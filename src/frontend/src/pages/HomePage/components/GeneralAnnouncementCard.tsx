@@ -18,6 +18,7 @@ const GeneralAnnouncementCard: React.FC<GeneralAnnouncementCardProps> = ({ annou
       sx={{
         width: '100%',
         height: 'fit-content',
+        flexShrink: 0,
         mr: 3,
         background: theme.palette.background.default,
         borderRadius: 2

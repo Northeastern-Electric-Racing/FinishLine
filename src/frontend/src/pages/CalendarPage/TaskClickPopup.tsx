@@ -63,8 +63,10 @@ export const TaskClickContent: React.FC<TaskClickContentProps> = ({ task, onClos
         title: data.title,
         notes: data.notes,
         priority: data.priority,
+        labelIds: task.labels.map((l) => l.taskLabelId),
         startDate: data.startDate,
-        deadline: data.deadline
+        deadline: data.deadline,
+        wbsNum: task.wbsNum
       });
       await editAssignees({
         taskId: task.taskId,

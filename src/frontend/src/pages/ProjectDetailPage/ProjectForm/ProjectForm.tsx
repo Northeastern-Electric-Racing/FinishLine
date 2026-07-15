@@ -8,7 +8,7 @@ import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Box, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import LinksEditView from '../../../components/LinksEditView';
@@ -17,27 +17,25 @@ import ProjectFormDetails from './ProjectFormDetails';
 import { useAllMembers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
-import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
 import { useEffect, useState } from 'react';
 import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequestView';
-import { NERButton } from '../../../components/NERButton';
-import HelpIcon from '@mui/icons-material/Help';
 import DescriptionBulletsEditView from '../../../components/DescriptionBulletEditView';
 import ProjectTemplateSection from './ProjectTemplateSection';
 import { WorkPackageFormViewPayload } from '../../WorkPackageForm/WorkPackageFormView';
 import ProjectFormWorkPackageSection from './ProjectFormWorkPackageSection';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { generateUUID } from '../../../utils/form';
+import { bulletsToObject, generateUUID } from '../../../utils/form';
 import { getMonday } from '../../../utils/datetime.utils';
-import { ChangeRequestFormReturn } from '../../CreateChangeRequestPage/CreateChangeRequestView';
+import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
+import * as React from 'react';
+import { useForm as useFormCR } from 'react-hook-form';
+import { yupResolver as yupResolverCR } from '@hookform/resolvers/yup';
 
 export interface ProjectFormInput {
   name: string;
   budget: number;
   summary: string;
   links: LinkCreateArgs[];
-  crId?: string;
   carNumber?: number;
   teamIds: string[];
   descriptionBullets: DescriptionBulletPreview[];
@@ -48,16 +46,13 @@ interface ProjectFormContainerProps {
   requiredLinkTypeNames: string[];
   exitEditMode: () => void;
   project?: Project;
-  onSubmit: (data: ProjectFormInput) => void;
+  onSubmit: (data: ProjectFormInput, why?: string, requestedReviewerId?: string) => void;
   defaultValues: ProjectFormInput;
   setManagerId: (id?: string) => void;
   setLeadId: (id?: string) => void;
   schema: yup.ObjectSchema<any>;
   leadId?: string;
   managerId?: string;
-  onSubmitChangeRequest?: (data: ProjectCreateChangeRequestFormInput) => void;
-  changeRequestFormReturn: ChangeRequestFormReturn;
-  onlyLeadershipChanged?: boolean;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -69,17 +64,13 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   setManagerId,
   schema,
   leadId,
-  managerId,
-  onSubmitChangeRequest,
-  changeRequestFormReturn,
-  onlyLeadershipChanged
+  managerId
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
-
   const toast = useToast();
 
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
+
   const {
     register,
     handleSubmit,
@@ -93,12 +84,20 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       name: defaultValues?.name,
       budget: defaultValues?.budget,
       summary: defaultValues?.summary,
-      crId: defaultValues?.crId,
       carNumber: defaultValues?.carNumber,
       links: defaultValues?.links,
       descriptionBullets: defaultValues?.descriptionBullets ?? [],
       teamIds: defaultValues?.teamIds
     }
+  });
+
+  const crSchema = yup.object().shape({
+    why: yup.string().required('Why is required'),
+    requestedReviewerId: yup.string().optional()
+  });
+  const { reset: resetCRForm, ...crFormMethods } = useFormCR<ChangeRequestFormInput>({
+    resolver: yupResolverCR(crSchema),
+    defaultValues: { why: '' }
   });
 
   const {
@@ -121,14 +120,48 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   const watchedTeams = watch('teamIds');
   const watchedBudget = watch('budget');
   const watchedSummary = watch('summary');
+  const watchedLinks = watch('links');
   const watchedDescriptionBullets = watch('descriptionBullets');
+
+  const leadershipChanged = project
+    ? leadId !== project.lead?.userId.toString() || managerId !== project.manager?.userId.toString()
+    : false;
+
+  const otherFieldsChanged = project
+    ? watchedName !== project.name ||
+      watchedBudget !== project.budget ||
+      watchedSummary !== project.summary ||
+      JSON.stringify((watchedLinks ?? []).map((l) => `${l.linkTypeName}:${l.url}`).sort()) !==
+        JSON.stringify(project.links.map((l) => `${l.linkType.name}:${l.url}`).sort()) ||
+      JSON.stringify(watchedDescriptionBullets) !== JSON.stringify(bulletsToObject(project.descriptionBullets))
+    : false;
+
+  const liveOnlyLeadershipChanged = leadershipChanged && !otherFieldsChanged;
+  const anyChangesMade = leadershipChanged || otherFieldsChanged;
+
+  const getButtonLabel = () => {
+    if (!project) return 'Create Project';
+    if (liveOnlyLeadershipChanged) return 'Submit & Implement';
+    if (otherFieldsChanged) return 'Submit Change Request';
+    return 'Submit & Implement';
+  };
+
+  const isButtonDisabled = () => {
+    if (!project) return false;
+    return !anyChangesMade;
+  };
+
+  const handleButtonClick = (e: React.MouseEvent) => {
+    if (project && otherFieldsChanged) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsModalOpen(true);
+    }
+  };
 
   useEffect(() => {
     if (selectedProjectTemplate) {
-      setValue('crId', '');
-
       let { projectName, teams, budget, descriptionBullets, summary } = selectedProjectTemplate;
-
       projectName = projectName || '';
       budget = budget || 0;
       teams = teams || [];
@@ -145,29 +178,10 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         setSelectedProjectTemplate(undefined);
       }
     }
-  }, [
-    selectedProjectTemplate,
-    watchedName,
-    watchedBudget,
-    watchedTeams,
-    watchedDescriptionBullets,
-    watchedSummary,
-    setValue
-  ]);
+  }, [selectedProjectTemplate, watchedName, watchedBudget, watchedTeams, watchedDescriptionBullets, watchedSummary]);
 
   if (usersIsLoading || !users) return <LoadingIndicator />;
-  if (usersIsError) {
-    return <ErrorPage message={usersError?.message} />;
-  }
-
-  const crWatch = watch('crId');
-  const changeRequestInputExists = !!crWatch && crWatch !== 'null' && crWatch !== '';
-
-  const handleCreateChangeRequest = async (data: ProjectFormInput) => {
-    if (onSubmitChangeRequest && changeRequestFormInput) {
-      onSubmitChangeRequest({ ...changeRequestFormInput, ...data });
-    }
-  };
+  if (usersIsError) return <ErrorPage message={usersError?.message} />;
 
   const detectCycle = (workPackages: WorkPackageFormViewPayload[]): boolean => {
     const visited = new Set<string>();
@@ -176,17 +190,14 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     const hasCycle = (wpId: string): boolean => {
       if (stack.has(wpId)) return true;
       if (visited.has(wpId)) return false;
-
       visited.add(wpId);
       stack.add(wpId);
-
       const workPackage = workPackages.find((wp) => wp.workPackageId === wpId);
       if (workPackage) {
         for (const blockedById of workPackage.blockedBy) {
           if (hasCycle(blockedById)) return true;
         }
       }
-
       stack.delete(wpId);
       return false;
     };
@@ -194,7 +205,6 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     for (const wp of workPackages) {
       if (hasCycle(wp.workPackageId)) return true;
     }
-
     return false;
   };
 
@@ -209,7 +219,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           toast.error('Error: Circular blocker relationship detected in work packages');
           return;
         }
-        handleSubmit(onSubmit)(e);
+        handleSubmit((data) => onSubmit(data))(e);
       }}
       onKeyPress={(e) => {
         e.key === 'Enter' && e.preventDefault();
@@ -220,40 +230,12 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         headerRight={
-          <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
-            {onSubmitChangeRequest && (
-              <Box display="inline-flex" alignItems="center">
-                <Tooltip
-                  title={
-                    <Typography fontSize={'16px'}>
-                      {`If you don't enter a Change Request ID into this form, you can create one here that when accepted will
-                      ${project ? `edit the selected Project` : `create a new Project`} with the inputted values`}
-                    </Typography>
-                  }
-                  placement="left"
-                >
-                  <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
-                </Tooltip>
-                <NERButton
-                  variant="contained"
-                  onClick={() => setIsModalOpen(true)}
-                  sx={{ mx: 1 }}
-                  disabled={changeRequestInputExists || onlyLeadershipChanged}
-                >
-                  Create Change Request
-                </NERButton>
-              </Box>
-            )}
-            <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+          <Box display="inline-flex" alignItems="center" justifyContent="end" flexWrap="nowrap" gap={1}>
+            <NERFailButton variant="contained" onClick={exitEditMode}>
               Cancel
             </NERFailButton>
-            <NERSuccessButton
-              disabled={!changeRequestInputExists && !!project && !onlyLeadershipChanged}
-              variant="contained"
-              type="submit"
-              sx={{ mx: 1 }}
-            >
-              Submit
+            <NERSuccessButton variant="contained" type="submit" disabled={isButtonDisabled()} onClick={handleButtonClick}>
+              {getButtonLabel()}
             </NERSuccessButton>
           </Box>
         }
@@ -277,20 +259,17 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                 templateToIdMap.set(wp.workPackageTemplateId, id);
               });
 
-              const workPackages = (template?.workPackageTemplates || []).map((wp) => {
-                return {
-                  ...wp,
-                  name: wp.workPackageName ?? '',
-                  stage: wp.stage ?? 'NONE',
-                  startDate: getMonday(new Date()),
-                  workPackageId: templateToIdMap.get(wp.workPackageTemplateId)!,
-                  duration: wp.duration ?? 0,
-                  blockedBy: wp.blockedBy.map((blocker) => templateToIdMap.get(blocker.workPackageTemplateId)!)
-                };
-              });
+              const workPackages = (template?.workPackageTemplates || []).map((wp) => ({
+                ...wp,
+                name: wp.workPackageName ?? '',
+                stage: wp.stage ?? 'NONE',
+                startDate: getMonday(new Date()),
+                workPackageId: templateToIdMap.get(wp.workPackageTemplateId)!,
+                duration: wp.duration ?? 0,
+                blockedBy: wp.blockedBy.map((blocker) => templateToIdMap.get(blocker.workPackageTemplateId)!)
+              }));
 
               setValue('workPackages', workPackages);
-
               setSelectedProjectTemplate(template);
             }}
           />
@@ -346,16 +325,21 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           )}
         </Stack>
       </PageLayout>
-      {onSubmitChangeRequest && (
+
+      {project && (
         <CreateChangeRequestModal
           onConfirm={async (crFormInput: ChangeRequestFormInput) => {
-            changeRequestFormInput = crFormInput;
-            await handleSubmit(handleCreateChangeRequest)();
+            await handleSubmit((data) => onSubmit(data, crFormInput.why, crFormInput.requestedReviewerId))();
+            setIsModalOpen(false);
+            resetCRForm();
           }}
-          onHide={() => setIsModalOpen(false)}
-          wbsNum={project ? wbsPipe(project!.wbsNum) : '0.0.0'}
+          onHide={() => {
+            setIsModalOpen(false);
+            resetCRForm();
+          }}
+          wbsNum={wbsPipe(project.wbsNum)}
           open={isModalOpen}
-          changeRequestFormReturn={changeRequestFormReturn}
+          changeRequestFormReturn={crFormMethods}
         />
       )}
     </form>

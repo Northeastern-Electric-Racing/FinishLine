@@ -1,0 +1,83 @@
+name: Sandbox Tear-Down
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - multitenancy
+
+# Share the concurrency group with sandbox-up so they can't run simultaneously.
+concurrency:
+  group: sandbox
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  tear-down:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Check if sandbox exists
+        id: check
+        run: |
+          STATUS=$(aws elasticbeanstalk describe-environments \
+            --environment-names finishline-sandbox-env \
+            --region us-east-2 \
+            --query "Environments[0].Status" \
+            --output text 2>/dev/null || echo "None")
+
+          if [ "$STATUS" = "None" ] || [ "$STATUS" = "" ] || [ "$STATUS" = "Terminated" ]; then
+            echo "No active sandbox found, nothing to tear down."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Sandbox found with status: $STATUS, proceeding with teardown."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Terraform
+        if: steps.check.outputs.exists == 'true'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.0"
+          terraform_wrapper: false
+
+      - name: Terraform init
+        if: steps.check.outputs.exists == 'true'
+        working-directory: infrastructure/environments/sandbox
+        run: terraform init
+
+      - name: Terraform destroy
+        if: steps.check.outputs.exists == 'true'
+        working-directory: infrastructure/environments/sandbox
+        env:
+          # Terraform requires all required variables to have values even for destroy.
+          # The actual values are irrelevant since destroy only reads state.
+          TF_VAR_db_master_password: "unused"
+          TF_VAR_session_secret: "unused"
+          TF_VAR_encryption_key: "unused"
+          TF_VAR_google_client_secret: "unused"
+          TF_VAR_drive_refresh_token: "unused"
+          TF_VAR_calendar_refresh_token: "unused"
+          TF_VAR_slack_bot_token: "unused"
+          TF_VAR_slack_token_secret: "unused"
+          TF_VAR_slack_signing_secret: "unused"
+          TF_VAR_notification_endpoint_secret: "unused"
+        run: terraform destroy -auto-approve
+
+      - name: Tag-based cleanup safety net
+        if: steps.check.outputs.exists == 'true'
+        run: bash infrastructure/scripts/cleanup-sandbox.sh

@@ -61,19 +61,12 @@ export const getSingleChangeRequest = (id: string) => {
  * @param accepted Is the change request being accepted?
  * @param reviewNotes The notes attached to reviewing the change request.
  */
-export const reviewChangeRequest = (
-  reviewerId: string,
-  crId: string,
-  accepted: boolean,
-  reviewNotes: string,
-  psId?: string
-) => {
+export const reviewChangeRequest = (reviewerId: string, crId: string, accepted: boolean, reviewNotes?: string) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestsReview(), {
     reviewerId,
     crId,
     accepted,
-    reviewNotes,
-    psId
+    reviewNotes
   });
 };
 
@@ -128,13 +121,20 @@ export const createActivationChangeRequest = (
  * @param submitterId The ID of the user creating the change request.
  * @param wbsNumber the wbsNumber of the WBS element the change request is for.
  * @param confirmDone are all details of the WBS element being stage gated fully completed?
+ * @param dateCompleted the date the work package was completed
  */
-export const createStageGateChangeRequest = (submitterId: string, wbsNum: WbsNumber, confirmDone: boolean) => {
+export const createStageGateChangeRequest = (
+  submitterId: string,
+  wbsNum: WbsNumber,
+  confirmDone: boolean,
+  dateCompleted: Date
+) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestsCreateStageGate(), {
     submitterId,
     wbsNum,
     type: ChangeRequestType.StageGate,
-    confirmDone
+    confirmDone,
+    dateCompleted
   });
 };
 
@@ -180,34 +180,6 @@ export const createLeadershipChangeRequest = (
     leadId,
     managerId,
     type: ChangeRequestType.Leadership
-  });
-};
-
-/**
- * Create a propose solution
- * @param submitterId The ID of the user creating the change request.
- * @param crId The ID of the associated change request.
- * @param description The description of the proposed solution.
- * @param scopeImpact The scope of the change for the proposed solution.
- * @param timelineImpact The number of week(s) impact for the proposed solution.
- * @param budgetImpact The budget in dollars, for the proposed solution.
- */
-
-export const addProposedSolution = (
-  submitterId: string,
-  crId: string,
-  description: string,
-  scopeImpact: string,
-  timelineImpact: number,
-  budgetImpact: number
-) => {
-  return axios.post<{ message: string }>(apiUrls.changeRequestCreateProposeSolution(), {
-    submitterId,
-    crId,
-    description,
-    scopeImpact,
-    timelineImpact,
-    budgetImpact
   });
 };
 

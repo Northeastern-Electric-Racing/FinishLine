@@ -1,6 +1,5 @@
 /// <reference types="cypress" />
 import { NEW_PROJECT_BUTTON, ALL_PROJECTS_TAB, MY_TEAMS_PROJECTS, PROJECTS_IM_LEADING } from '../../utils/selectors.utils';
-
 import { VISIBLE, LENGTH_GREATER_THAN, INCLUDE } from '../../utils/cypress-actions.utils';
 
 describe('Projects Overview', () => {
@@ -29,33 +28,22 @@ describe('Projects Overview', () => {
   it('Creating a Project Writes to DB and Appears in All Projects', () => {
     const projectName = 'E2E Test Project';
 
-    // Click New Project
     cy.contains(NEW_PROJECT_BUTTON).click();
     cy.url().should(INCLUDE, '/projects/new');
 
-    // Fill in Project Name
     cy.get('[placeholder="Enter project name..."]').type(projectName);
 
-    // Car is pre-selected (NER-25), keep default
-
-    // Select a Team
-    // Target the Teams label (not the sidebar link) and find its sibling combobox
     cy.get('label').contains('Teams').parent().find('[role="combobox"]').click({ force: true });
     cy.get('[role="listbox"]').contains('Huskies').click();
 
-    // Close any open dropdowns
     cy.get('body').click(0, 0);
 
-    // Fill in Summary
     cy.get('[placeholder="Enter a summary..."]').type('An e2e test project for automated testing', { force: true });
 
-    // Submit
-    cy.contains('Submit').click({ force: true });
+    cy.contains('Create Project').click({ force: true });
 
-    // Should redirect to All Projects
     cy.url().should(INCLUDE, '/projects/all');
 
-    // Verify the project appears in the table
     cy.contains(projectName, { timeout: 10000 }).should(VISIBLE);
   });
 });

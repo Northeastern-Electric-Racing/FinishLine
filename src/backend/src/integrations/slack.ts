@@ -354,7 +354,7 @@ export async function sendEphemeralMessage(
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
-      throw new HttpException(500, `Failed to send slack notifications: ${err.message}`);
+      throw new HttpException(500, `Failed to send slack ephemeral: ${err.message}`);
     }
   }
 }

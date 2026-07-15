@@ -3,7 +3,12 @@ import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities 
 import { datePipe } from '../../../../utils/pipes';
 import { useState, useEffect } from 'react';
 import NERArrows from '../../../../components/NERArrows';
-import { enumToArray, REVIEW_TIMES, getBackgroundColor } from '../../../../utils/design-review.utils';
+import {
+  enumToArray,
+  REVIEW_TIMES,
+  getBackgroundColor,
+  reviewTimesInCurrentTimeZone
+} from '../../../../utils/design-review.utils';
 import EventTimeSlot from '../../../CalendarPage/Components/EventTimeSlot';
 import { useCurrentUser, useUserIcsBusyTimes } from '../../../../hooks/users.hooks';
 import { icsBusySlotsByDay, isSlotBusy } from '../../../../utils/ics.utils';
@@ -111,7 +116,7 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({
               <TableRow key={time}>
                 <TableCell sx={{ ...stickyLeft, zIndex: 1 }}>
                   <Typography variant="body1" align="center" sx={{ fontSize: 15 }}>
-                    {time}
+                    {reviewTimesInCurrentTimeZone(time)}
                   </Typography>
                 </TableCell>
                 {selectedTimes.map((availability, dayIndex) => {

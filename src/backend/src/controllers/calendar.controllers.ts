@@ -276,6 +276,7 @@ export default class CalendarController {
         workPackageIds,
         scheduleSlots,
         initialDateScheduled,
+        notificationChannelIds,
         questionDocumentLink,
         location,
         zoomLink,
@@ -283,7 +284,7 @@ export default class CalendarController {
         mention
       } = req.body;
 
-      const parsedScheduleSlots = scheduleSlots.map((slot: any) => ({
+      const parsedScheduleSlots = scheduleSlots.map((slot: { allDay: boolean; startTime?: string; endTime?: string }) => ({
         startTime: slot.startTime ? new Date(slot.startTime) : undefined,
         endTime: slot.endTime ? new Date(slot.endTime) : undefined,
         allDay: slot.allDay
@@ -304,6 +305,7 @@ export default class CalendarController {
         workPackageIds,
         parsedScheduleSlots,
         parsedInitialDateScheduled,
+        notificationChannelIds,
         teamTypeId,
         questionDocumentLink,
         location,
@@ -332,6 +334,7 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         documents,
+        notificationChannelIds,
         questionDocumentLink,
         location,
         zoomLink,
@@ -351,6 +354,7 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         documents,
+        notificationChannelIds,
         teamTypeId,
         questionDocumentLink,
         location,

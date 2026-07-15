@@ -98,7 +98,10 @@ const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assigne
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
-const tasksByWbsNum = (wbsNum: string) => `${tasks()}/by-wbs/${wbsNum}`;
+const taskLabels = () => `${tasks()}/task-labels`;
+const taskLabelCreate = () => `${taskLabels()}/create`;
+const taskLabelEdit = (taskLabelId: string) => `${taskLabels()}/${taskLabelId}/edit`;
+const taskLabelDelete = (taskLabelId: string) => `${taskLabels()}/${taskLabelId}/delete`;
 
 /**************** Work Packages Endpoints ****************/
 const workPackages = (queryParams?: { [field: string]: string }) => {
@@ -384,10 +387,15 @@ const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-revie
 const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizations()}/sponsorshipChannelId/set`;
 const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
 const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
+const organizationsNotificationChannels = () => `${organizations()}/notification-channels`;
+const organizationsAvailableNotificationChannels = () => `${organizationsNotificationChannels()}/available`;
+const organizationsCreateNotificationChannel = () => `${organizationsNotificationChannels()}/create`;
+const organizationsDeleteNotificationChannel = () => `${organizationsNotificationChannels()}/delete`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
+const carEdit = (id: string) => `${cars()}/${id}/edit`;
 
 /************** Recruitment Endpoints ***************/
 const recruitment = () => `${API_URL}/recruitment`;
@@ -596,7 +604,10 @@ export const apiUrls = {
   editTaskAssignees,
   deleteTask,
   overdueTasksByTeamLeadership,
-  tasksByWbsNum,
+  taskLabels,
+  taskLabelCreate,
+  taskLabelEdit,
+  taskLabelDelete,
 
   workPackages,
   workPackagesByWbsNum,
@@ -789,9 +800,14 @@ export const apiUrls = {
   organizationsSetSlackSponsorshipNotificationChannelId,
   organizationsFinanceDelegates,
   organizationsSetFinanceDelegates,
+  organizationsNotificationChannels,
+  organizationsAvailableNotificationChannels,
+  organizationsCreateNotificationChannel,
+  organizationsDeleteNotificationChannel,
 
   cars,
   carsCreate,
+  carEdit,
 
   recruitment,
   allMilestones,

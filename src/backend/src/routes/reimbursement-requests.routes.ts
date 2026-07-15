@@ -96,13 +96,13 @@ reimbursementRequestsRouter.get('/reimbursements', ReimbursementRequestControlle
 reimbursementRequestsRouter.post(
   '/:vendorId/vendors/edit',
   nonEmptyString(body('name')),
-  nonEmptyString(body('username')).optional(),
-  nonEmptyString(body('password')).optional(),
-  nonEmptyString(body('discountCode')).optional(),
+  nonEmptyString(body('username')).optional({ checkFalsy: true }),
+  nonEmptyString(body('password')).optional({ checkFalsy: true }),
+  nonEmptyString(body('discountCode')).optional({ checkFalsy: true }),
   body('taxExempt').isBoolean(),
   body('twoFactorContacts').isArray(),
   nonEmptyString(body('twoFactorContacts.*')),
-  nonEmptyString(body('notes')).optional(),
+  nonEmptyString(body('notes')).optional({ checkFalsy: true }),
   validateInputs,
   ReimbursementRequestController.editVendor
 );

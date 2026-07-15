@@ -1,15 +1,5 @@
-import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import {
-  ChangeRequestReason,
-  ChangeRequestType,
-  dateToMidnightUTC,
-  Link,
-  LinkCreateArgs,
-  ProjectGantt,
-  Task,
-  WbsElementPreview,
-  WorkPackage
-} from 'shared';
+import { Box, FormControl, InputLabel, TextField, Typography } from '@mui/material';
+import { dateToMidnightUTC, Link, LinkCreateArgs, ProjectGantt, Task, WbsElementPreview, WorkPackage } from 'shared';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
@@ -26,7 +16,6 @@ interface GanttTimeLineChangeModalProps extends GanttRequestChangeModalProps {}
 
 export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTimeLineChangeModalProps) => {
   const toast = useToast();
-  const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Estimation);
   const [explanationForChange, setExplanationForChange] = useState('');
   const {
     data: originalProject,
@@ -50,31 +39,12 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     return <LoadingIndicator />;
   if (originalProjectIsError) return <ErrorPage error={originalProjectError} />;
 
-  const handleReasonChange = (event: SelectChangeEvent<ChangeRequestReason>) => {
-    setReasonForChange(event.target.value as ChangeRequestReason);
-  };
-
   const handleExplanationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setExplanationForChange(event.target.value);
   };
 
   const changeInTimeline = (startDate: Date, endDate: Date) => {
     return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`;
-  };
-
-  const createWhatMessage = (editedWorkPackages: WorkPackage[]): string => {
-    return (
-      'Adjusted Timelines for WorkPackages: \n' +
-      editedWorkPackages
-        .map(
-          (workPackage) =>
-            `- ${workPackage.name}: ${changeInTimeline(workPackage.startDate, workPackage.endDate)} To: ${changeInTimeline(
-              change.newStart,
-              change.newEnd
-            )}`
-        )
-        .join('\n')
-    );
   };
 
   const transformLinkToLinkCreateArgs = (link: Link): LinkCreateArgs => {
@@ -128,7 +98,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
   });
 
   const handleSubmit = async () => {
-    if (editedWorkPackages.length > 0 && !reasonForChange) {
+    if (editedWorkPackages.length > 0) {
       return;
     }
 
@@ -136,15 +106,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
       if (editedWorkPackages.length > 0) {
         const payload: CreateStandardChangeRequestPayload = {
           wbsNum: change.element.wbsNum,
-          type: ChangeRequestType.Issue,
-          what: createWhatMessage(editedWorkPackages),
-          why: [
-            {
-              explain: explanationForChange,
-              type: reasonForChange
-            }
-          ],
-          proposedSolutions: [],
+          why: explanationForChange,
           projectProposedChanges: {
             workPackageProposedChanges: editedWorkPackages.map((workPackage) => {
               const duration = dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week');
@@ -199,6 +161,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
             status: task.status,
             assignees: task.assignees?.map((user) => user.userId) || [],
             notes: task.notes || '',
+            labelIds: task.labels.map((l) => l.taskLabelId),
             deadline: task.deadline ? dateToMidnightUTC(task.deadline).toISOString() : undefined,
             startDate: task.startDate ? dateToMidnightUTC(task.startDate).toISOString() : undefined
           };
@@ -221,6 +184,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
             title: task.title,
             priority: task.priority,
             notes: task.notes || '',
+            labelIds: task.labels.map((l) => l.taskLabelId),
             deadline: task.deadline,
             startDate: task.startDate
           };
@@ -247,7 +211,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     <NERDraggableFormModal
       open={open}
       title={(change.element as WbsElementPreview).name ?? (change.element as Task).title}
-      disableSuccessButton={editedWorkPackages.length > 0 && (!reasonForChange || !explanationForChange)}
+      disableSuccessButton={editedWorkPackages.length > 0 && !explanationForChange}
       handleSubmit={handleSubmit}
       onHide={() => handleClose(true)}
     >
@@ -263,11 +227,6 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
           <Box sx={{ mt: 2 }}>
             <FormControl fullWidth>
               <InputLabel>Reason for Change</InputLabel>
-              <Select value={reasonForChange} label="Reason for Change" onChange={handleReasonChange}>
-                {Object.entries(ChangeRequestReason).map(([key, value]) => (
-                  <MenuItem value={value}>{key}</MenuItem>
-                ))}
-              </Select>
             </FormControl>
             <TextField
               fullWidth

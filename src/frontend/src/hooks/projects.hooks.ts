@@ -35,7 +35,8 @@ import {
   setAbbreviation,
   deleteAbbreviation,
   getTeamsProjects,
-  getAllProjects
+  getAllProjects,
+  getAllProjectsCopyBOM
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
@@ -63,6 +64,18 @@ export const useAllProjects = () => {
       return data;
     }
   );
+};
+
+/**
+ * Custom React Hook to supply all projects, bypassing the global car filter.
+ * Used by Copy BOM, which lets the user pick any past car regardless of the
+ * globally selected car and does its own frontend filtering by car.
+ */
+export const useAllProjectsCopyBOM = () => {
+  return useQuery<ProjectPreview[], Error>(['projects', 'previews', 'all-cars'], async () => {
+    const { data } = await getAllProjectsCopyBOM();
+    return data;
+  });
 };
 
 /**
