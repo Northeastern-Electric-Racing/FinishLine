@@ -291,7 +291,7 @@ export interface IcsBusyInterval {
   end: Date;
 }
 
-export interface IcsBusySlots {
+export interface BusySlots {
   dateSet: Date;
   busySlots: number[];
 }

@@ -59,11 +59,11 @@ userRouter.post(
 userRouter.get('/:userId/secure-settings', UsersController.getUserSecureSettings);
 userRouter.get('/:userId/schedule-settings', UsersController.getUserScheduleSettings);
 userRouter.get(
-  '/:userId/schedule-settings/ics-busy',
+  '/:userId/schedule-settings/busy-times',
   isDateOnly(query('startDate')),
   isDateOnly(query('endDate')),
   validateInputs,
-  UsersController.getUserIcsBusyTimes
+  UsersController.getUserBusyTimes
 );
 userRouter.get('/:userId/tasks', UsersController.getUserTasks);
 userRouter.post(

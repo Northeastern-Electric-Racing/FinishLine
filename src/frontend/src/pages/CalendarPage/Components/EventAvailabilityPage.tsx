@@ -255,7 +255,6 @@ export const EventAvailabilityPage: React.FC = () => {
         initialDate={displayDate}
         onSubmit={handleConfirm}
         canChangeDateRange={false}
-        showImportedCalendarBusy={!!userScheduleSettings.importedIcsCalendarUrl}
       />
     );
   }
@@ -428,7 +427,6 @@ export const EventAvailabilityPage: React.FC = () => {
         header="My Availability"
         availabilites={userScheduleSettings.availabilities}
         initialDate={displayDate}
-        showImportedCalendarBusy={!!userScheduleSettings.importedIcsCalendarUrl}
       />
       <AvailabilityEditModal
         open={editAvailabilityOpen}
@@ -440,7 +438,6 @@ export const EventAvailabilityPage: React.FC = () => {
         initialDate={displayDate}
         onSubmit={handleConfirm}
         canChangeDateRange={false}
-        showImportedCalendarBusy={!!userScheduleSettings.importedIcsCalendarUrl}
       />
       {selectedSlot && (
         <ScheduleEventModal

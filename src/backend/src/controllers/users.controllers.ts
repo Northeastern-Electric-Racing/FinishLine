@@ -200,12 +200,12 @@ export default class UsersController {
     }
   }
 
-  static async getUserIcsBusyTimes(req: Request, res: Response, next: NextFunction) {
+  static async getUserBusyTimes(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.params as Record<string, string>;
       const { startDate, endDate } = req.query as Record<string, string>;
 
-      const busyTimes = await UsersService.getUserIcsBusyTimes(
+      const busyTimes = await UsersService.getUserBusyTimes(
         userId,
         req.currentUser,
         new Date(startDate),

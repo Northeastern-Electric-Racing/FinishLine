@@ -17,7 +17,7 @@ import {
   getCurrentUserSecureSettings,
   getUserSecureSettings,
   getUserScheduleSettings,
-  getUserIcsBusyTimes,
+  getUserBusyTimes,
   updateUserScheduleSettings,
   getUserTasks,
   getManyUserTasks,
@@ -39,7 +39,7 @@ import {
   UserWithRole,
   UserWithScheduleSettings,
   ProjectOverview,
-  IcsBusySlots
+  BusySlots
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -331,15 +331,16 @@ export const useLogUserOut = () => {
 };
 
 /**
- * Custom react hook to get a user's busy times from their ics calendar url
+ * Custom react hook to get a user's busy times, combining their imported ics calendar feed and
+ * Finishline events they're on
  *
- * @returns user's busy times from imported calendar
+ * @returns user's busy times per day
  */
-export const useUserIcsBusyTimes = (id: string, startDate: Date, endDate: Date, enabled: boolean) => {
-  return useQuery<IcsBusySlots[], Error>(
-    ['users', id, 'schedule-settings', 'ics-busy', startDate.getTime(), endDate.getTime()],
+export const useUserBusyTimes = (id: string, startDate: Date, endDate: Date, enabled: boolean) => {
+  return useQuery<BusySlots[], Error>(
+    ['users', id, 'schedule-settings', 'busy-times', startDate.getTime(), endDate.getTime()],
     async () => {
-      const { data } = await getUserIcsBusyTimes(id, startDate, endDate);
+      const { data } = await getUserBusyTimes(id, startDate, endDate);
       return data;
     },
     { enabled: enabled && !!id }

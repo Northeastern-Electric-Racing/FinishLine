@@ -16,7 +16,6 @@ interface DRCEditModalProps {
   onSubmit: () => void;
   initialDate: Date;
   canChangeDateRange?: boolean;
-  showImportedCalendarBusy?: boolean;
 }
 
 const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
@@ -28,8 +27,7 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
   totalAvailabilities,
   onSubmit,
   initialDate,
-  canChangeDateRange = true,
-  showImportedCalendarBusy
+  canChangeDateRange = true
 }) => {
   const onCancel = () => {
     setConfirmedAvailabilities(new Map());
@@ -47,7 +45,6 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
           totalAvailabilities={totalAvailabilities}
           canChangeDateRange={canChangeDateRange}
           initialDate={initialDate}
-          showImportedCalendarBusy={showImportedCalendarBusy}
         />
 
         <Box
@@ -87,7 +84,6 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
         totalAvailabilities={totalAvailabilities}
         canChangeDateRange={canChangeDateRange}
         initialDate={initialDate}
-        showImportedCalendarBusy={showImportedCalendarBusy}
       />
     </NERModal>
   );

@@ -10,20 +10,15 @@ import {
   reviewTimesInCurrentTimeZone
 } from '../../../../utils/design-review.utils';
 import EventTimeSlot from '../../../CalendarPage/Components/EventTimeSlot';
-import { useCurrentUser, useUserIcsBusyTimes } from '../../../../hooks/users.hooks';
-import { icsBusySlotsByDay, isSlotBusy } from '../../../../utils/ics.utils';
+import { useCurrentUser, useUserBusyTimes } from '../../../../hooks/users.hooks';
+import { busySlotsByDay, isSlotBusy } from '../../../../utils/ics.utils';
 
 interface SingleAvailabilityViewProps {
   totalAvailability: Availability[];
   initialDate?: Date;
-  showImportedCalendarBusy?: boolean;
 }
 
-const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({
-  totalAvailability,
-  initialDate,
-  showImportedCalendarBusy = false
-}) => {
+const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAvailability, initialDate }) => {
   const currentUser = useCurrentUser();
   const [startDate, setStartDate] = useState<Date>(initialDate || new Date());
 
@@ -37,8 +32,8 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({
 
   const weekStart = selectedTimes[0]?.dateSet ?? startDate;
   const weekEnd = addDaysToDate(selectedTimes[selectedTimes.length - 1]?.dateSet ?? startDate, 1);
-  const { data: icsBusy } = useUserIcsBusyTimes(currentUser.userId, weekStart, weekEnd, showImportedCalendarBusy);
-  const busyByDay = showImportedCalendarBusy ? icsBusySlotsByDay(icsBusy ?? []) : new Map<number, Set<number>>();
+  const { data: busyTimes } = useUserBusyTimes(currentUser.userId, weekStart, weekEnd, true);
+  const busyByDay = busySlotsByDay(busyTimes ?? []);
 
   const onArrowIncrease = () => {
     const newDate = new Date(startDate);
@@ -61,12 +56,10 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {showImportedCalendarBusy && (
-        <Typography variant="caption" color="text.secondary" mb={1}>
-          Hatched slots are busy on your imported calendar. Edit your availability and use "Fill from external calendar" to
-          pull in any changes.
-        </Typography>
-      )}
+      <Typography variant="caption" color="text.secondary" mb={1}>
+        Hatched slots are busy on your imported calendar or Finishline events. Edit your availability and use "Fill from busy
+        times" to pull in any changes.
+      </Typography>
       <TableContainer
         sx={{
           overflowX: 'auto',

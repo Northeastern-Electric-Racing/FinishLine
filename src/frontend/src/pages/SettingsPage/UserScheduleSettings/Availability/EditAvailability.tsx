@@ -6,7 +6,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Tooltip,
   Typography,
   useMediaQuery
 } from '@mui/material';
@@ -23,8 +22,8 @@ import { datePipe } from '../../../../utils/pipes';
 import NERArrows from '../../../../components/NERArrows';
 import { NERButton } from '../../../../components/NERButton';
 import EventTimeSlot from '../../../CalendarPage/Components/EventTimeSlot';
-import { useCurrentUser, useUserIcsBusyTimes } from '../../../../hooks/users.hooks';
-import { icsBusySlotsByDay, isSlotBusy } from '../../../../utils/ics.utils';
+import { useCurrentUser, useUserBusyTimes } from '../../../../hooks/users.hooks';
+import { busySlotsByDay, isSlotBusy } from '../../../../utils/ics.utils';
 import { useToast } from '../../../../hooks/toasts.hooks';
 
 interface EditAvailabilityProps {
@@ -33,7 +32,6 @@ interface EditAvailabilityProps {
   totalAvailabilities: Availability[];
   initialDate: Date;
   canChangeDateRange?: boolean;
-  showImportedCalendarBusy?: boolean;
 }
 
 const EditAvailability: React.FC<EditAvailabilityProps> = ({
@@ -41,8 +39,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   totalAvailabilities,
   setEditedAvailabilities,
   initialDate,
-  canChangeDateRange = true,
-  showImportedCalendarBusy = false
+  canChangeDateRange = true
 }) => {
   const currentUser = useCurrentUser();
   const toast = useToast();
@@ -69,14 +66,14 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     currentlyDisplayedAvailabilities[currentlyDisplayedAvailabilities.length - 1]?.dateSet ?? initialDate,
     1
   );
-  const { data: icsBusy, isFetching: icsBusyIsFetching } = useUserIcsBusyTimes(
+  const { data: busyTimes, isFetching: busyTimesIsFetching } = useUserBusyTimes(
     currentUser.userId,
     weekStart,
     weekEnd,
-    showImportedCalendarBusy
+    true
   );
 
-  const busyByDay = showImportedCalendarBusy ? icsBusySlotsByDay(icsBusy ?? []) : new Map<number, Set<number>>();
+  const busyByDay = busySlotsByDay(busyTimes ?? []);
 
   const handleMouseDown = (event: any, availability: Availability, selectedTime: number) => {
     event.preventDefault();
@@ -137,7 +134,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     setIsInverted(!isInverted);
   };
 
-  const syncFromExternalCalendar = () => {
+  const syncFromBusyTimes = () => {
     const allSlots = enumToArray(REVIEW_TIMES).map((_time, timeIndex) => timeIndex);
     let busyCount = 0;
 
@@ -156,8 +153,8 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
 
     toast.success(
       busyCount > 0
-        ? 'Filled this week from your external calendar — adjust any slots before saving.'
-        : 'No calendar conflicts found this week — marked you available across the window.'
+        ? 'Filled this week from your busy times — adjust any slots before saving.'
+        : 'No conflicts found this week — marked you available across the window.'
     );
   };
 
@@ -197,28 +194,15 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
             )}
             . &nbsp;&nbsp; All times are in local time, {yourTimeZoneInitials()}.{' '}
           </Typography>
-          {showImportedCalendarBusy && (
-            <Typography variant="caption" color="text.secondary">
-              Hatched slots are busy on your imported calendar. Use "Fill from external calendar" to pre-fill, then adjust
-              any slots manually.
-            </Typography>
-          )}
+          <Typography variant="caption" color="text.secondary">
+            Hatched slots are busy on your imported calendar or Finishline events. Use "Fill from busy times" to pre-fill,
+            then adjust any slots manually.
+          </Typography>
         </Box>
         <Box display="flex" gap={1} flexShrink={0}>
-          <Tooltip
-            title={showImportedCalendarBusy ? '' : 'Connect a calendar in your user settings to use this'}
-            placement="top"
-          >
-            <span>
-              <NERButton
-                variant="outlined"
-                onClick={syncFromExternalCalendar}
-                disabled={!showImportedCalendarBusy || icsBusyIsFetching}
-              >
-                {icsBusyIsFetching ? 'Filling out...' : 'Fill from external calendar'}
-              </NERButton>
-            </span>
-          </Tooltip>
+          <NERButton variant="outlined" onClick={syncFromBusyTimes} disabled={busyTimesIsFetching}>
+            {busyTimesIsFetching ? 'Filling out...' : 'Fill from busy times'}
+          </NERButton>
           <NERButton variant="outlined" onClick={invertAvailabilities}>
             Invert Availability
           </NERButton>

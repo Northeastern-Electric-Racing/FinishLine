@@ -109,7 +109,6 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
           totalAvailabilities={totalAvailabilities}
           setConfirmedAvailabilities={setAvailabilities}
           initialDate={new Date()}
-          showImportedCalendarBusy={!!defaultValues?.importedIcsCalendarUrl}
         />
         <Grid item sx={{ mb: 1 }} xs={12} sm={4}>
           <FormControl fullWidth>

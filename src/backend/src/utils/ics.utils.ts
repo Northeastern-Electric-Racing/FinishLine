@@ -1,5 +1,7 @@
 import ical, { ICalEventStatus } from 'ical-generator';
 import nodeIcal, { CalendarComponent, RRule, VEvent } from 'node-ical';
+import dns from 'node:dns/promises';
+import ipaddr from 'ipaddr.js';
 import { IcsBusyInterval, Event, wbsPipe } from 'shared';
 import { HttpException } from './errors.utils.js';
 
@@ -55,40 +57,42 @@ interface VEventRecurrenceOverride extends VEvent {
   recurrenceid?: Date;
 }
 
-// checks if a given host is blocked (used to mitigate ssrf attacks)
-const isBlockedHost = (host: string): boolean => {
-  const h = host.toLowerCase();
-  return (
-    h === 'localhost' ||
-    h === '127.0.0.1' ||
-    h === '0.0.0.0' ||
-    h === '::1' ||
-    h.endsWith('.local') ||
-    /^10\./.test(h) ||
-    /^192\.168\./.test(h) ||
-    /^172\.(1[6-9]|2\d|3[0-1])\./.test(h) ||
-    /^169\.254\./.test(h) ||
-    h.startsWith('::ffff:') ||
-    /^fe80:/i.test(h) ||
-    /^fc[0-9a-f]{2}:/i.test(h) ||
-    /^fd[0-9a-f]{2}:/i.test(h)
-  );
+// resolves the host and checks whether any resolved address is blocked (used to mitigate SSRF attacks).
+// Uses dns.lookup (rather than dns.resolve) since it goes through the same OS resolver - including
+// /etc/hosts and NSS config - that the actual fetch will use, and it accepts literal IPs unchanged, so this
+// also catches URLs that use an IP directly. ipaddr.js classifies the resolved address's range for us
+// (loopback/private/link-local/reserved/carrier-grade-NAT/etc, for both IPv4 and IPv6, including
+// IPv4-mapped IPv6 addresses) rather than us hand-maintaining that list. This does not protect against DNS
+// rebinding (the host re-resolving to a different, internal address between this check and the real fetch)
+// - closing that gap would require pinning the connection to the address we resolved here.
+const isBlockedHost = async (hostname: string): Promise<boolean> => {
+  let addresses;
+  try {
+    addresses = await dns.lookup(hostname, { all: true });
+  } catch {
+    return true; // unresolvable host - fail closed
+  }
+
+  return addresses.length === 0 || addresses.some(({ address }) => ipaddr.process(address).range() !== 'unicast');
 };
 
 // checks if a give ics url is valid, throws if invalid
-export const validateIcsUrl = (url: string): URL => {
+export const validateIcsUrl = async (url: string): Promise<URL> => {
+  // rewritten before parsing rather than via `parsed.protocol = 'https:'` - the WHATWG URL setter silently
+  // no-ops when switching from a "not special" scheme (webcal) to a "special" one (https)
+  const normalizedUrl = url.replace(/^webcal:/i, 'https:');
+
   let parsed: URL;
   try {
-    parsed = new URL(url);
+    parsed = new URL(normalizedUrl);
   } catch {
     throw new HttpException(400, 'Invalid ICS URL');
   }
 
-  if (parsed.protocol === 'webcal:') parsed.protocol = 'https:';
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
     throw new HttpException(400, 'ICS URL must use http or https');
   }
-  if (isBlockedHost(parsed.hostname)) {
+  if (await isBlockedHost(parsed.hostname)) {
     throw new HttpException(400, 'ICS URL host is not allowed');
   }
   return parsed;
@@ -121,7 +125,7 @@ const fetchIcsText = async (url: URL): Promise<string> => {
  * (RECURRENCE-ID). Skips events marked CANCELLED or TRANSPARENT (free).
  */
 export const fetchIcsBusyTimes = async (url: string, rangeStart: Date, rangeEnd: Date): Promise<IcsBusyInterval[]> => {
-  const validUrl = validateIcsUrl(url);
+  const validUrl = await validateIcsUrl(url);
   const icsText = await fetchIcsText(validUrl);
 
   let parsed: Record<string, CalendarComponent | undefined>;

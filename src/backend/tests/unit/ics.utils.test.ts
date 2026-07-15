@@ -1,4 +1,8 @@
-import { busyIntervalsToSlots, removeBusySlotsFromAvailability } from '../../src/utils/ics.utils.js';
+import dns from 'node:dns/promises';
+import { vi } from 'vitest';
+import { busyIntervalsToSlots, removeBusySlotsFromAvailability, validateIcsUrl } from '../../src/utils/ics.utils.js';
+
+vi.mock('node:dns/promises', () => ({ default: { lookup: vi.fn() } }));
 
 describe('ICS Util Tests', () => {
   const at = (day: Date, hour: number, minutes = 0): Date => {
@@ -51,6 +55,65 @@ describe('ICS Util Tests', () => {
       const localStart = new Date(2026, 5, 2, 10, 0, 0, 0); // 10-11am local on June 2
       const localEnd = new Date(2026, 5, 2, 11, 0, 0, 0);
       expect(busyIntervalsToSlots([{ start: localStart, end: localEnd }], dateSet)).toEqual(new Set([0]));
+    });
+  });
+
+  describe('validateIcsUrl', () => {
+    beforeEach(() => {
+      vi.mocked(dns.lookup).mockReset();
+    });
+
+    it('accepts an http url whose host resolves to a public address', async () => {
+      vi.mocked(dns.lookup).mockResolvedValue([{ address: '93.184.216.34', family: 4 }] as never);
+      await expect(validateIcsUrl('http://example.com/cal.ics')).resolves.toBeInstanceOf(URL);
+    });
+
+    it('normalizes webcal to https', async () => {
+      vi.mocked(dns.lookup).mockResolvedValue([{ address: '93.184.216.34', family: 4 }] as never);
+      const result = await validateIcsUrl('webcal://example.com/cal.ics');
+      expect(result.protocol).toBe('https:');
+    });
+
+    it('rejects a literal loopback IP without needing DNS', async () => {
+      vi.mocked(dns.lookup).mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
+      await expect(validateIcsUrl('http://127.0.0.1/cal.ics')).rejects.toThrow('ICS URL host is not allowed');
+    });
+
+    it('rejects a hostname that resolves to a loopback address', async () => {
+      vi.mocked(dns.lookup).mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
+      await expect(validateIcsUrl('http://my-site.com/cal.ics')).rejects.toThrow('ICS URL host is not allowed');
+    });
+
+    it('rejects a hostname that resolves to a private address', async () => {
+      vi.mocked(dns.lookup).mockResolvedValue([{ address: '10.0.0.5', family: 4 }] as never);
+      await expect(validateIcsUrl('http://internal.example.com/cal.ics')).rejects.toThrow('ICS URL host is not allowed');
+    });
+
+    it('rejects a hostname that resolves to a link-local address', async () => {
+      vi.mocked(dns.lookup).mockResolvedValue([{ address: '169.254.169.254', family: 4 }] as never);
+      await expect(validateIcsUrl('http://metadata.example.com/cal.ics')).rejects.toThrow('ICS URL host is not allowed');
+    });
+
+    it('rejects when any of several resolved addresses is internal', async () => {
+      vi.mocked(dns.lookup).mockResolvedValue([
+        { address: '93.184.216.34', family: 4 },
+        { address: '127.0.0.1', family: 4 }
+      ] as never);
+      await expect(validateIcsUrl('http://example.com/cal.ics')).rejects.toThrow('ICS URL host is not allowed');
+    });
+
+    it('rejects an unresolvable host', async () => {
+      vi.mocked(dns.lookup).mockRejectedValue(new Error('ENOTFOUND'));
+      await expect(validateIcsUrl('http://does-not-exist.invalid/cal.ics')).rejects.toThrow('ICS URL host is not allowed');
+    });
+
+    it('rejects non-http(s) protocols without doing a DNS lookup', async () => {
+      await expect(validateIcsUrl('ftp://example.com/cal.ics')).rejects.toThrow('ICS URL must use http or https');
+      expect(dns.lookup).not.toHaveBeenCalled();
+    });
+
+    it('rejects an unparsable url', async () => {
+      await expect(validateIcsUrl('not a url')).rejects.toThrow('Invalid ICS URL');
     });
   });
 
