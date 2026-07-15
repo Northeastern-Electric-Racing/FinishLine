@@ -15,6 +15,7 @@ import { ShopProcess } from './seed/shop.process.js';
 import { TeamProcess } from './seed/team.process.js';
 import { ProjectProcess } from './seed/project.process.js';
 import { SchedulingProcess } from './seed/scheduling.process.js';
+import { TaskProcess } from './seed/tasks.process.js';
 import { WorkPackageProcess } from './seed/work-package.process.js';
 import { EventProcess } from './seed/event.process.js';
 
@@ -34,6 +35,8 @@ await new SeedRunner()
     new ProjectProcess(),
     new WorkPackageProcess(),
     new EventProcess()
+    new WorkPackageProcess(),
+    new TaskProcess()
   )
   .run();
 

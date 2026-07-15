@@ -226,6 +226,7 @@ export const convertEventToFormValues = (event: EventInstance): Partial<EventFor
     })),
     questionDocumentLink: event.questionDocumentLink,
     description: event.description,
+    notificationChannelIds: event.notificationChannelIds,
     scheduleDate,
     startTime: event.startTime ? new Date(event.startTime) : undefined,
     endTime: event.endTime ? new Date(event.endTime) : undefined,
