@@ -33,9 +33,7 @@ await new SeedRunner()
     new TeamProcess(),
     new ShopProcess(),
     new ProjectProcess(),
-    new WorkPackageProcess(),
-    new EventProcess()
-    new WorkPackageProcess(),
+    new EventProcess(),
     new TaskProcess()
   )
   .run();
