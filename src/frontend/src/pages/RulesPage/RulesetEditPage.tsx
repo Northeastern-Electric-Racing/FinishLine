@@ -31,6 +31,7 @@ import {
 } from '../../hooks/rules.hooks';
 import { countRulesToDelete, compareRuleCodes } from '../../utils/rules.utils';
 import { Rule } from 'shared';
+import { useToast } from '../../hooks/toasts.hooks';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
@@ -61,6 +62,7 @@ const RulesetEditPage: React.FC = () => {
   const [editedContent, setEditedContent] = useState<string>('');
 
   const theme = useTheme();
+  const toast = useToast();
 
   const {
     data: ruleset,
@@ -141,14 +143,20 @@ const RulesetEditPage: React.FC = () => {
     setReferenceToRemove(null);
   };
 
-  const handleConfirmRemoveReference = () => {
+  const handleConfirmRemoveReference = async () => {
     if (!referenceToRemove) return;
-    removeRuleReferencesMutation({
-      ruleId: referenceToRemove.rule.ruleId,
-      referencedRuleId: referenceToRemove.referencedRule.ruleId
-    });
-    setShowRemoveReferenceModal(false);
-    setReferenceToRemove(null);
+
+    try {
+      await removeRuleReferencesMutation({
+        ruleId: referenceToRemove.rule.ruleId,
+        referencedRuleId: referenceToRemove.referencedRule.ruleId
+      });
+      toast.success('Referenced rule removed successfully');
+      setShowRemoveReferenceModal(false);
+      setReferenceToRemove(null);
+    } catch (err) {
+      toast.error('Failed to remove referenced rule');
+    }
   };
 
   const handleRemoveRule = (ruleId: string) => {

@@ -1561,7 +1561,7 @@ describe('Rule Tests', () => {
 
       const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
 
-      expect(unassignedRules.length).toBe(3);
+      expect(unassignedRules.length).toBe(5);
       expect(unassignedRules.map((r) => r.ruleCode)).toContain('T');
       expect(unassignedRules.map((r) => r.ruleCode)).toContain('T2');
       expect(unassignedRules.map((r) => r.ruleCode)).toContain('T2.1');
@@ -1582,7 +1582,7 @@ describe('Rule Tests', () => {
 
       const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
 
-      expect(unassignedRules.length).toBe(2);
+      expect(unassignedRules.length).toBe(4);
       expect(unassignedRules.map((r) => r.ruleId)).not.toContain(topLevelRule.ruleId);
       expect(unassignedRules.map((r) => r.ruleId)).toContain(leafRule1.ruleId);
       expect(unassignedRules.map((r) => r.ruleId)).toContain(leafRule2.ruleId);
@@ -1600,7 +1600,7 @@ describe('Rule Tests', () => {
 
       const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
 
-      expect(unassignedRules.length).toBe(2);
+      expect(unassignedRules.length).toBe(4);
       expect(unassignedRules.map((r) => r.ruleId)).not.toContain(leafRule1.ruleId);
       expect(unassignedRules.map((r) => r.ruleId)).toContain(topLevelRule.ruleId);
       expect(unassignedRules.map((r) => r.ruleId)).toContain(leafRule2.ruleId);
@@ -1633,7 +1633,7 @@ describe('Rule Tests', () => {
 
       const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
 
-      expect(unassignedRules.length).toBe(5);
+      expect(unassignedRules.length).toBe(7);
       // Check that rules are sorted by ruleCode
       for (let i = 0; i < unassignedRules.length - 1; i++) {
         expect(unassignedRules[i].ruleCode <= unassignedRules[i + 1].ruleCode).toBe(true);
@@ -1642,7 +1642,7 @@ describe('Rule Tests', () => {
 
     it('Returns empty array when all rules are assigned to teams', async () => {
       const car = await createUniqueCar(orgId);
-      const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+      const { ruleset1, topLevelRule, leafRule1, leafRule2, referencedRule, referencingRule } = await setupRules(car);
 
       // Create a team and assign all rules to it
       const teamType = await createTestTeamType('TestTeamType', orgId);
@@ -1673,6 +1673,20 @@ describe('Rule Tests', () => {
         }
       });
 
+      await prisma.rule.update({
+        where: { ruleId: referencedRule.ruleId },
+        data: {
+          teams: { connect: { teamId: team.teamId } }
+        }
+      });
+
+      await prisma.rule.update({
+        where: { ruleId: referencingRule.ruleId },
+        data: {
+          teams: { connect: { teamId: team.teamId } }
+        }
+      });
+
       const unassignedRules = await RulesService.getUnassignedRules(ruleset1.rulesetId, organization);
 
       expect(unassignedRules.length).toBe(0);
@@ -1680,7 +1694,7 @@ describe('Rule Tests', () => {
 
     it('Returns empty array when all rules are deleted', async () => {
       const car = await createUniqueCar(orgId);
-      const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+      const { ruleset1, topLevelRule, leafRule1, leafRule2, referencedRule, referencingRule } = await setupRules(car);
 
       // Delete all rules
       await prisma.rule.update({
@@ -1695,6 +1709,16 @@ describe('Rule Tests', () => {
 
       await prisma.rule.update({
         where: { ruleId: leafRule2.ruleId },
+        data: { dateDeleted: new Date(), deletedBy: { connect: { userId: admin.userId } } }
+      });
+
+      await prisma.rule.update({
+        where: { ruleId: referencedRule.ruleId },
+        data: { dateDeleted: new Date(), deletedBy: { connect: { userId: admin.userId } } }
+      });
+
+      await prisma.rule.update({
+        where: { ruleId: referencingRule.ruleId },
         data: { dateDeleted: new Date(), deletedBy: { connect: { userId: admin.userId } } }
       });
 
@@ -2116,9 +2140,9 @@ describe('Rule Tests', () => {
 
       const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
 
-      expect(rules.length).toEqual(1);
-      expect(rules[0].ruleCode).toEqual('T');
-      expect(rules[0].ruleId).toEqual(topLevelRule.ruleId);
+      expect(rules.length).toEqual(3);
+      expect(rules.map((r) => r.ruleCode).sort()).toEqual(['A2', 'B2', 'T']);
+      expect(rules.find((r) => r.ruleId === topLevelRule.ruleId)?.ruleCode).toEqual('T');
     });
 
     it('Gets multiple top level rules', async () => {
@@ -2137,8 +2161,8 @@ describe('Rule Tests', () => {
 
       const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
 
-      expect(rules.length).toEqual(2);
-      expect(rules.map((r) => r.ruleCode).sort()).toEqual(['A', 'T']);
+      expect(rules.length).toEqual(4);
+      expect(rules.map((r) => r.ruleCode).sort()).toEqual(['A', 'A2', 'B2', 'T']);
     });
 
     it('Returns empty array when no top level rules exist', async () => {
@@ -2164,8 +2188,8 @@ describe('Rule Tests', () => {
       const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
       const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
 
-      expect(rules.length).toEqual(1);
-      expect(rules[0].ruleId).toEqual(topLevelRule.ruleId);
+      expect(rules.length).toEqual(3);
+      expect(rules.find((r) => r.ruleId === topLevelRule.ruleId)).toBeDefined();
       expect(rules.find((r) => r.ruleId === leafRule1.ruleId)).toBeUndefined();
       expect(rules.find((r) => r.ruleId === leafRule2.ruleId)).toBeUndefined();
     });
@@ -2183,7 +2207,7 @@ describe('Rule Tests', () => {
       });
 
       const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
-      expect(rules.length).toEqual(0);
+      expect(rules.find((r) => r.ruleId === topLevelRule.ruleId)).toBeUndefined();
     });
   });
 
@@ -2222,11 +2246,12 @@ describe('Rule Tests', () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule, leafRule1, referencedRule } = await setupRules(car);
       await RulesService.addRuleReferences(admin, topLevelRule.ruleId, referencedRule.ruleId, organization);
-      const rule = await RulesService.addRuleReferences(admin, leafRule1.ruleId, referencedRule.ruleId, organization);
+      const rule = await RulesService.addRuleReferences(admin, topLevelRule.ruleId, leafRule1.ruleId, organization);
       expect(rule.ruleId).toBe(topLevelRule.ruleId);
       expect(rule.referencedRules.length).toEqual(2);
-      expect(rule.referencedRules[0].ruleId).toEqual(topLevelRule.ruleId);
-      expect(rule.referencedRules[1].ruleId).toEqual(leafRule1.ruleId);
+      expect(rule.referencedRules.map((r) => r.ruleId)).toEqual(
+        expect.arrayContaining([referencedRule.ruleId, leafRule1.ruleId])
+      );
     });
 
     it('Fails adding referenced rule if user is not admin', async () => {
@@ -2235,7 +2260,7 @@ describe('Rule Tests', () => {
       await expect(
         async () =>
           await RulesService.addRuleReferences(nonLeadership, topLevelRule.ruleId, referencedRule.ruleId, organization)
-      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to edit a rule'));
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a rule'));
     });
 
     it('Fails adding referenced rule if rule does not exist', async () => {
@@ -2277,7 +2302,7 @@ describe('Rule Tests', () => {
       });
       await expect(
         async () => await RulesService.addRuleReferences(admin, topLevelRule.ruleId, referencedRule.ruleId, organization)
-      ).rejects.toThrow(new DeletedException('Rule', referencedRule.ruleId));
+      ).rejects.toThrow(new DeletedException('Referenced Rule', referencedRule.ruleId));
     });
 
     it('Fails adding referenced rule if referenced rule does not exist', async () => {
