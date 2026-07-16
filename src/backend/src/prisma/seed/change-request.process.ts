@@ -58,7 +58,7 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
       throw new Error('ChangeRequestProcess requires submitters and reviewers.');
     }
 
-    const budgetReasonId = (): string | undefined =>
+    const generateBudgetReasonId = (): string | undefined =>
       reimbursementProductOtherReasons.length > 0
         ? this.faker.helpers.arrayElement(reimbursementProductOtherReasons).otherReimbursementProductReasonId
         : undefined;
@@ -90,7 +90,7 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
               organizationId,
               this.faker.helpers.arrayElement(submitterPool).userId,
               this.faker.helpers.arrayElement(reviewerPool).userId,
-              budgetReasonId()
+              generateBudgetReasonId()
             )
           })
         )
@@ -129,7 +129,6 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     }
 
     const changeRequestsByWbsElementId = changeRequests.reduce<Record<string, Change_Request[]>>((acc, cr) => {
-      // budget CRs are category-scoped and legitimately have no wbsElement
       if (cr.wbsElementId) {
         acc[cr.wbsElementId] ??= [];
         acc[cr.wbsElementId].push(cr);
