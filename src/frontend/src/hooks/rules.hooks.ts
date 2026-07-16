@@ -437,7 +437,6 @@ export const useEditRule = () => {
  */
 export const useAddRuleReferences = () => {
   const queryClient = useQueryClient();
-  const toast = useToast();
 
   return useMutation<SharedRule, Error, { ruleId: string; referencedRuleId: string }>(
     ['rules', 'addReference'],
@@ -447,11 +446,7 @@ export const useAddRuleReferences = () => {
     },
     {
       onSuccess: () => {
-        toast.success('Referenced rule added successfully');
         queryClient.invalidateQueries(['rules']);
-      },
-      onError: (error: Error) => {
-        toast.error(`Failed to add referenced rule: ${error.message}`);
       }
     }
   );
@@ -462,7 +457,6 @@ export const useAddRuleReferences = () => {
  */
 export const useRemoveRuleReferences = () => {
   const queryClient = useQueryClient();
-  const toast = useToast();
 
   return useMutation<SharedRule, Error, { ruleId: string; referencedRuleId: string }>(
     ['rules', 'removeReference'],
@@ -472,11 +466,7 @@ export const useRemoveRuleReferences = () => {
     },
     {
       onSuccess: () => {
-        toast.success('Referenced rule removed successfully');
         queryClient.invalidateQueries(['rules']);
-      },
-      onError: (error: Error) => {
-        toast.error(`Failed to remove referenced rule: ${error.message}`);
       }
     }
   );
