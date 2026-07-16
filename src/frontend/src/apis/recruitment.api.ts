@@ -34,8 +34,26 @@ export const getAllFaqs = () => {
   });
 };
 
-export const createFaq = (payload: FaqPayload) => {
-  return axios.post(apiUrls.faqCreate(), {
+export const getRecruitingFaqs = () => {
+  return axios.get<FrequentlyAskedQuestion[]>(apiUrls.recruitingFaqs(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const getNewMemberFaqs = () => {
+  return axios.get<FrequentlyAskedQuestion[]>(apiUrls.newMemberFaqs(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const createRecruitingFaq = (payload: FaqPayload) => {
+  return axios.post(apiUrls.recruitingFaqCreate(), {
+    ...payload
+  });
+};
+
+export const createNewMemberFaq = (payload: FaqPayload) => {
+  return axios.post(apiUrls.newMemberFaqCreate(), {
     ...payload
   });
 };

@@ -3293,18 +3293,51 @@ const performSeed: () => Promise<void> = async () => {
   await RecruitmentServices.createMilestone(batman, 'Applications Close', '', daysAgo(56), ner);
   await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', daysAgo(49), ner);
 
-  await RecruitmentServices.createOrganizationFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
+  await RecruitmentServices.createOrganizationFaq(
+    batman,
+    'Who is the Chief Software Engineer?',
+    'Peyton McKee',
+    ner,
+    true,
+    false,
+    false
+  );
   await RecruitmentServices.createOrganizationFaq(
     batman,
     'When was FinishLine created?',
     'FinishLine was created in 2019',
-    ner
+    ner,
+    true,
+    false,
+    false
   );
   await RecruitmentServices.createOrganizationFaq(
     batman,
     'How many developers are working on FinishLine?',
     '178 as of 2024',
-    ner
+    ner,
+    true,
+    false,
+    false
+  );
+
+  await RecruitmentServices.createOrganizationFaq(
+    batman,
+    'Where do I go if I have a question during onboarding?',
+    'Ask in the #new-members Slack channel — no question is too small!',
+    ner,
+    false,
+    true,
+    false
+  );
+  await RecruitmentServices.createOrganizationFaq(
+    batman,
+    'How do I get access to the shop?',
+    'Complete the safety training checklist item and a lead will grant you access.',
+    ner,
+    false,
+    true,
+    false
   );
 
   await prisma.frequentlyAskedQuestion.create({

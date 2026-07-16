@@ -3,24 +3,24 @@ import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typo
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { FrequentlyAskedQuestion } from 'shared';
-import { NERButton } from '../../../components/NERButton';
-import { useRecruitingFaqs, useDeleteFAQ } from '../../../hooks/recruitment.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useHistoryState } from '../../../hooks/misc.hooks';
-import ErrorPage from '../../ErrorPage';
-import CreateFaqFormModal from './CreateFaqFormModal';
-import EditFaqFormModal from './EditFaqFormModal';
-import NERDeleteModal from '../../../components/NERDeleteModal';
-import { useToast } from '../../../hooks/toasts.hooks';
+import { NERButton } from '../../../../components/NERButton';
+import { useNewMemberFaqs, useDeleteFAQ } from '../../../../hooks/recruitment.hooks';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
+import { useHistoryState } from '../../../../hooks/misc.hooks';
+import ErrorPage from '../../../ErrorPage';
+import CreateNewMemberFaqFormModal from './CreateNewMemberFaqFormModal';
+import EditNewMemberFaqFormModal from './EditNewMemberFaqFormModal';
+import NERDeleteModal from '../../../../components/NERDeleteModal';
+import { useToast } from '../../../../hooks/toasts.hooks';
 
-const FAQsTable = () => {
+const NewMemberFAQTable = () => {
   const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
   const [faqEditing, setFaqEditing] = useHistoryState<FrequentlyAskedQuestion | undefined>('', undefined);
   const [faqToDelete, setFaqToDelete] = useState<FrequentlyAskedQuestion | undefined>(undefined);
   const { mutateAsync: deleteFaq } = useDeleteFAQ();
   const toast = useToast();
 
-  const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useRecruitingFaqs();
+  const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useNewMemberFaqs();
   const handleDelete = (id: string) => {
     setFaqToDelete(undefined);
     try {
@@ -70,8 +70,10 @@ const FAQsTable = () => {
 
   return (
     <Box>
-      <CreateFaqFormModal open={createModalShow} handleClose={() => setCreateModalShow(false)} />
-      {faqEditing && <EditFaqFormModal open={!!faqEditing} handleClose={() => setFaqEditing(undefined)} faq={faqEditing} />}
+      <CreateNewMemberFaqFormModal open={createModalShow} handleClose={() => setCreateModalShow(false)} />
+      {faqEditing && (
+        <EditNewMemberFaqFormModal open={!!faqEditing} handleClose={() => setFaqEditing(undefined)} faq={faqEditing} />
+      )}
 
       <MuiTable>
         <TableHead>
@@ -127,4 +129,4 @@ const FAQsTable = () => {
   );
 };
 
-export default FAQsTable;
+export default NewMemberFAQTable;

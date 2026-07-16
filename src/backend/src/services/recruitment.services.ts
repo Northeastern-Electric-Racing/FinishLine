@@ -169,9 +169,20 @@ export default class RecruitmentServices {
    * @param question question to be displayed by the FAQ
    * @param answer answer to the question of the FAQ
    * @param organizationId the organization Id of the FAQ
+   * @param isOnRecruitingDashboard whether the FAQ shows on the recruiting dashboard
+   * @param isOnNewMemberDashboard whether the FAQ shows on the new member dashboard
+   * @param isOnPartReviewPage whether the FAQ shows on the part review page
    * @returns A newly created FAQ
    */
-  static async createOrganizationFaq(submitter: User, question: string, answer: string, organization: Organization) {
+  static async createOrganizationFaq(
+    submitter: User,
+    question: string,
+    answer: string,
+    organization: Organization,
+    isOnRecruitingDashboard: boolean,
+    isOnNewMemberDashboard: boolean,
+    isOnPartReviewPage: boolean
+  ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create an faq');
 
@@ -181,7 +192,9 @@ export default class RecruitmentServices {
         answer,
         organizationId: organization.organizationId,
         userCreatedId: submitter.userId,
-        isOnRecruitingDashboard: true
+        isOnRecruitingDashboard,
+        isOnNewMemberDashboard,
+        isOnPartReviewPage
       }
     });
 

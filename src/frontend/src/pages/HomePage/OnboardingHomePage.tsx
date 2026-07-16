@@ -12,6 +12,7 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import OnboardingProgressBar from '../../components/OnboardingProgressBar';
+import NewMemberFAQsSection from './components/NewMemberFAQsSection';
 import ErrorPage from '../ErrorPage';
 
 const OnboardingHomePage = () => {
@@ -132,6 +133,10 @@ const OnboardingHomePage = () => {
           <Grid container item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
             <Grid item>
               <OnboardingInfoSection />
+            </Grid>
+            <Grid item>
+              <Typography sx={{ fontSize: '1.5em', mb: 1 }}>FAQs</Typography>
+              <NewMemberFAQsSection />
             </Grid>
           </Grid>
         </Grid>

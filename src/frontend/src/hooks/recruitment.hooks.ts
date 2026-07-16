@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Milestone, FrequentlyAskedQuestion, GuestDefinition, GuestDefinitionType } from 'shared';
 import {
-  createFaq,
+  createRecruitingFaq,
+  createNewMemberFaq,
   createGuestDefinition,
   createMilestone,
   deleteFaq,
@@ -11,6 +12,8 @@ import {
   editGuestDefinition,
   editMilestone,
   getAllFaqs,
+  getRecruitingFaqs,
+  getNewMemberFaqs,
   getAllGuestDefinitions,
   getAllMilestones
 } from '../apis/recruitment.api';
@@ -98,12 +101,42 @@ export const useAllFaqs = () => {
   });
 };
 
-export const useCreateFaq = () => {
+export const useRecruitingFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['faqs', 'recruiting'], async () => {
+    const { data } = await getRecruitingFaqs();
+    return data;
+  });
+};
+
+export const useNewMemberFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['faqs', 'new-member'], async () => {
+    const { data } = await getNewMemberFaqs();
+    return data;
+  });
+};
+
+export const useCreateRecruitingFaq = () => {
   const queryClient = useQueryClient();
   return useMutation<FrequentlyAskedQuestion, Error, FaqPayload>(
-    ['faqs', 'create'],
+    ['faqs', 'recruiting', 'create'],
     async (payload) => {
-      const { data } = await createFaq(payload);
+      const { data } = await createRecruitingFaq(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['faqs']);
+      }
+    }
+  );
+};
+
+export const useCreateNewMemberFaq = () => {
+  const queryClient = useQueryClient();
+  return useMutation<FrequentlyAskedQuestion, Error, FaqPayload>(
+    ['faqs', 'new-member', 'create'],
+    async (payload) => {
+      const { data } = await createNewMemberFaq(payload);
       return data;
     },
     {

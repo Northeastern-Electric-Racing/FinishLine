@@ -42,15 +42,56 @@ describe('Recruitment Tests', () => {
         await createTestUser(batmanAppAdmin, orgId),
         'question',
         'answer',
-        organization
+        organization,
+        true,
+        false,
+        false
       );
-      const faq2 = await RecruitmentServices.createOrganizationFaq(superman, 'question2', 'answer2', organization);
+      const faq2 = await RecruitmentServices.createOrganizationFaq(
+        superman,
+        'question2',
+        'answer2',
+        organization,
+        true,
+        false,
+        false
+      );
       const result = await RecruitmentServices.getAllOrganizationFaqs(organization);
       expect(result).toHaveLength(2);
       expect(result[0].question).toEqual(faq1.question);
       expect(result[0].answer).toEqual(faq1.answer);
       expect(result[1].question).toEqual(faq2.question);
       expect(result[1].answer).toEqual(faq2.answer);
+    });
+
+    it('getRecruitingFaqs and getNewMemberFaqs filter by dashboard', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const recruitingFaq = await RecruitmentServices.createOrganizationFaq(
+        admin,
+        'recruiting question',
+        'recruiting answer',
+        organization,
+        true,
+        false,
+        false
+      );
+      const newMemberFaq = await RecruitmentServices.createOrganizationFaq(
+        admin,
+        'new member question',
+        'new member answer',
+        organization,
+        false,
+        true,
+        false
+      );
+
+      const recruitingResult = await RecruitmentServices.getRecruitingFaqs(organization);
+      expect(recruitingResult).toHaveLength(1);
+      expect(recruitingResult[0].question).toEqual(recruitingFaq.question);
+
+      const newMemberResult = await RecruitmentServices.getNewMemberFaqs(organization);
+      expect(newMemberResult).toHaveLength(1);
+      expect(newMemberResult[0].question).toEqual(newMemberFaq.question);
     });
 
     describe('Edit FAQ', () => {
@@ -235,7 +276,10 @@ describe('Recruitment Tests', () => {
               await createTestUser(member, orgId),
               'question',
               'answer',
-              organization
+              organization,
+              true,
+              false,
+              false
             )
         ).rejects.toThrow(new AccessDeniedAdminOnlyException('create an faq'));
       });
@@ -286,21 +330,44 @@ describe('Recruitment Tests', () => {
                   await createTestUser(member, orgId),
                   'question',
                   'answer',
-                  organization
+                  organization,
+                  true,
+                  false,
+                  false
                 )
             ).rejects.toThrow(new AccessDeniedAdminOnlyException('create an faq'));
           });
 
-          it('Succeeds and creates an FAQ', async () => {
+          it('Succeeds and creates a recruiting FAQ', async () => {
             const result = await RecruitmentServices.createOrganizationFaq(
               await createTestUser(batmanAppAdmin, orgId),
               'question',
               'answer',
-              organization
+              organization,
+              true,
+              false,
+              false
             );
 
             expect(result.question).toEqual('question');
             expect(result.answer).toEqual('answer');
+            expect(result.isOnRecruitingDashboard).toBe(true);
+            expect(result.isOnNewMemberDashboard).toBe(false);
+          });
+
+          it('Succeeds and creates a new member FAQ', async () => {
+            const result = await RecruitmentServices.createOrganizationFaq(
+              await createTestUser(batmanAppAdmin, orgId),
+              'onboarding question',
+              'onboarding answer',
+              organization,
+              false,
+              true,
+              false
+            );
+
+            expect(result.isOnRecruitingDashboard).toBe(false);
+            expect(result.isOnNewMemberDashboard).toBe(true);
           });
         });
       });

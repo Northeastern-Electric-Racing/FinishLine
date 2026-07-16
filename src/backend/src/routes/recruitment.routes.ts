@@ -37,11 +37,19 @@ recruitmentRouter.get('/faqs/recruiting', RecruitmentController.getRecruitingFaq
 recruitmentRouter.get('/faqs/new-member', RecruitmentController.getNewMemberFaqs);
 
 recruitmentRouter.post(
-  '/faq/create',
+  '/faq/recruiting/create',
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
   validateInputs,
-  RecruitmentController.createOrganizationFaq
+  RecruitmentController.createRecruitingFaq
+);
+
+recruitmentRouter.post(
+  '/faq/new-member/create',
+  nonEmptyString(body('question')),
+  nonEmptyString(body('answer')),
+  validateInputs,
+  RecruitmentController.createNewMemberFaq
 );
 
 recruitmentRouter.post(

@@ -12,6 +12,7 @@ import {
   resetUsers
 } from '../test-utils.js';
 import PartReviewService from '../../src/services/part-review.services.js';
+import RecruitmentServices from '../../src/services/recruitment.services.js';
 import {
   batmanAppAdmin,
   supermanAdmin,
@@ -526,7 +527,15 @@ describe('part review tests', () => {
   });
 
   it('creates a faq, edits it, and deletes it', async () => {
-    const faq = await PartReviewService.createFaq('some question', 'some answer', batman, orgId);
+    const faq = await RecruitmentServices.createOrganizationFaq(
+      batman,
+      'some question',
+      'some answer',
+      organization,
+      false,
+      false,
+      true
+    );
     const prismaFaq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId: faq.faqId } });
 
     expect(prismaFaq?.question).toBe('some question');
@@ -565,10 +574,27 @@ describe('part review tests', () => {
 
   it('does not let non-admins create, edit, or delete faqs', async () => {
     await expect(
-      async () => await PartReviewService.createFaq('some question', 'some answer', nonAdmin, orgId)
-    ).rejects.toThrow(new AccessDeniedAdminOnlyException('create part review faq'));
+      async () =>
+        await RecruitmentServices.createOrganizationFaq(
+          nonAdmin,
+          'some question',
+          'some answer',
+          organization,
+          false,
+          false,
+          true
+        )
+    ).rejects.toThrow(new AccessDeniedAdminOnlyException('create an faq'));
 
-    const faq = await PartReviewService.createFaq('some question', 'some answer', batman, orgId);
+    const faq = await RecruitmentServices.createOrganizationFaq(
+      batman,
+      'some question',
+      'some answer',
+      organization,
+      false,
+      false,
+      true
+    );
 
     await expect(
       async () => await PartReviewService.updateFaq(faq.faqId, 'some title2', 'some description2', nonAdmin, orgId)
@@ -580,7 +606,15 @@ describe('part review tests', () => {
   });
 
   it('does not allow updating deleted faqs', async () => {
-    const faq = await PartReviewService.createFaq('some q', 'some a', batman, orgId);
+    const faq = await RecruitmentServices.createOrganizationFaq(
+      batman,
+      'some q',
+      'some a',
+      organization,
+      false,
+      false,
+      true
+    );
 
     await PartReviewService.deleteFaq(faq.faqId, superman, orgId);
 

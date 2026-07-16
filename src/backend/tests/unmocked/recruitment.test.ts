@@ -38,13 +38,19 @@ describe('Recruitment Tests', () => {
         await createTestUser(batmanAppAdmin, orgId),
         'question',
         'answer',
-        organization
+        organization,
+        true,
+        false,
+        false
       );
       const faq2 = await RecruitmentServices.createOrganizationFaq(
         await createTestUser(supermanAdmin, orgId),
         'question2',
         'answer2',
-        organization
+        organization,
+        true,
+        false,
+        false
       );
       const result = await RecruitmentServices.getAllOrganizationFaqs(organization);
       expect(result).toHaveLength(2);
@@ -236,7 +242,10 @@ describe('Recruitment Tests', () => {
               await createTestUser(member, orgId),
               'question',
               'answer',
-              organization
+              organization,
+              true,
+              false,
+              false
             )
         ).rejects.toThrow(new AccessDeniedAdminOnlyException('create an faq'));
       });
@@ -287,7 +296,10 @@ describe('Recruitment Tests', () => {
                   await createTestUser(member, orgId),
                   'question',
                   'answer',
-                  organization
+                  organization,
+                  true,
+                  false,
+                  false
                 )
             ).rejects.toThrow(new AccessDeniedAdminOnlyException('create an faq'));
           });
@@ -297,11 +309,16 @@ describe('Recruitment Tests', () => {
               await createTestUser(batmanAppAdmin, orgId),
               'question',
               'answer',
-              organization
+              organization,
+              true,
+              false,
+              false
             );
 
             expect(result.question).toEqual('question');
             expect(result.answer).toEqual('answer');
+            expect(result.isOnRecruitingDashboard).toBe(true);
+            expect(result.isOnNewMemberDashboard).toBe(false);
           });
         });
       });

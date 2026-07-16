@@ -87,10 +87,36 @@ export default class RecruitmentController {
     }
   }
 
-  static async createOrganizationFaq(req: Request, res: Response, next: NextFunction) {
+  static async createRecruitingFaq(req: Request, res: Response, next: NextFunction) {
     try {
       const { question, answer } = req.body;
-      const faq = await RecruitmentServices.createOrganizationFaq(req.currentUser, question, answer, req.organization);
+      const faq = await RecruitmentServices.createOrganizationFaq(
+        req.currentUser,
+        question,
+        answer,
+        req.organization,
+        true,
+        false,
+        false
+      );
+      res.status(200).json(faq);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createNewMemberFaq(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { question, answer } = req.body;
+      const faq = await RecruitmentServices.createOrganizationFaq(
+        req.currentUser,
+        question,
+        answer,
+        req.organization,
+        false,
+        true,
+        false
+      );
       res.status(200).json(faq);
     } catch (error: unknown) {
       next(error);

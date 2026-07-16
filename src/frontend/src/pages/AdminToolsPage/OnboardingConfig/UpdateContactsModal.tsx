@@ -11,7 +11,7 @@ import * as yup from 'yup';
 import { useUpdateOrganizationContacts } from '../../../hooks/organizations.hooks'; // Assume hook exists
 import { Contact } from 'shared';
 import { useAllMembers } from '../../../hooks/users.hooks';
-import { fullNamePipe } from '../../../utils/pipes';
+import { userToAutocompleteOption } from '../../../utils/teams.utils';
 
 const schema = yup.object().shape({
   contacts: yup
@@ -116,18 +116,22 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
             <Controller
               name={`contacts.${index}.userId`}
               control={control}
-              render={({ field }) => (
-                <Autocomplete
-                  {...field}
-                  options={users.map((user) => user.userId)}
-                  getOptionLabel={(option: string) => (option ? fullNamePipe(users.find((u) => u.userId === option)) : '')}
-                  onChange={(_, newValue) => field.onChange(newValue)}
-                  renderInput={(params) => (
-                    <TextField {...params} label={`User ${index + 1}`} variant="outlined" fullWidth />
-                  )}
-                  sx={{ minWidth: '300px' }}
-                />
-              )}
+              render={({ field }) => {
+                const memberOptions = users.map(userToAutocompleteOption);
+                return (
+                  <Autocomplete
+                    options={memberOptions}
+                    value={memberOptions.find((option) => option.id === field.value) ?? null}
+                    getOptionLabel={(option) => option.label}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    onChange={(_, newValue) => field.onChange(newValue?.id ?? '')}
+                    renderInput={(params) => (
+                      <TextField {...params} label={`User ${index + 1}`} variant="outlined" fullWidth />
+                    )}
+                    sx={{ minWidth: '300px' }}
+                  />
+                );
+              }}
             />
             <Controller
               name={`contacts.${index}.title`}

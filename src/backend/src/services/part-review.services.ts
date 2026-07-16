@@ -630,38 +630,6 @@ export default class PartReviewService {
   }
 
   /**
-   * Creates an faq
-   * @param question the question
-   * @param answer the answer
-   * @param creator user creating -- must be admin
-   * @param organizationId the organization
-   * @returns the faq
-   */
-  static async createFaq(
-    question: string,
-    answer: string,
-    creator: User,
-    organizationId: string
-  ): Promise<FrequentlyAskedQuestion> {
-    if (!(await userHasPermission(creator.userId, organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('create part review faq');
-    }
-
-    const faq = await prisma.frequentlyAskedQuestion.create({
-      data: {
-        question,
-        answer,
-        userCreated: { connect: { userId: creator.userId } },
-        organization: { connect: { organizationId } },
-        isOnPartReviewPage: true
-      },
-      ...getFaqQueryArgs(organizationId)
-    });
-
-    return faqTransformer(faq);
-  }
-
-  /**
    * updates an faq
    * @param faqId the faq to update
    * @param question the question
