@@ -6,7 +6,8 @@ import { ProjectOutput, ProjectProcess } from './project.process.js';
 import { WorkPackageOutput, WorkPackageProcess } from './work-package.process.js';
 import { Material_Status } from '@prisma/client';
 import {
-  generateMaterialCount,
+  generateProjectBOMCount,
+  splitBOMCount,
   generateAssemblyName,
   generateMaterialName,
   assemblyCreateInput,
@@ -16,7 +17,7 @@ import {
 type BOMInput = OrganizationOutput & UsersOutput & ConfigDataOutput & ProjectOutput & WorkPackageOutput;
 
 const ASSEMBLY_PROBABILITY = 0.3;
-const BATCH_AMOUNT = 50;
+const BATCH_SIZE = 20;
 
 export class BOMProcess extends SeedProcess<BOMInput, Record<string, never>> {
   dependencies() {
@@ -25,7 +26,7 @@ export class BOMProcess extends SeedProcess<BOMInput, Record<string, never>> {
 
   async run({
     projects,
-    workPackages,
+    workPackagesByProjectId,
     materialTypes,
     manufacturers,
     units,
@@ -36,15 +37,22 @@ export class BOMProcess extends SeedProcess<BOMInput, Record<string, never>> {
   }: BOMInput): Promise<Record<string, never>> {
     const creators = [...leadership, ...heads, ...admins, ...appAdmins];
 
-    const allWbsElements = [
-      ...projects.map(({ project }) => project.wbsElement),
-      ...workPackages.map(({ workPackage }) => workPackage.wbsElement)
-    ];
-
-    for (let i = 0; i < allWbsElements.length; i += BATCH_AMOUNT) {
-      const batch = allWbsElements.slice(i, i + BATCH_AMOUNT);
+    for (let i = 0; i < projects.length; i += BATCH_SIZE) {
+      const batch = projects.slice(i, i + BATCH_SIZE);
       await Promise.all(
-        batch.map((wbsElement) => this.generateBOMForWbsElement(wbsElement, creators, materialTypes, manufacturers, units))
+        batch.map(({ project }) => {
+          const projectWPs = workPackagesByProjectId[project.projectId] ?? [];
+          const allWbsElements = [project.wbsElement, ...projectWPs.map(({ workPackage }) => workPackage.wbsElement)];
+
+          const totalCount = generateProjectBOMCount(this.faker);
+          const counts = splitBOMCount(this.faker, totalCount, allWbsElements.length);
+
+          return Promise.all(
+            allWbsElements.map((wbsElement, index) =>
+              this.generateBOMForWbsElement(wbsElement, counts[index], creators, materialTypes, manufacturers, units)
+            )
+          );
+        })
       );
     }
 
@@ -53,11 +61,14 @@ export class BOMProcess extends SeedProcess<BOMInput, Record<string, never>> {
 
   private async generateBOMForWbsElement(
     wbsElement: { wbsElementId: string; name: string },
+    count: number,
     creators: UsersOutput['leadership'],
     materialTypes: BOMInput['materialTypes'],
     manufacturers: BOMInput['manufacturers'],
     units: BOMInput['units']
   ) {
+    if (count === 0) return;
+
     const creator = this.faker.helpers.arrayElement(creators);
     const hasAssembly = this.faker.datatype.boolean({ probability: ASSEMBLY_PROBABILITY });
 
@@ -69,8 +80,6 @@ export class BOMProcess extends SeedProcess<BOMInput, Record<string, never>> {
       });
       assemblyId = newAssemblyId;
     }
-
-    const count = generateMaterialCount(this.faker);
 
     await Promise.all(
       Array.from({ length: count }, () => {

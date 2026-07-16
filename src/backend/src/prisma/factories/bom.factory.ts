@@ -398,6 +398,31 @@ const DEFAULT_KEYWORDS = {
 const AssemblyNames: string[] = [];
 const MaterialNames: string[] = [];
 
+export const generateProjectBOMCount = (faker: Faker): number => {
+  const bucket = faker.number.int({ min: 1, max: 100 });
+
+  if (bucket <= 15) return 0;
+  if (bucket <= 80) return faker.number.int({ min: 1, max: 30 });
+  if (bucket <= 95) return faker.number.int({ min: 31, max: 80 });
+  return faker.number.int({ min: 81, max: 200 });
+};
+
+export const splitBOMCount = (faker: Faker, total: number, wbsElementCount: number): number[] => {
+  if (total === 0) return Array(wbsElementCount).fill(0);
+  if (wbsElementCount === 1) return [total];
+
+  const weights = Array.from({ length: wbsElementCount }, () => faker.number.float({ min: 0.5, max: 1.5 }));
+  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+
+  const counts = weights.map((w) => Math.round((total * w) / totalWeight));
+
+  const diff = total - counts.reduce((sum, c) => sum + c, 0);
+  const largestIndex = counts.reduce((maxIdx, c, i) => (c > counts[maxIdx] ? i : maxIdx), 0);
+  counts[largestIndex] += diff;
+
+  return counts.map((c) => Math.max(0, c));
+};
+
 export const generateMaterialCount = (faker: Faker): number =>
   faker.helpers.weightedArrayElement([
     { weight: 7, value: 0 },
