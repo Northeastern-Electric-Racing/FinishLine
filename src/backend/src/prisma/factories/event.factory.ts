@@ -178,13 +178,9 @@ export const scheduleSlotCreateInput = (
   event: { connect: { eventId } }
 });
 
-export const documentCreateInput = (
-  eventId: string,
-  createdByUserId: string,
-  identifier: number
-): Prisma.DocumentCreateInput => ({
-  googleFileId: `seed-doc-${identifier}-${crypto.randomUUID()}`,
-  name: `document-${identifier}.pdf`,
+export const documentCreateInput = (eventId: string, createdByUserId: string): Prisma.DocumentCreateInput => ({
+  googleFileId: `${faker.string.alphanumeric(33)}`,
+  name: `document-${faker.string.uuid()}.pdf`,
   createdBy: { connect: { userId: createdByUserId } },
   documentEvent: { connect: { eventId } }
 });
@@ -195,7 +191,7 @@ export const meetingAttendanceCreateInput = (
   userCreatedId: string,
   attendeeIds: string[]
 ): Prisma.Meeting_AttendanceCreateInput => ({
-  slackChannelId: `C${Math.random().toString(36).substring(2, 12).toUpperCase()}`,
+  slackChannelId: `C${faker.string.alphanumeric(10).toUpperCase()}`,
   slackMessageTimestamp: `${Math.floor(faker.date.past({ years: 1 }).getTime() / 1000)}.${faker.string.numeric(6)}`,
   organization: { connect: { organizationId } },
   team: { connect: { teamId } },

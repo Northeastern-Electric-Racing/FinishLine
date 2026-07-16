@@ -28,11 +28,9 @@ import {
   shouldCreateMeetingAttendance
 } from '../factories/event.factory.js';
 import { addDaysToDate } from 'shared';
-import { daysBetween, subtractDaysFromDate } from '../dates.js';
+import { clampDate, daysBetween, subtractDaysFromDate } from '../dates.js';
 
 type EventInput = OrganizationOutput & UsersOutput & ConfigDataOutput & TeamOutput & CarOutput & ProjectOutput;
-
-let documentIdentifier = 0;
 
 export class EventProcess extends SeedProcess<EventInput, Record<string, never>> {
   dependencies() {
@@ -128,16 +126,15 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
       const slotCount = generateScheduleSlotCount(this.faker, title);
       for (let s = 0; s < slotCount; s++) {
         const slotDate = addDaysToDate(initialDateScheduled, s * 7);
-        const { startTime, endTime } = generateScheduleSlotTimes(this.faker, slotDate);
+        const { startTime, endTime } = generateScheduleSlotTimes(this.faker, clampDate(slotDate, window));
         await this.prisma.schedule_Slot.create({
           data: scheduleSlotCreateInput(event.eventId, startTime, endTime)
         });
       }
 
       if (shouldCreateDocument(this.faker)) {
-        documentIdentifier++;
         await this.prisma.document.create({
-          data: documentCreateInput(event.eventId, creator.userId, documentIdentifier)
+          data: documentCreateInput(event.eventId, creator.userId)
         });
       }
 
