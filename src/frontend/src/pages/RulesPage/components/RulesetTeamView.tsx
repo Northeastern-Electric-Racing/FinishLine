@@ -134,7 +134,7 @@ const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules }) => {
   const tableHoverColor = theme.palette.action.hover;
 
   // recompute row tree only when the rules change
-  const { topLevelItems, rowsById } = useMemo(() => {
+  const { topLevelItems, rowsById, actualRuleIds } = useMemo(() => {
     const { teamRules, unassignedToTeam } = getTeamOrganization(allRules);
 
     // real-rule rows (bucket-scoped)
@@ -181,11 +181,13 @@ const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({ allRules }) => {
       topLevelItems.push(unassignedToTeamRow);
     }
 
-    return { topLevelItems, rowsById: [...sectionRows, ...ruleRows] };
+    // unassigned headers do not need rule content, "rule code" can span full width
+    return {
+      topLevelItems,
+      rowsById: [...sectionRows, ...ruleRows],
+      actualRuleIds: new Set<string>(ruleRows.map((r) => r.ruleId))
+    };
   }, [allRules]);
-
-  // Everything that isn't an actual rule (e.g., unassigned headers) should span the full row width
-  const actualRuleIds = new Set<string>(allRules.map((r) => r.ruleId));
 
   return (
     <Box>
