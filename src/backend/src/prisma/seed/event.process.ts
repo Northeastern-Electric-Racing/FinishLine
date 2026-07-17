@@ -95,7 +95,7 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
       const eventType = this.faker.helpers.arrayElement(eventTypes);
       const approved = generateConflictStatus(this.faker);
       const title = generateEventTitle(this.faker, projectName);
-      
+
       const availableDays = daysBetween(window);
       const offsetDays = generateInitialDateOffset(this.faker, availableDays, window.end > now);
       const initialDateScheduled = addDaysToDate(window.start, offsetDays);
