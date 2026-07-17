@@ -630,6 +630,13 @@ export default class RulesService {
     if (rule.ruleset?.car?.wbsElement?.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Rule');
 
+    const referencedRule = await prisma.rule.findUnique({
+      where: { ruleId: referencedRuleId }
+    });
+
+    if (!referencedRule) throw new NotFoundException('Referenced Rule', referencedRuleId);
+    if (referencedRule.dateDeleted) throw new DeletedException('Referenced Rule', referencedRuleId);
+
     const updatedRule = await prisma.rule.update({
       where: { ruleId },
       data: {

@@ -2377,5 +2377,27 @@ describe('Rule Tests', () => {
         async () => await RulesService.removeRuleReferences(admin, otherOrgRule.ruleId, referencedRule.ruleId, organization)
       ).rejects.toThrow(new InvalidOrganizationException('Rule'));
     });
+
+    it('Fails removing referenced rule if referenced rule does not exist', async () => {
+      const car = await createUniqueCar(orgId);
+      const { referencingRule } = await setupRules(car);
+      await expect(
+        async () => await RulesService.removeRuleReferences(admin, referencingRule.ruleId, 'fake-rule-id', organization)
+      ).rejects.toThrow(new NotFoundException('Referenced Rule', 'fake-rule-id'));
+    });
+
+    it('Fails removing referenced rule if referenced rule was deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { referencedRule, referencingRule } = await setupRules(car);
+
+      await prisma.rule.update({
+        where: { ruleId: referencedRule.ruleId },
+        data: { dateDeleted: new Date() }
+      });
+      await expect(
+        async () =>
+          await RulesService.removeRuleReferences(admin, referencingRule.ruleId, referencedRule.ruleId, organization)
+      ).rejects.toThrow(new DeletedException('Referenced Rule', referencedRule.ruleId));
+    });
   });
 });
