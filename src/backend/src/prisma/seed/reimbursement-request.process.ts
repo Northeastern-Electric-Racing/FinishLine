@@ -71,15 +71,7 @@ const EXTRA_COMMENT_TEMPLATES = [
 
 export class ReimbursementRequestProcess extends SeedProcess<ReimbursementRequestInput, ReimbursementRequestOutput> {
   dependencies() {
-    return [
-      OrganizationProcess,
-      UsersProcess,
-      ConfigDataProcess,
-      TeamProcess,
-      CarProcess,
-      WorkPackageProcess,
-      BOMProcess
-    ];
+    return [OrganizationProcess, UsersProcess, ConfigDataProcess, TeamProcess, CarProcess, WorkPackageProcess, BOMProcess];
   }
 
   async run({
@@ -215,7 +207,9 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
             : this.faker.helpers.arrayElement(GENERAL_SUPPLY_PRODUCT_NAMES);
 
           const productCosts = group.map((spec) =>
-            'material' in spec ? (spec.material.price ?? generateFallbackMaterialCost(this.faker)) : generateFallbackMaterialCost(this.faker)
+            'material' in spec
+              ? (spec.material.price ?? generateFallbackMaterialCost(this.faker))
+              : generateFallbackMaterialCost(this.faker)
           );
           const totalCost = productCosts.reduce((sum, cost) => sum + cost, 0);
 
@@ -237,17 +231,17 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
           for (let productIndex = 0; productIndex < group.length; productIndex++) {
             const spec: ReimbursementProductSpec<Material> = group[productIndex];
 
-            const reasonCreateInput = 'material' in spec
-              ? wbsReimbursementProductReasonCreateInput(spec.material.wbsElementId)
-              : otherReimbursementProductReasonCreateInput(
-                  this.faker.helpers.arrayElement(reimbursementProductOtherReasons).otherReimbursementProductReasonId
-                );
+            const reasonCreateInput =
+              'material' in spec
+                ? wbsReimbursementProductReasonCreateInput(spec.material.wbsElementId)
+                : otherReimbursementProductReasonCreateInput(
+                    this.faker.helpers.arrayElement(reimbursementProductOtherReasons).otherReimbursementProductReasonId
+                  );
 
             const reason = await this.prisma.reimbursement_Product_Reason.create({ data: reasonCreateInput });
 
-            const productName = 'material' in spec
-              ? spec.material.name
-              : this.faker.helpers.arrayElement(GENERAL_SUPPLY_PRODUCT_NAMES);
+            const productName =
+              'material' in spec ? spec.material.name : this.faker.helpers.arrayElement(GENERAL_SUPPLY_PRODUCT_NAMES);
 
             await this.prisma.reimbursement_Product.create({
               data: reimbursementProductCreateInput(
