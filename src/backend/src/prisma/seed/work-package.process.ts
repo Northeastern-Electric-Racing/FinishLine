@@ -2,7 +2,7 @@ import { SeedProcess } from '../processes/seed-process.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { ProjectOutput, ProjectProcess } from './project.process.js';
-import { WorkPackageContext, ProjectContext, FullUser, WorkPackage } from '../context.js';
+import { WorkPackageContext, ProjectContext, FullUser } from '../context.js';
 import {
   generateWorkPackageCount,
   generateWorkPackageName,
@@ -48,40 +48,6 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
     return { workPackages, workPackagesByProjectId };
   }
 
-  private async setWorkPackageCompleteAndAllPrior(
-    workPackage: WorkPackage,
-    blockedRef: Map<WorkPackage, WorkPackage | undefined>,
-    primary: boolean
-  ) {
-    await this.prisma.work_Package.update({
-      where: { workPackageId: workPackage.workPackageId },
-      data: {
-        wbsElement: {
-          update: {
-            status: primary ? WBS_Element_Status.ACTIVE : WBS_Element_Status.COMPLETE
-          }
-        }
-      }
-    });
-
-    let blocked = blockedRef.get(workPackage);
-
-    while (blocked) {
-      await this.prisma.work_Package.update({
-        where: { workPackageId: workPackage.workPackageId },
-        data: {
-          wbsElement: {
-            update: {
-              status: WBS_Element_Status.COMPLETE
-            }
-          }
-        }
-      });
-
-      blocked = blockedRef.get(blocked);
-    }
-  }
-
   private async generateWorkPackagesForProject(
     organizationId: string,
     { project, timeline }: ProjectContext,
@@ -93,7 +59,6 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
     const { carNumber, projectNumber } = project.wbsElement;
     const workPackageContexts: WorkPackageContext[] = [];
     const usedNames = new Set<string>();
-    const blockedRef: Map<WorkPackage, WorkPackage | undefined> = new Map();
 
     const now = new Date();
 
@@ -153,21 +118,46 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
       });
 
       workPackageContexts.push({ workPackage, timeline: wpTimeline });
-      blockedRef.set(workPackage, effectiveBlocker?.workPackage);
     }
 
-    if (status === WBS_Element_Status.ACTIVE) {
-      const { workPackage: randomWorkPackage, timeline: randomPackageTimeline } =
-        workPackageContexts[this.faker.number.int({ min: 0, max: workPackageContexts.length - 1 })];
+    const sorted = [...workPackageContexts].sort((a, b) => a.timeline.start.getTime() - b.timeline.start.getTime());
+    const pastWPs = sorted.filter((wp) => wp.timeline.start < now);
 
-      const affectedWorkPackages = workPackageContexts
-        .filter((context) => context.timeline.start < randomPackageTimeline.start)
-        .map((context) => context.workPackage);
+    if (pastWPs.length > 0) {
+      const daysOverdue = daysBetween({ start: timeline.start, end: now });
+      const projectStatus = getOverdueStatus(this.faker, daysOverdue);
+      const hasActiveWP = projectStatus === WBS_Element_Status.ACTIVE;
 
-      await this.setWorkPackageCompleteAndAllPrior(randomWorkPackage, blockedRef, true);
+      const activeIndex = hasActiveWP ? this.faker.number.int({ min: 0, max: pastWPs.length - 1 }) : -1;
 
       await Promise.all(
-        affectedWorkPackages.map((workPackage) => this.setWorkPackageCompleteAndAllPrior(workPackage, blockedRef, false))
+        sorted.map((ctx, index) => {
+          if (projectStatus === WBS_Element_Status.COMPLETE) {
+            return this.prisma.wBS_Element.update({
+              where: { wbsElementId: ctx.workPackage.wbsElement.wbsElementId },
+              data: { status: WBS_Element_Status.COMPLETE }
+            });
+          }
+
+          let status: WBS_Element_Status;
+
+          if (ctx.timeline.start >= now) {
+            status = WBS_Element_Status.INACTIVE;
+          } else if (index === activeIndex) {
+            status = WBS_Element_Status.ACTIVE;
+          } else if (index < activeIndex) {
+            status = WBS_Element_Status.COMPLETE;
+          } else if (index > activeIndex) {
+            status = WBS_Element_Status.INACTIVE;
+          } else {
+            status = WBS_Element_Status.COMPLETE;
+          }
+
+          return this.prisma.wBS_Element.update({
+            where: { wbsElementId: ctx.workPackage.wbsElement.wbsElementId },
+            data: { status }
+          });
+        })
       );
     }
 
