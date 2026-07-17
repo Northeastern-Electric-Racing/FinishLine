@@ -2,7 +2,7 @@ import { SeedProcess } from '../processes/seed-process.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { ProjectOutput, ProjectProcess } from './project.process.js';
-import { WorkPackageContext, ProjectContext, FullUser } from '../context.js';
+import { WorkPackageContext, ProjectContext, FullUser, DateRange } from '../context.js';
 import {
   generateWorkPackageCount,
   generateWorkPackageName,
@@ -19,6 +19,12 @@ type WorkPackageInput = OrganizationOutput & UsersOutput & ProjectOutput;
 export type WorkPackageOutput = {
   workPackages: WorkPackageContext[];
   workPackagesByProjectId: Record<string, WorkPackageContext[]>;
+  // projects re-exported with `timeline` recomputed as the actual span of their work packages
+  // (falling back to the original car-bounded generation window for projects with none), since
+  // a project has no dates of its own - it's the summation of its work packages
+  projects: ProjectContext[];
+  projectsByCarId: Record<string, ProjectContext[]>;
+  projectsById: Record<string, ProjectContext>;
 };
 
 const BLOCKED_PERCENTAGE = 0.3;
@@ -32,11 +38,20 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
     const { organizationId } = organization;
     const projectOwners = [...leadership, ...heads, ...admins, ...appAdmins];
 
-    const allWorkPackageContexts = await Promise.all(
-      projects.map((projectContext) => this.generateWorkPackagesForProject(organizationId, projectContext, projectOwners))
+    const results = await Promise.all(
+      projects.map(async (projectContext) => {
+        const workPackageContexts = await this.generateWorkPackagesForProject(organizationId, projectContext, projectOwners);
+        const timeline = this.deriveProjectTimeline(projectContext.timeline, workPackageContexts);
+
+        return {
+          workPackageContexts,
+          updatedProjectContext: { ...projectContext, timeline }
+        };
+      })
     );
 
-    const workPackages = allWorkPackageContexts.flat();
+    const workPackages = results.flatMap((result) => result.workPackageContexts);
+    const updatedProjects = results.map((result) => result.updatedProjectContext);
 
     const workPackagesByProjectId = workPackages.reduce<Record<string, WorkPackageContext[]>>((acc, wpContext) => {
       const { projectId } = wpContext.workPackage;
@@ -45,7 +60,35 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
       return acc;
     }, {});
 
-    return { workPackages, workPackagesByProjectId };
+    const projectsByCarId = updatedProjects.reduce<Record<string, ProjectContext[]>>((acc, projectContext) => {
+      const { carId } = projectContext.project;
+      acc[carId] ??= [];
+      acc[carId].push(projectContext);
+      return acc;
+    }, {});
+
+    const projectsById = updatedProjects.reduce<Record<string, ProjectContext>>((acc, projectContext) => {
+      acc[projectContext.project.projectId] = projectContext;
+      return acc;
+    }, {});
+
+    return { workPackages, workPackagesByProjectId, projects: updatedProjects, projectsByCarId, projectsById };
+  }
+
+  /**
+   * A project has no dates of its own - its effective timeline is the span of its actual work
+   * packages. Falls back to the original (car-bounded) generation window for projects with none.
+   */
+  private deriveProjectTimeline(generationWindow: DateRange, workPackageContexts: WorkPackageContext[]): DateRange {
+    if (workPackageContexts.length === 0) return generationWindow;
+
+    return workPackageContexts.reduce<DateRange>(
+      (range, { timeline }) => ({
+        start: timeline.start < range.start ? timeline.start : range.start,
+        end: timeline.end > range.end ? timeline.end : range.end
+      }),
+      workPackageContexts[0].timeline
+    );
   }
 
   private async generateWorkPackagesForProject(

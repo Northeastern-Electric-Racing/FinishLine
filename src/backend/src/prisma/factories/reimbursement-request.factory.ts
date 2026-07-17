@@ -2,9 +2,15 @@ import { Faker } from '@faker-js/faker';
 import { Account_Code, Index_Code, Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { addDaysToDate } from 'shared';
 
-export const REIMBURSEMENT_REQUESTS_PER_CAR = 150;
+// fraction of a past-year car's BOM items that get tied to a reimbursement request
+export const PAST_YEAR_BOM_TIE_CHANCE = 0.6;
+// fraction of the current-year car's BOM items that get tied to a reimbursement request
+// (it's only halfway through its year, so fewer of its BOM items have been purchased yet)
+export const CURRENT_YEAR_BOM_TIE_CHANCE = 0.3;
+// of all reimbursement products generated, the fraction that should reference a BOM item
+// vs. a general supply - the remainder (1 - this) are general supplies
+export const BOM_PRODUCT_RATIO = 0.7;
 
-export const WBS_REASON_CHANCE = 0.7;
 export const ASSIGNEE_CHANCE = 0.75;
 export const EXTRA_COMMENT_CHANCE = 0.15;
 export const DELIVERY_CHANCE = 0.65;
@@ -21,39 +27,6 @@ const STAGE_ORDER: Reimbursement_Status_Type[] = [
   Reimbursement_Status_Type.PENDING_SABO_SUBMISSION,
   Reimbursement_Status_Type.SABO_SUBMITTED,
   Reimbursement_Status_Type.REIMBURSED
-];
-
-export const WBS_PRODUCT_NAMES = [
-  'Carbon Fiber Sheets',
-  'Aluminum Stock',
-  'Epoxy Resin',
-  'High Performance Battery Pack',
-  'Sensor Components',
-  'Microcontrollers',
-  'PCB Manufacturing',
-  '3D Printing Filament',
-  'Machining Services',
-  'Fasteners and Hardware',
-  'Wiring Harness Materials',
-  'Bearings',
-  'Brake Pads',
-  'Suspension Bushings',
-  'Motor Controller Components',
-  'Battery Testing Equipment',
-  'CAD Software License',
-  'Data Acquisition Sensors',
-  'Tires',
-  'Welding Supplies',
-  'Powder Coating Service',
-  'Custom Machined Brackets',
-  'Heat Shrink Tubing',
-  'Connectors and Terminals',
-  'Composite Layup Materials',
-  'Cooling System Components',
-  'Steering Components',
-  'Chassis Tubing',
-  'Telemetry Hardware',
-  'Prototype Enclosures'
 ];
 
 export const GENERAL_SUPPLY_PRODUCT_NAMES = [
@@ -161,40 +134,37 @@ export const generateProductCount = (faker: Faker): number =>
     { weight: 10, value: 3 }
   ]);
 
-export const generateReimbursementRequestTotalCost = (faker: Faker): number => {
-  const bucket = faker.number.int({ min: 1, max: 100 });
+/** Independently rolls each material against `tieChance` to decide which ones get a reimbursement product. */
+export const selectMaterialsToTie = <T>(faker: Faker, materials: T[], tieChance: number): T[] =>
+  materials.filter(() => faker.datatype.boolean({ probability: tieChance }));
 
-  const dollars =
-    bucket <= 55
-      ? faker.number.int({ min: 15, max: 300 })
-      : bucket <= 90
-        ? faker.number.int({ min: 300, max: 1500 })
-        : faker.number.int({ min: 1500, max: 5000 });
+/** How many general-supply products to generate so the overall BOM-vs-general-supply split lands on `BOM_PRODUCT_RATIO`. */
+export const generalSupplyCountForTiedMaterials = (tiedMaterialCount: number): number =>
+  Math.round(tiedMaterialCount * ((1 - BOM_PRODUCT_RATIO) / BOM_PRODUCT_RATIO));
 
-  return dollars * 100;
-};
+/** Fallback cost (in cents) for a BOM-tied product whose material has no price set. */
+export const generateFallbackMaterialCost = (faker: Faker): number => faker.number.int({ min: 500, max: 20000 });
 
-/**
- * Splits a total cost (in cents) across `partCount` products, rounded to the nearest dollar,
- * with any rounding remainder applied to the last part so the parts always sum to the total.
- */
-export const splitCost = (faker: Faker, totalCost: number, partCount: number): number[] => {
-  if (partCount === 1) return [totalCost];
+export type ReimbursementProductSpec<T> = { material: T } | { generalSupply: true };
 
-  const weights = Array.from({ length: partCount }, () => faker.number.float({ min: 0.5, max: 1.5 }));
-  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+export const buildProductSpecs = <T>(tiedMaterials: T[], generalSupplyCount: number): ReimbursementProductSpec<T>[] => [
+  ...tiedMaterials.map((material) => ({ material })),
+  ...Array.from({ length: generalSupplyCount }, () => ({ generalSupply: true as const }))
+];
 
-  const parts = weights.map((weight) => Math.round((totalCost * weight) / totalWeight / 100) * 100);
-  const difference = totalCost - parts.reduce((sum, part) => sum + part, 0);
+/** Shuffles then chunks items into groups sized by `generateGroupSize` (e.g. `generateProductCount`), used to split a batch of products across individual reimbursement requests. */
+export const chunkIntoGroups = <T>(faker: Faker, items: T[], generateGroupSize: (faker: Faker) => number): T[][] => {
+  const shuffled = faker.helpers.shuffle(items);
+  const groups: T[][] = [];
 
-  // apply the rounding remainder to the largest part so a small part can never be pushed to zero/negative
-  const largestPartIndex = parts.reduce(
-    (largestIndex, part, index) => (part > parts[largestIndex] ? index : largestIndex),
-    0
-  );
-  parts[largestPartIndex] += difference;
+  let index = 0;
+  while (index < shuffled.length) {
+    const groupSize = Math.min(generateGroupSize(faker), shuffled.length - index);
+    groups.push(shuffled.slice(index, index + groupSize));
+    index += groupSize;
+  }
 
-  return parts;
+  return groups;
 };
 
 export const reimbursementRequestCreateInput = (
@@ -245,12 +215,14 @@ export const reimbursementProductCreateInput = (
   cost: number,
   reimbursementRequestId: string,
   reimbursementProductReasonId: string,
-  indexCodeId: string
+  indexCodeId: string,
+  materialId?: string
 ): Prisma.Reimbursement_ProductCreateInput => ({
   name,
   cost,
   reimbursementRequest: { connect: { reimbursementRequestId } },
   reimbursementProductReason: { connect: { reimbursementProductReasonId } },
+  ...(materialId ? { material: { connect: { materialId } } } : {}),
   refundSources: {
     create: {
       amount: cost,

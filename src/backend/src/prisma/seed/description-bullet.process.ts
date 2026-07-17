@@ -1,7 +1,6 @@
 import { SeedProcess } from '../processes/seed-process.js';
 import { OrganizationProcess, OrganizationOutput } from './organization.process.js';
 import { ConfigDataOutput, ConfigDataProcess } from './config-data.process.js';
-import { ProjectOutput, ProjectProcess } from './project.process.js';
 import { WorkPackageOutput, WorkPackageProcess } from './work-package.process.js';
 import {
   generateDescriptionBulletCount,
@@ -9,11 +8,11 @@ import {
   descriptionBulletCreateInput
 } from '../factories/description-bullet.factory.js';
 
-type DescriptionBulletInput = OrganizationOutput & ConfigDataOutput & ProjectOutput & WorkPackageOutput;
+type DescriptionBulletInput = OrganizationOutput & ConfigDataOutput & WorkPackageOutput;
 
 export class DescriptionBulletProcess extends SeedProcess<DescriptionBulletInput, Record<string, never>> {
   dependencies() {
-    return [OrganizationProcess, ConfigDataProcess, ProjectProcess, WorkPackageProcess];
+    return [OrganizationProcess, ConfigDataProcess, WorkPackageProcess];
   }
 
   async run({ projects, workPackages, descriptionBulletTypes }: DescriptionBulletInput): Promise<Record<string, never>> {

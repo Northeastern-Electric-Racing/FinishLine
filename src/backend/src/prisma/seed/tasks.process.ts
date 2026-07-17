@@ -1,11 +1,10 @@
 import { Task } from '@prisma/client';
 import { SeedProcess } from '../processes/seed-process.js';
-import { ProjectOutput, ProjectProcess } from './project.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { WorkPackageOutput, WorkPackageProcess } from './work-package.process.js';
 import { SeedTaskParent, assigneeCountForTask, createSeedTask, taskCountForProject } from '../factories/tasks.factory.js';
 
-type TaskInput = ProjectOutput & UsersOutput & WorkPackageOutput;
+type TaskInput = UsersOutput & WorkPackageOutput;
 
 export type TaskOutput = {
   tasks: Task[];
@@ -16,7 +15,7 @@ const WP_ATTACH_PROBABILITY = 0.4;
 
 export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
   dependencies() {
-    return [ProjectProcess, UsersProcess, WorkPackageProcess];
+    return [UsersProcess, WorkPackageProcess];
   }
 
   async run({
