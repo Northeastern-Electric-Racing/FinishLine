@@ -407,6 +407,12 @@ export const generateProjectBOMCount = (faker: Faker): number => {
   return faker.number.int({ min: 81, max: 200 });
 };
 
+/**
+ * Splits a project's total BOM count across its WBS elements, always summing back to `total`.
+ * Uses floor (never rounds up) so no share can overshoot, and the remainder left by flooring
+ * is handed out one unit at a time instead of dumped onto a single index - which previously
+ * could push that index below zero and get silently clamped away, undercounting the total.
+ */
 export const splitBOMCount = (faker: Faker, total: number, wbsElementCount: number): number[] => {
   if (total === 0) return Array(wbsElementCount).fill(0);
   if (wbsElementCount === 1) return [total];
@@ -414,49 +420,16 @@ export const splitBOMCount = (faker: Faker, total: number, wbsElementCount: numb
   const weights = Array.from({ length: wbsElementCount }, () => faker.number.float({ min: 0.5, max: 1.5 }));
   const totalWeight = weights.reduce((sum, w) => sum + w, 0);
 
-  const counts = weights.map((w) => Math.round((total * w) / totalWeight));
+  const counts = weights.map((w) => Math.floor((total * w) / totalWeight));
 
-  const diff = total - counts.reduce((sum, c) => sum + c, 0);
-  const largestIndex = counts.reduce((maxIdx, c, i) => (c > counts[maxIdx] ? i : maxIdx), 0);
-  counts[largestIndex] += diff;
+  let remainder = total - counts.reduce((sum, c) => sum + c, 0);
+  while (remainder > 0) {
+    counts[faker.number.int({ min: 0, max: wbsElementCount - 1 })] += 1;
+    remainder -= 1;
+  }
 
-  return counts.map((c) => Math.max(0, c));
+  return counts;
 };
-
-export const generateMaterialCount = (faker: Faker): number =>
-  faker.helpers.weightedArrayElement([
-    { weight: 7, value: 0 },
-    { weight: 3, value: 1 },
-    { weight: 4, value: 2 },
-    { weight: 5, value: 3 },
-    { weight: 6, value: 4 },
-    { weight: 7, value: 5 },
-    { weight: 8, value: 6 },
-    { weight: 9, value: 7 },
-    { weight: 10, value: 8 },
-    { weight: 11, value: 9 },
-    { weight: 11, value: 10 },
-    { weight: 10, value: 11 },
-    { weight: 9, value: 12 },
-    { weight: 8, value: 13 },
-    { weight: 7, value: 14 },
-    { weight: 6, value: 15 },
-    { weight: 5, value: 16 },
-    { weight: 4, value: 17 },
-    { weight: 3, value: 18 },
-    { weight: 2, value: 19 },
-    { weight: 2, value: 20 },
-    { weight: 1, value: 21 },
-    { weight: 1, value: 22 },
-    { weight: 1, value: 23 },
-    { weight: 1, value: 24 },
-    { weight: 1, value: 25 },
-    { weight: 1, value: 26 },
-    { weight: 1, value: 27 },
-    { weight: 1, value: 28 },
-    { weight: 1, value: 29 },
-    { weight: 1, value: 30 }
-  ]);
 
 export const generateAssemblyName = (faker: Faker): string => {
   while (true) {
