@@ -32,7 +32,7 @@ export class BOMProcess extends SeedProcess<BOMInput, BOMOutput> {
   }
 
   async run({
-    projects,
+    projectsWithTimeline,
     materialTypes,
     manufacturers,
     units,
@@ -46,8 +46,8 @@ export class BOMProcess extends SeedProcess<BOMInput, BOMOutput> {
     const materialsByProjectId: Record<string, Material[]> = {};
     const now = new Date();
 
-    for (let i = 0; i < projects.length; i += BATCH_SIZE) {
-      const batch = projects.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < projectsWithTimeline.length; i += BATCH_SIZE) {
+      const batch = projectsWithTimeline.slice(i, i + BATCH_SIZE);
       await Promise.all(
         batch.map(async ({ project, timeline }) => {
           // materials can only ever be created on a project's own WBS element (never a work package's) -

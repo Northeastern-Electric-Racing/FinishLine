@@ -16,6 +16,7 @@ import {
   chunkIntoGroups,
   CURRENT_YEAR_BOM_TIE_CHANCE,
   DELIVERY_CHANCE,
+  deriveMaterialStatusAfterTie,
   EXTRA_COMMENT_CHANCE,
   generalSupplyCountForTiedMaterials,
   generateDateOfExpense,
@@ -95,7 +96,7 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
     vendors,
     reimbursementProductOtherReasons,
     financeTeam,
-    projectsByCarId,
+    projectsByCarIdWithTimeline,
     materialsByProjectId
   }: ReimbursementRequestInput): Promise<ReimbursementRequestOutput> {
     const { organizationId } = organization;
@@ -152,7 +153,9 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
       // skip cars that haven't started yet (e.g. a next-year car still in early planning)
       if (dateRange.start >= now) continue;
 
-      const carProjects = (projectsByCarId[car.carId] ?? []).filter((projectContext) => projectContext.timeline.start < now);
+      const carProjects = (projectsByCarIdWithTimeline[car.carId] ?? []).filter(
+        (projectContext) => projectContext.timeline.start < now
+      );
       if (carProjects.length === 0) continue;
 
       const carCreationWindow = {
@@ -256,6 +259,16 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
                 'material' in spec ? spec.material.materialId : undefined
               )
             });
+
+            // createReimbursementProducts forces a tied material to READY_TO_ORDER (then ORDERED once
+            // PENDING_FINANCE is reached) as a side effect - keep the material's own status consistent
+            // with that, rather than the independent status BOMProcess originally rolled for it
+            if ('material' in spec) {
+              await this.prisma.material.update({
+                where: { materialId: spec.material.materialId },
+                data: { status: deriveMaterialStatusAfterTie(statusHistory) }
+              });
+            }
           }
 
           for (const step of statusHistory.slice(1)) {

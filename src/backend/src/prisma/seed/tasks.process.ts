@@ -19,7 +19,7 @@ export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
   }
 
   async run({
-    projects,
+    projectsWithTimeline,
     members,
     leadership,
     heads,
@@ -27,7 +27,7 @@ export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
     appAdmins,
     workPackagesByProjectId
   }: TaskInput): Promise<TaskOutput> {
-    if (projects.length === 0) {
+    if (projectsWithTimeline.length === 0) {
       throw new Error('TaskProcess requires at least one project.');
     }
 
@@ -39,7 +39,7 @@ export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
 
     const tasks: Task[] = [];
 
-    for (const { project, timeline } of projects) {
+    for (const { project, timeline } of projectsWithTimeline) {
       const projectWorkPackages = workPackagesByProjectId[project.projectId] ?? [];
       const taskCount = taskCountForProject(this.faker);
 

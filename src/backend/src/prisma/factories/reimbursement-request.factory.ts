@@ -1,5 +1,5 @@
 import { Faker } from '@faker-js/faker';
-import { Account_Code, Index_Code, Prisma, Reimbursement_Status_Type } from '@prisma/client';
+import { Account_Code, Index_Code, Material_Status, Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { addDaysToDate } from 'shared';
 
 // fraction of a past-year car's BOM items that get tied to a reimbursement request
@@ -126,6 +126,19 @@ export const generateReimbursementStatusHistory = (
 
 export const hasReachedStage = (history: ReimbursementStatusStep[], stage: Reimbursement_Status_Type): boolean =>
   history.some((step) => step.type === stage);
+
+/**
+ * createReimbursementProducts (reimbursement-requests.utils.ts) unconditionally forces a tied
+ * material's status to READY_TO_ORDER, and updateMaterialStatusesOnPayment bumps it to ORDERED
+ * the moment the request reaches PENDING_FINANCE (even if later DENIED) - so NOT_READY_TO_ORDER
+ * is never reachable for a tied material, and ORDERED is guaranteed once PENDING_FINANCE happens.
+ * RECEIVED once REIMBURSED isn't automatic in the app, but is the realistic real-world follow-through.
+ */
+export const deriveMaterialStatusAfterTie = (history: ReimbursementStatusStep[]): Material_Status => {
+  if (hasReachedStage(history, Reimbursement_Status_Type.REIMBURSED)) return Material_Status.RECEIVED;
+  if (hasReachedStage(history, Reimbursement_Status_Type.PENDING_FINANCE)) return Material_Status.ORDERED;
+  return Material_Status.READY_TO_ORDER;
+};
 
 export const generateProductCount = (faker: Faker): number =>
   faker.helpers.weightedArrayElement([

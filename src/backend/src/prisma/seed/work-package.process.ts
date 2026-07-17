@@ -19,12 +19,14 @@ type WorkPackageInput = OrganizationOutput & UsersOutput & ProjectOutput;
 export type WorkPackageOutput = {
   workPackages: WorkPackageContext[];
   workPackagesByProjectId: Record<string, WorkPackageContext[]>;
-  // projects re-exported with `timeline` recomputed as the actual span of their work packages
-  // (falling back to the original car-bounded generation window for projects with none), since
-  // a project has no dates of its own - it's the summation of its work packages
-  projects: ProjectContext[];
-  projectsByCarId: Record<string, ProjectContext[]>;
-  projectsById: Record<string, ProjectContext>;
+  // projects re-exported (under different names than ProjectOutput's, since SeedRunner merges every
+  // process's output into one flat global context and would collide on a shared key) with `timeline`
+  // recomputed as the actual span of their work packages (falling back to the original car-bounded
+  // generation window for projects with none), since a project has no dates of its own - it's the
+  // summation of its work packages
+  projectsWithTimeline: ProjectContext[];
+  projectsByCarIdWithTimeline: Record<string, ProjectContext[]>;
+  projectsByIdWithTimeline: Record<string, ProjectContext>;
 };
 
 const BLOCKED_PERCENTAGE = 0.3;
@@ -60,19 +62,25 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
       return acc;
     }, {});
 
-    const projectsByCarId = updatedProjects.reduce<Record<string, ProjectContext[]>>((acc, projectContext) => {
+    const projectsByCarIdWithTimeline = updatedProjects.reduce<Record<string, ProjectContext[]>>((acc, projectContext) => {
       const { carId } = projectContext.project;
       acc[carId] ??= [];
       acc[carId].push(projectContext);
       return acc;
     }, {});
 
-    const projectsById = updatedProjects.reduce<Record<string, ProjectContext>>((acc, projectContext) => {
+    const projectsByIdWithTimeline = updatedProjects.reduce<Record<string, ProjectContext>>((acc, projectContext) => {
       acc[projectContext.project.projectId] = projectContext;
       return acc;
     }, {});
 
-    return { workPackages, workPackagesByProjectId, projects: updatedProjects, projectsByCarId, projectsById };
+    return {
+      workPackages,
+      workPackagesByProjectId,
+      projectsWithTimeline: updatedProjects,
+      projectsByCarIdWithTimeline,
+      projectsByIdWithTimeline
+    };
   }
 
   /**

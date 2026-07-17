@@ -15,11 +15,15 @@ export class DescriptionBulletProcess extends SeedProcess<DescriptionBulletInput
     return [OrganizationProcess, ConfigDataProcess, WorkPackageProcess];
   }
 
-  async run({ projects, workPackages, descriptionBulletTypes }: DescriptionBulletInput): Promise<Record<string, never>> {
+  async run({
+    projectsWithTimeline,
+    workPackages,
+    descriptionBulletTypes
+  }: DescriptionBulletInput): Promise<Record<string, never>> {
     const [bulletType] = descriptionBulletTypes;
 
     await Promise.all([
-      ...projects.map(({ project }) =>
+      ...projectsWithTimeline.map(({ project }) =>
         this.createBulletsForWbsElement(project.wbsElement.wbsElementId, project.wbsElement.name, bulletType.id)
       ),
       ...workPackages.map(({ workPackage }) =>
