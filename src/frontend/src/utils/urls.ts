@@ -386,6 +386,10 @@ const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-revie
 const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizations()}/sponsorshipChannelId/set`;
 const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
 const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
+const organizationsNotificationChannels = () => `${organizations()}/notification-channels`;
+const organizationsAvailableNotificationChannels = () => `${organizationsNotificationChannels()}/available`;
+const organizationsCreateNotificationChannel = () => `${organizationsNotificationChannels()}/create`;
+const organizationsDeleteNotificationChannel = () => `${organizationsNotificationChannels()}/delete`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -794,6 +798,10 @@ export const apiUrls = {
   organizationsSetSlackSponsorshipNotificationChannelId,
   organizationsFinanceDelegates,
   organizationsSetFinanceDelegates,
+  organizationsNotificationChannels,
+  organizationsAvailableNotificationChannels,
+  organizationsCreateNotificationChannel,
+  organizationsDeleteNotificationChannel,
 
   cars,
   carsCreate,

@@ -108,3 +108,15 @@ variable "alarm_actions" {
   type        = list(string)
   default     = []
 }
+
+variable "skip_final_snapshot" {
+  description = "Skip final snapshot on destroy (set true for ephemeral environments)"
+  type        = bool
+  default     = false
+}
+
+variable "snapshot_identifier" {
+  description = "Snapshot ID to restore from on creation (leave null for a fresh database)"
+  type        = string
+  default     = null
+}

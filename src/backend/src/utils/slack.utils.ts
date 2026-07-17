@@ -392,25 +392,51 @@ export const sendAndGetSlackCRNotifications = async (
   return notifications;
 };
 
+/**
+ * Resolves whether a user can use the given Slack channel as a notification channel: only
+ * allowed if the user's Slack id is a member of the channel, regardless of whether it's
+ * public or private. Fails closed (denies access) if the channel can't be resolved from Slack.
+ * @param slackId the requesting user's Slack id, or undefined if they have none linked
+ * @param channelId the Slack channel id to check
+ * @returns the channel's name (if it could be resolved) and whether the user has access to it
+ */
+export const getNotificationChannelAccessForUser = async (
+  slackId: string | undefined,
+  channelId: string
+): Promise<{ channelName?: string; hasAccess: boolean }> => {
+  const channelName = await getChannelName(channelId);
+  if (!channelName) return { channelName: undefined, hasAccess: false };
+
+  if (!slackId) return { channelName, hasAccess: false };
+
+  const members = await getUsersInChannel(channelId);
+  return { channelName, hasAccess: members.includes(slackId) };
+};
+
 export const buildSlackMentionPrefix = (mention: SlackMentionType, memberSlackIds: string[]): string => {
   if (mention === SlackMentionType.CHANNEL) return '<!channel> ';
   if (memberSlackIds.length > 0) return `${memberSlackIds.map((id) => `<@${id}>`).join(' ')} `;
   return '';
 };
 
-export const sendSlackEventNotification = async (
-  team: Team,
+export const sendSlackEventNotificationToChannel = async (
+  channelId: string,
   message: string
 ): Promise<{ channelId: string; ts: string }[]> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return []; // don't send msgs unless in prod
   const msgs: { channelId: string; ts: string }[] = [];
   const fullLink = `https://finishlinebyner.com/calendar`;
   const btnText = `View Calendar`;
-  const notification = await sendMessage(team.slackId, message, fullLink, btnText);
+  const notification = await sendMessage(channelId, message, fullLink, btnText);
   if (notification) msgs.push(notification);
 
   return msgs;
 };
+
+export const sendSlackEventNotification = async (
+  team: Team,
+  message: string
+): Promise<{ channelId: string; ts: string }[]> => sendSlackEventNotificationToChannel(team.slackId, message);
 
 export interface EventNotificationOptions {
   memberSlackIds?: string[];
@@ -423,7 +449,8 @@ export const sendSlackEventNotifications = async (
   submitter: User,
   workPackageName: string,
   projectName: string,
-  options: EventNotificationOptions = {}
+  options: EventNotificationOptions = {},
+  notificationChannelIds: string[] = []
 ) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return []; // don't send msgs unless in prod
   const notifications: { channelId: string; ts: string }[] = [];
@@ -441,7 +468,16 @@ export const sendSlackEventNotifications = async (
     const sentNotifications: { channelId: string; ts: string }[] = await sendSlackEventNotification(team, message);
     if (sentNotifications) notifications.push(...sentNotifications);
   });
-  await Promise.all(completion);
+
+  const channelCompletion: Promise<void>[] = notificationChannelIds.map(async (channelId) => {
+    const sentNotifications: { channelId: string; ts: string }[] = await sendSlackEventNotificationToChannel(
+      channelId,
+      message
+    );
+    if (sentNotifications) notifications.push(...sentNotifications);
+  });
+
+  await Promise.all([...completion, ...channelCompletion]);
 
   const promises = notifications.map(
     async (notification) =>

@@ -15,6 +15,9 @@ import { ShopProcess } from './seed/shop.process.js';
 import { TeamProcess } from './seed/team.process.js';
 import { ProjectProcess } from './seed/project.process.js';
 import { SchedulingProcess } from './seed/scheduling.process.js';
+import { DescriptionBulletProcess } from './seed/description-bullet.process.js';
+import { BOMProcess } from './seed/bom.process.js';
+import { TaskProcess } from './seed/tasks.process.js';
 import { WorkPackageProcess } from './seed/work-package.process.js';
 import { ReimbursementRequestProcess } from './seed/reimbursement-request.process.js';
 
@@ -33,6 +36,9 @@ await new SeedRunner()
     new ShopProcess(),
     new ProjectProcess(),
     new WorkPackageProcess(),
+    new DescriptionBulletProcess(),
+    new BOMProcess(),
+    new TaskProcess(),
     new ReimbursementRequestProcess()
   )
   .run();

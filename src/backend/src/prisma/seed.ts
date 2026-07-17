@@ -4422,6 +4422,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    [],
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -4463,6 +4464,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    [],
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -4489,6 +4491,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    [],
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -4515,6 +4518,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    [],
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -4541,6 +4545,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    [],
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -4567,6 +4572,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    [],
     mechanical.teamTypeId,
     undefined,
     'Conference Room A',
@@ -4587,6 +4593,7 @@ const performSeed: () => Promise<void> = async () => {
     [workPackage3.id],
     [],
     weeksFromNow(1),
+    [],
     software.teamTypeId,
     'https://docs.google.com/document/d/2_example',
     'Conference Room B',
@@ -4613,6 +4620,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    [],
     electrical.teamTypeId,
     'https://docs.google.com/document/d/3_example',
     undefined,
@@ -4639,6 +4647,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    [],
     mechanical.teamTypeId,
     undefined,
     undefined,
