@@ -1,7 +1,8 @@
-import { faker, Faker } from '@faker-js/faker';
+import { Faker } from '@faker-js/faker';
 import { Conflict_Status, Event_Status, Prisma } from '@prisma/client';
 import { arrayOrNull } from '../utils/arrays.js';
 import { UsersOutput } from '../seed/user.process.js';
+import { DAY_MS, MINUTE_MS } from '../dates.js';
 
 const EVENT_TITLE_PREFIXES = [
   'Design Review -',
@@ -45,6 +46,7 @@ const APPROVAL_REQUIRED_PROBABILITY = 0.15;
 export const EVENTS_PER_PROJECT = 3;
 export const DOCUMENT_PROBABILITY = 0.6;
 export const MEETING_ATTENDANCE_PROBABILITY = 0.4;
+const EVENT_DATE_BUFFER_DAYS = 7;
 const MAX_ATTENDEES = 10;
 
 export const generateEventCount = (faker: Faker): number => faker.number.int({ min: 1, max: EVENTS_PER_PROJECT });
@@ -59,8 +61,6 @@ export const generateScheduleSlotCount = (faker: Faker, title: string): number =
 
   return faker.number.int({ min: 1, max: 2 });
 };
-
-export const generateScheduleSlotOffset = (faker: Faker): number => faker.number.int({ min: 7, max: 21 });
 
 export const generateInitialDateOffset = (faker: Faker, availableDays: number, isCurrentYear: boolean): number => {
   if (isCurrentYear) {
@@ -107,13 +107,32 @@ export const generateApprovalRequiredFromUserId = (
   });
 };
 
-export const generateEventStatus = (faker: Faker): Event_Status =>
-  faker.helpers.weightedArrayElement([
-    { weight: 60, value: Event_Status.SCHEDULED },
-    { weight: 20, value: Event_Status.UNCONFIRMED },
-    { weight: 12, value: Event_Status.CONFIRMED },
-    { weight: 8, value: Event_Status.DONE }
+export const generateEventStatus = (faker: Faker, initialDateScheduled: Date, now: Date = new Date()): Event_Status => {
+  const daysUntilDue = Math.floor((initialDateScheduled.getTime() - now.getTime()) / DAY_MS);
+
+  if (daysUntilDue < -EVENT_DATE_BUFFER_DAYS) {
+    return faker.helpers.weightedArrayElement([
+      { weight: 50, value: Event_Status.DONE },
+      { weight: 30, value: Event_Status.CONFIRMED },
+      { weight: 20, value: Event_Status.SCHEDULED }
+    ]);
+  }
+
+  if (daysUntilDue > EVENT_DATE_BUFFER_DAYS) {
+    return faker.helpers.weightedArrayElement([
+      { weight: 60, value: Event_Status.SCHEDULED },
+      { weight: 25, value: Event_Status.UNCONFIRMED },
+      { weight: 15, value: Event_Status.DONE }
+    ]);
+  }
+
+  return faker.helpers.weightedArrayElement([
+    { weight: 50, value: Event_Status.SCHEDULED },
+    { weight: 25, value: Event_Status.CONFIRMED },
+    { weight: 15, value: Event_Status.UNCONFIRMED },
+    { weight: 10, value: Event_Status.DONE }
   ]);
+};
 
 export const generateConflictStatus = (faker: Faker): Conflict_Status =>
   faker.helpers.weightedArrayElement([
@@ -178,7 +197,7 @@ export const scheduleSlotCreateInput = (
   event: { connect: { eventId } }
 });
 
-export const documentCreateInput = (eventId: string, createdByUserId: string): Prisma.DocumentCreateInput => ({
+export const documentCreateInput = (faker: Faker, eventId: string, createdByUserId: string): Prisma.DocumentCreateInput => ({
   googleFileId: `${faker.string.alphanumeric(33)}`,
   name: `document-${faker.string.uuid()}.pdf`,
   createdBy: { connect: { userId: createdByUserId } },
@@ -186,15 +205,25 @@ export const documentCreateInput = (eventId: string, createdByUserId: string): P
 });
 
 export const meetingAttendanceCreateInput = (
+  faker: Faker,
   organizationId: string,
   teamId: string,
   userCreatedId: string,
-  attendeeIds: string[]
-): Prisma.Meeting_AttendanceCreateInput => ({
-  slackChannelId: `C${faker.string.alphanumeric(10).toUpperCase()}`,
-  slackMessageTimestamp: `${Math.floor(faker.date.past({ years: 1 }).getTime() / 1000)}.${faker.string.numeric(6)}`,
-  organization: { connect: { organizationId } },
-  team: { connect: { teamId } },
-  userCreated: { connect: { userId: userCreatedId } },
-  attendees: { connect: attendeeIds.map((userId) => ({ userId })) }
-});
+  attendeeIds: string[],
+  initialDateScheduled: Date
+): Prisma.Meeting_AttendanceCreateInput => {
+  const openedAt = initialDateScheduled;
+  const closedAt = new Date(openedAt);
+  closedAt.setTime(openedAt.getTime() + faker.number.int({ min: 60, max: 120 }) * MINUTE_MS);
+
+  return {
+    slackChannelId: `C${faker.string.alphanumeric(10).toUpperCase()}`,
+    slackMessageTimestamp: `${Math.floor(openedAt.getTime() / 1000)}.${faker.string.numeric(6)}`,
+    openedAt,
+    closedAt,
+    organization: { connect: { organizationId } },
+    team: { connect: { teamId } },
+    userCreated: { connect: { userId: userCreatedId } },
+    attendees: { connect: attendeeIds.map((userId) => ({ userId })) }
+  };
+};

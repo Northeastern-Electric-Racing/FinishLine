@@ -93,13 +93,13 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
     for (let i = 0; i < count; i++) {
       const creator = this.faker.helpers.arrayElement(creators);
       const eventType = this.faker.helpers.arrayElement(eventTypes);
-      const status = generateEventStatus(this.faker);
       const approved = generateConflictStatus(this.faker);
       const title = generateEventTitle(this.faker, projectName);
-
+      
       const availableDays = daysBetween(window);
       const offsetDays = generateInitialDateOffset(this.faker, availableDays, window.end > now);
       const initialDateScheduled = addDaysToDate(window.start, offsetDays);
+      const status = generateEventStatus(this.faker, initialDateScheduled);
 
       const location = generateLocation(this.faker);
       const zoomLink = generateZoomLink(this.faker);
@@ -134,7 +134,7 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
 
       if (shouldCreateDocument(this.faker)) {
         await this.prisma.document.create({
-          data: documentCreateInput(event.eventId, creator.userId)
+          data: documentCreateInput(this.faker, event.eventId, creator.userId)
         });
       }
 
@@ -145,10 +145,12 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
 
         await this.prisma.meeting_Attendance.create({
           data: meetingAttendanceCreateInput(
+            this.faker,
             organizationId,
             team.teamId,
             creator.userId,
-            attendees.map((u) => u.userId)
+            attendees.map((u) => u.userId),
+            initialDateScheduled
           )
         });
       }
