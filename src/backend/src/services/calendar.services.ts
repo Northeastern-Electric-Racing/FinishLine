@@ -813,14 +813,28 @@ export default class CalendarService {
 
     const edittedEvent = eventTransformer(updatedEvent);
 
-    if (status === Event_Status.SCHEDULED && foundEventType.sendSlackNotifications) {
-      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent, true);
-    }
-
     if (status === Event_Status.CONFIRMED && foundEventType.sendSlackNotifications) {
       await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
     }
     return edittedEvent;
+  }
+
+  static scheduleChanged(before: ScheduleSlot[], after: ScheduleSlot[]): boolean {
+    if (before.length != after.length) return true;
+    var index = 0;
+    for (const scheduleSlot of before) {
+      if (
+        scheduleSlot.startTime.getTime() !== after[index].startTime.getTime() ||
+        scheduleSlot.endTime.getTime() !== after[index].endTime.getTime() ||
+        scheduleSlot.allDay !== after[index].allDay
+      ) {
+        return true;
+      }
+
+      index = index + 1;
+    }
+
+    return false;
   }
 
   /**
@@ -1091,6 +1105,14 @@ export default class CalendarService {
     });
 
     if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
+    const updatedEventTransform = eventTransformer(updatedEvent);
+
+    if (
+      updatedEventTransform.status === Event_Status.SCHEDULED &&
+      this.scheduleChanged(event.scheduledTimes, updatedEvent.scheduledTimes)
+    ) {
+      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, updatedEventTransform, true);
+    }
 
     return eventTransformer(updatedEvent);
   }
