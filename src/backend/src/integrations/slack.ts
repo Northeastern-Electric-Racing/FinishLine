@@ -1,5 +1,6 @@
 import bolt from '@slack/bolt';
 import type { App, ExpressReceiver } from '@slack/bolt';
+import { LRUCache } from 'lru-cache';
 import { HttpException } from '../utils/errors.utils.js';
 
 const { App: AppClass, ExpressReceiver: ExpressReceiverClass } = bolt;
@@ -221,51 +222,91 @@ const generateSlackTextBlock = (message: string, link?: string, linkButtonText?:
 };
 
 /**
- * Given an id of a channel, produces the slack ids of all the users in that channel.
+ * Fetches every member of a channel from Slack, paging through the full member list.
+ * Throws on any failure so that partial member lists are never returned or cached.
  * @param channelId the id of the channel
- * @returns an array of strings of all the slack ids of the users in the given channel
+ * @returns an array of the slack ids of every user in the channel
  */
-export const getUsersInChannel = async (channelId: string) => {
+const fetchUsersInChannel = async (channelId: string): Promise<string[]> => {
   const client = getSlackClient();
   if (!client) return [];
 
   let members: string[] = [];
   let cursor: string | undefined;
 
+  do {
+    const response = await client.conversations.members({
+      channel: channelId,
+      cursor,
+      limit: 200
+    });
+
+    if (!response.ok || !response.members) {
+      throw new Error(`Failed to fetch members: ${response.error}`);
+    }
+
+    members = members.concat(response.members);
+    cursor = response.response_metadata?.next_cursor;
+  } while (cursor);
+
+  return members;
+};
+
+/**
+ * Fetches a channel's name from Slack.
+ * @param channelId the id of the slack channel
+ * @returns the name of the channel, or undefined if slack has no name for it
+ */
+const fetchChannelName = async (channelId: string): Promise<string | undefined> => {
+  const client = getSlackClient();
+  if (!client) return undefined;
+
+  const channelRes = await client.conversations.info({ channel: channelId });
+  return channelRes.channel?.name;
+};
+
+/**
+ * Caches channel names, which change very rarely, keyed by channel id.
+ */
+const channelNameCache = new LRUCache<string, string>({
+  max: 500,
+  ttl: 1000 * 60 * 60 * 24, // 1 day
+  fetchMethod: fetchChannelName
+});
+
+/**
+ * Caches channel membership, keyed by channel id.
+ */
+const channelMembersCache = new LRUCache<string, string[]>({
+  max: 500,
+  ttl: 1000 * 60 * 60, // 1 hour
+  fetchMethod: fetchUsersInChannel
+});
+
+/**
+ * Given an id of a channel, produces the slack ids of all the users in that channel.
+ * Results are cached, and concurrent calls for the same channel share a single slack request.
+ * @param channelId the id of the channel
+ * @returns an array of strings of all the slack ids of the users in the given channel
+ */
+export const getUsersInChannel = async (channelId: string): Promise<string[]> => {
   try {
-    do {
-      const response = await client.conversations.members({
-        channel: channelId,
-        cursor,
-        limit: 200
-      });
-
-      if (response.ok && response.members) {
-        members = members.concat(response.members);
-        cursor = response.response_metadata?.next_cursor;
-      } else {
-        throw new Error(`Failed to fetch members: ${response.error}`);
-      }
-    } while (cursor);
-
-    return members;
+    return (await channelMembersCache.fetch(channelId)) ?? [];
   } catch (error) {
-    return members;
+    console.error('Failed to fetch Slack channel members:', (error as any)?.data?.error ?? error);
+    return [];
   }
 };
 
 /**
- * Given a slack channel id, produces the name of the channel
+ * Given a slack channel id, produces the name of the channel.
+ * Results are cached, and concurrent calls for the same channel share a single slack request.
  * @param channelId the id of the slack channel
  * @returns the name of the channel or undefined if it cannot be found
  */
-export const getChannelName = async (channelId: string) => {
-  const client = getSlackClient();
-  if (!client) return undefined;
-
+export const getChannelName = async (channelId: string): Promise<string | undefined> => {
   try {
-    const channelRes = await client.conversations.info({ channel: channelId });
-    return channelRes.channel?.name;
+    return await channelNameCache.fetch(channelId);
   } catch (error) {
     return undefined;
   }
