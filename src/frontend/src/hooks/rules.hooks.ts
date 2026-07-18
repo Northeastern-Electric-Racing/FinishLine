@@ -467,7 +467,7 @@ export const useDeleteRulesetType = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['rulesetTypes']);
+        queryClient.invalidateQueries(['rules', 'rulesetTypes']);
       }
     }
   );
