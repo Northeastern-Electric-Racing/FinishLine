@@ -1107,10 +1107,6 @@ export default class CalendarService {
     if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
     const updatedEventTransform = eventTransformer(updatedEvent);
 
-    const foundEventType = await prisma.event_Type.findUnique({
-      where: { eventTypeId }
-    });
-
     if (
       updatedEventTransform.status === Event_Status.SCHEDULED &&
       this.scheduleChanged(event.scheduledTimes, updatedEvent.scheduledTimes)
