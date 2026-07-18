@@ -13,7 +13,7 @@ rulesRouter.get('/ruleset/:rulesetId', RulesController.getRulesetById);
 rulesRouter.post(
   '/rule/create',
   nonEmptyString(body('ruleCode')),
-  nonEmptyString(body('ruleContent')),
+  body('ruleContent').isString(),
   nonEmptyString(body('rulesetId')),
   body('parentRuleId').optional().isString(),
   body('referencedRules').optional().isArray(),
@@ -25,8 +25,8 @@ rulesRouter.post(
 );
 rulesRouter.post(
   '/rule/:ruleId/edit',
-  nonEmptyString(body('ruleContent')),
-  body('ruleCode').optional().isString(),
+  body('ruleContent').isString(),
+  nonEmptyString(body('ruleCode').optional()),
   body('imageFileIds').optional().isArray(),
   body('imageFileIds.*').optional().isString(),
   body('parentRuleId').optional().isString(),
