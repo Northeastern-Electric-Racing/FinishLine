@@ -1,9 +1,9 @@
-import { FormControl, FormHelperText, FormLabel, TextField } from '@mui/material';
-import { Box } from '@mui/system';
+import { FormControl, FormHelperText, FormLabel } from '@mui/material';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
+import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 interface RulesetTypeFormData {
@@ -15,15 +15,6 @@ interface AddRulesetTypeModalProps {
   onHide: () => void;
   onFormSubmit: (data: RulesetTypeFormData) => Promise<void>;
 }
-
-const sectionHeaderStyle = {
-  fontWeight: 'bold',
-  color: '#ef4345',
-  textDecoration: 'underline',
-  fontSize: '1rem',
-  textUnderlineOffset: '5px',
-  marginBottom: '10px'
-};
 
 const schema = yup.object({
   name: yup.string().required('Name is required')
@@ -77,26 +68,11 @@ const AddRulesetTypeModal: React.FC<AddRulesetTypeModalProps> = ({ open, onHide,
       formId={'add-ruleset-type-form'}
       showCloseButton
     >
-      <Box>
-        <FormControl fullWidth error={!!errors.name}>
-          <FormLabel sx={sectionHeaderStyle}>Name Ruleset:</FormLabel>
-          <Controller
-            name="name"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                autoComplete="off"
-                placeholder="Name Ruleset"
-                error={!!errors.name}
-                fullWidth
-                sx={{ minWidth: '200px' }}
-              />
-            )}
-          />
-          <FormHelperText error>{errors.name?.message}</FormHelperText>
-        </FormControl>
-      </Box>
+      <FormControl fullWidth>
+        <FormLabel>Ruleset Name</FormLabel>
+        <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
+        <FormHelperText error>{errors.name?.message}</FormHelperText>
+      </FormControl>
     </NERFormModal>
   );
 };

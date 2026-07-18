@@ -62,7 +62,7 @@ const RulesetTypesTable: React.FC = () => {
 
     return (
       <>
-        <IconButton type="button" onClick={() => setShowDeleteModal(true)}>
+        <IconButton type="button" sx={{ mx: 1 }} onClick={() => setShowDeleteModal(true)}>
           <Delete />
         </IconButton>
         {showDeleteModal && (
@@ -103,7 +103,12 @@ const RulesetTypesTable: React.FC = () => {
         onFormSubmit={handleAddRulesetTypeConfirm}
       />
       <NERTable
-        columns={[{ name: 'Ruleset Type' }, { name: 'Last Updated' }, { name: 'Revisions' }, { name: '' }]}
+        columns={[
+          { name: 'Ruleset Type', width: '35%' },
+          { name: 'Last Updated', width: '30%' },
+          { name: 'Revisions', width: '25%' },
+          { name: ' ', width: '10%' }
+        ]}
         rows={rulesetTypeTableRows}
       />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
