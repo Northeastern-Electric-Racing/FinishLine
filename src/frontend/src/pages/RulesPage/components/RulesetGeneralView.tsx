@@ -3,10 +3,12 @@ import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/mat
 import { Rule } from 'shared';
 import RuleRow from '../RuleRow';
 import RuleStatusTag from './RuleStatusTag';
+import RuleContent from './RuleContent';
 import UpdateStatusPopover from '../../ProjectDetailPage/ProjectViewContainer/ProjectRules/UpdateStatusPopover';
 import { useSetRuleCompletion } from '../../../hooks/rules.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
+import { useRuleTreeNavigation } from '../useRuleTreeNavigation';
 
 interface RulesetGeneralViewProps {
   allRules: Rule[];
@@ -34,6 +36,9 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
   const sortedRules = useMemo(() => [...allRules].sort(compareRuleCodes), [allRules]);
   const topLevelRules = useMemo(() => sortedRules.filter((rule) => !rule.parentRule), [sortedRules]);
 
+  // Expand ancestors + scroll for referenced rules.
+  const { expandedIds, toggleExpand, navigateToRule } = useRuleTreeNavigation(sortedRules);
+
   const handleStatusClose = () => {
     setStatusPopoverAnchor(null);
     setSelectedRule(null);
@@ -60,6 +65,9 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
                 key={rule.ruleId}
                 rule={rule}
                 allRules={sortedRules}
+                expandedIds={expandedIds}
+                onToggleExpand={toggleExpand}
+                middleContent={(r) => <RuleContent rule={r} onReferenceClick={navigateToRule} color={tableTextColor} />}
                 rightContent={(r) => (
                   <RuleStatusTag
                     rule={r}

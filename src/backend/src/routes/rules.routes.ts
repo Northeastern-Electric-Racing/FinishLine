@@ -35,6 +35,19 @@ rulesRouter.post(
 );
 rulesRouter.post('/rule/:ruleId/delete', RulesController.deleteRule);
 
+rulesRouter.post(
+  '/rule/:ruleId/references/add',
+  nonEmptyString(body('referencedRuleId')),
+  validateInputs,
+  RulesController.addRuleReferences
+);
+rulesRouter.post(
+  '/rule/:ruleId/references/delete',
+  nonEmptyString(body('referencedRuleId')),
+  validateInputs,
+  RulesController.removeRuleReferences
+);
+
 rulesRouter.post('/rulesetType/create', nonEmptyString(body('name')), validateInputs, RulesController.createRulesetType);
 
 rulesRouter.post(

@@ -169,6 +169,24 @@ export const editRule = (ruleId: string, ruleContent: string) => {
 };
 
 /**
+ * Adds a referenced rule to a rule
+ * @param ruleId the rule receiving the reference
+ * @param referencedRuleId the rule ID to add as a reference
+ */
+export const addRuleReferences = (ruleId: string, referencedRuleId: string) => {
+  return axios.post<SharedRule>(apiUrls.rulesAddReferences(ruleId), { referencedRuleId });
+};
+
+/**
+ * Removes a referenced rule from a rule
+ * @param ruleId the rule losing the reference
+ * @param referencedRuleId the rule ID to remove from the references
+ */
+export const removeRuleReferences = (ruleId: string, referencedRuleId: string) => {
+  return axios.post<SharedRule>(apiUrls.rulesRemoveReferences(ruleId), { referencedRuleId });
+};
+
+/**
  * Updates a rulesets active status
  */
 export const updateRuleset = (rulesetId: string, name: string, isActive: boolean) => {

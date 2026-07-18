@@ -15,7 +15,7 @@ export const ruleTransformer = (rule: Prisma.RuleGetPayload<RulePreviewQueryArgs
         }
       : undefined,
     subRuleIds: rule.subRules.map((subRule) => subRule.ruleId),
-    referencedRuleIds: rule.referencedRule.map((ref) => ref.ruleId),
+    referencedRules: rule.referencedRule.map((ref) => ({ ruleId: ref.ruleId, ruleCode: ref.ruleCode })),
     teams: rule.teams?.map((team) => ({
       teamId: team.teamId,
       teamName: team.teamName

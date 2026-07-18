@@ -4,7 +4,7 @@
  */
 
 import { Box, Button, Paper, Table, TableBody, TableContainer, TextField, useTheme } from '@mui/material';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
 import FullPageTabs from '../../components/FullPageTabs';
@@ -15,13 +15,23 @@ import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import AddRuleSectionModal from './components/AddRuleSectionModal';
 import AddRuleModal from './components/AddRuleModal';
+import AddReferencedRuleModal from './components/AddReferencedRuleModal';
+import RemoveReferencedRuleModal from './components/RemoveReferencedRuleModal';
+import RuleContent from './components/RuleContent';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
 import { NERButton } from '../../components/NERButton';
 import DeleteRuleModal from './components/DeleteRuleModal';
-import { useDeleteRule, useEditRule, useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
+import {
+  useDeleteRule,
+  useEditRule,
+  useRemoveRuleReferences,
+  useSingleRuleset,
+  useAllRulesForRuleset
+} from '../../hooks/rules.hooks';
 import { countRulesToDelete, compareRuleCodes } from '../../utils/rules.utils';
 import { Rule } from 'shared';
+import { useToast } from '../../hooks/toasts.hooks';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
@@ -36,9 +46,12 @@ const RulesetEditPage: React.FC = () => {
   const [addMenuAnchorEl, setAddMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [activeRuleId, setActiveRuleId] = useState<string | null>(null);
 
-  // temporary placeholder useState fns for the add rule section and add rule modals
   const [showAddRuleSectionModal, setShowAddRuleSectionModal] = useState(false);
   const [showAddRuleModal, setShowAddRuleModal] = useState(false);
+  const [showAddReferencedRuleModal, setShowAddReferencedRuleModal] = useState(false);
+  const [showRemoveReferenceModal, setShowRemoveReferenceModal] = useState(false);
+
+  const [referenceToRemove, setReferenceToRemove] = useState<{ rule: Rule; referencedRule: Rule } | null>(null);
 
   // Delete modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -49,6 +62,7 @@ const RulesetEditPage: React.FC = () => {
   const [editedContent, setEditedContent] = useState<string>('');
 
   const theme = useTheme();
+  const toast = useToast();
 
   const {
     data: ruleset,
@@ -64,6 +78,9 @@ const RulesetEditPage: React.FC = () => {
   } = useAllRulesForRuleset(rulesetId!);
   const { mutateAsync: deleteRuleMutation } = useDeleteRule();
   const { mutateAsync: editRuleMutation } = useEditRule();
+  const { mutateAsync: removeRuleReferencesMutation } = useRemoveRuleReferences();
+
+  const rulesById = useMemo(() => new Map((allRules ?? []).map((r) => [r.ruleId, r])), [allRules]);
 
   const tabs = [
     { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
@@ -105,6 +122,41 @@ const RulesetEditPage: React.FC = () => {
   const handleAddRuleFromMenu = () => {
     setShowAddRuleModal(true);
     handleCloseAddMenu();
+  };
+
+  const handleAddReferencedRuleFromMenu = () => {
+    setShowAddReferencedRuleModal(true);
+    handleCloseAddMenu();
+  };
+
+  const handleRemoveReference = (ruleId: string, referencedRuleId: string) => {
+    const rule = rulesById.get(ruleId);
+    const referencedRule = rulesById.get(referencedRuleId);
+    if (rule && referencedRule) {
+      setReferenceToRemove({ rule, referencedRule });
+      setShowRemoveReferenceModal(true);
+    }
+  };
+
+  const handleRemoveReferenceCancel = () => {
+    setShowRemoveReferenceModal(false);
+    setReferenceToRemove(null);
+  };
+
+  const handleConfirmRemoveReference = async () => {
+    if (!referenceToRemove) return;
+
+    try {
+      await removeRuleReferencesMutation({
+        ruleId: referenceToRemove.rule.ruleId,
+        referencedRuleId: referenceToRemove.referencedRule.ruleId
+      });
+      toast.success('Referenced rule removed successfully');
+      setShowRemoveReferenceModal(false);
+      setReferenceToRemove(null);
+    } catch (err) {
+      toast.error('Failed to remove referenced rule');
+    }
   };
 
   const handleRemoveRule = (ruleId: string) => {
@@ -227,7 +279,11 @@ const RulesetEditPage: React.FC = () => {
                         }
                         return (
                           currentRule.ruleContent && (
-                            <span style={{ color: theme.palette.common.black }}>{currentRule.ruleContent}</span>
+                            <RuleContent
+                              rule={currentRule}
+                              color={theme.palette.common.black}
+                              onReferenceRemove={(refId) => handleRemoveReference(currentRule.ruleId, refId)}
+                            />
                           )
                         );
                       }}
@@ -258,6 +314,7 @@ const RulesetEditPage: React.FC = () => {
               anchorEl={addMenuAnchorEl}
               onClose={handleCloseAddMenu}
               onAddRule={handleAddRuleFromMenu}
+              onAddReferencedRule={handleAddReferencedRuleFromMenu}
             />
 
             <AddRuleSectionModal
@@ -272,6 +329,23 @@ const RulesetEditPage: React.FC = () => {
               rulesetId={rulesetId}
               initialParentRuleId={activeRuleId || undefined}
             />
+
+            <AddReferencedRuleModal
+              open={showAddReferencedRuleModal}
+              onClose={() => setShowAddReferencedRuleModal(false)}
+              ruleId={activeRuleId}
+              allRules={allRules}
+            />
+
+            {referenceToRemove && (
+              <RemoveReferencedRuleModal
+                open={showRemoveReferenceModal}
+                onHide={handleRemoveReferenceCancel}
+                onConfirm={handleConfirmRemoveReference}
+                rule={referenceToRemove.rule}
+                referencedRule={referenceToRemove.referencedRule}
+              />
+            )}
 
             {ruleToDelete && (
               <DeleteRuleModal

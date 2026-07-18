@@ -15,7 +15,7 @@ export const ruleTransformer = (rule: Rule): Rule => {
   return {
     ...rule,
     subRuleIds: rule.subRuleIds || [],
-    referencedRuleIds: rule.referencedRuleIds || []
+    referencedRules: rule.referencedRules || []
   };
 };
 

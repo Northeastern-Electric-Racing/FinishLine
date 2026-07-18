@@ -23,6 +23,8 @@ import {
   getRulesetsByRulesetType,
   deleteRule,
   editRule,
+  addRuleReferences,
+  removeRuleReferences,
   updateRuleset,
   deleteRuleset,
   deleteRulesetType,
@@ -425,6 +427,46 @@ export const useEditRule = () => {
       },
       onError: (error: Error) => {
         toast.error(`Failed to update rule: ${error.message}`);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to add referenced rules to a rule
+ */
+export const useAddRuleReferences = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<SharedRule, Error, { ruleId: string; referencedRuleId: string }>(
+    ['rules', 'addReference'],
+    async ({ ruleId, referencedRuleId }) => {
+      const { data } = await addRuleReferences(ruleId, referencedRuleId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rules']);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to remove referenced rules from a rule
+ */
+export const useRemoveRuleReferences = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<SharedRule, Error, { ruleId: string; referencedRuleId: string }>(
+    ['rules', 'removeReference'],
+    async ({ ruleId, referencedRuleId }) => {
+      const { data } = await removeRuleReferences(ruleId, referencedRuleId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rules']);
       }
     }
   );

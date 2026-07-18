@@ -540,6 +540,119 @@ export default class RulesService {
   }
 
   /**
+   * Adds a referenced rule to an existing rule
+   * @param submitter the user making the request
+   * @param ruleId the rule receiving the reference
+   * @param referencedRuleId the rule ID to add as a reference
+   * @param organization the organization the rule belongs to
+   * @returns the updated rule
+   */
+  static async addRuleReferences(submitter: User, ruleId: string, referencedRuleId: string, organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit a rule');
+
+    const rule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: {
+        ruleset: {
+          include: {
+            car: {
+              include: {
+                wbsElement: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!rule) throw new NotFoundException('Rule', ruleId);
+    if (rule.dateDeleted) throw new DeletedException('Rule', ruleId);
+    if (rule.ruleset?.car?.wbsElement?.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Rule');
+
+    if (referencedRuleId === ruleId) {
+      throw new HttpException(400, 'A rule cannot reference itself');
+    }
+
+    // Referenced rules must be in the same ruleset, which guarantees same org
+    const referencedRule = await prisma.rule.findUnique({
+      where: { ruleId: referencedRuleId, rulesetId: rule.rulesetId }
+    });
+
+    if (!referencedRule) throw new NotFoundException('Referenced Rule', referencedRuleId);
+    if (referencedRule.dateDeleted) throw new DeletedException('Referenced Rule', referencedRuleId);
+
+    const updatedRule = await prisma.rule.update({
+      where: { ruleId },
+      data: {
+        referencedRule: {
+          connect: { ruleId: referencedRuleId }
+        },
+        dateUpdated: new Date(),
+        updatedByUserId: submitter.userId
+      },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return ruleTransformer(updatedRule);
+  }
+
+  /**
+   * Removes a referenced rule from an existing rule
+   * @param submitter the user making the request
+   * @param ruleId the rule losing the reference
+   * @param referencedRuleId the rule ID to remove from the references
+   * @param organization the organization the rule belongs to
+   * @returns the updated rule
+   */
+  static async removeRuleReferences(submitter: User, ruleId: string, referencedRuleId: string, organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit a rule');
+
+    const rule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: {
+        ruleset: {
+          include: {
+            car: {
+              include: {
+                wbsElement: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!rule) throw new NotFoundException('Rule', ruleId);
+    if (rule.dateDeleted) throw new DeletedException('Rule', ruleId);
+    if (rule.ruleset?.car?.wbsElement?.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Rule');
+
+    const referencedRule = await prisma.rule.findUnique({
+      where: { ruleId: referencedRuleId }
+    });
+
+    if (!referencedRule) throw new NotFoundException('Referenced Rule', referencedRuleId);
+    if (referencedRule.dateDeleted) throw new DeletedException('Referenced Rule', referencedRuleId);
+
+    const updatedRule = await prisma.rule.update({
+      where: { ruleId },
+      data: {
+        referencedRule: {
+          disconnect: { ruleId: referencedRuleId }
+        },
+        dateUpdated: new Date(),
+        updatedByUserId: submitter.userId
+      },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return ruleTransformer(updatedRule);
+  }
+
+  /**
    * Given a ruleset id, retrieves the ruleset and throws errors if
    * it does not exist or is already deleted
    * @param rulesetId the id of the ruleset

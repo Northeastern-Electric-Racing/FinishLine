@@ -24,6 +24,8 @@ import { Project, ProjectRule, Rule } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
+import RuleContent from '../../../RulesPage/components/RuleContent';
+import { useRuleTreeNavigation } from '../../../RulesPage/useRuleTreeNavigation';
 import UpdateStatusPopover from './UpdateStatusPopover';
 import AddRuleModal from './AddProjectRuleModal';
 import {
@@ -97,6 +99,12 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const topLevelRules = useMemo(() => {
     return projectRuleList.filter((rule) => !rule.parentRule);
   }, [projectRuleList]);
+
+  // all referenced rules are shown, only referenced rules that exist in this project are clickable
+  const projectRuleIds = useMemo(() => new Set(projectRuleList.map((r) => r.ruleId)), [projectRuleList]);
+
+  // controlled expansion + click-to-navigate
+  const { expandedIds, toggleExpand, navigateToRule } = useRuleTreeNavigation(projectRuleList);
 
   // Handle completion update
   const handleStatusUpdate = async (ruleId: string, isComplete: boolean) => {
@@ -304,6 +312,16 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
                     key={rule.ruleId}
                     rule={rule}
                     allRules={projectRuleList}
+                    expandedIds={expandedIds}
+                    onToggleExpand={toggleExpand}
+                    middleContent={(r) => (
+                      <RuleContent
+                        rule={r}
+                        color={tableTextColor}
+                        onReferenceClick={navigateToRule}
+                        isReferenceInteractive={(id) => projectRuleIds.has(id)}
+                      />
+                    )}
                     rightContent={renderRightContent}
                     backgroundColor={tableBackgroundColor}
                     textColor={tableTextColor}
