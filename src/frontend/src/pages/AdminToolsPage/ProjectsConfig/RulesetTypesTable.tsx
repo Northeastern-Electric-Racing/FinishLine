@@ -8,8 +8,8 @@ import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllRulesetTypes, useCreateRulesetType, useDeleteRulesetType } from '../../../hooks/rules.hooks';
 import { Delete } from '@mui/icons-material';
-import RulesetTypeDeleteModal from '../../RulesPage/components/RulesetTypeDeleteModal';
-import AddRulesetTypeModal from '../../RulesPage/components/AddRulesetTypeModal';
+import RulesetTypeDeleteModal from './RulesetTypeDeleteModal';
+import AddRulesetTypeModal from './AddRulesetTypeModal';
 
 interface RulesetTypeDeleteButtonProps {
   rulesetTypeId: string;

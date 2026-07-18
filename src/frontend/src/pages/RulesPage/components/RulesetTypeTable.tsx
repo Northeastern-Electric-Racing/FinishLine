@@ -17,12 +17,11 @@ import {
 import { useHistory } from 'react-router-dom';
 import { datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
-import { useAllRulesetTypes, useDeleteRulesetType } from '../../../hooks/rules.hooks';
+import { useAllRulesetTypes } from '../../../hooks/rules.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { RulesetType } from 'shared';
 import { NERButton } from '../../../components/NERButton';
-import { useToast } from '../../../hooks/toasts.hooks';
 
 type RulesetTypeColumnId = 'id' | 'name' | 'lastUpdated' | 'revisions' | 'actions' | 'delete';
 
