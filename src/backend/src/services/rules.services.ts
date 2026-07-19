@@ -507,6 +507,21 @@ export default class RulesService {
     if (currentRule.ruleset?.car?.wbsElement?.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Rule');
 
+    if (ruleCode !== undefined && ruleCode !== currentRule.ruleCode) {
+      const existingRule = await prisma.rule.findUnique({
+        where: {
+          rulesetId_ruleCode: {
+            rulesetId: currentRule.rulesetId,
+            ruleCode
+          }
+        }
+      });
+
+      if (existingRule) {
+        throw new HttpException(400, `Rule with code ${ruleCode} already exists in this ruleset`);
+      }
+    }
+
     if (parentRuleId) {
       const parentRule = await prisma.rule.findUnique({
         where: { ruleId: parentRuleId }
@@ -518,6 +533,10 @@ export default class RulesService {
 
       if (parentRule.dateDeleted) {
         throw new DeletedException('Parent Rule', parentRuleId);
+      }
+
+      if (parentRule.rulesetId !== currentRule.rulesetId) {
+        throw new HttpException(400, 'Parent rule must be in the same ruleset');
       }
     }
 
