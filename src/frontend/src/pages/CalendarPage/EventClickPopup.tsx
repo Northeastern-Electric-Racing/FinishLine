@@ -370,7 +370,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
                 }
               }}
             >
-              View availability
+              {event.userCreated.userId === currentUser.userId ? 'View availability / Schedule event' : 'View availability'}
             </Button>
           </Stack>
         )}
