@@ -1270,6 +1270,22 @@ describe('Rule Tests', () => {
       ).rejects.toThrow(new HttpException(400, `Rule with code ${leafRule2.ruleCode} already exists in this ruleset`));
     });
 
+    it('Fails when new rule code duplicates another rule code padded with whitespace', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1, leafRule2 } = await setupRules(car);
+
+      await expect(
+        RulesService.editRule(
+          admin,
+          leafRule1.ruleContent,
+          leafRule1.ruleId,
+          `  ${leafRule2.ruleCode}  `,
+          leafRule1.imageFileIds,
+          organization
+        )
+      ).rejects.toThrow(new HttpException(400, `Rule with code ${leafRule2.ruleCode} already exists in this ruleset`));
+    });
+
     it('Allows a new rule code that does not start with the existing parent rule code', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule2 } = await setupRules(car); // leafRule2's parent code is 'T'

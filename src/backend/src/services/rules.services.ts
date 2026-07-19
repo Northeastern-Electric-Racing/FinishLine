@@ -148,6 +148,8 @@ export default class RulesService {
       throw new AccessDeniedException('Cannot create rule in a ruleset from another organization');
     }
 
+    ruleCode = ruleCode.trim();
+
     // Check for duplicate rule code within the same ruleset
     const existingRule = await prisma.rule.findUnique({
       where: {
@@ -507,22 +509,26 @@ export default class RulesService {
     if (currentRule.ruleset?.car?.wbsElement?.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Rule');
 
-    if (ruleCode !== undefined && ruleCode.trim() === '') {
-      throw new HttpException(400, 'Rule code cannot be empty');
-    }
+    if (ruleCode !== undefined) {
+      ruleCode = ruleCode.trim();
 
-    if (ruleCode !== undefined && ruleCode !== currentRule.ruleCode) {
-      const existingRule = await prisma.rule.findUnique({
-        where: {
-          rulesetId_ruleCode: {
-            rulesetId: currentRule.rulesetId,
-            ruleCode
+      if (ruleCode === '') {
+        throw new HttpException(400, 'Rule code cannot be empty');
+      }
+
+      if (ruleCode !== currentRule.ruleCode) {
+        const existingRule = await prisma.rule.findUnique({
+          where: {
+            rulesetId_ruleCode: {
+              rulesetId: currentRule.rulesetId,
+              ruleCode
+            }
           }
-        }
-      });
+        });
 
-      if (existingRule) {
-        throw new HttpException(400, `Rule with code ${ruleCode} already exists in this ruleset`);
+        if (existingRule) {
+          throw new HttpException(400, `Rule with code ${ruleCode} already exists in this ruleset`);
+        }
       }
     }
 
