@@ -15,7 +15,7 @@ import {
   Typography,
   useTheme
 } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Rule, TeamPreview } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -92,7 +92,6 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<Set<string>>(new Set());
   const [originalAssignments, setOriginalAssignments] = useState<Set<string>>(new Set());
-  const [isInitialized, setIsInitialized] = useState(false);
   // unassign impact for the amount of project rules that would be deleted by this action, used to warn the user before saving
   const [pendingToggles, setPendingToggles] = useState<Array<{ ruleId: string; teamId: string }> | null>(null);
   const [unassignImpact, setUnassignImpact] = useState<{ ruleCount: number; projectCount: number }>({
@@ -103,9 +102,11 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
   const { data: teams, isLoading: teamsLoading, isError: teamsError, error: teamsErrorData } = useAllTeams();
   const { mutate: bulkToggle, isLoading: isSaving } = useBulkToggleRuleTeam();
 
-  // Load initial team assignments from rule data
+  const hasAppliedTeamParamRef = useRef(false);
+
+  // Reload when rule data changes
   useEffect(() => {
-    if (isInitialized || !teams || teams.length === 0) return;
+    if (!teams || teams.length === 0) return;
 
     const initialAssignments = new Set<string>();
     rules.forEach((rule) => {
@@ -117,14 +118,14 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     setOriginalAssignments(initialAssignments);
     setAssignments(new Set(initialAssignments));
 
-    // Pre-select the team passed in via query param (e.g. when navigating from a project's rules tab)
-    const teamIdParam = new URLSearchParams(location.search).get('teamId');
-    if (teamIdParam && teams.some((team) => team.teamId === teamIdParam)) {
-      setSelectedTeamId(teamIdParam);
+    if (!hasAppliedTeamParamRef.current) {
+      const teamIdParam = new URLSearchParams(location.search).get('teamId');
+      if (teamIdParam && teams.some((team) => team.teamId === teamIdParam)) {
+        setSelectedTeamId(teamIdParam);
+      }
+      hasAppliedTeamParamRef.current = true;
     }
-
-    setIsInitialized(true);
-  }, [rules, teams, isInitialized, location.search]);
+  }, [rules, teams, location.search]);
 
   const handleTeamSelect = (teamId: string) => setSelectedTeamId(teamId);
 

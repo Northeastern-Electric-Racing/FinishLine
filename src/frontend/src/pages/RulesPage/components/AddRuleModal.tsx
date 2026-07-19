@@ -148,7 +148,7 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
           {showPrefixWarning && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
               <Typography sx={{ color: '#ef4345', fontSize: '0.9rem' }}>
-                Note: This code doesn't start with the parent's code '{parentRuleCode}'
+                Note: Rule Code should start with '{parentRuleCode}' to match parent code
               </Typography>
             </Box>
           )}
