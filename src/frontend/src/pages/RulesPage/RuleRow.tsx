@@ -14,7 +14,13 @@ interface RuleRowProps {
   rule: Rule;
   allRules?: Rule[];
   level?: number;
-  leftContent?: (rule: Rule, level: number, isExpanded: boolean, hasSubRules: boolean) => React.ReactNode;
+  leftContent?: (
+    rule: Rule,
+    level: number,
+    isExpanded: boolean,
+    hasSubRules: boolean,
+    toggleExpand: () => void
+  ) => React.ReactNode;
   middleContent?: (rule: Rule, level: number) => React.ReactNode;
   rightContent: (rule: Rule, level: number) => React.ReactNode;
   backgroundColor: string | ((rule: Rule) => string);
@@ -203,7 +209,7 @@ const RuleRow: React.FC<RuleRowProps> = ({
               whiteSpace: 'normal'
             }}
           >
-            {leftContent ? leftContent(rule, level, isExpanded, hasSubRules) : defaultLeftContent}
+            {leftContent ? leftContent(rule, level, isExpanded, hasSubRules, toggleExpand) : defaultLeftContent}
           </TableCell>
         ) : (
           <>
@@ -222,7 +228,7 @@ const RuleRow: React.FC<RuleRowProps> = ({
                 width: leftWidth
               }}
             >
-              {leftContent ? leftContent(rule, level, isExpanded, hasSubRules) : defaultLeftContent}
+              {leftContent ? leftContent(rule, level, isExpanded, hasSubRules, toggleExpand) : defaultLeftContent}
             </TableCell>
             <TableCell
               align="left"

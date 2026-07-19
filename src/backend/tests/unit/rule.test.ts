@@ -1273,7 +1273,7 @@ describe('Rule Tests', () => {
         leafRule2.imageFileIds,
         organization
       );
-      
+
       expect(updatedRule.parentRule?.ruleCode).not.toEqual('X2');
       expect(updatedRule.ruleCode).toEqual('X2.1');
     });
