@@ -821,17 +821,16 @@ export default class CalendarService {
 
   static scheduleChanged(before: ScheduleSlot[], after: ScheduleSlot[]): boolean {
     if (before.length !== after.length) return true;
-    let index = 0;
     for (const scheduleSlot of before) {
+      const afterSlot = after.find((s) => s.scheduleSlotId === scheduleSlot.scheduleSlotId);
       if (
-        scheduleSlot.startTime.getTime() !== after[index].startTime.getTime() ||
-        scheduleSlot.endTime.getTime() !== after[index].endTime.getTime() ||
-        scheduleSlot.allDay !== after[index].allDay
+        !afterSlot ||
+        scheduleSlot.startTime.getTime() !== afterSlot.startTime.getTime() ||
+        scheduleSlot.endTime.getTime() !== afterSlot.endTime.getTime() ||
+        scheduleSlot.allDay !== afterSlot.allDay
       ) {
         return true;
       }
-
-      index = index + 1;
     }
 
     return false;
@@ -1107,14 +1106,20 @@ export default class CalendarService {
     if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
     const updatedEventTransform = eventTransformer(updatedEvent);
 
+    const foundEventType = await prisma.event_Type.findUnique({
+      where: { eventTypeId: updatedEventTransform.eventTypeId }
+    });
+
     if (
       updatedEventTransform.status === Event_Status.SCHEDULED &&
+      foundEventType &&
+      foundEventType.sendSlackNotifications === true &&
       this.scheduleChanged(event.scheduledTimes, updatedEvent.scheduledTimes)
     ) {
       await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, updatedEventTransform, true);
     }
 
-    return eventTransformer(updatedEvent);
+    return updatedEventTransform;
   }
 
   /**
