@@ -232,6 +232,21 @@ describe('Create Rules Tests', () => {
       ).rejects.toThrow(new HttpException(400, 'Parent rule must be in the same ruleset'));
     });
 
+    // this is allowed but with warning in case a parent needs to be renamed which won't break all existing children
+    it('allows a child rule code that does not start with the parent rule code', async () => {
+      const parentRule = await RulesService.createRule(batman, 'T.1', 'Parent', rulesetId, organization);
+
+      const childRule = await RulesService.createRule(superman, 'TH.1', 'Child', rulesetId, organization, parentRule.ruleId);
+
+      expect(childRule.ruleCode).toBe('TH.1');
+      expect(childRule.parentRule?.ruleId).toBe(parentRule.ruleId);
+    });
+
+    it('successfully creates a rule with blank content', async () => {
+      const rule = await RulesService.createRule(batman, 'T.9.1', '', rulesetId, organization);
+      expect(rule.ruleContent).toBe('');
+    });
+
     it('fails when referenced rule does not exist', async () => {
       await expect(
         RulesService.createRule(batman, 'T.1.1', 'Some rule', rulesetId, organization, undefined, ['fake-rule-id'])
@@ -1197,6 +1212,70 @@ describe('Rule Tests', () => {
       );
 
       expect(updatedRule.ruleContent).toEqual('BRAND NEW RULE CONTENT');
+    });
+
+    it('Succeeds and edits a rule to have blank content', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+      const updatedRule = await RulesService.editRule(
+        admin,
+        '',
+        leafRule1.ruleId,
+        leafRule1.ruleCode,
+        leafRule1.imageFileIds,
+        organization
+      );
+
+      expect(updatedRule.ruleContent).toEqual('');
+    });
+
+    it('Succeeds and changes a rule code that still satisfies the parent prefix', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+
+      const updatedRule = await RulesService.editRule(
+        admin,
+        leafRule1.ruleContent,
+        leafRule1.ruleId,
+        'T99',
+        leafRule1.imageFileIds,
+        organization
+      );
+
+      expect(updatedRule.ruleCode).toEqual('T99');
+    });
+
+    it('Fails when new rule code duplicates another rule in the same ruleset', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1, leafRule2 } = await setupRules(car);
+
+      await expect(
+        RulesService.editRule(
+          admin,
+          leafRule1.ruleContent,
+          leafRule1.ruleId,
+          leafRule2.ruleCode,
+          leafRule1.imageFileIds,
+          organization
+        )
+      ).rejects.toThrow(new HttpException(400, `Rule with code ${leafRule2.ruleCode} already exists in this ruleset`));
+    });
+
+    it('Allows a new rule code that does not start with the existing parent rule code', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule2 } = await setupRules(car); // leafRule2's parent code is 'T'
+
+      const updatedRule = await RulesService.editRule(
+        admin,
+        leafRule2.ruleContent,
+        leafRule2.ruleId,
+        'X2.1',
+        leafRule2.imageFileIds,
+        organization
+      );
+      
+      expect(updatedRule.parentRule?.ruleCode).not.toEqual('X2');
+      expect(updatedRule.ruleCode).toEqual('X2.1');
     });
   });
 
