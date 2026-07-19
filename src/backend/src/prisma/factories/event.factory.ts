@@ -1,8 +1,13 @@
 import { Faker } from '@faker-js/faker';
 import { Conflict_Status, Event_Status, Prisma } from '@prisma/client';
 import { arrayOrNull } from '../utils/arrays.js';
-import { UsersOutput } from '../seed/user.process.js';
 import { DAY_MS, MINUTE_MS } from '../dates.js';
+import { addDaysToDate } from 'shared';
+
+type ConflictResult = {
+  approved: Conflict_Status;
+  approvalRequiredFromUserId: string | undefined;
+};
 
 const EVENT_TITLE_PREFIXES = [
   'Design Review -',
@@ -42,12 +47,12 @@ export const EVENT_DESCRIPTIONS = [
   'Planning session for upcoming milestones.'
 ];
 
-const APPROVAL_REQUIRED_PROBABILITY = 0.15;
 export const EVENTS_PER_PROJECT = 3;
 export const DOCUMENT_PROBABILITY = 0.6;
 export const MEETING_ATTENDANCE_PROBABILITY = 0.4;
 const EVENT_DATE_BUFFER_DAYS = 7;
 const MAX_ATTENDEES = 10;
+export const DAYS_AFTER_NO_EVENT = 20;
 
 export const generateEventCount = (faker: Faker): number => faker.number.int({ min: 1, max: EVENTS_PER_PROJECT });
 
@@ -64,9 +69,7 @@ export const generateScheduleSlotCount = (faker: Faker, title: string): number =
 
 export const generateInitialDateOffset = (faker: Faker, availableDays: number, isCurrentYear: boolean): number => {
   if (isCurrentYear) {
-    const recentWindow = Math.min(availableDays, 150);
-    const recentStart = Math.max(0, availableDays - recentWindow);
-    return faker.number.int({ min: recentStart, max: availableDays });
+    return faker.number.int({ min: 0, max: Math.min(DAYS_AFTER_NO_EVENT, availableDays) });
   }
   return faker.number.int({ min: 0, max: Math.max(0, availableDays) });
 };
@@ -98,48 +101,61 @@ export const generateEventTitle = (faker: Faker, projectName: string): string =>
   return `${prefix} ${projectName}`;
 };
 
-export const generateApprovalRequiredFromUserId = (
-  faker: Faker,
-  creators: UsersOutput['leadership']
-): string | undefined => {
-  return faker.helpers.maybe(() => faker.helpers.arrayElement(creators).userId, {
-    probability: APPROVAL_REQUIRED_PROBABILITY
-  });
-};
+export const generateEventDateCreated = (faker: Faker, initialDateScheduled: Date): Date =>
+  addDaysToDate(initialDateScheduled, -faker.number.int({ min: 1, max: 14 }));
 
-export const generateEventStatus = (faker: Faker, initialDateScheduled: Date, now: Date = new Date()): Event_Status => {
+export const generateEventStatus = (
+  faker: Faker,
+  requiresConfirmation: boolean,
+  initialDateScheduled: Date,
+  now: Date = new Date()
+): Event_Status => {
   const daysUntilDue = Math.floor((initialDateScheduled.getTime() - now.getTime()) / DAY_MS);
+
+  if (requiresConfirmation && daysUntilDue > 0) return Event_Status.UNCONFIRMED;
 
   if (daysUntilDue < -EVENT_DATE_BUFFER_DAYS) {
     return faker.helpers.weightedArrayElement([
       { weight: 50, value: Event_Status.DONE },
-      { weight: 30, value: Event_Status.CONFIRMED },
-      { weight: 20, value: Event_Status.SCHEDULED }
+      { weight: 50, value: Event_Status.SCHEDULED }
     ]);
   }
 
-  if (daysUntilDue > EVENT_DATE_BUFFER_DAYS) {
-    return faker.helpers.weightedArrayElement([
-      { weight: 60, value: Event_Status.SCHEDULED },
-      { weight: 25, value: Event_Status.UNCONFIRMED },
-      { weight: 15, value: Event_Status.DONE }
-    ]);
+  if (daysUntilDue > 0) {
+    return requiresConfirmation
+      ? faker.helpers.weightedArrayElement([
+          { weight: 60, value: Event_Status.UNCONFIRMED },
+          { weight: 40, value: Event_Status.SCHEDULED }
+        ])
+      : faker.helpers.weightedArrayElement([
+          { weight: 60, value: Event_Status.SCHEDULED },
+          { weight: 40, value: Event_Status.UNCONFIRMED }
+        ]);
   }
 
   return faker.helpers.weightedArrayElement([
     { weight: 50, value: Event_Status.SCHEDULED },
-    { weight: 25, value: Event_Status.CONFIRMED },
-    { weight: 15, value: Event_Status.UNCONFIRMED },
+    { weight: 40, value: Event_Status.UNCONFIRMED },
     { weight: 10, value: Event_Status.DONE }
   ]);
 };
 
-export const generateConflictStatus = (faker: Faker): Conflict_Status =>
-  faker.helpers.weightedArrayElement([
+export const generateConflictStatus = (faker: Faker, creators: { userId: string }[]): ConflictResult => {
+  const approved = faker.helpers.weightedArrayElement([
     { weight: 85, value: Conflict_Status.NO_CONFLICT },
     { weight: 10, value: Conflict_Status.PENDING },
     { weight: 5, value: Conflict_Status.APPROVED }
   ]);
+
+  if (approved === Conflict_Status.NO_CONFLICT) {
+    return { approved, approvalRequiredFromUserId: undefined };
+  }
+
+  return {
+    approved,
+    approvalRequiredFromUserId: faker.helpers.arrayElement(creators).userId
+  };
+};
 
 export const generateScheduleSlotTimes = (faker: Faker, baseDate: Date): { startTime: Date; endTime: Date } => {
   const startTime = new Date(baseDate);
@@ -159,6 +175,16 @@ export const generateScheduleSlotTimes = (faker: Faker, baseDate: Date): { start
 };
 
 export const eventCreateInput = (
+  eventType: {
+    requiresConfirmation: boolean;
+    location: boolean;
+    zoomLink: boolean;
+    questionDocument: boolean;
+    description: boolean;
+    documents: boolean;
+    requiredMembers: boolean;
+    optionalMembers: boolean;
+  },
   title: string,
   userCreatedId: string,
   eventTypeId: string,
@@ -169,6 +195,10 @@ export const eventCreateInput = (
   zoomLink: string | null,
   description: string | null,
   questionDocumentLink: string | null,
+  requiredMemberIds: string[],
+  optionalMemberIds: string[],
+  confirmedMemberIds: string[],
+  deniedMemberIds: string[],
   approvalRequiredFromUserId?: string
 ): Prisma.EventCreateInput => ({
   title,
@@ -178,11 +208,24 @@ export const eventCreateInput = (
   calendarEventIds: [],
   userCreated: { connect: { userId: userCreatedId } },
   eventType: { connect: { eventTypeId } },
-  ...(location ? { location } : {}),
-  ...(zoomLink ? { zoomLink } : {}),
-  ...(description ? { description } : {}),
-  ...(questionDocumentLink ? { questionDocumentLink } : {}),
-  ...(approvalRequiredFromUserId ? { approvalRequiredBy: { connect: { userId: approvalRequiredFromUserId } } } : {})
+  requiredMembers: {
+    connect: [
+      { userId: userCreatedId },
+      ...requiredMemberIds.filter((id) => id !== userCreatedId).map((id) => ({ userId: id }))
+    ]
+  },
+  ...(eventType.optionalMembers && optionalMemberIds.length > 0
+    ? { optionalMembers: { connect: optionalMemberIds.map((userId) => ({ userId })) } }
+    : {}),
+  confirmedMembers: { connect: confirmedMemberIds.map((userId) => ({ userId })) },
+  deniedMembers: { connect: deniedMemberIds.map((userId) => ({ userId })) },
+  ...(eventType.location && location ? { location } : {}),
+  ...(eventType.zoomLink && zoomLink ? { zoomLink } : {}),
+  ...(eventType.description && description ? { description } : {}),
+  ...(eventType.questionDocument && questionDocumentLink ? { questionDocumentLink } : {}),
+  ...(approved !== Conflict_Status.NO_CONFLICT && approvalRequiredFromUserId
+    ? { approvalRequiredBy: { connect: { userId: approvalRequiredFromUserId } } }
+    : {})
 });
 
 export const scheduleSlotCreateInput = (
@@ -197,9 +240,15 @@ export const scheduleSlotCreateInput = (
   event: { connect: { eventId } }
 });
 
-export const documentCreateInput = (faker: Faker, eventId: string, createdByUserId: string): Prisma.DocumentCreateInput => ({
+export const documentCreateInput = (
+  faker: Faker,
+  eventId: string,
+  createdByUserId: string,
+  dateCreated: Date
+): Prisma.DocumentCreateInput => ({
   googleFileId: `${faker.string.alphanumeric(33)}`,
   name: `document-${faker.string.uuid()}.pdf`,
+  dateCreated,
   createdBy: { connect: { userId: createdByUserId } },
   documentEvent: { connect: { eventId } }
 });
