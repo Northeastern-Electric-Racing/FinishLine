@@ -39,7 +39,7 @@ const MismatchedRuleCodeModal = ({
       onHide={onHide}
       title="Rule Code Update"
       cancelText="Cancel"
-      submitText="Yes"
+      submitText="Submit"
       onSubmit={onConfirm}
       formId="mismatched-rule-code-form"
     >

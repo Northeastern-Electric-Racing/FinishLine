@@ -37,7 +37,7 @@ import { useToast } from '../../hooks/toasts.hooks';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
- * Supports editing and assigning rules to projects and teams.
+ * Supports editing and adding rules.
  */
 const RulesetEditPage: React.FC = () => {
   const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>(); //why tab value??
@@ -63,7 +63,8 @@ const RulesetEditPage: React.FC = () => {
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState<string>('');
   const [editedCode, setEditedCode] = useState<string>('');
-  // Rule code warnings (parent-prefix mismatch / affected sub-rules)
+
+  // Editing rule code warnings
   const [pendingCodeWarnings, setPendingCodeWarnings] = useState<string[] | null>(null);
 
   const theme = useTheme();
@@ -213,6 +214,11 @@ const RulesetEditPage: React.FC = () => {
 
   const handleSaveEdit = async () => {
     if (!editingRuleId) return;
+
+    if (!editedCode.trim()) {
+      toast.error('Rule code cannot be empty');
+      return;
+    }
 
     const currentRule = allRules.find((r) => r.ruleId === editingRuleId);
     const warnings: string[] = [];

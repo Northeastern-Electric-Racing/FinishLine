@@ -507,6 +507,10 @@ export default class RulesService {
     if (currentRule.ruleset?.car?.wbsElement?.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Rule');
 
+    if (ruleCode !== undefined && ruleCode.trim() === '') {
+      throw new HttpException(400, 'Rule code cannot be empty');
+    }
+
     if (ruleCode !== undefined && ruleCode !== currentRule.ruleCode) {
       const existingRule = await prisma.rule.findUnique({
         where: {

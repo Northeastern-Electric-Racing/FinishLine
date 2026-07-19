@@ -232,7 +232,7 @@ describe('Create Rules Tests', () => {
       ).rejects.toThrow(new HttpException(400, 'Parent rule must be in the same ruleset'));
     });
 
-    // this is allowed but with warning in case a parent needs to be renamed which won't break all existing children
+    // this is allowed but with warning in case a parent code needs to be updated which won't break all existing children
     it('allows a child rule code that does not start with the parent rule code', async () => {
       const parentRule = await RulesService.createRule(batman, 'T.1', 'Parent', rulesetId, organization);
 
@@ -1227,6 +1227,15 @@ describe('Rule Tests', () => {
       );
 
       expect(updatedRule.ruleContent).toEqual('');
+    });
+
+    it('Fails when new rule code is blank', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+
+      await expect(
+        RulesService.editRule(admin, leafRule1.ruleContent, leafRule1.ruleId, '', leafRule1.imageFileIds, organization)
+      ).rejects.toThrow(new HttpException(400, 'Rule code cannot be empty'));
     });
 
     it('Succeeds and changes a rule code that still satisfies the parent prefix', async () => {
