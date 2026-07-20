@@ -53,7 +53,7 @@ export const MEETING_ATTENDANCE_PROBABILITY = 0.4;
 const EVENT_DATE_BUFFER_DAYS = 7;
 const MAX_ATTENDEES = 10;
 export const DAYS_AFTER_NO_EVENT = 20;
-const CONFIRMED_WINDOW = 14
+const CONFIRMED_WINDOW = 14;
 
 export const generateEventCount = (faker: Faker): number => faker.number.int({ min: 1, max: EVENTS_PER_PROJECT });
 

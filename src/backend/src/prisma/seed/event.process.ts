@@ -127,7 +127,7 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
           ? [...requiredMemberIds, ...this.faker.helpers.arrayElements(optionalMemberIds)]
           : [...this.faker.helpers.arrayElements(requiredMemberIds), ...this.faker.helpers.arrayElements(optionalMemberIds)]
         : [];
-        
+
       // Unused. For reference if later reused.
       const deniedMemberIds: string[] = [];
 
