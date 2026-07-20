@@ -819,7 +819,7 @@ export default class CalendarService {
     return edittedEvent;
   }
 
-  static scheduleChanged(before: ScheduleSlot[], after: ScheduleSlot[]): boolean {
+  static hasScheduleChanged(before: ScheduleSlot[], after: ScheduleSlot[]): boolean {
     if (before.length !== after.length) return true;
     for (const scheduleSlot of before) {
       const afterSlot = after.find((s) => s.scheduleSlotId === scheduleSlot.scheduleSlotId);
@@ -1113,8 +1113,8 @@ export default class CalendarService {
     if (
       updatedEventTransform.status === Event_Status.SCHEDULED &&
       foundEventType &&
-      foundEventType.sendSlackNotifications === true &&
-      this.scheduleChanged(event.scheduledTimes, updatedEvent.scheduledTimes)
+      foundEventType.sendSlackNotifications &&
+      this.hasScheduleChanged(event.scheduledTimes, updatedEvent.scheduledTimes)
     ) {
       await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, updatedEventTransform, true);
     }
