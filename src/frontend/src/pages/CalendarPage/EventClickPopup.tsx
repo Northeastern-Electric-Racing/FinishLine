@@ -137,6 +137,9 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
   const canEditOrDelete =
     event.userCreated.userId === currentUser.userId || isAdmin(currentUser.role) || isHead(currentUser.role);
 
+  // Creators and admins can schedule the event from the availability page
+  const canScheduleEvent = event.userCreated.userId === currentUser.userId || isAdmin(currentUser.role);
+
   const eventDate = event.initialDateScheduled || clickedDate || event.startTime;
 
   const availabilityUrl = `${routes.CALENDAR}/event/${event.eventId}?date=${eventDate.toISOString()}`;
@@ -370,7 +373,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
                 }
               }}
             >
-              View availability
+              {canScheduleEvent ? 'View availability / Schedule event' : 'View availability'}
             </Button>
           </Stack>
         )}
