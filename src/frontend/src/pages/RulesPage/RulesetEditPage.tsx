@@ -393,7 +393,7 @@ const RulesetEditPage: React.FC = () => {
                           );
                         }
                         return (
-                          currentRule.ruleContent && (
+                          (currentRule.ruleContent || currentRule.referencedRules.length > 0) && (
                             <RuleContent
                               rule={currentRule}
                               color={theme.palette.common.black}

@@ -50,7 +50,7 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
   const watchedRuleCode = watch('ruleCode');
   const showPrefixWarning = !!parentRuleCode && !!watchedRuleCode && !watchedRuleCode.startsWith(parentRuleCode);
 
-  // Reset reference hierarchy and prefill the code field with the parent's code when modal opens
+  // Prefill code field with the parent's code when modal opens
   useEffect(() => {
     if (open) {
       setSelectedReferenceHierarchy([]);
