@@ -122,8 +122,6 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
             .map((user) => user.userId)
         : [];
 
-      const allMemberIds = [...requiredMemberIds, ...optionalMemberIds];
-
       const confirmedMemberIds = eventType.requiresConfirmation
         ? status === Event_Status.CONFIRMED
           ? [...requiredMemberIds, ...this.faker.helpers.arrayElements(optionalMemberIds)]
