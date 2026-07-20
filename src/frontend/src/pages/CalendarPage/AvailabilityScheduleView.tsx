@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { Availability, Event, EventWithMembers, getDayOfWeek, getNextSevenDays, User } from 'shared';
+import { Availability, Event, EventWithMembers, dbDateToLocalDate, getDayOfWeek, getNextSevenDays, User } from 'shared';
 import React, { useState } from 'react';
 import {
   enumToArray,
@@ -38,7 +38,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
 
   // Use displayDate if provided, otherwise fall back to event's initial date.
-  const initialDate = event.initialDateScheduled || displayDate || new Date();
+  const initialDate = event.initialDateScheduled ? dbDateToLocalDate(event.initialDateScheduled) : displayDate || new Date();
   const potentialDays = getNextSevenDays(initialDate);
 
   // Handle hover - updates the sidebar with available/unavailable users and slot info
