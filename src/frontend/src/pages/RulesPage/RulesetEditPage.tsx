@@ -227,13 +227,15 @@ const RulesetEditPage: React.FC = () => {
       warnings.push(`This code doesn't start with its parent rule's code: ${currentRule.parentRule.ruleCode}.`);
     }
 
-    if (currentRule && currentRule.ruleCode !== editedCode && currentRule.subRuleIds.length > 0) {
+    if (currentRule && currentRule.ruleCode !== editedCode) {
       const affectedCount = countRulesToDelete(currentRule, allRules) - 1;
-      warnings.push(
-        `This rule has ${affectedCount} child rule${affectedCount === 1 ? '' : 's'} whose code${
-          affectedCount === 1 ? '' : 's'
-        } won't update with the new prefix.`
-      );
+      if (affectedCount > 0) {
+        warnings.push(
+          `This rule has ${affectedCount} child rule${affectedCount === 1 ? '' : 's'} whose code${
+            affectedCount === 1 ? '' : 's'
+          } won't update with the new prefix.`
+        );
+      }
     }
 
     if (warnings.length > 0) {
