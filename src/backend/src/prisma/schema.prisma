@@ -1368,7 +1368,6 @@ model Organization {
   sponsorshipNotificationsSlackChannelId String?
   platformDescription                    String    @default("")
   platformLogoImageId                    String?
-  notificationChannelIds                 String[]  @default([])
 
   // Relation references
   wbsElements              WBS_Element[]

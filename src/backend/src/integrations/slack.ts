@@ -312,6 +312,73 @@ export const getChannelName = async (channelId: string): Promise<string | undefi
   }
 };
 
+const listChannelsOfTypes = async (types: string): Promise<{ id: string; name: string }[]> => {
+  const client = getSlackClient();
+  if (!client) return [];
+
+  let channels: { id: string; name: string }[] = [];
+  let cursor: string | undefined;
+
+  do {
+    const response = await client.conversations.list({
+      types,
+      exclude_archived: true,
+      cursor,
+      limit: 200
+    });
+
+    if (response.ok && response.channels) {
+      channels = channels.concat(
+        response.channels
+          .filter(
+            (channel: { is_member?: boolean; id?: string; name?: string }) => channel.is_member && channel.id && channel.name
+          )
+          .map((channel: { id: string; name: string }) => ({ id: channel.id, name: channel.name }))
+      );
+      cursor = response.response_metadata?.next_cursor;
+    } else {
+      throw Object.assign(new Error(`Failed to fetch channels: ${response.error}`), { code: response.error });
+    }
+  } while (cursor);
+
+  return channels;
+};
+
+/**
+ * Caches the bot's channel list, keyed by the requested `types` string. A full workspace
+ * channel listing is one of the more expensive Slack calls to repeat on every request.
+ */
+const botChannelsCache = new LRUCache<string, { id: string; name: string }[]>({
+  max: 10,
+  ttl: 1000 * 60 * 60, // 1 hour
+  fetchMethod: listChannelsOfTypes
+});
+
+/**
+ * Produces every channel (public or private) the bot is currently a member of, with each
+ * channel's current name. One bulk call regardless of channel count, so callers should use
+ * this instead of resolving names one channel at a time via getChannelName. Results are
+ * cached, and concurrent calls share a single slack request. Falls back to public channels
+ * only if the bot token is missing the groups:read scope needed for private channels, rather
+ * than failing the whole lookup.
+ * @returns an array of { id, name } for every channel the bot can see
+ */
+export const getBotChannels = async (): Promise<{ id: string; name: string }[]> => {
+  try {
+    return (await botChannelsCache.fetch('public_channel,private_channel')) ?? [];
+  } catch (error) {
+    const slackError = (error as { data?: { error?: string } }).data?.error;
+    if (slackError === 'missing_scope') {
+      try {
+        return (await botChannelsCache.fetch('public_channel')) ?? [];
+      } catch (fallbackError) {
+        return [];
+      }
+    }
+    return [];
+  }
+};
+
 /**
  * Checks whether the bot is a member of the given channel
  * @param channelId the id of the slack channel
