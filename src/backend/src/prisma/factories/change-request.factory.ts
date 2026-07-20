@@ -1,5 +1,5 @@
 import { Faker } from '@faker-js/faker';
-import { CR_Type, Prisma } from '@prisma/client';
+import { Account_Code, CR_Type, Prisma } from '@prisma/client';
 import { DateRange } from '../context.js';
 import { clampDate, daysBetween } from '../dates.js';
 import { addDaysToDate } from 'shared';
@@ -11,9 +11,11 @@ export type SeedCrParent = {
   managerId?: string;
 };
 
+export type SeedCrActor = { userId: string };
+
 export type SeedCrOverrides = Partial<Prisma.Change_RequestCreateInput>;
 export const WORK_PACKAGE_CR_TYPES: CR_Type[] = [CR_Type.ACTIVATION, CR_Type.STAGE_GATE];
-export const PROJECT_CR_TYPES: CR_Type[] = [CR_Type.STANDARD, CR_Type.BUDGET, CR_Type.LEADERSHIP];
+export const PROJECT_CR_TYPES: CR_Type[] = [CR_Type.STANDARD, CR_Type.LEADERSHIP];
 
 type ReviewOutcome = 'APPROVED' | 'DENIED' | 'PENDING';
 
@@ -56,6 +58,10 @@ const CHANGE_DETAILS = [
   'Updated status'
 ];
 
+const BUDGET_AMOUNTS = [500, 1000, 1500, 2000, 2500, 5000];
+
+type CrLink = { kind: 'wbs'; wbsElementId: string } | { kind: 'accountCode'; accountCodeId: string };
+
 const crTypeForParent = (faker: Faker, isWorkPackage: boolean): CR_Type => {
   if (isWorkPackage) {
     return faker.helpers.weightedArrayElement([
@@ -65,35 +71,38 @@ const crTypeForParent = (faker: Faker, isWorkPackage: boolean): CR_Type => {
   }
 
   return faker.helpers.weightedArrayElement([
-    { weight: 94, value: CR_Type.STANDARD },
-    { weight: 3, value: CR_Type.BUDGET },
+    { weight: 97, value: CR_Type.STANDARD },
     { weight: 3, value: CR_Type.LEADERSHIP }
   ]);
 };
 
-const reviewOutcome = (faker: Faker): ReviewOutcome =>
+const latestOutcome = (faker: Faker): ReviewOutcome =>
   faker.helpers.weightedArrayElement([
     { weight: 57, value: 'APPROVED' as const },
     { weight: 39, value: 'PENDING' as const },
     { weight: 4, value: 'DENIED' as const }
   ]);
 
+const resolvedOutcome = (faker: Faker): ReviewOutcome =>
+  faker.helpers.weightedArrayElement([
+    { weight: 93, value: 'APPROVED' as const },
+    { weight: 7, value: 'DENIED' as const }
+  ]);
+
 const subtypeCreateInput = (
   faker: Faker,
   type: CR_Type,
-  parent: SeedCrParent,
+  parent: SeedCrParent | undefined,
   submittedDate: Date
 ): Pick<
   Prisma.Change_RequestCreateInput,
   'budgetChangeRequest' | 'stageGateChangeRequest' | 'activationChangeRequest' | 'leadershipChangeRequest'
 > => {
-  const { leadId, managerId } = parent;
-
   switch (type) {
     case CR_Type.BUDGET:
       return {
         budgetChangeRequest: {
-          create: { proposedBudget: faker.helpers.arrayElement([500, 1000, 1500, 2000, 2500, 5000]) }
+          create: { proposedBudget: faker.helpers.arrayElement(BUDGET_AMOUNTS) }
         }
       };
     case CR_Type.STAGE_GATE:
@@ -102,7 +111,9 @@ const subtypeCreateInput = (
           create: { leftoverBudget: 0, confirmDone: true }
         }
       };
-    case CR_Type.ACTIVATION:
+    case CR_Type.ACTIVATION: {
+      const leadId = parent?.leadId;
+      const managerId = parent?.managerId;
       if (!leadId || !managerId) {
         throw new Error('Activation change request requires a lead and manager on the parent work package.');
       }
@@ -116,12 +127,13 @@ const subtypeCreateInput = (
           }
         }
       };
+    }
     case CR_Type.LEADERSHIP:
       return {
         leadershipChangeRequest: {
           create: {
-            ...(leadId ? { lead: { connect: { userId: leadId } } } : {}),
-            ...(managerId ? { manager: { connect: { userId: managerId } } } : {})
+            ...(parent?.leadId ? { lead: { connect: { userId: parent.leadId } } } : {}),
+            ...(parent?.managerId ? { manager: { connect: { userId: parent.managerId } } } : {})
           }
         }
       };
@@ -134,16 +146,16 @@ const subtypeCreateInput = (
 const changesCreateInput = (
   faker: Faker,
   implementerId: string,
-  link: { wbsElementId: string } | { categoryId: string }
+  link: CrLink
 ): Prisma.ChangeCreateWithoutChangeRequestInput[] => {
   const count = faker.number.int({ min: 1, max: 4 });
 
   return Array.from({ length: count }, () => ({
     detail: faker.helpers.arrayElement(CHANGE_DETAILS),
     implementer: { connect: { userId: implementerId } },
-    ...('wbsElementId' in link
+    ...(link.kind === 'wbs'
       ? { wbsElement: { connect: { wbsElementId: link.wbsElementId } } }
-      : { category: { connect: { otherReimbursementProductReasonId: link.categoryId } } })
+      : { accountCode: { connect: { accountCodeId: link.accountCodeId } } })
   }));
 };
 
@@ -163,41 +175,56 @@ export const crCountForWorkPackage = (faker: Faker): number =>
     { weight: 5, value: 3 }
   ]);
 
-export const createSeedChangeRequest = (
-  faker: Faker,
-  parent: SeedCrParent,
-  isWorkPackage: boolean,
-  identifier: number,
-  organizationId: string,
-  submitterId: string,
-  reviewerId: string,
-  budgetReasonId: string | undefined,
-  overrides: SeedCrOverrides = {}
-): Prisma.Change_RequestCreateInput => {
-  const { timeline, wbsElementId } = parent;
-  const type = crTypeForParent(faker, isWorkPackage);
+export const crCountForAccountCode = (faker: Faker): number =>
+  faker.helpers.weightedArrayElement([
+    { weight: 40, value: 0 },
+    { weight: 40, value: faker.number.int({ min: 1, max: 3 }) },
+    { weight: 20, value: faker.number.int({ min: 4, max: 6 }) }
+  ]);
 
-  const useCategory = type === CR_Type.BUDGET && budgetReasonId !== undefined;
-  const baseLink = useCategory
-    ? { category: { connect: { otherReimbursementProductReasonId: budgetReasonId as string } } }
-    : { wbsElement: { connect: { wbsElementId } } };
-  const changeLink = useCategory ? { categoryId: budgetReasonId as string } : { wbsElementId };
+type BuildChangeRequestArgs = {
+  faker: Faker;
+  identifier: number;
+  organizationId: string;
+  type: CR_Type;
+  parent?: SeedCrParent;
+  link: CrLink;
+  submitterId: string;
+  reviewerId: string;
+  dateSubmitted: Date;
+  outcome: ReviewOutcome;
+  reviewWindowEnd: Date;
+  overrides?: SeedCrOverrides;
+};
 
-  const dateSubmitted = clampDate(
-    addDaysToDate(new Date(timeline.start), faker.number.int({ min: 0, max: daysBetween(timeline) })),
-    { start: timeline.start, end: timeline.end }
-  );
-
-  const outcome = reviewOutcome(faker);
+const buildChangeRequest = ({
+  faker,
+  identifier,
+  organizationId,
+  type,
+  parent,
+  link,
+  submitterId,
+  reviewerId,
+  dateSubmitted,
+  outcome,
+  reviewWindowEnd,
+  overrides = {}
+}: BuildChangeRequestArgs): Prisma.Change_RequestCreateInput => {
   const reviewed = outcome !== 'PENDING';
   const accepted = outcome === 'APPROVED';
 
   const dateReviewed = reviewed
     ? clampDate(addDaysToDate(dateSubmitted, faker.number.int({ min: 1, max: 10 })), {
         start: dateSubmitted,
-        end: timeline.end
+        end: reviewWindowEnd
       })
     : undefined;
+
+  const baseLink =
+    link.kind === 'wbs'
+      ? { wbsElement: { connect: { wbsElementId: link.wbsElementId } } }
+      : { accountCode: { connect: { accountCodeId: link.accountCodeId } } };
 
   return {
     identifier,
@@ -214,10 +241,83 @@ export const createSeedChangeRequest = (
           dateReviewed,
           accepted,
           reviewNotes: accepted ? faker.helpers.arrayElement(APPROVED_NOTES) : faker.helpers.arrayElement(DENIED_NOTES),
-
-          ...(accepted ? { changes: { create: changesCreateInput(faker, reviewerId, changeLink) } } : {})
+          ...(accepted ? { changes: { create: changesCreateInput(faker, reviewerId, link) } } : {})
         }
       : {}),
     ...overrides
   };
+};
+
+const outcomesForOrderedCrs = (faker: Faker, count: number): ReviewOutcome[] =>
+  Array.from({ length: count }, (_, index) => (index === count - 1 ? latestOutcome(faker) : resolvedOutcome(faker)));
+
+const orderedSubmissionDates = (faker: Faker, timeline: DateRange, count: number): Date[] =>
+  Array.from({ length: count }, () =>
+    clampDate(addDaysToDate(new Date(timeline.start), faker.number.int({ min: 0, max: daysBetween(timeline) })), {
+      start: timeline.start,
+      end: timeline.end
+    })
+  ).sort((a, b) => a.getTime() - b.getTime());
+
+const pickActor = (faker: Faker, actors: SeedCrActor[]): string => faker.helpers.arrayElement(actors).userId;
+
+export const buildWbsChangeRequests = (
+  faker: Faker,
+  parent: SeedCrParent,
+  isWorkPackage: boolean,
+  identifiers: number[],
+  organizationId: string,
+  submitters: SeedCrActor[],
+  reviewers: SeedCrActor[]
+): Prisma.Change_RequestCreateInput[] => {
+  if (identifiers.length === 0) return [];
+
+  const dates = orderedSubmissionDates(faker, parent.timeline, identifiers.length);
+  const outcomes = outcomesForOrderedCrs(faker, identifiers.length);
+
+  return identifiers.map((identifier, index) =>
+    buildChangeRequest({
+      faker,
+      identifier,
+      organizationId,
+      type: crTypeForParent(faker, isWorkPackage),
+      parent,
+      link: { kind: 'wbs', wbsElementId: parent.wbsElementId },
+      submitterId: pickActor(faker, submitters),
+      reviewerId: pickActor(faker, reviewers),
+      dateSubmitted: dates[index],
+      outcome: outcomes[index],
+      reviewWindowEnd: parent.timeline.end
+    })
+  );
+};
+
+export const buildAccountCodeChangeRequests = (
+  faker: Faker,
+  accountCode: Account_Code,
+  timeline: DateRange,
+  identifiers: number[],
+  organizationId: string,
+  submitters: SeedCrActor[],
+  reviewers: SeedCrActor[]
+): Prisma.Change_RequestCreateInput[] => {
+  if (identifiers.length === 0) return [];
+
+  const dates = orderedSubmissionDates(faker, timeline, identifiers.length);
+  const outcomes = outcomesForOrderedCrs(faker, identifiers.length);
+
+  return identifiers.map((identifier, index) =>
+    buildChangeRequest({
+      faker,
+      identifier,
+      organizationId,
+      type: CR_Type.BUDGET,
+      link: { kind: 'accountCode', accountCodeId: accountCode.accountCodeId },
+      submitterId: pickActor(faker, submitters),
+      reviewerId: pickActor(faker, reviewers),
+      dateSubmitted: dates[index],
+      outcome: outcomes[index],
+      reviewWindowEnd: timeline.end
+    })
+  );
 };
