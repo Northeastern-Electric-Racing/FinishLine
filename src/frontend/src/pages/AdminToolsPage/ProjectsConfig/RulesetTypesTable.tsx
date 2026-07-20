@@ -11,21 +11,77 @@ import { Delete } from '@mui/icons-material';
 import RulesetTypeDeleteModal from './RulesetTypeDeleteModal';
 import AddRulesetTypeModal from './AddRulesetTypeModal';
 
+const handleDeleteRulesetType = async (
+  rulesetTypeId: string,
+  name: string,
+  hasRevisionFiles: boolean,
+  deleteRulesetTypeMutation: (rulesetTypeId: string) => Promise<void>,
+  toast: ReturnType<typeof useToast>,
+  onSuccess: () => void
+) => {
+  if (hasRevisionFiles) {
+    toast.error('Cannot delete ruleset type with existing revisions');
+    return;
+  }
+
+  try {
+    await deleteRulesetTypeMutation(rulesetTypeId);
+    toast.success(`Ruleset Type: ${name} deleted successfully!`);
+    onSuccess();
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      toast.error(error.message);
+    }
+  }
+};
+
 interface RulesetTypeDeleteButtonProps {
   rulesetTypeId: string;
   name: string;
-  onDelete: (rulesetTypeId: string, name: string) => void;
+  hasRevisionFiles: boolean;
+  deleteRulesetTypeMutation: (rulesetTypeId: string) => Promise<void>;
+  toast: ReturnType<typeof useToast>;
 }
+
+const RulesetTypeDeleteButton: React.FC<RulesetTypeDeleteButtonProps> = ({
+  rulesetTypeId,
+  name,
+  hasRevisionFiles,
+  deleteRulesetTypeMutation,
+  toast
+}) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const handleDeleteSubmit = () =>
+    handleDeleteRulesetType(rulesetTypeId, name, hasRevisionFiles, deleteRulesetTypeMutation, toast, () =>
+      setShowDeleteModal(false)
+    );
+
+  return (
+    <>
+      <IconButton type="button" sx={{ mx: 1 }} onClick={() => setShowDeleteModal(true)}>
+        <Delete />
+      </IconButton>
+      {showDeleteModal && (
+        <RulesetTypeDeleteModal
+          rulesetTypeName={name}
+          onDelete={handleDeleteSubmit}
+          onHide={() => setShowDeleteModal(false)}
+        />
+      )}
+    </>
+  );
+};
 
 const RulesetTypesTable: React.FC = () => {
   const toast = useToast();
-  const { data: rulesetTypes = [], isLoading, error } = useAllRulesetTypes();
+  const { data: rulesetTypes, isLoading, isError, error } = useAllRulesetTypes();
   const { mutateAsync: createRulesetType } = useCreateRulesetType();
   const { mutateAsync: deleteRulesetType } = useDeleteRulesetType();
   const [addRulesetTypeModalShow, setAddRulesetTypeModalShow] = useState(false);
 
-  if (error) return <ErrorPage message={error.message} />;
-  if (isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (!rulesetTypes || isLoading) return <LoadingIndicator />;
 
   const handleAddRulesetTypeConfirm = async (data: { name: string }) => {
     await createRulesetType({ name: data.name });
@@ -35,49 +91,8 @@ const RulesetTypesTable: React.FC = () => {
     setAddRulesetTypeModalShow(false);
   };
 
-  const handleDeleteRulesetType = async (rulesetTypeId: string, name: string) => {
-    const rulesetType = rulesetTypes.find((rt) => rt.rulesetTypeId === rulesetTypeId);
-    if (rulesetType && rulesetType.revisionFiles.length > 0) {
-      toast.error('Cannot delete ruleset type with existing revisions');
-      return;
-    }
-
-    try {
-      await deleteRulesetType(rulesetTypeId);
-      toast.success(`Ruleset Type: ${name} deleted successfully!`);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
-  };
-
-  const RulesetTypeDeleteButton: React.FC<RulesetTypeDeleteButtonProps> = ({ rulesetTypeId, name, onDelete }) => {
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-    const handleDeleteSubmit = () => {
-      onDelete(rulesetTypeId, name);
-      setShowDeleteModal(false);
-    };
-
-    return (
-      <>
-        <IconButton type="button" sx={{ mx: 1 }} onClick={() => setShowDeleteModal(true)}>
-          <Delete />
-        </IconButton>
-        {showDeleteModal && (
-          <RulesetTypeDeleteModal
-            rulesetTypeName={name}
-            onDelete={handleDeleteSubmit}
-            onHide={() => setShowDeleteModal(false)}
-          />
-        )}
-      </>
-    );
-  };
-
   const rulesetTypeTableRows = rulesetTypes.map((rulesetType, index) => (
-    <TableRow>
+    <TableRow key={rulesetType.rulesetTypeId}>
       <TableCell sx={{ borderBottom: index === rulesetTypes.length - 1 ? 'none' : 'default' }}>{rulesetType.name}</TableCell>
       <TableCell sx={{ borderBottom: index === rulesetTypes.length - 1 ? 'none' : 'default' }}>
         {datePipe(rulesetType.lastUpdated)}
@@ -89,7 +104,9 @@ const RulesetTypesTable: React.FC = () => {
         <RulesetTypeDeleteButton
           rulesetTypeId={rulesetType.rulesetTypeId}
           name={rulesetType.name}
-          onDelete={handleDeleteRulesetType}
+          hasRevisionFiles={rulesetType.revisionFiles.length > 0}
+          deleteRulesetTypeMutation={deleteRulesetType}
+          toast={toast}
         />
       </TableCell>
     </TableRow>
