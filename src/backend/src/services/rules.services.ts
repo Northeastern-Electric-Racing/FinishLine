@@ -97,6 +97,28 @@ export default class RulesService {
   }
 
   /**
+   * Throws if a rule with the given code already exists in the given ruleset
+   * @param rulesetId The ruleset to check for an existing rule code
+   * @param ruleCode The rule code to check
+   */
+  private static async assertRuleCodeAvailable(rulesetId: string, ruleCode: string) {
+    const trimmedRuleCode = ruleCode.trim();
+
+    const existingRule = await prisma.rule.findUnique({
+      where: {
+        rulesetId_ruleCode: {
+          rulesetId,
+          ruleCode: trimmedRuleCode
+        }
+      }
+    });
+
+    if (existingRule) {
+      throw new HttpException(400, `Rule with code ${trimmedRuleCode} already exists in this ruleset`);
+    }
+  }
+
+  /**
    * Creates a new rule in the database
    *
    * @param user The user creating the rule, must be a member or above
@@ -151,18 +173,7 @@ export default class RulesService {
     ruleCode = ruleCode.trim();
 
     // Check for duplicate rule code within the same ruleset
-    const existingRule = await prisma.rule.findUnique({
-      where: {
-        rulesetId_ruleCode: {
-          rulesetId,
-          ruleCode
-        }
-      }
-    });
-
-    if (existingRule) {
-      throw new HttpException(400, `Rule with code ${ruleCode} already exists in this ruleset`);
-    }
+    await RulesService.assertRuleCodeAvailable(rulesetId, ruleCode);
 
     // Verify parent rule exists if provided
     if (parentRuleId) {
@@ -517,18 +528,7 @@ export default class RulesService {
       }
 
       if (ruleCode !== currentRule.ruleCode) {
-        const existingRule = await prisma.rule.findUnique({
-          where: {
-            rulesetId_ruleCode: {
-              rulesetId: currentRule.rulesetId,
-              ruleCode
-            }
-          }
-        });
-
-        if (existingRule) {
-          throw new HttpException(400, `Rule with code ${ruleCode} already exists in this ruleset`);
-        }
+        await RulesService.assertRuleCodeAvailable(currentRule.rulesetId, ruleCode);
       }
     }
 
