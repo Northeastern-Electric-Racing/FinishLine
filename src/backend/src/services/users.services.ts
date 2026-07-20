@@ -677,9 +677,6 @@ export default class UsersService {
       try {
         icsBusy = await fetchIcsBusyTimes(decrypt(scheduleSettings.importedIcsCalendarUrl), startDate, endDate);
       } catch (error) {
-        if (error instanceof HttpException) {
-          throw new HttpException(error.status, `Failed to fetch ICS calendar: ${error.message}`);
-        }
         throw error;
       }
     }
