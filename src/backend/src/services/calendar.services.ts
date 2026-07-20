@@ -813,14 +813,27 @@ export default class CalendarService {
 
     const edittedEvent = eventTransformer(updatedEvent);
 
-    if (status === Event_Status.SCHEDULED && foundEventType.sendSlackNotifications) {
-      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent, true);
-    }
-
     if (status === Event_Status.CONFIRMED && foundEventType.sendSlackNotifications) {
       await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
     }
     return edittedEvent;
+  }
+
+  static hasScheduleChanged(before: ScheduleSlot[], after: ScheduleSlot[]): boolean {
+    if (before.length !== after.length) return true;
+    for (const scheduleSlot of before) {
+      const afterSlot = after.find((s) => s.scheduleSlotId === scheduleSlot.scheduleSlotId);
+      if (
+        !afterSlot ||
+        scheduleSlot.startTime.getTime() !== afterSlot.startTime.getTime() ||
+        scheduleSlot.endTime.getTime() !== afterSlot.endTime.getTime() ||
+        scheduleSlot.allDay !== afterSlot.allDay
+      ) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -1091,8 +1104,22 @@ export default class CalendarService {
     });
 
     if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
+    const updatedEventTransform = eventTransformer(updatedEvent);
 
-    return eventTransformer(updatedEvent);
+    const foundEventType = await prisma.event_Type.findUnique({
+      where: { eventTypeId: updatedEventTransform.eventTypeId }
+    });
+
+    if (
+      updatedEventTransform.status === Event_Status.SCHEDULED &&
+      foundEventType &&
+      foundEventType.sendSlackNotifications &&
+      this.hasScheduleChanged(event.scheduledTimes, updatedEvent.scheduledTimes)
+    ) {
+      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, updatedEventTransform, true);
+    }
+
+    return updatedEventTransform;
   }
 
   /**
