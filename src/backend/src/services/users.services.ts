@@ -674,11 +674,7 @@ export default class UsersService {
 
     let icsBusy: IcsBusyInterval[] = [];
     if (scheduleSettings?.importedIcsCalendarUrl) {
-      try {
-        icsBusy = await fetchIcsBusyTimes(decrypt(scheduleSettings.importedIcsCalendarUrl), startDate, endDate);
-      } catch (error) {
-        throw error;
-      }
+      icsBusy = await fetchIcsBusyTimes(decrypt(scheduleSettings.importedIcsCalendarUrl), startDate, endDate);
     }
 
     const userTeamIds = [
