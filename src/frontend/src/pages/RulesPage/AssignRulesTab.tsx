@@ -103,20 +103,24 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
   const { mutate: bulkToggle, isLoading: isSaving } = useBulkToggleRuleTeam();
 
   const hasAppliedTeamParamRef = useRef(false);
+  // background refetches ensure current toggles remain
+  const hasPendingChangesRef = useRef(false);
 
-  // Reload when rule data changes
+  // Reload when rule data changes, unless the user has unsaved toggles pending
   useEffect(() => {
     if (!teams || teams.length === 0) return;
 
-    const initialAssignments = new Set<string>();
-    rules.forEach((rule) => {
-      rule.teams?.forEach((team) => {
-        initialAssignments.add(`${team.teamId}:${rule.ruleId}`);
+    if (!hasPendingChangesRef.current) {
+      const initialAssignments = new Set<string>();
+      rules.forEach((rule) => {
+        rule.teams?.forEach((team) => {
+          initialAssignments.add(`${team.teamId}:${rule.ruleId}`);
+        });
       });
-    });
 
-    setOriginalAssignments(initialAssignments);
-    setAssignments(new Set(initialAssignments));
+      setOriginalAssignments(initialAssignments);
+      setAssignments(new Set(initialAssignments));
+    }
 
     if (!hasAppliedTeamParamRef.current) {
       const teamIdParam = new URLSearchParams(location.search).get('teamId');
@@ -212,6 +216,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
       getAncestorIds(ruleId, rules).forEach((id) => newAssignments.add(teamAssignmentKey(id)));
     }
 
+    hasPendingChangesRef.current = true;
     setAssignments(newAssignments);
   };
 
@@ -247,6 +252,7 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
   const executeToggles = (toggles: Array<{ ruleId: string; teamId: string }>) => {
     bulkToggle(toggles, {
       onSuccess: () => {
+        hasPendingChangesRef.current = false;
         history.push(routes.RULESET_EDIT.replace(':rulesetId', rulesetId));
       },
       onSettled: () => {
