@@ -129,9 +129,9 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
           ? [...requiredMemberIds, ...this.faker.helpers.arrayElements(optionalMemberIds)]
           : [...this.faker.helpers.arrayElements(requiredMemberIds), ...this.faker.helpers.arrayElements(optionalMemberIds)]
         : [];
-      const deniedMemberIds = eventType.requiresConfirmation
-        ? [...this.faker.helpers.arrayElements(allMemberIds.filter((id) => !confirmedMemberIds.includes(id)))]
-        : [];
+        
+      // Unused. For reference if later reused.
+      const deniedMemberIds: string[] = [];
 
       const event = await this.prisma.event.create({
         data: eventCreateInput(

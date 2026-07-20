@@ -53,6 +53,7 @@ export const MEETING_ATTENDANCE_PROBABILITY = 0.4;
 const EVENT_DATE_BUFFER_DAYS = 7;
 const MAX_ATTENDEES = 10;
 export const DAYS_AFTER_NO_EVENT = 20;
+const CONFIRMED_WINDOW = 14
 
 export const generateEventCount = (faker: Faker): number => faker.number.int({ min: 1, max: EVENTS_PER_PROJECT });
 
@@ -113,6 +114,15 @@ export const generateEventStatus = (
   const daysUntilDue = Math.floor((initialDateScheduled.getTime() - now.getTime()) / DAY_MS);
 
   if (requiresConfirmation && daysUntilDue > 0) return Event_Status.UNCONFIRMED;
+
+  // Confirmed status only gets a change in a window of time since they are very rare and not common amongst an aggegate dataset
+  if (requiresConfirmation && daysUntilDue > 0 && daysUntilDue < CONFIRMED_WINDOW) {
+    return faker.helpers.weightedArrayElement([
+      { weight: 70, value: Event_Status.UNCONFIRMED },
+      { weight: 20, value: Event_Status.SCHEDULED },
+      { weight: 10, value: Event_Status.CONFIRMED }
+    ]);
+  }
 
   if (daysUntilDue < -EVENT_DATE_BUFFER_DAYS) {
     return faker.helpers.weightedArrayElement([
