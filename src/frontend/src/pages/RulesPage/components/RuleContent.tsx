@@ -5,6 +5,7 @@
 
 import { Box, useTheme } from '@mui/material';
 import { Rule } from 'shared';
+import { useGetImageUrls } from '../../../hooks/onboarding.hook';
 
 interface RuleContentProps {
   rule: Rule;
@@ -32,6 +33,10 @@ const RuleContent: React.FC<RuleContentProps> = ({
 
   const { referencedRules } = rule;
 
+  const { data: imageUrls } = useGetImageUrls(
+    rule.imageFileIds.map((fileId) => ({ objectId: fileId, imageFileId: fileId }))
+  );
+
   const handleReferenceClick = (referencedRuleId: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onReferenceClick) {
@@ -48,35 +53,53 @@ const RuleContent: React.FC<RuleContentProps> = ({
     interactionEnabled && (isReferenceInteractive ? isReferenceInteractive(ruleId) : true);
 
   return (
-    <span style={{ color }}>
-      {rule.ruleContent}
-      {referencedRules.length > 0 && (
-        <Box component="span" sx={{ ml: 0.5 }}>
-          {' [ '}
-          {referencedRules.map((ref, index) => {
-            const interactive = isReferenceInteractable(ref.ruleId);
-            return (
-              <Box component="span" key={ref.ruleId}>
-                {index > 0 && ', '}
-                <Box
-                  component="span"
-                  onClick={interactive ? handleReferenceClick(ref.ruleId) : undefined}
-                  sx={{
-                    textDecoration: interactive ? 'underline' : 'none',
-                    cursor: interactive ? 'pointer' : 'default',
-                    // for edit view, hovering over a referenced code highlights it red to signal removal
-                    ...(interactive && onReferenceRemove && { '&:hover': { color: theme.palette.primary.main } })
-                  }}
-                >
-                  {ref.ruleCode}
+    <Box>
+      <span style={{ color }}>
+        {rule.ruleContent}
+        {referencedRules.length > 0 && (
+          <Box component="span" sx={{ ml: 0.5 }}>
+            {' [ '}
+            {referencedRules.map((ref, index) => {
+              const interactive = isReferenceInteractable(ref.ruleId);
+              return (
+                <Box component="span" key={ref.ruleId}>
+                  {index > 0 && ', '}
+                  <Box
+                    component="span"
+                    onClick={interactive ? handleReferenceClick(ref.ruleId) : undefined}
+                    sx={{
+                      textDecoration: interactive ? 'underline' : 'none',
+                      cursor: interactive ? 'pointer' : 'default',
+                      // for edit view, hovering over a referenced code highlights it red to signal removal
+                      ...(interactive && onReferenceRemove && { '&:hover': { color: theme.palette.primary.main } })
+                    }}
+                  >
+                    {ref.ruleCode}
+                  </Box>
                 </Box>
-              </Box>
-            );
-          })}
-          {' ]'}
+              );
+            })}
+            {' ]'}
+          </Box>
+        )}
+      </span>
+      {imageUrls && imageUrls.length > 0 && (
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+          {imageUrls.map(
+            (image) =>
+              image.url && (
+                <Box
+                  key={image.id}
+                  component="img"
+                  src={image.url}
+                  alt="Rule attachment"
+                  sx={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 1 }}
+                />
+              )
+          )}
         </Box>
       )}
-    </span>
+    </Box>
   );
 };
 

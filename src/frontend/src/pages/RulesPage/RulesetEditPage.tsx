@@ -345,7 +345,12 @@ const RulesetEditPage: React.FC = () => {
               allRules={allRules}
             />
 
-            <AddImageModal open={showAddImageModal} onClose={() => setShowAddImageModal(false)} />
+            <AddImageModal
+              open={showAddImageModal}
+              onClose={() => setShowAddImageModal(false)}
+              ruleId={activeRuleId}
+              allRules={allRules}
+            />
 
             {referenceToRemove && (
               <RemoveReferencedRuleModal
