@@ -82,16 +82,18 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
           ))
         )}
       </Stack>
-      {Array.from(descriptionBulletsSplitByType.entries()).map(([type, bullets]) => (
-        <CheckList
-          key={type}
-          title={type}
-          items={bullets.map((db): CheckListItem => {
-            return { ...db, resolved: !!db.userChecked, user: db.userChecked };
-          })}
-          isDisabled={checkListDisabled}
-        />
-      ))}
+      <Box sx={{ mt: 5 }}>
+        {Array.from(descriptionBulletsSplitByType.entries()).map(([type, bullets]) => (
+          <CheckList
+            key={type}
+            title={type}
+            items={bullets.map((db): CheckListItem => {
+              return { ...db, resolved: !!db.userChecked, user: db.userChecked };
+            })}
+            isDisabled={checkListDisabled}
+          />
+        ))}
+      </Box>
     </>
   );
 };
