@@ -16,6 +16,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import AddRuleSectionModal from './components/AddRuleSectionModal';
 import AddRuleModal from './components/AddRuleModal';
 import AddReferencedRuleModal from './components/AddReferencedRuleModal';
+import AddImageModal from './components/AddImageModal';
 import RemoveReferencedRuleModal from './components/RemoveReferencedRuleModal';
 import RuleContent from './components/RuleContent';
 import { AddRuleBox } from './components/AddRuleBox';
@@ -49,6 +50,7 @@ const RulesetEditPage: React.FC = () => {
   const [showAddRuleSectionModal, setShowAddRuleSectionModal] = useState(false);
   const [showAddRuleModal, setShowAddRuleModal] = useState(false);
   const [showAddReferencedRuleModal, setShowAddReferencedRuleModal] = useState(false);
+  const [showAddImageModal, setShowAddImageModal] = useState(false);
   const [showRemoveReferenceModal, setShowRemoveReferenceModal] = useState(false);
 
   const [referenceToRemove, setReferenceToRemove] = useState<{ rule: Rule; referencedRule: Rule } | null>(null);
@@ -126,6 +128,11 @@ const RulesetEditPage: React.FC = () => {
 
   const handleAddReferencedRuleFromMenu = () => {
     setShowAddReferencedRuleModal(true);
+    handleCloseAddMenu();
+  };
+
+  const handleAddImageFromMenu = () => {
+    setShowAddImageModal(true);
     handleCloseAddMenu();
   };
 
@@ -315,6 +322,7 @@ const RulesetEditPage: React.FC = () => {
               onClose={handleCloseAddMenu}
               onAddRule={handleAddRuleFromMenu}
               onAddReferencedRule={handleAddReferencedRuleFromMenu}
+              onAddImage={handleAddImageFromMenu}
             />
 
             <AddRuleSectionModal
@@ -336,6 +344,8 @@ const RulesetEditPage: React.FC = () => {
               ruleId={activeRuleId}
               allRules={allRules}
             />
+
+            <AddImageModal open={showAddImageModal} onClose={() => setShowAddImageModal(false)} />
 
             {referenceToRemove && (
               <RemoveReferencedRuleModal
