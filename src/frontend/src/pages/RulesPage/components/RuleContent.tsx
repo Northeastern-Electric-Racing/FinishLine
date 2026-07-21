@@ -4,8 +4,10 @@
  */
 
 import { Box, useTheme } from '@mui/material';
+import { useState } from 'react';
 import { Rule } from 'shared';
 import { useGetImageUrls } from '../../../hooks/onboarding.hook';
+import ImagePreviewModal from './ImagePreviewModal';
 
 interface RuleContentProps {
   rule: Rule;
@@ -30,6 +32,7 @@ const RuleContent: React.FC<RuleContentProps> = ({
   isReferenceInteractive
 }) => {
   const theme = useTheme();
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
   const { referencedRules } = rule;
 
@@ -86,18 +89,27 @@ const RuleContent: React.FC<RuleContentProps> = ({
       {imageUrls && imageUrls.length > 0 && (
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
           {imageUrls.map(
-            (image) =>
+            (image, index) =>
               image.url && (
                 <Box
                   key={image.id}
                   component="img"
                   src={image.url}
                   alt="Rule attachment"
-                  sx={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 1 }}
+                  onClick={() => setPreviewIndex(index)}
+                  sx={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 1, cursor: 'pointer' }}
                 />
               )
           )}
         </Box>
+      )}
+      {previewIndex !== null && imageUrls?.[previewIndex]?.url && (
+        <ImagePreviewModal
+          open
+          imageUrl={imageUrls[previewIndex].url!}
+          title={`Rule ${rule.ruleCode} Image ${previewIndex + 1}`}
+          onClose={() => setPreviewIndex(null)}
+        />
       )}
     </Box>
   );
