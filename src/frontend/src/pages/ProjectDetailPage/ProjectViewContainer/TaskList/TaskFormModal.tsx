@@ -2,7 +2,17 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, Box, Chip, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isGuest, isUnderWordCount, Task, TaskLabel, TaskBlockerPreview, TaskPriority, TaskStatus, WbsNumber } from 'shared';
+import {
+  countWords,
+  isGuest,
+  isUnderWordCount,
+  Task,
+  TaskLabel,
+  TaskBlockerPreview,
+  TaskPriority,
+  TaskStatus,
+  WbsNumber
+} from 'shared';
 import { useAllMembers, useCurrentUser } from '../../../../hooks/users.hooks';
 import * as yup from 'yup';
 import { taskUserToAutocompleteOption } from '../../../../utils/task.utils';

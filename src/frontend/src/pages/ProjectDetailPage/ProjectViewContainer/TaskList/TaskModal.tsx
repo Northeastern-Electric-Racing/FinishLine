@@ -102,12 +102,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
                   <Chip key={blocker.taskId} label={blocker.title} size="small" />
                 ))}
                 {task.blockedByWorkPackages.map((blockingWp) => (
-                  <Chip
-                    key={wbsPipe(blockingWp.wbsNum)}
-                    label={`${blockingWp.name} (WP)`}
-                    size="small"
-                    variant="outlined"
-                  />
+                  <Chip key={wbsPipe(blockingWp.wbsNum)} label={`${blockingWp.name} (WP)`} size="small" variant="outlined" />
                 ))}
               </Box>
             </Grid>

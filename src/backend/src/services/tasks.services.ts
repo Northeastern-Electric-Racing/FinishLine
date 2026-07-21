@@ -25,7 +25,11 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
-import { sendSlackTaskAssignedNotificationToUsers, validateTaskBlockedBys, validateTaskLabels } from '../utils/tasks.utils.js';
+import {
+  sendSlackTaskAssignedNotificationToUsers,
+  validateTaskBlockedBys,
+  validateTaskLabels
+} from '../utils/tasks.utils.js';
 import { getUsers, userHasPermission } from '../utils/users.utils.js';
 import { wbsNumOf } from '../utils/utils.js';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
