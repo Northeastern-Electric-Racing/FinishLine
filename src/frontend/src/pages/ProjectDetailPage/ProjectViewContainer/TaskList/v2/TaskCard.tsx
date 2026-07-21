@@ -73,6 +73,7 @@ export const TaskCard = ({
     deadline,
     assignees,
     labels,
+    blockedBy,
     priority,
     startDate,
     wpWbsNum
@@ -88,6 +89,7 @@ export const TaskCard = ({
         startDate,
         priority,
         labelIds: labels.map((l) => l.taskLabelId),
+        blockedByIds: blockedBy.map((b) => b.taskId),
         wbsNum: targetWbsNum
       });
 

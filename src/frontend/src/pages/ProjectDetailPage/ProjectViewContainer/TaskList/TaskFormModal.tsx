@@ -2,7 +2,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, Box, Chip, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isGuest, isUnderWordCount, Task, TaskLabel, TaskPriority, TaskStatus, WbsNumber } from 'shared';
+import { countWords, isGuest, isUnderWordCount, Task, TaskLabel, TaskBlockerPreview, TaskPriority, TaskStatus, WbsNumber } from 'shared';
 import { useAllMembers, useCurrentUser } from '../../../../hooks/users.hooks';
 import * as yup from 'yup';
 import { taskUserToAutocompleteOption } from '../../../../utils/task.utils';
@@ -10,7 +10,7 @@ import NERFormModal from '../../../../components/NERFormModal';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import { useWorkPackagesByProject } from '../../../../hooks/work-packages.hooks';
-import { useAllTaskLabels } from '../../../../hooks/tasks.hooks';
+import { useAllTaskLabels, useFilterTasks } from '../../../../hooks/tasks.hooks';
 
 export interface EditTaskFormInput {
   taskId: string;
@@ -18,6 +18,7 @@ export interface EditTaskFormInput {
   notes?: string;
   assignees: string[];
   labels: TaskLabel[];
+  blockedBy: TaskBlockerPreview[];
   startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
@@ -69,6 +70,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
       assignees: yup.array().required().min(1, 'At least one assignee is required for In Progress tasks'),
       labels: yup.array().of(yup.mixed<TaskLabel>().required()).required(),
+      blockedBy: yup.array().of(yup.mixed<TaskBlockerPreview>().required()).required(),
       title: yup.string().required(),
       taskId: yup.string().required(),
       wpWbsNum: yup.mixed<WbsNumber>().optional()
@@ -95,6 +97,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
       assignees: yup.array().required(),
       labels: yup.array().of(yup.mixed<TaskLabel>().required()).required(),
+      blockedBy: yup.array().of(yup.mixed<TaskBlockerPreview>().required()).required(),
       title: yup.string().required(),
       taskId: yup.string().required(),
       wpWbsNum: yup.mixed<WbsNumber>().nullable().optional()
@@ -108,6 +111,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
   const projectWbsNum = { ...wbsNum, workPackageNumber: 0 };
   const { data: workPackages } = useWorkPackagesByProject(projectWbsNum);
+  const { data: projectTasks } = useFilterTasks({ wbsNum: projectWbsNum });
+  const blockedByOptions: TaskBlockerPreview[] = (projectTasks ?? []).filter((t) => t.taskId !== task?.taskId);
 
   const isWpContext = wbsNum.workPackageNumber !== 0;
 
@@ -128,6 +133,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       priority: task?.priority ?? TaskPriority.Low,
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? [],
       labels: task?.labels ?? [],
+      blockedBy: task?.blockedBy ?? [],
       wpWbsNum: task?.wbsNum.workPackageNumber !== 0 ? task?.wbsNum : undefined
     }
   });
@@ -317,6 +323,34 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                       ))
                     }
                     renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select labels" />}
+                  />
+                )}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item md={12}>
+            <FormControl fullWidth>
+              <FormLabel>Blocked By</FormLabel>
+              <Controller
+                name="blockedBy"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Autocomplete
+                    multiple
+                    filterSelectedOptions
+                    options={blockedByOptions}
+                    getOptionLabel={(option: TaskBlockerPreview) => option.title}
+                    isOptionEqualToValue={(option, val) => option.taskId === val.taskId}
+                    onChange={(_, selected) => onChange(selected)}
+                    value={value}
+                    renderTags={(selected, getTagProps) =>
+                      selected.map((blocker, index) => (
+                        <Chip {...getTagProps({ index })} key={blocker.taskId} label={blocker.title} />
+                      ))
+                    }
+                    renderInput={(params) => (
+                      <TextField {...params} variant="standard" placeholder="Select tasks that block this task" />
+                    )}
                   />
                 )}
               />

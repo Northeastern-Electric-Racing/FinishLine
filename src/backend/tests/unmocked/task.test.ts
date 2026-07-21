@@ -65,6 +65,7 @@ describe('Task Tests', () => {
         '',
         'HIGH',
         [],
+        [],
         undefined,
         undefined,
         newWbsNum
@@ -78,7 +79,16 @@ describe('Task Tests', () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
 
-      const updatedTask = await TasksService.editTask(user, organizationId, task.taskId, 'Updated Title', '', 'HIGH', []);
+      const updatedTask = await TasksService.editTask(
+        user,
+        organizationId,
+        task.taskId,
+        'Updated Title',
+        '',
+        'HIGH',
+        [],
+        []
+      );
 
       expect(updatedTask.taskId).toBe(task.taskId);
       expect(updatedTask.title).toBe('Updated Title');
@@ -98,6 +108,7 @@ describe('Task Tests', () => {
           'Test Task',
           '',
           'HIGH',
+          [],
           [],
           undefined,
           undefined,
@@ -140,6 +151,7 @@ describe('Task Tests', () => {
           '',
           'HIGH',
           [],
+          [],
           undefined,
           undefined,
           deletedWbsNum
@@ -152,9 +164,16 @@ describe('Task Tests', () => {
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
       const label = await TasksService.createTaskLabel(user, 'Test Label', '#3B82F6', organization);
 
-      const updatedTask = await TasksService.editTask(user, organizationId, task.taskId, 'Test Task', '', 'HIGH', [
-        label.taskLabelId
-      ]);
+      const updatedTask = await TasksService.editTask(
+        user,
+        organizationId,
+        task.taskId,
+        'Test Task',
+        '',
+        'HIGH',
+        [label.taskLabelId],
+        []
+      );
 
       expect(updatedTask.labels).toHaveLength(1);
       expect(updatedTask.labels[0].taskLabelId).toBe(label.taskLabelId);
@@ -165,7 +184,7 @@ describe('Task Tests', () => {
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
 
       await expect(async () =>
-        TasksService.editTask(user, organizationId, task.taskId, 'Test Task', '', 'HIGH', ['nonexistent-label-id'])
+        TasksService.editTask(user, organizationId, task.taskId, 'Test Task', '', 'HIGH', ['nonexistent-label-id'], [])
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -176,7 +195,7 @@ describe('Task Tests', () => {
       await prisma.task_Label.update({ where: { taskLabelId: label.taskLabelId }, data: { dateDeleted: new Date() } });
 
       await expect(async () =>
-        TasksService.editTask(user, organizationId, task.taskId, 'Test Task', '', 'HIGH', [label.taskLabelId])
+        TasksService.editTask(user, organizationId, task.taskId, 'Test Task', '', 'HIGH', [label.taskLabelId], [])
       ).rejects.toThrow(DeletedException);
     });
 
@@ -193,7 +212,7 @@ describe('Task Tests', () => {
       const label = await TasksService.createTaskLabel(otherUser, 'Test Label', '#3B82F6', otherOrg);
 
       await expect(async () =>
-        TasksService.editTask(user, organizationId, task.taskId, 'Test Task', '', 'HIGH', [label.taskLabelId])
+        TasksService.editTask(user, organizationId, task.taskId, 'Test Task', '', 'HIGH', [label.taskLabelId], [])
       ).rejects.toThrow(InvalidOrganizationException);
     });
   });
@@ -481,7 +500,7 @@ describe('Task Tests', () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(admin, 'Test', '', [], 'HIGH', 'DONE', organizationId, new Date());
       await expect(async () =>
-        TasksService.editTask(guest, organizationId, task.taskId, 'Title', 'Notes', 'HIGH', [], new Date())
+        TasksService.editTask(guest, organizationId, task.taskId, 'Title', 'Notes', 'HIGH', [], [], new Date())
       ).rejects.toThrow(new AccessDeniedException('Guests cannot edit tasks'));
     });
   });

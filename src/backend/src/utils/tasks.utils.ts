@@ -2,7 +2,7 @@ import { Task_Priority, Task_Status } from '@prisma/client';
 import { Task, TaskPriority, TaskStatus } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { sendSlackTaskAssignedNotification } from './slack.utils.js';
-import { DeletedException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
+import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
 
 export const convertTaskPriority = (priority: Task_Priority): TaskPriority =>
   ({
@@ -38,6 +38,41 @@ export const validateTaskLabels = async (labelIds: string[], organizationId: str
 
   const wrongOrgLabel = labels.find((l) => l.organizationId !== organizationId);
   if (wrongOrgLabel) throw new InvalidOrganizationException('Task Label');
+};
+
+/**
+ * Validates that all given task IDs exist, are not deleted, and belong to the given organization.
+ * @param blockedByIds the task ids that would block the task
+ * @param organizationId the organization the blocking tasks must belong to
+ * @param taskId the id of the task being blocked, if it already exists (omitted on create)
+ * @throws NotFoundException if any ID doesn't exist
+ * @throws DeletedException if any blocking task is soft-deleted
+ * @throws InvalidOrganizationException if any blocking task belongs to a different organization
+ * @throws HttpException if a task is listed as blocking itself
+ */
+export const validateTaskBlockedBys = async (blockedByIds: string[], organizationId: string, taskId?: string) => {
+  if (blockedByIds.length === 0) return [];
+
+  if (taskId && blockedByIds.includes(taskId)) {
+    throw new HttpException(400, 'A task cannot block itself');
+  }
+
+  const blockedByTasks = await prisma.task.findMany({
+    where: { taskId: { in: blockedByIds } },
+    include: { wbsElement: true }
+  });
+
+  const foundIds = blockedByTasks.map((t) => t.taskId);
+  const missingIds = blockedByIds.filter((id) => !foundIds.includes(id));
+  if (missingIds.length > 0) throw new NotFoundException('Task', missingIds.join(', '));
+
+  const deletedTask = blockedByTasks.find((t) => t.dateDeleted !== null);
+  if (deletedTask) throw new DeletedException('Task', deletedTask.taskId);
+
+  const wrongOrgTask = blockedByTasks.find((t) => t.wbsElement.organizationId !== organizationId);
+  if (wrongOrgTask) throw new InvalidOrganizationException('Task');
+
+  return blockedByTasks;
 };
 
 /**

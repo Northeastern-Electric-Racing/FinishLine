@@ -654,6 +654,8 @@ model Task {
   wbsElement      WBS_Element   @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId    String
   labels          Task_Label[]
+  blockedBy       Task[]        @relation(name: "taskBlocking")
+  blocking        Task[]        @relation(name: "taskBlocking")
 
   @@index([wbsElementId])
 }

@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { CalendarTask, Task, TaskCardPreview, TaskLabel } from 'shared';
+import { BlockingWorkPackagePreview, CalendarTask, Task, TaskBlockerPreview, TaskCardPreview, TaskLabel } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
 import { convertTaskPriority, convertTaskStatus } from '../utils/tasks.utils.js';
 import { userTransformer } from './user.transformer.js';
@@ -7,8 +7,26 @@ import {
   CalendarTaskQueryArgs,
   TaskLabelQueryArgs,
   TaskQueryArgs,
-  TaskPreviewQueryArgs
+  TaskPreviewQueryArgs,
+  TaskBlockedByQueryArgs,
+  BlockingWorkPackagesQueryArgs
 } from '../prisma-query-args/tasks.query-args.js';
+
+export const taskBlockedByTransformer = (task: Prisma.TaskGetPayload<TaskBlockedByQueryArgs>): TaskBlockerPreview => ({
+  taskId: task.taskId,
+  title: task.title
+});
+
+// only surfaces a blocking work package if it still has at least one non-done task
+export const getBlockingWorkPackages = (
+  wbsElement: Pick<Prisma.WBS_ElementGetPayload<BlockingWorkPackagesQueryArgs>, 'workPackage'>
+): BlockingWorkPackagePreview[] =>
+  (wbsElement.workPackage?.blockedBy ?? [])
+    .filter((blocker) => blocker.tasks.some((t) => t.status !== 'DONE'))
+    .map((blocker) => ({
+      wbsNum: wbsNumOf(blocker),
+      name: blocker.name
+    }));
 
 export const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
   const wbsNum = wbsNumOf(task.wbsElement);
@@ -25,6 +43,8 @@ export const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Tas
     createdBy: userTransformer(task.createdBy),
     assignees: task.assignees.map(userTransformer),
     labels: task.labels.map(taskLabelTransformer),
+    blockedBy: task.blockedBy.map(taskBlockedByTransformer),
+    blockedByWorkPackages: getBlockingWorkPackages(task.wbsElement),
     dateDeleted: task.dateDeleted ?? undefined,
     dateCreated: task.dateCreated,
     deletedBy: task.deletedBy ? userTransformer(task.deletedBy) : undefined
@@ -62,6 +82,8 @@ export const calendarTaskTransformer = (task: Prisma.TaskGetPayload<CalendarTask
     createdBy: userTransformer(task.createdBy),
     assignees: task.assignees.map(userTransformer),
     labels: task.labels.map(taskLabelTransformer),
+    blockedBy: task.blockedBy.map(taskBlockedByTransformer),
+    blockedByWorkPackages: getBlockingWorkPackages(task.wbsElement),
     dateDeleted: task.dateDeleted ?? undefined,
     dateCreated: task.dateCreated,
     deletedBy: task.deletedBy ? userTransformer(task.deletedBy) : undefined,

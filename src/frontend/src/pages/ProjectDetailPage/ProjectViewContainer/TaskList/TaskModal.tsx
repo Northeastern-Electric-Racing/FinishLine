@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { fullNamePipe, datePipe } from '../../../../utils/pipes';
+import { fullNamePipe, datePipe, wbsPipe } from '../../../../utils/pipes';
 import { Task, WbsNumber } from 'shared';
 import { Box, Chip, Grid, Typography } from '@mui/material';
 import { useState } from 'react';
@@ -94,6 +94,24 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
               ))}
             </Box>
           </Grid>
+          {(task.blockedBy.length > 0 || task.blockedByWorkPackages.length > 0) && (
+            <Grid item xs={12} md={6}>
+              <Typography fontWeight={'bold'}>Blocked By:</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                {task.blockedBy.map((blocker) => (
+                  <Chip key={blocker.taskId} label={blocker.title} size="small" />
+                ))}
+                {task.blockedByWorkPackages.map((blockingWp) => (
+                  <Chip
+                    key={wbsPipe(blockingWp.wbsNum)}
+                    label={`${blockingWp.name} (WP)`}
+                    size="small"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
+            </Grid>
+          )}
           <Grid item xs={12} md={6}>
             <Typography fontWeight={'bold'}>Notes:</Typography>
             <Box sx={{ height: 'auto', overflow: 'auto' }}>

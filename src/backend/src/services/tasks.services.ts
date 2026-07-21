@@ -25,7 +25,7 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
-import { sendSlackTaskAssignedNotificationToUsers, validateTaskLabels } from '../utils/tasks.utils.js';
+import { sendSlackTaskAssignedNotificationToUsers, validateTaskBlockedBys, validateTaskLabels } from '../utils/tasks.utils.js';
 import { getUsers, userHasPermission } from '../utils/users.utils.js';
 import { wbsNumOf } from '../utils/utils.js';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
@@ -49,6 +49,7 @@ export default class TasksService {
    * @param assignees the assignees ids of the task
    * @param organizationId the organization that the user is currently in
    * @param labelIds the label ids for the task
+   * @param blockedByIds the ids of the tasks that block this task
    * @param startDate the start date of the task
    * @param deadline the deadline of the task
    * @returns the id of the successfully created task
@@ -64,6 +65,7 @@ export default class TasksService {
     assignees: string[],
     organization: Organization,
     labelIds: string[],
+    blockedByIds: string[],
     startDate?: Date,
     deadline?: Date
   ): Promise<Task> {
@@ -121,6 +123,7 @@ export default class TasksService {
     }
 
     await validateTaskLabels(labelIds, organization.organizationId);
+    const blockedByTasks = await validateTaskBlockedBys(blockedByIds, organization.organizationId);
 
     const createdTask = await prisma.task.create({
       data: {
@@ -140,7 +143,8 @@ export default class TasksService {
         status,
         createdBy: { connect: { userId: createdBy.userId } },
         assignees: { connect: users.map((user) => ({ userId: user.userId })) },
-        labels: { connect: labelIds.map((id) => ({ taskLabelId: id })) }
+        labels: { connect: labelIds.map((id) => ({ taskLabelId: id })) },
+        blockedBy: { connect: blockedByTasks.map((task) => ({ taskId: task.taskId })) }
       },
       ...getTaskQueryArgs(organization.organizationId)
     });
@@ -162,6 +166,7 @@ export default class TasksService {
    * @param notes the new notes for the task
    * @param priority the new priority for the task
    * @param labelIds the new label ids for the task
+   * @param blockedByIds the new ids of the tasks that block this task
    * @param startDate the new start date for the task
    * @param deadline the new deadline for the task
    * @param wbsNum the new wbs element for the task
@@ -175,6 +180,7 @@ export default class TasksService {
     notes: string,
     priority: Task_Priority,
     labelIds: string[],
+    blockedByIds: string[],
     startDate?: Date,
     deadline?: Date,
     wbsNum?: WbsNumber
@@ -200,6 +206,7 @@ export default class TasksService {
     }
 
     await validateTaskLabels(labelIds, organizationId);
+    const blockedByTasks = await validateTaskBlockedBys(blockedByIds, organizationId, taskId);
 
     // if wbsNum passed, error if there's a problem with the wbs element
     if (wbsNum) {
@@ -234,7 +241,8 @@ export default class TasksService {
             }
           }
         }),
-        labels: { set: labelIds.map((id) => ({ taskLabelId: id })) }
+        labels: { set: labelIds.map((id) => ({ taskLabelId: id })) },
+        blockedBy: { set: blockedByTasks.map((task) => ({ taskId: task.taskId })) }
       },
       ...getTaskQueryArgs(originalTask.wbsElement.organizationId)
     });
