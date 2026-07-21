@@ -102,7 +102,6 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
   const { data: teams, isLoading: teamsLoading, isError: teamsError, error: teamsErrorData } = useAllTeams();
   const { mutate: bulkToggle, isLoading: isSaving } = useBulkToggleRuleTeam();
 
-  const hasAppliedTeamParamRef = useRef(false);
   // background refetches ensure current toggles remain
   const hasPendingChangesRef = useRef(false);
 
@@ -122,14 +121,13 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
       setAssignments(new Set(initialAssignments));
     }
 
-    if (!hasAppliedTeamParamRef.current) {
+    if (!selectedTeamId) {
       const teamIdParam = new URLSearchParams(location.search).get('teamId');
       if (teamIdParam && teams.some((team) => team.teamId === teamIdParam)) {
         setSelectedTeamId(teamIdParam);
       }
-      hasAppliedTeamParamRef.current = true;
     }
-  }, [rules, teams, location.search]);
+  }, [rules, teams, location.search, selectedTeamId]);
 
   const handleTeamSelect = (teamId: string) => setSelectedTeamId(teamId);
 

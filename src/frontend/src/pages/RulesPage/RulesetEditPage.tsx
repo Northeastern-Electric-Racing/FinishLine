@@ -223,11 +223,11 @@ const RulesetEditPage: React.FC = () => {
     const currentRule = allRules.find((r) => r.ruleId === editingRuleId);
     const warnings: string[] = [];
 
-    if (currentRule?.parentRule && !editedCode.startsWith(currentRule.parentRule.ruleCode)) {
-      warnings.push(`This code doesn't start with its parent rule's code: ${currentRule.parentRule.ruleCode}.`);
-    }
-
     if (currentRule && currentRule.ruleCode !== editedCode) {
+      if (currentRule.parentRule && !editedCode.startsWith(currentRule.parentRule.ruleCode)) {
+        warnings.push(`This code doesn't start with its parent rule's code: ${currentRule.parentRule.ruleCode}.`);
+      }
+
       const affectedCount = countRulesToDelete(currentRule, allRules) - 1;
       if (affectedCount > 0) {
         warnings.push(

@@ -1286,6 +1286,34 @@ describe('Rule Tests', () => {
       ).rejects.toThrow(new HttpException(400, `Rule with code ${leafRule2.ruleCode} already exists in this ruleset`));
     });
 
+    it('Fails when parent rule is in a different ruleset', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset2, leafRule1 } = await setupRules(car);
+
+      const otherRulesetRule = await prisma.rule.create({
+        data: {
+          ruleCode: 'X1',
+          ruleContent: 'Rule in a different ruleset',
+          imageFileIds: [],
+          dateCreated: new Date(),
+          ruleset: { connect: { rulesetId: ruleset2.rulesetId } },
+          createdBy: { connect: { userId: admin.userId } }
+        }
+      });
+
+      await expect(
+        RulesService.editRule(
+          admin,
+          leafRule1.ruleContent,
+          leafRule1.ruleId,
+          leafRule1.ruleCode,
+          leafRule1.imageFileIds,
+          organization,
+          otherRulesetRule.ruleId
+        )
+      ).rejects.toThrow(new HttpException(400, 'Parent rule must be in the same ruleset'));
+    });
+
     it('Allows a new rule code that does not start with the existing parent rule code', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule2 } = await setupRules(car); // leafRule2's parent code is 'T'

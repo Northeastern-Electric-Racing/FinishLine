@@ -99,22 +99,20 @@ export default class RulesService {
   /**
    * Throws if a rule with the given code already exists in the given ruleset
    * @param rulesetId The ruleset to check for an existing rule code
-   * @param ruleCode The rule code to check
+   * @param ruleCode The trimmed rule code to check
    */
   private static async assertRuleCodeAvailable(rulesetId: string, ruleCode: string) {
-    const trimmedRuleCode = ruleCode.trim();
-
     const existingRule = await prisma.rule.findUnique({
       where: {
         rulesetId_ruleCode: {
           rulesetId,
-          ruleCode: trimmedRuleCode
+          ruleCode
         }
       }
     });
 
     if (existingRule) {
-      throw new HttpException(400, `Rule with code ${trimmedRuleCode} already exists in this ruleset`);
+      throw new HttpException(400, `Rule with code ${ruleCode} already exists in this ruleset`);
     }
   }
 
