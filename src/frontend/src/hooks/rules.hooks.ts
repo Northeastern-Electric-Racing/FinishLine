@@ -420,8 +420,8 @@ export const useEditRule = () => {
       return data;
     },
     {
-      onSuccess: () => {
-        toast.success('Rule updated successfully');
+      onSuccess: (_data, variables) => {
+        toast.success(variables.imageFileIds !== undefined ? 'Image uploaded successfully' : 'Rule updated successfully');
         queryClient.invalidateQueries(['rules']);
         queryClient.invalidateQueries(['rulesets']);
       },

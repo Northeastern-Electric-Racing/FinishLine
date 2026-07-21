@@ -58,7 +58,6 @@ const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, al
         ruleContent: activeRule.ruleContent,
         imageFileIds: [...activeRule.imageFileIds, fileId]
       });
-      toast.success('Image added');
       handleClose();
     } catch (error: unknown) {
       if (error instanceof Error) {
