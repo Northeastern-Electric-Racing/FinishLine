@@ -209,6 +209,7 @@ export const eventCreateInput = (
   optionalMemberIds: string[],
   confirmedMemberIds: string[],
   deniedMemberIds: string[],
+  dateCreated: Date,
   approvalRequiredFromUserId?: string
 ): Prisma.EventCreateInput => ({
   title,
@@ -218,6 +219,7 @@ export const eventCreateInput = (
   calendarEventIds: [],
   userCreated: { connect: { userId: userCreatedId } },
   eventType: { connect: { eventTypeId } },
+  dateCreated,
   requiredMembers: {
     connect: [
       { userId: userCreatedId },

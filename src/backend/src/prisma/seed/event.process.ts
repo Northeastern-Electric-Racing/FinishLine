@@ -111,13 +111,18 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
       const dateCreated = generateEventDateCreated(this.faker, initialDateScheduled);
 
       const requiredMemberIds = eventType.requiredMembers
-        ? this.faker.helpers.arrayElements(allUsers, this.faker.number.int({ min: 1, max: 5 })).map((user) => user.userId)
-        : [];
+        ? [
+            creator.userId,
+            ...this.faker.helpers
+              .arrayElements(allUsers, this.faker.number.int({ min: 0, max: 4 }))
+              .map((user) => user.userId)
+          ]
+        : [creator.userId];
       const optionalMemberIds = eventType.optionalMembers
         ? this.faker.helpers
             .arrayElements(
               allUsers.filter((user) => !requiredMemberIds.includes(user.userId)),
-              this.faker.number.int({ min: 1, max: 5 })
+              this.faker.number.int({ min: 0, max: 5 })
             )
             .map((user) => user.userId)
         : [];
@@ -148,6 +153,7 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
           optionalMemberIds,
           confirmedMemberIds,
           deniedMemberIds,
+          dateCreated,
           approvalRequiredFromUserId
         )
       });
