@@ -18,6 +18,7 @@ import AddRuleModal from './components/AddRuleModal';
 import AddReferencedRuleModal from './components/AddReferencedRuleModal';
 import AddImageModal from './components/AddImageModal';
 import RemoveReferencedRuleModal from './components/RemoveReferencedRuleModal';
+import RemoveImageModal from './components/RemoveImageModal';
 import RuleContent from './components/RuleContent';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
@@ -54,6 +55,8 @@ const RulesetEditPage: React.FC = () => {
   const [showRemoveReferenceModal, setShowRemoveReferenceModal] = useState(false);
 
   const [referenceToRemove, setReferenceToRemove] = useState<{ rule: Rule; referencedRule: Rule } | null>(null);
+  const [imageToRemove, setImageToRemove] = useState<{ rule: Rule; fileId: string } | null>(null);
+  const [showRemoveImageModal, setShowRemoveImageModal] = useState(false);
 
   // Delete modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -163,6 +166,36 @@ const RulesetEditPage: React.FC = () => {
       setReferenceToRemove(null);
     } catch (err) {
       toast.error('Failed to remove referenced rule');
+    }
+  };
+
+  const handleRemoveImage = (ruleId: string, fileId: string) => {
+    const rule = rulesById.get(ruleId);
+    if (rule) {
+      setImageToRemove({ rule, fileId });
+      setShowRemoveImageModal(true);
+    }
+  };
+
+  const handleRemoveImageCancel = () => {
+    setShowRemoveImageModal(false);
+    setImageToRemove(null);
+  };
+
+  const handleConfirmRemoveImage = async () => {
+    if (!imageToRemove) return;
+
+    try {
+      await editRuleMutation({
+        ruleId: imageToRemove.rule.ruleId,
+        ruleContent: imageToRemove.rule.ruleContent,
+        imageFileIds: imageToRemove.rule.imageFileIds.filter((id) => id !== imageToRemove.fileId)
+      });
+      toast.success('Image removed successfully');
+      setShowRemoveImageModal(false);
+      setImageToRemove(null);
+    } catch (err) {
+      toast.error('Failed to remove image');
     }
   };
 
@@ -290,6 +323,7 @@ const RulesetEditPage: React.FC = () => {
                               rule={currentRule}
                               color={theme.palette.common.black}
                               onReferenceRemove={(refId) => handleRemoveReference(currentRule.ruleId, refId)}
+                              onImageRemove={(fileId) => handleRemoveImage(currentRule.ruleId, fileId)}
                             />
                           )
                         );
@@ -359,6 +393,16 @@ const RulesetEditPage: React.FC = () => {
                 onConfirm={handleConfirmRemoveReference}
                 rule={referenceToRemove.rule}
                 referencedRule={referenceToRemove.referencedRule}
+              />
+            )}
+
+            {imageToRemove && (
+              <RemoveImageModal
+                open={showRemoveImageModal}
+                onHide={handleRemoveImageCancel}
+                onConfirm={handleConfirmRemoveImage}
+                ruleCode={imageToRemove.rule.ruleCode}
+                imageNumber={imageToRemove.rule.imageFileIds.indexOf(imageToRemove.fileId) + 1}
               />
             )}
 

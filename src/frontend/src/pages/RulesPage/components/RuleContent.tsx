@@ -3,7 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, useTheme } from '@mui/material';
+import { Box, IconButton, useTheme } from '@mui/material';
+import { Close } from '@mui/icons-material';
 import { useState } from 'react';
 import { Rule } from 'shared';
 import { useGetImageUrls } from '../../../hooks/onboarding.hook';
@@ -19,6 +20,8 @@ interface RuleContentProps {
   // sets selected referenced rules as interactable, when omitted every reference is interactive
   // used in project view since only references in that project will be clickable
   isReferenceInteractive?: (ruleId: string) => boolean;
+  // in edit view, a delete icon is shown on each image thumbnail to remove it
+  onImageRemove?: (fileId: string) => void;
 }
 
 /**
@@ -29,7 +32,8 @@ const RuleContent: React.FC<RuleContentProps> = ({
   color,
   onReferenceClick,
   onReferenceRemove,
-  isReferenceInteractive
+  isReferenceInteractive,
+  onImageRemove
 }) => {
   const theme = useTheme();
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
@@ -91,14 +95,34 @@ const RuleContent: React.FC<RuleContentProps> = ({
           {imageUrls.map(
             (image, index) =>
               image.url && (
-                <Box
-                  key={image.id}
-                  component="img"
-                  src={image.url}
-                  alt="Rule attachment"
-                  onClick={() => setPreviewIndex(index)}
-                  sx={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 1, cursor: 'pointer' }}
-                />
+                <Box key={image.id} sx={{ position: 'relative', width: 48, height: 48 }}>
+                  <Box
+                    component="img"
+                    src={image.url}
+                    alt="Rule attachment"
+                    onClick={() => setPreviewIndex(index)}
+                    sx={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 1, cursor: 'pointer' }}
+                  />
+                  {onImageRemove && (
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onImageRemove(image.id);
+                      }}
+                      sx={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        padding: '2px',
+                        backgroundColor: theme.palette.grey[700],
+                        '&:hover': { backgroundColor: theme.palette.primary.main }
+                      }}
+                    >
+                      <Close sx={{ fontSize: 14, color: theme.palette.common.white }} />
+                    </IconButton>
+                  )}
+                </Box>
               )
           )}
         </Box>
