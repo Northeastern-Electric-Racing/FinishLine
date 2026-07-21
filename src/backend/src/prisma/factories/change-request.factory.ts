@@ -62,6 +62,10 @@ const BUDGET_AMOUNTS = [500, 1000, 1500, 2000, 2500, 5000];
 
 type CrLink = { kind: 'wbs'; wbsElementId: string } | { kind: 'accountCode'; accountCodeId: string };
 
+const AUTO_ACCEPTED_TYPES: CR_Type[] = [CR_Type.ACTIVATION, CR_Type.STAGE_GATE, CR_Type.LEADERSHIP];
+
+const isAutoAccepted = (type: CR_Type): boolean => AUTO_ACCEPTED_TYPES.includes(type);
+
 const crTypeForParent = (faker: Faker, isWorkPackage: boolean): CR_Type => {
   if (isWorkPackage) {
     return faker.helpers.weightedArrayElement([
@@ -248,15 +252,23 @@ const buildChangeRequest = ({
   };
 };
 
-const outcomesForOrderedCrs = (faker: Faker, count: number): ReviewOutcome[] =>
-  Array.from({ length: count }, (_, index) => (index === count - 1 ? latestOutcome(faker) : resolvedOutcome(faker)));
+const outcomesForOrderedCrs = (faker: Faker, types: CR_Type[]): ReviewOutcome[] => {
+  const lastReviewableIndex = types.reduce((last, type, index) => (isAutoAccepted(type) ? last : index), -1);
 
-const orderedSubmissionDates = (faker: Faker, timeline: DateRange, count: number): Date[] =>
+  return types.map((type, index) => {
+    if (isAutoAccepted(type)) return 'APPROVED';
+    return index === lastReviewableIndex ? latestOutcome(faker) : resolvedOutcome(faker);
+  });
+};
+
+const cappedWindow = (timeline: DateRange): DateRange => ({
+  start: timeline.start,
+  end: new Date(Math.min(timeline.end.getTime(), Date.now()))
+});
+
+const orderedSubmissionDates = (faker: Faker, window: DateRange, count: number): Date[] =>
   Array.from({ length: count }, () =>
-    clampDate(addDaysToDate(new Date(timeline.start), faker.number.int({ min: 0, max: daysBetween(timeline) })), {
-      start: timeline.start,
-      end: timeline.end
-    })
+    clampDate(addDaysToDate(new Date(window.start), faker.number.int({ min: 0, max: daysBetween(window) })), window)
   ).sort((a, b) => a.getTime() - b.getTime());
 
 const pickActor = (faker: Faker, actors: SeedCrActor[]): string => faker.helpers.arrayElement(actors).userId;
@@ -272,22 +284,24 @@ export const buildWbsChangeRequests = (
 ): Prisma.Change_RequestCreateInput[] => {
   if (identifiers.length === 0) return [];
 
-  const dates = orderedSubmissionDates(faker, parent.timeline, identifiers.length);
-  const outcomes = outcomesForOrderedCrs(faker, identifiers.length);
+  const window = cappedWindow(parent.timeline);
+  const dates = orderedSubmissionDates(faker, window, identifiers.length);
+  const types = identifiers.map(() => crTypeForParent(faker, isWorkPackage));
+  const outcomes = outcomesForOrderedCrs(faker, types);
 
   return identifiers.map((identifier, index) =>
     buildChangeRequest({
       faker,
       identifier,
       organizationId,
-      type: crTypeForParent(faker, isWorkPackage),
+      type: types[index],
       parent,
       link: { kind: 'wbs', wbsElementId: parent.wbsElementId },
       submitterId: pickActor(faker, submitters),
       reviewerId: pickActor(faker, reviewers),
       dateSubmitted: dates[index],
       outcome: outcomes[index],
-      reviewWindowEnd: parent.timeline.end
+      reviewWindowEnd: window.end
     })
   );
 };
@@ -303,8 +317,10 @@ export const buildAccountCodeChangeRequests = (
 ): Prisma.Change_RequestCreateInput[] => {
   if (identifiers.length === 0) return [];
 
-  const dates = orderedSubmissionDates(faker, timeline, identifiers.length);
-  const outcomes = outcomesForOrderedCrs(faker, identifiers.length);
+  const window = cappedWindow(timeline);
+  const dates = orderedSubmissionDates(faker, window, identifiers.length);
+  const types = identifiers.map(() => CR_Type.BUDGET);
+  const outcomes = outcomesForOrderedCrs(faker, types);
 
   return identifiers.map((identifier, index) =>
     buildChangeRequest({
@@ -317,7 +333,7 @@ export const buildAccountCodeChangeRequests = (
       reviewerId: pickActor(faker, reviewers),
       dateSubmitted: dates[index],
       outcome: outcomes[index],
-      reviewWindowEnd: timeline.end
+      reviewWindowEnd: window.end
     })
   );
 };

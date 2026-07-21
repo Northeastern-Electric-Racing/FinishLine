@@ -7,6 +7,7 @@ import { WorkPackageOutput, WorkPackageProcess } from './work-package.process.js
 import { ConfigDataOutput, ConfigDataProcess } from './config-data.process.js';
 import { TeamOutput, TeamProcess } from './team.process.js';
 import { DateRange } from '../context.js';
+import { WEEK_MS } from '../dates.js';
 import {
   buildAccountCodeChangeRequests,
   buildWbsChangeRequests,
@@ -32,7 +33,8 @@ export type ChangeRequestOutput = {
 const changeRequestInclude = {
   activationChangeRequest: true,
   stageGateChangeRequest: true,
-  budgetChangeRequest: true
+  budgetChangeRequest: true,
+  wbsElement: { include: { workPackage: true } }
 } satisfies Prisma.Change_RequestInclude;
 
 type SeededChangeRequest = Prisma.Change_RequestGetPayload<{ include: typeof changeRequestInclude }>;
@@ -54,32 +56,49 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     return Promise.all(inputs.map((data) => this.prisma.change_Request.create({ data, include: changeRequestInclude })));
   }
 
-  private async applyAcceptedWbsStatuses(changeRequests: SeededChangeRequest[]): Promise<void> {
-    const latestStatusByWbs = new Map<string, { dateSubmitted: Date; status: WBS_Element_Status }>();
+  private async applyAcceptedWbsChanges(changeRequests: SeededChangeRequest[]): Promise<void> {
+    const workPackageCrs = new Map<string, SeededChangeRequest[]>();
 
     for (const cr of changeRequests) {
-      if (!cr.accepted || !cr.wbsElementId) continue;
+      if (!cr.accepted || !cr.wbsElement?.workPackage) continue;
+      if (cr.type !== CR_Type.ACTIVATION && cr.type !== CR_Type.STAGE_GATE) continue;
 
-      const status =
-        cr.type === CR_Type.ACTIVATION
-          ? WBS_Element_Status.ACTIVE
-          : cr.type === CR_Type.STAGE_GATE
-            ? WBS_Element_Status.COMPLETE
-            : undefined;
+      const list = workPackageCrs.get(cr.wbsElement.wbsElementId) ?? [];
+      list.push(cr);
+      workPackageCrs.set(cr.wbsElement.wbsElementId, list);
+    }
 
-      if (!status) continue;
+    await Promise.all(Array.from(workPackageCrs.values()).map((crs) => this.applyWorkPackageLifecycle(crs)));
+  }
 
-      const current = latestStatusByWbs.get(cr.wbsElementId);
-      if (!current || cr.dateSubmitted >= current.dateSubmitted) {
-        latestStatusByWbs.set(cr.wbsElementId, { dateSubmitted: cr.dateSubmitted, status });
+  private async applyWorkPackageLifecycle(crs: SeededChangeRequest[]): Promise<void> {
+    const workPackage = crs[0].wbsElement?.workPackage;
+    if (!workPackage) return;
+
+    const ordered = [...crs].sort((a, b) => a.dateSubmitted.getTime() - b.dateSubmitted.getTime());
+
+    let { startDate, duration } = workPackage;
+    let status: WBS_Element_Status = WBS_Element_Status.INACTIVE;
+
+    for (const cr of ordered) {
+      if (cr.type === CR_Type.ACTIVATION && cr.activationChangeRequest) {
+        ({ startDate } = cr.activationChangeRequest);
+        status = WBS_Element_Status.ACTIVE;
+      } else if (cr.type === CR_Type.STAGE_GATE) {
+        const completedDate = cr.dateReviewed ?? cr.dateSubmitted;
+        duration = Math.max(1, Math.round((completedDate.getTime() - startDate.getTime()) / WEEK_MS));
+        status = WBS_Element_Status.COMPLETE;
       }
     }
 
-    await Promise.all(
-      Array.from(latestStatusByWbs.entries()).map(([wbsElementId, { status }]) =>
-        this.prisma.wBS_Element.update({ where: { wbsElementId }, data: { status } })
-      )
-    );
+    await this.prisma.work_Package.update({
+      where: { workPackageId: workPackage.workPackageId },
+      data: {
+        startDate,
+        duration,
+        wbsElement: { update: { status } }
+      }
+    });
   }
 
   private async applyAcceptedAccountCodeBudgets(changeRequests: SeededChangeRequest[]): Promise<void> {
@@ -224,7 +243,7 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     const createdWbsChangeRequests = await this.createChangeRequests(wbsChangeRequestInputs);
     const createdBudgetChangeRequests = await this.createChangeRequests(budgetChangeRequestInputs);
 
-    await this.applyAcceptedWbsStatuses(createdWbsChangeRequests);
+    await this.applyAcceptedWbsChanges(createdWbsChangeRequests);
     await this.applyAcceptedAccountCodeBudgets(createdBudgetChangeRequests);
 
     const changeRequests = [...createdWbsChangeRequests, ...createdBudgetChangeRequests];
