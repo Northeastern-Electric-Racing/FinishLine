@@ -413,22 +413,78 @@ export const useEditRule = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  return useMutation<SharedRule, Error, { ruleId: string; ruleContent: string; imageFileIds?: string[] }>(
+  return useMutation<SharedRule, Error, { ruleId: string; ruleContent: string }>(
     ['rules', 'edit'],
-    async ({ ruleId, ruleContent, imageFileIds }) => {
-      const { data } = await editRule(ruleId, ruleContent, imageFileIds);
+    async ({ ruleId, ruleContent }) => {
+      const { data } = await editRule(ruleId, ruleContent);
       return data;
     },
     {
-      onSuccess: (_data, variables) => {
-        if (variables.imageFileIds === undefined) {
-          toast.success('Rule updated successfully');
-        }
+      onSuccess: () => {
+        toast.success('Rule updated successfully');
         queryClient.invalidateQueries(['rules']);
         queryClient.invalidateQueries(['rulesets']);
       },
       onError: (error: Error) => {
         toast.error(`Failed to update rule: ${error.message}`);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to upload an image and attach it to a rule
+ */
+export const useAddRuleImage = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const { mutateAsync: uploadFile } = useUploadRulesetFile();
+
+  return useMutation<SharedRule, Error, { rule: SharedRule; file: File }>(
+    ['rules', 'addImage'],
+    async ({ rule, file }) => {
+      const fileId = await uploadFile(file);
+      const { data } = await editRule(rule.ruleId, rule.ruleContent, [...rule.imageFileIds, fileId]);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        toast.success('Image uploaded successfully');
+        queryClient.invalidateQueries(['rules']);
+        queryClient.invalidateQueries(['rulesets']);
+      },
+      onError: (error: Error) => {
+        toast.error(error.message);
+      }
+    }
+  );
+};
+
+/**
+ * React Query hook to remove an image from a rule
+ */
+export const useRemoveRuleImage = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<SharedRule, Error, { rule: SharedRule; fileId: string }>(
+    ['rules', 'removeImage'],
+    async ({ rule, fileId }) => {
+      const { data } = await editRule(
+        rule.ruleId,
+        rule.ruleContent,
+        rule.imageFileIds.filter((id) => id !== fileId)
+      );
+      return data;
+    },
+    {
+      onSuccess: () => {
+        toast.success('Image removed successfully');
+        queryClient.invalidateQueries(['rules']);
+        queryClient.invalidateQueries(['rulesets']);
+      },
+      onError: (error: Error) => {
+        toast.error(error.message);
       }
     }
   );

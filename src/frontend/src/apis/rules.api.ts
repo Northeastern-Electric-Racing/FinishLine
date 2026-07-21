@@ -163,7 +163,7 @@ export const deleteRule = (ruleId: string) => {
  * Edits a rule's content
  * @param ruleId - The ID of the rule to edit
  * @param ruleContent - The new content for the rule
- * @param imageFileIds - The full replacement list of image file IDs for the rule (optional, keeps existing if omitted)
+ * @param imageFileIds - Image file IDs for the rule
  */
 export const editRule = (ruleId: string, ruleContent: string, imageFileIds?: string[]) => {
   return axios.post<SharedRule>(apiUrls.rulesEdit(ruleId), {

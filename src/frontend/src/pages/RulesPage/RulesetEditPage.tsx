@@ -28,6 +28,7 @@ import {
   useDeleteRule,
   useEditRule,
   useRemoveRuleReferences,
+  useRemoveRuleImage,
   useSingleRuleset,
   useAllRulesForRuleset
 } from '../../hooks/rules.hooks';
@@ -84,6 +85,7 @@ const RulesetEditPage: React.FC = () => {
   const { mutateAsync: deleteRuleMutation } = useDeleteRule();
   const { mutateAsync: editRuleMutation } = useEditRule();
   const { mutateAsync: removeRuleReferencesMutation } = useRemoveRuleReferences();
+  const { mutateAsync: removeRuleImageMutation } = useRemoveRuleImage();
 
   const rulesById = useMemo(() => new Map((allRules ?? []).map((r) => [r.ruleId, r])), [allRules]);
 
@@ -186,16 +188,11 @@ const RulesetEditPage: React.FC = () => {
     if (!imageToRemove) return;
 
     try {
-      await editRuleMutation({
-        ruleId: imageToRemove.rule.ruleId,
-        ruleContent: imageToRemove.rule.ruleContent,
-        imageFileIds: imageToRemove.rule.imageFileIds.filter((id) => id !== imageToRemove.fileId)
-      });
-      toast.success('Image removed successfully');
+      await removeRuleImageMutation({ rule: imageToRemove.rule, fileId: imageToRemove.fileId });
       setShowRemoveImageModal(false);
       setImageToRemove(null);
     } catch (err) {
-      toast.error('Failed to remove image');
+      console.error('Failed to remove image:', err);
     }
   };
 

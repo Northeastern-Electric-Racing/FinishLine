@@ -9,7 +9,7 @@ import { FileUpload } from '@mui/icons-material';
 import { MAX_FILE_SIZE, Rule } from 'shared';
 import NERModal from '../../../components/NERModal';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useEditRule, useUploadRulesetFile } from '../../../hooks/rules.hooks';
+import { useAddRuleImage } from '../../../hooks/rules.hooks';
 
 interface AddImageModalProps {
   open: boolean;
@@ -22,8 +22,7 @@ const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, al
   const toast = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { mutateAsync: uploadFile } = useUploadRulesetFile();
-  const { mutateAsync: editRuleMutation } = useEditRule();
+  const { mutateAsync: addRuleImage } = useAddRuleImage();
 
   const activeRule = ruleId ? allRules.find((r) => r.ruleId === ruleId) : undefined;
 
@@ -52,18 +51,10 @@ const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, al
 
     setIsSubmitting(true);
     try {
-      const fileId = await uploadFile(file);
-      await editRuleMutation({
-        ruleId: activeRule.ruleId,
-        ruleContent: activeRule.ruleContent,
-        imageFileIds: [...activeRule.imageFileIds, fileId]
-      });
-      toast.success('Image uploaded successfully');
+      await addRuleImage({ rule: activeRule, file });
       handleClose();
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
+    } catch (err) {
+      console.error('Failed to add image:', err);
     } finally {
       setIsSubmitting(false);
     }
