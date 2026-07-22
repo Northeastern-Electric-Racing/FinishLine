@@ -15,6 +15,7 @@ import {
 import prisma from '../prisma/prisma.js';
 import taskTransformer, {
   calendarTaskTransformer,
+  getBlockingWorkPackages,
   taskCardPreviewTransformer,
   taskLabelTransformer
 } from '../transformers/tasks.transformer.js';
@@ -34,6 +35,7 @@ import { getUsers, userHasPermission } from '../utils/users.utils.js';
 import { wbsNumOf } from '../utils/utils.js';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
 import {
+  getBlockingWorkPackagesArgs,
   getCalendarTaskQueryArgs,
   getTaskLabelQueryArgs,
   getTaskPreviewQueryArgs,
@@ -267,13 +269,32 @@ export default class TasksService {
     if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
 
     // Get the original task and check if it exists
-    const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { assignees: true, wbsElement: true } });
+    const originalTask = await prisma.task.findUnique({
+      where: { taskId },
+      include: {
+        assignees: true,
+        wbsElement: getBlockingWorkPackagesArgs(),
+        blockedBy: { select: { taskId: true, title: true, status: true } }
+      }
+    });
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (organizationId !== originalTask.wbsElement.organizationId) throw new InvalidOrganizationException('Task');
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
     if (status === 'IN_PROGRESS' && (!originalTask.deadline || originalTask.assignees.length === 0)) {
       throw new HttpException(400, 'A task in progress must have a deadline and assignees!');
+    }
+
+    if (status === 'DONE') {
+      const incompleteBlockers = originalTask.blockedBy.filter((blocker) => blocker.status !== 'DONE');
+      const blockingWorkPackages = getBlockingWorkPackages(originalTask.wbsElement);
+      if (incompleteBlockers.length > 0 || blockingWorkPackages.length > 0) {
+        const blockerNames = [
+          ...incompleteBlockers.map((blocker) => blocker.title),
+          ...blockingWorkPackages.map((wp) => wp.name)
+        ];
+        throw new HttpException(400, `Cannot mark task as done: blocked by ${blockerNames.join(', ')}`);
+      }
     }
 
     const updatedTask = await prisma.task.update({

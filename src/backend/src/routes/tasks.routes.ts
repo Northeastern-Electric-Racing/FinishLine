@@ -42,8 +42,8 @@ tasksRouter.post(
   nonEmptyString(body('assignees.*')),
   body('labelIds').isArray(),
   body('labelIds.*').isString(),
-  body('blockedByIds').optional().isArray(),
-  body('blockedByIds.*').optional().isString(),
+  body('blockedByIds').isArray(),
+  body('blockedByIds.*').isString(),
   validateInputs,
   TasksController.createTask
 );
@@ -60,8 +60,8 @@ tasksRouter.post(
   intMinZero(body('wbsNum.workPackageNumber')),
   body('labelIds').isArray(),
   body('labelIds.*').isString(),
-  body('blockedByIds').optional().isArray(),
-  body('blockedByIds.*').optional().isString(),
+  body('blockedByIds').isArray(),
+  body('blockedByIds.*').isString(),
   validateInputs,
   TasksController.editTask
 );

@@ -12,7 +12,8 @@ import {
   createTestUser,
   resetUsers,
   createTestCar,
-  createTestProject
+  createTestProject,
+  createTestWorkPackage
 } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import TasksService from '../../src/services/tasks.services.js';
@@ -276,6 +277,90 @@ describe('Task Tests', () => {
           'IN_PROGRESS'
         )
       ).rejects.toThrow(new HttpException(400, 'A task in progress must have a deadline and assignees!'));
+    });
+
+    it('fails to set status to done when blocked by an incomplete task', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const blockerTask = await createTestTask(user, 'Blocker', '', [], 'HIGH', 'IN_PROGRESS', organizationId);
+      const blockedTask = await prisma.task.create({
+        data: {
+          title: 'Blocked',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_PROGRESS',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: blockerTask.wbsElementId } },
+          blockedBy: { connect: { taskId: blockerTask.taskId } }
+        }
+      });
+
+      await expect(async () =>
+        TasksService.editTaskStatus(user, organizationId, blockedTask.taskId, 'DONE')
+      ).rejects.toThrow(new HttpException(400, `Cannot mark task as done: blocked by ${blockerTask.title}`));
+    });
+
+    it('successfully sets status to done when all blocking tasks are already done', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const blockerTask = await createTestTask(user, 'Blocker', '', [], 'HIGH', 'DONE', organizationId);
+      const blockedTask = await prisma.task.create({
+        data: {
+          title: 'Blocked',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: blockerTask.wbsElementId } },
+          blockedBy: { connect: { taskId: blockerTask.taskId } }
+        }
+      });
+
+      await TasksService.editTaskStatus(user, organizationId, blockedTask.taskId, 'DONE');
+      const updatedTask = await prisma.task.findUnique({ where: { taskId: blockedTask.taskId } });
+      expect(updatedTask?.status).toBe('DONE');
+    });
+
+    it('fails to set status to done when the work package is blocked by a work package with incomplete tasks', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const car = await createTestCar(organizationId, user.userId);
+      const project = await createTestProject(user, organizationId, undefined, car.carId);
+      const wpA = await createTestWorkPackage(user, organizationId, project.projectId, 0, 1, 1);
+      const wpB = await createTestWorkPackage(user, organizationId, project.projectId, 0, 1, 2);
+
+      await prisma.work_Package.update({
+        where: { workPackageId: wpB.workPackageId },
+        data: { blockedBy: { connect: { wbsElementId: wpA.wbsElement.wbsElementId } } }
+      });
+
+      // wpA still has an incomplete task, so it still counts as actively blocking
+      await prisma.task.create({
+        data: {
+          title: 'WP A task',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: wpA.wbsElementId } }
+        }
+      });
+
+      const taskInWpB = await prisma.task.create({
+        data: {
+          title: 'WP B task',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: wpB.wbsElementId } }
+        }
+      });
+
+      await expect(async () =>
+        TasksService.editTaskStatus(user, organizationId, taskInWpB.taskId, 'DONE')
+      ).rejects.toThrow(new HttpException(400, 'Cannot mark task as done: blocked by WP 0.1.1'));
     });
   });
 

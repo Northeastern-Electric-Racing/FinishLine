@@ -18,7 +18,7 @@ export default class TasksController {
         assignees,
         req.organization,
         labelIds,
-        blockedByIds ?? [],
+        blockedByIds,
         startDate ? new Date(startDate) : undefined,
         deadline ? new Date(deadline) : undefined
       );
@@ -42,7 +42,7 @@ export default class TasksController {
         notes,
         priority,
         labelIds,
-        blockedByIds ?? [],
+        blockedByIds,
         startDate ? new Date(startDate) : undefined,
         deadline ? new Date(deadline) : undefined,
         wbsNum

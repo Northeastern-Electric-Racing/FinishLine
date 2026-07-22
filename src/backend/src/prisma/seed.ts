@@ -1303,14 +1303,15 @@ const performSeed: () => Promise<void> = async () => {
   // await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.deliverables[0].descriptionId);
 
   /** Work Package 2 */
-  await seedWorkPackage(
+  // blockedBy Work Package Huskies 1 to demonstrate a work package that blocks another
+  const { workPackageWbsNumber: workPackageHuskies2WbsNumber } = await seedWorkPackage(
     thomasEmrax,
     'Adhesive Shear Strength Test',
     changeRequestProjectHuskies1Id,
     WorkPackageStage.Research,
     weeksAgo(10).toISOString().split('T')[0],
     5,
-    [],
+    [workPackageHuskies1WbsNumber],
     [],
     thomasEmrax,
     WbsElementStatus.Inactive,
@@ -2272,7 +2273,7 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Tasks
    */
-  await TasksService.createTask(
+  const taskResearchAttenuation = await TasksService.createTask(
     joeShmoe,
     projectHuskies1WbsNumber,
     'Research attenuation',
@@ -2287,6 +2288,7 @@ const performSeed: () => Promise<void> = async () => {
     daysFromNow(10)
   );
 
+  // blockedBy Research attenuation to demonstrate a task manually blocked by another task that isn't done yet
   await TasksService.createTask(
     joeShmoe,
     projectHuskies1WbsNumber,
@@ -2297,11 +2299,12 @@ const performSeed: () => Promise<void> = async () => {
     [joeShmoe.userId],
     ner,
     [taskLabelDesign.taskLabelId],
-    [],
+    [taskResearchAttenuation.taskId],
     daysAgo(5),
     daysFromNow(15)
   );
 
+  // blockedBy Research attenuation to demonstrate a task manually blocked by another task that isn't done yet
   await TasksService.createTask(
     joeBlow,
     projectHuskies1WbsNumber,
@@ -2312,9 +2315,26 @@ const performSeed: () => Promise<void> = async () => {
     [joeShmoe.userId, joeBlow.userId],
     ner,
     [taskLabelResearch.taskLabelId, taskLabelBlocked.taskLabelId],
-    [],
+    [taskResearchAttenuation.taskId],
     undefined,
     daysFromNow(8)
+  );
+
+  // relies purely on blockedByWorkPackages, since Work Package 2 is blockedBy Work Package Huskies 1,
+  // which still has an incomplete task ('Impact Test' below)
+  await TasksService.createTask(
+    joeShmoe,
+    workPackageHuskies2WbsNumber,
+    'Run Shear Strength Test',
+    'Run the shear strength test once the adhesive samples are ready',
+    Task_Priority.MEDIUM,
+    Task_Status.IN_BACKLOG,
+    [joeShmoe.userId],
+    ner,
+    [taskLabelTesting.taskLabelId, taskLabelBlocked.taskLabelId],
+    [],
+    undefined,
+    daysFromNow(20)
   );
 
   await TasksService.createTask(

@@ -232,6 +232,17 @@ export const TaskCard = ({
                         )}
                       </Box>
                     </Grid>
+                    {(task.blockedBy.length > 0 || task.blockedByWorkPackages.length > 0) && (
+                      <Grid item xs={12}>
+                        <Typography variant="body2" sx={{ color: '#ef4345', fontWeight: 500, mt: 1 }}>
+                          Blocked by:{' '}
+                          {[
+                            ...task.blockedBy.map((b) => b.title),
+                            ...task.blockedByWorkPackages.map((wp) => `${wp.name} (WP)`)
+                          ].join(', ')}
+                        </Typography>
+                      </Grid>
+                    )}
                   </Grid>
                 </CardContent>
               </Card>
