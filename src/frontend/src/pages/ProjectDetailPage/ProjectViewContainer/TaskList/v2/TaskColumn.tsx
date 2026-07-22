@@ -72,12 +72,12 @@ export const TaskColumn = ({
       });
       onAddTask(task);
       toast.success('Task Successfully Created!');
+      setShowCreateTaskModal(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
     }
-    setShowCreateTaskModal(false);
   };
 
   return (

@@ -41,6 +41,7 @@ export interface Task {
 export type TaskBlockerPreview = {
   taskId: string;
   title: string;
+  status: TaskStatus;
 };
 
 export type BlockingWorkPackagePreview = {

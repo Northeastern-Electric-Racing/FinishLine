@@ -15,7 +15,8 @@ import {
 import prisma from '../prisma/prisma.js';
 import taskTransformer, {
   calendarTaskTransformer,
-  getBlockingWorkPackages,
+  getActiveTaskBlockerNames,
+  taskBlockedByTransformer,
   taskCardPreviewTransformer,
   taskLabelTransformer
 } from '../transformers/tasks.transformer.js';
@@ -37,6 +38,7 @@ import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
 import {
   getBlockingWorkPackagesArgs,
   getCalendarTaskQueryArgs,
+  getTaskBlockedByQueryArgs,
   getTaskLabelQueryArgs,
   getTaskPreviewQueryArgs,
   getTaskQueryArgs
@@ -130,6 +132,18 @@ export default class TasksService {
 
     await validateTaskLabels(labelIds, organization.organizationId);
     const blockedByTasks = await validateTaskBlockedBys(blockedByIds, organization.organizationId);
+
+    // only worth the extra nested fetch when actually attempting to create the task as done
+    if (status === 'DONE') {
+      const wbsElementForBlockCheck = await prisma.wBS_Element.findUniqueOrThrow({
+        where: { wbsNumber: { ...wbsNum, organizationId: organization.organizationId } },
+        ...getBlockingWorkPackagesArgs()
+      });
+      const blockerNames = getActiveTaskBlockerNames(blockedByTasks.map(taskBlockedByTransformer), wbsElementForBlockCheck);
+      if (blockerNames.length > 0) {
+        throw new HttpException(400, `Cannot create task as done: blocked by ${blockerNames.join(', ')}`);
+      }
+    }
 
     const createdTask = await prisma.task.create({
       data: {
@@ -269,14 +283,7 @@ export default class TasksService {
     if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
 
     // Get the original task and check if it exists
-    const originalTask = await prisma.task.findUnique({
-      where: { taskId },
-      include: {
-        assignees: true,
-        wbsElement: getBlockingWorkPackagesArgs(),
-        blockedBy: { select: { taskId: true, title: true, status: true } }
-      }
-    });
+    const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { assignees: true, wbsElement: true } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (organizationId !== originalTask.wbsElement.organizationId) throw new InvalidOrganizationException('Task');
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
@@ -285,14 +292,20 @@ export default class TasksService {
       throw new HttpException(400, 'A task in progress must have a deadline and assignees!');
     }
 
+    // only worth the extra nested fetch when actually attempting to complete the task
     if (status === 'DONE') {
-      const incompleteBlockers = originalTask.blockedBy.filter((blocker) => blocker.status !== 'DONE');
-      const blockingWorkPackages = getBlockingWorkPackages(originalTask.wbsElement);
-      if (incompleteBlockers.length > 0 || blockingWorkPackages.length > 0) {
-        const blockerNames = [
-          ...incompleteBlockers.map((blocker) => blocker.title),
-          ...blockingWorkPackages.map((wp) => wp.name)
-        ];
+      const taskForBlockCheck = await prisma.task.findUniqueOrThrow({
+        where: { taskId },
+        select: {
+          blockedBy: getTaskBlockedByQueryArgs(),
+          wbsElement: getBlockingWorkPackagesArgs()
+        }
+      });
+      const blockerNames = getActiveTaskBlockerNames(
+        taskForBlockCheck.blockedBy.map(taskBlockedByTransformer),
+        taskForBlockCheck.wbsElement
+      );
+      if (blockerNames.length > 0) {
         throw new HttpException(400, `Cannot mark task as done: blocked by ${blockerNames.join(', ')}`);
       }
     }

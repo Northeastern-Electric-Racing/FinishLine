@@ -121,7 +121,12 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
   const projectWbsNum = { ...wbsNum, workPackageNumber: 0 };
   const { data: workPackages } = useWorkPackagesByProject(projectWbsNum);
-  const { data: projectTasks } = useFilterTasks({ wbsNum: projectWbsNum });
+  const {
+    data: projectTasks,
+    isLoading: projectTasksLoading,
+    isError: projectTasksIsError,
+    error: projectTasksError
+  } = useFilterTasks({ wbsNum: projectWbsNum });
   const blockedByOptions: TaskBlockerPreview[] = (projectTasks ?? []).filter((t) => t.taskId !== task?.taskId);
 
   const isWpContext = wbsNum.workPackageNumber !== 0;
@@ -152,7 +157,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
   if (isError) return <ErrorPage error={error} />;
   if (labelsIsError) return <ErrorPage error={labelsError} />;
-  if (usersLoading || !users || labelsIsLoading || !taskLabels) return <LoadingIndicator />;
+  if (projectTasksIsError) return <ErrorPage error={projectTasksError} />;
+  if (usersLoading || !users || labelsIsLoading || !taskLabels || projectTasksLoading) return <LoadingIndicator />;
 
   const userOptions: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
   const wpOptions: { label: string; wbsNum: WbsNumber }[] = (workPackages ?? []).map((wp) => ({

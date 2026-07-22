@@ -4,7 +4,7 @@
  */
 
 import { fullNamePipe, datePipe, wbsPipe } from '../../../../utils/pipes';
-import { Task, WbsNumber } from 'shared';
+import { Task, TaskStatus, WbsNumber } from 'shared';
 import { Box, Chip, Grid, Typography } from '@mui/material';
 import { useState } from 'react';
 import TaskFormModal, { EditTaskFormInput } from './TaskFormModal';
@@ -25,6 +25,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const isWpTask = task.wbsNum.workPackageNumber !== 0;
   const isWpContext = wbsNum.workPackageNumber !== 0;
+  const activeBlockers = task.blockedBy.filter((blocker) => blocker.status !== TaskStatus.DONE);
 
   const ViewModal: React.FC = () => {
     return (
@@ -94,11 +95,11 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
               ))}
             </Box>
           </Grid>
-          {(task.blockedBy.length > 0 || task.blockedByWorkPackages.length > 0) && (
+          {(activeBlockers.length > 0 || task.blockedByWorkPackages.length > 0) && (
             <Grid item xs={12} md={6}>
               <Typography fontWeight={'bold'}>Blocked By:</Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                {task.blockedBy.map((blocker) => (
+                {activeBlockers.map((blocker) => (
                   <Chip key={blocker.taskId} label={blocker.title} size="small" />
                 ))}
                 {task.blockedByWorkPackages.map((blockingWp) => (

@@ -2,11 +2,11 @@ import { Draggable } from '@hello-pangea/dnd';
 import { Construction, Folder, Delete, Schedule } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Grid, Typography, IconButton } from '@mui/material';
 import { useState } from 'react';
-import { notGuest, Task, WbsNumber } from 'shared';
+import { notGuest, Task, TaskStatus, WbsNumber } from 'shared';
 import { useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
-import { datePipe, fullNamePipe } from '../../../../../utils/pipes';
+import { datePipe, fullNamePipe, listPipe } from '../../../../../utils/pipes';
 import { EditTaskFormInput } from '../TaskFormModal';
 import TaskModal from '../TaskModal';
 import NERModal from '../../../../../components/NERModal';
@@ -100,12 +100,12 @@ export const TaskCard = ({
 
       onEditTask(newTask);
       toast.success('Task edited successfully!');
+      setShowModal(false);
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    setShowModal(false);
   };
 
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
@@ -113,6 +113,7 @@ export const TaskCard = ({
   const isWpTask = task.wbsNum.workPackageNumber !== 0;
   const isProjectContext = wbsNum.workPackageNumber === 0;
   const wpColor = wpColors[(task.wbsNum.workPackageNumber - 1) % wpColors.length];
+  const activeBlockers = task.blockedBy.filter((blocker) => blocker.status !== TaskStatus.DONE);
 
   return (
     <>
@@ -232,14 +233,13 @@ export const TaskCard = ({
                         )}
                       </Box>
                     </Grid>
-                    {(task.blockedBy.length > 0 || task.blockedByWorkPackages.length > 0) && (
+                    {(activeBlockers.length > 0 || task.blockedByWorkPackages.length > 0) && (
                       <Grid item xs={12}>
                         <Typography variant="body2" sx={{ color: '#ef4345', fontWeight: 500, mt: 1 }}>
                           Blocked by:{' '}
-                          {[
-                            ...task.blockedBy.map((b) => b.title),
-                            ...task.blockedByWorkPackages.map((wp) => `${wp.name} (WP)`)
-                          ].join(', ')}
+                          {listPipe([...activeBlockers, ...task.blockedByWorkPackages], (blocker) =>
+                            'wbsNum' in blocker ? `${blocker.name} (WP)` : blocker.title
+                          )}
                         </Typography>
                       </Grid>
                     )}

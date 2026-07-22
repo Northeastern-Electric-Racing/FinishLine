@@ -9,6 +9,7 @@ import {
 import {
   createTestOrganization,
   createTestTask,
+  createTestTaskWithOrganization,
   createTestUser,
   resetUsers,
   createTestCar,
@@ -216,6 +217,50 @@ describe('Task Tests', () => {
         TasksService.editTask(user, organizationId, task.taskId, 'Test Task', '', 'HIGH', [label.taskLabelId], [])
       ).rejects.toThrow(InvalidOrganizationException);
     });
+
+    it('fails to edit blockedBy when it would create a circular blocking dependency', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const taskA = await createTestTask(user, 'Task A', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
+      const taskB = await prisma.task.create({
+        data: {
+          title: 'Task B',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: taskA.wbsElementId } },
+          blockedBy: { connect: { taskId: taskA.taskId } }
+        }
+      });
+
+      // Task B is already blockedBy Task A; making Task A blockedBy Task B would close the cycle
+      await expect(async () =>
+        TasksService.editTask(user, organizationId, taskA.taskId, taskA.title, '', 'HIGH', [], [taskB.taskId])
+      ).rejects.toThrow(new HttpException(400, 'This would create a circular blocking dependency'));
+    });
+  });
+
+  describe('Create task', () => {
+    it('fails to create a task as done when blocked by an incomplete task', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const { task: blockerTask, organization: org } = await createTestTaskWithOrganization(user, organization);
+
+      await expect(async () =>
+        TasksService.createTask(
+          user,
+          { carNumber: 0, projectNumber: 1, workPackageNumber: 0 },
+          'New Task',
+          '',
+          'HIGH',
+          'DONE',
+          [],
+          org,
+          [],
+          [blockerTask.taskId]
+        )
+      ).rejects.toThrow(new HttpException(400, `Cannot create task as done: blocked by ${blockerTask.title}`));
+    });
   });
 
   describe('Edit task status', () => {
@@ -358,9 +403,35 @@ describe('Task Tests', () => {
         }
       });
 
-      await expect(async () =>
-        TasksService.editTaskStatus(user, organizationId, taskInWpB.taskId, 'DONE')
-      ).rejects.toThrow(new HttpException(400, 'Cannot mark task as done: blocked by WP 0.1.1'));
+      await expect(async () => TasksService.editTaskStatus(user, organizationId, taskInWpB.taskId, 'DONE')).rejects.toThrow(
+        new HttpException(400, 'Cannot mark task as done: blocked by WP 0.1.1')
+      );
+    });
+
+    it('successfully sets status to done when the only blocking task has been deleted', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const blockerTask = await createTestTask(user, 'Blocker', '', [], 'HIGH', 'IN_PROGRESS', organizationId);
+      const blockedTask = await prisma.task.create({
+        data: {
+          title: 'Blocked',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: blockerTask.wbsElementId } },
+          blockedBy: { connect: { taskId: blockerTask.taskId } }
+        }
+      });
+
+      await prisma.task.update({
+        where: { taskId: blockerTask.taskId },
+        data: { dateDeleted: new Date(), deletedByUserId: user.userId }
+      });
+
+      await TasksService.editTaskStatus(user, organizationId, blockedTask.taskId, 'DONE');
+      const updatedTask = await prisma.task.findUnique({ where: { taskId: blockedTask.taskId } });
+      expect(updatedTask?.status).toBe('DONE');
     });
   });
 

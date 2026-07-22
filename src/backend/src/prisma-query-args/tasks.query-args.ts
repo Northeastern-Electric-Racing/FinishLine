@@ -18,10 +18,12 @@ export const getTaskLabelQueryArgs = () =>
   });
 
 export const getTaskBlockedByQueryArgs = () =>
-  Prisma.validator<Prisma.TaskDefaultArgs>()({
+  Prisma.validator<Prisma.TaskFindManyArgs>()({
+    where: { dateDeleted: null },
     select: {
       taskId: true,
-      title: true
+      title: true,
+      status: true
     }
   });
 
