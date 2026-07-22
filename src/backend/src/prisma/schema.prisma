@@ -654,6 +654,8 @@ model Task {
   wbsElement      WBS_Element   @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId    String
   labels          Task_Label[]
+  blockedBy       Task[]        @relation(name: "taskBlocking")
+  blocking        Task[]        @relation(name: "taskBlocking")
 
   @@index([wbsElementId])
 }
@@ -1232,12 +1234,13 @@ model Availability {
 }
 
 model Schedule_Settings {
-  drScheduleSettingsId String         @id @default(uuid())
-  personalGmail        String
-  personalZoomLink     String
-  User                 User           @relation(fields: [userId], references: [userId])
-  userId               String         @unique
-  availabilities       Availability[]
+  drScheduleSettingsId   String         @id @default(uuid())
+  personalGmail          String
+  personalZoomLink       String
+  User                   User           @relation(fields: [userId], references: [userId])
+  userId                 String         @unique
+  availabilities         Availability[]
+  importedIcsCalendarUrl String?
 }
 
 model Wbs_Proposed_Changes {

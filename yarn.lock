@@ -4721,6 +4721,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@js-temporal/polyfill@npm:^0.5.1":
+  version: 0.5.1
+  resolution: "@js-temporal/polyfill@npm:0.5.1"
+  dependencies:
+    jsbi: "npm:^4.3.0"
+  checksum: 10/6c3d51e929269a7ab791766edf32b9a7c9bc45407e1708675505d5dcd455839704f189c39b99e993d0f9fcb987e57a2e78c78b4483128b24fe5c7a7e29cc4406
+  languageName: node
+  linkType: hard
+
 "@jsonjoy.com/base64@npm:17.67.0":
   version: 17.67.0
   resolution: "@jsonjoy.com/base64@npm:17.67.0"
@@ -9278,8 +9287,10 @@ __metadata:
     google-auth-library: "npm:^8.1.1"
     googleapis: "npm:^118.0.0"
     ical-generator: "npm:^10.2.0"
+    ipaddr.js: "npm:^2.4.0"
     jsonwebtoken: "npm:^8.5.1"
     multer: "npm:^1.4.5-lts.1"
+    node-ical: "npm:^0.26.1"
     nodemailer: "npm:^6.9.1"
     nodemon: "npm:^2.0.16"
     ora: "npm:^9.4.1"
@@ -15598,6 +15609,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ipaddr.js@npm:^2.4.0":
+  version: 2.4.0
+  resolution: "ipaddr.js@npm:2.4.0"
+  checksum: 10/e29cd15cd1f3c177f1671a74ed5dc2d7908088294850a7dbc000969a370cf02d6cdd81f8ab35a4fb0397247cd93999528eb4506277cd7db52fa2a487015207cf
+  languageName: node
+  linkType: hard
+
 "is-alphabetical@npm:^2.0.0":
   version: 2.0.1
   resolution: "is-alphabetical@npm:2.0.1"
@@ -17008,6 +17026,13 @@ __metadata:
   bin:
     js-yaml: bin/js-yaml.js
   checksum: 10/a52d0519f0f4ef5b4adc1cde466cb54c50d56e2b4a983b9d5c9c0f2f99462047007a6274d7e95617a21d3c91fde3ee6115536ed70991cd645ba8521058b78f77
+  languageName: node
+  linkType: hard
+
+"jsbi@npm:^4.3.0":
+  version: 4.3.2
+  resolution: "jsbi@npm:4.3.2"
+  checksum: 10/71f2d292ba8db5fa68d3f7a2427664a356065adb629a35404635ccd70ed412631a301b910613323de14b3310dab71a6b8c4ecf0f9c0653ee61c22e94679d52f3
   languageName: node
   linkType: hard
 
@@ -19171,6 +19196,16 @@ __metadata:
   bin:
     node-gyp: bin/node-gyp.js
   checksum: 10/4ebab5b77585a637315e969c2274b5520562473fe75de850639a580c2599652fb9f33959ec782ea45a2e149d8f04b548030f472eeeb3dbdf19a7f2ccbc30b908
+  languageName: node
+  linkType: hard
+
+"node-ical@npm:^0.26.1":
+  version: 0.26.1
+  resolution: "node-ical@npm:0.26.1"
+  dependencies:
+    rrule-temporal: "npm:^1.5.3"
+    temporal-polyfill: "npm:^0.3.2"
+  checksum: 10/58ab31f91de887d7605755f7fc430b4c1dccab7b99777f18a2e73584ed9b7230f3d67f912f15e1f137c1bcc09178ef4a23651d06979be0c209de0315ad2099c2
   languageName: node
   linkType: hard
 
@@ -23485,6 +23520,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rrule-temporal@npm:^1.5.3":
+  version: 1.5.3
+  resolution: "rrule-temporal@npm:1.5.3"
+  dependencies:
+    "@js-temporal/polyfill": "npm:^0.5.1"
+  checksum: 10/f85effb665471ad57df25718ed1664879f489c8eadb795701254c5d431e32f4a6bc4b3002a04787f3da6968c1b08f359f3af81939844ffea08fff69671529409
+  languageName: node
+  linkType: hard
+
 "rtlcss@npm:^4.1.0":
   version: 4.3.0
   resolution: "rtlcss@npm:4.3.0"
@@ -25065,6 +25109,22 @@ __metadata:
   version: 2.0.0
   resolution: "temp-dir@npm:2.0.0"
   checksum: 10/cc4f0404bf8d6ae1a166e0e64f3f409b423f4d1274d8c02814a59a5529f07db6cd070a749664141b992b2c1af337fa9bb451a460a43bb9bcddc49f235d3115aa
+  languageName: node
+  linkType: hard
+
+"temporal-polyfill@npm:^0.3.2":
+  version: 0.3.2
+  resolution: "temporal-polyfill@npm:0.3.2"
+  dependencies:
+    temporal-spec: "npm:0.3.1"
+  checksum: 10/3e4ced86e08e7893286b9471f28baacc7c1d29a854372405d81c490eaa3eaed860d2e1aa25094f110ff5edc5a9d932c7957a723004ac0a4f145e8045fa387fc0
+  languageName: node
+  linkType: hard
+
+"temporal-spec@npm:0.3.1":
+  version: 0.3.1
+  resolution: "temporal-spec@npm:0.3.1"
+  checksum: 10/69509d1a4162c834b76d1394a3a97cef57df9ec912b8aa549a989be8bd75f25a72c987fcc7747d566298b73d4264be9e48a8d0a91e60edcb71c7901aabfb00e7
   languageName: node
   linkType: hard
 
