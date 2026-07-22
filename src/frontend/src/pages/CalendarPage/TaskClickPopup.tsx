@@ -64,6 +64,7 @@ export const TaskClickContent: React.FC<TaskClickContentProps> = ({ task, onClos
         notes: data.notes,
         priority: data.priority,
         labelIds: task.labels.map((l) => l.taskLabelId),
+        blockedByIds: data.blockedBy.map((b) => b.taskId),
         startDate: data.startDate,
         deadline: data.deadline,
         wbsNum: task.wbsNum
