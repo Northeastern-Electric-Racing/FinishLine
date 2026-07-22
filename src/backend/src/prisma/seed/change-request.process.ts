@@ -37,7 +37,9 @@ const changeRequestInclude = {
   wbsElement: { include: { workPackage: true } }
 } satisfies Prisma.Change_RequestInclude;
 
-type SeededChangeRequest = Prisma.Change_RequestGetPayload<{ include: typeof changeRequestInclude }>;
+type SeededChangeRequest = Prisma.Change_RequestGetPayload<{
+  include: typeof changeRequestInclude;
+}>;
 
 export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, ChangeRequestOutput> {
   private identifierCounter = 1;
@@ -53,7 +55,14 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
   }
 
   private async createChangeRequests(inputs: Prisma.Change_RequestCreateInput[]): Promise<SeededChangeRequest[]> {
-    return Promise.all(inputs.map((data) => this.prisma.change_Request.create({ data, include: changeRequestInclude })));
+    return Promise.all(
+      inputs.map((data) =>
+        this.prisma.change_Request.create({
+          data,
+          include: changeRequestInclude
+        })
+      )
+    );
   }
 
   private async applyAcceptedWbsChanges(changeRequests: SeededChangeRequest[]): Promise<void> {
@@ -86,17 +95,25 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
         status = WBS_Element_Status.ACTIVE;
       } else if (cr.type === CR_Type.STAGE_GATE) {
         const completedDate = cr.dateReviewed ?? cr.dateSubmitted;
+
         duration = Math.max(1, Math.round((completedDate.getTime() - startDate.getTime()) / WEEK_MS));
+
         status = WBS_Element_Status.COMPLETE;
       }
     }
 
     await this.prisma.work_Package.update({
-      where: { workPackageId: workPackage.workPackageId },
+      where: {
+        workPackageId: workPackage.workPackageId
+      },
       data: {
         startDate,
         duration,
-        wbsElement: { update: { status } }
+        wbsElement: {
+          update: {
+            status
+          }
+        }
       }
     });
   }
@@ -108,6 +125,7 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
       if (!cr.accepted || !cr.accountCodeId || !cr.budgetChangeRequest) continue;
 
       const current = latestBudgetByAccountCode.get(cr.accountCodeId);
+
       if (!current || cr.dateSubmitted >= current.dateSubmitted) {
         latestBudgetByAccountCode.set(cr.accountCodeId, {
           dateSubmitted: cr.dateSubmitted,
@@ -118,7 +136,14 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
 
     await Promise.all(
       Array.from(latestBudgetByAccountCode.entries()).map(([accountCodeId, { proposedBudget }]) =>
-        this.prisma.account_Code.update({ where: { accountCodeId }, data: { amount: proposedBudget } })
+        this.prisma.account_Code.update({
+          where: {
+            accountCodeId
+          },
+          data: {
+            amount: proposedBudget
+          }
+        })
       )
     );
   }
@@ -129,12 +154,21 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     fallbackReviewers: SeedCrActor[]
   ): Promise<{ submitters: SeedCrActor[]; reviewers: SeedCrActor[] }> {
     const financeTeam = await this.prisma.team.findUnique({
-      where: { teamId: financeTeamId },
-      include: { members: true, leads: true, head: true }
+      where: {
+        teamId: financeTeamId
+      },
+      include: {
+        members: true,
+        leads: true,
+        head: true
+      }
     });
 
     if (!financeTeam) {
-      return { submitters: fallbackSubmitters, reviewers: fallbackReviewers };
+      return {
+        submitters: fallbackSubmitters,
+        reviewers: fallbackReviewers
+      };
     }
 
     const reviewers = [...financeTeam.leads, financeTeam.head];
@@ -174,11 +208,15 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     }
 
     const wbsChangeRequestInputs: Prisma.Change_RequestCreateInput[] = [];
+    const now = new Date();
 
     for (const { project, timeline } of projects) {
+      if (timeline.start.getTime() > now.getTime()) continue;
+
       const projectWorkPackages = workPackagesByProjectId[project.projectId] ?? [];
 
       const { leadId: projectLeadId, managerId: projectManagerId } = project.wbsElement;
+
       const projectParent: SeedCrParent = {
         wbsElementId: project.wbsElementId,
         timeline,
@@ -199,7 +237,10 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
       );
 
       for (const { workPackage, timeline: wpTimeline } of projectWorkPackages) {
+        if (wpTimeline.start.getTime() > now.getTime()) continue;
+
         const { leadId: wpLeadId, managerId: wpManagerId } = workPackage.wbsElement;
+
         const wpParent: SeedCrParent = {
           wbsElementId: workPackage.wbsElement.wbsElementId,
           timeline: wpTimeline,
@@ -222,6 +263,7 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     }
 
     const financeWindow = this.financeWindow(projects.map(({ timeline }) => timeline));
+
     const { submitters: financeSubmitters, reviewers: financeReviewers } = await this.resolveFinanceActors(
       financeTeam.teamId,
       submitterPool,
@@ -253,6 +295,7 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
         acc[cr.wbsElementId] ??= [];
         acc[cr.wbsElementId].push(cr);
       }
+
       return acc;
     }, {});
 
