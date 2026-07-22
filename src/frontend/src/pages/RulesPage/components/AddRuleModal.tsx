@@ -12,19 +12,20 @@ interface AddRuleModalProps {
   onClose: () => void;
   rulesetId: string;
   initialParentRuleId?: string;
+  parentRuleCode?: string;
 }
 
 interface FormData {
   ruleCode: string;
-  ruleContent: string;
+  ruleContent?: string;
 }
 
 const schema = yup.object().shape({
   ruleCode: yup.string().required('Rule Code is required'),
-  ruleContent: yup.string().required('Rule Content is required')
+  ruleContent: yup.string()
 });
 
-const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, initialParentRuleId }) => {
+const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, initialParentRuleId, parentRuleCode }) => {
   const theme = useTheme();
   const toast = useToast();
   const { mutateAsync: createRule } = useCreateRule();
@@ -36,6 +37,7 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
     handleSubmit,
     control,
     reset,
+    watch,
     formState: { errors }
   } = useForm<FormData>({
     resolver: yupResolver(schema),
@@ -45,12 +47,19 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
     }
   });
 
-  // Reset reference hierarchy when modal opens/closes or parent changes
+  const watchedRuleCode = watch('ruleCode');
+  const showPrefixWarning = !!parentRuleCode && !!watchedRuleCode && !watchedRuleCode.startsWith(parentRuleCode);
+
+  // Prefill code field with the parent's code when modal opens
   useEffect(() => {
     if (open) {
       setSelectedReferenceHierarchy([]);
+      reset({
+        ruleCode: parentRuleCode ? `${parentRuleCode}.` : '',
+        ruleContent: ''
+      });
     }
-  }, [open, initialParentRuleId]);
+  }, [open, initialParentRuleId, parentRuleCode, reset]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -59,7 +68,7 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
 
       await createRule({
         ruleCode: data.ruleCode,
-        ruleContent: data.ruleContent,
+        ruleContent: data.ruleContent ?? '',
         rulesetId,
         parentRuleId: initialParentRuleId,
         referencedRules,
@@ -69,7 +78,9 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
       toast.success('Rule created successfully');
       handleClose();
     } catch (error) {
-      toast.error('Failed to create rule');
+      if (error instanceof Error) {
+        toast.error(`Failed to create rule: ${error.message}`);
+      }
     }
   };
 
@@ -136,6 +147,13 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
               />
             )}
           />
+          {showPrefixWarning && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+              <Typography sx={{ color: '#ef4345', fontSize: '0.9rem' }}>
+                Note: Rule Code should start with '{parentRuleCode}' to match parent code
+              </Typography>
+            </Box>
+          )}
         </Box>
 
         {/* Rule Content */}
@@ -144,7 +162,7 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
             variant="h4"
             sx={{ color: theme.palette.primary.main, textDecoration: 'underline', fontSize: 30, mb: 2 }}
           >
-            Rule Content*
+            Rule Content
           </Typography>
           <Controller
             name="ruleContent"
