@@ -5,6 +5,7 @@ import RuleRow from '../RuleRow';
 import RuleStatusTag from './RuleStatusTag';
 import RuleContent from './RuleContent';
 import UpdateStatusPopover from '../../ProjectDetailPage/ProjectViewContainer/ProjectRules/UpdateStatusPopover';
+import { NERButton } from '../../../components/NERButton';
 import { useSetRuleCompletion } from '../../../hooks/rules.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
@@ -37,7 +38,8 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
   const topLevelRules = useMemo(() => sortedRules.filter((rule) => !rule.parentRule), [sortedRules]);
 
   // Expand ancestors + scroll for referenced rules.
-  const { expandedIds, toggleExpand, navigateToRule } = useRuleTreeNavigation(sortedRules);
+  const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded } =
+    useRuleTreeNavigation(sortedRules);
 
   const handleStatusClose = () => {
     setStatusPopoverAnchor(null);
@@ -57,6 +59,12 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
 
   return (
     <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+        <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
+          {areAllExpanded ? 'Collapse All' : 'Expand All'}
+        </NERButton>
+      </Box>
+
       <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor }}>
         <Table sx={{ borderCollapse: 'separate', borderSpacing: '0 8px', backgroundColor }}>
           <TableBody>
