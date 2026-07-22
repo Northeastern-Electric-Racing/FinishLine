@@ -20,21 +20,6 @@ import { apiUrls } from '../utils/urls';
 import { taskLabelTransformer, taskTransformer } from './transformers/tasks.transformers';
 
 /**
- * axios runs transformResponse on error bodies too (e.g. { message: string } from a rejected request),
- * so taskTransformer would otherwise crash trying to read a field (assignees, labels, etc.) that only
- * exists on success responses. Falling back to the raw parsed body lets the response interceptor in
- * axios.ts correctly read error.response.data.message instead of a confusing TypeError.
- */
-const transformTaskResponse = (data: string) => {
-  const parsed = JSON.parse(data);
-  try {
-    return taskTransformer(parsed);
-  } catch {
-    return parsed;
-  }
-};
-
-/**
  * Api call to create a task.
  * @param wbsNum wbsNum of the wbsElement that the task is associated with
  * @param title the title of the task
@@ -74,7 +59,18 @@ export const createSingleTask = (
       blockedByIds
     },
     {
-      transformResponse: transformTaskResponse
+      // axios runs transformResponse on error bodies too (e.g. { message: string } from a rejected
+      // request), so taskTransformer would otherwise crash reading a field that only exists on success
+      // responses. Falling back to the raw parsed body lets the interceptor in axios.ts read
+      // error.response.data.message instead of a confusing TypeError.
+      transformResponse: (data) => {
+        const parsed = JSON.parse(data);
+        try {
+          return taskTransformer(parsed);
+        } catch {
+          return parsed;
+        }
+      }
     }
   );
 };
@@ -128,7 +124,15 @@ export const editTaskAssignees = (taskId: string, assignees: string[]) => {
       assignees
     },
     {
-      transformResponse: transformTaskResponse
+      // same fallback as createSingleTask above: avoid crashing taskTransformer on an error body
+      transformResponse: (data) => {
+        const parsed = JSON.parse(data);
+        try {
+          return taskTransformer(parsed);
+        } catch {
+          return parsed;
+        }
+      }
     }
   );
 };
