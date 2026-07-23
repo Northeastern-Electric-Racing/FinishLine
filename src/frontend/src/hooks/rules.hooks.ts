@@ -444,7 +444,7 @@ export const useAddRuleImage = () => {
     ['rules', 'addImage'],
     async ({ rule, file }) => {
       const fileId = await uploadFile(file);
-      const { data } = await editRule(rule.ruleId, rule.ruleContent, [...rule.imageFileIds, fileId]);
+      const { data } = await editRule(rule.ruleId, rule.ruleContent, rule.ruleCode, [...rule.imageFileIds, fileId]);
       return data;
     },
     {
@@ -473,6 +473,7 @@ export const useRemoveRuleImage = () => {
       const { data } = await editRule(
         rule.ruleId,
         rule.ruleContent,
+        rule.ruleCode,
         rule.imageFileIds.filter((id) => id !== fileId)
       );
       return data;
