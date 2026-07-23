@@ -53,13 +53,14 @@ export default class UsersService {
   }
 
   /**
-   * Gets a minimal list of the current organization's users for use in dropdowns (id + name + email).
-   * @param organizationId the organization to get the users from
+   * Gets a minimal list of the current organization's members for use in dropdowns (id + name + email).
+   * Only users with a non-guest role in the organization are returned, so guests are excluded.
+   * @param organizationId the organization to get the members from
    * @returns the slim users
    */
   static async getAllSlimUsers(organizationId: string): Promise<SlimUser[]> {
     const users = await prisma.user.findMany({
-      where: { organizations: { some: { organizationId } } },
+      where: { roles: { some: { organizationId, roleType: { not: Role_Type.GUEST } } } },
       orderBy: { firstName: 'asc' },
       ...getSlimUserQueryArgs()
     });

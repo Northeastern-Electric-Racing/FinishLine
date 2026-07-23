@@ -25,7 +25,8 @@ interface TaskFilterBarProps {
   scopeProjectWbsNum?: WbsNumber;
 }
 
-const fieldSx = { minWidth: 200, flex: '1 1 200px', maxWidth: 320 };
+// each control flexes to an equal share of the single filter row, shrinking so they all stay on one row
+const fieldSx = { flex: '1 1 0', minWidth: 0 };
 
 /**
  * Shared dropdown filter bar for every task board. Which controls appear depends on the context:
@@ -51,7 +52,7 @@ const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
   const workPackageScope = context === 'global' ? filters.projectWbsNums : scopeProjectWbsNum ? [scopeProjectWbsNum] : [];
 
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+    <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: 2, mb: 2 }}>
       {showCar && <CarDropdown value={filters.carNumbers} onChange={(carNumbers) => patch({ carNumbers })} sx={fieldSx} />}
       {showProject && (
         <ProjectDropdown

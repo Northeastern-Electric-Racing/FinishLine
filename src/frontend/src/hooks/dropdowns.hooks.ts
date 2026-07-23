@@ -19,8 +19,11 @@ const SLIM_QUERY_OPTIONS = { staleTime: 1000 * 60 * 5 } as const;
 export const useSlimCars = () =>
   useQuery<SlimCar[], Error>(['slim', 'cars'], async () => (await getSlimCars()).data, SLIM_QUERY_OPTIONS);
 
-export const useSlimProjects = () =>
-  useQuery<SlimProject[], Error>(['slim', 'projects'], async () => (await getSlimProjects()).data, SLIM_QUERY_OPTIONS);
+export const useSlimProjects = (enabled = true) =>
+  useQuery<SlimProject[], Error>(['slim', 'projects'], async () => (await getSlimProjects()).data, {
+    ...SLIM_QUERY_OPTIONS,
+    enabled
+  });
 
 export const useSlimWorkPackages = () =>
   useQuery<SlimWorkPackage[], Error>(

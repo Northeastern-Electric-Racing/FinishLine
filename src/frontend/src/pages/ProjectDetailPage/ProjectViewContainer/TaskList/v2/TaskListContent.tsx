@@ -1,7 +1,7 @@
 import { DragDropContext, OnDragEndResponder, OnDragStartResponder } from '@hello-pangea/dnd';
 import { Badge, Box, Button, TextField, Typography } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { FilterTaskArgs, Task, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
 import { useQueryClient } from 'react-query';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
@@ -37,6 +37,10 @@ interface TaskListContentProps {
 }
 
 const nonEmpty = <T,>(arr: T[]): T[] | undefined => (arr.length > 0 ? arr : undefined);
+
+// how many tasks each column renders initially, and how many more it reveals each time the user scrolls
+// to the bottom — keeps a large global board from mounting hundreds of cards at once
+const TASK_PAGE_SIZE = 20;
 
 export const TaskListContent = ({
   context,
@@ -114,10 +118,28 @@ export const TaskListContent = ({
   const [columnHeights, setColumnHeights] = useState<Partial<Record<TaskStatus, number>>>({});
   const equalizedHeight = Math.max(...(Object.values(columnHeights) as number[]));
 
+  // incremental rendering: only the first `visibleCount` tasks of each column are mounted; the sentinel
+  // rendered below the board grows this as it scrolls into view (see setSentinel)
+  const [visibleCount, setVisibleCount] = useState(TASK_PAGE_SIZE);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const setSentinel = useCallback((node: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    if (!node) return;
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) setVisibleCount((count) => count + TASK_PAGE_SIZE);
+      },
+      { rootMargin: '400px' }
+    );
+    observerRef.current.observe(node);
+  }, []);
+
   // (re)build the board whenever the loaded tasks or the client-side search change
   useEffect(() => {
     if (tasks) {
       setTasksByStatus(getTasksByStatus(filteredTasks));
+      // start fresh when the tasks/filters/search change so a new view doesn't render everything at once
+      setVisibleCount(TASK_PAGE_SIZE);
     }
   }, [tasks, filteredTasks]);
 
@@ -324,16 +346,14 @@ export const TaskListContent = ({
               </Typography>
             </Button>
           </Badge>
-          {/* uncontrolled boards (project/work package) render the search here; the global page puts it in the header */}
-          {!controlled && (
-            <TextField
-              size="small"
-              placeholder="Search tasks"
-              value={filters.search}
-              onChange={(event) => patch({ search: event.target.value })}
-              sx={{ ml: 'auto', minWidth: 240 }}
-            />
-          )}
+          {/* search sits directly to the right of the filters button on every board */}
+          <TextField
+            size="small"
+            placeholder="Search tasks"
+            value={filters.search}
+            onChange={(event) => patch({ search: event.target.value })}
+            sx={{ minWidth: 240 }}
+          />
         </Box>
         {/* kept mounted (just hidden) so the dropdowns fetch their options on page load, not on first open */}
         <Box sx={{ display: showFilters ? 'block' : 'none' }}>
@@ -353,7 +373,7 @@ export const TaskListContent = ({
               onEditTask={onEditTask}
               onHeightChange={onHeightChange}
               status={status}
-              tasks={tasksByStatus[status]}
+              tasks={tasksByStatus[status].slice(0, visibleCount)}
               key={status}
               wbsNum={wbsNum}
               context={context}
@@ -363,6 +383,11 @@ export const TaskListContent = ({
             />
           ))}
         </Box>
+        {/* when any column still has tasks beyond what's rendered, this sentinel reveals another page as
+            it scrolls near the viewport */}
+        {visibleCount < Math.max(0, ...statuses.map((status) => tasksByStatus[status].length)) && (
+          <div ref={setSentinel} style={{ height: 1 }} />
+        )}
       </DragDropContext>
     </>
   );

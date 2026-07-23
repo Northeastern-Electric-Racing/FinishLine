@@ -525,6 +525,13 @@ const attendanceGetOngoing = (teamId: string) => `${attendance()}/ongoing/${team
 const attendanceCloseOngoing = (teamId: string) => `${attendance()}/close/${teamId}`;
 const attendanceGetById = (meetingAttendanceId: string) => `${attendance()}/${meetingAttendanceId}`;
 
+/**************** Dashboard Endpoints ****************/
+const dashboards = () => `${API_URL}/dashboards`;
+const dashboardsGet = () => `${dashboards()}/`;
+const dashboardsCreate = () => `${dashboards()}/create`;
+const dashboardEdit = (dashboardId: string) => `${dashboards()}/${dashboardId}/edit`;
+const dashboardDelete = (dashboardId: string) => `${dashboards()}/${dashboardId}/delete`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -915,6 +922,11 @@ export const apiUrls = {
   attendanceGetOngoing,
   attendanceCloseOngoing,
   attendanceGetById,
+
+  dashboardsGet,
+  dashboardsCreate,
+  dashboardEdit,
+  dashboardDelete,
 
   version
 };

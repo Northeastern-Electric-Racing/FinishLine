@@ -13,6 +13,7 @@ import NERModal from '../../../../../components/NERModal';
 import { Link as RouterLink, useHistory, useLocation } from 'react-router-dom';
 import { routes } from '../../../../../utils/routes';
 import { wbsPipe } from '../../../../../utils/pipes';
+import { useSlimProjects } from '../../../../../hooks/dropdowns.hooks';
 
 const wpColors = [
   { bg: 'rgba(55,138,221,0.15)', color: '#7dbef4' }, // blue
@@ -29,18 +30,30 @@ export const TaskCard = ({
   task,
   index,
   wbsNum,
+  showProjectName = false,
   onDeleteTask,
   onEditTask
 }: {
   task: Task;
   index: number;
   wbsNum?: WbsNumber;
+  // shows the owning project's name on the card (used only on the global board, where tasks span projects)
+  showProjectName?: boolean;
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
 }) => {
   const { mutateAsync: deleteTask } = useDeleteTask();
   const { mutateAsync: editTask } = useEditTask();
   const { mutateAsync: editTaskAssignees } = useEditTaskAssignees();
+
+  // only fetch slim projects when we actually need to label cards (global board)
+  const { data: slimProjects } = useSlimProjects(showProjectName);
+  const projectName = showProjectName
+    ? slimProjects?.find(
+        (project) =>
+          project.wbsNum.carNumber === task.wbsNum.carNumber && project.wbsNum.projectNumber === task.wbsNum.projectNumber
+      )?.name
+    : undefined;
 
   const user = useCurrentUser();
 
@@ -170,6 +183,15 @@ export const TaskCard = ({
                 elevation={snapshot.isDragging ? 3 : 1}
               >
                 <CardContent>
+                  {projectName && (
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: 'block', fontWeight: 600, mb: 0.5, textTransform: 'uppercase', letterSpacing: 0.4 }}
+                    >
+                      {projectName}
+                    </Typography>
+                  )}
                   <Grid container>
                     <Grid item xs={11}>
                       <Typography variant="h5" component="div">

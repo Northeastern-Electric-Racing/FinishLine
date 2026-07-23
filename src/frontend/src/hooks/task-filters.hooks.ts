@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { validateWBS, WbsNumber, wbsPipe } from 'shared';
 
@@ -76,60 +76,57 @@ const deserializeFilters = (search: string): TaskFilterFields => {
   };
 };
 
-const hasFilterParams = (search: string): boolean => {
-  const params = new URLSearchParams(search);
-  return FILTER_PARAM_KEYS.some((key) => params.has(key));
-};
-
 interface UseTaskFiltersOptions {
   /**
-   * When set, filters are persisted to the URL query string (shareable) and to localStorage under
-   * this key (sticky across visits). The URL takes precedence on load. When omitted, filters are
-   * ephemeral local state (used by the project/work package boards).
+   * When set, the URL query string is the single source of truth for the filters, so a filtered view
+   * is shareable via link and can be applied by simply navigating to a saved dashboard link. When
+   * omitted, filters are ephemeral local state (used by the project/work package boards).
    */
   persistKey?: string;
 }
 
 /**
- * Manages task filter state. Optionally mirrors the state into the URL and localStorage so a filtered
- * view can be shared via link and restored on return.
+ * Manages task filter state. When `persistKey` is set the filters are read from and written to the URL
+ * query string (the single source of truth), so shared links and saved dashboards reproduce the exact
+ * view. Otherwise the filters are ephemeral local state.
  */
 export const useTaskFilters = ({ persistKey }: UseTaskFiltersOptions = {}) => {
   const history = useHistory();
   const location = useLocation();
 
-  const [filters, setFilters] = useState<TaskFilterFields>(() => {
-    if (!persistKey) return emptyTaskFilters;
-    // URL wins so shared links reproduce the exact view
-    if (hasFilterParams(location.search)) return deserializeFilters(location.search);
-    const stored = localStorage.getItem(persistKey);
-    if (stored) {
-      try {
-        return { ...emptyTaskFilters, ...(JSON.parse(stored) as Partial<TaskFilterFields>) };
-      } catch {
-        // ignore malformed storage
+  // ephemeral filters for the uncontrolled project / work package boards
+  const [localFilters, setLocalFilters] = useState<TaskFilterFields>(emptyTaskFilters);
+
+  // when persisting, the URL is the single source of truth, so navigating to a saved dashboard link
+  // (or a shared link) drives the filters directly
+  const urlFilters = useMemo(() => deserializeFilters(location.search), [location.search]);
+
+  const filters = persistKey ? urlFilters : localFilters;
+
+  const setFilters = useCallback(
+    (update: TaskFilterFields | ((prev: TaskFilterFields) => TaskFilterFields)) => {
+      if (!persistKey) {
+        setLocalFilters(update);
+        return;
       }
-    }
-    return emptyTaskFilters;
-  });
+      const prev = deserializeFilters(location.search);
+      const next = typeof update === 'function' ? update(prev) : update;
+      const currentSearch = location.search.replace(/^\?/, '');
+      // preserve any non-filter params (e.g. the `?task=` param that opens a task modal)
+      const nextSearch = serializeFilters(next, currentSearch);
+      if (nextSearch !== currentSearch) {
+        history.replace({ pathname: location.pathname, search: nextSearch });
+      }
+    },
+    [persistKey, history, location.pathname, location.search]
+  );
 
-  // keep the URL + localStorage in sync with the current filters, without disturbing other query
-  // params (e.g. the `?task=` param that opens a task modal)
-  useEffect(() => {
-    if (!persistKey) return;
-    localStorage.setItem(persistKey, JSON.stringify(filters));
-    const currentSearch = location.search.replace(/^\?/, '');
-    const nextSearch = serializeFilters(filters, currentSearch);
-    if (nextSearch !== currentSearch) {
-      history.replace({ pathname: location.pathname, search: nextSearch });
-    }
-  }, [filters, persistKey, history, location.pathname, location.search]);
+  const patch = useCallback(
+    (partial: Partial<TaskFilterFields>) => setFilters((prev) => ({ ...prev, ...partial })),
+    [setFilters]
+  );
 
-  const patch = useCallback((partial: Partial<TaskFilterFields>) => {
-    setFilters((prev) => ({ ...prev, ...partial }));
-  }, []);
-
-  const clear = useCallback(() => setFilters(emptyTaskFilters), []);
+  const clear = useCallback(() => setFilters(emptyTaskFilters), [setFilters]);
 
   return { filters, setFilters, patch, clear };
 };
