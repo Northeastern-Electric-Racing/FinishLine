@@ -13,6 +13,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { formatEventTime } from 'shared';
 import { datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
+import { userOffsetTime } from '../../../utils/design-review.utils';
 
 interface ScheduleEventModalProps {
   open: boolean;
@@ -39,12 +40,13 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
   const history = useHistory();
   const { mutateAsync: scheduleEvent, isLoading } = useScheduleEvent(eventId);
 
-  // Compute the full start and end times
+  // Compute the full start and end times, converting EST-based slot hours to local time
+  const offset = userOffsetTime();
   const startTime = new Date(selectedDay);
-  startTime.setHours(startHour, 0, 0, 0);
+  startTime.setHours(startHour + offset, 0, 0, 0);
 
   const endTime = new Date(selectedDay);
-  endTime.setHours(endHour, 0, 0, 0);
+  endTime.setHours(endHour + offset, 0, 0, 0);
 
   const handleConfirm = async () => {
     try {

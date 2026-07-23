@@ -37,7 +37,6 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
       allowEdit={!isGuest(auth.user.role)}
       allowActivate={!isGuest(auth.user.role)}
       allowStageGate={!isGuest(auth.user.role)}
-      allowRequestChange={!isGuest(auth.user.role)}
       allowDelete={isAdmin(auth.user.role)}
     />
   );

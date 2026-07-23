@@ -97,6 +97,26 @@ export default class RulesService {
   }
 
   /**
+   * Throws if a rule with the given code already exists in the given ruleset
+   * @param rulesetId The ruleset to check for an existing rule code
+   * @param ruleCode The trimmed rule code to check
+   */
+  private static async assertRuleCodeAvailable(rulesetId: string, ruleCode: string) {
+    const existingRule = await prisma.rule.findUnique({
+      where: {
+        rulesetId_ruleCode: {
+          rulesetId,
+          ruleCode
+        }
+      }
+    });
+
+    if (existingRule) {
+      throw new HttpException(400, `Rule with code ${ruleCode} already exists in this ruleset`);
+    }
+  }
+
+  /**
    * Creates a new rule in the database
    *
    * @param user The user creating the rule, must be a member or above
@@ -148,19 +168,10 @@ export default class RulesService {
       throw new AccessDeniedException('Cannot create rule in a ruleset from another organization');
     }
 
-    // Check for duplicate rule code within the same ruleset
-    const existingRule = await prisma.rule.findUnique({
-      where: {
-        rulesetId_ruleCode: {
-          rulesetId,
-          ruleCode
-        }
-      }
-    });
+    ruleCode = ruleCode.trim();
 
-    if (existingRule) {
-      throw new HttpException(400, `Rule with code ${ruleCode} already exists in this ruleset`);
-    }
+    // Check for duplicate rule code within the same ruleset
+    await RulesService.assertRuleCodeAvailable(rulesetId, ruleCode);
 
     // Verify parent rule exists if provided
     if (parentRuleId) {
@@ -507,6 +518,18 @@ export default class RulesService {
     if (currentRule.ruleset?.car?.wbsElement?.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Rule');
 
+    if (ruleCode !== undefined) {
+      ruleCode = ruleCode.trim();
+
+      if (ruleCode === '') {
+        throw new HttpException(400, 'Rule code cannot be empty');
+      }
+
+      if (ruleCode !== currentRule.ruleCode) {
+        await RulesService.assertRuleCodeAvailable(currentRule.rulesetId, ruleCode);
+      }
+    }
+
     if (parentRuleId) {
       const parentRule = await prisma.rule.findUnique({
         where: { ruleId: parentRuleId }
@@ -518,6 +541,10 @@ export default class RulesService {
 
       if (parentRule.dateDeleted) {
         throw new DeletedException('Parent Rule', parentRuleId);
+      }
+
+      if (parentRule.rulesetId !== currentRule.rulesetId) {
+        throw new HttpException(400, 'Parent rule must be in the same ruleset');
       }
     }
 

@@ -29,11 +29,25 @@ export interface Task {
   createdBy: User;
   deletedBy?: User;
   assignees: User[];
+  labels: TaskLabel[];
   startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
   status: TaskStatus;
+  blockedBy: TaskBlockerPreview[];
+  blockedByWorkPackages: BlockingWorkPackagePreview[];
 }
+
+export type TaskBlockerPreview = {
+  taskId: string;
+  title: string;
+  status: TaskStatus;
+};
+
+export type BlockingWorkPackagePreview = {
+  wbsNum: WbsNumber;
+  name: string;
+};
 
 export type TaskCardPreview = Pick<Task, 'taskId' | 'title' | 'deadline' | 'priority' | 'wbsNum'> & {
   assignees: { userId: string; firstName: string; lastName: string }[];
@@ -49,12 +63,20 @@ export type TaskPreview = Pick<Task, 'taskId' | 'title' | 'notes' | 'dateCreated
 export interface FilterTaskArgs {
   memberIds?: string[];
   teamIds?: string[];
-  startPeriod: Date;
-  endPeriod: Date;
+  startPeriod?: Date;
+  endPeriod?: Date;
+  labelIds?: string[];
+  wbsNum?: WbsNumber;
 }
 
 // Need lead and manager in order to determine permissions for editing and deleting tasks in the calendar view
 export interface CalendarTask extends Task {
   projectLeadId?: string;
   projectManagerId?: string;
+}
+
+export interface TaskLabel {
+  taskLabelId: string;
+  name: string;
+  colorHexCode: string;
 }

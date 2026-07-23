@@ -9,7 +9,7 @@ import { useGetAllIndexCodes } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
-import { ChangeRequestType, Project } from 'shared';
+import { Project } from 'shared';
 import { useGetTeamsProjects } from '../../../hooks/projects.hooks';
 
 const schema = yup.object().shape({
@@ -95,10 +95,7 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
 
     const payload: CreateStandardChangeRequestPayload = {
       wbsNum: currentProject.wbsNum,
-      type: ChangeRequestType.Other,
-      what: 'project',
-      why: [],
-      proposedSolutions: [],
+      why: '',
       projectProposedChanges: {
         leadId: currentProject.lead?.userId,
         managerId: currentProject.manager?.userId,

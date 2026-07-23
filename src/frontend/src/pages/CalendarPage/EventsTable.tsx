@@ -28,6 +28,8 @@ import EditEventModal from './Components/EditEventModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import FilterListOffIcon from '@mui/icons-material/FilterListOff';
 import NERDeleteModal from '../../components/NERDeleteModal';
 
 interface YourEventsHeadCells {
@@ -122,6 +124,7 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
   const [showEditModal, setShowEditModal] = useState(false);
 
   const [eventToDelete, setEventToDelete] = useState<Event | undefined>(undefined);
+  const [hidePastEvents, setHidePastEvents] = useState(true);
 
   const handleOpenClickPopup = (event: Event) => {
     setClickedEvent(event);
@@ -226,7 +229,12 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
       : [])
   ];
 
-  const events = sortEvents(tab === 1 ? yourEvents : reviewEvents);
+  const now = new Date();
+  const baseEvents = tab === 1 ? yourEvents : reviewEvents;
+  const filteredEvents = hidePastEvents
+    ? baseEvents.filter((event) => getNextMeetingTime(event).getTime() >= now.getTime())
+    : baseEvents;
+  const events = sortEvents(filteredEvents);
 
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
@@ -245,9 +253,29 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              {headCells.map((headCell) => (
-                <TableCellHuge title={headCell.label} />
-              ))}
+              {headCells.map((headCell) =>
+                headCell.id === 'date' ? (
+                  <TableCell key={headCell.id} sx={{ backgroundColor: '#dd514c' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                      <Typography variant="h4" fontSize={25}>
+                        {headCell.label}
+                      </Typography>
+                      <Tooltip
+                        title={
+                          hidePastEvents ? 'Showing upcoming only; click to show all' : 'Showing all; click to hide past'
+                        }
+                        arrow
+                      >
+                        <IconButton size="small" onClick={() => setHidePastEvents((prev) => !prev)} sx={{ color: 'white' }}>
+                          {hidePastEvents ? <FilterListIcon fontSize="small" /> : <FilterListOffIcon fontSize="small" />}
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                ) : (
+                  <TableCellHuge key={headCell.id} title={headCell.label} />
+                )
+              )}
               {tab === 1 && <TableCellHuge title={''} />}
             </TableRow>
           </TableHead>
