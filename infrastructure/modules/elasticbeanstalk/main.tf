@@ -1,5 +1,10 @@
 # Elastic Beanstalk Module
 
+data "aws_elastic_beanstalk_solution_stack" "docker" {
+  most_recent = true
+  name_regex  = "^64bit Amazon Linux 2023 .* running Docker$"
+}
+
 #############
 # Elastic Beanstalk Application
 #############
@@ -26,8 +31,9 @@ resource "aws_elastic_beanstalk_application" "main" {
 resource "aws_elastic_beanstalk_environment" "main" {
   name                = "${var.project_name}-${var.environment}-env"
   application         = aws_elastic_beanstalk_application.main.name
-  solution_stack_name = var.solution_stack_name
+  solution_stack_name = var.solution_stack_name != "" ? var.solution_stack_name : data.aws_elastic_beanstalk_solution_stack.docker.name
   tier                = "WebServer"
+  cname_prefix        = var.cname_prefix != "" ? var.cname_prefix : null
 
   #####################
   # VPC Configuration
@@ -75,6 +81,15 @@ resource "aws_elastic_beanstalk_environment" "main" {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "SecurityGroups"
     value     = var.instance_security_group_id
+  }
+
+  dynamic "setting" {
+    for_each = var.ec2_key_name != "" ? [1] : []
+    content {
+      namespace = "aws:autoscaling:launchconfiguration"
+      name      = "EC2KeyName"
+      value     = var.ec2_key_name
+    }
   }
 
   #####################
@@ -291,7 +306,7 @@ resource "aws_elastic_beanstalk_environment" "main" {
   setting {
     namespace = "aws:elasticbeanstalk:cloudwatch:logs"
     name      = "DeleteOnTerminate"
-    value     = var.environment == "production" ? "false" : "true"
+    value     = var.retain_logs_on_terminate ? "false" : "true"
   }
 
   setting {
@@ -309,7 +324,7 @@ resource "aws_elastic_beanstalk_environment" "main" {
   setting {
     namespace = "aws:elasticbeanstalk:cloudwatch:logs:health"
     name      = "DeleteOnTerminate"
-    value     = var.environment == "production" ? "false" : "true"
+    value     = var.retain_logs_on_terminate ? "false" : "true"
   }
 
   setting {
@@ -351,12 +366,9 @@ resource "aws_elastic_beanstalk_environment" "main" {
   #####################
   # Environment Variables
   #####################
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "NODE_ENV"
-    value     = var.environment == "production" ? "production" : "development"
-  }
-
+  # NODE_ENV is set by each caller via environment_variables below, not hardcoded
+  # here — this used to force "development" for any non-production environment,
+  # silently overriding sandbox's own NODE_ENV=sandbox value.
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "PORT"

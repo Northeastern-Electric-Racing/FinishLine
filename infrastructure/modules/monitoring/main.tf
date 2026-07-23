@@ -221,7 +221,7 @@ resource "aws_cloudwatch_metric_alarm" "eb_cpu_high" {
   statistic           = "Average"
   threshold           = 80
   alarm_description   = "This metric monitors EC2 CPU utilization"
-  alarm_actions       = [var.sns_topic_arn]
+  alarm_actions       = var.sns_topic_arn != "" ? [var.sns_topic_arn] : []
 
   dimensions = {
     AutoScalingGroupName = var.eb_autoscaling_group_name
@@ -245,7 +245,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_http_5xx_errors" {
   statistic           = "Sum"
   threshold           = 10  # Alert if more than 10 5xx errors in 5 minutes
   alarm_description   = "High rate of HTTP 5xx errors indicates application issues"
-  alarm_actions       = [var.sns_topic_arn]
+  alarm_actions       = var.sns_topic_arn != "" ? [var.sns_topic_arn] : []
 
   dimensions = {
     LoadBalancer = var.alb_arn_suffix
@@ -272,7 +272,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
   statistic           = "Average"
   threshold           = 75
   alarm_description   = "RDS CPU utilization is high - may need optimization or larger instance"
-  alarm_actions       = [var.sns_topic_arn]
+  alarm_actions       = var.sns_topic_arn != "" ? [var.sns_topic_arn] : []
 
   dimensions = {
     DBInstanceIdentifier = var.rds_instance_id
@@ -295,7 +295,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_read_latency_high" {
   statistic           = "Average"
   threshold           = 0.01  # 10ms in seconds
   alarm_description   = "RDS read latency is high - may indicate I/O bottleneck or need for indexing"
-  alarm_actions       = [var.sns_topic_arn]
+  alarm_actions       = var.sns_topic_arn != "" ? [var.sns_topic_arn] : []
 
   dimensions = {
     DBInstanceIdentifier = var.rds_instance_id
@@ -318,7 +318,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_memory_low" {
   statistic           = "Average"
   threshold           = 524288000  # 500MB in bytes
   alarm_description   = "RDS freeable memory is low - may need larger instance or query optimization"
-  alarm_actions       = [var.sns_topic_arn]
+  alarm_actions       = var.sns_topic_arn != "" ? [var.sns_topic_arn] : []
 
   dimensions = {
     DBInstanceIdentifier = var.rds_instance_id
@@ -337,7 +337,7 @@ resource "aws_cloudwatch_metric_alarm" "eb_memory_high" {
   evaluation_periods  = 2
   threshold           = 75
   alarm_description   = "This metric monitors EC2 memory utilization"
-  alarm_actions       = [var.sns_topic_arn]
+  alarm_actions       = var.sns_topic_arn != "" ? [var.sns_topic_arn] : []
 
   metric_query {
     id          = "m1"

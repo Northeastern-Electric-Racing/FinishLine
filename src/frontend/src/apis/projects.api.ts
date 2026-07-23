@@ -48,6 +48,18 @@ export const getAllProjects = () => {
 };
 
 /**
+ * Fetches all projects with preview querry args for Copy BOM
+ * Note: Copy BOM lets the user pick any past car to copy from and handles its own
+ * frontend filtering, so we bypass the global car filter using overrideCarId: 'all-cars'
+ */
+export const getAllProjectsCopyBOM = () => {
+  return axios.get<ProjectPreview[]>(apiUrls.allProjectPreviews(), {
+    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer),
+    overrideCarId: 'all-cars'
+  });
+};
+
+/**
  * Fetches all the projects that are on the users teams
  */
 export const getUsersTeamsProjects = () => {

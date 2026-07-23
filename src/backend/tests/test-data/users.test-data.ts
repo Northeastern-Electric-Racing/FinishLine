@@ -173,7 +173,8 @@ export const batmanScheduleSettings: Schedule_Settings = {
   drScheduleSettingsId: 'bmschedule',
   personalGmail: 'brucewayne@gmail.com',
   personalZoomLink: 'https://zoom.us/j/gotham',
-  userId: '69'
+  userId: '69',
+  importedIcsCalendarUrl: null
 };
 
 export const batmanWithScheduleSettings: CreateTestUserParams & { scheduleSettings: Schedule_Settings } = {
@@ -194,14 +195,16 @@ export const wonderwomanScheduleSettings: Schedule_Settings = {
   drScheduleSettingsId: 'wwschedule',
   personalGmail: 'diana@gmail.com',
   personalZoomLink: 'https://zoom.us/jk/athens',
-  userId: '72'
+  userId: '72',
+  importedIcsCalendarUrl: null
 };
 
 export const wonderwomanMarkedScheduleSettings: Schedule_Settings = {
   drScheduleSettingsId: 'wwschedule',
   personalGmail: 'diana@gmail.com',
   personalZoomLink: 'https://zoom.us/jk/athens',
-  userId: '72'
+  userId: '72',
+  importedIcsCalendarUrl: null
 };
 
 export const wonderwomanWithScheduleSettings: CreateTestUserParams & { scheduleSettings: Schedule_Settings } = {

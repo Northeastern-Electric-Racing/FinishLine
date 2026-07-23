@@ -94,7 +94,14 @@ export const getProjectPreviewQueryArgs = (organizationId: string) =>
           status: true
         }
       },
-      workPackages: getWorkPackagePreviewQueryArgs(),
+      workPackages: {
+        where: {
+          wbsElement: {
+            dateDeleted: null
+          }
+        },
+        ...getWorkPackagePreviewQueryArgs()
+      },
       projectId: true,
       budget: true,
       abbreviation: true,
@@ -138,7 +145,14 @@ export const getProjectOverviewQueryArgs = (organizationId: string) =>
           }
         }
       },
-      workPackages: getWorkPackagePreviewQueryArgs(),
+      workPackages: {
+        where: {
+          wbsElement: {
+            dateDeleted: null
+          }
+        },
+        ...getWorkPackagePreviewQueryArgs()
+      },
       projectId: true,
       budget: true,
       abbreviation: true,

@@ -26,6 +26,7 @@ const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
+const userScheduleSettingsBusyTimes = (id: string) => `${usersById(id)}/schedule-settings/busy-times`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
@@ -97,7 +98,10 @@ const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assigne
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
-const tasksByWbsNum = (wbsNum: string) => `${tasks()}/by-wbs/${wbsNum}`;
+const taskLabels = () => `${tasks()}/task-labels`;
+const taskLabelCreate = () => `${taskLabels()}/create`;
+const taskLabelEdit = (taskLabelId: string) => `${taskLabels()}/${taskLabelId}/edit`;
+const taskLabelDelete = (taskLabelId: string) => `${taskLabels()}/${taskLabelId}/delete`;
 
 /**************** Work Packages Endpoints ****************/
 const workPackages = (queryParams?: { [field: string]: string }) => {
@@ -383,10 +387,15 @@ const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-revie
 const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizations()}/sponsorshipChannelId/set`;
 const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
 const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
+const organizationsNotificationChannels = () => `${organizations()}/notification-channels`;
+const organizationsAvailableNotificationChannels = () => `${organizationsNotificationChannels()}/available`;
+const organizationsCreateNotificationChannel = () => `${organizationsNotificationChannels()}/create`;
+const organizationsDeleteNotificationChannel = () => `${organizationsNotificationChannels()}/delete`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
+const carEdit = (id: string) => `${cars()}/${id}/edit`;
 
 /************** Recruitment Endpoints ***************/
 const recruitment = () => `${API_URL}/recruitment`;
@@ -558,6 +567,7 @@ export const apiUrls = {
   userFavoriteProjects,
   userSecureSettings,
   userScheduleSettings,
+  userScheduleSettingsBusyTimes,
   userScheduleSettingsSet,
   userTasks,
   manyUserTasks,
@@ -626,7 +636,10 @@ export const apiUrls = {
   editTaskAssignees,
   deleteTask,
   overdueTasksByTeamLeadership,
-  tasksByWbsNum,
+  taskLabels,
+  taskLabelCreate,
+  taskLabelEdit,
+  taskLabelDelete,
 
   workPackages,
   workPackagesByWbsNum,
@@ -819,9 +832,14 @@ export const apiUrls = {
   organizationsSetSlackSponsorshipNotificationChannelId,
   organizationsFinanceDelegates,
   organizationsSetFinanceDelegates,
+  organizationsNotificationChannels,
+  organizationsAvailableNotificationChannels,
+  organizationsCreateNotificationChannel,
+  organizationsDeleteNotificationChannel,
 
   cars,
   carsCreate,
+  carEdit,
 
   recruitment,
   allMilestones,

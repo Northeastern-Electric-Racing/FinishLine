@@ -1,6 +1,7 @@
-import { isAdmin, isHead, Team, TeamPreview, TeamType, User } from 'shared';
-import { Organization, WBS_Element_Status } from '@prisma/client';
+import { isAdmin, isHead, Team, TeamPreview, TeamType, User, WbsElementStatus } from 'shared';
+import { Organization } from '@prisma/client';
 import prisma from '../prisma/prisma.js';
+import { calculateProjectStatus } from '../utils/projects.utils.js';
 import teamTransformer, { teamBaseTransformer, teamPreviewTransformer } from '../transformers/teams.transformer.js';
 import {
   NotFoundException,
@@ -406,7 +407,7 @@ export default class TeamsService {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('You must be an admin or above to archive a team');
 
-    if (team.projects.some((project) => project.wbsElement.status !== WBS_Element_Status.COMPLETE))
+    if (team.projects.some((project) => calculateProjectStatus(project) !== WbsElementStatus.Complete))
       throw new HttpException(400, 'A team is not archivable if it has any active projects, or incomplete projects');
 
     const updateData = {

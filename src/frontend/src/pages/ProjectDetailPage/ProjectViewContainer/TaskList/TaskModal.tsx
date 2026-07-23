@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { fullNamePipe, datePipe } from '../../../../utils/pipes';
-import { Task, WbsNumber } from 'shared';
-import { Box, Grid, Typography } from '@mui/material';
+import { fullNamePipe, datePipe, wbsPipe } from '../../../../utils/pipes';
+import { Task, TaskStatus, WbsNumber } from 'shared';
+import { Box, Chip, Grid, Typography } from '@mui/material';
 import { useState } from 'react';
 import TaskFormModal, { EditTaskFormInput } from './TaskFormModal';
 import NERModal from '../../../../components/NERModal';
@@ -25,6 +25,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const isWpTask = task.wbsNum.workPackageNumber !== 0;
   const isWpContext = wbsNum.workPackageNumber !== 0;
+  const activeBlockers = task.blockedBy.filter((blocker) => blocker.status !== TaskStatus.DONE);
 
   const ViewModal: React.FC = () => {
     return (
@@ -79,6 +80,32 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
                 Work Package:
                 <Typography display={'inline'}> {task.wbsName}</Typography>
               </Typography>
+            </Grid>
+          )}
+          <Grid item xs={12} md={6}>
+            <Typography fontWeight={'bold'}>Label(s):</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+              {task.labels.map((label) => (
+                <Chip
+                  key={label.taskLabelId}
+                  label={label.name}
+                  size="small"
+                  sx={{ backgroundColor: label.colorHexCode, color: '#fff', fontWeight: 'bold' }}
+                />
+              ))}
+            </Box>
+          </Grid>
+          {(activeBlockers.length > 0 || task.blockedByWorkPackages.length > 0) && (
+            <Grid item xs={12} md={6}>
+              <Typography fontWeight={'bold'}>Blocked By:</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                {activeBlockers.map((blocker) => (
+                  <Chip key={blocker.taskId} label={blocker.title} size="small" />
+                ))}
+                {task.blockedByWorkPackages.map((blockingWp) => (
+                  <Chip key={wbsPipe(blockingWp.wbsNum)} label={`${blockingWp.name} (WP)`} size="small" variant="outlined" />
+                ))}
+              </Box>
             </Grid>
           )}
           <Grid item xs={12} md={6}>

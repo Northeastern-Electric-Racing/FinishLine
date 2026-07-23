@@ -93,20 +93,13 @@ describe('Rendering Project View Container', () => {
   });
 
   it('disables the buttons for guest users', () => {
-    renderComponent();
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
       ...exampleAuthenticatedGuestUser
     });
+    renderComponent();
 
-    fireEvent.click(screen.getByText('Actions'));
-
-    const editMenuItem = screen.getByText('Edit').closest('li');
-    expect(editMenuItem).not.toBeNull();
-    expect(editMenuItem?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
-
-    const reqChangeMenuItem = screen.getByText('Request Change');
-    expect(reqChangeMenuItem).not.toBeNull();
-    expect(reqChangeMenuItem?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    const actionsButton = screen.getByText('Actions').closest('button');
+    expect(actionsButton).toBeDisabled();
   });
 
   it('enables the buttons for admin users', async () => {
@@ -116,7 +109,6 @@ describe('Rendering Project View Container', () => {
     });
     fireEvent.click(screen.getByText('Actions'));
     expect(screen.getByText('Edit')).not.toHaveAttribute('aria-disabled', 'true');
-    expect(screen.getByText('Request Change')).not.toHaveAttribute('aria-disabled', 'true');
   });
 
   describe('Work Package Preview', () => {
