@@ -11,11 +11,12 @@ import { getAncestorIds } from '../../utils/rules.utils';
  * Controlled expand + click-to-navigate for referenced rules.
  * Clicking a referenced rule link expands its full ancestor path and scrolls to it on the page.
  * @param rules the rules currently rendered on this page
+ * @param initialExpandedIds ids expanded by default
  * @returns expansion state + handlers
  */
-export const useRuleTreeNavigation = (rules: Rule[]) => {
+export const useRuleTreeNavigation = (rules: Rule[], initialExpandedIds?: Set<string>) => {
   // set of rule ids currently expanded
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => initialExpandedIds ?? new Set());
   // rule pending to scroll to
   const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
   // list of rules in this view to determine if a referenced rule is able to be scrolled to (for project view)

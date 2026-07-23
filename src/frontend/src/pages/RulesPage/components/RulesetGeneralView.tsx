@@ -5,21 +5,28 @@ import RuleRow from '../RuleRow';
 import RuleStatusTag from './RuleStatusTag';
 import RuleContent from './RuleContent';
 import UpdateStatusPopover from '../../ProjectDetailPage/ProjectViewContainer/ProjectRules/UpdateStatusPopover';
-import { NERButton } from '../../../components/NERButton';
 import { useSetRuleCompletion } from '../../../hooks/rules.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
-import { useRuleTreeNavigation } from '../useRuleTreeNavigation';
 
 interface RulesetGeneralViewProps {
   allRules: Rule[];
   rulesetId: string;
+  expandedIds: Set<string>;
+  toggleExpand: (ruleId: string) => void;
+  navigateToRule: (ruleId: string) => void;
 }
 
 /**
  * general view for displaying all top-level rules as dropdowns
  */
-const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rulesetId }) => {
+const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
+  allRules,
+  rulesetId,
+  expandedIds,
+  toggleExpand,
+  navigateToRule
+}) => {
   const theme = useTheme();
   const toast = useToast();
   const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
@@ -36,10 +43,6 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
   // Sort once by rule code so both top-level rows and their children render in a stable numeric order.
   const sortedRules = useMemo(() => [...allRules].sort(compareRuleCodes), [allRules]);
   const topLevelRules = useMemo(() => sortedRules.filter((rule) => !rule.parentRule), [sortedRules]);
-
-  // Expand ancestors + scroll for referenced rules.
-  const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded } =
-    useRuleTreeNavigation(sortedRules);
 
   const handleStatusClose = () => {
     setStatusPopoverAnchor(null);
@@ -59,12 +62,6 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-        <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
-          {areAllExpanded ? 'Collapse All' : 'Expand All'}
-        </NERButton>
-      </Box>
-
       <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor }}>
         <Table sx={{ borderCollapse: 'separate', borderSpacing: '0 8px', backgroundColor }}>
           <TableBody>
