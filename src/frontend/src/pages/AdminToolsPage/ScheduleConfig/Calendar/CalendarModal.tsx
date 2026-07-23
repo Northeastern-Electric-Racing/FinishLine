@@ -1,7 +1,8 @@
-import React from 'react';
-import { Box, FormControl, FormHelperText, Typography, Stack } from '@mui/material';
+import React, { useEffect } from 'react';
+import { Box, FormControl, FormHelperText, Typography } from '@mui/material';
 import NERFormModal from '../../../../components/NERFormModal';
 import ReactHookTextField from '../../../../components/ReactHookTextField';
+import ColorPickerInput from '../../../../components/ColorPickerInput';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
@@ -27,15 +28,6 @@ export interface BaseCalendarModalProps {
   initialValues?: Partial<CalendarFormValues>;
 }
 
-const COLOR_OPTIONS: { label: string; value: string }[] = [
-  { label: 'Red', value: '#EF4444' },
-  { label: 'Orange', value: '#F97316' },
-  { label: 'Green', value: '#22C55E' },
-  { label: 'Blue', value: '#3B82F6' },
-  { label: 'Purple', value: '#A855F7' },
-  { label: 'Navy', value: '#1E3A8A' }
-];
-
 const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubmit, initialValues }) => {
   const toast = useToast();
 
@@ -53,7 +45,7 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
 
   const frozenValuesRef = React.useRef<CalendarFormValues>({ name: '', description: '', colorHexCode: '' });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       frozenValuesRef.current = {
         name: initialValues?.name ?? '',
@@ -127,30 +119,7 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
           <Typography color="#ef4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
             Color:*
           </Typography>
-          <Stack direction="row" spacing={1.2} flexWrap="wrap">
-            {COLOR_OPTIONS.map((c) => {
-              const isSelected = c.value === selectedColor;
-              return (
-                <Box
-                  key={c.value}
-                  onClick={() => handleColorClick(c.value)}
-                  sx={{
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    px: 1.5,
-                    height: 28,
-                    borderRadius: '999px',
-                    backgroundColor: c.value,
-                    border: isSelected ? '2px solid #ef4345' : '2px solid transparent',
-                    boxSizing: 'border-box',
-                    minWidth: 32
-                  }}
-                />
-              );
-            })}
-          </Stack>
+          <ColorPickerInput selectedColor={selectedColor} onColorClick={handleColorClick} />
           <FormHelperText error>{errors.colorHexCode?.message}</FormHelperText>
         </FormControl>
       </Box>

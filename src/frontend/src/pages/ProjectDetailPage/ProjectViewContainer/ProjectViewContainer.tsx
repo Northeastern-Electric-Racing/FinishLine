@@ -3,13 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { Project, isGuest, isAdmin, isLeadership } from 'shared';
 import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
 import ProjectDetails from './ProjectDetails';
 import { routes } from '../../../utils/routes';
 import EditIcon from '@mui/icons-material/Edit';
-import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import { Box } from '@mui/material';
 import { useState } from 'react';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
@@ -18,7 +17,6 @@ import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ScopeTab } from './ScopeTab';
 import ProjectGantt from './ProjectGantt';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -122,18 +120,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             icon: <EditIcon fontSize="small" />
           },
           {
-            title: 'Request Change',
-            onClick: handleDropdownClose,
-            disabled: isGuest(user.role),
-            icon: <SyncAltIcon fontSize="small" />,
-            component: Link,
-            to: routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(project.wbsNum)
-          },
-          {
             title: 'Suggest Budget Increase',
             onClick: () => {
               history.push(
-                `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&budgetChange=${budgetIncrease}`
+                `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&budgetChange=${budgetIncrease}&returnUrl=${encodeURIComponent(`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`)}`
               );
             },
             disabled: !isLeadership(user.role) || budgetIncrease <= 0,
@@ -152,7 +142,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
           {
             title: 'Create New Work Package',
             onClick: () => {
-              history.push(`${routes.WORK_PACKAGE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}&crId=null`);
+              history.push(`${routes.WORK_PACKAGE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}`);
             },
             disabled: isGuest(user.role),
             icon: <ContentPasteIcon fontSize="small" />
@@ -221,7 +211,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             { tabUrlValue: 'overview', tabName: 'Overview' },
             { tabUrlValue: 'tasks', tabName: 'Tasks' },
             { tabUrlValue: 'bom', tabName: 'BOM' },
-            { tabUrlValue: 'scope', tabName: 'Scope' },
             { tabUrlValue: 'changes', tabName: 'Changes' },
             { tabUrlValue: 'gantt', tabName: 'Gantt' },
             { tabUrlValue: 'change-requests', tabName: 'Change Requests' },
@@ -243,14 +232,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       ) : tab === 2 ? (
         <BOMTab project={project} />
       ) : tab === 3 ? (
-        <ScopeTab project={project} />
-      ) : tab === 4 ? (
         <ChangesList changes={project.changes} />
-      ) : tab === 5 ? (
+      ) : tab === 4 ? (
         <ProjectGantt workPackages={project.workPackages} />
-      ) : tab === 6 ? (
+      ) : tab === 5 ? (
         <ChangeRequestTab wbsElement={project} />
-      ) : tab === 7 ? (
+      ) : tab === 6 ? (
         <PartsReviewPage project={project} />
       ) : tab === 8 ? (
         <ProjectSpendingHistory wbsNum={project.wbsNum} />

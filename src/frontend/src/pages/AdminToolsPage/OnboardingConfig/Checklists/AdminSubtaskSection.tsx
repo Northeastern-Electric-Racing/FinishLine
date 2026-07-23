@@ -115,21 +115,19 @@ const AdminSubtaskSection: React.FC<AdminSubtaskSectionProps> = ({ parentTask })
                               borderRadius: 3,
                               mb: 2,
                               backgroundColor:
-                                item.itemType === ChecklistItemType.TASK ? theme.palette.background.paper : 'transparent',
+                                item.itemType === ChecklistItemType.TASK ? theme.palette.grey[100] : 'transparent',
                               padding: item.itemType === ChecklistItemType.TASK ? 2 : 0
                             }}
                           >
                             {item.itemType === ChecklistItemType.TASK ? (
                               <>
-                                <Box display="flex" alignItems="center" gap={1} sx={{ flex: 1 }}>
+                                <Box display="flex" alignItems="center" gap={1} sx={{ flex: 1, color: 'black' }}>
                                   <Box {...provided.dragHandleProps}>
                                     <IconButton>
                                       <GridDragIcon sx={{ color: 'black' }} />
                                     </IconButton>
                                   </Box>
-                                  <Typography color="black" fontWeight="bold">
-                                    {item.content} {item.isOptional && '(Optional)'}
-                                  </Typography>
+                                  <NERMarkdown markdown={`${item.content}${item.isOptional ? ' (Optional)' : ''}`} />
                                 </Box>
                                 <Box sx={{ display: 'flex' }}>
                                   <IconButton onClick={() => setItemToDelete(item)}>

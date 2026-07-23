@@ -51,6 +51,8 @@ export const TaskColumn = ({
     title,
     deadline,
     assignees,
+    labels,
+    blockedBy,
     priority,
     startDate,
     wpWbsNum
@@ -64,16 +66,18 @@ export const TaskColumn = ({
         priority,
         status: status as TaskStatus,
         assignees,
-        notes
+        notes,
+        labelIds: labels.map((l) => l.taskLabelId),
+        blockedByIds: blockedBy.map((b) => b.taskId)
       });
       onAddTask(task);
       toast.success('Task Successfully Created!');
+      setShowCreateTaskModal(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
     }
-    setShowCreateTaskModal(false);
   };
 
   return (

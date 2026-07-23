@@ -12,10 +12,14 @@ import {
   AvailabilityCreateArgs,
   UserWithScheduleSettings,
   ProjectOverview,
-  isAtLeastRank
+  isAtLeastRank,
+  BusySlots,
+  IcsBusyInterval
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
+import { busyIntervalsToSlots, fetchIcsBusyTimes, validateIcsUrl } from '../utils/ics.utils.js';
+import CalendarService from './calendar.services.js';
 import { generateAccessToken } from '../utils/auth.utils.js';
 import { projectOverviewTransformer } from '../transformers/projects.transformer.js';
 import { getProjectOverviewQueryArgs } from '../prisma-query-args/projects.query-args.js';
@@ -29,6 +33,7 @@ import authenticatedUserTransformer from '../transformers/auth-user.transformer.
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
 import taskTransformer from '../transformers/tasks.transformer.js';
 import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
+import { encrypt, decrypt } from '../utils/encryption.utils.js';
 
 export default class UsersService {
   /**
@@ -525,7 +530,8 @@ export default class UsersService {
     user: User,
     personalGmail: string,
     personalZoomLink: string,
-    availabilities: AvailabilityCreateArgs[]
+    availabilities: AvailabilityCreateArgs[],
+    importedIcsCalendarUrl?: string
   ): Promise<UserScheduleSettings> {
     if (personalGmail !== '') {
       const existingUser = await prisma.schedule_Settings.findFirst({
@@ -537,16 +543,24 @@ export default class UsersService {
       }
     }
 
+    const normalizedIcsUrl = importedIcsCalendarUrl?.trim() || undefined;
+
+    if (normalizedIcsUrl) await validateIcsUrl(normalizedIcsUrl);
+
+    const encryptedIcsUrl = normalizedIcsUrl ? encrypt(normalizedIcsUrl) : null;
+
     const newUserScheduleSettings = await prisma.schedule_Settings.upsert({
       where: { userId: user.userId },
       update: {
         personalGmail,
-        personalZoomLink
+        personalZoomLink,
+        importedIcsCalendarUrl: encryptedIcsUrl
       },
       create: {
         userId: user.userId,
         personalGmail,
-        personalZoomLink
+        personalZoomLink,
+        importedIcsCalendarUrl: encryptedIcsUrl
       },
       ...getUserScheduleSettingsQueryArgs()
     });
@@ -621,5 +635,71 @@ export default class UsersService {
     }
 
     return users.map(userWithScheduleSettingsTransformer);
+  }
+
+  /**
+   * Read-only busy-times for a user over [startDate, endDate), combining their imported ICS calendar
+   * feed with Finishline events they're on (required/optional member, creator, or on one of the event's
+   * teams), mapped onto the 0-11 availability slots per day.
+   *
+   * @param userId the user whose schedule is being read
+   * @param submitter the requesting user
+   * @param startDate the first day of the range (inclusive)
+   * @param endDate the day after the last day of the range (exclusive)
+   * @param organization the organization the requesting user is in
+   * @returns the busy slots per day, only including days that have at least one busy slot
+   */
+  static async getUserBusyTimes(
+    userId: string,
+    submitter: User,
+    startDate: Date,
+    endDate: Date,
+    organization: Organization
+  ): Promise<BusySlots[]> {
+    if (submitter.userId !== userId) throw new AccessDeniedException('You can only access your own schedule settings');
+    const user = await prisma.user.findUnique({
+      where: { userId },
+      include: {
+        organizations: true,
+        teamsAsMember: { select: { teamId: true } },
+        teamsAsLead: { select: { teamId: true } },
+        teamsAsHead: { select: { teamId: true } }
+      }
+    });
+    if (!user) throw new NotFoundException('User', userId);
+    if (!user.organizations.map((org) => org.organizationId).includes(organization.organizationId))
+      throw new HttpException(400, `User ${userId} is not apart of the current organization`);
+
+    const scheduleSettings = await prisma.schedule_Settings.findUnique({ where: { userId } });
+
+    let icsBusy: IcsBusyInterval[] = [];
+    if (scheduleSettings?.importedIcsCalendarUrl) {
+      icsBusy = await fetchIcsBusyTimes(decrypt(scheduleSettings.importedIcsCalendarUrl), startDate, endDate);
+    }
+
+    const userTeamIds = [
+      ...user.teamsAsMember.map((team) => team.teamId),
+      ...user.teamsAsLead.map((team) => team.teamId),
+      ...user.teamsAsHead.map((team) => team.teamId)
+    ];
+
+    const finishlineEvents = await CalendarService.getFilteredEvents(
+      { memberIds: [userId], teamIds: userTeamIds, startPeriod: startDate, endPeriod: endDate },
+      organization
+    );
+    const eventBusy: IcsBusyInterval[] = finishlineEvents.flatMap((event) =>
+      event.scheduledTimes.map((slot) => ({ start: slot.startTime, end: slot.endTime }))
+    );
+
+    const busy = [...icsBusy, ...eventBusy];
+    if (busy.length === 0) return [];
+
+    const busyDays: BusySlots[] = [];
+    for (let day = new Date(startDate); day < endDate; day.setUTCDate(day.getUTCDate() + 1)) {
+      const busySlots = busyIntervalsToSlots(busy, day);
+      if (busySlots.size > 0) busyDays.push({ dateSet: new Date(day), busySlots: Array.from(busySlots) });
+    }
+
+    return busyDays;
   }
 }

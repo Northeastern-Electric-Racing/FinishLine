@@ -1,4 +1,4 @@
-import { dbDateToLocalDate, Task } from 'shared';
+import { dbDateToLocalDate, Task, TaskLabel } from 'shared';
 
 /**
  * Transforms a task to ensure deep field transformation of date objects.
@@ -12,6 +12,15 @@ export const taskTransformer = (task: Task): Task => {
     dateCreated: new Date(task.dateCreated),
     dateDeleted: task.dateDeleted ? new Date(task.dateDeleted) : undefined,
     deadline: task.deadline ? dbDateToLocalDate(new Date(task.deadline)) : undefined,
-    startDate: task.startDate ? dbDateToLocalDate(new Date(task.startDate)) : undefined
+    startDate: task.startDate ? dbDateToLocalDate(new Date(task.startDate)) : undefined,
+    labels: task.labels.map(taskLabelTransformer)
   };
 };
+
+/**
+ * Transforms a task label to ensure deep field transformation of date objects.
+ *
+ * @param label Incoming task label object supplied by the HTTP response.
+ * @returns Properly transformed task label object.
+ */
+export const taskLabelTransformer = (label: TaskLabel): TaskLabel => ({ ...label });

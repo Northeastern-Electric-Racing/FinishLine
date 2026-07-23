@@ -6,6 +6,7 @@
 import axios from '../utils/axios';
 import {
   dateToMidnightUTC,
+  BusySlots,
   ProjectOverview,
   SetUserScheduleSettingsPayload,
   Task,
@@ -211,4 +212,19 @@ export const getManyUsersWithScheduleSettings = (userIds: string[]) => {
 
 export const logUserOut = () => {
   return axios.post<{ message: string }>(apiUrls.logUserOut());
+};
+
+/**
+ * Gets a user's busy times, combining their imported ics calendar feed and Finishline events they're on.
+ *
+ * @returns their busy times per day.
+ */
+export const getUserBusyTimes = (userId: string, startDate: Date, endDate: Date) => {
+  return axios.get<BusySlots[]>(apiUrls.userScheduleSettingsBusyTimes(userId), {
+    params: {
+      startDate: dateToMidnightUTC(startDate).toISOString(),
+      endDate: dateToMidnightUTC(endDate).toISOString()
+    },
+    transformResponse: (data) => (JSON.parse(data) as BusySlots[]).map((day) => ({ ...day, dateSet: new Date(day.dateSet) }))
+  });
 };

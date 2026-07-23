@@ -23,7 +23,14 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
   const toast = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [selectedPartIndex, setSelectedPartIndex] = useState<number>();
   const { mutateAsync: uploadFile } = useUploadFile();
+
+  const handleCloseAndReset = () => {
+    setFiles([]);
+    setSelectedPartIndex(undefined);
+    handleClose();
+  };
 
   const schema = yup.object().shape({
     submissionId: yup.string().required(),
@@ -54,8 +61,6 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
     control,
     name: 'fileIds'
   });
-
-  const [selectedPartIndex, setSelectedPartIndex] = useState<number>();
 
   const onFormSubmit = async (data: { submissionId: string; status: Review_Status; notes?: string; fileIds: string[] }) => {
     try {
@@ -88,7 +93,7 @@ const ReviewFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInPr
   return (
     <NERFormModal
       open={open}
-      onHide={handleClose}
+      onHide={handleCloseAndReset}
       title={!!defaultValues ? 'Edit Review' : 'New Review'}
       reset={() => reset()}
       handleUseFormSubmit={handleSubmit}

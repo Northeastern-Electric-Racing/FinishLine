@@ -5,5 +5,13 @@ export type DescriptionBulletQueryArgs = ReturnType<typeof getDescriptionBulletQ
 
 export const getDescriptionBulletQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Description_BulletDefaultArgs>()({
-    include: { userChecked: getUserQueryArgs(organizationId), descriptionBulletType: true }
+    select: {
+      descriptionId: true,
+      detail: true,
+      dateAdded: true,
+      dateDeleted: true,
+      dateTimeChecked: true,
+      descriptionBulletType: { select: { name: true } },
+      userChecked: getUserQueryArgs(organizationId)
+    }
   });

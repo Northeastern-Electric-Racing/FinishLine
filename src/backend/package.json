@@ -8,7 +8,8 @@
     "build": "NODE_OPTIONS='--max-old-space-size=8192' tsc --noEmit false",
     "start": "node -r dotenv/config dist/backend/index.js",
     "prisma:manual": "tsx --import dotenv/config ./src/prisma/manual.ts",
-    "prisma:dev-seed": "tsx --import dotenv/config ./src/prisma/dev-seed.ts"
+    "prisma:dev-seed": "tsx --import dotenv/config ./src/prisma/dev-seed.ts",
+    "prisma:dev-setup": "docker compose up -d --no-recreate database && yarn prisma:reset:no-seed --force && yarn workspace backend prisma:dev-seed"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",
@@ -32,9 +33,12 @@
     "google-auth-library": "^8.1.1",
     "googleapis": "^118.0.0",
     "ical-generator": "^10.2.0",
+    "ipaddr.js": "^2.4.0",
     "jsonwebtoken": "^8.5.1",
     "multer": "^1.4.5-lts.1",
+    "node-ical": "^0.26.1",
     "nodemailer": "^6.9.1",
+    "ora": "^9.4.1",
     "pdf-parse-new": "^1.4.1",
     "prisma": "^6.2.1",
     "shared": "1.0.0"

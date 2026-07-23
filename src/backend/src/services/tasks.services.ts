@@ -7,12 +7,19 @@ import {
   notGuest,
   Task,
   TaskCardPreview,
+  TaskLabel,
   WbsNumber,
   wbsPipe,
   User
 } from 'shared';
 import prisma from '../prisma/prisma.js';
-import taskTransformer, { calendarTaskTransformer, taskCardPreviewTransformer } from '../transformers/tasks.transformer.js';
+import taskTransformer, {
+  calendarTaskTransformer,
+  getActiveTaskBlockerNames,
+  taskBlockedByTransformer,
+  taskCardPreviewTransformer,
+  taskLabelTransformer
+} from '../transformers/tasks.transformer.js';
 import {
   NotFoundException,
   AccessDeniedException,
@@ -20,12 +27,19 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
-import { sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils.js';
+import {
+  sendSlackTaskAssignedNotificationToUsers,
+  validateTaskBlockedBys,
+  validateTaskLabels
+} from '../utils/tasks.utils.js';
 import { getUsers, userHasPermission } from '../utils/users.utils.js';
 import { wbsNumOf } from '../utils/utils.js';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
 import {
+  getBlockingWorkPackagesArgs,
   getCalendarTaskQueryArgs,
+  getTaskBlockedByQueryArgs,
+  getTaskLabelQueryArgs,
   getTaskPreviewQueryArgs,
   getTaskQueryArgs
 } from '../prisma-query-args/tasks.query-args.js';
@@ -42,6 +56,8 @@ export default class TasksService {
    * @param status the status of the task
    * @param assignees the assignees ids of the task
    * @param organizationId the organization that the user is currently in
+   * @param labelIds the label ids for the task
+   * @param blockedByIds the ids of the tasks that block this task
    * @param startDate the start date of the task
    * @param deadline the deadline of the task
    * @returns the id of the successfully created task
@@ -56,6 +72,8 @@ export default class TasksService {
     status: Task_Status,
     assignees: string[],
     organization: Organization,
+    labelIds: string[],
+    blockedByIds: string[],
     startDate?: Date,
     deadline?: Date
   ): Promise<Task> {
@@ -112,6 +130,21 @@ export default class TasksService {
       throw new HttpException(400, 'Tasks in progress must have a dealine and assignees');
     }
 
+    await validateTaskLabels(labelIds, organization.organizationId);
+    const blockedByTasks = await validateTaskBlockedBys(blockedByIds, organization.organizationId);
+
+    // only worth the extra nested fetch when actually attempting to create the task as done
+    if (status === 'DONE') {
+      const wbsElementForBlockCheck = await prisma.wBS_Element.findUniqueOrThrow({
+        where: { wbsNumber: { ...wbsNum, organizationId: organization.organizationId } },
+        ...getBlockingWorkPackagesArgs()
+      });
+      const blockerNames = getActiveTaskBlockerNames(blockedByTasks.map(taskBlockedByTransformer), wbsElementForBlockCheck);
+      if (blockerNames.length > 0) {
+        throw new HttpException(400, `Cannot create task as done: blocked by ${blockerNames.join(', ')}`);
+      }
+    }
+
     const createdTask = await prisma.task.create({
       data: {
         wbsElement: {
@@ -129,7 +162,9 @@ export default class TasksService {
         priority,
         status,
         createdBy: { connect: { userId: createdBy.userId } },
-        assignees: { connect: users.map((user) => ({ userId: user.userId })) }
+        assignees: { connect: users.map((user) => ({ userId: user.userId })) },
+        labels: { connect: labelIds.map((id) => ({ taskLabelId: id })) },
+        blockedBy: { connect: blockedByTasks.map((task) => ({ taskId: task.taskId })) }
       },
       ...getTaskQueryArgs(organization.organizationId)
     });
@@ -150,6 +185,8 @@ export default class TasksService {
    * @param title the new title for the task
    * @param notes the new notes for the task
    * @param priority the new priority for the task
+   * @param labelIds the new label ids for the task
+   * @param blockedByIds the new ids of the tasks that block this task
    * @param startDate the new start date for the task
    * @param deadline the new deadline for the task
    * @param wbsNum the new wbs element for the task
@@ -162,6 +199,8 @@ export default class TasksService {
     title: string,
     notes: string,
     priority: Task_Priority,
+    labelIds: string[],
+    blockedByIds: string[],
     startDate?: Date,
     deadline?: Date,
     wbsNum?: WbsNumber
@@ -185,6 +224,9 @@ export default class TasksService {
     if (effectiveStartDate && effectiveDeadline && effectiveStartDate > effectiveDeadline) {
       throw new HttpException(400, 'Start date must be before or on the same day as the deadline');
     }
+
+    await validateTaskLabels(labelIds, organizationId);
+    const blockedByTasks = await validateTaskBlockedBys(blockedByIds, organizationId, taskId);
 
     // if wbsNum passed, error if there's a problem with the wbs element
     if (wbsNum) {
@@ -218,7 +260,9 @@ export default class TasksService {
               }
             }
           }
-        })
+        }),
+        labels: { set: labelIds.map((id) => ({ taskLabelId: id })) },
+        blockedBy: { set: blockedByTasks.map((task) => ({ taskId: task.taskId })) }
       },
       ...getTaskQueryArgs(originalTask.wbsElement.organizationId)
     });
@@ -246,6 +290,24 @@ export default class TasksService {
 
     if (status === 'IN_PROGRESS' && (!originalTask.deadline || originalTask.assignees.length === 0)) {
       throw new HttpException(400, 'A task in progress must have a deadline and assignees!');
+    }
+
+    // only worth the extra nested fetch when actually attempting to complete the task
+    if (status === 'DONE') {
+      const taskForBlockCheck = await prisma.task.findUniqueOrThrow({
+        where: { taskId },
+        select: {
+          blockedBy: getTaskBlockedByQueryArgs(),
+          wbsElement: getBlockingWorkPackagesArgs()
+        }
+      });
+      const blockerNames = getActiveTaskBlockerNames(
+        taskForBlockCheck.blockedBy.map(taskBlockedByTransformer),
+        taskForBlockCheck.wbsElement
+      );
+      if (blockerNames.length > 0) {
+        throw new HttpException(400, `Cannot mark task as done: blocked by ${blockerNames.join(', ')}`);
+      }
     }
 
     const updatedTask = await prisma.task.update({
@@ -354,7 +416,7 @@ export default class TasksService {
   }
 
   static async getFilteredTasks(filters: FilterTaskArgs, organization: Organization): Promise<CalendarTask[]> {
-    const { memberIds, teamIds, startPeriod, endPeriod } = filters;
+    const { memberIds, teamIds, startPeriod, endPeriod, labelIds, wbsNum } = filters;
 
     // Validate memberIds if provided
     if (memberIds && memberIds.length > 0) {
@@ -379,6 +441,10 @@ export default class TasksService {
       }
     }
 
+    if (labelIds && labelIds.length > 0) {
+      await validateTaskLabels(labelIds, organization.organizationId);
+    }
+
     const orFilters: any[] = [];
     if (memberIds && memberIds.length > 0) {
       orFilters.push({ assignees: { some: { userId: { in: memberIds } } } });
@@ -394,13 +460,32 @@ export default class TasksService {
       });
     }
 
+    let wbsElementIds: string[] | undefined;
+    if (wbsNum) {
+      const wbsElement = await prisma.wBS_Element.findUnique({
+        where: { wbsNumber: { ...wbsNum, organizationId: organization.organizationId } }
+      });
+      if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+      if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+
+      if (wbsNum.workPackageNumber === 0) {
+        const project = await prisma.project.findUnique({
+          where: { wbsElementId: wbsElement.wbsElementId },
+          include: { workPackages: { include: { wbsElement: true } } }
+        });
+        if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+        wbsElementIds = [wbsElement.wbsElementId, ...project.workPackages.map((wp) => wp.wbsElementId)];
+      } else {
+        wbsElementIds = [wbsElement.wbsElementId];
+      }
+    }
+
     const tasks = await prisma.task.findMany({
       where: {
         dateDeleted: null,
-        deadline: {
-          gte: startPeriod,
-          lte: endPeriod
-        },
+        ...(startPeriod && endPeriod ? { deadline: { gte: startPeriod, lte: endPeriod } } : {}),
+        ...(wbsElementIds ? { wbsElementId: { in: wbsElementIds } } : {}),
+        ...(labelIds && labelIds.length > 0 ? { labels: { some: { taskLabelId: { in: labelIds } } } } : {}),
         wbsElement: {
           organizationId: organization.organizationId,
           dateDeleted: null
@@ -448,58 +533,108 @@ export default class TasksService {
   }
 
   /**
-   * Gets all tasks associated with a wbs element
-   * If the wbs number is a project (workPackageNumber === 0), returns the project's
-   * own tasks merged with all of its work packages' tasks
-   * If the wbs number is a work package, returns just that WP's tasks
-   * @param wbsNum the wbs number to fetch tasks for
+   * Gets all task labels in the database for a given organization
    * @param organization the organization that the user is currently in
-   * @returns array of tasks
+   * @returns array of task labels
    */
-  static async getTasksByWbsNum(wbsNum: WbsNumber, organization: Organization): Promise<Task[]> {
-    const wbsElement = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsNumber: {
-          ...wbsNum,
-          organizationId: organization.organizationId
-        }
+  static async getAllTaskLabels(organization: Organization): Promise<TaskLabel[]> {
+    const labels = await prisma.task_Label.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      ...getTaskLabelQueryArgs()
+    });
+
+    return labels.map(taskLabelTransformer);
+  }
+
+  /**
+   * Creates a task label in the database
+   * @param creator the user creating the task label
+   * @param name the name of the task label
+   * @param colorHexCode the hex code for the task label color
+   * @param organization the organization that the user is currently in
+   * @returns the created task label
+   * @throws if the user does not have permission
+   */
+  static async createTaskLabel(
+    creator: User,
+    name: string,
+    colorHexCode: string,
+    organization: Organization
+  ): Promise<TaskLabel> {
+    const hasPermission = await userHasPermission(creator.userId, organization.organizationId, isAdmin);
+    if (!hasPermission) throw new AccessDeniedException('Non admins cannot create task labels');
+
+    const label = await prisma.task_Label.create({
+      data: {
+        name,
+        colorHexCode,
+        userCreated: { connect: { userId: creator.userId } },
+        organization: { connect: { organizationId: organization.organizationId } }
       }
     });
 
-    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+    return taskLabelTransformer(label);
+  }
 
-    // project case, so return project's own tasks and all its wp's tasks
-    if (wbsNum.workPackageNumber === 0) {
-      const project = await prisma.project.findUnique({
-        where: { wbsElementId: wbsElement.wbsElementId },
-        include: { workPackages: { include: { wbsElement: true } } }
-      });
+  /**
+   * Edits a task label in the database
+   * @param user the user creating the task label
+   * @param taskLabelId the id of the task label being edited
+   * @param name the name of the task label
+   * @param colorHexCode the hex code for the task label color
+   * @param organization the organization that the user is currently in
+   * @returns the edited task label
+   * @throws if the user does not have permission
+   */
+  static async editTaskLabel(
+    user: User,
+    taskLabelId: string,
+    name: string,
+    colorHexCode: string,
+    organization: Organization
+  ): Promise<TaskLabel> {
+    const hasPermission = await userHasPermission(user.userId, organization.organizationId, isAdmin);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit task labels');
 
-      if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+    const label = await prisma.task_Label.findUnique({ where: { taskLabelId } });
+    if (!label) throw new NotFoundException('Task Label', taskLabelId);
+    if (label.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Task Label');
+    if (label.dateDeleted) throw new DeletedException('Task Label', taskLabelId);
 
-      const wpWbsElementIds = project.workPackages.map((wp) => wp.wbsElementId);
-
-      const tasks = await prisma.task.findMany({
-        where: {
-          dateDeleted: null,
-          wbsElementId: { in: [wbsElement.wbsElementId, ...wpWbsElementIds] }
-        },
-        ...getTaskQueryArgs(organization.organizationId)
-      });
-
-      return tasks.map(taskTransformer);
-    }
-
-    // work package case, so return just that wp's tasks
-    const tasks = await prisma.task.findMany({
-      where: {
-        dateDeleted: null,
-        wbsElementId: wbsElement.wbsElementId
-      },
-      ...getTaskQueryArgs(organization.organizationId)
+    const updatedLabel = await prisma.task_Label.update({
+      where: { taskLabelId },
+      data: { name, colorHexCode }
     });
 
-    return tasks.map(taskTransformer);
+    return taskLabelTransformer(updatedLabel);
+  }
+
+  /**
+   * Deletes a task label in the database
+   * @param user the user creating the task label
+   * @param taskLabelId the id of the task label being deleted
+   * @param organization the organization that the user is currently in
+   * @returns the deleted task label
+   * @throws if the user does not have permission
+   */
+  static async deleteTaskLabel(user: User, taskLabelId: string, organization: Organization): Promise<string> {
+    const hasPermission = await userHasPermission(user.userId, organization.organizationId, isAdmin);
+    if (!hasPermission) throw new AccessDeniedException('Only admins can delete task labels');
+
+    const label = await prisma.task_Label.findUnique({ where: { taskLabelId } });
+    if (!label) throw new NotFoundException('Task Label', taskLabelId);
+    if (label.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Task Label');
+    if (label.dateDeleted) throw new DeletedException('Task Label', taskLabelId);
+
+    await prisma.task_Label.update({
+      where: { taskLabelId },
+      data: {
+        dateDeleted: new Date(),
+        userDeleted: { connect: { userId: user.userId } },
+        tasks: { set: [] }
+      }
+    });
+
+    return taskLabelId;
   }
 }

@@ -38,6 +38,12 @@ export interface TeamWithMembers {
   head: User;
 }
 
+export interface NotificationChannelPreview {
+  slackChannelId: string;
+  name?: string;
+  hasAccess?: boolean;
+}
+
 export interface TeamTypeCalendarPreview {
   teamTypeId: string;
   name: string;
@@ -218,6 +224,7 @@ export interface Event {
   description?: string;
   status: EventStatus;
   initialDateScheduled?: Date;
+  notificationChannelIds: string[];
 }
 
 export type EventInstance = Omit<Event, 'scheduledTimes'> &
@@ -260,6 +267,7 @@ export interface EventWithMembers {
   description?: string;
   status: EventStatus;
   initialDateScheduled?: Date;
+  notificationChannelIds: string[];
 }
 
 export interface TeamType {
@@ -276,4 +284,14 @@ export interface TeamType {
 export interface AvailabilityCreateArgs {
   availability: number[];
   dateSet: Date;
+}
+
+export interface IcsBusyInterval {
+  start: Date;
+  end: Date;
+}
+
+export interface BusySlots {
+  dateSet: Date;
+  busySlots: number[];
 }

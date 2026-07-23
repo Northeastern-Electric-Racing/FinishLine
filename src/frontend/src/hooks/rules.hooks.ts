@@ -413,10 +413,10 @@ export const useEditRule = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  return useMutation<SharedRule, Error, { ruleId: string; ruleContent: string }>(
+  return useMutation<SharedRule, Error, { ruleId: string; ruleContent: string; ruleCode?: string }>(
     ['rules', 'edit'],
-    async ({ ruleId, ruleContent }) => {
-      const { data } = await editRule(ruleId, ruleContent);
+    async ({ ruleId, ruleContent, ruleCode }) => {
+      const { data } = await editRule(ruleId, ruleContent, ruleCode);
       return data;
     },
     {
@@ -482,6 +482,7 @@ export const useUpdateRuleset = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['rulesets']);
+        queryClient.invalidateQueries(['rules', 'rulesetTypes']);
       }
     }
   );
@@ -496,6 +497,7 @@ export const useDeleteRuleset = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['rulesets']);
+        queryClient.invalidateQueries(['rules', 'rulesetTypes']);
       }
     }
   );
@@ -509,7 +511,7 @@ export const useDeleteRulesetType = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['rulesetTypes']);
+        queryClient.invalidateQueries(['rules', 'rulesetTypes']);
       }
     }
   );
@@ -532,6 +534,7 @@ export const useCreateRuleset = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['rulesets']);
+        queryClient.invalidateQueries(['rules', 'rulesetTypes']);
       }
     }
   );

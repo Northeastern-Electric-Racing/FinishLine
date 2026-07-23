@@ -1,7 +1,13 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { Availability, Event, EventWithMembers, getDayOfWeek, getNextSevenDays, User } from 'shared';
+import { Availability, Event, EventWithMembers, dbDateToLocalDate, getDayOfWeek, getNextSevenDays, User } from 'shared';
 import React, { useState } from 'react';
-import { enumToArray, getBackgroundColor, NUMBER_OF_TIME_SLOTS, REVIEW_TIMES } from '../../utils/design-review.utils';
+import {
+  enumToArray,
+  getBackgroundColor,
+  NUMBER_OF_TIME_SLOTS,
+  REVIEW_TIMES,
+  reviewTimesInCurrentTimeZone
+} from '../../utils/design-review.utils';
 import { datePipe } from '../../utils/pipes';
 import EventTimeSlot from './Components/EventTimeSlot';
 
@@ -32,7 +38,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
 
   // Use displayDate if provided, otherwise fall back to event's initial date.
-  const initialDate = event.initialDateScheduled || displayDate || new Date();
+  const initialDate = event.initialDateScheduled ? dbDateToLocalDate(event.initialDateScheduled) : displayDate || new Date();
   const potentialDays = getNextSevenDays(initialDate);
 
   // Handle hover - updates the sidebar with available/unavailable users and slot info
@@ -166,7 +172,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
             <TableRow>
               <TableCell sx={{ ...stickyLeft, zIndex: 1 }}>
                 <Typography flexGrow={1} variant="h6" align="center" sx={{ fontSize: { xs: 12, md: 16 } }}>
-                  {time}
+                  {reviewTimesInCurrentTimeZone(time)}
                 </Typography>
               </TableCell>
               {potentialDays.map((day, dayIndex) => {

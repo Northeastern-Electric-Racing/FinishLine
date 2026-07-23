@@ -7,10 +7,7 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 import {
   ChangeRequest,
-  ChangeRequestReason,
-  ChangeRequestType,
   ProjectProposedChangesCreateArgs,
-  ProposedSolutionCreateArgs,
   WbsNumber,
   WorkPackageProposedChangesCreateArgs,
   LeadershipChangeCreateArgs,
@@ -23,7 +20,6 @@ import {
   getAllChangeRequests,
   getSingleChangeRequest,
   reviewChangeRequest,
-  addProposedSolution,
   deleteChangeRequest,
   requestCRReview,
   getToReviewChangeRequests,
@@ -104,8 +100,7 @@ export interface ReviewPayload {
   reviewerId: string;
   crId: string;
   accepted: boolean;
-  reviewNotes: string;
-  psId?: string;
+  reviewNotes?: string;
 }
 
 /**
@@ -120,8 +115,7 @@ export const useReviewChangeRequest = () => {
         reviewPayload.reviewerId,
         reviewPayload.crId,
         reviewPayload.accepted,
-        reviewPayload.reviewNotes,
-        reviewPayload.psId
+        reviewPayload.reviewNotes
       );
       return data;
     },
@@ -154,10 +148,8 @@ export const useDeleteChangeRequest = () => {
 
 export type CreateStandardChangeRequestPayload = {
   wbsNum: WbsNumber;
-  type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
-  what: string;
-  why: { explain: string; type: ChangeRequestReason }[];
-  proposedSolutions: ProposedSolutionCreateArgs[];
+  why: string;
+  requestedReviewerId?: string;
   projectProposedChanges?: ProjectProposedChangesCreateArgs;
   workPackageProposedChanges?: WorkPackageProposedChangesCreateArgs;
 };
@@ -196,6 +188,7 @@ export interface CreateStageGateChangeRequestPayload {
   wbsNum: WbsNumber;
   confirmDone: boolean;
   type: string;
+  dateCompleted: Date;
 }
 
 export interface CreateBudgetChangeRequestPayload {
@@ -204,15 +197,6 @@ export interface CreateBudgetChangeRequestPayload {
   accountCodeId?: string;
   proposedBudget: number;
   type: string;
-}
-
-export interface CreateProposedSolutionPayload {
-  submitterId: string;
-  crId: string;
-  description: string;
-  scopeImpact: string;
-  timelineImpact: number;
-  budgetImpact: number;
 }
 
 /**
@@ -242,7 +226,12 @@ export const useCreateStageGateChangeRequest = () => {
   return useMutation<{ message: string }, Error, CreateStageGateChangeRequestPayload>(
     ['change requests', 'create', 'stage gate'],
     async (payload: CreateStageGateChangeRequestPayload) => {
-      const { data } = await createStageGateChangeRequest(payload.submitterId, payload.wbsNum, payload.confirmDone);
+      const { data } = await createStageGateChangeRequest(
+        payload.submitterId,
+        payload.wbsNum,
+        payload.confirmDone,
+        payload.dateCompleted
+      );
       return data;
     }
   );
@@ -288,32 +277,6 @@ export const useCreateLeadershipChangeRequest = () => {
         queryClient.invalidateQueries(['change requests']);
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['work packages']);
-      }
-    }
-  );
-};
-
-/**
- * Custom React Hook to create a proposed solution
- */
-export const useCreateProposeSolution = () => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, CreateProposedSolutionPayload>(
-    ['change requests', 'create', 'propose solution'],
-    async (payload: CreateProposedSolutionPayload) => {
-      const { data } = await addProposedSolution(
-        payload.submitterId,
-        payload.crId,
-        payload.description,
-        payload.scopeImpact,
-        payload.timelineImpact,
-        payload.budgetImpact
-      );
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['change requests']);
       }
     }
   );

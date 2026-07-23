@@ -4,6 +4,7 @@
  */
 
 import { Box, Button, Paper, Table, TableBody, TableContainer, TextField, useTheme } from '@mui/material';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
@@ -22,6 +23,7 @@ import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
 import { NERButton } from '../../components/NERButton';
 import DeleteRuleModal from './components/DeleteRuleModal';
+import MismatchedRuleCodeModal from './components/MismatchedRuleCodeModal';
 import {
   useDeleteRule,
   useEditRule,
@@ -35,7 +37,7 @@ import { useToast } from '../../hooks/toasts.hooks';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
- * Supports editing and assigning rules to projects and teams.
+ * Supports editing and adding rules.
  */
 const RulesetEditPage: React.FC = () => {
   const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>(); //why tab value??
@@ -60,6 +62,10 @@ const RulesetEditPage: React.FC = () => {
   // Editing state
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState<string>('');
+  const [editedCode, setEditedCode] = useState<string>('');
+
+  // Editing rule code warnings
+  const [pendingCodeWarnings, setPendingCodeWarnings] = useState<string[] | null>(null);
 
   const theme = useTheme();
   const toast = useToast();
@@ -189,24 +195,70 @@ const RulesetEditPage: React.FC = () => {
     if (rule) {
       setEditingRuleId(ruleId);
       setEditedContent(rule.ruleContent);
+      setEditedCode(rule.ruleCode);
+    }
+  };
+
+  const performSaveEdit = async () => {
+    if (!editingRuleId) return;
+
+    try {
+      await editRuleMutation({ ruleId: editingRuleId, ruleContent: editedContent, ruleCode: editedCode });
+      setEditingRuleId(null);
+      setEditedContent('');
+      setEditedCode('');
+    } catch (err) {
+      console.error('Failed to update rule:', err);
     }
   };
 
   const handleSaveEdit = async () => {
     if (!editingRuleId) return;
 
-    try {
-      await editRuleMutation({ ruleId: editingRuleId, ruleContent: editedContent });
-      setEditingRuleId(null);
-      setEditedContent('');
-    } catch (err) {
-      console.error('Failed to update rule:', err);
+    if (!editedCode.trim()) {
+      toast.error('Rule code cannot be empty');
+      return;
     }
+
+    const currentRule = allRules.find((r) => r.ruleId === editingRuleId);
+    const warnings: string[] = [];
+
+    if (currentRule && currentRule.ruleCode !== editedCode) {
+      if (currentRule.parentRule && !editedCode.startsWith(currentRule.parentRule.ruleCode)) {
+        warnings.push(`This code doesn't start with its parent rule's code: ${currentRule.parentRule.ruleCode}.`);
+      }
+
+      const affectedCount = countRulesToDelete(currentRule, allRules) - 1;
+      if (affectedCount > 0) {
+        warnings.push(
+          `This rule has ${affectedCount} child rule${affectedCount === 1 ? '' : 's'} whose code${
+            affectedCount === 1 ? '' : 's'
+          } won't update with the new prefix.`
+        );
+      }
+    }
+
+    if (warnings.length > 0) {
+      setPendingCodeWarnings(warnings);
+      return;
+    }
+
+    await performSaveEdit();
+  };
+
+  const handleConfirmCodeWarning = async () => {
+    setPendingCodeWarnings(null);
+    await performSaveEdit();
+  };
+
+  const handleCancelCodeWarning = () => {
+    setPendingCodeWarnings(null);
   };
 
   const handleCancelEdit = () => {
     setEditingRuleId(null);
     setEditedContent('');
+    setEditedCode('');
   };
 
   const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, allRules) : 0;
@@ -247,6 +299,69 @@ const RulesetEditPage: React.FC = () => {
                       key={rule.ruleId}
                       rule={rule}
                       allRules={allRules}
+                      leftContent={(currentRule, level, isExpanded, hasSubRules, toggleExpand) => {
+                        const isEditing = editingRuleId === currentRule.ruleId;
+                        return (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              paddingLeft: `${level * 20}px`,
+                              color: theme.palette.common.black
+                            }}
+                          >
+                            {hasSubRules && (
+                              <ChevronRightIcon
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleExpand();
+                                }}
+                                sx={{
+                                  fontSize: '20px',
+                                  color: theme.palette.common.black,
+                                  transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                                  transition: 'transform 0.2s',
+                                  cursor: 'pointer',
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                    borderRadius: '50%'
+                                  }
+                                }}
+                              />
+                            )}
+                            {isEditing ? (
+                              <TextField
+                                value={editedCode}
+                                onChange={(e) => setEditedCode(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                variant="outlined"
+                                size="small"
+                                autoFocus
+                                sx={{
+                                  width: '80px',
+                                  flexShrink: 0,
+                                  backgroundColor: theme.palette.grey[100],
+                                  '& .MuiOutlinedInput-root': {
+                                    color: theme.palette.common.black,
+                                    '& fieldset': {
+                                      borderColor: '#dd514c'
+                                    },
+                                    '&:hover fieldset': {
+                                      borderColor: '#dd514c'
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                      borderColor: '#dd514c'
+                                    }
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <span style={{ color: theme.palette.common.black }}>{currentRule.ruleCode}</span>
+                            )}
+                          </Box>
+                        );
+                      }}
                       middleContent={(currentRule) => {
                         const isEditing = editingRuleId === currentRule.ruleId;
                         if (isEditing) {
@@ -278,7 +393,7 @@ const RulesetEditPage: React.FC = () => {
                           );
                         }
                         return (
-                          currentRule.ruleContent && (
+                          (currentRule.ruleContent || currentRule.referencedRules.length > 0) && (
                             <RuleContent
                               rule={currentRule}
                               color={theme.palette.common.black}
@@ -328,6 +443,7 @@ const RulesetEditPage: React.FC = () => {
               onClose={() => setShowAddRuleModal(false)}
               rulesetId={rulesetId}
               initialParentRuleId={activeRuleId || undefined}
+              parentRuleCode={activeRuleId ? rulesById.get(activeRuleId)?.ruleCode : undefined}
             />
 
             <AddReferencedRuleModal
@@ -335,6 +451,15 @@ const RulesetEditPage: React.FC = () => {
               onClose={() => setShowAddReferencedRuleModal(false)}
               ruleId={activeRuleId}
               allRules={allRules}
+            />
+
+            <MismatchedRuleCodeModal
+              open={!!pendingCodeWarnings}
+              onHide={handleCancelCodeWarning}
+              onConfirm={handleConfirmCodeWarning}
+              messages={pendingCodeWarnings ?? []}
+              originalCode={editingRuleId ? rulesById.get(editingRuleId)?.ruleCode : undefined}
+              updatedCode={editedCode}
             />
 
             {referenceToRemove && (

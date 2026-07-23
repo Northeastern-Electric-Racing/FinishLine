@@ -1,10 +1,5 @@
 /// <reference types="cypress" />
-import {
-  CR_ROW,
-  NEW_CHANGE_REQUEST_BUTTON,
-  ALL_CHANGE_REQUESTS_TAB,
-  CHANGE_REQUEST_TABLE
-} from '../../utils/selectors.utils';
+import { CR_ROW, ALL_CHANGE_REQUESTS_TAB, CHANGE_REQUEST_TABLE } from '../../utils/selectors.utils';
 
 import { LENGTH_GREATER_THAN, INCLUDE } from '../../utils/cypress-actions.utils';
 
@@ -29,12 +24,6 @@ describe('Change Request Overview', () => {
 
   it('My Aproved Change Requests Should Display At Least Three CRs', () => {
     cy.get(CR_ROW('My Approved Change Requests')).children().should(LENGTH_GREATER_THAN, 2);
-  });
-
-  it('New Change Request Button Redirects to New Change Requeest Form', () => {
-    cy.contains(NEW_CHANGE_REQUEST_BUTTON).click();
-
-    cy.url().should(INCLUDE, '/change-requests/new');
   });
 
   it('Can Switch to All Change Requests Table', () => {

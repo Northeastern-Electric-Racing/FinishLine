@@ -14,21 +14,18 @@ import {
   ChangeRequestStatus
 } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
-import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils.js';
-import proposedSolutionTransformer from './proposed-solutions.transformer.js';
+import { calculateChangeRequestStatus } from '../utils/change-requests.utils.js';
 import { getDateImplemented } from '../utils/change-requests.utils.js';
 import { userTransformer } from './user.transformer.js';
 import { descBulletConverter } from '../utils/description-bullets.utils.js';
 import teamTransformer from './teams.transformer.js';
-import {
-  WbsProposedChangeQueryArgs,
-  WorkPackageProposedChangesQueryArgs
-} from '../prisma-query-args/scope-change-requests.query-args.js';
 import { HttpException } from '../utils/errors.utils.js';
 import {
   ChangeRequestGuestQueryArgs,
   ChangeRequestManyQueryArgs,
-  ChangeRequestWithProjectAndWorkPackageQueryArgs
+  ChangeRequestWithProjectAndWorkPackageQueryArgs,
+  WbsProposedChangeQueryArgs,
+  WorkPackageProposedChangesQueryArgs
 } from '../prisma-query-args/change-requests.query-args.js';
 import { accountCodeTransformer, otherProductReasonTransformer } from './reimbursement-requests.transformer.js';
 import { GuestChangeRequest } from '../../../shared/src/types/change-request-types.js';
@@ -58,22 +55,19 @@ const projectProposedChangesTransformer = (
 const workPackageProposedChangesTransformer = (
   workPackageProposedChanges: Prisma.Work_Package_Proposed_ChangesGetPayload<WorkPackageProposedChangesQueryArgs>
 ): WorkPackageProposedChanges => {
+  const { wbsProposedChanges } = workPackageProposedChanges;
+
   return {
-    id: workPackageProposedChanges.wbsProposedChangesId,
-    name: workPackageProposedChanges.wbsProposedChanges.name,
-    status: workPackageProposedChanges.wbsProposedChanges.status as WbsElementStatus,
-    links: workPackageProposedChanges.wbsProposedChanges.links,
-    lead: workPackageProposedChanges.wbsProposedChanges.lead
-      ? userTransformer(workPackageProposedChanges.wbsProposedChanges.lead)
-      : undefined,
-    manager: workPackageProposedChanges.wbsProposedChanges.manager
-      ? userTransformer(workPackageProposedChanges.wbsProposedChanges.manager)
-      : undefined,
+    id: workPackageProposedChanges.workPackageProposedChangesId,
+    name: wbsProposedChanges.name,
+    status: wbsProposedChanges.status as WbsElementStatus,
+    links: wbsProposedChanges.links,
+    lead: wbsProposedChanges.lead ? userTransformer(wbsProposedChanges.lead) : undefined,
+    manager: wbsProposedChanges.manager ? userTransformer(wbsProposedChanges.manager) : undefined,
     startDate: workPackageProposedChanges.startDate,
     duration: workPackageProposedChanges.duration,
     blockedBy: workPackageProposedChanges.blockedBy.map(wbsNumOf),
-    descriptionBullets:
-      workPackageProposedChanges.wbsProposedChanges.proposedDescriptionBulletChanges.map(descBulletConverter),
+    descriptionBullets: wbsProposedChanges.proposedDescriptionBulletChanges.map(descBulletConverter),
     stage: (workPackageProposedChanges.stage as WorkPackageStage) || undefined
   };
 };
@@ -90,7 +84,6 @@ export const changeRequestManyTransformer = (
   const status = calculateChangeRequestStatus(changeRequest);
 
   return {
-    // all cr fields
     crId: changeRequest.crId,
     identifier: changeRequest.identifier,
     wbsNum: changeRequest.wbsElement ? wbsNumOf(changeRequest.wbsElement) : undefined,
@@ -107,15 +100,10 @@ export const changeRequestManyTransformer = (
     dateImplemented: getDateImplemented(changeRequest),
     implementedChanges: [],
     status,
-    // scope cr fields
+    // standard cr fields — not included in many query
+    why: undefined,
     projectProposedChanges: undefined,
     workPackageProposedChanges: undefined,
-    what: undefined,
-    why: undefined,
-    scopeImpact: undefined,
-    budgetImpact: undefined,
-    timelineImpact: undefined,
-    proposedSolutions: undefined,
     originalProjectData: undefined,
     originalWorkPackageData: undefined,
     // activation + leadership cr fields
@@ -135,7 +123,7 @@ export const changeRequestManyTransformer = (
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
     requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? [],
-    //budget cr fields
+    // budget cr fields
     proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined
   };
 };
@@ -158,7 +146,6 @@ const changeRequestTransformer = (
     : undefined;
 
   return {
-    // all cr fields
     crId: changeRequest.crId,
     identifier: changeRequest.identifier,
     wbsNum: changeRequest.wbsElement ? wbsNumOf(changeRequest.wbsElement) : undefined,
@@ -185,30 +172,16 @@ const changeRequestTransformer = (
       dateImplemented: change.dateImplemented
     })),
     status,
-    // scope cr fields
-    projectProposedChanges: changeRequest.scopeChangeRequest?.wbsProposedChanges?.projectProposedChanges
-      ? projectProposedChangesTransformer(changeRequest.scopeChangeRequest.wbsProposedChanges)
+    // standard cr fields
+    why: changeRequest.why ?? undefined,
+    projectProposedChanges: changeRequest.wbsProposedChanges?.projectProposedChanges
+      ? projectProposedChangesTransformer(changeRequest.wbsProposedChanges)
       : undefined,
-    workPackageProposedChanges: changeRequest.scopeChangeRequest?.wbsProposedChanges?.workPackageProposedChanges
-      ? workPackageProposedChangesTransformer(changeRequest.scopeChangeRequest.wbsProposedChanges.workPackageProposedChanges)
+    workPackageProposedChanges: changeRequest.wbsProposedChanges?.workPackageProposedChanges
+      ? workPackageProposedChangesTransformer(changeRequest.wbsProposedChanges.workPackageProposedChanges)
       : undefined,
-    what: changeRequest.scopeChangeRequest?.what ?? undefined,
-    why: changeRequest.scopeChangeRequest?.why.map((why) => ({
-      type: convertCRScopeWhyType(why.type),
-      explain: why.explain
-    })),
-    scopeImpact: changeRequest.scopeChangeRequest?.scopeImpact ?? undefined,
-    budgetImpact: changeRequest.scopeChangeRequest?.budgetImpact ?? undefined,
-    timelineImpact: changeRequest.scopeChangeRequest?.timelineImpact ?? undefined,
-    proposedSolutions: changeRequest.scopeChangeRequest
-      ? (changeRequest.scopeChangeRequest?.proposedSolutions.map(proposedSolutionTransformer) ?? [])
-      : undefined,
-    originalProjectData: changeRequest.scopeChangeRequest?.wbsOriginalData?.projectProposedChanges
-      ? projectProposedChangesTransformer(changeRequest.scopeChangeRequest.wbsOriginalData)
-      : undefined,
-    originalWorkPackageData: changeRequest.scopeChangeRequest?.wbsOriginalData?.workPackageProposedChanges
-      ? workPackageProposedChangesTransformer(changeRequest.scopeChangeRequest.wbsOriginalData.workPackageProposedChanges)
-      : undefined,
+    originalProjectData: undefined,
+    originalWorkPackageData: undefined,
     // activation + leadership cr fields
     lead: changeRequest.leadershipChangeRequest?.lead
       ? userTransformer(changeRequest.leadershipChangeRequest.lead)
@@ -226,7 +199,7 @@ const changeRequestTransformer = (
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
     requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? [],
-    //budget cr fields
+    // budget cr fields
     proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined
   };
 };
