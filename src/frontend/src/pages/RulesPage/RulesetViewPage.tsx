@@ -43,8 +43,7 @@ const RulesetViewPage = () => {
   const {
     topLevelItems: teamTopLevelItems,
     rowsById: teamRowsById,
-    actualRuleIds: teamActualRuleIds,
-    initialExpandedIds: teamInitialExpandedIds
+    actualRuleIds: teamActualRuleIds
   } = useTeamRuleOrganization(allRules ?? []);
 
   const {
@@ -53,7 +52,7 @@ const RulesetViewPage = () => {
     expandAll: teamExpandAll,
     collapseAll: teamCollapseAll,
     areAllExpanded: teamAreAllExpanded
-  } = useRuleTreeNavigation(teamRowsById, teamInitialExpandedIds);
+  } = useRuleTreeNavigation(teamRowsById);
 
   if (isRulesetError) {
     return <ErrorPage error={rulesetError} />;
