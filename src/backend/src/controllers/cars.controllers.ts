@@ -12,6 +12,16 @@ export default class CarsController {
     }
   }
 
+  static async getAllSlimCars(req: Request, res: Response, next: NextFunction) {
+    try {
+      const cars = await CarsService.getAllSlimCars(req.organization);
+
+      res.status(200).json(cars);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createCar(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;

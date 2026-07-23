@@ -38,7 +38,6 @@ import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
 import {
   getBlockingWorkPackagesArgs,
   getCalendarTaskQueryArgs,
-  getTaskBlockedByQueryArgs,
   getTaskLabelQueryArgs,
   getTaskPreviewQueryArgs,
   getTaskQueryArgs
@@ -127,7 +126,7 @@ export default class TasksService {
     }
 
     if (status === 'IN_PROGRESS' && (!deadline || assignees.length === 0)) {
-      throw new HttpException(400, 'Tasks in progress must have a dealine and assignees');
+      throw new HttpException(400, 'A task in progress must have a deadline and assignees!');
     }
 
     await validateTaskLabels(labelIds, organization.organizationId);
@@ -166,7 +165,7 @@ export default class TasksService {
         labels: { connect: labelIds.map((id) => ({ taskLabelId: id })) },
         blockedBy: { connect: blockedByTasks.map((task) => ({ taskId: task.taskId })) }
       },
-      ...getTaskQueryArgs(organization.organizationId)
+      ...getTaskQueryArgs()
     });
 
     const newTask = taskTransformer(createdTask);
@@ -264,7 +263,7 @@ export default class TasksService {
         labels: { set: labelIds.map((id) => ({ taskLabelId: id })) },
         blockedBy: { set: blockedByTasks.map((task) => ({ taskId: task.taskId })) }
       },
-      ...getTaskQueryArgs(originalTask.wbsElement.organizationId)
+      ...getTaskQueryArgs()
     });
     return taskTransformer(updatedTask);
   }
@@ -292,28 +291,14 @@ export default class TasksService {
       throw new HttpException(400, 'A task in progress must have a deadline and assignees!');
     }
 
-    // only worth the extra nested fetch when actually attempting to complete the task
-    if (status === 'DONE') {
-      const taskForBlockCheck = await prisma.task.findUniqueOrThrow({
-        where: { taskId },
-        select: {
-          blockedBy: getTaskBlockedByQueryArgs(),
-          wbsElement: getBlockingWorkPackagesArgs()
-        }
-      });
-      const blockerNames = getActiveTaskBlockerNames(
-        taskForBlockCheck.blockedBy.map(taskBlockedByTransformer),
-        taskForBlockCheck.wbsElement
-      );
-      if (blockerNames.length > 0) {
-        throw new HttpException(400, `Cannot mark task as done: blocked by ${blockerNames.join(', ')}`);
-      }
-    }
+    // Blocked-by is advisory when completing a task: the frontend warns the user about any incomplete
+    // blockers (using the blockedBy data already on the task) and only calls this once they confirm, so
+    // we intentionally don't reject a blocked task here.
 
     const updatedTask = await prisma.task.update({
       where: { taskId },
       data: { status },
-      ...getTaskQueryArgs(originalTask.wbsElement.organizationId)
+      ...getTaskQueryArgs()
     });
     return taskTransformer(updatedTask);
   }
@@ -368,7 +353,7 @@ export default class TasksService {
             set: transformedAssigneeUsers
           }
         },
-        ...getTaskQueryArgs(organization.organizationId)
+        ...getTaskQueryArgs()
       })
     );
 
@@ -387,7 +372,7 @@ export default class TasksService {
    * @throws if the user does not have permission
    */
   static async deleteTask(currentUser: User, taskId: string, organization: Organization): Promise<string> {
-    const task = await prisma.task.findUnique({ where: { taskId }, ...getTaskQueryArgs(organization.organizationId) });
+    const task = await prisma.task.findUnique({ where: { taskId }, ...getTaskQueryArgs() });
     if (!task) throw new NotFoundException('Task', taskId);
     if (task.dateDeleted) throw new DeletedException('Task', taskId);
 
@@ -416,7 +401,19 @@ export default class TasksService {
   }
 
   static async getFilteredTasks(filters: FilterTaskArgs, organization: Organization): Promise<CalendarTask[]> {
-    const { memberIds, teamIds, startPeriod, endPeriod, labelIds, wbsNum } = filters;
+    const {
+      memberIds,
+      teamIds,
+      startPeriod,
+      endPeriod,
+      labelIds,
+      wbsNum,
+      carNumbers,
+      projectWbsNums,
+      workPackageWbsNums,
+      search,
+      andMemberTeam
+    } = filters;
 
     // Validate memberIds if provided
     if (memberIds && memberIds.length > 0) {
@@ -445,18 +442,66 @@ export default class TasksService {
       await validateTaskLabels(labelIds, organization.organizationId);
     }
 
+    // Legacy calendar semantics: member and team OR together (and member also matches the task creator).
     const orFilters: any[] = [];
-    if (memberIds && memberIds.length > 0) {
-      orFilters.push({ assignees: { some: { userId: { in: memberIds } } } });
-      orFilters.push({ createdByUserId: { in: memberIds } });
-    }
-    if (teamIds && teamIds.length > 0) {
-      orFilters.push({
-        wbsElement: {
-          project: {
-            teams: { some: { teamId: { in: teamIds } } }
+    // Global-page semantics: each filter is its own AND condition, OR-ing only within its own selections.
+    const andConditions: any[] = [];
+
+    if (andMemberTeam) {
+      if (memberIds && memberIds.length > 0) {
+        andConditions.push({ assignees: { some: { userId: { in: memberIds } } } });
+      }
+      if (teamIds && teamIds.length > 0) {
+        // match tasks whose project OR whose work package's project belongs to a selected team
+        andConditions.push({
+          wbsElement: {
+            OR: [
+              { project: { teams: { some: { teamId: { in: teamIds } } } } },
+              { workPackage: { wbsElement: { project: { teams: { some: { teamId: { in: teamIds } } } } } } }
+            ]
           }
+        });
+      }
+    } else {
+      if (memberIds && memberIds.length > 0) {
+        orFilters.push({ assignees: { some: { userId: { in: memberIds } } } });
+        orFilters.push({ createdByUserId: { in: memberIds } });
+      }
+      if (teamIds && teamIds.length > 0) {
+        orFilters.push({
+          wbsElement: {
+            project: {
+              teams: { some: { teamId: { in: teamIds } } }
+            }
+          }
+        });
+      }
+    }
+
+    if (carNumbers && carNumbers.length > 0) {
+      andConditions.push({ wbsElement: { carNumber: { in: carNumbers } } });
+    }
+    if (projectWbsNums && projectWbsNums.length > 0) {
+      andConditions.push({
+        wbsElement: {
+          OR: projectWbsNums.map((wbs) => ({ carNumber: wbs.carNumber, projectNumber: wbs.projectNumber }))
         }
+      });
+    }
+    if (workPackageWbsNums && workPackageWbsNums.length > 0) {
+      andConditions.push({
+        wbsElement: {
+          OR: workPackageWbsNums.map((wbs) => ({
+            carNumber: wbs.carNumber,
+            projectNumber: wbs.projectNumber,
+            workPackageNumber: wbs.workPackageNumber
+          }))
+        }
+      });
+    }
+    if (search && search.trim().length > 0) {
+      andConditions.push({
+        OR: [{ title: { contains: search, mode: 'insensitive' } }, { notes: { contains: search, mode: 'insensitive' } }]
       });
     }
 
@@ -490,9 +535,10 @@ export default class TasksService {
           organizationId: organization.organizationId,
           dateDeleted: null
         },
-        ...(orFilters.length > 0 ? { OR: orFilters } : {})
+        ...(orFilters.length > 0 ? { OR: orFilters } : {}),
+        ...(andConditions.length > 0 ? { AND: andConditions } : {})
       },
-      ...getCalendarTaskQueryArgs(organization.organizationId)
+      ...getCalendarTaskQueryArgs()
     });
 
     return tasks.map(calendarTaskTransformer);

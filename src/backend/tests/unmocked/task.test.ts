@@ -324,7 +324,7 @@ describe('Task Tests', () => {
       ).rejects.toThrow(new HttpException(400, 'A task in progress must have a deadline and assignees!'));
     });
 
-    it('fails to set status to done when blocked by an incomplete task', async () => {
+    it('sets status to done even when blocked by an incomplete task (block is advisory, frontend confirms)', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const blockerTask = await createTestTask(user, 'Blocker', '', [], 'HIGH', 'IN_PROGRESS', organizationId);
       const blockedTask = await prisma.task.create({
@@ -340,9 +340,9 @@ describe('Task Tests', () => {
         }
       });
 
-      await expect(async () =>
-        TasksService.editTaskStatus(user, organizationId, blockedTask.taskId, 'DONE')
-      ).rejects.toThrow(new HttpException(400, `Cannot mark task as done: blocked by ${blockerTask.title}`));
+      await TasksService.editTaskStatus(user, organizationId, blockedTask.taskId, 'DONE');
+      const updatedTask = await prisma.task.findUnique({ where: { taskId: blockedTask.taskId } });
+      expect(updatedTask?.status).toBe('DONE');
     });
 
     it('successfully sets status to done when all blocking tasks are already done', async () => {
@@ -366,7 +366,7 @@ describe('Task Tests', () => {
       expect(updatedTask?.status).toBe('DONE');
     });
 
-    it('fails to set status to done when the work package is blocked by a work package with incomplete tasks', async () => {
+    it('sets status to done even when the work package is blocked by a work package with incomplete tasks', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const car = await createTestCar(organizationId, user.userId);
       const project = await createTestProject(user, organizationId, undefined, car.carId);
@@ -403,9 +403,9 @@ describe('Task Tests', () => {
         }
       });
 
-      await expect(async () => TasksService.editTaskStatus(user, organizationId, taskInWpB.taskId, 'DONE')).rejects.toThrow(
-        new HttpException(400, 'Cannot mark task as done: blocked by WP 0.1.1')
-      );
+      await TasksService.editTaskStatus(user, organizationId, taskInWpB.taskId, 'DONE');
+      const updatedTask = await prisma.task.findUnique({ where: { taskId: taskInWpB.taskId } });
+      expect(updatedTask?.status).toBe('DONE');
     });
 
     it('successfully sets status to done when the only blocking task has been deleted', async () => {
@@ -647,6 +647,172 @@ describe('Task Tests', () => {
       expect(tasks.length).toBe(2);
       expect(tasks.map((t) => t.title)).toContain('Task 1');
       expect(tasks.map((t) => t.title)).toContain('Task 2');
+    });
+
+    it('filters tasks by carNumbers, OR-ing within the filter', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const car1 = await createTestCar(organizationId, user.userId, 1);
+      const car2 = await createTestCar(organizationId, user.userId, 2);
+      const projectA = await createTestProject(user, organizationId, undefined, car1.carId, 1, 1);
+      const projectB = await createTestProject(user, organizationId, undefined, car2.carId, 2, 1);
+
+      await prisma.task.create({
+        data: {
+          title: 'Car1 Task',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: projectA.wbsElementId } }
+        }
+      });
+      await prisma.task.create({
+        data: {
+          title: 'Car2 Task',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: projectB.wbsElementId } }
+        }
+      });
+
+      const both = await TasksService.getFilteredTasks({ carNumbers: [1, 2] }, organization);
+      expect(both.map((t) => t.title).sort()).toEqual(['Car1 Task', 'Car2 Task']);
+
+      const onlyCar1 = await TasksService.getFilteredTasks({ carNumbers: [1] }, organization);
+      expect(onlyCar1.map((t) => t.title)).toEqual(['Car1 Task']);
+    });
+
+    it('filters tasks by projectWbsNums, OR-ing within the filter', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const car = await createTestCar(organizationId, user.userId, 1);
+      const projectA = await createTestProject(user, organizationId, undefined, car.carId, 1, 1);
+      const projectB = await createTestProject(user, organizationId, undefined, car.carId, 1, 2);
+
+      await prisma.task.create({
+        data: {
+          title: 'Project A Task',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: projectA.wbsElementId } }
+        }
+      });
+      await prisma.task.create({
+        data: {
+          title: 'Project B Task',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: projectB.wbsElementId } }
+        }
+      });
+
+      const both = await TasksService.getFilteredTasks(
+        {
+          projectWbsNums: [
+            { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+            { carNumber: 1, projectNumber: 2, workPackageNumber: 0 }
+          ]
+        },
+        organization
+      );
+      expect(both.map((t) => t.title).sort()).toEqual(['Project A Task', 'Project B Task']);
+
+      const onlyA = await TasksService.getFilteredTasks(
+        { projectWbsNums: [{ carNumber: 1, projectNumber: 1, workPackageNumber: 0 }] },
+        organization
+      );
+      expect(onlyA.map((t) => t.title)).toEqual(['Project A Task']);
+    });
+
+    it('AND-s the project and team filters when andMemberTeam is set', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const car = await createTestCar(organizationId, user.userId, 1);
+      const team = await prisma.team.create({
+        data: { teamName: 'Team X', slackId: 'slack-x', description: '', headId: user.userId, organizationId }
+      });
+      const projectA = await createTestProject(user, organizationId, team.teamId, car.carId, 1, 1);
+      const projectB = await createTestProject(user, organizationId, undefined, car.carId, 1, 2);
+
+      await prisma.task.create({
+        data: {
+          title: 'Team Project Task',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: projectA.wbsElementId } }
+        }
+      });
+      await prisma.task.create({
+        data: {
+          title: 'Other Project Task',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: projectB.wbsElementId } }
+        }
+      });
+
+      const tasks = await TasksService.getFilteredTasks(
+        {
+          projectWbsNums: [
+            { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+            { carNumber: 1, projectNumber: 2, workPackageNumber: 0 }
+          ],
+          teamIds: [team.teamId],
+          andMemberTeam: true
+        },
+        organization
+      );
+
+      expect(tasks.map((t) => t.title)).toEqual(['Team Project Task']);
+    });
+
+    it('filters tasks by a fuzzy search over title and notes', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const car = await createTestCar(organizationId, user.userId, 1);
+      const project = await createTestProject(user, organizationId, undefined, car.carId, 1, 1);
+
+      await prisma.task.create({
+        data: {
+          title: 'Fix Brakes',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: project.wbsElementId } }
+        }
+      });
+      await prisma.task.create({
+        data: {
+          title: 'Other Work',
+          notes: 'needs suspension tuning',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: project.wbsElementId } }
+        }
+      });
+
+      const byTitle = await TasksService.getFilteredTasks({ search: 'brake' }, organization);
+      expect(byTitle.map((t) => t.title)).toEqual(['Fix Brakes']);
+
+      const byNotes = await TasksService.getFilteredTasks({ search: 'suspension' }, organization);
+      expect(byNotes.map((t) => t.title)).toEqual(['Other Work']);
     });
   });
 

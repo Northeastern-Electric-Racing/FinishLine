@@ -30,6 +30,15 @@ export default class UsersController {
     }
   }
 
+  static async getAllSlimUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const users = await UsersService.getAllSlimUsers(req.organization.organizationId);
+      res.status(200).json(users);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getCurrentUser(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await UsersService.getCurrentUser(req.currentUser);

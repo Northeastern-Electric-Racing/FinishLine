@@ -14,9 +14,12 @@ import {
   ProjectOverview,
   isAtLeastRank,
   BusySlots,
-  IcsBusyInterval
+  IcsBusyInterval,
+  SlimUser
 } from 'shared';
 import prisma from '../prisma/prisma.js';
+import { getSlimUserQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
+import { slimUserTransformer } from '../transformers/dropdown.transformer.js';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
 import { busyIntervalsToSlots, fetchIcsBusyTimes, validateIcsUrl } from '../utils/ics.utils.js';
 import CalendarService from './calendar.services.js';
@@ -47,6 +50,21 @@ export default class UsersService {
     });
 
     return users.map(userTransformer);
+  }
+
+  /**
+   * Gets a minimal list of the current organization's users for use in dropdowns (id + name + email).
+   * @param organizationId the organization to get the users from
+   * @returns the slim users
+   */
+  static async getAllSlimUsers(organizationId: string): Promise<SlimUser[]> {
+    const users = await prisma.user.findMany({
+      where: { organizations: { some: { organizationId } } },
+      orderBy: { firstName: 'asc' },
+      ...getSlimUserQueryArgs()
+    });
+
+    return users.map(slimUserTransformer);
   }
 
   /**
@@ -580,7 +598,7 @@ export default class UsersService {
     const requestedUser = await prisma.user.findUnique({
       where: { userId },
       include: {
-        assignedTasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organization.organizationId) },
+        assignedTasks: { where: { dateDeleted: null }, ...getTaskQueryArgs() },
         organizations: true
       }
     });

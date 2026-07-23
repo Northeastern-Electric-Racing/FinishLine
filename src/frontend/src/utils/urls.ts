@@ -397,6 +397,13 @@ const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
 const carEdit = (id: string) => `${cars()}/${id}/edit`;
 
+// slim ("for dropdown") endpoints — minimal payloads for populating select menus
+const carsSlim = () => `${cars()}/slim`;
+const projectsSlim = () => `${projects()}/slim`;
+const workPackagesSlim = () => `${workPackages()}/slim`;
+const usersSlim = () => `${users()}/slim`;
+const teamsSlim = () => `${teams()}/slim`;
+
 /************** Recruitment Endpoints ***************/
 const recruitment = () => `${API_URL}/recruitment`;
 const allMilestones = () => `${recruitment()}/milestones`;
@@ -525,6 +532,11 @@ export const apiUrls = {
   users,
   orgUsers,
   orgMembers,
+  carsSlim,
+  projectsSlim,
+  workPackagesSlim,
+  usersSlim,
+  teamsSlim,
   usersById,
   usersLogin,
   usersLoginDev,

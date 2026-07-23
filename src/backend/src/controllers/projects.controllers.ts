@@ -32,6 +32,15 @@ export default class ProjectsController {
     }
   }
 
+  static async getAllSlimProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const projects = await ProjectsService.getAllSlimProjects(req.organization);
+      res.status(200).json(projects);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getUsersTeamsProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const projects: ProjectOverview[] = await ProjectsService.getUsersTeamsProjects(

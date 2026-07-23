@@ -1,8 +1,10 @@
 import { Organization } from '@prisma/client';
-import { isAdmin, User } from 'shared';
+import { isAdmin, SlimCar, User } from 'shared';
 import { getCarQueryArgs } from '../prisma-query-args/cars.query-args.js';
+import { getSlimCarQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
 import prisma from '../prisma/prisma.js';
 import { carTransformer } from '../transformers/cars.transformer.js';
+import { slimCarTransformer } from '../transformers/dropdown.transformer.js';
 import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
 
@@ -18,6 +20,20 @@ export default class CarsService {
     });
 
     return cars.map(carTransformer);
+  }
+
+  /**
+   * Gets a minimal list of cars for use in dropdowns (id + name + wbsNum only).
+   * @param organization the organization the user is in
+   * @returns the slim cars
+   */
+  static async getAllSlimCars(organization: Organization): Promise<SlimCar[]> {
+    const cars = await prisma.car.findMany({
+      where: { wbsElement: { organizationId: organization.organizationId, dateDeleted: null } },
+      ...getSlimCarQueryArgs()
+    });
+
+    return cars.map(slimCarTransformer);
   }
 
   static async createCar(organization: Organization, user: User, name: string) {

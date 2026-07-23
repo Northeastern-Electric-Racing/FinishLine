@@ -23,6 +23,16 @@ export default class TeamsController {
     }
   }
 
+  static async getAllSlimTeams(req: Request, res: Response, next: NextFunction) {
+    try {
+      const teams = await TeamsService.getAllSlimTeams(req.organization);
+
+      res.status(200).json(teams);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllArchivedTeams(req: Request, res: Response, next: NextFunction) {
     try {
       const teams = await TeamsService.getAllArchivedTeams(req.organization);

@@ -13,6 +13,8 @@ export const TaskColumn = ({
   status,
   tasks,
   wbsNum,
+  context,
+  projectCarNumbers,
   equalizedHeight,
   isDragging,
   onEditTask,
@@ -22,7 +24,9 @@ export const TaskColumn = ({
 }: {
   status: TaskStatus;
   tasks: TaskWithIndex[];
-  wbsNum: WbsNumber;
+  wbsNum?: WbsNumber;
+  context?: 'global' | 'project' | 'workPackage';
+  projectCarNumbers?: number[];
   equalizedHeight: number;
   isDragging: boolean;
   onEditTask: (task: Task) => void;
@@ -55,11 +59,18 @@ export const TaskColumn = ({
     blockedBy,
     priority,
     startDate,
-    wpWbsNum
+    wpWbsNum,
+    projectWbsNum
   }: EditTaskFormInput) => {
+    // work package wins, then the chosen project (global create), then the board's own scope
+    const createWbsNum = wpWbsNum ?? projectWbsNum ?? wbsNum;
+    if (!createWbsNum) {
+      toast.error('Please select a project for this task.');
+      return;
+    }
     try {
       const task = await createTask({
-        wbsNum: wpWbsNum ?? wbsNum,
+        wbsNum: createWbsNum,
         title,
         deadline: deadline ? toDateString(deadline) : undefined,
         startDate: startDate ? toDateString(startDate) : undefined,
@@ -88,6 +99,8 @@ export const TaskColumn = ({
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
         wbsNum={wbsNum}
+        context={context}
+        projectCarNumbers={projectCarNumbers}
         isLoading={isLoading}
       />
       <Box

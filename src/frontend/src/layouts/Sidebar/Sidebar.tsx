@@ -17,6 +17,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import ChecklistIcon from '@mui/icons-material/Checklist';
 import NavPageLink from './NavPageLink';
 import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
@@ -73,6 +74,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       name: 'Gantt',
       icon: <AlignHorizontalLeftIcon />,
       route: routes.GANTT
+    },
+    !onGuestHomePage && {
+      name: 'Tasks',
+      icon: <ChecklistIcon />,
+      route: routes.TASKS
     },
     !onGuestHomePage
       ? {

@@ -6,6 +6,7 @@ import { body } from 'express-validator';
 const carsRouter = express.Router();
 
 carsRouter.get('/', CarsController.getAllCars);
+carsRouter.get('/slim', CarsController.getAllSlimCars);
 
 carsRouter.post('/create', CarsController.createCar);
 carsRouter.post('/:carId/edit', nonEmptyString(body('name')), validateInputs, CarsController.editCar);
