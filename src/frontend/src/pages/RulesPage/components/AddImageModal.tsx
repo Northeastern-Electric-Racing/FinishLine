@@ -18,6 +18,11 @@ interface AddImageModalProps {
   allRules: Rule[];
 }
 
+const isImage = (fileName: string) => {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+  return extension === 'png' || extension === 'jpg' || extension === 'jpeg';
+};
+
 const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, allRules }) => {
   const toast = useToast();
   const [file, setFile] = useState<File | null>(null);
@@ -32,6 +37,11 @@ const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, al
     }
 
     const [selectedFile] = e.target.files;
+
+    if (!isImage(selectedFile.name)) {
+      toast.error('File must be a PNG or JPEG image');
+      return;
+    }
 
     if (selectedFile.size > MAX_FILE_SIZE) {
       toast.error(`File exceeds the maximum size limit of ${MAX_FILE_SIZE / (1024 * 1024)} MB`);
@@ -75,7 +85,7 @@ const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, al
           {file && <Typography>{file.name}</Typography>}
           <Button variant="contained" color="success" component="label" startIcon={<FileUpload />} disabled={!!file}>
             {file ? 'Image Selected' : 'Select Image'}
-            <input type="file" accept="image/*" hidden onChange={handleFileSelect} />
+            <input type="file" accept="image/png, image/jpeg" hidden onChange={handleFileSelect} />
           </Button>
         </Box>
       </Box>
