@@ -18,7 +18,7 @@ import ErrorPage from '../ErrorPage';
 import TableCustomToolbar from '../../components/TableCustomToolbar';
 
 function isWBSElement(value: any): value is WbsElement {
-  return value && 'wbsNum' in value;
+  return typeof value === 'object' && value !== null && 'wbsNum' in value;
 }
 
 const ChangeRequestsTable: React.FC = () => {
@@ -56,6 +56,22 @@ const ChangeRequestsTable: React.FC = () => {
 
   if (isError) return <ErrorPage message={error?.message} />;
 
+  const rows = data.map((v) => ({
+    ...v,
+    carNumber: v.wbsNum ? v.wbsNum.carNumber : undefined,
+    wbsOrCategoryOrAccountCode: v.wbsNum
+      ? { wbsNum: v.wbsNum, name: v.wbsName }
+      : v.category
+        ? { category: v.category, name: v.category.name }
+        : v.accountCode
+          ? { accountCode: v.accountCode, name: v.accountCode.name }
+          : undefined,
+    submitter: fullNamePipe(v.submitter),
+    reviewer: fullNamePipe(v.reviewer)
+  }));
+
+  const wbsOrCategoryOrAccountCodeById = new Map(rows.map((row) => [row.crId, row.wbsOrCategoryOrAccountCode]));
+
   const idColumn: GridColDef = {
     ...baseColDef,
     field: 'identifier',
@@ -88,8 +104,8 @@ const ChangeRequestsTable: React.FC = () => {
       return `${value?.name ? displayEnum(value?.name) : ''}`;
     },
     sortComparator: (_v1, _v2, param1, param2) => {
-      const val1 = param1.value;
-      const val2 = param2.value;
+      const val1 = wbsOrCategoryOrAccountCodeById.get(param1.id as string);
+      const val2 = wbsOrCategoryOrAccountCodeById.get(param2.id as string);
 
       if (isWBSElement(val1) && isWBSElement(val2)) {
         const wbs1 = val1.wbsNum;
@@ -101,7 +117,7 @@ const ChangeRequestsTable: React.FC = () => {
       }
 
       if (!isWBSElement(val1) && !isWBSElement(val2)) {
-        return val1.budget - val2.budget;
+        return (val1?.name ?? '').localeCompare(val2?.name ?? '');
       }
 
       // Prefer WBS entries first, or reverse depending on your preference
@@ -220,21 +236,7 @@ const ChangeRequestsTable: React.FC = () => {
         }}
         loading={isLoading}
         error={error}
-        rows={
-          data.map((v) => ({
-            ...v,
-            carNumber: v.wbsNum ? v.wbsNum.carNumber : undefined,
-            wbsOrCategoryOrAccountCode: v.wbsNum
-              ? { wbsNum: v.wbsNum, name: v.wbsName }
-              : v.category
-                ? { category: v.category, name: v.category.name }
-                : v.accountCode
-                  ? { accountCode: v.accountCode, name: v.accountCode.name }
-                  : undefined,
-            submitter: fullNamePipe(v.submitter),
-            reviewer: fullNamePipe(v.reviewer)
-          })) || []
-        }
+        rows={rows}
         columns={windowSize < 900 ? smallColumns : columns}
         getRowId={(row) => row.crId}
         sx={{
