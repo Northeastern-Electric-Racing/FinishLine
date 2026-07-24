@@ -457,7 +457,7 @@ export default class TasksService {
           wbsElement: {
             OR: [
               { project: { teams: { some: { teamId: { in: teamIds } } } } },
-              { workPackage: { wbsElement: { project: { teams: { some: { teamId: { in: teamIds } } } } } } }
+              { workPackage: { project: { teams: { some: { teamId: { in: teamIds } } } } } }
             ]
           }
         });

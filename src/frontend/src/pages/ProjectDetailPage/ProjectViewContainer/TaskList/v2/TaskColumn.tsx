@@ -162,6 +162,7 @@ export const TaskColumn = ({
                   task={task}
                   index={index}
                   wbsNum={wbsNum}
+                  context={context}
                   showProjectName={context === 'global'}
                 />
               ))}

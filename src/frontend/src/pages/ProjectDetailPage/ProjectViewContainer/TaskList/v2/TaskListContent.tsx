@@ -314,6 +314,7 @@ export const TaskListContent = ({
           onHide={() => setFixTaskModal(null)}
           onSubmit={onFixTaskSubmit}
           wbsNum={fixTaskModal.wbsNum}
+          context={context}
         />
       )}
       <NERModal

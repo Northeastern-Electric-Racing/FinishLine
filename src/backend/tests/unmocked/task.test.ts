@@ -780,6 +780,90 @@ describe('Task Tests', () => {
       expect(tasks.map((t) => t.title)).toEqual(['Team Project Task']);
     });
 
+    it('matches work package tasks via their parent project team when andMemberTeam is set', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const car = await createTestCar(organizationId, user.userId, 1);
+      const team = await prisma.team.create({
+        data: { teamName: 'Team Y', slackId: 'slack-y', description: '', headId: user.userId, organizationId }
+      });
+      // projectA belongs to the team, projectB does not
+      const projectA = await createTestProject(user, organizationId, team.teamId, car.carId, 1, 1);
+      const projectB = await createTestProject(user, organizationId, undefined, car.carId, 1, 2);
+
+      const wpA = await prisma.work_Package.create({
+        data: {
+          wbsElement: {
+            create: {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 1,
+              dateCreated: new Date(),
+              name: 'Team WP',
+              status: 'INACTIVE',
+              leadId: user.userId,
+              managerId: user.userId,
+              organizationId
+            }
+          },
+          project: { connect: { projectId: projectA.projectId } },
+          orderInProject: 1,
+          startDate: new Date(),
+          duration: 2
+        }
+      });
+      const wpB = await prisma.work_Package.create({
+        data: {
+          wbsElement: {
+            create: {
+              carNumber: 1,
+              projectNumber: 2,
+              workPackageNumber: 1,
+              dateCreated: new Date(),
+              name: 'Other WP',
+              status: 'INACTIVE',
+              leadId: user.userId,
+              managerId: user.userId,
+              organizationId
+            }
+          },
+          project: { connect: { projectId: projectB.projectId } },
+          orderInProject: 1,
+          startDate: new Date(),
+          duration: 2
+        }
+      });
+
+      await prisma.task.create({
+        data: {
+          title: 'Team WP Task',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: wpA.wbsElementId } }
+        }
+      });
+      await prisma.task.create({
+        data: {
+          title: 'Other WP Task',
+          notes: '',
+          priority: 'HIGH',
+          status: 'IN_BACKLOG',
+          dateCreated: new Date(),
+          createdBy: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: wpB.wbsElementId } }
+        }
+      });
+
+      const tasks = await TasksService.getFilteredTasks(
+        { teamIds: [team.teamId], andMemberTeam: true },
+        organization
+      );
+
+      expect(tasks.map((t) => t.title)).toEqual(['Team WP Task']);
+    });
+
     it('filters tasks by a fuzzy search over title and notes', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const car = await createTestCar(organizationId, user.userId, 1);

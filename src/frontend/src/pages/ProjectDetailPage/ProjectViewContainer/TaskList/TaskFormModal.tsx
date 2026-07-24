@@ -74,7 +74,9 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
 }) => {
   // In progress tasks must have a deadline and at least one assignee; backlog/done tasks don't.
   const isInProgress = status === TaskStatus.IN_PROGRESS;
-  const isGlobalCreate = context === 'global';
+  // only the global *create* form surfaces the project picker; editing an existing task always derives
+  // its project from the task itself, even when opened from the global board.
+  const isGlobalCreate = context === 'global' && !task;
   const schema = yup.object().shape({
     notes: yup
       .string()
@@ -171,8 +173,10 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
     (t) => t.taskId !== task?.taskId && t.status !== TaskStatus.DONE
   );
 
-  // whether the form is scoped to a specific work package (hides the WP picker). Never true for global.
-  const isWpContext = !isGlobalCreate && !!wbsNum && wbsNum.workPackageNumber !== 0;
+  // whether the *board* itself is scoped to a single work package (hides the WP picker). Driven by the
+  // board context, not the task's own wbs — a WP task opened from the global/project board still needs
+  // the WP picker so it can be reassigned.
+  const isWpContext = context === 'workPackage';
 
   // highlight the missing required fields right away when asked to (e.g. dragged into In Progress)
   useEffect(() => {

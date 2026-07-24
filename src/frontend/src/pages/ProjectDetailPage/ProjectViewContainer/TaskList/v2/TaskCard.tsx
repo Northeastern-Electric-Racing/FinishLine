@@ -30,6 +30,7 @@ export const TaskCard = ({
   task,
   index,
   wbsNum,
+  context,
   showProjectName = false,
   onDeleteTask,
   onEditTask
@@ -37,6 +38,8 @@ export const TaskCard = ({
   task: Task;
   index: number;
   wbsNum?: WbsNumber;
+  // the board this card lives on, forwarded to the modal so the edit form knows whether it's WP-scoped
+  context?: 'global' | 'project' | 'workPackage';
   // shows the owning project's name on the card (used only on the global board, where tasks span projects)
   showProjectName?: boolean;
   onDeleteTask: (taskId: string) => void;
@@ -156,6 +159,7 @@ export const TaskCard = ({
         onSubmit={handleEditTask}
         hasEditPermissions={notGuest(user.role)}
         wbsNum={wbsNum ?? task.wbsNum}
+        context={context}
         onOpenTask={openTask}
       />
       <NERModal

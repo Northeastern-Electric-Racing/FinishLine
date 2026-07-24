@@ -5,9 +5,11 @@
 
 import { fullNamePipe, datePipe, wbsPipe } from '../../../../utils/pipes';
 import { Task, TaskStatus, WbsNumber } from 'shared';
-import { Box, Chip, Grid, IconButton, Link, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Chip, Grid, IconButton, Link, Tooltip, Typography } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
+import { routes } from '../../../../utils/routes';
 import TaskFormModal, { EditTaskFormInput } from './TaskFormModal';
 import NERModal from '../../../../components/NERModal';
 import { useToast } from '../../../../hooks/toasts.hooks';
@@ -19,6 +21,8 @@ interface TaskModalProps {
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
   hasEditPermissions: boolean;
   wbsNum: WbsNumber;
+  // the board this task was opened from, so the edit form knows whether it's WP-scoped
+  context?: 'global' | 'project' | 'workPackage';
   // opens another task's modal by taskId (used by the "Blocked By" task links)
   onOpenTask: (taskId: string) => void;
 }
@@ -30,6 +34,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   onSubmit,
   hasEditPermissions,
   wbsNum,
+  context,
   onOpenTask
 }) => {
   const [isEditMode, setIsEditMode] = useState(false);
@@ -43,7 +48,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const isWpTask = task.wbsNum.workPackageNumber !== 0;
-  const isWpContext = wbsNum.workPackageNumber !== 0;
+  const isWpContext = context === 'workPackage';
   const activeBlockers = task.blockedBy.filter((blocker) => blocker.status !== TaskStatus.DONE);
 
   const ViewModal: React.FC = () => {
@@ -60,11 +65,24 @@ const TaskModal: React.FC<TaskModalProps> = ({
           }
         }}
         actionsLeftChildren={
-          <Tooltip title="Copy link to this task">
-            <IconButton onClick={handleCopyLink}>
-              <ContentCopyIcon />
-            </IconButton>
-          </Tooltip>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Tooltip title="Copy link to this task">
+              <IconButton onClick={handleCopyLink}>
+                <ContentCopyIcon />
+              </IconButton>
+            </Tooltip>
+            {/* on the global board only, offer a shortcut to the task's own project/work package task page */}
+            {context === 'global' && (
+              <Button
+                variant="outlined"
+                component={RouterLink}
+                to={`${routes.PROJECTS}/${wbsPipe(task.wbsNum)}/tasks`}
+                onClick={onHide}
+              >
+                {isWpTask ? 'Go to Work Package' : 'Go to Project'}
+              </Button>
+            )}
+          </Box>
         }
       >
         <Grid container spacing={4}>
@@ -169,6 +187,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
         setIsEditMode(false);
       }}
       wbsNum={wbsNum}
+      context={context}
     />
   ) : (
     <ViewModal />
