@@ -6,6 +6,7 @@
 import { SxProps, Theme } from '@mui/material';
 import { WbsNumber, wbsPipe } from 'shared';
 import { useWorkPackagesDropdown } from '../../hooks/dropdowns.hooks';
+import ErrorPage from '../../pages/ErrorPage';
 import DropdownSelect from './DropdownSelect';
 
 interface WorkPackageDropdownProps {
@@ -19,7 +20,9 @@ interface WorkPackageDropdownProps {
 
 /** Reusable multi-select of work packages (FilterTaskArgs.workPackageWbsNums). */
 const WorkPackageDropdown: React.FC<WorkPackageDropdownProps> = ({ value, onChange, projectWbsNums, sx }) => {
-  const { data: workPackages, isLoading } = useWorkPackagesDropdown();
+  const { data: workPackages, isLoading, isError, error } = useWorkPackagesDropdown();
+
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const projectKeys = (projectWbsNums ?? []).map((wbs) => `${wbs.carNumber}.${wbs.projectNumber}`);
   const selectedKeys = value.map(wbsPipe);

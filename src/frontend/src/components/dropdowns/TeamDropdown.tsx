@@ -5,6 +5,7 @@
 
 import { SxProps, Theme } from '@mui/material';
 import { useTeamsDropdown } from '../../hooks/dropdowns.hooks';
+import ErrorPage from '../../pages/ErrorPage';
 import DropdownSelect from './DropdownSelect';
 
 interface TeamDropdownProps {
@@ -16,7 +17,9 @@ interface TeamDropdownProps {
 
 /** Reusable multi-select of teams (FilterTaskArgs.teamIds). */
 const TeamDropdown: React.FC<TeamDropdownProps> = ({ value, onChange, sx }) => {
-  const { data: teams, isLoading } = useTeamsDropdown();
+  const { data: teams, isLoading, isError, error } = useTeamsDropdown();
+
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const options = (teams ?? []).map((team) => ({ key: team.teamId, label: team.name }));
 

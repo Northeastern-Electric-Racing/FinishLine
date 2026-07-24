@@ -5,6 +5,7 @@
 
 import { SxProps, Theme } from '@mui/material';
 import { useMembersDropdown } from '../../hooks/dropdowns.hooks';
+import ErrorPage from '../../pages/ErrorPage';
 import DropdownSelect from './DropdownSelect';
 
 interface AssigneeDropdownProps {
@@ -16,7 +17,9 @@ interface AssigneeDropdownProps {
 
 /** Reusable multi-select of org members (FilterTaskArgs.memberIds). */
 const AssigneeDropdown: React.FC<AssigneeDropdownProps> = ({ value, onChange, sx }) => {
-  const { data: users, isLoading } = useMembersDropdown();
+  const { data: users, isLoading, isError, error } = useMembersDropdown();
+
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const options = (users ?? []).map((user) => ({ key: user.userId, label: `${user.firstName} ${user.lastName}` }));
 

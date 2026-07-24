@@ -5,6 +5,7 @@
 
 import { SxProps, Theme } from '@mui/material';
 import { useGetAllCars } from '../../hooks/cars.hooks';
+import ErrorPage from '../../pages/ErrorPage';
 import DropdownSelect from './DropdownSelect';
 
 interface CarDropdownProps {
@@ -19,7 +20,9 @@ interface CarDropdownProps {
  * are few cars, so this reuses the existing full cars endpoint rather than a dedicated dropdown one.
  */
 const CarDropdown: React.FC<CarDropdownProps> = ({ value, onChange, sx }) => {
-  const { data: cars, isLoading } = useGetAllCars();
+  const { data: cars, isLoading, isError, error } = useGetAllCars();
+
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const options = (cars ?? []).map((car) => ({ key: String(car.wbsNum.carNumber), label: car.name }));
 

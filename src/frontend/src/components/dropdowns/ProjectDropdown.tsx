@@ -6,6 +6,7 @@
 import { SxProps, Theme } from '@mui/material';
 import { WbsNumber, wbsPipe } from 'shared';
 import { useProjectsDropdown } from '../../hooks/dropdowns.hooks';
+import ErrorPage from '../../pages/ErrorPage';
 import DropdownSelect from './DropdownSelect';
 
 interface ProjectDropdownProps {
@@ -21,7 +22,9 @@ interface ProjectDropdownProps {
 
 /** Reusable select of projects. Selection is by project WBS number (FilterTaskArgs.projectWbsNums). */
 const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ value, onChange, carNumbers, multiple = true, sx }) => {
-  const { data: projects, isLoading } = useProjectsDropdown();
+  const { data: projects, isLoading, isError, error } = useProjectsDropdown();
+
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const visible = (projects ?? []).filter(
     (project) => !carNumbers || carNumbers.length === 0 || carNumbers.includes(project.carNumber)

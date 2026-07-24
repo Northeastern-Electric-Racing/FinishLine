@@ -6,6 +6,7 @@
 import { Autocomplete, Box, Chip, SxProps, TextField, Theme } from '@mui/material';
 import { TaskLabel } from 'shared';
 import { useAllTaskLabels } from '../../hooks/tasks.hooks';
+import ErrorPage from '../../pages/ErrorPage';
 
 interface LabelDropdownProps {
   /** selected task label ids */
@@ -20,7 +21,9 @@ interface LabelDropdownProps {
  * global task pages.
  */
 const LabelDropdown: React.FC<LabelDropdownProps> = ({ value, onChange, sx }) => {
-  const { data: taskLabels, isLoading } = useAllTaskLabels();
+  const { data: taskLabels, isLoading, isError, error } = useAllTaskLabels();
+
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const labels = taskLabels ?? [];
 
