@@ -4,7 +4,7 @@
  */
 
 import { SxProps, Theme } from '@mui/material';
-import { useSlimCars } from '../../hooks/dropdowns.hooks';
+import { useGetAllCars } from '../../hooks/cars.hooks';
 import DropdownSelect from './DropdownSelect';
 
 interface CarDropdownProps {
@@ -14,9 +14,12 @@ interface CarDropdownProps {
   sx?: SxProps<Theme>;
 }
 
-/** Reusable multi-select of cars. Selection is by car number (matches FilterTaskArgs.carNumbers). */
+/**
+ * Reusable multi-select of cars. Selection is by car number (matches FilterTaskArgs.carNumbers). There
+ * are few cars, so this reuses the existing full cars endpoint rather than a dedicated dropdown one.
+ */
 const CarDropdown: React.FC<CarDropdownProps> = ({ value, onChange, sx }) => {
-  const { data: cars, isLoading } = useSlimCars();
+  const { data: cars, isLoading } = useGetAllCars();
 
   const options = (cars ?? []).map((car) => ({ key: String(car.wbsNum.carNumber), label: car.name }));
 

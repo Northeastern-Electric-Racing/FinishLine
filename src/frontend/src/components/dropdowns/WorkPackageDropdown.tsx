@@ -5,7 +5,7 @@
 
 import { SxProps, Theme } from '@mui/material';
 import { WbsNumber, wbsPipe } from 'shared';
-import { useSlimWorkPackages } from '../../hooks/dropdowns.hooks';
+import { useWorkPackagesDropdown } from '../../hooks/dropdowns.hooks';
 import DropdownSelect from './DropdownSelect';
 
 interface WorkPackageDropdownProps {
@@ -19,11 +19,17 @@ interface WorkPackageDropdownProps {
 
 /** Reusable multi-select of work packages (FilterTaskArgs.workPackageWbsNums). */
 const WorkPackageDropdown: React.FC<WorkPackageDropdownProps> = ({ value, onChange, projectWbsNums, sx }) => {
-  const { data: workPackages, isLoading } = useSlimWorkPackages();
+  const { data: workPackages, isLoading } = useWorkPackagesDropdown();
 
   const projectKeys = (projectWbsNums ?? []).map((wbs) => `${wbs.carNumber}.${wbs.projectNumber}`);
+  const selectedKeys = value.map(wbsPipe);
+  // show every work package in the selected projects, plus any already-selected work package (so a
+  // selection stays visible/removable even if its project isn't currently in the project filter)
   const visible = (workPackages ?? []).filter(
-    (wp) => projectKeys.length === 0 || projectKeys.includes(`${wp.wbsNum.carNumber}.${wp.wbsNum.projectNumber}`)
+    (wp) =>
+      projectKeys.length === 0 ||
+      projectKeys.includes(`${wp.wbsNum.carNumber}.${wp.wbsNum.projectNumber}`) ||
+      selectedKeys.includes(wbsPipe(wp.wbsNum))
   );
   const options = visible.map((wp) => ({ key: wbsPipe(wp.wbsNum), label: `${wbsPipe(wp.wbsNum)} - ${wp.name}` }));
 
@@ -32,7 +38,7 @@ const WorkPackageDropdown: React.FC<WorkPackageDropdownProps> = ({ value, onChan
       label="Work Package"
       placeholder="Filter by work package"
       options={options}
-      selectedKeys={value.map(wbsPipe)}
+      selectedKeys={selectedKeys}
       onChange={(keys) => onChange(visible.filter((wp) => keys.includes(wbsPipe(wp.wbsNum))).map((wp) => wp.wbsNum))}
       loading={isLoading}
       sx={sx}

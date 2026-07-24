@@ -30,10 +30,10 @@ export default class UsersController {
     }
   }
 
-  static async getAllSlimUsers(req: Request, res: Response, next: NextFunction) {
+  static async getAllMembersDropdown(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = await UsersService.getAllSlimUsers(req.organization.organizationId);
-      res.status(200).json(users);
+      const members = await UsersService.getAllMembersDropdown(req.organization.organizationId);
+      res.status(200).json(members);
     } catch (error: unknown) {
       next(error);
     }

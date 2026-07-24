@@ -14,7 +14,7 @@ const projectRouter = express.Router();
 
 projectRouter.get('/all-gantt', ProjectsController.getAllProjectsGantt);
 projectRouter.get('/all-previews', ProjectsController.getAllProjects);
-projectRouter.get('/slim', ProjectsController.getAllSlimProjects);
+projectRouter.get('/dropdown', ProjectsController.getAllProjectsDropdown);
 projectRouter.get('/users-teams', ProjectsController.getUsersTeamsProjects);
 projectRouter.get('/leading', ProjectsController.getUsersLeadingProjects);
 projectRouter.get('/teams-projects/:teamId', ProjectsController.getTeamsProjects);

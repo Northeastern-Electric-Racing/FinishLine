@@ -6,27 +6,16 @@
 import { Prisma } from '@prisma/client';
 
 /**
- * Minimal query args backing the `/slim` dropdown endpoints. Each selects only the id, display name,
- * and just enough context to render/disambiguate the item in a dropdown.
+ * Minimal query args backing the `/dropdown` endpoints. Each selects only the id, display name, and
+ * just enough context to render/disambiguate the item in a dropdown.
  */
 
-export type SlimCarQueryArgs = ReturnType<typeof getSlimCarQueryArgs>;
-export type SlimProjectQueryArgs = ReturnType<typeof getSlimProjectQueryArgs>;
-export type SlimWorkPackageQueryArgs = ReturnType<typeof getSlimWorkPackageQueryArgs>;
-export type SlimUserQueryArgs = ReturnType<typeof getSlimUserQueryArgs>;
-export type SlimTeamQueryArgs = ReturnType<typeof getSlimTeamQueryArgs>;
+export type ProjectDropdownQueryArgs = ReturnType<typeof getProjectDropdownQueryArgs>;
+export type WorkPackageDropdownQueryArgs = ReturnType<typeof getWorkPackageDropdownQueryArgs>;
+export type MemberDropdownQueryArgs = ReturnType<typeof getMemberDropdownQueryArgs>;
+export type TeamDropdownQueryArgs = ReturnType<typeof getTeamDropdownQueryArgs>;
 
-export const getSlimCarQueryArgs = () =>
-  Prisma.validator<Prisma.CarDefaultArgs>()({
-    select: {
-      carId: true,
-      wbsElement: {
-        select: { name: true, carNumber: true, projectNumber: true, workPackageNumber: true }
-      }
-    }
-  });
-
-export const getSlimProjectQueryArgs = () =>
+export const getProjectDropdownQueryArgs = () =>
   Prisma.validator<Prisma.ProjectDefaultArgs>()({
     select: {
       projectId: true,
@@ -36,7 +25,7 @@ export const getSlimProjectQueryArgs = () =>
     }
   });
 
-export const getSlimWorkPackageQueryArgs = () =>
+export const getWorkPackageDropdownQueryArgs = () =>
   Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
     select: {
       workPackageId: true,
@@ -47,12 +36,12 @@ export const getSlimWorkPackageQueryArgs = () =>
     }
   });
 
-export const getSlimUserQueryArgs = () =>
+export const getMemberDropdownQueryArgs = () =>
   Prisma.validator<Prisma.UserDefaultArgs>()({
     select: { userId: true, firstName: true, lastName: true, email: true }
   });
 
-export const getSlimTeamQueryArgs = () =>
+export const getTeamDropdownQueryArgs = () =>
   Prisma.validator<Prisma.TeamDefaultArgs>()({
     select: { teamId: true, teamName: true }
   });

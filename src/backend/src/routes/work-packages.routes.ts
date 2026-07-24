@@ -14,7 +14,7 @@ import { WorkPackageSelection, WbsElementStatus } from 'shared';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
-workPackagesRouter.get('/slim', WorkPackagesController.getAllSlimWorkPackages);
+workPackagesRouter.get('/dropdown', WorkPackagesController.getAllWorkPackagesDropdown);
 workPackagesRouter.get(
   '/all-preview',
   query('status').optional().isIn(Object.values(WbsElementStatus)),

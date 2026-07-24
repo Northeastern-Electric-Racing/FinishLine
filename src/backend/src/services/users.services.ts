@@ -15,11 +15,11 @@ import {
   isAtLeastRank,
   BusySlots,
   IcsBusyInterval,
-  SlimUser
+  MemberDropdownItem
 } from 'shared';
 import prisma from '../prisma/prisma.js';
-import { getSlimUserQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
-import { slimUserTransformer } from '../transformers/dropdown.transformer.js';
+import { getMemberDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
+import { memberDropdownTransformer } from '../transformers/dropdown.transformer.js';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
 import { busyIntervalsToSlots, fetchIcsBusyTimes, validateIcsUrl } from '../utils/ics.utils.js';
 import CalendarService from './calendar.services.js';
@@ -56,16 +56,16 @@ export default class UsersService {
    * Gets a minimal list of the current organization's members for use in dropdowns (id + name + email).
    * Only users with a non-guest role in the organization are returned, so guests are excluded.
    * @param organizationId the organization to get the members from
-   * @returns the slim users
+   * @returns the members for a dropdown
    */
-  static async getAllSlimUsers(organizationId: string): Promise<SlimUser[]> {
+  static async getAllMembersDropdown(organizationId: string): Promise<MemberDropdownItem[]> {
     const users = await prisma.user.findMany({
       where: { roles: { some: { organizationId, roleType: { not: Role_Type.GUEST } } } },
       orderBy: { firstName: 'asc' },
-      ...getSlimUserQueryArgs()
+      ...getMemberDropdownQueryArgs()
     });
 
-    return users.map(slimUserTransformer);
+    return users.map(memberDropdownTransformer);
   }
 
   /**

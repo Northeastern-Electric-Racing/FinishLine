@@ -23,9 +23,9 @@ export default class TeamsController {
     }
   }
 
-  static async getAllSlimTeams(req: Request, res: Response, next: NextFunction) {
+  static async getAllTeamsDropdown(req: Request, res: Response, next: NextFunction) {
     try {
-      const teams = await TeamsService.getAllSlimTeams(req.organization);
+      const teams = await TeamsService.getAllTeamsDropdown(req.organization);
 
       res.status(200).json(teams);
     } catch (error: unknown) {

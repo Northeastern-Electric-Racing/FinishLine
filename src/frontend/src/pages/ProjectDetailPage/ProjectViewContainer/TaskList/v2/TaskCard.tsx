@@ -13,7 +13,7 @@ import NERModal from '../../../../../components/NERModal';
 import { Link as RouterLink, useHistory, useLocation } from 'react-router-dom';
 import { routes } from '../../../../../utils/routes';
 import { wbsPipe } from '../../../../../utils/pipes';
-import { useSlimProjects } from '../../../../../hooks/dropdowns.hooks';
+import { useProjectsDropdown } from '../../../../../hooks/dropdowns.hooks';
 
 const wpColors = [
   { bg: 'rgba(55,138,221,0.15)', color: '#7dbef4' }, // blue
@@ -46,10 +46,10 @@ export const TaskCard = ({
   const { mutateAsync: editTask } = useEditTask();
   const { mutateAsync: editTaskAssignees } = useEditTaskAssignees();
 
-  // only fetch slim projects when we actually need to label cards (global board)
-  const { data: slimProjects } = useSlimProjects(showProjectName);
+  // only fetch the projects dropdown list when we actually need to label cards (global board)
+  const { data: dropdownProjects } = useProjectsDropdown(showProjectName);
   const projectName = showProjectName
-    ? slimProjects?.find(
+    ? dropdownProjects?.find(
         (project) =>
           project.wbsNum.carNumber === task.wbsNum.carNumber && project.wbsNum.projectNumber === task.wbsNum.projectNumber
       )?.name

@@ -39,9 +39,9 @@ export default class WorkPackagesController {
   }
 
   // Fetch a minimal list of work packages for dropdowns (id + name + wbsNum + projectName)
-  static async getAllSlimWorkPackages(req: Request, res: Response, next: NextFunction) {
+  static async getAllWorkPackagesDropdown(req: Request, res: Response, next: NextFunction) {
     try {
-      const workPackages = await WorkPackagesService.getAllSlimWorkPackages(req.organization);
+      const workPackages = await WorkPackagesService.getAllWorkPackagesDropdown(req.organization);
       res.status(200).json(workPackages);
     } catch (error: unknown) {
       next(error);

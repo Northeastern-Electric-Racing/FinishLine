@@ -5,7 +5,7 @@
 
 import { SxProps, Theme } from '@mui/material';
 import { WbsNumber, wbsPipe } from 'shared';
-import { useSlimProjects } from '../../hooks/dropdowns.hooks';
+import { useProjectsDropdown } from '../../hooks/dropdowns.hooks';
 import DropdownSelect from './DropdownSelect';
 
 interface ProjectDropdownProps {
@@ -21,7 +21,7 @@ interface ProjectDropdownProps {
 
 /** Reusable select of projects. Selection is by project WBS number (FilterTaskArgs.projectWbsNums). */
 const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ value, onChange, carNumbers, multiple = true, sx }) => {
-  const { data: projects, isLoading } = useSlimProjects();
+  const { data: projects, isLoading } = useProjectsDropdown();
 
   const visible = (projects ?? []).filter(
     (project) => !carNumbers || carNumbers.length === 0 || carNumbers.includes(project.carNumber)

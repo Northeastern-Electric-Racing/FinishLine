@@ -75,11 +75,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       icon: <AlignHorizontalLeftIcon />,
       route: routes.GANTT
     },
-    !onGuestHomePage && {
-      name: 'Tasks',
-      icon: <ChecklistIcon />,
-      route: routes.TASKS
-    },
     !onGuestHomePage
       ? {
           name: 'Projects',
@@ -113,6 +108,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
             }
           ]
         },
+    !onGuestHomePage && {
+      name: 'Tasks',
+      icon: <ChecklistIcon />,
+      route: routes.TASKS
+    },
     !onGuestHomePage && {
       name: 'Change Requests',
       icon: <SyncAltIcon />,

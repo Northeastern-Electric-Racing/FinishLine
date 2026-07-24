@@ -4,7 +4,7 @@
  */
 
 import { SxProps, Theme } from '@mui/material';
-import { useSlimUsers } from '../../hooks/dropdowns.hooks';
+import { useMembersDropdown } from '../../hooks/dropdowns.hooks';
 import DropdownSelect from './DropdownSelect';
 
 interface AssigneeDropdownProps {
@@ -16,7 +16,7 @@ interface AssigneeDropdownProps {
 
 /** Reusable multi-select of org members (FilterTaskArgs.memberIds). */
 const AssigneeDropdown: React.FC<AssigneeDropdownProps> = ({ value, onChange, sx }) => {
-  const { data: users, isLoading } = useSlimUsers();
+  const { data: users, isLoading } = useMembersDropdown();
 
   const options = (users ?? []).map((user) => ({ key: user.userId, label: `${user.firstName} ${user.lastName}` }));
 

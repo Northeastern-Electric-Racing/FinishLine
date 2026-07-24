@@ -3,16 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { SlimCar, SlimProject, SlimTeam, SlimUser, SlimWorkPackage } from 'shared';
+import { MemberDropdownItem, ProjectDropdownItem, TeamDropdownItem, WorkPackageDropdownItem } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 
-export const getSlimCars = () => axios.get<SlimCar[]>(apiUrls.carsSlim());
+export const getAllProjectsDropdown = () => axios.get<ProjectDropdownItem[]>(apiUrls.projectsDropdown());
 
-export const getSlimProjects = () => axios.get<SlimProject[]>(apiUrls.projectsSlim());
+export const getAllWorkPackagesDropdown = () => axios.get<WorkPackageDropdownItem[]>(apiUrls.workPackagesDropdown());
 
-export const getSlimWorkPackages = () => axios.get<SlimWorkPackage[]>(apiUrls.workPackagesSlim());
+export const getAllMembersDropdown = () => axios.get<MemberDropdownItem[]>(apiUrls.membersDropdown());
 
-export const getSlimUsers = () => axios.get<SlimUser[]>(apiUrls.usersSlim());
-
-export const getSlimTeams = () => axios.get<SlimTeam[]>(apiUrls.teamsSlim());
+export const getAllTeamsDropdown = () => axios.get<TeamDropdownItem[]>(apiUrls.teamsDropdown());

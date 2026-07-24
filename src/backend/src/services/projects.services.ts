@@ -10,14 +10,14 @@ import {
   ProjectOverview,
   ProjectGantt,
   ProjectPreview,
-  SlimProject,
+  ProjectDropdownItem,
   WbsNumber,
   wbsPipe,
   User
 } from 'shared';
 import prisma from '../prisma/prisma.js';
-import { getSlimProjectQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
-import { slimProjectTransformer } from '../transformers/dropdown.transformer.js';
+import { getProjectDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
+import { projectDropdownTransformer } from '../transformers/dropdown.transformer.js';
 import projectTransformer, {
   projectOverviewTransformer,
   projectGanttTransformer,
@@ -81,16 +81,16 @@ export default class ProjectsService {
   /**
    * Gets a minimal list of projects for use in dropdowns (id + name + wbsNum + carNumber only).
    * @param organization the organization the user is in
-   * @returns the slim projects
+   * @returns the projects for a dropdown
    */
-  static async getAllSlimProjects(organization: Organization): Promise<SlimProject[]> {
+  static async getAllProjectsDropdown(organization: Organization): Promise<ProjectDropdownItem[]> {
     const projects = await prisma.project.findMany({
       where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
       orderBy: { wbsElement: { carNumber: 'desc' } },
-      ...getSlimProjectQueryArgs()
+      ...getProjectDropdownQueryArgs()
     });
 
-    return projects.map(slimProjectTransformer);
+    return projects.map(projectDropdownTransformer);
   }
 
   /**

@@ -4,7 +4,7 @@ import UsersService from '../../src/services/users.services.js';
 import prisma from '../../src/prisma/prisma.js';
 import { Organization } from '@prisma/client';
 
-describe('Slim Users Tests', () => {
+describe('Members Dropdown Tests', () => {
   let organization: Organization;
   let organizationId: string;
 
@@ -22,8 +22,8 @@ describe('Slim Users Tests', () => {
     const member = await createTestUser(financeMember, organizationId);
     const guest = await createTestUser(theVisitorGuest, organizationId);
 
-    const slimUsers = await UsersService.getAllSlimUsers(organizationId);
-    const returnedIds = slimUsers.map((user) => user.userId);
+    const members = await UsersService.getAllMembersDropdown(organizationId);
+    const returnedIds = members.map((user) => user.userId);
 
     expect(returnedIds).toEqual(expect.arrayContaining([admin.userId, member.userId]));
     expect(returnedIds).not.toContain(guest.userId);
@@ -44,8 +44,8 @@ describe('Slim Users Tests', () => {
     });
     await createTestUser(financeMember, otherOrganization.organizationId);
 
-    const slimUsers = await UsersService.getAllSlimUsers(organizationId);
+    const members = await UsersService.getAllMembersDropdown(organizationId);
 
-    expect(slimUsers).toHaveLength(0);
+    expect(members).toHaveLength(0);
   });
 });

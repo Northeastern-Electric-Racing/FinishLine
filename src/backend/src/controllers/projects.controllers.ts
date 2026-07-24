@@ -32,9 +32,9 @@ export default class ProjectsController {
     }
   }
 
-  static async getAllSlimProjects(req: Request, res: Response, next: NextFunction) {
+  static async getAllProjectsDropdown(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects = await ProjectsService.getAllSlimProjects(req.organization);
+      const projects = await ProjectsService.getAllProjectsDropdown(req.organization);
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
