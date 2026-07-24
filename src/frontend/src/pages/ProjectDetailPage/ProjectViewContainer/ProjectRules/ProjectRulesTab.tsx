@@ -6,7 +6,6 @@
 import { useState, useMemo } from 'react';
 import {
   Box,
-  Button,
   Typography,
   CircularProgress,
   Alert,
@@ -104,7 +103,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const projectRuleIds = useMemo(() => new Set(projectRuleList.map((r) => r.ruleId)), [projectRuleList]);
 
   // controlled expansion + click-to-navigate
-  const { expandedIds, toggleExpand, navigateToRule } = useRuleTreeNavigation(projectRuleList);
+  const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded } =
+    useRuleTreeNavigation(projectRuleList);
 
   // Handle completion update
   const handleStatusUpdate = async (ruleId: string, isComplete: boolean) => {
@@ -224,50 +224,11 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
             />
           ))}
         </MuiTabs>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <Tooltip
-            title={
-              teamNames.length > 0
-                ? `Assign rules to the ${teamNames.join(', ')} team${
-                    teamNames.length === 1 ? '' : 's'
-                  } to add them to this project`
-                : 'Add a team to this project to assign rules'
-            }
-            arrow
-            slotProps={{ tooltip: { sx: { textAlign: 'center' } } }}
-          >
-            <IconButton
-              size="small"
-              onClick={(e) => e.stopPropagation()}
-              sx={{
-                padding: '5px',
-                color: 'text.secondary'
-              }}
-            >
-              <InfoOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Button
-            disabled={!activeRuleset || teamNames.length === 0}
-            // Assign rule page only supports highlighting a single team at a time
-            onClick={() =>
-              activeRuleset &&
-              history.push(
-                `${routes.RULESET_EDIT.replace(':rulesetId', activeRuleset.rulesetId)}/assign-rules${
-                  teamId ? `?teamId=${teamId}` : ''
-                }`
-              )
-            }
-            sx={{
-              border: 1,
-              height: '2.25rem'
-            }}
-          >
-            <Typography fontSize={'.75rem'} align="center">
-              Assign Rules
-            </Typography>
-          </Button>
-        </Box>
+        {activeRuleset && (
+          <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
+            {areAllExpanded ? 'Collapse All' : 'Expand All'}
+          </NERButton>
+        )}
       </Box>
 
       {/* Active ruleset name for this ruleset type */}
@@ -350,7 +311,49 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         }}
       >
         <Box sx={{ borderBottom: `2px solid ${theme.palette.divider}`, mb: 2, ml: '30px' }} />
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: '30px', pb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2, pr: '30px', pb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Assign Rules Tooltip */}
+            <Tooltip
+              title={
+                teamNames.length > 0
+                  ? `Assign rules to the ${teamNames.join(', ')} team${
+                      teamNames.length === 1 ? '' : 's'
+                    } to add them to this project`
+                  : 'Add a team to this project to assign rules'
+              }
+              arrow
+              slotProps={{ tooltip: { sx: { textAlign: 'center' } } }}
+            >
+              <IconButton
+                size="small"
+                onClick={(e) => e.stopPropagation()}
+                sx={{
+                  padding: '5px',
+                  color: 'text.secondary'
+                }}
+              >
+                <InfoOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            {/* Assign Rules Button */}
+            <NERButton
+              variant="outlined"
+              disabled={!activeRuleset || teamNames.length === 0}
+              // Assign rule page only supports highlighting a single team at a time
+              onClick={() =>
+                activeRuleset &&
+                history.push(
+                  `${routes.RULESET_EDIT.replace(':rulesetId', activeRuleset.rulesetId)}/assign-rules${
+                    teamId ? `?teamId=${teamId}` : ''
+                  }`
+                )
+              }
+            >
+              Assign Rules
+            </NERButton>
+          </Box>
+          {/* Add Rule Button */}
           <NERButton
             variant="contained"
             sx={{ color: '#ededed' }}
