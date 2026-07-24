@@ -285,3 +285,13 @@ export interface AvailabilityCreateArgs {
   availability: number[];
   dateSet: Date;
 }
+
+export interface IcsBusyInterval {
+  start: Date;
+  end: Date;
+}
+
+export interface BusySlots {
+  dateSet: Date;
+  busySlots: number[];
+}

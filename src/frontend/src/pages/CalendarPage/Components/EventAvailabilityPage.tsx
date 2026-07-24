@@ -13,7 +13,8 @@ import {
   UserWithScheduleSettings,
   EventWithMembers,
   EventStatus,
-  isAdmin
+  isAdmin,
+  dbDateToLocalDate
 } from 'shared';
 import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -127,9 +128,9 @@ export const EventAvailabilityPage: React.FC = () => {
 
   const displayDate = useMemo(() => {
     if (dateParam) {
-      return new Date(dateParam);
+      return dbDateToLocalDate(new Date(dateParam));
     }
-    return event?.initialDateScheduled ?? new Date();
+    return event?.initialDateScheduled ? dbDateToLocalDate(event.initialDateScheduled) : new Date();
   }, [dateParam, event]);
 
   const isUserMember = useMemo(() => {
