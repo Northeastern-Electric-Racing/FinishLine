@@ -17,7 +17,9 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import AddRuleSectionModal from './components/AddRuleSectionModal';
 import AddRuleModal from './components/AddRuleModal';
 import AddReferencedRuleModal from './components/AddReferencedRuleModal';
+import AddImageModal from './components/AddImageModal';
 import RemoveReferencedRuleModal from './components/RemoveReferencedRuleModal';
+import RemoveImageModal from './components/RemoveImageModal';
 import RuleContent from './components/RuleContent';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
@@ -28,6 +30,7 @@ import {
   useDeleteRule,
   useEditRule,
   useRemoveRuleReferences,
+  useRemoveRuleImage,
   useSingleRuleset,
   useAllRulesForRuleset
 } from '../../hooks/rules.hooks';
@@ -51,9 +54,12 @@ const RulesetEditPage: React.FC = () => {
   const [showAddRuleSectionModal, setShowAddRuleSectionModal] = useState(false);
   const [showAddRuleModal, setShowAddRuleModal] = useState(false);
   const [showAddReferencedRuleModal, setShowAddReferencedRuleModal] = useState(false);
+  const [showAddImageModal, setShowAddImageModal] = useState(false);
   const [showRemoveReferenceModal, setShowRemoveReferenceModal] = useState(false);
 
   const [referenceToRemove, setReferenceToRemove] = useState<{ rule: Rule; referencedRule: Rule } | null>(null);
+  const [imageToRemove, setImageToRemove] = useState<{ rule: Rule; fileId: string } | null>(null);
+  const [showRemoveImageModal, setShowRemoveImageModal] = useState(false);
 
   // Delete modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -85,6 +91,7 @@ const RulesetEditPage: React.FC = () => {
   const { mutateAsync: deleteRuleMutation } = useDeleteRule();
   const { mutateAsync: editRuleMutation } = useEditRule();
   const { mutateAsync: removeRuleReferencesMutation } = useRemoveRuleReferences();
+  const { mutateAsync: removeRuleImageMutation } = useRemoveRuleImage();
 
   const rulesById = useMemo(() => new Map((allRules ?? []).map((r) => [r.ruleId, r])), [allRules]);
 
@@ -135,6 +142,11 @@ const RulesetEditPage: React.FC = () => {
     handleCloseAddMenu();
   };
 
+  const handleAddImageFromMenu = () => {
+    setShowAddImageModal(true);
+    handleCloseAddMenu();
+  };
+
   const handleRemoveReference = (ruleId: string, referencedRuleId: string) => {
     const rule = rulesById.get(ruleId);
     const referencedRule = rulesById.get(referencedRuleId);
@@ -162,6 +174,31 @@ const RulesetEditPage: React.FC = () => {
       setReferenceToRemove(null);
     } catch (err) {
       toast.error('Failed to remove referenced rule');
+    }
+  };
+
+  const handleRemoveImage = (ruleId: string, fileId: string) => {
+    const rule = rulesById.get(ruleId);
+    if (rule) {
+      setImageToRemove({ rule, fileId });
+      setShowRemoveImageModal(true);
+    }
+  };
+
+  const handleRemoveImageCancel = () => {
+    setShowRemoveImageModal(false);
+    setImageToRemove(null);
+  };
+
+  const handleConfirmRemoveImage = async () => {
+    if (!imageToRemove) return;
+
+    try {
+      await removeRuleImageMutation({ rule: imageToRemove.rule, fileId: imageToRemove.fileId });
+      setShowRemoveImageModal(false);
+      setImageToRemove(null);
+    } catch (err) {
+      console.error('Failed to remove image:', err);
     }
   };
 
@@ -398,6 +435,7 @@ const RulesetEditPage: React.FC = () => {
                               rule={currentRule}
                               color={theme.palette.common.black}
                               onReferenceRemove={(refId) => handleRemoveReference(currentRule.ruleId, refId)}
+                              onImageRemove={(fileId) => handleRemoveImage(currentRule.ruleId, fileId)}
                             />
                           )
                         );
@@ -430,6 +468,7 @@ const RulesetEditPage: React.FC = () => {
               onClose={handleCloseAddMenu}
               onAddRule={handleAddRuleFromMenu}
               onAddReferencedRule={handleAddReferencedRuleFromMenu}
+              onAddImage={handleAddImageFromMenu}
             />
 
             <AddRuleSectionModal
@@ -453,6 +492,13 @@ const RulesetEditPage: React.FC = () => {
               allRules={allRules}
             />
 
+            <AddImageModal
+              open={showAddImageModal}
+              onClose={() => setShowAddImageModal(false)}
+              ruleId={activeRuleId}
+              allRules={allRules}
+            />
+
             <MismatchedRuleCodeModal
               open={!!pendingCodeWarnings}
               onHide={handleCancelCodeWarning}
@@ -469,6 +515,16 @@ const RulesetEditPage: React.FC = () => {
                 onConfirm={handleConfirmRemoveReference}
                 rule={referenceToRemove.rule}
                 referencedRule={referenceToRemove.referencedRule}
+              />
+            )}
+
+            {imageToRemove && (
+              <RemoveImageModal
+                open={showRemoveImageModal}
+                onHide={handleRemoveImageCancel}
+                onConfirm={handleConfirmRemoveImage}
+                ruleCode={imageToRemove.rule.ruleCode}
+                imageNumber={imageToRemove.rule.imageFileIds.indexOf(imageToRemove.fileId) + 1}
               />
             )}
 

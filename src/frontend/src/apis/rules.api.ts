@@ -164,9 +164,14 @@ export const deleteRule = (ruleId: string) => {
  * @param ruleId - The ID of the rule to edit
  * @param ruleContent - The new content for the rule
  * @param ruleCode - The new code for the rule (optional, keeps existing if not provided)
+ * @param imageFileIds - Image file IDs for the rule
  */
-export const editRule = (ruleId: string, ruleContent: string, ruleCode?: string) => {
-  return axios.post<SharedRule>(apiUrls.rulesEdit(ruleId), { ruleContent, ruleCode });
+export const editRule = (ruleId: string, ruleContent: string, ruleCode?: string, imageFileIds?: string[]) => {
+  return axios.post<SharedRule>(apiUrls.rulesEdit(ruleId), {
+    ruleContent,
+    ruleCode,
+    ...(imageFileIds !== undefined && { imageFileIds })
+  });
 };
 
 /**
