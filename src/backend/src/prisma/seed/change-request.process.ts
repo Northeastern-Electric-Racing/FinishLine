@@ -139,29 +139,39 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     const latestLeadershipByWbsElementId = new Map<string, SeededChangeRequest>();
 
     for (const cr of changeRequests) {
-      if (!cr.accepted || cr.type !== CR_Type.LEADERSHIP || !cr.wbsElementId || !cr.leadershipChangeRequest) {
+      const { accepted, type, wbsElementId, leadershipChangeRequest, dateSubmitted } = cr;
+
+      if (!accepted || type !== CR_Type.LEADERSHIP || !wbsElementId || !leadershipChangeRequest) {
         continue;
       }
 
-      const current = latestLeadershipByWbsElementId.get(cr.wbsElementId);
+      const current = latestLeadershipByWbsElementId.get(wbsElementId);
 
-      if (!current || cr.dateSubmitted >= current.dateSubmitted) {
-        latestLeadershipByWbsElementId.set(cr.wbsElementId, cr);
+      if (!current || dateSubmitted >= current.dateSubmitted) {
+        latestLeadershipByWbsElementId.set(wbsElementId, cr);
       }
     }
 
     await Promise.all(
-      Array.from(latestLeadershipByWbsElementId.entries()).map(([wbsElementId, cr]) =>
-        this.prisma.wBS_Element.update({
+      Array.from(latestLeadershipByWbsElementId.entries()).map(([wbsElementId, cr]) => {
+        const { leadershipChangeRequest } = cr;
+
+        if (!leadershipChangeRequest) {
+          return Promise.resolve();
+        }
+
+        const { leadId, managerId } = leadershipChangeRequest;
+
+        return this.prisma.wBS_Element.update({
           where: {
             wbsElementId
           },
           data: {
-            leadId: cr.leadershipChangeRequest!.leadId,
-            managerId: cr.leadershipChangeRequest!.managerId
+            leadId,
+            managerId
           }
-        })
-      )
+        });
+      })
     );
   }
 
@@ -169,14 +179,17 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     const latestBudgetByAccountCode = new Map<string, { dateSubmitted: Date; proposedBudget: number }>();
 
     for (const cr of changeRequests) {
-      if (!cr.accepted || !cr.accountCodeId || !cr.budgetChangeRequest) continue;
+      const { accepted, accountCodeId, budgetChangeRequest, dateSubmitted } = cr;
 
-      const current = latestBudgetByAccountCode.get(cr.accountCodeId);
+      if (!accepted || !accountCodeId || !budgetChangeRequest) continue;
 
-      if (!current || cr.dateSubmitted >= current.dateSubmitted) {
-        latestBudgetByAccountCode.set(cr.accountCodeId, {
-          dateSubmitted: cr.dateSubmitted,
-          proposedBudget: cr.budgetChangeRequest.proposedBudget
+      const current = latestBudgetByAccountCode.get(accountCodeId);
+      const { proposedBudget } = budgetChangeRequest;
+
+      if (!current || dateSubmitted >= current.dateSubmitted) {
+        latestBudgetByAccountCode.set(accountCodeId, {
+          dateSubmitted,
+          proposedBudget
         });
       }
     }
