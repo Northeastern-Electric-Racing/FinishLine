@@ -8,9 +8,17 @@ type AddRuleBoxProps = {
   onClose: () => void;
   onAddRule: () => void;
   onAddReferencedRule: () => void;
+  onAddImage: () => void;
 };
 
-export const AddRuleBox: React.FC<AddRuleBoxProps> = ({ open, anchorEl, onClose, onAddRule, onAddReferencedRule }) => {
+export const AddRuleBox: React.FC<AddRuleBoxProps> = ({
+  open,
+  anchorEl,
+  onClose,
+  onAddRule,
+  onAddReferencedRule,
+  onAddImage
+}) => {
   const theme = useTheme();
 
   const optionButtonSx = {
@@ -53,6 +61,9 @@ export const AddRuleBox: React.FC<AddRuleBoxProps> = ({ open, anchorEl, onClose,
         </NERButton>
         <NERButton onClick={onAddReferencedRule} sx={{ ...optionButtonSx, borderTop: '1px solid black' }}>
           Add Referenced Rule
+        </NERButton>
+        <NERButton onClick={onAddImage} sx={{ ...optionButtonSx, borderTop: '1px solid black' }}>
+          Add Image
         </NERButton>
       </Box>
     </Popover>
