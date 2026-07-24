@@ -134,8 +134,8 @@ const subtypeCreateInput = (
         throw new Error('Activation change request requires a lead and manager on the parent work package.');
       }
 
-      const leadId = pickDifferentActor(faker, ownerCandidates, [currentLeadId]);
-      const managerId = pickDifferentActor(faker, ownerCandidates, [currentManagerId, leadId]);
+      const leadId = pickDifferentActor(faker, ownerCandidates, [currentLeadId, currentManagerId]);
+      const managerId = pickDifferentActor(faker, ownerCandidates, [currentLeadId, currentManagerId, leadId]);
 
       return {
         activationChangeRequest: {
@@ -152,9 +152,17 @@ const subtypeCreateInput = (
       const currentLeadId = parent?.leadId;
       const currentManagerId = parent?.managerId;
 
-      const leadId = pickDifferentActor(faker, ownerCandidates, currentLeadId ? [currentLeadId] : []);
+      const leadId = pickDifferentActor(
+        faker,
+        ownerCandidates,
+        [currentLeadId, currentManagerId].filter((id): id is string => id !== undefined)
+      );
 
-      const managerId = pickDifferentActor(faker, ownerCandidates, currentManagerId ? [currentManagerId, leadId] : [leadId]);
+      const managerId = pickDifferentActor(
+        faker,
+        ownerCandidates,
+        [currentLeadId, currentManagerId, leadId].filter((id): id is string => id !== undefined)
+      );
 
       return {
         leadershipChangeRequest: {
@@ -291,7 +299,14 @@ const outcomesForOrderedCrs = (faker: Faker, types: CR_Type[]): ReviewOutcome[] 
 
   return types.map((type, index) => {
     if (isAutoAccepted(type)) return 'APPROVED';
-    return index === lastReviewableIndex ? latestOutcome(faker) : resolvedOutcome(faker);
+
+    const outcome = index === lastReviewableIndex ? latestOutcome(faker) : resolvedOutcome(faker);
+
+    if (type === CR_Type.STANDARD && outcome === 'APPROVED') {
+      return 'DENIED';
+    }
+
+    return outcome;
   });
 };
 
