@@ -93,11 +93,22 @@ const resolvedOutcome = (faker: Faker): ReviewOutcome =>
     { weight: 7, value: 'DENIED' as const }
   ]);
 
+const pickDifferentActor = (faker: Faker, actors: SeedCrActor[], excludedIds: string[]): string => {
+  const candidates = actors.filter(({ userId }) => !excludedIds.includes(userId));
+
+  if (candidates.length === 0) {
+    throw new Error('Change request requires an available replacement actor.');
+  }
+
+  return faker.helpers.arrayElement(candidates).userId;
+};
+
 const subtypeCreateInput = (
   faker: Faker,
   type: CR_Type,
   parent: SeedCrParent | undefined,
-  submittedDate: Date
+  submittedDate: Date,
+  ownerCandidates: SeedCrActor[]
 ): Pick<
   Prisma.Change_RequestCreateInput,
   'budgetChangeRequest' | 'stageGateChangeRequest' | 'activationChangeRequest' | 'leadershipChangeRequest'
@@ -116,11 +127,16 @@ const subtypeCreateInput = (
         }
       };
     case CR_Type.ACTIVATION: {
-      const leadId = parent?.leadId;
-      const managerId = parent?.managerId;
-      if (!leadId || !managerId) {
+      const currentLeadId = parent?.leadId;
+      const currentManagerId = parent?.managerId;
+
+      if (!currentLeadId || !currentManagerId) {
         throw new Error('Activation change request requires a lead and manager on the parent work package.');
       }
+
+      const leadId = pickDifferentActor(faker, ownerCandidates, [currentLeadId]);
+      const managerId = pickDifferentActor(faker, ownerCandidates, [currentManagerId, leadId]);
+
       return {
         activationChangeRequest: {
           create: {
@@ -132,15 +148,23 @@ const subtypeCreateInput = (
         }
       };
     }
-    case CR_Type.LEADERSHIP:
+    case CR_Type.LEADERSHIP: {
+      const currentLeadId = parent?.leadId;
+      const currentManagerId = parent?.managerId;
+
+      const leadId = pickDifferentActor(faker, ownerCandidates, currentLeadId ? [currentLeadId] : []);
+
+      const managerId = pickDifferentActor(faker, ownerCandidates, currentManagerId ? [currentManagerId, leadId] : [leadId]);
+
       return {
         leadershipChangeRequest: {
           create: {
-            ...(parent?.leadId ? { lead: { connect: { userId: parent.leadId } } } : {}),
-            ...(parent?.managerId ? { manager: { connect: { userId: parent.managerId } } } : {})
+            lead: { connect: { userId: leadId } },
+            manager: { connect: { userId: managerId } }
           }
         }
       };
+    }
     case CR_Type.STANDARD:
     default:
       return {};
@@ -150,12 +174,14 @@ const subtypeCreateInput = (
 const changesCreateInput = (
   faker: Faker,
   implementerId: string,
-  link: CrLink
+  link: CrLink,
+  dateImplemented: Date
 ): Prisma.ChangeCreateWithoutChangeRequestInput[] => {
   const count = faker.number.int({ min: 1, max: 4 });
 
   return Array.from({ length: count }, () => ({
     detail: faker.helpers.arrayElement(CHANGE_DETAILS),
+    dateImplemented,
     implementer: { connect: { userId: implementerId } },
     ...(link.kind === 'wbs'
       ? { wbsElement: { connect: { wbsElementId: link.wbsElementId } } }
@@ -195,6 +221,7 @@ type BuildChangeRequestArgs = {
   link: CrLink;
   submitterId: string;
   reviewerId: string;
+  ownerCandidates?: SeedCrActor[];
   dateSubmitted: Date;
   outcome: ReviewOutcome;
   reviewWindowEnd: Date;
@@ -210,6 +237,7 @@ const buildChangeRequest = ({
   link,
   submitterId,
   reviewerId,
+  ownerCandidates = [],
   dateSubmitted,
   outcome,
   reviewWindowEnd,
@@ -238,14 +266,20 @@ const buildChangeRequest = ({
     organization: { connect: { organizationId } },
     submitter: { connect: { userId: submitterId } },
     ...baseLink,
-    ...subtypeCreateInput(faker, type, parent, dateSubmitted),
+    ...subtypeCreateInput(faker, type, parent, dateSubmitted, ownerCandidates),
     ...(reviewed
       ? {
           reviewer: { connect: { userId: reviewerId } },
           dateReviewed,
           accepted,
           reviewNotes: accepted ? faker.helpers.arrayElement(APPROVED_NOTES) : faker.helpers.arrayElement(DENIED_NOTES),
-          ...(accepted ? { changes: { create: changesCreateInput(faker, reviewerId, link) } } : {})
+          ...(accepted
+            ? {
+                changes: {
+                  create: changesCreateInput(faker, reviewerId, link, dateReviewed ?? dateSubmitted)
+                }
+              }
+            : {})
         }
       : {}),
     ...overrides
@@ -299,6 +333,7 @@ export const buildWbsChangeRequests = (
       link: { kind: 'wbs', wbsElementId: parent.wbsElementId },
       submitterId: pickActor(faker, submitters),
       reviewerId: pickActor(faker, reviewers),
+      ownerCandidates: reviewers,
       dateSubmitted: dates[index],
       outcome: outcomes[index],
       reviewWindowEnd: window.end
