@@ -772,16 +772,18 @@ export default class RulesService {
    * Gets rulesets for a given ruleset type
    * @param rulesetTypeId id of ruleset type
    * @param organizationId id of organization
+   * @param carId optional id of the car to filter rulesets by
    * @returns rulesets associated with provided ruleset type
    */
-  static async getRulesetsByRulesetType(rulesetTypeId: string, organizationId: string): Promise<Ruleset[]> {
+  static async getRulesetsByRulesetType(rulesetTypeId: string, organizationId: string, carId?: string): Promise<Ruleset[]> {
     const rulesets = await prisma.ruleset.findMany({
       where: {
         rulesetTypeId,
         deletedByUserId: null,
         rulesetType: {
           organizationId
-        }
+        },
+        ...(carId && { carId })
       },
       orderBy: {
         dateCreated: 'desc'

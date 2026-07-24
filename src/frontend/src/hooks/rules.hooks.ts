@@ -35,6 +35,7 @@ import {
   getRulesetType
 } from '../apis/rules.api';
 import { useToast } from './toasts.hooks';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Hook to supply all ruleset types.
@@ -375,10 +376,14 @@ export const useSetRuleCompletion = (rulesetId: string, projectId: string) => {
  * @returns Query result containing Rulesets data, loading state, and error state.
  */
 export const useRulesetsByType = (rulesetTypeId: string) => {
-  return useQuery<Ruleset[], Error>(['rulesets', rulesetTypeId], async () => {
-    const { data } = await getRulesetsByRulesetType(rulesetTypeId);
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<Ruleset[], Error>(
+    ['rulesets', rulesetTypeId, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getRulesetsByRulesetType(rulesetTypeId);
+      return data;
+    }
+  );
 };
 
 /**

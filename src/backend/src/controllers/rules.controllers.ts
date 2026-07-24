@@ -137,7 +137,11 @@ export default class RulesController {
   static async getRulesetsByRulesetType(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetTypeId } = req.params as Record<string, string>;
-      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetTypeId, req.organization.organizationId);
+      const rulesets = await RulesService.getRulesetsByRulesetType(
+        rulesetTypeId,
+        req.organization.organizationId,
+        req.currentCar?.carId
+      );
       res.status(200).json(rulesets);
     } catch (error: unknown) {
       next(error);
