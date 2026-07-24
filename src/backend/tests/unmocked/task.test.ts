@@ -856,10 +856,7 @@ describe('Task Tests', () => {
         }
       });
 
-      const tasks = await TasksService.getFilteredTasks(
-        { teamIds: [team.teamId], andMemberTeam: true },
-        organization
-      );
+      const tasks = await TasksService.getFilteredTasks({ teamIds: [team.teamId], andMemberTeam: true }, organization);
 
       expect(tasks.map((t) => t.title)).toEqual(['Team WP Task']);
     });
