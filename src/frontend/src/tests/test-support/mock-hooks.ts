@@ -69,7 +69,9 @@ export const mockEditProjectReturnValue = mockUseMutationResult<Task>(
     dateCreated: new Date(),
     createdBy: exampleAdminUser,
     assignees: [],
-    labels: []
+    labels: [],
+    blockedBy: [],
+    blockedByWorkPackages: []
   },
   new Error()
 );
@@ -89,7 +91,9 @@ export const mockCreateTaskReturnValue = mockUseMutationResult<Task>(
     dateCreated: new Date(),
     createdBy: exampleAdminUser,
     assignees: [],
-    labels: []
+    labels: [],
+    blockedBy: [],
+    blockedByWorkPackages: []
   },
   new Error()
 ) as UseMutationResult<Task, Error, CreateTaskPayload, unknown>;
@@ -116,7 +120,9 @@ export const mockEditTaskAssigneesReturnValue = mockUseMutationResult<Task>(
     dateCreated: new Date(),
     createdBy: exampleAdminUser,
     assignees: [],
-    labels: []
+    labels: [],
+    blockedBy: [],
+    blockedByWorkPackages: []
   },
   new Error()
 ) as UseMutationResult<Task, Error, { taskId: string; assignees: string[] }, unknown>;

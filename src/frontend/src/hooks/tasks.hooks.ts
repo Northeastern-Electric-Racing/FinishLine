@@ -29,6 +29,7 @@ export interface CreateTaskPayload {
   notes?: string;
   assignees: string[];
   labelIds: string[];
+  blockedByIds: string[];
 }
 
 /**
@@ -62,6 +63,7 @@ export const useCreateTask = () => {
         createTaskPayload.assignees,
         createTaskPayload.notes ?? '',
         createTaskPayload.labelIds,
+        createTaskPayload.blockedByIds,
         createTaskPayload.deadline,
         createTaskPayload.startDate
       );
@@ -87,6 +89,7 @@ export interface TaskPayload {
   priority: TaskPriority;
   wbsNum?: WbsNumber;
   labelIds: string[];
+  blockedByIds: string[];
 }
 
 /**
@@ -104,6 +107,7 @@ export const useEditTask = () => {
         taskPayload.notes ?? '',
         taskPayload.priority,
         taskPayload.labelIds,
+        taskPayload.blockedByIds,
         taskPayload.deadline,
         taskPayload.startDate,
         taskPayload.wbsNum

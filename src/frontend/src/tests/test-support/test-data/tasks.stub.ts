@@ -17,6 +17,8 @@ export const exampleTask1: Task = {
   createdBy: exampleLeadershipUser,
   assignees: [exampleMemberUser],
   labels: [],
+  blockedBy: [],
+  blockedByWorkPackages: [],
   deadline: new Date('2024-03-01T00:00:00-05:00'),
   priority: TaskPriority.Medium,
   status: TaskStatus.IN_PROGRESS
@@ -32,6 +34,8 @@ export const exampleTask1DueSoon: Task = {
   createdBy: exampleLeadershipUser,
   assignees: [exampleMemberUser],
   labels: [],
+  blockedBy: [],
+  blockedByWorkPackages: [],
   deadline: new Date('2023-11-01T00:00:00-05:00'),
   priority: TaskPriority.Medium,
   status: TaskStatus.IN_PROGRESS

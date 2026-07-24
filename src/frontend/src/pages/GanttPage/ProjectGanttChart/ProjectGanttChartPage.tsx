@@ -362,6 +362,8 @@ const ProjectGanttChartPage: FC = () => {
       },
       assignees: [],
       labels: taskInfo.labels,
+      blockedBy: [],
+      blockedByWorkPackages: [],
       deadline,
       startDate,
       priority: taskInfo.priority,

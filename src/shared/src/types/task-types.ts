@@ -34,7 +34,20 @@ export interface Task {
   deadline?: Date;
   priority: TaskPriority;
   status: TaskStatus;
+  blockedBy: TaskBlockerPreview[];
+  blockedByWorkPackages: BlockingWorkPackagePreview[];
 }
+
+export type TaskBlockerPreview = {
+  taskId: string;
+  title: string;
+  status: TaskStatus;
+};
+
+export type BlockingWorkPackagePreview = {
+  wbsNum: WbsNumber;
+  name: string;
+};
 
 export type TaskCardPreview = Pick<Task, 'taskId' | 'title' | 'deadline' | 'priority' | 'wbsNum'> & {
   assignees: { userId: string; firstName: string; lastName: string }[];

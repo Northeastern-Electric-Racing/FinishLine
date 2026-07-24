@@ -26,6 +26,7 @@ const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
+const userScheduleSettingsBusyTimes = (id: string) => `${usersById(id)}/schedule-settings/busy-times`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
@@ -534,6 +535,7 @@ export const apiUrls = {
   userFavoriteProjects,
   userSecureSettings,
   userScheduleSettings,
+  userScheduleSettingsBusyTimes,
   userScheduleSettingsSet,
   userTasks,
   manyUserTasks,

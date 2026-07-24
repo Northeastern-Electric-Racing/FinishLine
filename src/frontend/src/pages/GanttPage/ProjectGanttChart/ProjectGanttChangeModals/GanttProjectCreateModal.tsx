@@ -74,6 +74,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
               assignees: task.assignees.map((user) => user.userId),
               notes: task.notes || '',
               labelIds: task.labels.map((l) => l.taskLabelId),
+              blockedByIds: task.blockedBy.map((b) => b.taskId),
               deadline: task.deadline ? dateToMidnightUTC(task.deadline).toISOString() : undefined,
               startDate: task.startDate ? dateToMidnightUTC(task.startDate).toISOString() : undefined
             });

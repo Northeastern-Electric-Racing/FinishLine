@@ -5,6 +5,7 @@ interface EventTimeSlotProps {
   onClick?: () => void;
   selected?: boolean;
   allRequiredAvailable?: boolean;
+  busy?: boolean;
   onMouseDown?: (e: React.MouseEvent) => void;
   onMouseEnter?: (e: React.MouseEvent) => void;
   onMouseUp?: () => void;
@@ -15,6 +16,7 @@ const EventTimeSlot: React.FC<EventTimeSlotProps> = ({
   onClick,
   selected = false,
   allRequiredAvailable = false,
+  busy = false,
   onMouseDown,
   onMouseEnter,
   onMouseUp
@@ -46,6 +48,9 @@ const EventTimeSlot: React.FC<EventTimeSlotProps> = ({
         sx={{
           borderRadius: 0.5,
           bgcolor: backgroundColor,
+          backgroundImage: busy
+            ? 'repeating-linear-gradient(45deg, rgba(0,0,0,0.25) 0px, rgba(0,0,0,0.25) 2px, transparent 2px, transparent 6px)'
+            : 'none',
           width: '100%',
           height: '100%',
           minWidth: 24,
