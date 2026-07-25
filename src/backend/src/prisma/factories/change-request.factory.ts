@@ -1,14 +1,23 @@
 import { Faker } from '@faker-js/faker';
-import { Account_Code, CR_Type, Prisma } from '@prisma/client';
+import { Account_Code, CR_Type, WBS_Element_Status, Work_Package_Stage, Prisma } from '@prisma/client';
 import { DateRange } from '../context.js';
 import { clampDate, daysBetween } from '../dates.js';
 import { addDaysToDate } from 'shared';
+
+export type SeedProposalBullet = { detail: string; descriptionBulletTypeId: string };
+export type SeedProposalLink = { url: string; linkTypeId: string };
 
 export type SeedCrParent = {
   wbsElementId: string;
   timeline: DateRange;
   leadId?: string;
   managerId?: string;
+  name: string;
+  status: WBS_Element_Status;
+  descriptionBullets: SeedProposalBullet[];
+  links: SeedProposalLink[];
+  project?: { budget: number; summary: string; teamIds: string[] };
+  workPackage?: { startDate: Date; duration: number; stage: Work_Package_Stage | null; blockedByWbsElementIds: string[] };
 };
 
 export type SeedCrActor = { userId: string };
@@ -60,6 +69,129 @@ const CHANGE_DETAILS = [
 
 const BUDGET_AMOUNTS = [500, 1000, 1500, 2000, 2500, 5000];
 
+const NAME_REVISION_SUFFIXES = [' v2', ' (Updated)', ' - Rev B', ' (Revised)'];
+
+const PROPOSED_SUMMARIES = [
+  'Updated scope to reflect current progress',
+  'Clarified deliverables based on team feedback',
+  'Revised summary after design review',
+  'Refined project scope and goals'
+];
+
+const BUDGET_DELTAS = [-1000, -500, -250, 250, 500, 1000, 1500];
+
+const WORK_PACKAGE_STAGES: Work_Package_Stage[] = [
+  Work_Package_Stage.RESEARCH,
+  Work_Package_Stage.DESIGN,
+  Work_Package_Stage.MANUFACTURING,
+  Work_Package_Stage.INSTALL,
+  Work_Package_Stage.TESTING
+];
+
+const maybeReviseName = (faker: Faker, currentName: string): string =>
+  faker.datatype.boolean({ probability: 0.25 })
+    ? `${currentName}${faker.helpers.arrayElement(NAME_REVISION_SUFFIXES)}`
+    : currentName;
+
+const maybeAdjustBudget = (faker: Faker, currentBudget: number): number =>
+  faker.datatype.boolean({ probability: 0.4 })
+    ? Math.max(0, currentBudget + faker.helpers.arrayElement(BUDGET_DELTAS))
+    : currentBudget;
+
+const maybeReviseSummary = (faker: Faker, currentSummary: string): string =>
+  faker.datatype.boolean({ probability: 0.3 }) ? faker.helpers.arrayElement(PROPOSED_SUMMARIES) : currentSummary;
+
+const maybeChangeStage = (faker: Faker, currentStage: Work_Package_Stage | null): Work_Package_Stage | null =>
+  faker.datatype.boolean({ probability: 0.3 }) ? faker.helpers.arrayElement(WORK_PACKAGE_STAGES) : currentStage;
+
+/**
+ * Builds a real Wbs_Proposed_Changes (+ Project_Proposed_Changes / Work_Package_Proposed_Changes) record
+ * for a STANDARD change request editing an existing project or work package. Description bullets and
+ * links are copied through unchanged so an accepted CR never implies bullets/links were wiped out -
+ * this seed only applies the fields it actually varies (name/lead/manager/budget/summary/stage).
+ */
+const buildStandardProposedChanges = (
+  faker: Faker,
+  parent: SeedCrParent,
+  submitterId: string,
+  ownerCandidates: SeedCrActor[]
+): Pick<Prisma.Change_RequestCreateInput, 'wbsProposedChanges'> => {
+  const keepSameActors = ownerCandidates.length === 0 || faker.datatype.boolean({ probability: 0.7 });
+
+  const leadId = keepSameActors
+    ? parent.leadId
+    : pickDifferentActor(
+        faker,
+        ownerCandidates,
+        [parent.leadId, parent.managerId].filter((id): id is string => id !== undefined)
+      );
+
+  const managerId = keepSameActors
+    ? parent.managerId
+    : pickDifferentActor(
+        faker,
+        ownerCandidates,
+        [parent.leadId, parent.managerId, leadId].filter((id): id is string => id !== undefined)
+      );
+
+  const baseWbsProposal = {
+    name: maybeReviseName(faker, parent.name),
+    status: parent.status,
+    ...(leadId ? { lead: { connect: { userId: leadId } } } : {}),
+    ...(managerId ? { manager: { connect: { userId: managerId } } } : {}),
+    links: {
+      create: parent.links.map((link) => ({
+        url: link.url,
+        linkType: { connect: { id: link.linkTypeId } },
+        creator: { connect: { userId: submitterId } }
+      }))
+    },
+    proposedDescriptionBulletChanges: {
+      create: parent.descriptionBullets.map((bullet) => ({
+        detail: bullet.detail,
+        descriptionBulletType: { connect: { id: bullet.descriptionBulletTypeId } }
+      }))
+    }
+  };
+
+  if (parent.project) {
+    return {
+      wbsProposedChanges: {
+        create: {
+          ...baseWbsProposal,
+          projectProposedChanges: {
+            create: {
+              budget: maybeAdjustBudget(faker, parent.project.budget),
+              summary: maybeReviseSummary(faker, parent.project.summary),
+              teams: { connect: parent.project.teamIds.map((teamId) => ({ teamId })) }
+            }
+          }
+        }
+      }
+    };
+  }
+
+  if (parent.workPackage) {
+    return {
+      wbsProposedChanges: {
+        create: {
+          ...baseWbsProposal,
+          workPackageProposedChanges: {
+            create: {
+              startDate: parent.workPackage.startDate,
+              duration: parent.workPackage.duration,
+              stage: maybeChangeStage(faker, parent.workPackage.stage),
+              blockedBy: { connect: parent.workPackage.blockedByWbsElementIds.map((wbsElementId) => ({ wbsElementId })) }
+            }
+          }
+        }
+      }
+    };
+  }
+
+  throw new Error('Standard change request parent must be a project or a work package.');
+};
+
 type CrLink = { kind: 'wbs'; wbsElementId: string } | { kind: 'accountCode'; accountCodeId: string };
 
 const AUTO_ACCEPTED_TYPES: CR_Type[] = [CR_Type.ACTIVATION, CR_Type.STAGE_GATE, CR_Type.LEADERSHIP];
@@ -69,8 +201,9 @@ const isAutoAccepted = (type: CR_Type): boolean => AUTO_ACCEPTED_TYPES.includes(
 const crTypeForParent = (faker: Faker, isWorkPackage: boolean): CR_Type => {
   if (isWorkPackage) {
     return faker.helpers.weightedArrayElement([
-      { weight: 51, value: CR_Type.ACTIVATION },
-      { weight: 49, value: CR_Type.STAGE_GATE }
+      { weight: 45, value: CR_Type.ACTIVATION },
+      { weight: 40, value: CR_Type.STAGE_GATE },
+      { weight: 15, value: CR_Type.STANDARD }
     ]);
   }
 
@@ -108,10 +241,15 @@ const subtypeCreateInput = (
   type: CR_Type,
   parent: SeedCrParent | undefined,
   submittedDate: Date,
-  ownerCandidates: SeedCrActor[]
+  ownerCandidates: SeedCrActor[],
+  submitterId: string
 ): Pick<
   Prisma.Change_RequestCreateInput,
-  'budgetChangeRequest' | 'stageGateChangeRequest' | 'activationChangeRequest' | 'leadershipChangeRequest'
+  | 'budgetChangeRequest'
+  | 'stageGateChangeRequest'
+  | 'activationChangeRequest'
+  | 'leadershipChangeRequest'
+  | 'wbsProposedChanges'
 > => {
   switch (type) {
     case CR_Type.BUDGET:
@@ -173,7 +311,12 @@ const subtypeCreateInput = (
         }
       };
     }
-    case CR_Type.STANDARD:
+    case CR_Type.STANDARD: {
+      if (!parent) {
+        throw new Error('Standard change request requires a parent WBS element.');
+      }
+      return buildStandardProposedChanges(faker, parent, submitterId, ownerCandidates);
+    }
     default:
       return {};
   }
@@ -282,7 +425,7 @@ const buildChangeRequest = ({
     submitter: { connect: { userId: submitterId } },
     ...(hasRequestedReviewer ? { requestedReviewers: { connect: { userId: reviewerId } } } : {}),
     ...baseLink,
-    ...subtypeCreateInput(faker, type, parent, dateSubmitted, ownerCandidates),
+    ...subtypeCreateInput(faker, type, parent, dateSubmitted, ownerCandidates, submitterId),
     ...(reviewed
       ? {
           reviewer: { connect: { userId: reviewerId } },
@@ -308,13 +451,7 @@ const outcomesForOrderedCrs = (faker: Faker, types: CR_Type[]): ReviewOutcome[] 
   return types.map((type, index) => {
     if (isAutoAccepted(type)) return 'APPROVED';
 
-    const outcome = index === lastReviewableIndex ? latestOutcome(faker) : resolvedOutcome(faker);
-
-    if (type === CR_Type.STANDARD && outcome === 'APPROVED') {
-      return 'DENIED';
-    }
-
-    return outcome;
+    return index === lastReviewableIndex ? latestOutcome(faker) : resolvedOutcome(faker);
   });
 };
 

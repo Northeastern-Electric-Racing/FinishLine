@@ -36,7 +36,8 @@ const changeRequestInclude = {
   stageGateChangeRequest: true,
   budgetChangeRequest: true,
   leadershipChangeRequest: true,
-  wbsElement: { include: { workPackage: true } }
+  wbsProposedChanges: { include: { projectProposedChanges: true, workPackageProposedChanges: true } },
+  wbsElement: { include: { workPackage: true, project: true } }
 } satisfies Prisma.Change_RequestInclude;
 
 type SeededChangeRequest = Prisma.Change_RequestGetPayload<{
@@ -80,7 +81,7 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
 
     for (const cr of changeRequests) {
       if (!cr.accepted || !cr.wbsElement?.workPackage) continue;
-      if (cr.type !== CR_Type.ACTIVATION && cr.type !== CR_Type.STAGE_GATE) continue;
+      if (cr.type !== CR_Type.ACTIVATION && cr.type !== CR_Type.STAGE_GATE && cr.type !== CR_Type.STANDARD) continue;
 
       const list = workPackageCrs.get(cr.wbsElement.wbsElementId) ?? [];
       list.push(cr);
@@ -89,6 +90,13 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
 
     await Promise.all(Array.from(workPackageCrs.values()).map((crs) => this.applyWorkPackageLifecycle(crs)));
   }
+  /**
+   * Replays every accepted ACTIVATION/STAGE_GATE/STANDARD CR for one work package in chronological
+   * order. STANDARD CRs are folded into this same replay (rather than a separate pass) because
+   * editWorkPackage unconditionally reverts a COMPLETE work package back to ACTIVE on any edit -
+   * that only makes sense evaluated in the same chronological sequence as the CRs that drive
+   * status via ACTIVATION/STAGE_GATE.
+   */
   private async applyWorkPackageLifecycle(crs: SeededChangeRequest[]): Promise<void> {
     const [firstCr] = crs;
     const { wbsElement } = firstCr;
@@ -98,12 +106,12 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
 
     const ordered = [...crs].sort((a, b) => a.dateSubmitted.getTime() - b.dateSubmitted.getTime());
 
-    let { startDate, duration } = workPackage;
-    let { leadId, managerId } = wbsElement;
+    let { startDate, duration, stage } = workPackage;
+    let { leadId, managerId, name } = wbsElement;
     let status: WBS_Element_Status = WBS_Element_Status.INACTIVE;
 
     for (const cr of ordered) {
-      const { type, activationChangeRequest, dateReviewed, dateSubmitted } = cr;
+      const { type, activationChangeRequest, dateReviewed, dateSubmitted, wbsProposedChanges } = cr;
 
       if (type === CR_Type.ACTIVATION && activationChangeRequest) {
         ({ startDate, leadId, managerId } = activationChangeRequest);
@@ -114,6 +122,16 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
         duration = Math.max(1, Math.round((completedDate.getTime() - startDate.getTime()) / WEEK_MS));
 
         status = WBS_Element_Status.COMPLETE;
+      } else if (type === CR_Type.STANDARD && wbsProposedChanges) {
+        name = wbsProposedChanges.name;
+        leadId = wbsProposedChanges.leadId;
+        managerId = wbsProposedChanges.managerId;
+        if (wbsProposedChanges.workPackageProposedChanges) {
+          stage = wbsProposedChanges.workPackageProposedChanges.stage;
+        }
+        if (status === WBS_Element_Status.COMPLETE) {
+          status = WBS_Element_Status.ACTIVE;
+        }
       }
     }
 
@@ -124,8 +142,10 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
       data: {
         startDate,
         duration,
+        stage,
         wbsElement: {
           update: {
+            name,
             leadId,
             managerId,
             status
@@ -135,42 +155,89 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     });
   }
 
-  private async applyAcceptedLeadershipChanges(changeRequests: SeededChangeRequest[]): Promise<void> {
-    const latestLeadershipByWbsElementId = new Map<string, SeededChangeRequest>();
+  /**
+   * Both LEADERSHIP CRs and STANDARD CRs (via their proposed lead/manager) can change a WBS
+   * element's lead/manager, so both are merged into one "latest accepted CR wins" comparison
+   * per WBS element rather than picking a winner independently per type. Work-package-level
+   * STANDARD CRs are excluded here since applyWorkPackageLifecycle already handles them (LEADERSHIP
+   * CRs are never generated for work packages, so this function only ever runs for projects).
+   */
+  private async applyAcceptedLeadManagerChanges(changeRequests: SeededChangeRequest[]): Promise<void> {
+    type LeadManagerCandidate = { dateSubmitted: Date; leadId: string | null; managerId: string | null };
+    const latestByWbsElementId = new Map<string, LeadManagerCandidate>();
+
+    const consider = (
+      wbsElementId: string | null | undefined,
+      dateSubmitted: Date,
+      leadId: string | null,
+      managerId: string | null
+    ) => {
+      if (!wbsElementId) return;
+      const current = latestByWbsElementId.get(wbsElementId);
+      if (!current || dateSubmitted >= current.dateSubmitted) {
+        latestByWbsElementId.set(wbsElementId, { dateSubmitted, leadId, managerId });
+      }
+    };
 
     for (const cr of changeRequests) {
-      const { accepted, type, wbsElementId, leadershipChangeRequest, dateSubmitted } = cr;
+      if (!cr.accepted) continue;
 
-      if (!accepted || type !== CR_Type.LEADERSHIP || !wbsElementId || !leadershipChangeRequest) {
-        continue;
-      }
-
-      const current = latestLeadershipByWbsElementId.get(wbsElementId);
-
-      if (!current || dateSubmitted >= current.dateSubmitted) {
-        latestLeadershipByWbsElementId.set(wbsElementId, cr);
+      if (cr.type === CR_Type.LEADERSHIP && cr.leadershipChangeRequest) {
+        consider(cr.wbsElementId, cr.dateSubmitted, cr.leadershipChangeRequest.leadId, cr.leadershipChangeRequest.managerId);
+      } else if (cr.type === CR_Type.STANDARD && cr.wbsProposedChanges && !cr.wbsElement?.workPackage) {
+        consider(cr.wbsElementId, cr.dateSubmitted, cr.wbsProposedChanges.leadId, cr.wbsProposedChanges.managerId);
       }
     }
 
     await Promise.all(
-      Array.from(latestLeadershipByWbsElementId.entries()).map(([wbsElementId, cr]) => {
-        const { leadershipChangeRequest } = cr;
+      Array.from(latestByWbsElementId.entries()).map(([wbsElementId, { leadId, managerId }]) =>
+        this.prisma.wBS_Element.update({
+          where: { wbsElementId },
+          data: { leadId, managerId }
+        })
+      )
+    );
+  }
 
-        if (!leadershipChangeRequest) {
-          return Promise.resolve();
-        }
+  /**
+   * Applies the non lead/manager fields a project-level STANDARD CR can propose (name/budget/summary)
+   * using the latest accepted STANDARD CR per project. Work-package-level STANDARD CRs are handled by
+   * applyWorkPackageLifecycle instead, since they interact with ACTIVATION/STAGE_GATE's status/stage
+   * state machine. Description bullets/links are deliberately left untouched since the proposal always
+   * copies them through unchanged (see buildStandardProposedChanges).
+   */
+  private async applyAcceptedStandardChanges(changeRequests: SeededChangeRequest[]): Promise<void> {
+    const latestByWbsElementId = new Map<string, SeededChangeRequest>();
 
-        const { leadId, managerId } = leadershipChangeRequest;
+    for (const cr of changeRequests) {
+      if (!cr.accepted || cr.type !== CR_Type.STANDARD || !cr.wbsElementId || !cr.wbsProposedChanges) continue;
+      if (cr.wbsElement?.workPackage) continue;
 
-        return this.prisma.wBS_Element.update({
-          where: {
-            wbsElementId
-          },
-          data: {
-            leadId,
-            managerId
-          }
+      const current = latestByWbsElementId.get(cr.wbsElementId);
+      if (!current || cr.dateSubmitted >= current.dateSubmitted) {
+        latestByWbsElementId.set(cr.wbsElementId, cr);
+      }
+    }
+
+    await Promise.all(
+      Array.from(latestByWbsElementId.entries()).map(async ([wbsElementId, cr]) => {
+        const proposal = cr.wbsProposedChanges;
+        if (!proposal) return;
+
+        await this.prisma.wBS_Element.update({
+          where: { wbsElementId },
+          data: { name: proposal.name }
         });
+
+        if (proposal.projectProposedChanges && cr.wbsElement?.project) {
+          await this.prisma.project.update({
+            where: { projectId: cr.wbsElement.project.projectId },
+            data: {
+              budget: proposal.projectProposedChanges.budget,
+              summary: proposal.projectProposedChanges.summary
+            }
+          });
+        }
       })
     );
   }
@@ -271,6 +338,32 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     const wbsChangeRequestInputs: Prisma.Change_RequestCreateInput[] = [];
     const now = new Date();
 
+    const [allBullets, allLinks, allWorkPackages] = await Promise.all([
+      this.prisma.description_Bullet.findMany({ where: { dateDeleted: null, wbsElementId: { not: null } } }),
+      this.prisma.link.findMany({ where: { dateDeleted: null, wbsElementId: { not: null } } }),
+      this.prisma.work_Package.findMany({ select: { workPackageId: true, blockedBy: { select: { wbsElementId: true } } } })
+    ]);
+
+    const blockedByByWorkPackageId = new Map<string, string[]>(
+      allWorkPackages.map((wp) => [wp.workPackageId, wp.blockedBy.map((b) => b.wbsElementId)])
+    );
+
+    const bulletsByWbsElementId = new Map<string, { detail: string; descriptionBulletTypeId: string }[]>();
+    for (const bullet of allBullets) {
+      if (!bullet.wbsElementId) continue;
+      const list = bulletsByWbsElementId.get(bullet.wbsElementId) ?? [];
+      list.push({ detail: bullet.detail, descriptionBulletTypeId: bullet.descriptionBulletTypeId });
+      bulletsByWbsElementId.set(bullet.wbsElementId, list);
+    }
+
+    const linksByWbsElementId = new Map<string, { url: string; linkTypeId: string }[]>();
+    for (const link of allLinks) {
+      if (!link.wbsElementId) continue;
+      const list = linksByWbsElementId.get(link.wbsElementId) ?? [];
+      list.push({ url: link.url, linkTypeId: link.linkTypeId });
+      linksByWbsElementId.set(link.wbsElementId, list);
+    }
+
     for (const { project, timeline } of projects) {
       if (timeline.start.getTime() > now.getTime()) continue;
 
@@ -282,7 +375,12 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
         wbsElementId: project.wbsElementId,
         timeline,
         leadId: projectLeadId ?? undefined,
-        managerId: projectManagerId ?? undefined
+        managerId: projectManagerId ?? undefined,
+        name: project.wbsElement.name,
+        status: project.wbsElement.status,
+        descriptionBullets: bulletsByWbsElementId.get(project.wbsElementId) ?? [],
+        links: linksByWbsElementId.get(project.wbsElementId) ?? [],
+        project: { budget: project.budget, summary: project.summary, teamIds: project.teams.map((team) => team.teamId) }
       };
 
       wbsChangeRequestInputs.push(
@@ -307,7 +405,17 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
           wbsElementId: workPackage.wbsElement.wbsElementId,
           timeline: wpTimeline,
           leadId: wpLeadId ?? undefined,
-          managerId: wpManagerId ?? undefined
+          managerId: wpManagerId ?? undefined,
+          name: workPackage.wbsElement.name,
+          status: workPackage.wbsElement.status,
+          descriptionBullets: bulletsByWbsElementId.get(workPackage.wbsElement.wbsElementId) ?? [],
+          links: linksByWbsElementId.get(workPackage.wbsElement.wbsElementId) ?? [],
+          workPackage: {
+            startDate: workPackage.startDate,
+            duration: workPackage.duration,
+            stage: workPackage.stage,
+            blockedByWbsElementIds: blockedByByWorkPackageId.get(workPackage.workPackageId) ?? []
+          }
         };
 
         const workPackageChangeRequestInputs = buildWbsChangeRequests(
@@ -373,7 +481,8 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     const createdBudgetChangeRequests = await this.createChangeRequests(budgetChangeRequestInputs);
 
     await this.applyAcceptedWbsChanges(createdWbsChangeRequests);
-    await this.applyAcceptedLeadershipChanges(createdWbsChangeRequests);
+    await this.applyAcceptedLeadManagerChanges(createdWbsChangeRequests);
+    await this.applyAcceptedStandardChanges(createdWbsChangeRequests);
     await this.applyAcceptedAccountCodeBudgets(createdBudgetChangeRequests);
 
     const changeRequests = [...createdWbsChangeRequests, ...createdBudgetChangeRequests];
