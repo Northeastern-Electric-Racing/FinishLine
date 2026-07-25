@@ -123,11 +123,9 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
 
         status = WBS_Element_Status.COMPLETE;
       } else if (type === CR_Type.STANDARD && wbsProposedChanges) {
-        name = wbsProposedChanges.name;
-        leadId = wbsProposedChanges.leadId;
-        managerId = wbsProposedChanges.managerId;
+        ({ name, leadId, managerId } = wbsProposedChanges);
         if (wbsProposedChanges.workPackageProposedChanges) {
-          stage = wbsProposedChanges.workPackageProposedChanges.stage;
+          ({ stage } = wbsProposedChanges.workPackageProposedChanges);
         }
         if (status === WBS_Element_Status.COMPLETE) {
           status = WBS_Element_Status.ACTIVE;

@@ -120,6 +120,31 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
       workPackageContexts.push({ workPackage, timeline: wpTimeline });
     }
 
+    // Work package durations are chosen up to a random cap, so nothing otherwise guarantees they
+    // collectively reach the project's actual end date - only the first one is anchored to the
+    // start. Stretch whichever work package ends latest so its end reaches the project end exactly.
+    // This is always safe to do without checking blocking relationships: any work package that
+    // actually blocks another is mathematically guaranteed to end before its blocked successor
+    // (the successor's start is the blocker's end + 1 day, plus at least a 1-week duration), so the
+    // latest-ending work package in the project can never itself be blocking anything.
+    if (workPackageContexts.length > 0) {
+      const latest = workPackageContexts.reduce((a, b) => (a.timeline.end.getTime() >= b.timeline.end.getTime() ? a : b));
+
+      if (latest.timeline.end.getTime() < timeline.end.getTime()) {
+        const stretchedDuration = Math.max(
+          1,
+          Math.ceil((timeline.end.getTime() - latest.timeline.start.getTime()) / WEEK_MS)
+        );
+
+        await this.prisma.work_Package.update({
+          where: { workPackageId: latest.workPackage.workPackageId },
+          data: { duration: stretchedDuration }
+        });
+
+        latest.timeline = { start: latest.timeline.start, end: new Date(timeline.end) };
+      }
+    }
+
     const sorted = [...workPackageContexts].sort((a, b) => a.timeline.start.getTime() - b.timeline.start.getTime());
     const pastWPs = sorted.filter((wp) => wp.timeline.start < now);
 
