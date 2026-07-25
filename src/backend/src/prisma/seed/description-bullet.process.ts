@@ -24,7 +24,13 @@ export class DescriptionBulletProcess extends SeedProcess<DescriptionBulletInput
 
     await Promise.all([
       ...projects.map(({ project, timeline }) =>
-        this.createBulletsForWbsElement(project.wbsElement.wbsElementId, project.wbsElement.name, bulletType.id, timeline, now)
+        this.createBulletsForWbsElement(
+          project.wbsElement.wbsElementId,
+          project.wbsElement.name,
+          bulletType.id,
+          timeline,
+          now
+        )
       ),
       ...workPackages.map(({ workPackage, timeline }) =>
         this.createBulletsForWbsElement(
