@@ -48,14 +48,15 @@ export const useAllRulesetTypes = () => {
 };
 
 /**
- * Hook to get the active ruleset for a given ruleset type.
+ * Hook to get the active ruleset for a given ruleset type scoped to a car
+ * Each car can have its own active ruleset per ruleset type.
  */
-export const useActiveRuleset = (rulesetTypeId: string) => {
+export const useActiveRuleset = (rulesetTypeId: string, carNumber?: number) => {
   return useQuery<Ruleset | undefined, Error>(
-    ['rules', 'activeRuleset', rulesetTypeId],
+    ['rules', 'activeRuleset', rulesetTypeId, carNumber],
     async () => {
       try {
-        const { data } = await getActiveRuleset(rulesetTypeId);
+        const { data } = await getActiveRuleset(rulesetTypeId, carNumber);
         return data;
       } catch {
         // Return undefined if no active ruleset exists

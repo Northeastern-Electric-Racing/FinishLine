@@ -825,7 +825,7 @@ describe('Create Rules Tests', () => {
       );
       await expect(
         async () => await RulesService.updateRuleset(batman, orgId, ruleset2.rulesetId, 'name', true)
-      ).rejects.toThrow(new HttpException(400, 'There is already an active ruleset for this ruleset type'));
+      ).rejects.toThrow(new HttpException(400, 'There is already an active ruleset for this ruleset type and car'));
     });
   });
 });

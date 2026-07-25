@@ -7,7 +7,14 @@ export default class RulesController {
   static async getActiveRuleset(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetTypeId } = req.params as Record<string, string>;
-      const rulesetType = await RulesService.getActiveRuleset(req.currentUser, rulesetTypeId, req.organization);
+      const { carNumber } = req.query;
+      const parsedCarNumber = typeof carNumber === 'string' ? Number(carNumber) : undefined;
+      const rulesetType = await RulesService.getActiveRuleset(
+        req.currentUser,
+        rulesetTypeId,
+        req.organization,
+        parsedCarNumber
+      );
       res.status(200).json(rulesetType);
     } catch (error: unknown) {
       next(error);

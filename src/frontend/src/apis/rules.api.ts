@@ -77,8 +77,9 @@ export const getAllRulesetTypes = () => {
 /**
  * Gets the active ruleset for a given ruleset type.
  */
-export const getActiveRuleset = (rulesetTypeId: string) => {
+export const getActiveRuleset = (rulesetTypeId: string, carNumber?: number) => {
   return axios.get<Ruleset>(apiUrls.rulesGetActiveRuleset(rulesetTypeId), {
+    params: { carNumber },
     transformResponse: (data) => rulesetTransformer(JSON.parse(data))
   });
 };

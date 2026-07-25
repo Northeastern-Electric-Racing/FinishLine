@@ -37,13 +37,14 @@ import { uploadFile, downloadFile } from '../utils/google-integration.utils.js';
 
 export default class RulesService {
   /**
-   * Gets the active ruleset for the given ruleset type ID
+   * Gets the active ruleset for the given ruleset type ID and car
    * @param user a user who is requesting for the active ruleset
    * @param rulesetTypeId the given ruleset type id
    * @param organization the organization for permission check
+   * @param carNumber the car number to scope the active ruleset to, since each car can have its own active ruleset per type
    * @returns a ruleset with the given id if it exists, otherwise throws an error
    */
-  static async getActiveRuleset(user: User, rulesetTypeId: string, organization: Organization) {
+  static async getActiveRuleset(user: User, rulesetTypeId: string, organization: Organization, carNumber?: number) {
     if (!(await userHasPermission(user.userId, organization.organizationId, notGuest)))
       throw new AccessDeniedException('only members and above can view ruleset types!');
 
@@ -59,8 +60,27 @@ export default class RulesService {
       throw new DeletedException('Ruleset Type', rulesetTypeId);
     }
 
+    let carId: string | undefined;
+    if (carNumber !== undefined) {
+      const car = await prisma.car.findFirst({
+        where: {
+          wbsElement: {
+            carNumber,
+            organizationId: organization.organizationId,
+            dateDeleted: null
+          }
+        }
+      });
+
+      if (!car) {
+        throw new NotFoundException('Car', carNumber);
+      }
+
+      carId = car.carId;
+    }
+
     const activeRuleset = await prisma.ruleset.findFirst({
-      where: { rulesetTypeId, deletedByUserId: null, active: true },
+      where: { rulesetTypeId, deletedByUserId: null, active: true, ...(carId && { carId }) },
       ...getRulesetQueryArgs()
     });
 
@@ -1219,6 +1239,7 @@ export default class RulesService {
       const activeRuleset = await prisma.ruleset.findFirst({
         where: {
           active: true,
+          carId: rulesetExists.carId,
           rulesetType: {
             rulesetTypeId: rulesetExists.rulesetTypeId,
             organizationId
@@ -1228,7 +1249,7 @@ export default class RulesService {
       });
 
       if (activeRuleset) {
-        throw new HttpException(400, 'There is already an active ruleset for this ruleset type');
+        throw new HttpException(400, 'There is already an active ruleset for this ruleset type and car');
       }
     }
     const ruleset = await prisma.ruleset.update({

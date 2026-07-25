@@ -64,9 +64,10 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   // Get the currently selected ruleset type
   const selectedRulesetType = rulesetTypes?.[selectedRulesetTypeIndex];
 
-  // Fetch the active ruleset for the selected ruleset type
+  // Fetch the active ruleset for the selected ruleset type, scoped to this project's own car
   const { data: activeRuleset, isLoading: activeRulesetLoading } = useActiveRuleset(
-    selectedRulesetType?.rulesetTypeId || ''
+    selectedRulesetType?.rulesetTypeId || '',
+    project.wbsNum.carNumber
   );
 
   // Fetch project rules for the active ruleset
