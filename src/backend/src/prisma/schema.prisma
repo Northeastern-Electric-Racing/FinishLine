@@ -292,6 +292,7 @@ model User {
   attendedMeetingAttendances              Meeting_Attendance[]                 @relation(name: "meetingAttendees")
   createdTaskLabels                       Task_Label[]                         @relation(name: "taskLabelCreator")
   deletedTaskLabels                       Task_Label[]                         @relation(name: "taskLabelDeleter")
+  dashboards                              Dashboard[]                          @relation(name: "userDashboards")
 }
 
 model Role {
@@ -1415,6 +1416,22 @@ model Organization {
   eventTypes               Event_Type[]
   meetingAttendances       Meeting_Attendance[]
   taskLabels               Task_Label[]
+  dashboards               Dashboard[]
+}
+
+model Dashboard {
+  dashboardId    String       @id @default(uuid())
+  name           String
+  link           String
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  user           User         @relation(fields: [userId], references: [userId], name: "userDashboards")
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@index([organizationId])
+  @@index([userId])
 }
 
 model FrequentlyAskedQuestion {

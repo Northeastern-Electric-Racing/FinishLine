@@ -357,8 +357,7 @@ const ProjectGanttChartPage: FC = () => {
         userId: user.userId,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email,
-        role: user.role
+        email: user.email
       },
       assignees: [],
       labels: taskInfo.labels,

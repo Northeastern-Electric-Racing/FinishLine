@@ -30,6 +30,15 @@ export default class UsersController {
     }
   }
 
+  static async getAllMembersDropdown(req: Request, res: Response, next: NextFunction) {
+    try {
+      const members = await UsersService.getAllMembersDropdown(req.organization.organizationId);
+      res.status(200).json(members);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getCurrentUser(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await UsersService.getCurrentUser(req.currentUser);

@@ -9,6 +9,7 @@ const userRouter = express.Router();
 userRouter.get('/', UsersController.getAllUsers);
 userRouter.get('/organization', UsersController.getAllOrgUsers);
 userRouter.get('/members', UsersController.getAllMembers);
+userRouter.get('/members/dropdown', UsersController.getAllMembersDropdown);
 userRouter.post(
   '/scheduleSettings',
   body('userIds').isArray(),
