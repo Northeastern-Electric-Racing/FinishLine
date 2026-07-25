@@ -397,6 +397,12 @@ const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
 const carEdit = (id: string) => `${cars()}/${id}/edit`;
 
+// dropdown endpoints — minimal payloads for populating select menus
+const projectsDropdown = () => `${projects()}/dropdown`;
+const workPackagesDropdown = () => `${workPackages()}/dropdown`;
+const membersDropdown = () => `${users()}/members/dropdown`;
+const teamsDropdown = () => `${teams()}/dropdown`;
+
 /************** Recruitment Endpoints ***************/
 const recruitment = () => `${API_URL}/recruitment`;
 const allMilestones = () => `${recruitment()}/milestones`;
@@ -518,6 +524,13 @@ const attendanceGetOngoing = (teamId: string) => `${attendance()}/ongoing/${team
 const attendanceCloseOngoing = (teamId: string) => `${attendance()}/close/${teamId}`;
 const attendanceGetById = (meetingAttendanceId: string) => `${attendance()}/${meetingAttendanceId}`;
 
+/**************** Dashboard Endpoints ****************/
+const dashboards = () => `${API_URL}/dashboards`;
+const dashboardsGet = () => `${dashboards()}/`;
+const dashboardsCreate = () => `${dashboards()}/create`;
+const dashboardEdit = (dashboardId: string) => `${dashboards()}/${dashboardId}/edit`;
+const dashboardDelete = (dashboardId: string) => `${dashboards()}/${dashboardId}/delete`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -525,6 +538,10 @@ export const apiUrls = {
   users,
   orgUsers,
   orgMembers,
+  projectsDropdown,
+  workPackagesDropdown,
+  membersDropdown,
+  teamsDropdown,
   usersById,
   usersLogin,
   usersLoginDev,
@@ -903,6 +920,11 @@ export const apiUrls = {
   attendanceGetOngoing,
   attendanceCloseOngoing,
   attendanceGetById,
+
+  dashboardsGet,
+  dashboardsCreate,
+  dashboardEdit,
+  dashboardDelete,
 
   version
 };

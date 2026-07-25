@@ -144,7 +144,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
       ) : tabValue === 1 ? (
         !allowEdit ? null : (
-          <TaskListContent wbsNum={workPackage.wbsNum} />
+          <TaskListContent context="workPackage" wbsNum={workPackage.wbsNum} />
         )
       ) : tabValue === 2 ? (
         <ChangesList changes={workPackage.changes} />

@@ -9,6 +9,7 @@ const LOGIN = `/login`;
 const INFO = `/info`;
 const GUEST_INFO = `/guestinfo`;
 const GANTT = `/gantt`;
+const TASKS = `/tasks`;
 const CREDITS = `/credits`;
 
 /**************** Home Section ****************/
@@ -100,6 +101,7 @@ export const routes = {
   TEAMS_BY_ID,
 
   GANTT,
+  TASKS,
 
   PROJECTS,
   PROJECT_MANAGEMENT,

@@ -153,18 +153,22 @@ export const useEditTaskAssignees = () => {
  * @returns the edit task status mutation
  */
 export const useSetTaskStatus = () => {
-  // const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, { taskId: string; status: TaskStatus }>(
     ['tasks', 'edit-status'],
     async (editStatusTaskPayload: { taskId: string; status: TaskStatus }) => {
       const { data } = await editSingleTaskStatus(editStatusTaskPayload.taskId, editStatusTaskPayload.status);
       return data;
+    },
+    {
+      // the board updates optimistically, but the cached tasks must also be refreshed or a later
+      // rebuild from the cache (e.g. when the client-side search changes) would revert the move
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['tasks']);
+      }
     }
-    // {
-    //   onSuccess: () => {
-    //     queryClient.invalidateQueries(['projects']);
-    //   }
-    // }
   );
 };
 

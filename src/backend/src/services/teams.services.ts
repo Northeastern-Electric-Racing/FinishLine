@@ -1,6 +1,8 @@
-import { isAdmin, isHead, Team, TeamPreview, TeamType, User, WbsElementStatus } from 'shared';
+import { isAdmin, isHead, TeamDropdownItem, Team, TeamPreview, TeamType, User, WbsElementStatus } from 'shared';
 import { Organization } from '@prisma/client';
 import prisma from '../prisma/prisma.js';
+import { getTeamDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
+import { teamDropdownTransformer } from '../transformers/dropdown.transformer.js';
 import { calculateProjectStatus } from '../utils/projects.utils.js';
 import teamTransformer, { teamBaseTransformer, teamPreviewTransformer } from '../transformers/teams.transformer.js';
 import {
@@ -26,6 +28,20 @@ export default class TeamsService {
       ...getTeamBaseQueryArgs()
     });
     return teams.map(teamBaseTransformer);
+  }
+
+  /**
+   * Gets a minimal list of teams for use in dropdowns (id + name only).
+   * @param organization the organization the user is in
+   * @returns the teams for a dropdown
+   */
+  static async getAllTeamsDropdown(organization: Organization): Promise<TeamDropdownItem[]> {
+    const teams = await prisma.team.findMany({
+      where: { dateArchived: null, organizationId: organization.organizationId },
+      orderBy: { teamName: 'asc' },
+      ...getTeamDropdownQueryArgs()
+    });
+    return teams.map(teamDropdownTransformer);
   }
 
   /**
