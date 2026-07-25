@@ -229,6 +229,7 @@ type BuildChangeRequestArgs = {
   link: CrLink;
   submitterId: string;
   reviewerId: string;
+  reviewerIsHeadOrAdmin: boolean;
   ownerCandidates?: SeedCrActor[];
   dateSubmitted: Date;
   outcome: ReviewOutcome;
@@ -245,6 +246,7 @@ const buildChangeRequest = ({
   link,
   submitterId,
   reviewerId,
+  reviewerIsHeadOrAdmin,
   ownerCandidates = [],
   dateSubmitted,
   outcome,
@@ -266,6 +268,11 @@ const buildChangeRequest = ({
       ? { wbsElement: { connect: { wbsElementId: link.wbsElementId } } }
       : { accountCode: { connect: { accountCodeId: link.accountCodeId } } };
 
+  // reviewChangeRequest only allows a non-head/admin reviewer if they're a requested reviewer,
+  // so it's mandatory whenever the reviewer doesn't satisfy isHead; otherwise it's an optional
+  // field a submitter may or may not have set.
+  const hasRequestedReviewer = !reviewerIsHeadOrAdmin || faker.datatype.boolean({ probability: 0.25 });
+
   return {
     identifier,
     type,
@@ -273,6 +280,7 @@ const buildChangeRequest = ({
     why: type === CR_Type.BUDGET ? faker.helpers.arrayElement(BUDGET_WHY) : faker.helpers.arrayElement(STANDARD_WHY),
     organization: { connect: { organizationId } },
     submitter: { connect: { userId: submitterId } },
+    ...(hasRequestedReviewer ? { requestedReviewers: { connect: { userId: reviewerId } } } : {}),
     ...baseLink,
     ...subtypeCreateInput(faker, type, parent, dateSubmitted, ownerCandidates),
     ...(reviewed
@@ -329,7 +337,8 @@ export const buildWbsChangeRequests = (
   identifiers: number[],
   organizationId: string,
   submitters: SeedCrActor[],
-  reviewers: SeedCrActor[]
+  reviewers: SeedCrActor[],
+  headOrAdminUserIds: Set<string>
 ): Prisma.Change_RequestCreateInput[] => {
   if (identifiers.length === 0) return [];
 
@@ -338,22 +347,28 @@ export const buildWbsChangeRequests = (
   const types = identifiers.map(() => crTypeForParent(faker, isWorkPackage));
   const outcomes = outcomesForOrderedCrs(faker, types);
 
-  return identifiers.map((identifier, index) =>
-    buildChangeRequest({
+  return identifiers.map((identifier, index) => {
+    const submitterId = pickActor(faker, submitters);
+    // A reviewer who isn't head/admin rank can't review their own change request, so the
+    // reviewer must differ from the submitter whenever the pools overlap.
+    const reviewerId = pickDifferentActor(faker, reviewers, [submitterId]);
+
+    return buildChangeRequest({
       faker,
       identifier,
       organizationId,
       type: types[index],
       parent,
       link: { kind: 'wbs', wbsElementId: parent.wbsElementId },
-      submitterId: pickActor(faker, submitters),
-      reviewerId: pickActor(faker, reviewers),
+      submitterId,
+      reviewerId,
+      reviewerIsHeadOrAdmin: headOrAdminUserIds.has(reviewerId),
       ownerCandidates: reviewers,
       dateSubmitted: dates[index],
       outcome: outcomes[index],
       reviewWindowEnd: window.end
-    })
-  );
+    });
+  });
 };
 
 export const buildAccountCodeChangeRequests = (
@@ -363,7 +378,8 @@ export const buildAccountCodeChangeRequests = (
   identifiers: number[],
   organizationId: string,
   submitters: SeedCrActor[],
-  reviewers: SeedCrActor[]
+  reviewers: SeedCrActor[],
+  headOrAdminUserIds: Set<string>
 ): Prisma.Change_RequestCreateInput[] => {
   if (identifiers.length === 0) return [];
 
@@ -372,18 +388,22 @@ export const buildAccountCodeChangeRequests = (
   const types = identifiers.map(() => CR_Type.BUDGET);
   const outcomes = outcomesForOrderedCrs(faker, types);
 
-  return identifiers.map((identifier, index) =>
-    buildChangeRequest({
+  return identifiers.map((identifier, index) => {
+    const submitterId = pickActor(faker, submitters);
+    const reviewerId = pickDifferentActor(faker, reviewers, [submitterId]);
+
+    return buildChangeRequest({
       faker,
       identifier,
       organizationId,
       type: CR_Type.BUDGET,
       link: { kind: 'accountCode', accountCodeId: accountCode.accountCodeId },
-      submitterId: pickActor(faker, submitters),
-      reviewerId: pickActor(faker, reviewers),
+      submitterId,
+      reviewerId,
+      reviewerIsHeadOrAdmin: headOrAdminUserIds.has(reviewerId),
       dateSubmitted: dates[index],
       outcome: outcomes[index],
       reviewWindowEnd: window.end
-    })
-  );
+    });
+  });
 };

@@ -262,6 +262,7 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
 
     const submitterPool = [...members, ...leadership, ...heads, ...admins, ...appAdmins];
     const reviewerPool = [...leadership, ...heads, ...admins, ...appAdmins];
+    const headOrAdminUserIds = new Set([...heads, ...admins, ...appAdmins].map(({ userId }) => userId));
 
     if (submitterPool.length === 0 || reviewerPool.length === 0) {
       throw new Error('ChangeRequestProcess requires submitters and reviewers.');
@@ -292,7 +293,8 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
           this.allocateIdentifiers(crCountForProject(this.faker)),
           organizationId,
           submitterPool,
-          reviewerPool
+          reviewerPool,
+          headOrAdminUserIds
         )
       );
 
@@ -315,7 +317,8 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
           this.allocateIdentifiers(crCountForWorkPackage(this.faker)),
           organizationId,
           submitterPool,
-          reviewerPool
+          reviewerPool,
+          headOrAdminUserIds
         );
 
         const acceptedStageGate = workPackageChangeRequestInputs.find(
@@ -361,7 +364,8 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
         this.allocateIdentifiers(crCountForAccountCode(this.faker)),
         organizationId,
         financeSubmitters,
-        financeReviewers
+        financeReviewers,
+        headOrAdminUserIds
       )
     );
 
