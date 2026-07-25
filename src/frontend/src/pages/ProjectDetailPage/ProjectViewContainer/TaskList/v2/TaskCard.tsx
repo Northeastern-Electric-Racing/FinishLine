@@ -10,9 +10,10 @@ import { datePipe, fullNamePipe, listPipe } from '../../../../../utils/pipes';
 import { EditTaskFormInput } from '../TaskFormModal';
 import TaskModal from '../TaskModal';
 import NERModal from '../../../../../components/NERModal';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useHistory, useLocation } from 'react-router-dom';
 import { routes } from '../../../../../utils/routes';
 import { wbsPipe } from '../../../../../utils/pipes';
+import { useProjectsDropdown } from '../../../../../hooks/dropdowns.hooks';
 
 const wpColors = [
   { bg: 'rgba(55,138,221,0.15)', color: '#7dbef4' }, // blue
@@ -29,12 +30,18 @@ export const TaskCard = ({
   task,
   index,
   wbsNum,
+  context,
+  showProjectName = false,
   onDeleteTask,
   onEditTask
 }: {
   task: Task;
   index: number;
-  wbsNum: WbsNumber;
+  wbsNum?: WbsNumber;
+  // the board this card lives on, forwarded to the modal so the edit form knows whether it's WP-scoped
+  context?: 'global' | 'project' | 'workPackage';
+  // shows the owning project's name on the card (used only on the global board, where tasks span projects)
+  showProjectName?: boolean;
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
 }) => {
@@ -42,11 +49,38 @@ export const TaskCard = ({
   const { mutateAsync: editTask } = useEditTask();
   const { mutateAsync: editTaskAssignees } = useEditTaskAssignees();
 
+  // only fetch the projects dropdown list when we actually need to label cards (global board)
+  const { data: dropdownProjects } = useProjectsDropdown(showProjectName);
+  const projectName = showProjectName
+    ? dropdownProjects?.find(
+        (project) =>
+          project.wbsNum.carNumber === task.wbsNum.carNumber && project.wbsNum.projectNumber === task.wbsNum.projectNumber
+      )?.name
+    : undefined;
+
   const user = useCurrentUser();
 
   const toast = useToast();
-  const [showModal, setShowModal] = useState(false);
+  const history = useHistory();
+  const location = useLocation();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // the open task is encoded in the url (?task=<taskId>) so a task modal can be linked to and shared directly
+  const selectedTaskId = new URLSearchParams(location.search).get('task');
+  const showModal = selectedTaskId === task.taskId;
+
+  const openTask = (taskId: string) => {
+    const params = new URLSearchParams(location.search);
+    params.set('task', taskId);
+    history.push(`${location.pathname}?${params.toString()}`);
+  };
+
+  const closeTask = () => {
+    const params = new URLSearchParams(location.search);
+    params.delete('task');
+    const search = params.toString();
+    history.push(search ? `${location.pathname}?${search}` : location.pathname);
+  };
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -100,7 +134,7 @@ export const TaskCard = ({
 
       onEditTask(newTask);
       toast.success('Task edited successfully!');
-      setShowModal(false);
+      closeTask();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -111,7 +145,8 @@ export const TaskCard = ({
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const isOverdue = task.deadline != null && new Date(task.deadline) < new Date() && task.status !== 'DONE';
   const isWpTask = task.wbsNum.workPackageNumber !== 0;
-  const isProjectContext = wbsNum.workPackageNumber === 0;
+  // on the global board there's no board-level wbs, so treat it like the project view (show the WP chip)
+  const isProjectContext = !wbsNum || wbsNum.workPackageNumber === 0;
   const wpColor = wpColors[(task.wbsNum.workPackageNumber - 1) % wpColors.length];
   const activeBlockers = task.blockedBy.filter((blocker) => blocker.status !== TaskStatus.DONE);
 
@@ -120,10 +155,12 @@ export const TaskCard = ({
       <TaskModal
         modalShow={showModal}
         task={task}
-        onHide={() => setShowModal(false)}
+        onHide={closeTask}
         onSubmit={handleEditTask}
         hasEditPermissions={notGuest(user.role)}
-        wbsNum={wbsNum}
+        wbsNum={wbsNum ?? task.wbsNum}
+        context={context}
+        onOpenTask={openTask}
       />
       <NERModal
         open={showDeleteConfirm}
@@ -139,7 +176,7 @@ export const TaskCard = ({
       <Draggable draggableId={String(task.taskId)} index={index}>
         {(provided, snapshot) => (
           <Box sx={{ marginBottom: 1 }} {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
-            <div onClick={() => setShowModal(true)}>
+            <div onClick={() => openTask(task.taskId)}>
               <Card
                 sx={{
                   opacity: snapshot.isDragging ? 0.9 : 1,
@@ -150,6 +187,15 @@ export const TaskCard = ({
                 elevation={snapshot.isDragging ? 3 : 1}
               >
                 <CardContent>
+                  {projectName && (
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: 'block', fontWeight: 600, mb: 0.5, textTransform: 'uppercase', letterSpacing: 0.4 }}
+                    >
+                      {projectName}
+                    </Typography>
+                  )}
                   <Grid container>
                     <Grid item xs={11}>
                       <Typography variant="h5" component="div">

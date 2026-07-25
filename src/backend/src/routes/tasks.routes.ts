@@ -26,6 +26,18 @@ tasksRouter.post(
   intMinZero(body('wbsNum.carNumber').optional()),
   intMinZero(body('wbsNum.projectNumber').optional()),
   intMinZero(body('wbsNum.workPackageNumber').optional()),
+  body('carNumbers').optional().isArray(),
+  intMinZero(body('carNumbers.*').optional()),
+  body('projectWbsNums').optional().isArray(),
+  intMinZero(body('projectWbsNums.*.carNumber').optional()),
+  intMinZero(body('projectWbsNums.*.projectNumber').optional()),
+  intMinZero(body('projectWbsNums.*.workPackageNumber').optional()),
+  body('workPackageWbsNums').optional().isArray(),
+  intMinZero(body('workPackageWbsNums.*.carNumber').optional()),
+  intMinZero(body('workPackageWbsNums.*.projectNumber').optional()),
+  intMinZero(body('workPackageWbsNums.*.workPackageNumber').optional()),
+  body('search').optional().isString(),
+  body('andMemberTeam').optional().isBoolean(),
   validateInputs,
   TasksController.getFilteredTasks
 );

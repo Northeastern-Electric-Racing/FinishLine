@@ -19,6 +19,7 @@ import { DescriptionBulletProcess } from './seed/description-bullet.process.js';
 import { BOMProcess } from './seed/bom.process.js';
 import { TaskProcess } from './seed/tasks.process.js';
 import { WorkPackageProcess } from './seed/work-package.process.js';
+import { ChangeRequestProcess } from './seed/change-request.process.js';
 import { EventProcess } from './seed/event.process.js';
 import { ReimbursementRequestProcess } from './seed/reimbursement-request.process.js';
 
@@ -41,6 +42,7 @@ await new SeedRunner()
     new BOMProcess(),
     new EventProcess(),
     new TaskProcess(),
+    new ChangeRequestProcess(),
     new ReimbursementRequestProcess()
   )
   .run();

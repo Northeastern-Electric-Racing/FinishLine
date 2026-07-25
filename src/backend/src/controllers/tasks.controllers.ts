@@ -99,7 +99,19 @@ export default class TasksController {
 
   static async getFilteredTasks(req: Request, res: Response, next: NextFunction) {
     try {
-      const { memberIds, teamIds, startPeriod, endPeriod, labelIds, wbsNum } = req.body;
+      const {
+        memberIds,
+        teamIds,
+        startPeriod,
+        endPeriod,
+        labelIds,
+        wbsNum,
+        carNumbers,
+        projectWbsNums,
+        workPackageWbsNums,
+        search,
+        andMemberTeam
+      } = req.body;
 
       const tasks = await TasksService.getFilteredTasks(
         {
@@ -108,7 +120,12 @@ export default class TasksController {
           startPeriod: startPeriod ? new Date(startPeriod) : undefined,
           endPeriod: endPeriod ? new Date(endPeriod) : undefined,
           labelIds,
-          wbsNum
+          wbsNum,
+          carNumbers,
+          projectWbsNums,
+          workPackageWbsNums,
+          search,
+          andMemberTeam
         },
         req.organization
       );

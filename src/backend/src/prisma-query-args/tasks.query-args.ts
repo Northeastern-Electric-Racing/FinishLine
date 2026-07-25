@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args.js';
+import { getUserPreviewWithEmailQueryArgs, getUserQueryArgs } from './user.query-args.js';
 
 export type TaskQueryArgs = ReturnType<typeof getTaskQueryArgs>;
 export type TaskPreviewQueryArgs = ReturnType<typeof getTaskPreviewQueryArgs>;
@@ -33,7 +33,7 @@ export const getBlockingWorkPackagesArgs = () =>
   Prisma.validator<Prisma.WBS_ElementDefaultArgs>()({
     include: {
       workPackage: {
-        include: {
+        select: {
           blockedBy: {
             select: {
               carNumber: true,
@@ -48,19 +48,19 @@ export const getBlockingWorkPackagesArgs = () =>
     }
   });
 
-export const getTaskQueryArgs = (organizationId: string) =>
+export const getTaskQueryArgs = () =>
   Prisma.validator<Prisma.TaskDefaultArgs>()({
     include: {
       wbsElement: getBlockingWorkPackagesArgs(),
-      createdBy: getUserQueryArgs(organizationId),
-      deletedBy: getUserQueryArgs(organizationId),
-      assignees: getUserQueryArgs(organizationId),
+      createdBy: getUserPreviewWithEmailQueryArgs(),
+      deletedBy: getUserPreviewWithEmailQueryArgs(),
+      assignees: getUserPreviewWithEmailQueryArgs(),
       labels: getTaskLabelQueryArgs(),
       blockedBy: getTaskBlockedByQueryArgs()
     }
   });
 
-export const getCalendarTaskQueryArgs = (organizationId: string) =>
+export const getCalendarTaskQueryArgs = () =>
   Prisma.validator<Prisma.TaskDefaultArgs>()({
     include: {
       wbsElement: {
@@ -77,9 +77,8 @@ export const getCalendarTaskQueryArgs = (organizationId: string) =>
           workPackage: getBlockingWorkPackagesArgs().include.workPackage
         }
       },
-      createdBy: getUserQueryArgs(organizationId),
-      deletedBy: getUserQueryArgs(organizationId),
-      assignees: getUserQueryArgs(organizationId),
+      createdBy: getUserPreviewWithEmailQueryArgs(),
+      assignees: getUserPreviewWithEmailQueryArgs(),
       labels: getTaskLabelQueryArgs(),
       blockedBy: getTaskBlockedByQueryArgs()
     }
