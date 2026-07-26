@@ -34,6 +34,7 @@ import {
   reimbursementRequestCommentCreateInput,
   reimbursementRequestCreateInput,
   REIMBURSEMENT_CHANCE_PER_RECIPIENT,
+  ReimbursementStatusStep,
   selectMaterialsToTie,
   systemCommentText,
   wbsReimbursementProductReasonCreateInput
@@ -69,6 +70,23 @@ const EXTRA_COMMENT_TEMPLATES = [
   'Let me know if you need anything else for this'
 ];
 
+const REQUEST_CONCURRENCY = 8;
+
+type PlannedRequest = {
+  identifier: number;
+  recipient: FullUser;
+  dateCreated: Date;
+  statusHistory: ReimbursementStatusStep[];
+  dateOfExpense: Date | undefined;
+  indexCode: ReturnType<typeof chooseFundingSource>['indexCode'];
+  accountCode: ReturnType<typeof chooseFundingSource>['accountCode'];
+  vendorId: string;
+  description: string;
+  group: ReimbursementProductSpec<Material>[];
+  productCosts: number[];
+  totalCost: number;
+};
+
 export class ReimbursementRequestProcess extends SeedProcess<ReimbursementRequestInput, ReimbursementRequestOutput> {
   dependencies() {
     return [OrganizationProcess, UsersProcess, ConfigDataProcess, TeamProcess, CarProcess, WorkPackageProcess, BOMProcess];
@@ -94,9 +112,6 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
     const { organizationId } = organization;
     const now = new Date();
 
-    // appAdmins is just the bootstrap user, which has no User_Secure_Settings row - createReimbursementRequest
-    // hard-requires that for the recipient, so it's excluded here (it can still approve/action requests, which
-    // has no such requirement)
     const recipients = [...members, ...leadership, ...heads, ...admins];
     const headApprovers = [...heads, ...admins, ...appAdmins];
     const headApproverIds = new Set(headApprovers.map((user) => user.userId));
@@ -137,12 +152,13 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
       return acc;
     }, {});
 
+    // Phase 1: plan every request synchronously (no DB calls)
+    // Splitting "decide what to create" from "create it" lets it fan the actual writes out
+    // across Promise.all batches.
     let identifier = 0;
-    const reimbursementRequests: Reimbursement_Request[] = [];
-    const reimbursedTotalsByRecipientId = new Map<string, { total: number; latestDate: Date }>();
+    const plannedRequests: PlannedRequest[] = [];
 
     for (const { car, dateRange } of cars) {
-      // skip cars that haven't started yet (e.g. a next-year car still in early planning)
       if (dateRange.start >= now) continue;
 
       const carProjects = (projectsByCarIdWithTimeline[car.carId] ?? []).filter(
@@ -155,8 +171,6 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
         end: clampDate(dateRange.end, { start: dateRange.start, end: now })
       };
 
-      // the current-year car is only halfway through its year, so fewer of its BOM items have
-      // actually been purchased/reimbursed yet compared to a past-year car's full history
       const bomTieChance = car.carId === currentYearCar.car.carId ? CURRENT_YEAR_BOM_TIE_CHANCE : PAST_YEAR_BOM_TIE_CHANCE;
 
       for (const project of carProjects) {
@@ -185,8 +199,6 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
 
           const statusHistory = generateReimbursementStatusHistory(this.faker, dateCreated, now);
 
-          // only a Head+ recipient may set their date of expense immediately at creation; everyone
-          // else has to wait until their request is leadership-approved and add it themselves after
           const approvalStep = statusHistory.find((step) => step.type === Reimbursement_Status_Type.LEADERSHIP_APPROVED);
           const pendingFinanceStep = statusHistory.find((step) => step.type === Reimbursement_Status_Type.PENDING_FINANCE);
 
@@ -213,170 +225,326 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
           );
           const totalCost = productCosts.reduce((sum, cost) => sum + cost, 0);
 
-          const createdRequest = await this.prisma.reimbursement_Request.create({
-            data: reimbursementRequestCreateInput(
-              organizationId,
-              identifier,
-              recipient.userId,
-              vendor.vendorId,
-              indexCode.indexCodeId,
-              accountCode.accountCodeId,
-              totalCost,
-              dateCreated,
-              dateOfExpense,
-              description
-            )
+          plannedRequests.push({
+            identifier,
+            recipient,
+            dateCreated,
+            statusHistory,
+            dateOfExpense,
+            indexCode,
+            accountCode,
+            vendorId: vendor.vendorId,
+            description,
+            group,
+            productCosts,
+            totalCost
           });
-
-          for (let productIndex = 0; productIndex < group.length; productIndex++) {
-            const spec: ReimbursementProductSpec<Material> = group[productIndex];
-
-            const reasonCreateInput =
-              'material' in spec
-                ? wbsReimbursementProductReasonCreateInput(spec.material.wbsElementId)
-                : otherReimbursementProductReasonCreateInput(
-                    this.faker.helpers.arrayElement(reimbursementProductOtherReasons).otherReimbursementProductReasonId
-                  );
-
-            const reason = await this.prisma.reimbursement_Product_Reason.create({ data: reasonCreateInput });
-
-            const productName =
-              'material' in spec ? spec.material.name : this.faker.helpers.arrayElement(GENERAL_SUPPLY_PRODUCT_NAMES);
-
-            await this.prisma.reimbursement_Product.create({
-              data: reimbursementProductCreateInput(
-                productName,
-                productCosts[productIndex],
-                createdRequest.reimbursementRequestId,
-                reason.reimbursementProductReasonId,
-                indexCode.indexCodeId,
-                'material' in spec ? spec.material.materialId : undefined
-              )
-            });
-
-            // createReimbursementProducts forces a tied material to READY_TO_ORDER (then ORDERED once
-            // PENDING_FINANCE is reached) as a side effect - keep the material's own status consistent
-            // with that, rather than the independent status BOMProcess originally rolled for it
-            if ('material' in spec) {
-              await this.prisma.material.update({
-                where: { materialId: spec.material.materialId },
-                data: { status: deriveMaterialStatusAfterTie(statusHistory) }
-              });
-            }
-          }
-
-          for (const step of statusHistory.slice(1)) {
-            const actor = this.pickActorForStage(step.type, recipient, headApprovers, admins, financePersonnel);
-
-            if (step.type === Reimbursement_Status_Type.PENDING_FINANCE) {
-              await this.prisma.receipt.create({
-                data: receiptCreateInput(createdRequest.reimbursementRequestId, recipient.userId, identifier, step.date)
-              });
-            }
-
-            const action = SYSTEM_COMMENT_ACTION_BY_STAGE[step.type];
-            if (action) {
-              await this.prisma.reimbursement_Request_Comment.create({
-                data: reimbursementRequestCommentCreateInput(
-                  createdRequest.reimbursementRequestId,
-                  actor.userId,
-                  systemCommentText(actor.firstName, actor.lastName, action),
-                  step.date
-                )
-              });
-            }
-
-            await this.prisma.reimbursement_Status.create({
-              data: {
-                type: step.type,
-                userId: actor.userId,
-                dateCreated: step.date,
-                reimbursementRequestId: createdRequest.reimbursementRequestId
-              }
-            });
-          }
-
-          if (hasReachedStage(statusHistory, Reimbursement_Status_Type.PENDING_SABO_SUBMISSION)) {
-            await this.prisma.reimbursement_Request.update({
-              where: { reimbursementRequestId: createdRequest.reimbursementRequestId },
-              data: { saboId: `SABO-${identifier}` }
-            });
-          }
-
-          if (
-            dateOfExpense &&
-            !hasReachedStage(statusHistory, Reimbursement_Status_Type.DENIED) &&
-            this.faker.datatype.boolean({ probability: DELIVERY_CHANCE })
-          ) {
-            const dateDelivered = clampDate(
-              this.faker.date.soon({ days: this.faker.number.int({ min: 1, max: 14 }), refDate: dateOfExpense }),
-              { start: dateOfExpense, end: now }
-            );
-
-            await this.prisma.reimbursement_Request.update({
-              where: { reimbursementRequestId: createdRequest.reimbursementRequestId },
-              data: { dateDelivered }
-            });
-
-            await this.prisma.reimbursement_Request_Comment.create({
-              data: reimbursementRequestCommentCreateInput(
-                createdRequest.reimbursementRequestId,
-                recipient.userId,
-                systemCommentText(recipient.firstName, recipient.lastName, 'Marked As Delivered'),
-                dateDelivered
-              )
-            });
-          }
-
-          if (
-            hasReachedStage(statusHistory, Reimbursement_Status_Type.LEADERSHIP_APPROVED) &&
-            this.faker.datatype.boolean({ probability: ASSIGNEE_CHANCE })
-          ) {
-            await this.prisma.reimbursement_Request.update({
-              where: { reimbursementRequestId: createdRequest.reimbursementRequestId },
-              data: { assignee: { connect: { userId: this.faker.helpers.arrayElement(financePersonnel).userId } } }
-            });
-          }
-
-          if (this.faker.datatype.boolean({ probability: EXTRA_COMMENT_CHANCE })) {
-            const commentAuthor = this.faker.helpers.arrayElement([recipient, ...financePersonnel]);
-
-            await this.prisma.reimbursement_Request_Comment.create({
-              data: reimbursementRequestCommentCreateInput(
-                createdRequest.reimbursementRequestId,
-                commentAuthor.userId,
-                this.faker.helpers.arrayElement(EXTRA_COMMENT_TEMPLATES),
-                statusHistory[statusHistory.length - 1].date
-              )
-            });
-          }
-
-          if (hasReachedStage(statusHistory, Reimbursement_Status_Type.REIMBURSED)) {
-            const reimbursedDate = statusHistory.find((step) => step.type === Reimbursement_Status_Type.REIMBURSED)!.date;
-            const existing = reimbursedTotalsByRecipientId.get(recipient.userId);
-
-            reimbursedTotalsByRecipientId.set(recipient.userId, {
-              total: (existing?.total ?? 0) + totalCost,
-              latestDate: existing && existing.latestDate > reimbursedDate ? existing.latestDate : reimbursedDate
-            });
-          }
-
-          reimbursementRequests.push(createdRequest);
         }
       }
     }
 
-    for (const [recipientId, { total, latestDate }] of reimbursedTotalsByRecipientId) {
-      if (!this.faker.datatype.boolean({ probability: REIMBURSEMENT_CHANCE_PER_RECIPIENT })) continue;
+    // Phase 2: execute the writes, N requests at a time
+    const reimbursementRequests: Reimbursement_Request[] = [];
+    const reimbursedTotalsByRecipientId = new Map<string, { total: number; latestDate: Date }>();
 
-      const amount = Math.round((total * this.faker.number.float({ min: 0.5, max: 1 })) / 100) * 100;
+    for (let i = 0; i < plannedRequests.length; i += REQUEST_CONCURRENCY) {
+      const batch = plannedRequests.slice(i, i + REQUEST_CONCURRENCY);
 
-      await this.prisma.reimbursement.create({
-        data: reimbursementCreateInput(organizationId, recipientId, amount, latestDate)
-      });
+      const results = await Promise.all(
+        batch.map((planned) =>
+          this.createReimbursementRequest(
+            planned,
+            organizationId,
+            headApprovers,
+            admins,
+            financePersonnel,
+            reimbursementProductOtherReasons,
+            now
+          )
+        )
+      );
+
+      for (const { createdRequest, reimbursed } of results) {
+        reimbursementRequests.push(createdRequest);
+
+        if (reimbursed) {
+          const existing = reimbursedTotalsByRecipientId.get(reimbursed.recipientId);
+          reimbursedTotalsByRecipientId.set(reimbursed.recipientId, {
+            total: (existing?.total ?? 0) + reimbursed.totalCost,
+            latestDate: existing && existing.latestDate > reimbursed.date ? existing.latestDate : reimbursed.date
+          });
+        }
+      }
     }
 
+    // Phase 3: aggregate Reimbursement rows, one per recipient
+    const reimbursementCreates = [...reimbursedTotalsByRecipientId.entries()]
+      .filter(() => this.faker.datatype.boolean({ probability: REIMBURSEMENT_CHANCE_PER_RECIPIENT }))
+      .map(([recipientId, { total, latestDate }]) => {
+        const amount = Math.round((total * this.faker.number.float({ min: 0.5, max: 1 })) / 100) * 100;
+        return this.prisma.reimbursement.create({
+          data: reimbursementCreateInput(organizationId, recipientId, amount, latestDate)
+        });
+      });
+
+    await Promise.all(reimbursementCreates);
+
     return { reimbursementRequests };
+  }
+
+  /**
+   * Creates a single reimbursement request and everything hanging off it (products, status
+   * history, receipts, comments, delivery/assignee/etc). All the sub-writes below are
+   * independent of each other's created rows - the chronological ordering that matters is
+   * already baked into the `date` fields computed in Phase 1 - so they're fired concurrently
+   * rather than awaited one at a time.
+   */
+  private async createReimbursementRequest(
+    planned: PlannedRequest,
+    organizationId: string,
+    headApprovers: FullUser[],
+    admins: FullUser[],
+    financePersonnel: FullUser[],
+    reimbursementProductOtherReasons: { otherReimbursementProductReasonId: string }[],
+    now: Date
+  ): Promise<{
+    createdRequest: Reimbursement_Request;
+    reimbursed?: { recipientId: string; totalCost: number; date: Date };
+  }> {
+    const {
+      identifier,
+      recipient,
+      dateCreated,
+      statusHistory,
+      dateOfExpense,
+      indexCode,
+      accountCode,
+      vendorId,
+      description,
+      group,
+      productCosts,
+      totalCost
+    } = planned;
+
+    const createdRequest = await this.prisma.reimbursement_Request.create({
+      data: reimbursementRequestCreateInput(
+        organizationId,
+        identifier,
+        recipient.userId,
+        vendorId,
+        indexCode.indexCodeId,
+        accountCode.accountCodeId,
+        totalCost,
+        dateCreated,
+        dateOfExpense,
+        description
+      )
+    });
+
+    // Products (and their reasons + tied-material status updates) are independent of each other.
+    const productWrites = group.map((spec, productIndex) => {
+      const otherReasonId =
+        'material' in spec
+          ? undefined
+          : this.faker.helpers.arrayElement(reimbursementProductOtherReasons).otherReimbursementProductReasonId;
+
+      return this.createReimbursementProduct(
+        spec,
+        productCosts[productIndex],
+        createdRequest.reimbursementRequestId,
+        indexCode.indexCodeId,
+        otherReasonId,
+        statusHistory
+      );
+    });
+
+    // Status-history side effects (receipt / comment / status row) are independent per step,
+    // and independent across steps too - only the dates need to be in order, which they are.
+    const statusWrites = statusHistory
+      .slice(1)
+      .map((step) =>
+        this.applyStatusStep(
+          step,
+          createdRequest.reimbursementRequestId,
+          identifier,
+          recipient,
+          headApprovers,
+          admins,
+          financePersonnel
+        )
+      );
+
+    await Promise.all([...productWrites, ...statusWrites]);
+
+    // Post-processing conditionals: independent of each other, all depend only on createdRequest.
+    const followUps: Promise<unknown>[] = [];
+
+    if (hasReachedStage(statusHistory, Reimbursement_Status_Type.PENDING_SABO_SUBMISSION)) {
+      followUps.push(
+        this.prisma.reimbursement_Request.update({
+          where: { reimbursementRequestId: createdRequest.reimbursementRequestId },
+          data: { saboId: `SABO-${identifier}` }
+        })
+      );
+    }
+
+    if (
+      dateOfExpense &&
+      !hasReachedStage(statusHistory, Reimbursement_Status_Type.DENIED) &&
+      this.faker.datatype.boolean({ probability: DELIVERY_CHANCE })
+    ) {
+      const dateDelivered = clampDate(
+        this.faker.date.soon({ days: this.faker.number.int({ min: 1, max: 14 }), refDate: dateOfExpense }),
+        { start: dateOfExpense, end: now }
+      );
+
+      followUps.push(
+        this.prisma.reimbursement_Request.update({
+          where: { reimbursementRequestId: createdRequest.reimbursementRequestId },
+          data: { dateDelivered }
+        }),
+        this.prisma.reimbursement_Request_Comment.create({
+          data: reimbursementRequestCommentCreateInput(
+            createdRequest.reimbursementRequestId,
+            recipient.userId,
+            systemCommentText(recipient.firstName, recipient.lastName, 'Marked As Delivered'),
+            dateDelivered
+          )
+        })
+      );
+    }
+
+    if (
+      hasReachedStage(statusHistory, Reimbursement_Status_Type.LEADERSHIP_APPROVED) &&
+      this.faker.datatype.boolean({ probability: ASSIGNEE_CHANCE })
+    ) {
+      followUps.push(
+        this.prisma.reimbursement_Request.update({
+          where: { reimbursementRequestId: createdRequest.reimbursementRequestId },
+          data: { assignee: { connect: { userId: this.faker.helpers.arrayElement(financePersonnel).userId } } }
+        })
+      );
+    }
+
+    if (this.faker.datatype.boolean({ probability: EXTRA_COMMENT_CHANCE })) {
+      const commentAuthor = this.faker.helpers.arrayElement([recipient, ...financePersonnel]);
+      followUps.push(
+        this.prisma.reimbursement_Request_Comment.create({
+          data: reimbursementRequestCommentCreateInput(
+            createdRequest.reimbursementRequestId,
+            commentAuthor.userId,
+            this.faker.helpers.arrayElement(EXTRA_COMMENT_TEMPLATES),
+            statusHistory[statusHistory.length - 1].date
+          )
+        })
+      );
+    }
+
+    await Promise.all(followUps);
+
+    const reimbursed = hasReachedStage(statusHistory, Reimbursement_Status_Type.REIMBURSED)
+      ? {
+          recipientId: recipient.userId,
+          totalCost,
+          date: statusHistory.find((step) => step.type === Reimbursement_Status_Type.REIMBURSED)!.date
+        }
+      : undefined;
+
+    return { createdRequest, reimbursed };
+  }
+
+  // Creates one reimbursement product:
+  // its reason must be created first (product needs the id), then the product itself,
+  // then (for tied materials) the material status update - the latter two can run in
+  // parallel once the reason exists.
+  private async createReimbursementProduct(
+    spec: ReimbursementProductSpec<Material>,
+    cost: number,
+    reimbursementRequestId: string,
+    indexCodeId: string,
+    otherReasonId: string | undefined,
+    statusHistory: ReimbursementStatusStep[]
+  ): Promise<void> {
+    const reasonCreateInput =
+      'material' in spec
+        ? wbsReimbursementProductReasonCreateInput(spec.material.wbsElementId)
+        : otherReimbursementProductReasonCreateInput(otherReasonId!);
+
+    const reason = await this.prisma.reimbursement_Product_Reason.create({ data: reasonCreateInput });
+
+    const productName =
+      'material' in spec ? spec.material.name : this.faker.helpers.arrayElement(GENERAL_SUPPLY_PRODUCT_NAMES);
+
+    const productCreate = this.prisma.reimbursement_Product.create({
+      data: reimbursementProductCreateInput(
+        productName,
+        cost,
+        reimbursementRequestId,
+        reason.reimbursementProductReasonId,
+        indexCodeId,
+        'material' in spec ? spec.material.materialId : undefined
+      )
+    });
+
+    const materialUpdate =
+      'material' in spec
+        ? this.prisma.material.update({
+            where: { materialId: spec.material.materialId },
+            data: { status: deriveMaterialStatusAfterTie(statusHistory) }
+          })
+        : Promise.resolve();
+
+    await Promise.all([productCreate, materialUpdate]);
+  }
+
+  // Applies one status-history step's side effects: optional receipt, optional system comment,
+  // and the status row itself - all independent of each other.
+  private async applyStatusStep(
+    step: ReimbursementStatusStep,
+    reimbursementRequestId: string,
+    identifier: number,
+    recipient: FullUser,
+    headApprovers: FullUser[],
+    admins: FullUser[],
+    financePersonnel: FullUser[]
+  ): Promise<void> {
+    const actor = this.pickActorForStage(step.type, recipient, headApprovers, admins, financePersonnel);
+    const writes: Promise<unknown>[] = [];
+
+    if (step.type === Reimbursement_Status_Type.PENDING_FINANCE) {
+      writes.push(
+        this.prisma.receipt.create({
+          data: receiptCreateInput(reimbursementRequestId, recipient.userId, identifier, step.date)
+        })
+      );
+    }
+
+    const action = SYSTEM_COMMENT_ACTION_BY_STAGE[step.type];
+    if (action) {
+      writes.push(
+        this.prisma.reimbursement_Request_Comment.create({
+          data: reimbursementRequestCommentCreateInput(
+            reimbursementRequestId,
+            actor.userId,
+            systemCommentText(actor.firstName, actor.lastName, action),
+            step.date
+          )
+        })
+      );
+    }
+
+    writes.push(
+      this.prisma.reimbursement_Status.create({
+        data: {
+          type: step.type,
+          userId: actor.userId,
+          dateCreated: step.date,
+          reimbursementRequestId
+        }
+      })
+    );
+
+    await Promise.all(writes);
   }
 
   private pickActorForStage(
@@ -389,8 +557,6 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
     switch (stage) {
       case Reimbursement_Status_Type.LEADERSHIP_APPROVED:
         return this.faker.helpers.arrayElement(headApprovers);
-      // in practice this is almost always the recipient marking their own request pending finance
-      // once they've added purchase details; only rarely does an admin do it on their behalf
       case Reimbursement_Status_Type.PENDING_FINANCE:
         return this.faker.datatype.boolean({ probability: 0.85 }) || admins.length === 0
           ? recipient
