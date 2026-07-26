@@ -5,6 +5,7 @@ import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import OnboardingBlock from '../../AdminToolsPage/OnboardingConfig/OnboardingBlock';
 import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
+import NewMemberEventsWidget from './NewMemberEventsWidget';
 
 const OnboardingInfoSection: React.FC = () => {
   const theme = useTheme();
@@ -30,6 +31,9 @@ const OnboardingInfoSection: React.FC = () => {
   return (
     <Grid container item sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
       <OnboardingBlock organization={organization} />
+      <Grid item>
+        <NewMemberEventsWidget />
+      </Grid>
       <Grid item>
         <Box
           sx={{
