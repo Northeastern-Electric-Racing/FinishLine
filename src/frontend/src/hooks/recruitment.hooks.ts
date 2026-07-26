@@ -15,13 +15,20 @@ import {
   getRecruitingFaqs,
   getNewMemberFaqs,
   getAllGuestDefinitions,
-  getAllMilestones
+  getAllMilestones,
+  getNewMemberMilestones,
+  getRecruitingMilestones
 } from '../apis/recruitment.api';
 
 export interface MilestonePayload {
   name: string;
   description: string;
   dateOfEvent: Date;
+}
+
+export interface MilestoneCreatePayload extends MilestonePayload {
+  isOnNewMemberDashboard: boolean;
+  isOnRecruitingDashboard: boolean;
 }
 
 export interface FaqPayload {
@@ -46,9 +53,23 @@ export const useAllMilestones = () => {
   });
 };
 
+export const useNewMemberMilestones = () => {
+  return useQuery<Milestone[], Error>(['milestones', 'new-member'], async () => {
+    const { data } = await getNewMemberMilestones();
+    return data;
+  });
+};
+
+export const useRecruitingMilestones = () => {
+  return useQuery<Milestone[], Error>(['milestones', 'recruiting'], async () => {
+    const { data } = await getRecruitingMilestones();
+    return data;
+  });
+};
+
 export const useCreateMilestone = () => {
   const queryClient = useQueryClient();
-  return useMutation<Milestone, Error, MilestonePayload>(
+  return useMutation<Milestone, Error, MilestoneCreatePayload>(
     ['milestones', 'create'],
     async (payload) => {
       const { data } = await createMilestone(payload);

@@ -1,5 +1,5 @@
 import axios from '../utils/axios';
-import { MilestonePayload, FaqPayload, GuestDefinitionPayload } from '../hooks/recruitment.hooks';
+import { MilestonePayload, MilestoneCreatePayload, FaqPayload, GuestDefinitionPayload } from '../hooks/recruitment.hooks';
 import { apiUrls } from '../utils/urls';
 import { dateToMidnightUTC, GuestDefinition, Milestone } from 'shared';
 import { FrequentlyAskedQuestion } from 'shared';
@@ -10,7 +10,19 @@ export const getAllMilestones = () => {
   });
 };
 
-export const createMilestone = (payload: MilestonePayload) => {
+export const getNewMemberMilestones = () => {
+  return axios.get<Milestone[]>(apiUrls.newMemberMilestones(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const getRecruitingMilestones = () => {
+  return axios.get<Milestone[]>(apiUrls.recruitingMilestones(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const createMilestone = (payload: MilestoneCreatePayload) => {
   return axios.post(apiUrls.milestoneCreate(), {
     ...payload,
     dateOfEvent: dateToMidnightUTC(payload.dateOfEvent)

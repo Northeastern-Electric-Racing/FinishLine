@@ -5,6 +5,7 @@ import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import OnboardingBlock from '../../AdminToolsPage/OnboardingConfig/OnboardingBlock';
 import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
+import NewMemberMilestonesWidget from './NewMemberMilestonesWidget';
 import NewMemberEventsWidget from './NewMemberEventsWidget';
 
 const OnboardingInfoSection: React.FC = () => {
@@ -33,6 +34,9 @@ const OnboardingInfoSection: React.FC = () => {
       <OnboardingBlock organization={organization} />
       <Grid item>
         <NewMemberEventsWidget />
+      </Grid>
+      <Grid item>
+        <NewMemberMilestonesWidget />
       </Grid>
       <Grid item>
         <Box

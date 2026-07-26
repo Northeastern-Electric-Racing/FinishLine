@@ -6,6 +6,11 @@ import RecruitmentController from '../controllers/recruitment.controllers.js';
 const recruitmentRouter = express.Router();
 
 /* Milestone Section */
+
+recruitmentRouter.get('/milestones/new-member', RecruitmentController.getNewMemberMilestones);
+
+recruitmentRouter.get('/milestones/recruiting', RecruitmentController.getRecruitingMilestones);
+
 recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
 
 recruitmentRouter.post(
@@ -13,6 +18,8 @@ recruitmentRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('description')),
   isDateOnly(body('dateOfEvent')),
+  body('isOnNewMemberDashboard').isBoolean(),
+  body('isOnRecruitingDashboard').isBoolean(),
   validateInputs,
   RecruitmentController.createMilestone
 );

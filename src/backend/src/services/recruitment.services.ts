@@ -21,11 +21,45 @@ export default class RecruitmentServices {
   }
 
   /**
+   * Gets all milestones flagged for the given dashboard, for the given organization
+   * @param organization the organization to get milestones for
+   * @param dashboardFlag which dashboard flag to filter milestones by
+   * @returns all milestones from the given organization flagged for the given dashboard
+   */
+  private static async getMilestonesByDashboardFlag(
+    organization: Organization,
+    dashboardFlag: 'isOnNewMemberDashboard' | 'isOnRecruitingDashboard'
+  ) {
+    return prisma.milestone.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null, [dashboardFlag]: true }
+    });
+  }
+
+  /**
+   * Gets all milestones flagged for the new member dashboard, for the given organization
+   * @param organization the organization to get new member milestones for
+   * @returns all new-member-dashboard milestones from the given organization
+   */
+  static async getNewMemberMilestones(organization: Organization) {
+    return this.getMilestonesByDashboardFlag(organization, 'isOnNewMemberDashboard');
+  }
+
+  /**
+   * Gets all milestones flagged for the recruiting dashboard, for the given organization
+   * @param organization the organization to get recruiting milestones for
+   * @returns all recruiting-dashboard milestones from the given organization
+   */
+  static async getRecruitingMilestones(organization: Organization) {
+    return this.getMilestonesByDashboardFlag(organization, 'isOnRecruitingDashboard');
+  }
+
+  /**
    * Creates a new milestone in the given organization
    * @param submitter a user who is making this request
    * @param name the name of the user
    * @param description description of the milestone
    * @param dateOfEvent date of the event of the milestone
+   * @param dashboards which dashboards the milestone should show on
    * @param organizationId the organization Id of the milestone
    * @returns A newly created milestone
    */
@@ -34,6 +68,7 @@ export default class RecruitmentServices {
     name: string,
     description: string,
     dateOfEvent: Date,
+    dashboards: { isOnNewMemberDashboard: boolean; isOnRecruitingDashboard: boolean },
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
@@ -44,6 +79,8 @@ export default class RecruitmentServices {
         name,
         description,
         dateOfEvent,
+        isOnNewMemberDashboard: dashboards.isOnNewMemberDashboard,
+        isOnRecruitingDashboard: dashboards.isOnRecruitingDashboard,
         organizationId: organization.organizationId,
         userCreatedId: submitter.userId
       }

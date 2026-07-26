@@ -6,17 +6,17 @@ import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
-import { useAllMilestones } from '../../../hooks/recruitment.hooks';
+import { useRecruitingMilestones } from '../../../hooks/recruitment.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { isPastEvent } from '../../../utils/datetime.utils';
 import { formatDateOnly } from 'shared';
 
 const TimelineSection = () => {
-  const { isLoading, isError, error, data: milestones } = useAllMilestones();
+  const { isLoading, isError, error, data: milestones } = useRecruitingMilestones();
 
-  if (isLoading || !milestones) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
+  if (isLoading || !milestones) return <LoadingIndicator />;
 
   const sortedMilestones = milestones
     .map((milestone) => ({

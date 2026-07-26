@@ -11,15 +11,34 @@ export default class RecruitmentController {
     }
   }
 
+  static async getNewMemberMilestones(req: Request, res: Response, next: NextFunction) {
+    try {
+      const newMemberMilestones = await RecruitmentServices.getNewMemberMilestones(req.organization);
+      res.status(200).json(newMemberMilestones);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getRecruitingMilestones(req: Request, res: Response, next: NextFunction) {
+    try {
+      const recruitingMilestones = await RecruitmentServices.getRecruitingMilestones(req.organization);
+      res.status(200).json(recruitingMilestones);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createMilestone(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, description, dateOfEvent } = req.body;
+      const { name, description, dateOfEvent, isOnNewMemberDashboard, isOnRecruitingDashboard } = req.body;
 
       const milestone = await RecruitmentServices.createMilestone(
         req.currentUser,
         name,
         description,
         dateOfEvent,
+        { isOnNewMemberDashboard, isOnRecruitingDashboard },
         req.organization
       );
       res.status(200).json(milestone);
