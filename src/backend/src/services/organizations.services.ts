@@ -7,8 +7,7 @@ import {
   RoleEnum,
   isAdmin,
   isAtLeastRank,
-  User,
-  OrganizationPreview
+  User
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -28,8 +27,8 @@ import { projectPreviewTransformer } from '../transformers/projects.transformer.
 import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { userTransformer } from '../transformers/user.transformer.js';
 import { organizationTransformer } from '../transformers/organizationTransformer.js';
-import { getChannelName } from '../integrations/slack.js';
-import { getNotificationChannelAccessForUser } from '../utils/slack.utils.js';
+import { getBotChannels } from '../integrations/slack.js';
+import { isSlackChannelMember } from '../utils/slack.utils.js';
 
 export default class OrganizationsService {
   /**
@@ -509,167 +508,26 @@ export default class OrganizationsService {
   }
 
   /**
-   * Gets the organization's list of Slack channels that events can notify, resolving each
-   * channel's name live from Slack. Admin-only: use getAvailableNotificationChannelsForUser
-   * to get the channels a specific user can actually use.
-   * @param submitter the user making the request
-   * @param organizationId the organization to get the notification channels for
-   * @returns the notification channels, each with its Slack channel id and current name
-   * @throws AccessDeniedAdminOnlyException if the submitter is not an admin
+   * Gets every Slack channel the bot is currently a member of, each annotated with whether the
+   * given user is also a member of it (public or private). Both are resolved live from Slack,
+   * so channel names and membership always reflect the current state (e.g. a rename or the bot
+   * leaving a channel shows up immediately) rather than a stored snapshot. Channels the user
+   * can't access are still included (with hasAccess: false) so callers can display channels
+   * that are already selected on an event without dropping them.
+   * @param userId the user requesting the available channels
+   * @returns every channel the bot can see, each with its Slack channel id, current name, and the user's access
    */
-  static async getNotificationChannels(submitter: User, organizationId: string): Promise<NotificationChannelPreview[]> {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('view notification channels');
-    }
-
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    if (organization.dateDeleted) {
-      throw new DeletedException('Organization', organizationId);
-    }
+  static async getAvailableNotificationChannelsForUser(userId: string): Promise<NotificationChannelPreview[]> {
+    const slackId = await getUserSlackId(userId);
+    const botChannels = await getBotChannels();
 
     return Promise.all(
-      organization.notificationChannelIds.map(async (slackChannelId) => ({
-        slackChannelId,
-        name: await getChannelName(slackChannelId)
+      botChannels.map(async (channel) => ({
+        slackChannelId: channel.id,
+        name: channel.name,
+        hasAccess: await isSlackChannelMember(slackId, channel.id)
       }))
     );
-  }
-
-  /**
-   * Adds a Slack channel that events can notify
-   * @param submitter the user making the change
-   * @param organizationId the organization to update
-   * @param slackChannelId the Slack channel id to add
-   * @returns the added notification channel
-   * @throws AccessDeniedAdminOnlyException if the submitter is not an admin
-   * @throws HttpException if the channel is already in the list, or if its name can't be resolved
-   */
-  static async createNotificationChannel(
-    submitter: User,
-    organizationId: string,
-    slackChannelId: string
-  ): Promise<NotificationChannelPreview> {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('create notification channel');
-    }
-
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    if (organization.dateDeleted) {
-      throw new DeletedException('Organization', organizationId);
-    }
-
-    if (organization.notificationChannelIds.includes(slackChannelId)) {
-      throw new HttpException(400, 'That Slack channel has already been added.');
-    }
-
-    const name = await getChannelName(slackChannelId);
-
-    if (!name) {
-      throw new HttpException(
-        400,
-        'Could not resolve that Slack channel. Check the channel id and make sure the Slack bot has been added to it.'
-      );
-    }
-
-    await prisma.organization.update({
-      where: { organizationId },
-      data: { notificationChannelIds: { push: slackChannelId } }
-    });
-
-    return { slackChannelId, name };
-  }
-
-  /**
-   * Gets the organization's full list of Slack channels that events can notify, each annotated
-   * with whether the given user is actually a member of it (public or private), resolved live
-   * from Slack. Channels the user can't access are still included (with hasAccess: false) so
-   * callers can display channels that are already selected on an event without dropping them.
-   * @param userId the user requesting the available channels
-   * @param organizationId the organization to get the notification channels for
-   * @returns every notification channel for the org, each with its Slack channel id, current name, and the user's access
-   */
-  static async getAvailableNotificationChannelsForUser(
-    userId: string,
-    organizationId: string
-  ): Promise<NotificationChannelPreview[]> {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    if (organization.dateDeleted) {
-      throw new DeletedException('Organization', organizationId);
-    }
-
-    const slackId = await getUserSlackId(userId);
-    const channels = await Promise.all(
-      organization.notificationChannelIds.map(async (slackChannelId): Promise<NotificationChannelPreview | undefined> => {
-        const { channelName, hasAccess } = await getNotificationChannelAccessForUser(slackId, slackChannelId);
-        return channelName ? { slackChannelId, name: channelName, hasAccess } : undefined;
-      })
-    );
-
-    return channels.filter((channel): channel is NotificationChannelPreview => !!channel);
-  }
-
-  /**
-   * Removes a Slack channel from the organization's notification channel list
-   * @param submitter the user making the change
-   * @param organizationId the organization to update
-   * @param slackChannelId the Slack channel id to remove
-   * @throws AccessDeniedAdminOnlyException if the submitter is not an admin
-   * @throws NotFoundException if the channel isn't in the list
-   */
-  static async deleteNotificationChannel(
-    submitter: User,
-    organizationId: string,
-    slackChannelId: string
-  ): Promise<OrganizationPreview> {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('delete notification channel');
-    }
-
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    if (organization.dateDeleted) {
-      throw new DeletedException('Organization', organizationId);
-    }
-
-    if (!organization.notificationChannelIds.includes(slackChannelId)) {
-      throw new NotFoundException('Notification Channel', slackChannelId);
-    }
-
-    const deletedOrg = await prisma.organization.update({
-      where: { organizationId },
-      data: {
-        notificationChannelIds: { set: organization.notificationChannelIds.filter((id) => id !== slackChannelId) }
-      }
-    });
-
-    return organizationTransformer(deletedOrg);
   }
 
   /**

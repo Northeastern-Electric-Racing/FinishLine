@@ -19,6 +19,7 @@ import { DescriptionBulletProcess } from './seed/description-bullet.process.js';
 import { BOMProcess } from './seed/bom.process.js';
 import { TaskProcess } from './seed/tasks.process.js';
 import { WorkPackageProcess } from './seed/work-package.process.js';
+import { ChangeRequestProcess } from './seed/change-request.process.js';
 import { EventProcess } from './seed/event.process.js';
 
 const prisma = new PrismaClient();
@@ -39,7 +40,8 @@ await new SeedRunner()
     new DescriptionBulletProcess(),
     new BOMProcess(),
     new EventProcess(),
-    new TaskProcess()
+    new TaskProcess(),
+    new ChangeRequestProcess()
   )
   .run();
 
