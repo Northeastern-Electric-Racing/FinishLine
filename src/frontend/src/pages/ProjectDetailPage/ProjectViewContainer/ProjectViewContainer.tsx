@@ -239,7 +239,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <ChangeRequestTab wbsElement={project} />
       ) : tab === 6 ? (
         <PartsReviewPage project={project} />
-      ) : tab === 8 ? (
+      ) : tab === 7 ? (
         <ProjectSpendingHistory wbsNum={project.wbsNum} />
       ) : (
         <ProjectRulesTab project={project} />

@@ -20,6 +20,18 @@ export const useRuleTreeNavigation = (rules: Rule[]) => {
   const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
   // list of rules in this view to determine if a referenced rule is able to be scrolled to (for project view)
   const ruleIds = useMemo(() => new Set(rules.map((r) => r.ruleId)), [rules]);
+  // ids of rules that are expandable (have sub-rules)
+  const expandableIds = useMemo(() => new Set(rules.filter((r) => r.subRuleIds.length > 0).map((r) => r.ruleId)), [rules]);
+
+  const areAllExpanded = expandableIds.size > 0 && [...expandableIds].every((id) => expandedIds.has(id));
+
+  const expandAll = useCallback(() => {
+    setExpandedIds(new Set(expandableIds));
+  }, [expandableIds]);
+
+  const collapseAll = useCallback(() => {
+    setExpandedIds(new Set());
+  }, []);
 
   // flips a rule's expanded/collapsed state
   const toggleExpand = useCallback((ruleId: string) => {
@@ -56,5 +68,5 @@ export const useRuleTreeNavigation = (rules: Rule[]) => {
     }
   }, [pendingScrollId, expandedIds]);
 
-  return { expandedIds, toggleExpand, navigateToRule };
+  return { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded };
 };
