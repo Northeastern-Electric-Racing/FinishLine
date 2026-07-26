@@ -29,12 +29,10 @@ const SetUserPreferences: React.FC<SetUserPreferencesProps> = ({ userSettings })
   });
 
   if (isLoading) return <LoadingIndicator />;
-  //if (isError) return <ErrorPage message={error?.message} />;
 
   const onSubmit = async ({ slackId }: { slackId: string }) => {
     try {
       await mutateAsync({ ...userSettings, slackId });
-      window.location.reload();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);

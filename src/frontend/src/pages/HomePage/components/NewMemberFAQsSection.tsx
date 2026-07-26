@@ -7,9 +7,10 @@ import React from 'react';
 
 const NewMemberFAQsSection = () => {
   const { isLoading, isError, error, data: faqs } = useNewMemberFaqs();
-  if (isLoading || !faqs) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error.message} />;
+
+  if (isLoading || !faqs) return <LoadingIndicator />;
 
   if (faqs.length === 0) {
     return (
