@@ -12,7 +12,8 @@ import { AccessDeniedException, InvalidEventTypeConfigurationException, NotFound
 import prisma from '../prisma/prisma.js';
 import { getEventQueryArgs } from '../prisma-query-args/event.query-args.js';
 import { eventTransformer } from '../transformers/calendar.transformer.js';
-import { getNotificationChannelAccessForUser } from './slack.utils.js';
+import { isSlackChannelMember } from './slack.utils.js';
+import { getBotChannels } from '../integrations/slack.js';
 import { getUserSlackId } from './users.utils.js';
 
 export function buildScheduledTimesOverlap(start?: Date, end?: Date): Prisma.Schedule_SlotListRelationFilter | undefined {
@@ -347,33 +348,30 @@ export const findMatchingTimeOfDaySlots = <T extends { scheduleSlotId: string; s
 };
 
 /**
- * Ensures the given notification channel ids belong to the organization and that the given
- * user is a member of every one of them, public or private. Membership is resolved live from
- * Slack.
- * @param organization The organization the notification channels must belong to
+ * Ensures the given notification channel ids are channels the Slack bot can currently see and
+ * that the given user is a member of every one of them, public or private. Both are resolved
+ * live from Slack, so a channel the bot has since left or that no longer exists is rejected.
  * @param submitter The user selecting the notification channels
  * @param notificationChannelIds The notification channel ids to validate
- * @throws NotFoundException if a channel id isn't one of the organization's notification channels
+ * @throws NotFoundException if a channel id isn't currently visible to the Slack bot
  * @throws AccessDeniedException if the user isn't a member of one of the selected channels
  */
-export const validateNotificationChannelIds = async (
-  organization: Organization,
-  submitter: User,
-  notificationChannelIds: string[]
-) => {
+export const validateNotificationChannelIds = async (submitter: User, notificationChannelIds: string[]) => {
   if (notificationChannelIds.length === 0) return;
 
-  const missingIds = notificationChannelIds.filter((id) => !organization.notificationChannelIds.includes(id));
+  const botChannels = await getBotChannels();
+  const botChannelIds = new Set(botChannels.map((channel) => channel.id));
+  const missingIds = notificationChannelIds.filter((id) => !botChannelIds.has(id));
   if (missingIds.length > 0) {
     throw new NotFoundException('Notification Channel', missingIds.join(', '));
   }
 
   const submitterSlackId = await getUserSlackId(submitter.userId);
   const accessResults = await Promise.all(
-    notificationChannelIds.map((channelId) => getNotificationChannelAccessForUser(submitterSlackId, channelId))
+    notificationChannelIds.map((channelId) => isSlackChannelMember(submitterSlackId, channelId))
   );
 
-  if (accessResults.some((result) => !result.hasAccess)) {
+  if (accessResults.some((hasAccess) => !hasAccess)) {
     throw new AccessDeniedException('You are not a member of one or more of the selected notification channels');
   }
 };

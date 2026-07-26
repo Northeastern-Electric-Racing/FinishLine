@@ -22,10 +22,7 @@ import {
   setOrganizationNewMemberImage,
   getOrganizationNewMemberImage,
   setOrganizationPlatformLogoImage,
-  getNotificationChannels,
-  getAvailableNotificationChannels,
-  createNotificationChannel,
-  deleteNotificationChannel
+  getNotificationChannels
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/organizations.api';
 
@@ -303,45 +300,6 @@ export const useNotificationChannels = () => {
     const { data } = await getNotificationChannels();
     return data;
   });
-};
-
-export const useAvailableNotificationChannels = () => {
-  return useQuery<NotificationChannelPreview[], Error>(['organizations', 'notification-channels', 'available'], async () => {
-    const { data } = await getAvailableNotificationChannels();
-    return data;
-  });
-};
-
-export const useCreateNotificationChannel = () => {
-  const queryClient = useQueryClient();
-  return useMutation<NotificationChannelPreview, Error, string>(
-    ['organizations', 'notification-channels'],
-    async (slackChannelId: string) => {
-      const { data } = await createNotificationChannel(slackChannelId);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['organizations', 'notification-channels']);
-      }
-    }
-  );
-};
-
-export const useDeleteNotificationChannel = () => {
-  const queryClient = useQueryClient();
-  return useMutation<{ slackChannelId: string }, Error, string>(
-    ['organizations', 'notification-channels'],
-    async (slackChannelId: string) => {
-      const { data } = await deleteNotificationChannel(slackChannelId);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['organizations', 'notification-channels']);
-      }
-    }
-  );
 };
 
 export const useGetFinanceDelegates = () => {
