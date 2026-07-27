@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useHomePageContext } from '../../app/HomePageContext';
 import ChecklistSection from './components/ChecklistSection';
-import OnboardingInfoSection from './components/OnboardingInfoSection';
 import ConfirmOnboardingChecklistModal from './components/ConfirmOnboardingChecklistModal';
 import { NERButton } from '../../components/NERButton';
 import { useCheckedChecklists, useUsersChecklists, useChecklistProgress } from '../../hooks/onboarding.hook';
@@ -12,12 +11,13 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import OnboardingProgressBar from '../../components/OnboardingProgressBar';
-import NewMemberFAQsSection from './components/NewMemberFAQsSection';
 import ErrorPage from '../ErrorPage';
 import { useCompleteOnboarding } from '../../hooks/team-types.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 
 const OnboardingHomePage = () => {
   const history = useHistory();
+  const auth = useAuth();
   const [isModalOpen, setModalOpen] = useState(false);
   const { setCurrentHomePage } = useHomePageContext();
   const { data: organization, isLoading: organizationIsLoading } = useCurrentOrganization();
@@ -74,6 +74,9 @@ const OnboardingHomePage = () => {
 
   const handleConfirmModal = async () => {
     await completeOnboarding();
+    // the logged-in user object is plain client state, not refetched automatically,
+    // so it needs to be refreshed here for Home.tsx's routing to see the completed onboarding status
+    await auth.signInCurrent();
     history.push(routes.HOME);
   };
 
@@ -123,7 +126,6 @@ const OnboardingHomePage = () => {
           <Grid
             item
             xs={12}
-            md={8}
             sx={{
               maxHeight: '82vh',
               overflow: 'auto',
@@ -133,15 +135,6 @@ const OnboardingHomePage = () => {
             }}
           >
             <ChecklistSection usersChecklists={usersChecklists} checkedChecklists={checkedChecklists} />
-          </Grid>
-          <Grid container item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
-            <Grid item>
-              <OnboardingInfoSection />
-            </Grid>
-            <Grid item>
-              <Typography sx={{ fontSize: '1.5em', mb: 1 }}>FAQs</Typography>
-              <NewMemberFAQsSection />
-            </Grid>
           </Grid>
         </Grid>
       </Grid>

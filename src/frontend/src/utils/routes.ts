@@ -17,6 +17,7 @@ const HOME_PNM = HOME + `/pnm`;
 const HOME_SELECT_SUBTEAM = HOME + `/select-subteam`;
 const HOME_MEMBER = HOME + `/member`;
 const HOME_ONBOARDING = HOME + `/onboarding`;
+const HOME_NEW_MEMBER = HOME + `/new-member`;
 
 /**************** Finance Section ****************/
 const FINANCE = `/finance`;
@@ -92,6 +93,7 @@ export const routes = {
   HOME_PNM,
   HOME_SELECT_SUBTEAM,
   HOME_ONBOARDING,
+  HOME_NEW_MEMBER,
   HOME_MEMBER,
 
   TEAMS,

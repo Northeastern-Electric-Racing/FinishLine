@@ -8,6 +8,7 @@ import {
   Task,
   TaskPriority,
   TaskStatus,
+  Team,
   UserSettings,
   UserWithRole,
   WorkPackage
@@ -53,6 +54,8 @@ export const mockUseSingleUserSettings = (settings?: UserSettings) =>
 
 export const mockUseUsersFavoriteProjects = (projects?: Project[]) =>
   mockUseQueryResult<Project[]>(false, false, projects || [], new Error());
+
+export const mockUseGetUsersTeams = (teams?: Team[]) => mockUseQueryResult<Team[]>(false, false, teams || [], new Error());
 
 export const mockEditProjectReturnValue = mockUseMutationResult<Task>(
   false,
