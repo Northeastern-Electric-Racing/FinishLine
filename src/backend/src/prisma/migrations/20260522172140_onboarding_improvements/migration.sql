@@ -85,3 +85,7 @@ ALTER TABLE "Team_Join_Request" ADD CONSTRAINT "Team_Join_Request_reviewedByUser
 -- AlterTable
 ALTER TABLE "Organization" ADD COLUMN "newMemberSlackChannelId" TEXT,
 ADD COLUMN "newMemberSlackChannelName" TEXT;
+
+-- AlterTable
+ALTER TABLE "Link_Type" ADD COLUMN "isOnOnboardingDashboard" BOOLEAN NOT NULL DEFAULT false;
+

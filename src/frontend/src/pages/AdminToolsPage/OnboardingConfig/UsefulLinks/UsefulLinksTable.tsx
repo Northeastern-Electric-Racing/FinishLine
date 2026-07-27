@@ -28,9 +28,11 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 interface UsefulLinksTableProps {
   isOnGuestHomePage?: boolean;
+  isOnNewMemberDashboard?: boolean;
+  isOnOnboardingDashboard?: boolean;
 }
 
-const UsefulLinksTable = ({ isOnGuestHomePage }: UsefulLinksTableProps) => {
+const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboardingDashboard }: UsefulLinksTableProps) => {
   const currentUser = useCurrentUser();
   const {
     data: links,
@@ -54,17 +56,22 @@ const UsefulLinksTable = ({ isOnGuestHomePage }: UsefulLinksTableProps) => {
     setLinkToDelete(undefined);
   };
 
-  const linkTypes = linkTypesBeforeFilter.filter((linkType) =>
-    isOnGuestHomePage ? linkType.isOnGuestHomePage : !linkType.isOnGuestHomePage
-  );
+  const matchesDashboard = (linkType?: {
+    isOnGuestHomePage: boolean;
+    isOnNewMemberDashboard: boolean;
+    isOnOnboardingDashboard: boolean;
+  }) => {
+    if (!linkType) return false;
+    if (isOnNewMemberDashboard) return linkType.isOnNewMemberDashboard;
+    if (isOnOnboardingDashboard) return linkType.isOnOnboardingDashboard;
+    if (isOnGuestHomePage) return linkType.isOnGuestHomePage;
+    return !linkType.isOnGuestHomePage && !linkType.isOnNewMemberDashboard && !linkType.isOnOnboardingDashboard;
+  };
 
-  const usefulLinks = links.filter((link) =>
-    isOnGuestHomePage ? link.linkType?.isOnGuestHomePage : !link.linkType?.isOnGuestHomePage
-  );
+  const linkTypes = linkTypesBeforeFilter.filter(matchesDashboard);
 
-  console.log('Links: ', links);
-  console.log('Links after filter: ', usefulLinks);
-  console.log('isOnGuestHomePage:', isOnGuestHomePage);
+  const usefulLinks = links.filter((link) => matchesDashboard(link.linkType));
+
   return (
     <Box>
       <CreateUsefulLinkModal

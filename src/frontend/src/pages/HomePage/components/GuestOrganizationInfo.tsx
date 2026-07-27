@@ -43,7 +43,7 @@ const GuestOrganizationInfo = () => {
   if (!links || usefulLinksIsLoading || !linkTypes || linkTypesIsLoading) return <LoadingIndicator />;
   if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
 
-  const usefulLinks = links?.filter((link) => !link.linkType.isOnGuestHomePage);
+  const usefulLinks = links?.filter((link) => link.linkType.isOnGuestHomePage);
 
   return (
     <Card

@@ -1,15 +1,21 @@
-import { Grid, Typography, ListItem, List, useTheme, Button } from '@mui/material';
+import { Grid, Typography, ListItem, List, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import OnboardingBlock from '../../AdminToolsPage/OnboardingConfig/OnboardingBlock';
-import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
 import NewMemberMilestonesWidget from './NewMemberMilestonesWidget';
 import NewMemberEventsWidget from './NewMemberEventsWidget';
 import NewMemberSlackWidget from './NewMemberSlackWidget';
+import NewMemberUsefulLinksWidget from './NewMemberUsefulLinksWidget';
 
-const OnboardingInfoSection: React.FC = () => {
+interface OnboardingInfoSectionProps {
+  /** 'full' (default) shows every widget, for the new member dashboard. 'checklist' shows only
+   * the onboarding block, useful links, and contacts, for the onboarding checklist page. */
+  variant?: 'full' | 'checklist';
+}
+
+const OnboardingInfoSection: React.FC<OnboardingInfoSectionProps> = ({ variant = 'full' }) => {
   const theme = useTheme();
   const {
     data: organization,
@@ -18,69 +24,32 @@ const OnboardingInfoSection: React.FC = () => {
     error: organizationError
   } = useCurrentOrganization();
 
-  const { data: usefulLinks, isError: linksIsError, error: linksError, isLoading: linksIsLoading } = useAllUsefulLinks();
-
   if (organizationIsError) {
     return <ErrorPage message={organizationError.message} />;
   }
 
-  if (linksIsError) return <ErrorPage message={linksError?.message} />;
-
-  if (!organization || organizationIsLoading || !usefulLinks || linksIsLoading) return <LoadingIndicator />;
-
-  const links = usefulLinks?.filter((link) => !link.linkType.isOnGuestHomePage);
+  if (!organization || organizationIsLoading) return <LoadingIndicator />;
 
   return (
     <Grid container item sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
       <OnboardingBlock organization={organization} />
-      <Grid item>
-        <NewMemberEventsWidget />
-      </Grid>
-      <Grid item>
-        <NewMemberMilestonesWidget />
-      </Grid>
-      <Grid item>
-        <NewMemberSlackWidget />
-      </Grid>
-      <Grid item>
-        <Box
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: '10px',
-            width: '100%',
-            overflow: 'hidden',
-            overflowY: 'auto',
-            paddingBottom: 2,
-            minHeight: '150px'
-          }}
-        >
-          <Typography variant="h5" sx={{ mb: 2, px: 2, pt: 2 }}>
-            Useful Links
-          </Typography>
-          <Grid container spacing={2} justifyContent="center" sx={{ px: 2 }}>
-            {links.map((link) => {
-              return (
-                <Grid item xs={6}>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    sx={{
-                      backgroundColor: '#616161',
-                      color: 'white',
-                      borderRadius: '10px',
-                      padding: 2.5,
-                      '&:hover': { backgroundColor: '#ef4345' }
-                    }}
-                    href={link.url}
-                    target="_blank"
-                  >
-                    {link.linkType.name}
-                  </Button>
-                </Grid>
-              );
-            })}
+      {variant === 'full' && (
+        <>
+          <Grid item>
+            <NewMemberEventsWidget />
           </Grid>
-        </Box>
+          <Grid item>
+            <NewMemberMilestonesWidget />
+          </Grid>
+          <Grid item>
+            <NewMemberSlackWidget />
+          </Grid>
+        </>
+      )}
+      <Grid item>
+        <NewMemberUsefulLinksWidget
+          dashboardFlag={variant === 'checklist' ? 'isOnOnboardingDashboard' : 'isOnNewMemberDashboard'}
+        />
       </Grid>
       <Grid item>
         <Box
