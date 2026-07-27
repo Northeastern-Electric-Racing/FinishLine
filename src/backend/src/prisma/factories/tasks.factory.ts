@@ -85,6 +85,17 @@ const TASK_TITLE_OBJECTS = [
   'recruitment UI'
 ];
 
+const TASK_LABELS = [
+  { name: 'Documentation', colorHexCode: '#EC4899' },
+  { name: 'New-Member Task', colorHexCode: '#283593' },
+  { name: 'Own', colorHexCode: '#283593' },
+  { name: 'Assist', colorHexCode: '#283593' },
+  { name: 'Observe', colorHexCode: '#283593' },
+  { name: 'Quick & Easy', colorHexCode: '#66BB6A' },
+  { name: 'Collaborative', colorHexCode: '#F0B429' },
+  { name: 'Intense', colorHexCode: '#E5534B' }
+];
+
 const taskTitle = (faker: Faker): string => {
   if (faker.datatype.boolean({ probability: 0.7 })) {
     return faker.helpers.arrayElement(TASK_TITLE_OBJECTS);
@@ -180,17 +191,6 @@ export const assigneeCountForTask = (faker: Faker): number =>
     { weight: 25, value: 2 },
     { weight: 5, value: 3 }
   ]);
-
-const TASK_LABELS = [
-  { name: 'Documentation', colorHexCode: '#EC4899' },
-  { name: 'New-Member Task', colorHexCode: '#283593' },
-  { name: 'Own', colorHexCode: '#283593' },
-  { name: 'Assist', colorHexCode: '#283593' },
-  { name: 'Observe', colorHexCode: '#283593' },
-  { name: 'Quick & Easy', colorHexCode: '#66BB6A' },
-  { name: 'Collaborative', colorHexCode: '#F0B429' },
-  { name: 'Intense', colorHexCode: '#E5534B' }
-];
 
 export const taskLabelCreateInputs = (organizationId: string, userCreatedId: string): Prisma.Task_LabelCreateInput[] =>
   TASK_LABELS.map(({ name, colorHexCode }) => ({

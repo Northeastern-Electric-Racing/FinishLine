@@ -126,13 +126,14 @@ const buildStandardProposedChanges = (
         [parent.leadId, parent.managerId].filter((id): id is string => id !== undefined)
       );
 
-  const managerId = keepSameActors
-    ? parent.managerId
-    : pickDifferentActor(
-        faker,
-        ownerCandidates,
-        [parent.leadId, parent.managerId, leadId].filter((id): id is string => id !== undefined)
-      );
+  const managerId =
+    keepSameActors && leadId !== parent.managerId
+      ? parent.managerId
+      : pickDifferentActor(
+          faker,
+          ownerCandidates,
+          [parent.leadId, parent.managerId, leadId].filter((id): id is string => id !== undefined)
+        );
 
   const baseWbsProposal = {
     name: maybeReviseName(faker, parent.name),
