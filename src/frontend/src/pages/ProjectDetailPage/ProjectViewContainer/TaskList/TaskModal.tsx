@@ -3,12 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { fullNamePipe, datePipe } from '../../../../utils/pipes';
-import { Task, WbsNumber } from 'shared';
-import { Box, Chip, Grid, Typography } from '@mui/material';
+import { fullNamePipe, datePipe, wbsPipe } from '../../../../utils/pipes';
+import { Task, TaskStatus, WbsNumber } from 'shared';
+import { Box, Button, Chip, Grid, IconButton, Link, Tooltip, Typography } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
+import { routes } from '../../../../utils/routes';
 import TaskFormModal, { EditTaskFormInput } from './TaskFormModal';
 import NERModal from '../../../../components/NERModal';
+import { useToast } from '../../../../hooks/toasts.hooks';
 
 interface TaskModalProps {
   task: Task;
@@ -17,14 +21,35 @@ interface TaskModalProps {
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
   hasEditPermissions: boolean;
   wbsNum: WbsNumber;
+  // the board this task was opened from, so the edit form knows whether it's WP-scoped
+  context?: 'global' | 'project' | 'workPackage';
+  // opens another task's modal by taskId (used by the "Blocked By" task links)
+  onOpenTask: (taskId: string) => void;
 }
 
-const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit, hasEditPermissions, wbsNum }) => {
+const TaskModal: React.FC<TaskModalProps> = ({
+  task,
+  modalShow,
+  onHide,
+  onSubmit,
+  hasEditPermissions,
+  wbsNum,
+  context,
+  onOpenTask
+}) => {
   const [isEditMode, setIsEditMode] = useState(false);
+  const toast = useToast();
+
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}${window.location.pathname}?task=${task.taskId}`;
+    navigator.clipboard.writeText(url);
+    toast.success('Task link copied to clipboard!');
+  };
 
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const isWpTask = task.wbsNum.workPackageNumber !== 0;
-  const isWpContext = wbsNum.workPackageNumber !== 0;
+  const isWpContext = context === 'workPackage';
+  const activeBlockers = task.blockedBy.filter((blocker) => blocker.status !== TaskStatus.DONE);
 
   const ViewModal: React.FC = () => {
     return (
@@ -39,6 +64,26 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
             setIsEditMode(true);
           }
         }}
+        actionsLeftChildren={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Tooltip title="Copy link to this task">
+              <IconButton onClick={handleCopyLink}>
+                <ContentCopyIcon />
+              </IconButton>
+            </Tooltip>
+            {/* on the global board only, offer a shortcut to the task's own project/work package task page */}
+            {context === 'global' && (
+              <Button
+                variant="outlined"
+                component={RouterLink}
+                to={`${routes.PROJECTS}/${wbsPipe(task.wbsNum)}/tasks`}
+                onClick={onHide}
+              >
+                {isWpTask ? 'Go to Work Package' : 'Go to Project'}
+              </Button>
+            )}
+          </Box>
+        }
       >
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
@@ -94,6 +139,28 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
               ))}
             </Box>
           </Grid>
+          {(activeBlockers.length > 0 || task.blockedByWorkPackages.length > 0) && (
+            <Grid item xs={12} md={6}>
+              <Typography fontWeight={'bold'}>Blocked By:</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                {activeBlockers.map((blocker) => (
+                  <Link
+                    key={blocker.taskId}
+                    component="button"
+                    type="button"
+                    underline="hover"
+                    onClick={() => onOpenTask(blocker.taskId)}
+                    sx={{ fontSize: '0.875rem' }}
+                  >
+                    {blocker.title}
+                  </Link>
+                ))}
+                {task.blockedByWorkPackages.map((blockingWp) => (
+                  <Chip key={wbsPipe(blockingWp.wbsNum)} label={`${blockingWp.name} (WP)`} size="small" variant="outlined" />
+                ))}
+              </Box>
+            </Grid>
+          )}
           <Grid item xs={12} md={6}>
             <Typography fontWeight={'bold'}>Notes:</Typography>
             <Box sx={{ height: 'auto', overflow: 'auto' }}>
@@ -120,6 +187,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, modalShow, onHide, onSubmit
         setIsEditMode(false);
       }}
       wbsNum={wbsNum}
+      context={context}
     />
   ) : (
     <ViewModal />

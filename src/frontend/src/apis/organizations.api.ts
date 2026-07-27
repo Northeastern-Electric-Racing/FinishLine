@@ -1,5 +1,5 @@
 import axios from '../utils/axios';
-import { Organization, ProjectPreview } from 'shared';
+import { NotificationChannelPreview, Organization, ProjectPreview } from 'shared';
 import { apiUrls } from '../utils/urls';
 import {
   ApplicationLinkPayload,
@@ -161,5 +161,15 @@ export const getFinanceDelegates = async () => {
 export const setFinanceDelegates = async (userIds: string[]) => {
   return axios.post(apiUrls.organizationsSetFinanceDelegates(), {
     userIds
+  });
+};
+
+/**
+ * Gets the Slack channels events can notify that the current user can see: every channel the
+ * Slack bot is in, each annotated with whether the current user is also a member of it
+ */
+export const getNotificationChannels = async () => {
+  return axios.get<NotificationChannelPreview[]>(apiUrls.organizationsNotificationChannels(), {
+    transformResponse: (data) => JSON.parse(data)
   });
 };

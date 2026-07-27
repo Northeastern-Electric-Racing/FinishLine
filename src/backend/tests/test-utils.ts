@@ -180,6 +180,8 @@ export const resetUsers = async () => {
   await prisma.shop.deleteMany();
   await prisma.description_Bullet.deleteMany();
   await prisma.description_Bullet_Type.deleteMany();
+  await prisma.unit.deleteMany();
+  await prisma.dashboard.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -653,6 +655,7 @@ export const createTestDesignReviewEvent = async () => {
     [testWorkPackage.workPackageId], // workPackageIds
     [], // scheduleSlots - empty for confirmation events
     new Date('2027-03-25T10:00:00'), // initialDateScheduled - required for requiresConfirmation events
+    [], // notificationChannelIds
     teamType.teamTypeId, // team type id
     'https://docs.google.com/document/d/test-design-review-questions', // questionDocument
     'Campus Center Room 101', // location
@@ -794,6 +797,7 @@ export const createTestTaskWithOrganization = async (user: User, organization?: 
     TaskStatus.IN_PROGRESS,
     [user.userId],
     organization,
+    [],
     [],
     new Date(),
     new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)

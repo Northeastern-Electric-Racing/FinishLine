@@ -86,6 +86,8 @@ organizationRouter.post(
   OrganizationsController.setSlackSponsorshipNotificationsSlackId
 );
 
+organizationRouter.get('/notification-channels', OrganizationsController.getNotificationChannels);
+
 organizationRouter.get('/finance-delegates', OrganizationsController.getFinanceDelegates);
 organizationRouter.post(
   '/finance-delegates/set',

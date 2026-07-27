@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Organization, ProjectPreview, User } from 'shared';
+import { NotificationChannelPreview, Organization, ProjectPreview, User } from 'shared';
 import {
   getFeaturedProjects,
   getCurrentOrganization,
@@ -21,7 +21,8 @@ import {
   setFinanceDelegates,
   setOrganizationNewMemberImage,
   getOrganizationNewMemberImage,
-  setOrganizationPlatformLogoImage
+  setOrganizationPlatformLogoImage,
+  getNotificationChannels
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/organizations.api';
 
@@ -292,6 +293,13 @@ export const useSetSlackSponsorshipNotificationChannelId = () => {
       }
     }
   );
+};
+
+export const useNotificationChannels = () => {
+  return useQuery<NotificationChannelPreview[], Error>(['organizations', 'notification-channels'], async () => {
+    const { data } = await getNotificationChannels();
+    return data;
+  });
 };
 
 export const useGetFinanceDelegates = () => {

@@ -12,7 +12,8 @@ import {
   PROJECTS_PER_CAR,
   projectCreateInput,
   projectNameForIndex,
-  projectTemplateCreateInput
+  projectTemplateCreateInput,
+  shouldExist
 } from '../factories/project.factory.js';
 
 import type { ProjectContext } from '../context.js';
@@ -88,6 +89,12 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
 
         return Promise.all(
           Array.from({ length: PROJECTS_PER_CAR }, async (_, index) => {
+            const timeline = generateProjectTimeline(this.faker, dateRange);
+
+            if (!shouldExist(this.faker, timeline)) {
+              return;
+            }
+
             const projectNumber = index + 1;
 
             let projectName = projectNameForIndex(this.faker, index);
@@ -106,7 +113,6 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
             const manager = this.faker.helpers.arrayElement(managerPool.length > 0 ? managerPool : projectOwners);
 
             const selectedLinkTypes = this.projectLinkTypes(linkTypes);
-            const timeline = generateProjectTimeline(this.faker, dateRange);
 
             const project = await this.prisma.project.create({
               data: projectCreateInput(
@@ -135,7 +141,7 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
       })
     );
 
-    const projects = projectContextsByCar.flat();
+    const projects = projectContextsByCar.flat().filter((context) => context !== undefined);
 
     const templateCreatorId = appAdmins[0]?.userId;
     await this.createProjectTemplates(organizationId, templateCreatorId, teams);

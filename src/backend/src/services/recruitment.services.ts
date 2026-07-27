@@ -431,7 +431,7 @@ export default class RecruitmentServices {
    */
   static async getSingleGuestDefinition(organization: Organization, definitionId: string) {
     const guest = await prisma.guest_Definition.findUnique({
-      where: { organization, definitionId }
+      where: { organizationId: organization.organizationId, definitionId }
     });
 
     if (!guest) {

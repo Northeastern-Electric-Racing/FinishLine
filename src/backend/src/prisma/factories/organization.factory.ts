@@ -1,8 +1,10 @@
 import { Prisma, Theme } from '@prisma/client';
 
 export const BOOTSTRAP_GOOGLE_AUTH_ID = 'thomas-emrax';
+export const BOOTSTRAP_USER_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-000000000001';
 
 export const bootstrapUserCreateInput = (): Prisma.UserCreateInput => ({
+  userId: BOOTSTRAP_USER_ID,
   firstName: 'Thomas',
   lastName: 'Emrax',
   googleAuthId: BOOTSTRAP_GOOGLE_AUTH_ID,

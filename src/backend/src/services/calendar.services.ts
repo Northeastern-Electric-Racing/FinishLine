@@ -41,7 +41,8 @@ import {
   removeDeletedEventDocuments,
   isUserOnEvent,
   buildScheduledTimesOverlap,
-  findMatchingTimeOfDaySlots
+  findMatchingTimeOfDaySlots,
+  validateNotificationChannelIds
 } from '../utils/calendar.utils.js';
 import {
   AccessDeniedAdminOnlyException,
@@ -267,6 +268,7 @@ export default class CalendarService {
     workPackageIds: string[],
     scheduleSlots: ScheduleSlotCreateArgs[],
     initialDateScheduled: Date | undefined,
+    notificationChannelIds: string[],
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
@@ -353,6 +355,9 @@ export default class CalendarService {
         throw new NotFoundException('Team', missingIds.join(', '));
       }
     }
+
+    // Validate notificationChannelIds
+    await validateNotificationChannelIds(submitter, notificationChannelIds);
 
     // Validate shopIds
     if (shopIds.length > 0) {
@@ -444,6 +449,7 @@ export default class CalendarService {
         teams: {
           connect: teamIds.map((teamId) => ({ teamId }))
         },
+        notificationChannelIds,
         teamTypeId,
         shops: {
           connect: shopIds.map((shopId) => ({ shopId }))
@@ -549,7 +555,8 @@ export default class CalendarService {
         submitter,
         workPackageNames,
         organization.name,
-        { memberSlackIds: memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id), mention }
+        { memberSlackIds: memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id), mention },
+        newEvent.notificationChannelIds
       );
     }
 
@@ -595,6 +602,7 @@ export default class CalendarService {
     machineryIds: string[],
     workPackageIds: string[],
     documents: EventDocumentCreateArgs[],
+    notificationChannelIds: string[],
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
@@ -680,6 +688,14 @@ export default class CalendarService {
         throw new NotFoundException('Team', missingIds.join(', '));
       }
     }
+
+    // Validate notificationChannelIds - only newly-added channels need to be validated, since a user
+    // without access to a channel already on the event should still be able to save other changes
+    // without being forced to remove it
+    const addedNotificationChannelIds = notificationChannelIds.filter(
+      (id) => !foundEvent.notificationChannelIds.includes(id)
+    );
+    await validateNotificationChannelIds(submitter, addedNotificationChannelIds);
 
     // Validate shopIds
     if (shopIds.length > 0) {
@@ -772,6 +788,7 @@ export default class CalendarService {
         teams: {
           set: teamIds.map((teamId) => ({ teamId }))
         },
+        notificationChannelIds,
         ...(teamTypeId !== undefined && { teamTypeId }),
         status,
         shops: {
@@ -796,14 +813,27 @@ export default class CalendarService {
 
     const edittedEvent = eventTransformer(updatedEvent);
 
-    if (status === Event_Status.SCHEDULED && foundEventType.sendSlackNotifications) {
-      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent, true);
-    }
-
     if (status === Event_Status.CONFIRMED && foundEventType.sendSlackNotifications) {
       await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
     }
     return edittedEvent;
+  }
+
+  static hasScheduleChanged(before: ScheduleSlot[], after: ScheduleSlot[]): boolean {
+    if (before.length !== after.length) return true;
+    for (const scheduleSlot of before) {
+      const afterSlot = after.find((s) => s.scheduleSlotId === scheduleSlot.scheduleSlotId);
+      if (
+        !afterSlot ||
+        scheduleSlot.startTime.getTime() !== afterSlot.startTime.getTime() ||
+        scheduleSlot.endTime.getTime() !== afterSlot.endTime.getTime() ||
+        scheduleSlot.allDay !== afterSlot.allDay
+      ) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -1074,8 +1104,22 @@ export default class CalendarService {
     });
 
     if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
+    const updatedEventTransform = eventTransformer(updatedEvent);
 
-    return eventTransformer(updatedEvent);
+    const foundEventType = await prisma.event_Type.findUnique({
+      where: { eventTypeId: updatedEventTransform.eventTypeId }
+    });
+
+    if (
+      updatedEventTransform.status === Event_Status.SCHEDULED &&
+      foundEventType &&
+      foundEventType.sendSlackNotifications &&
+      this.hasScheduleChanged(event.scheduledTimes, updatedEvent.scheduledTimes)
+    ) {
+      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, updatedEventTransform, true);
+    }
+
+    return updatedEventTransform;
   }
 
   /**

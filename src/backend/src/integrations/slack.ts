@@ -1,5 +1,6 @@
 import bolt from '@slack/bolt';
 import type { App, ExpressReceiver } from '@slack/bolt';
+import { LRUCache } from 'lru-cache';
 import { HttpException } from '../utils/errors.utils.js';
 
 const { App: AppClass, ExpressReceiver: ExpressReceiverClass } = bolt;
@@ -221,53 +222,160 @@ const generateSlackTextBlock = (message: string, link?: string, linkButtonText?:
 };
 
 /**
- * Given an id of a channel, produces the slack ids of all the users in that channel.
+ * Fetches every member of a channel from Slack, paging through the full member list.
+ * Throws on any failure so that partial member lists are never returned or cached.
  * @param channelId the id of the channel
- * @returns an array of strings of all the slack ids of the users in the given channel
+ * @returns an array of the slack ids of every user in the channel
  */
-export const getUsersInChannel = async (channelId: string) => {
+const fetchUsersInChannel = async (channelId: string): Promise<string[]> => {
   const client = getSlackClient();
   if (!client) return [];
 
   let members: string[] = [];
   let cursor: string | undefined;
 
+  do {
+    const response = await client.conversations.members({
+      channel: channelId,
+      cursor,
+      limit: 200
+    });
+
+    if (!response.ok || !response.members) {
+      throw new Error(`Failed to fetch members: ${response.error}`);
+    }
+
+    members = members.concat(response.members);
+    cursor = response.response_metadata?.next_cursor;
+  } while (cursor);
+
+  return members;
+};
+
+/**
+ * Fetches a channel's name from Slack.
+ * @param channelId the id of the slack channel
+ * @returns the name of the channel, or undefined if slack has no name for it
+ */
+const fetchChannelName = async (channelId: string): Promise<string | undefined> => {
+  const client = getSlackClient();
+  if (!client) return undefined;
+
+  const channelRes = await client.conversations.info({ channel: channelId });
+  return channelRes.channel?.name;
+};
+
+/**
+ * Caches channel names, which change very rarely, keyed by channel id.
+ */
+const channelNameCache = new LRUCache<string, string>({
+  max: 500,
+  ttl: 1000 * 60 * 60 * 24, // 1 day
+  fetchMethod: fetchChannelName
+});
+
+/**
+ * Caches channel membership, keyed by channel id.
+ */
+const channelMembersCache = new LRUCache<string, string[]>({
+  max: 500,
+  ttl: 1000 * 60 * 60, // 1 hour
+  fetchMethod: fetchUsersInChannel
+});
+
+/**
+ * Given an id of a channel, produces the slack ids of all the users in that channel.
+ * Results are cached, and concurrent calls for the same channel share a single slack request.
+ * @param channelId the id of the channel
+ * @returns an array of strings of all the slack ids of the users in the given channel
+ */
+export const getUsersInChannel = async (channelId: string): Promise<string[]> => {
   try {
-    do {
-      const response = await client.conversations.members({
-        channel: channelId,
-        cursor,
-        limit: 200
-      });
-
-      if (response.ok && response.members) {
-        members = members.concat(response.members);
-        cursor = response.response_metadata?.next_cursor;
-      } else {
-        throw new Error(`Failed to fetch members: ${response.error}`);
-      }
-    } while (cursor);
-
-    return members;
+    return (await channelMembersCache.fetch(channelId)) ?? [];
   } catch (error) {
-    return members;
+    console.error('Failed to fetch Slack channel members:', (error as any)?.data?.error ?? error);
+    return [];
   }
 };
 
 /**
- * Given a slack channel id, produces the name of the channel
+ * Given a slack channel id, produces the name of the channel.
+ * Results are cached, and concurrent calls for the same channel share a single slack request.
  * @param channelId the id of the slack channel
  * @returns the name of the channel or undefined if it cannot be found
  */
-export const getChannelName = async (channelId: string) => {
-  const client = getSlackClient();
-  if (!client) return undefined;
-
+export const getChannelName = async (channelId: string): Promise<string | undefined> => {
   try {
-    const channelRes = await client.conversations.info({ channel: channelId });
-    return channelRes.channel?.name;
+    return await channelNameCache.fetch(channelId);
   } catch (error) {
     return undefined;
+  }
+};
+
+const listChannelsOfTypes = async (types: string): Promise<{ id: string; name: string }[]> => {
+  const client = getSlackClient();
+  if (!client) return [];
+
+  let channels: { id: string; name: string }[] = [];
+  let cursor: string | undefined;
+
+  do {
+    const response = await client.conversations.list({
+      types,
+      exclude_archived: true,
+      cursor,
+      limit: 200
+    });
+
+    if (response.ok && response.channels) {
+      channels = channels.concat(
+        response.channels
+          .filter(
+            (channel: { is_member?: boolean; id?: string; name?: string }) => channel.is_member && channel.id && channel.name
+          )
+          .map((channel: { id: string; name: string }) => ({ id: channel.id, name: channel.name }))
+      );
+      cursor = response.response_metadata?.next_cursor;
+    } else {
+      throw Object.assign(new Error(`Failed to fetch channels: ${response.error}`), { code: response.error });
+    }
+  } while (cursor);
+
+  return channels;
+};
+
+/**
+ * Caches the bot's channel list, keyed by the requested `types` string. A full workspace
+ * channel listing is one of the more expensive Slack calls to repeat on every request.
+ */
+const botChannelsCache = new LRUCache<string, { id: string; name: string }[]>({
+  max: 10,
+  ttl: 1000 * 60 * 60, // 1 hour
+  fetchMethod: listChannelsOfTypes
+});
+
+/**
+ * Produces every channel (public or private) the bot is currently a member of, with each
+ * channel's current name. One bulk call regardless of channel count, so callers should use
+ * this instead of resolving names one channel at a time via getChannelName. Results are
+ * cached, and concurrent calls share a single slack request. Falls back to public channels
+ * only if the bot token is missing the groups:read scope needed for private channels, rather
+ * than failing the whole lookup.
+ * @returns an array of { id, name } for every channel the bot can see
+ */
+export const getBotChannels = async (): Promise<{ id: string; name: string }[]> => {
+  try {
+    return (await botChannelsCache.fetch('public_channel,private_channel')) ?? [];
+  } catch (error) {
+    const slackError = (error as { data?: { error?: string } }).data?.error;
+    if (slackError === 'missing_scope') {
+      try {
+        return (await botChannelsCache.fetch('public_channel')) ?? [];
+      } catch (fallbackError) {
+        return [];
+      }
+    }
+    return [];
   }
 };
 

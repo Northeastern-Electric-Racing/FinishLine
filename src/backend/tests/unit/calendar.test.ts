@@ -906,6 +906,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -957,6 +958,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined // teamTypeId
         )
       ).rejects.toThrow(new NotFoundException('Event Type', 'non-existent-event-type-id'));
@@ -985,6 +987,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined // teamTypeId
         )
       ).rejects.toThrow(new InvalidOrganizationException('Event Type'));
@@ -1012,6 +1015,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1061,6 +1065,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1093,6 +1098,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1125,6 +1131,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1157,6 +1164,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1189,6 +1197,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1227,6 +1236,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1272,6 +1282,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1307,6 +1318,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1327,6 +1339,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1370,6 +1383,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1390,6 +1404,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1419,6 +1434,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots2,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1463,6 +1479,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1483,6 +1500,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1512,6 +1530,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots2,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1693,6 +1712,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1711,6 +1731,7 @@ describe('Calendar Tests', () => {
           [adminUser.userId],
           [member.userId],
           Event_Status.UNCONFIRMED,
+          [],
           [],
           [],
           [],
@@ -1739,6 +1760,7 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
+          [],
           []
         )
       ).rejects.toThrow(new DeletedException('Event', event.eventId));
@@ -1759,6 +1781,7 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
+          [], // notificationChannelIds
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1783,6 +1806,7 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
+          [], // notificationChannelIds
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1813,6 +1837,7 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
+          [], // notificationChannelIds
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1837,6 +1862,7 @@ describe('Calendar Tests', () => {
           ['non-existent-machinery-id'],
           [],
           [],
+          [], // notificationChannelIds
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1867,6 +1893,7 @@ describe('Calendar Tests', () => {
           [deletedMachinery.machineryId],
           [],
           [],
+          [], // notificationChannelIds
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1892,6 +1919,7 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         [],
+        [], // notificationChannelIds
         undefined,
         'https://updated.com/questions.pdf',
         'Updated Location',
@@ -1942,6 +1970,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://updated.com/questions.pdf',
         'Updated Location',
@@ -2124,6 +2153,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined,
+        [],
         undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -2176,6 +2206,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined,
+        [],
         undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -2382,6 +2413,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined,
+        [],
         undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -2500,6 +2532,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined,
+        [],
         undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
