@@ -88,6 +88,15 @@ organizationRouter.post(
 
 organizationRouter.get('/notification-channels', OrganizationsController.getNotificationChannels);
 
+organizationRouter.post(
+  '/newMemberSlackChannelId/set',
+  nonEmptyString(body('channelId')),
+  validateInputs,
+  OrganizationsController.setNewMemberSlackChannelId
+);
+
+organizationRouter.get('/new-member-slack-messages', OrganizationsController.getNewMemberSlackMessages);
+
 organizationRouter.get('/finance-delegates', OrganizationsController.getFinanceDelegates);
 organizationRouter.post(
   '/finance-delegates/set',

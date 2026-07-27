@@ -251,6 +251,30 @@ export default class OrganizationsController {
     }
   }
 
+  static async setNewMemberSlackChannelId(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { channelId } = req.body;
+
+      const updatedOrg = await OrganizationsService.setNewMemberSlackChannelId(
+        channelId,
+        req.currentUser,
+        req.organization.organizationId
+      );
+      res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getNewMemberSlackMessages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const messages = await OrganizationsService.getNewMemberSlackMessages(req.organization);
+      res.status(200).json(messages);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getFinanceDelegates(req: Request, res: Response, next: NextFunction) {
     try {
       const financeDelegates = await OrganizationsService.getFinanceDelegates(req.organization.organizationId);

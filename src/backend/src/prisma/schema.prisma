@@ -1398,6 +1398,8 @@ model Organization {
   partReviewSampleImageId                String?
   partReviewGuideLink                    String?
   sponsorshipNotificationsSlackChannelId String?
+  newMemberSlackChannelId                String?
+  newMemberSlackChannelName              String?
   platformDescription                    String    @default("")
   platformLogoImageId                    String?
 

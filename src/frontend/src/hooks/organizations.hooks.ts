@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { NotificationChannelPreview, Organization, ProjectPreview, User } from 'shared';
+import { NotificationChannelPreview, Organization, ProjectPreview, SlackMessagePreview, User } from 'shared';
 import {
   getFeaturedProjects,
   getCurrentOrganization,
@@ -17,6 +17,8 @@ import {
   getPartReviewGuideLink,
   setPartReviewGuideLink,
   setSlackSponsorshipNotificationSlackChannelId,
+  setNewMemberSlackChannelId,
+  getNewMemberSlackMessages,
   getFinanceDelegates,
   setFinanceDelegates,
   setOrganizationNewMemberImage,
@@ -300,6 +302,39 @@ export const useNotificationChannels = () => {
     const { data } = await getNotificationChannels();
     return data;
   });
+};
+
+export const useSetNewMemberSlackChannelId = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, string>(
+    ['organizations', 'new-member-slack-channel'],
+    async (channelId: string) => {
+      const { data } = await setNewMemberSlackChannelId({ channelId });
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get the 3 most recent messages from the new member Slack channel.
+ * Polls periodically so the widget reflects new messages without a page reload.
+ */
+export const useNewMemberSlackMessages = () => {
+  return useQuery<SlackMessagePreview[], Error>(
+    ['organizations', 'new-member-slack-messages'],
+    async () => {
+      const { data } = await getNewMemberSlackMessages();
+      return data;
+    },
+    {
+      refetchInterval: 60000
+    }
+  );
 };
 
 export const useGetFinanceDelegates = () => {

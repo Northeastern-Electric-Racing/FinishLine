@@ -4578,6 +4578,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    [],
     electrical.teamTypeId,
     undefined,
     'Curry Student Center',
@@ -4604,6 +4605,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    [],
     mechanical.teamTypeId,
     undefined,
     'Richards Hall',
@@ -4630,6 +4632,7 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     undefined,
+    [],
     software.teamTypeId,
     undefined,
     undefined,

@@ -385,6 +385,8 @@ const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
 const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/set`;
 const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizations()}/sponsorshipChannelId/set`;
+const organizationsSetNewMemberSlackChannelId = () => `${organizations()}/newMemberSlackChannelId/set`;
+const organizationsNewMemberSlackMessages = () => `${organizations()}/new-member-slack-messages`;
 const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
 const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
 const organizationsNotificationChannels = () => `${organizations()}/notification-channels`;
@@ -818,6 +820,8 @@ export const apiUrls = {
   organizationsGetPartReviewGuideLink,
   organizationsSetPartReviewGuideLink,
   organizationsSetSlackSponsorshipNotificationChannelId,
+  organizationsSetNewMemberSlackChannelId,
+  organizationsNewMemberSlackMessages,
   organizationsFinanceDelegates,
   organizationsSetFinanceDelegates,
   organizationsNotificationChannels,

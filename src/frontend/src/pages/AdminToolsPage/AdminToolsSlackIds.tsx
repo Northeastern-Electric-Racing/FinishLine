@@ -10,6 +10,7 @@ import { useToast } from '../../hooks/toasts.hooks';
 import {
   useCurrentOrganization,
   useSetSlackSponsorshipNotificationChannelId,
+  useSetNewMemberSlackChannelId,
   useSetWorkspaceId
 } from '../../hooks/organizations.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -36,10 +37,12 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
   const toast = useToast();
   const { mutateAsync: setWorkspaceIdMutateAsync, isLoading } = useSetWorkspaceId();
   const { mutateAsync: setSponsorshipChannelIdMutateAsync } = useSetSlackSponsorshipNotificationChannelId();
+  const { mutateAsync: setNewMemberChannelIdMutateAsync } = useSetNewMemberSlackChannelId();
   const [workspaceId, setWorkspaceId] = useState(organization.slackWorkspaceId ?? '');
   const [sponsorshipChannelId, setSponsorshipChannelId] = useState(
     organization.sponsorshipNotificationsSlackChannelId ?? ''
   );
+  const [newMemberChannelId, setNewMemberChannelId] = useState(organization.newMemberSlackChannelId ?? '');
   const {
     data: allTeams,
     isLoading: allTeamsIsLoading,
@@ -82,6 +85,17 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
     try {
       await setSponsorshipChannelIdMutateAsync(sponsorshipChannelId);
       toast.success('Successfully updated the sponsorship notification channel ID.');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
+  };
+
+  const handleSubmitNewMemberChannelId = async () => {
+    try {
+      await setNewMemberChannelIdMutateAsync(newMemberChannelId);
+      toast.success('Successfully updated the new member channel ID.');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -136,6 +150,26 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
             sx={{ mr: 2 }}
           />
           <NERButton variant="contained" disabled={isLoading} onClick={handleSubmitSponsorshipChannelId}>
+            Update
+          </NERButton>
+        </Box>
+
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Link
+            color={'#ffffff'}
+            href={'https://help.socialintents.com/article/148-how-to-find-your-slack-team-id-and-slack-channel-id'}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <HelpIcon sx={{ mr: 2, height: 50 }} />
+          </Link>
+          <TextField
+            label="New Member Channel ID"
+            value={newMemberChannelId}
+            onChange={(e) => setNewMemberChannelId(e.target.value)}
+            sx={{ mr: 2 }}
+          />
+          <NERButton variant="contained" disabled={isLoading} onClick={handleSubmitNewMemberChannelId}>
             Update
           </NERButton>
         </Box>

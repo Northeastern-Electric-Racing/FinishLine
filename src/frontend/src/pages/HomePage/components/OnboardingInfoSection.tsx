@@ -7,6 +7,7 @@ import OnboardingBlock from '../../AdminToolsPage/OnboardingConfig/OnboardingBlo
 import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
 import NewMemberMilestonesWidget from './NewMemberMilestonesWidget';
 import NewMemberEventsWidget from './NewMemberEventsWidget';
+import NewMemberSlackWidget from './NewMemberSlackWidget';
 
 const OnboardingInfoSection: React.FC = () => {
   const theme = useTheme();
@@ -37,6 +38,9 @@ const OnboardingInfoSection: React.FC = () => {
       </Grid>
       <Grid item>
         <NewMemberMilestonesWidget />
+      </Grid>
+      <Grid item>
+        <NewMemberSlackWidget />
       </Grid>
       <Grid item>
         <Box
