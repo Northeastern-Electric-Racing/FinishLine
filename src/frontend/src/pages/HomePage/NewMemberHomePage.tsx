@@ -11,6 +11,7 @@ import { useHomePageContext } from '../../app/HomePageContext';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import OnboardingInfoSection from './components/OnboardingInfoSection';
 import NewMemberFAQsSection from './components/NewMemberFAQsSection';
+import NewMemberChecklistSummaryWidget from './components/NewMemberChecklistSummaryWidget';
 
 const NewMemberHomePage = () => {
   const { setCurrentHomePage } = useHomePageContext();
@@ -50,6 +51,11 @@ const NewMemberHomePage = () => {
         <Grid item xs={12} md={4} sx={{ padding: 2 }}>
           <Typography sx={{ fontSize: '1.5em', mb: 1 }}>FAQs</Typography>
           <NewMemberFAQsSection />
+        </Grid>
+      </Grid>
+      <Grid container display={'flex'}>
+        <Grid item xs={12} sx={{ padding: 2 }}>
+          <NewMemberChecklistSummaryWidget />
         </Grid>
       </Grid>
     </PageLayout>
