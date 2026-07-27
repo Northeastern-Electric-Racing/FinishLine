@@ -3,17 +3,14 @@ import nodeIcal, { CalendarComponent, RRule, VEvent } from 'node-ical';
 import dns from 'node:dns/promises';
 import ipaddr from 'ipaddr.js';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc.js';
-import timezone from 'dayjs/plugin/timezone.js';
-import { IcsBusyInterval, Event, wbsPipe } from 'shared';
+import 'dayjs/plugin/utc.js';
+import 'dayjs/plugin/timezone.js';
+import { IcsBusyInterval, Event, wbsPipe, EASTERN_TIMEZONE } from 'shared';
 import { HttpException } from './errors.utils.js';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 // availability slots are defined relative to Eastern time (see frontend design-review.utils.ts ESTOffset),
 // regardless of what timezone the server process happens to run in
-const BUSINESS_TIMEZONE = 'America/New_York';
+const BUSINESS_TIMEZONE = EASTERN_TIMEZONE;
 
 export const generateIcsFeed = (events: Event[]): string => {
   const cal = ical({ name: 'Northeastern Electric Racing' });
@@ -205,16 +202,15 @@ export const fetchIcsBusyTimes = async (url: string, rangeStart: Date, rangeEnd:
   return busy;
 };
 
-// returns midnight in BUSINESS_TIMEZONE for the UTC calendar date encoded by dateSet
-export const localDayStartForDateSet = (dateSet: Date | string): Date => {
+export const localDayStartForDateSet = (dateSet: Date | string): dayjs.Dayjs => {
   const dayString = dayjs.utc(dateSet).format('YYYY-MM-DD');
-  return dayjs.tz(dayString, BUSINESS_TIMEZONE).toDate();
+  return dayjs.tz(dayString, BUSINESS_TIMEZONE);
 };
 
 // converts the ics busy intervals (real UTC instants) into availability slots (0-11), where slot N
 // covers the hour (10 + N) in BUSINESS_TIMEZONE - not the server process's local timezone
 export const busyIntervalsToSlots = (busy: IcsBusyInterval[], dateSet: Date | string): Set<number> => {
-  const dayStart = dayjs(localDayStartForDateSet(dateSet)).tz(BUSINESS_TIMEZONE);
+  const dayStart = localDayStartForDateSet(dateSet);
   const busySlots = new Set<number>();
 
   const availabilityStart = 10;
