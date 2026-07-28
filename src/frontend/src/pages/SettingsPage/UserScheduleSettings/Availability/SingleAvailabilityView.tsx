@@ -1,5 +1,5 @@
 import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
+import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
 import { useState, useEffect } from 'react';
 import NERArrows from '../../../../components/NERArrows';
@@ -10,6 +10,8 @@ import {
   reviewTimesInCurrentTimeZone
 } from '../../../../utils/design-review.utils';
 import EventTimeSlot from '../../../CalendarPage/Components/EventTimeSlot';
+import { useCurrentUser, useUserBusyTimes } from '../../../../hooks/users.hooks';
+import { busySlotsByDay, isSlotBusy } from '../../../../utils/ics.utils';
 
 interface SingleAvailabilityViewProps {
   totalAvailability: Availability[];
@@ -17,6 +19,7 @@ interface SingleAvailabilityViewProps {
 }
 
 const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAvailability, initialDate }) => {
+  const currentUser = useCurrentUser();
   const [startDate, setStartDate] = useState<Date>(initialDate || new Date());
 
   useEffect(() => {
@@ -26,6 +29,11 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
   }, [initialDate]);
 
   const selectedTimes = getMostRecentAvailabilities(totalAvailability, startDate);
+
+  const weekStart = selectedTimes[0]?.dateSet ?? startDate;
+  const weekEnd = addDaysToDate(selectedTimes[selectedTimes.length - 1]?.dateSet ?? startDate, 1);
+  const { data: busyTimes } = useUserBusyTimes(currentUser.userId, weekStart, weekEnd, true);
+  const busyByDay = busySlotsByDay(busyTimes ?? []);
 
   const onArrowIncrease = () => {
     const newDate = new Date(startDate);
@@ -48,6 +56,10 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Typography variant="caption" color="text.secondary" mb={1}>
+        Hatched slots are busy on your imported calendar or Finishline events. Edit your availability and use "Fill from busy
+        times" to pull in any changes.
+      </Typography>
       <TableContainer
         sx={{
           overflowX: 'auto',
@@ -107,6 +119,7 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
                       <EventTimeSlot
                         backgroundColor={isAvailable ? getBackgroundColor(1, 1) : getBackgroundColor(0, 1)}
                         selected={false}
+                        busy={isSlotBusy(busyByDay, availability.dateSet, timeIndex)}
                         onClick={() => {}}
                       />
                     </TableCell>

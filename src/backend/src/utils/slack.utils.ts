@@ -167,7 +167,7 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
   const formattedCost = `$${(totalCost / 100).toFixed(2)}`; // convert from cents to dollars and cents
 
   const msg = `${await getUserSlackMentionOrName(submitterId)} created a reimbursement request for ${formattedCost} at ${vendor.name} (ID#: ${identifier}) 💲`;
-  const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
+  const link = `https://finishlinebyner.com/finance/reimbursement-requests/all-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
   const financeTeam = await prisma.team.findFirst({
@@ -207,7 +207,7 @@ export const sendReimbursementRequestDeniedNotification = async (slackId: string
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
 
   const msg = `Your reimbursement request has been denied.`;
-  const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
+  const link = `https://finishlinebyner.com/finance/reimbursement-requests/all-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
   await sendMessage(slackId, msg, link, linkButtonText);
@@ -392,25 +392,45 @@ export const sendAndGetSlackCRNotifications = async (
   return notifications;
 };
 
+/**
+ * Checks whether a user can use the given Slack channel as a notification channel: only
+ * allowed if the user's Slack id is a member of the channel, regardless of whether it's
+ * public or private.
+ * @param slackId the requesting user's Slack id, or undefined if they have none linked
+ * @param channelId the Slack channel id to check
+ * @returns whether the user is a member of the channel
+ */
+export const isSlackChannelMember = async (slackId: string | undefined, channelId: string): Promise<boolean> => {
+  if (!slackId) return false;
+
+  const members = await getUsersInChannel(channelId);
+  return members.includes(slackId);
+};
+
 export const buildSlackMentionPrefix = (mention: SlackMentionType, memberSlackIds: string[]): string => {
   if (mention === SlackMentionType.CHANNEL) return '<!channel> ';
   if (memberSlackIds.length > 0) return `${memberSlackIds.map((id) => `<@${id}>`).join(' ')} `;
   return '';
 };
 
-export const sendSlackEventNotification = async (
-  team: Team,
+export const sendSlackEventNotificationToChannel = async (
+  channelId: string,
   message: string
 ): Promise<{ channelId: string; ts: string }[]> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return []; // don't send msgs unless in prod
   const msgs: { channelId: string; ts: string }[] = [];
   const fullLink = `https://finishlinebyner.com/calendar`;
   const btnText = `View Calendar`;
-  const notification = await sendMessage(team.slackId, message, fullLink, btnText);
+  const notification = await sendMessage(channelId, message, fullLink, btnText);
   if (notification) msgs.push(notification);
 
   return msgs;
 };
+
+export const sendSlackEventNotification = async (
+  team: Team,
+  message: string
+): Promise<{ channelId: string; ts: string }[]> => sendSlackEventNotificationToChannel(team.slackId, message);
 
 export interface EventNotificationOptions {
   memberSlackIds?: string[];
@@ -423,7 +443,8 @@ export const sendSlackEventNotifications = async (
   submitter: User,
   workPackageName: string,
   projectName: string,
-  options: EventNotificationOptions = {}
+  options: EventNotificationOptions = {},
+  notificationChannelIds: string[] = []
 ) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return []; // don't send msgs unless in prod
   const notifications: { channelId: string; ts: string }[] = [];
@@ -441,7 +462,21 @@ export const sendSlackEventNotifications = async (
     const sentNotifications: { channelId: string; ts: string }[] = await sendSlackEventNotification(team, message);
     if (sentNotifications) notifications.push(...sentNotifications);
   });
-  await Promise.all(completion);
+
+  // Skip any notification channel that's the same Slack channel as one of the teams above, so a
+  // channel that's both a team's channel and a selected notification channel is only pinged once
+  const teamChannelIds = new Set(teams.map((team) => team.slackId));
+  const channelCompletion: Promise<void>[] = notificationChannelIds
+    .filter((channelId) => !teamChannelIds.has(channelId))
+    .map(async (channelId) => {
+      const sentNotifications: { channelId: string; ts: string }[] = await sendSlackEventNotificationToChannel(
+        channelId,
+        message
+      );
+      if (sentNotifications) notifications.push(...sentNotifications);
+    });
+
+  await Promise.all([...completion, ...channelCompletion]);
 
   const promises = notifications.map(
     async (notification) =>

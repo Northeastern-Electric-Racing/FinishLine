@@ -240,6 +240,17 @@ export default class OrganizationsController {
     }
   }
 
+  static async getNotificationChannels(req: Request, res: Response, next: NextFunction) {
+    try {
+      const notificationChannels = await OrganizationsService.getAvailableNotificationChannelsForUser(
+        req.currentUser.userId
+      );
+      res.status(200).json(notificationChannels);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getFinanceDelegates(req: Request, res: Response, next: NextFunction) {
     try {
       const financeDelegates = await OrganizationsService.getFinanceDelegates(req.organization.organizationId);

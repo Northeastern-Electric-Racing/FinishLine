@@ -48,12 +48,11 @@ const AdminToolsSlackIdsView: React.FC<AdminToolsWorkspaceIdViewProps> = ({ orga
   } = useAllTeamPreviews();
   const [clickedTeam, setClickedTeam] = useState<TeamBase>();
 
-  if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
-
   if (allTeamsIsError) {
     return <ErrorPage message={allTeamsError.message} />;
   }
 
+  if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
   if (isLoading) return <LoadingIndicator />;
 
   const teamTableRows = allTeams.map((team, index) => (

@@ -67,11 +67,15 @@ export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
  * Custom React Hook to get all work packages for a given project
  * @param projectWbsNum the wbs number of the project
  */
-export const useWorkPackagesByProject = (projectWbsNum: WbsNumber) => {
-  return useQuery<WorkPackage[], Error>(['work-packages', 'by-project', wbsPipe(projectWbsNum)], async () => {
-    const { data } = await getWorkPackagesByProject(projectWbsNum);
-    return data;
-  });
+export const useWorkPackagesByProject = (projectWbsNum: WbsNumber, enabled = true) => {
+  return useQuery<WorkPackage[], Error>(
+    ['work-packages', 'by-project', wbsPipe(projectWbsNum)],
+    async () => {
+      const { data } = await getWorkPackagesByProject(projectWbsNum);
+      return data;
+    },
+    { enabled }
+  );
 };
 
 /**

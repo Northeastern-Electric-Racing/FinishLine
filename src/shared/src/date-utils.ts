@@ -109,7 +109,9 @@ const getUniqueAvailabilities = (availabilities: Availability[]) => {
 
 const getMostRecentAvailabilities = (availabilities: Availability[], startDate: Date): Availability[] => {
   availabilities = getUniqueAvailabilities(availabilities);
-  const startDateObj = new Date(startDate);
+  // Availability is date-only; strip the time-of-day so downstream UTC/local conversions
+  // (e.g. a second pass through availabilityTransformer) can't roll the date to a different day.
+  const startDateObj = startOfDay(new Date(startDate));
 
   const getClosestDate = (availabilities: Availability[], targetDate: Date): Availability => {
     if (availabilities.length < 1)

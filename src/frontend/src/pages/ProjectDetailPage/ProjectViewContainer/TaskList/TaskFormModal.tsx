@@ -1,8 +1,19 @@
+import { useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, Box, Chip, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isGuest, isUnderWordCount, Task, TaskLabel, TaskPriority, TaskStatus, WbsNumber } from 'shared';
+import {
+  countWords,
+  isGuest,
+  isUnderWordCount,
+  Task,
+  TaskLabel,
+  TaskBlockerPreview,
+  TaskPriority,
+  TaskStatus,
+  WbsNumber
+} from 'shared';
 import { useAllMembers, useCurrentUser } from '../../../../hooks/users.hooks';
 import * as yup from 'yup';
 import { taskUserToAutocompleteOption } from '../../../../utils/task.utils';
@@ -10,7 +21,8 @@ import NERFormModal from '../../../../components/NERFormModal';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import { useWorkPackagesByProject } from '../../../../hooks/work-packages.hooks';
-import { useAllTaskLabels } from '../../../../hooks/tasks.hooks';
+import { useAllTaskLabels, useFilterTasks } from '../../../../hooks/tasks.hooks';
+import ProjectDropdown from '../../../../components/dropdowns/ProjectDropdown';
 
 export interface EditTaskFormInput {
   taskId: string;
@@ -18,10 +30,13 @@ export interface EditTaskFormInput {
   notes?: string;
   assignees: string[];
   labels: TaskLabel[];
+  blockedBy: TaskBlockerPreview[];
   startDate?: Date;
   deadline?: Date;
   priority: TaskPriority;
   wpWbsNum?: WbsNumber | null;
+  // only used by the global-create form: the project the new task belongs to
+  projectWbsNum?: WbsNumber | null;
 }
 
 interface TaskFormModalProps {
@@ -32,7 +47,16 @@ interface TaskFormModalProps {
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
   onReset?: () => void;
   isLoading?: boolean;
-  wbsNum: WbsNumber;
+  // optional so the global board can create/edit tasks without a fixed project/work package scope
+  wbsNum?: WbsNumber;
+  // 'global' surfaces a project picker (and hides any car picker) so a task can be created without a
+  // pre-selected project. Defaults to the existing project/work package behavior.
+  context?: 'global' | 'project' | 'workPackage';
+  // global create only: constrain the project picker to these car numbers
+  projectCarNumbers?: number[];
+  // when true, surfaces validation errors as soon as the modal opens (used to highlight the missing
+  // deadline/assignee when a task is dragged into In Progress without them)
+  validateOnOpen?: boolean;
 }
 
 const TaskFormModal: React.FC<TaskFormModalProps> = ({
@@ -43,80 +67,66 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
   onHide,
   onReset,
   isLoading,
-  wbsNum
+  wbsNum,
+  context,
+  projectCarNumbers,
+  validateOnOpen = false
 }) => {
-  let schema;
-
-  if (status === TaskStatus.IN_PROGRESS) {
-    schema = yup.object().shape({
-      notes: yup
-        .string()
-        .optional()
-        .test((value) => {
-          if (!value) return true;
-          const wordCount = countWords(value);
-          return wordCount < 250;
-        }),
-      startDate: yup.date().optional(),
-      deadline: yup
-        .date()
-        .required('Deadline is required for In Progress tasks')
-        .test('deadline-after-start', 'Deadline must be on or after the start date', function (deadline) {
-          const { startDate } = this.parent;
-          if (!startDate || !deadline) return true;
-          return deadline >= startDate;
-        }),
-      priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
-      assignees: yup.array().required().min(1, 'At least one assignee is required for In Progress tasks'),
-      labels: yup.array().of(yup.mixed<TaskLabel>().required()).required(),
-      title: yup.string().required(),
-      taskId: yup.string().required(),
-      wpWbsNum: yup.mixed<WbsNumber>().optional()
-    });
-  } else {
-    schema = yup.object().shape({
-      notes: yup
-        .string()
-        .optional()
-        .test((value) => {
-          if (!value) return true;
-          const wordCount = countWords(value);
-          return wordCount < 250;
-        }),
-      startDate: yup.date().optional(),
-      deadline: yup
-        .date()
-        .optional()
-        .test('deadline-after-start', 'Deadline must be on or after the start date', function (deadline) {
-          const { startDate } = this.parent;
-          if (!startDate || !deadline) return true;
-          return deadline >= startDate;
-        }),
-      priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
-      assignees: yup.array().required(),
-      labels: yup.array().of(yup.mixed<TaskLabel>().required()).required(),
-      title: yup.string().required(),
-      taskId: yup.string().required(),
-      wpWbsNum: yup.mixed<WbsNumber>().nullable().optional()
-    });
-  }
+  // In progress tasks must have a deadline and at least one assignee; backlog/done tasks don't.
+  const isInProgress = status === TaskStatus.IN_PROGRESS;
+  // only the global *create* form surfaces the project picker; editing an existing task always derives
+  // its project from the task itself, even when opened from the global board.
+  const isGlobalCreate = context === 'global' && !task;
+  const schema = yup.object().shape({
+    notes: yup
+      .string()
+      .optional()
+      .test((value) => {
+        if (!value) return true;
+        const wordCount = countWords(value);
+        return wordCount < 250;
+      }),
+    startDate: yup.date().optional(),
+    deadline: isInProgress
+      ? yup
+          .date()
+          .required('Deadline is required for In Progress tasks')
+          .test('deadline-after-start', 'Deadline must be on or after the start date', function (deadline) {
+            const { startDate } = this.parent;
+            if (!startDate || !deadline) return true;
+            return deadline >= startDate;
+          })
+      : yup
+          .date()
+          .optional()
+          .test('deadline-after-start', 'Deadline must be on or after the start date', function (deadline) {
+            const { startDate } = this.parent;
+            if (!startDate || !deadline) return true;
+            return deadline >= startDate;
+          }),
+    priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
+    assignees: isInProgress
+      ? yup.array().required().min(1, 'At least one assignee is required for In Progress tasks')
+      : yup.array().required(),
+    labels: yup.array().of(yup.mixed<TaskLabel>().required()).required(),
+    blockedBy: yup.array().of(yup.mixed<TaskBlockerPreview>().required()).required(),
+    title: yup.string().required(),
+    taskId: yup.string().required(),
+    wpWbsNum: yup.mixed<WbsNumber>().nullable().optional(),
+    projectWbsNum: isGlobalCreate
+      ? yup.mixed<WbsNumber>().required('Project is required')
+      : yup.mixed<WbsNumber>().nullable().optional()
+  });
 
   const user = useCurrentUser();
-
-  const { data: users, isLoading: usersLoading, isError, error } = useAllMembers();
-  const { data: taskLabels, isLoading: labelsIsLoading, isError: labelsIsError, error: labelsError } = useAllTaskLabels();
-
-  const projectWbsNum = { ...wbsNum, workPackageNumber: 0 };
-  const { data: workPackages } = useWorkPackagesByProject(projectWbsNum);
-
-  const isWpContext = wbsNum.workPackageNumber !== 0;
 
   const {
     handleSubmit,
     control,
     watch,
     formState: { errors },
-    reset
+    reset,
+    trigger
   } = useForm<EditTaskFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -128,14 +138,54 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       priority: task?.priority ?? TaskPriority.Low,
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? [],
       labels: task?.labels ?? [],
-      wpWbsNum: task?.wbsNum.workPackageNumber !== 0 ? task?.wbsNum : undefined
+      blockedBy: task?.blockedBy ?? [],
+      wpWbsNum: task?.wbsNum.workPackageNumber !== 0 ? task?.wbsNum : undefined,
+      projectWbsNum: null
     }
   });
 
   const startDate = watch('startDate');
+  const selectedProjectWbsNum = watch('projectWbsNum');
+
+  // The project the task belongs to: chosen in the picker on the global-create form, otherwise derived
+  // from the board's own wbs number.
+  const effectiveProjectWbsNum: WbsNumber | undefined = isGlobalCreate
+    ? (selectedProjectWbsNum ?? undefined)
+    : wbsNum
+      ? { ...wbsNum, workPackageNumber: 0 }
+      : undefined;
+
+  const { data: users, isLoading: usersLoading, isError, error } = useAllMembers();
+  const { data: taskLabels, isLoading: labelsIsLoading, isError: labelsIsError, error: labelsError } = useAllTaskLabels();
+
+  const placeholderWbs: WbsNumber = { carNumber: 0, projectNumber: 0, workPackageNumber: 0 };
+  const { data: workPackages } = useWorkPackagesByProject(
+    effectiveProjectWbsNum ?? placeholderWbs,
+    !!effectiveProjectWbsNum
+  );
+  const {
+    data: projectTasks,
+    isError: projectTasksIsError,
+    error: projectTasksError
+  } = useFilterTasks(effectiveProjectWbsNum ? { wbsNum: effectiveProjectWbsNum } : null);
+  // only tasks that aren't the task being edited and aren't already done can block a task
+  const blockedByOptions: TaskBlockerPreview[] = (projectTasks ?? []).filter(
+    (t) => t.taskId !== task?.taskId && t.status !== TaskStatus.DONE
+  );
+
+  // whether the *board* itself is scoped to a single work package (hides the WP picker). Driven by the
+  // board context, not the task's own wbs — a WP task opened from the global/project board still needs
+  // the WP picker so it can be reassigned.
+  const isWpContext = context === 'workPackage';
+
+  // highlight the missing required fields right away when asked to (e.g. dragged into In Progress)
+  useEffect(() => {
+    if (modalShow && validateOnOpen) trigger();
+  }, [modalShow, validateOnOpen, trigger]);
 
   if (isError) return <ErrorPage error={error} />;
   if (labelsIsError) return <ErrorPage error={labelsError} />;
+  if (projectTasksIsError) return <ErrorPage error={projectTasksError} />;
   if (usersLoading || !users || labelsIsLoading || !taskLabels) return <LoadingIndicator />;
 
   const userOptions: { label: string; id: string }[] = users.map(taskUserToAutocompleteOption);
@@ -177,6 +227,26 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
         }}
       >
         <Grid container spacing={2}>
+          {isGlobalCreate && (
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <FormLabel>Project</FormLabel>
+                <Controller
+                  name="projectWbsNum"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <ProjectDropdown
+                      multiple={false}
+                      carNumbers={projectCarNumbers}
+                      value={value ? [value] : []}
+                      onChange={(wbsNums) => onChange(wbsNums[0] ?? null)}
+                    />
+                  )}
+                />
+                <FormHelperText error={!!errors.projectWbsNum}>{errors.projectWbsNum?.message}</FormHelperText>
+              </FormControl>
+            </Grid>
+          )}
           <Grid item xs={12} md={7}>
             <FormControl sx={{ width: '100%' }}>
               <FormLabel>Title</FormLabel>
@@ -317,6 +387,34 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                       ))
                     }
                     renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select labels" />}
+                  />
+                )}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item md={12}>
+            <FormControl fullWidth>
+              <FormLabel>Blocked By</FormLabel>
+              <Controller
+                name="blockedBy"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Autocomplete
+                    multiple
+                    filterSelectedOptions
+                    options={blockedByOptions}
+                    getOptionLabel={(option: TaskBlockerPreview) => option.title}
+                    isOptionEqualToValue={(option, val) => option.taskId === val.taskId}
+                    onChange={(_, selected) => onChange(selected)}
+                    value={value}
+                    renderTags={(selected, getTagProps) =>
+                      selected.map((blocker, index) => (
+                        <Chip {...getTagProps({ index })} key={blocker.taskId} label={blocker.title} />
+                      ))
+                    }
+                    renderInput={(params) => (
+                      <TextField {...params} variant="standard" placeholder="Select tasks that block this task" />
+                    )}
                   />
                 )}
               />

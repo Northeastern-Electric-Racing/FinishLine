@@ -26,6 +26,7 @@ const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
+const userScheduleSettingsBusyTimes = (id: string) => `${usersById(id)}/schedule-settings/busy-times`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
@@ -386,11 +387,18 @@ const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-revie
 const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizations()}/sponsorshipChannelId/set`;
 const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
 const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
+const organizationsNotificationChannels = () => `${organizations()}/notification-channels`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
 const carEdit = (id: string) => `${cars()}/${id}/edit`;
+
+// dropdown endpoints — minimal payloads for populating select menus
+const projectsDropdown = () => `${projects()}/dropdown`;
+const workPackagesDropdown = () => `${workPackages()}/dropdown`;
+const membersDropdown = () => `${users()}/members/dropdown`;
+const teamsDropdown = () => `${teams()}/dropdown`;
 
 /************** Recruitment Endpoints ***************/
 const recruitment = () => `${API_URL}/recruitment`;
@@ -514,6 +522,13 @@ const attendanceGetOngoing = (teamId: string) => `${attendance()}/ongoing/${team
 const attendanceCloseOngoing = (teamId: string) => `${attendance()}/close/${teamId}`;
 const attendanceGetById = (meetingAttendanceId: string) => `${attendance()}/${meetingAttendanceId}`;
 
+/**************** Dashboard Endpoints ****************/
+const dashboards = () => `${API_URL}/dashboards`;
+const dashboardsGet = () => `${dashboards()}/`;
+const dashboardsCreate = () => `${dashboards()}/create`;
+const dashboardEdit = (dashboardId: string) => `${dashboards()}/${dashboardId}/edit`;
+const dashboardDelete = (dashboardId: string) => `${dashboards()}/${dashboardId}/delete`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -521,6 +536,10 @@ export const apiUrls = {
   users,
   orgUsers,
   orgMembers,
+  projectsDropdown,
+  workPackagesDropdown,
+  membersDropdown,
+  teamsDropdown,
   usersById,
   usersLogin,
   usersLoginDev,
@@ -531,6 +550,7 @@ export const apiUrls = {
   userFavoriteProjects,
   userSecureSettings,
   userScheduleSettings,
+  userScheduleSettingsBusyTimes,
   userScheduleSettingsSet,
   userTasks,
   manyUserTasks,
@@ -795,6 +815,7 @@ export const apiUrls = {
   organizationsSetSlackSponsorshipNotificationChannelId,
   organizationsFinanceDelegates,
   organizationsSetFinanceDelegates,
+  organizationsNotificationChannels,
 
   cars,
   carsCreate,
@@ -895,6 +916,11 @@ export const apiUrls = {
   attendanceGetOngoing,
   attendanceCloseOngoing,
   attendanceGetById,
+
+  dashboardsGet,
+  dashboardsCreate,
+  dashboardEdit,
+  dashboardDelete,
 
   version
 };

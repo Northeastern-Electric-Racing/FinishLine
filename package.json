@@ -10,6 +10,7 @@
     "src/docs-site"
   ],
   "scripts": {
+    "setup:hooks": "git config core.hooksPath .githooks",
     "prettier-check": "yarn prettier --check .",
     "frontend": "yarn workspace frontend start",
     "backend": "yarn workspace backend start",
