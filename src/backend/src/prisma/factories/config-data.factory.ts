@@ -1,5 +1,6 @@
 import { Prisma, Work_Package_Stage } from '@prisma/client';
 import { connectOrganization, connectUser } from '../utils/common.factory.js';
+import { encrypt } from '../../utils/encryption.utils.js';
 
 type WorkPackageTemplateConfig = {
   templateName: string;
@@ -278,7 +279,7 @@ export const vendorCreateInputs = (addedByUserId: string, organizationId: string
     taxExempt,
     notes,
     username,
-    password,
+    password: password ? encrypt(password) : undefined,
     discountCode,
     addedBy: connectUser(addedByUserId),
     organization: connectOrganization(organizationId),

@@ -1,6 +1,7 @@
 import { Faker } from '@faker-js/faker';
 import { Material_Status, Prisma } from '@prisma/client';
 import { randomElementWithBlacklist } from '../utils/common.factory.js';
+import { DateRange } from '../context.js';
 
 const MATERIAL_KEYWORDS_BY_TYPE: Record<
   string,
@@ -407,30 +408,6 @@ export const generateProjectBOMCount = (faker: Faker): number => {
   return faker.number.int({ min: 81, max: 200 });
 };
 
-/**
- * Splits a project's total BOM count across its WBS elements, always summing back to `total`.
- * Uses floor (never rounds up) so no share can overshoot, and the remainder left by flooring
- * is handed out one unit at a time instead of dumped onto a single index - which previously
- * could push that index below zero and get silently clamped away, undercounting the total.
- */
-export const splitBOMCount = (faker: Faker, total: number, wbsElementCount: number): number[] => {
-  if (total === 0) return Array(wbsElementCount).fill(0);
-  if (wbsElementCount === 1) return [total];
-
-  const weights = Array.from({ length: wbsElementCount }, () => faker.number.float({ min: 0.5, max: 1.5 }));
-  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
-
-  const counts = weights.map((w) => Math.floor((total * w) / totalWeight));
-
-  let remainder = total - counts.reduce((sum, c) => sum + c, 0);
-  while (remainder > 0) {
-    counts[faker.number.int({ min: 0, max: wbsElementCount - 1 })] += 1;
-    remainder -= 1;
-  }
-
-  return counts;
-};
-
 export const generateAssemblyName = (faker: Faker): string => {
   while (true) {
     const parts: string[] = [];
@@ -485,10 +462,11 @@ export const generateMaterialName = (faker: Faker, materialTypeName: string): st
 export const assemblyCreateInput = (
   name: string,
   wbsElementId: string,
-  userCreatedId: string
+  userCreatedId: string,
+  dateCreated: Date
 ): Prisma.AssemblyCreateInput => ({
   name,
-  dateCreated: new Date(),
+  dateCreated,
   userCreated: { connect: { userId: userCreatedId } },
   wbsElement: { connect: { wbsElementId } }
 });
@@ -499,6 +477,7 @@ export const materialCreateInput = (
   userCreatedId: string,
   materialTypeId: string,
   status: Material_Status,
+  dateCreated: Date,
   assemblyId?: string,
   manufacturerId?: string,
   unitId?: string,
@@ -506,7 +485,7 @@ export const materialCreateInput = (
   price?: number
 ): Prisma.MaterialCreateInput => ({
   name,
-  dateCreated: new Date(),
+  dateCreated,
   linkUrl: '',
   status,
   userCreated: { connect: { userId: userCreatedId } },
@@ -516,5 +495,33 @@ export const materialCreateInput = (
   ...(manufacturerId ? { manufacturer: { connect: { id: manufacturerId } } } : {}),
   ...(unitId ? { unit: { connect: { id: unitId } } } : {}),
   ...(quantity !== undefined ? { quantity } : {}),
-  ...(price !== undefined ? { price, subtotal: price * (quantity ?? 1) } : {})
+  // matches BillOfMaterialsService.createMaterial: subtotal is only ever computed when both price and quantity are set
+  ...(price !== undefined ? { price } : {}),
+  ...(price !== undefined && quantity !== undefined ? { subtotal: Math.round(price * quantity) } : {})
 });
+
+/** Clamps a random date to `timeline`, and never later than `now` (a material can't have been logged in the future). */
+export const generateMaterialDateCreated = (faker: Faker, timeline: DateRange, now: Date): Date => {
+  const end = timeline.end < now ? timeline.end : now;
+  if (end <= timeline.start) return new Date(timeline.start);
+  return faker.date.between({ from: timeline.start, to: end });
+};
+
+// past-year cars have had their entire year to actually purchase things, so most BOM items are received by now
+export const PAST_YEAR_RECEIVED_CHANCE = 0.85;
+// the current-year car is only halfway through its year, so only about half of its BOM items have been purchased so far
+export const CURRENT_YEAR_RECEIVED_CHANCE = 0.5;
+
+const NOT_YET_PURCHASED_STATUSES: Material_Status[] = [
+  Material_Status.NOT_READY_TO_ORDER,
+  Material_Status.READY_TO_ORDER,
+  Material_Status.ORDERED,
+  Material_Status.SHIPPED
+];
+
+export const generateMaterialStatus = (faker: Faker, isCurrentYearCar: boolean): Material_Status => {
+  const receivedChance = isCurrentYearCar ? CURRENT_YEAR_RECEIVED_CHANCE : PAST_YEAR_RECEIVED_CHANCE;
+
+  if (faker.datatype.boolean({ probability: receivedChance })) return Material_Status.RECEIVED;
+  return faker.helpers.arrayElement(NOT_YET_PURCHASED_STATUSES);
+};
