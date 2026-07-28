@@ -138,7 +138,8 @@ const performSeed: () => Promise<void> = async () => {
         'https://docs.google.com/forms/d/e/1FAIpQLSeCvG7GqmZm_gmSZiahbVTW9ZFpEWG0YfGQbkSB_whhHzxXpA/closedform',
       platformDescription:
         'Finishline is a Project Management Dashboard developed by the Software Team at Northeastern Electric Racing.',
-      platformLogoImageId: '1auQO3GYydZOo1-vCn0D2iyCfaxaVFssx'
+      platformLogoImageId: '1auQO3GYydZOo1-vCn0D2iyCfaxaVFssx',
+      slackWorkspaceId: 'T7MHAQ5TL'
     }
   });
 

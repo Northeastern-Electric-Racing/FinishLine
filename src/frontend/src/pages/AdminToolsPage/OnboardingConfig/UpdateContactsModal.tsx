@@ -10,8 +10,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import * as yup from 'yup';
 import { useUpdateOrganizationContacts } from '../../../hooks/organizations.hooks'; // Assume hook exists
 import { Contact } from 'shared';
-import { useAllMembers } from '../../../hooks/users.hooks';
-import { userToAutocompleteOption } from '../../../utils/teams.utils';
+import { useMembersDropdown } from '../../../hooks/dropdowns.hooks';
 
 const schema = yup.object().shape({
   contacts: yup
@@ -48,7 +47,7 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
     mutateAsync
   } = useUpdateOrganizationContacts();
 
-  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllMembers();
+  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useMembersDropdown();
 
   const contactsAsObjects = useMemo(
     () =>
@@ -117,7 +116,10 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
               name={`contacts.${index}.userId`}
               control={control}
               render={({ field }) => {
-                const memberOptions = users.map(userToAutocompleteOption);
+                const memberOptions = users.map((user) => ({
+                  id: user.userId,
+                  label: `${user.firstName} ${user.lastName}`
+                }));
                 return (
                   <Autocomplete
                     options={memberOptions}

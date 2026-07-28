@@ -1,4 +1,4 @@
-import { Grid, Typography, ListItem, List, useTheme } from '@mui/material';
+import { Grid, Typography, ListItem, List, Link, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
@@ -9,13 +9,13 @@ import NewMemberEventsWidget from './NewMemberEventsWidget';
 import NewMemberSlackWidget from './NewMemberSlackWidget';
 import NewMemberUsefulLinksWidget from './NewMemberUsefulLinksWidget';
 
-interface OnboardingInfoSectionProps {
+interface NewMemberOnboardingInfoSectionProps {
   /** 'full' (default) shows every widget, for the new member dashboard. 'checklist' shows only
    * the onboarding block, useful links, and contacts, for the onboarding checklist page. */
   variant?: 'full' | 'checklist';
 }
 
-const OnboardingInfoSection: React.FC<OnboardingInfoSectionProps> = ({ variant = 'full' }) => {
+const NewMemberOnboardingInfoSection: React.FC<NewMemberOnboardingInfoSectionProps> = ({ variant = 'full' }) => {
   const theme = useTheme();
   const {
     data: organization,
@@ -67,16 +67,28 @@ const OnboardingInfoSection: React.FC<OnboardingInfoSectionProps> = ({ variant =
           <List sx={{ listStyleType: 'disc', pl: 2 }}>
             {organization.contacts.map((contact) => {
               return (
-                <ListItem sx={{ display: 'list-item', padding: 0.5, ml: 2 }}>
-                  {contact.user.firstName} {contact.user.lastName}: {contact.user.email} - {contact.title}
+                <ListItem key={`${contact.user.userId}-${contact.title}`} sx={{ display: 'list-item', padding: 0.5, ml: 2 }}>
+                  {contact.user.firstName} {contact.user.lastName} - {contact.title}
                 </ListItem>
               );
             })}
           </List>
+          {organization.slackWorkspaceId && (
+            <Typography sx={{ ml: 2, pb: 2 }}>
+              You can find them on{' '}
+              <Link
+                href={`https://app.slack.com/client/${organization.slackWorkspaceId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Slack
+              </Link>
+            </Typography>
+          )}
         </Box>
       </Grid>
     </Grid>
   );
 };
 
-export default OnboardingInfoSection;
+export default NewMemberOnboardingInfoSection;

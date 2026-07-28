@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useHomePageContext } from '../../app/HomePageContext';
 import ChecklistSection from './components/ChecklistSection';
-import OnboardingInfoSection from './components/OnboardingInfoSection';
+import NewMemberOnboardingInfoSection from './components/NewMemberOnboardingInfoSection';
 import ConfirmOnboardingChecklistModal from './components/ConfirmOnboardingChecklistModal';
 import { NERButton } from '../../components/NERButton';
 import { useCheckedChecklists, useUsersChecklists, useChecklistProgress } from '../../hooks/onboarding.hook';
@@ -140,7 +140,7 @@ const OnboardingHomePage = () => {
           </Grid>
           <Grid container item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
             <Grid item>
-              <OnboardingInfoSection variant="checklist" />
+              <NewMemberOnboardingInfoSection variant="checklist" />
             </Grid>
           </Grid>
         </Grid>

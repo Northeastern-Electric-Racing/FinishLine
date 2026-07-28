@@ -9,7 +9,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
-import OnboardingInfoSection from './components/OnboardingInfoSection';
+import NewMemberOnboardingInfoSection from './components/NewMemberOnboardingInfoSection';
 import NewMemberFAQsSection from './components/NewMemberFAQsSection';
 import NewMemberChecklistSummaryWidget from './components/NewMemberChecklistSummaryWidget';
 
@@ -46,7 +46,7 @@ const NewMemberHomePage = () => {
       </Grid>
       <Grid container display={'flex'}>
         <Grid item xs={12} md={8} sx={{ padding: 2 }}>
-          <OnboardingInfoSection />
+          <NewMemberOnboardingInfoSection />
         </Grid>
         <Grid item xs={12} md={4} sx={{ padding: 2 }}>
           <Typography sx={{ fontSize: '1.5em', mb: 1 }}>FAQs</Typography>

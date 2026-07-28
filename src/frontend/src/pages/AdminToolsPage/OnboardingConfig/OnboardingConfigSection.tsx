@@ -1,4 +1,4 @@
-import { Grid, Typography, List, ListItem, useTheme } from '@mui/material';
+import { Grid, Typography, List, ListItem, Link, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import UsefulLinksTable from './UsefulLinks/UsefulLinksTable';
 import LinkTypeTable from '../ProjectsConfig/LinkTypes/LinkTypeTable';
@@ -18,7 +18,7 @@ import NERUploadButton from '../../../components/NERUploadButton';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { MAX_FILE_SIZE } from 'shared';
 
-const OnboardingInfoSection: React.FC = () => {
+const OnboardingConfigSection: React.FC = () => {
   const theme = useTheme();
   const [showModal, setShowModal] = useState(false);
   const [addedImage, setAddedImage] = useState<File | undefined>(undefined);
@@ -218,12 +218,24 @@ const OnboardingInfoSection: React.FC = () => {
           <List sx={{ listStyleType: 'disc', pl: 4 }}>
             {organization.contacts.map((contact) => {
               return (
-                <ListItem sx={{ display: 'list-item', padding: 0.5 }}>
-                  {contact.user.firstName} {contact.user.lastName}: {contact.user.email} - {contact.title}
+                <ListItem key={`${contact.user.userId}-${contact.title}`} sx={{ display: 'list-item', padding: 0.5 }}>
+                  {contact.user.firstName} {contact.user.lastName} - {contact.title}
                 </ListItem>
               );
             })}
           </List>
+          {organization.slackWorkspaceId && (
+            <Typography sx={{ ml: 2, pb: 2 }}>
+              You can find them on{' '}
+              <Link
+                href={`https://app.slack.com/client/${organization.slackWorkspaceId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Slack
+              </Link>
+            </Typography>
+          )}
         </Box>
       </Grid>
       <UpdateOnboardingContactsModal
@@ -235,4 +247,4 @@ const OnboardingInfoSection: React.FC = () => {
   );
 };
 
-export default OnboardingInfoSection;
+export default OnboardingConfigSection;
