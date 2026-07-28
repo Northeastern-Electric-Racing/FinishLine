@@ -71,7 +71,10 @@ const guestUser: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.DARK,
-      slackId: SLACK_ID ? SLACK_ID : 'guest'
+      // always empty (ignores the SLACK_ID env var other seeded users get) so this guest
+      // exercises the forced slack-id-entry gate once they finish onboarding, instead of
+      // bypassing it
+      slackId: ''
     }
   }
 };
