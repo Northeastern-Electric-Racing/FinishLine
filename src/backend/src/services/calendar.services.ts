@@ -3016,7 +3016,7 @@ export default class CalendarService {
 
     for (const userSetting of memberUserSettings) {
       if (userSetting.slackId) {
-        await sendSlackEventConfirmNotification(userSetting.slackId, eventId, event.title, projectName);
+        await sendSlackEventConfirmNotification(userSetting.slackId, eventId, event.title, projectName, true);
       }
     }
   }

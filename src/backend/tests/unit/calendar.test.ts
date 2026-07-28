@@ -2634,12 +2634,13 @@ describe('Calendar Tests', () => {
         [],
         [],
         scheduleSlots,
-        undefined,
-        undefined,
-        undefined,
-        'Conference Room A',
-        undefined,
-        undefined
+        undefined, // initialDateScheduled
+        [], // notificationChannelIds
+        undefined, // teamTypeId
+        undefined, // questionDocumentLink
+        'Conference Room A', // location
+        undefined, // zoomLink
+        undefined // description
       );
     });
 

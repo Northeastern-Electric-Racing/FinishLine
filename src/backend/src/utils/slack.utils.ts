@@ -314,11 +314,14 @@ export const sendSlackEventConfirmNotification = async (
   slackId: string,
   eventId: string,
   eventName: string,
-  projectName: string
+  projectName: string,
+  remindUnconfirmed: boolean = false
 ) => {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
-  const msg = `You have been invited to ${eventName} in project ${projectName}!`;
+  const msg = remindUnconfirmed
+    ? `REMINDER: Please fill out your availability for ${eventName} in project ${projectName}!`
+    : `You have been invited to ${eventName} in project ${projectName}!`;
   const fullLink = isProduction
     ? `https://finishlinebyner.com/calendar/event/${eventId}`
     : `http://localhost:3000/calendar/event/${eventId}`;
