@@ -70,21 +70,46 @@ const EXTRA_COMMENT_TEMPLATES = [
   'Let me know if you need anything else for this'
 ];
 
+// How many reimbursement requests to build concurrently. Each request fans out into several
+// parallel writes internally (products, status steps, etc.), so this caps *outer* concurrency
+// to avoid exhausting the Prisma connection pool. Tune based on your pool size (Prisma's default
+// pool is `num_cpus * 2 + 1`) - if you raise this, make sure your DB connection limit can absorb
+// REQUEST_CONCURRENCY * (~3-6 concurrent connections per in-flight request).
 const REQUEST_CONCURRENCY = 8;
 
+// Fully pre-decided plan shapes (all faker draws already resolved)
+// One product's pre-decided values. name and (for general supplies) otherReasonId are drawn in Phase 1.
+type PlannedProduct = {
+  spec: ReimbursementProductSpec<Material>;
+  cost: number;
+  name: string;
+  // Present only for general-supply products. undefined for material-tied products.
+  otherReasonId?: string;
+};
+
+type PlannedStatusStep = ReimbursementStatusStep & { actorId: string; actorFirstName: string; actorLastName: string };
+type PlannedDelivery = { dateDelivered: Date }
+type PlannedExtraComment = { authorId: string; text: string; date: Date };
+
+// Precomputed, synchronous inputs for a single reimbursement request - no DB access, no faker in Phase 2.
 type PlannedRequest = {
   identifier: number;
   recipient: FullUser;
   dateCreated: Date;
   statusHistory: ReimbursementStatusStep[];
+  plannedSteps: PlannedStatusStep[];
   dateOfExpense: Date | undefined;
   indexCode: ReturnType<typeof chooseFundingSource>['indexCode'];
   accountCode: ReturnType<typeof chooseFundingSource>['accountCode'];
   vendorId: string;
   description: string;
-  group: ReimbursementProductSpec<Material>[];
-  productCosts: number[];
+  products: PlannedProduct[];
   totalCost: number;
+  materialStatusAfterTie: Material['status'];
+  // pre-decided follow-ups
+  delivery?: PlannedDelivery;
+  assigneeId?: string;
+  extraComment?: PlannedExtraComment;
 };
 
 export class ReimbursementRequestProcess extends SeedProcess<ReimbursementRequestInput, ReimbursementRequestOutput> {
@@ -152,9 +177,8 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
       return acc;
     }, {});
 
-    // Phase 1: plan every request synchronously (no DB calls)
-    // Splitting "decide what to create" from "create it" lets it fan the actual writes out
-    // across Promise.all batches.
+    // Phase 1: plan every request synchronously. Every faker draw happens here, in the exact
+    // order V1 consumed them, so the seeded stream is identical to V1 and reproducible run-to-run.
     let identifier = 0;
     const plannedRequests: PlannedRequest[] = [];
 
@@ -190,6 +214,7 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
         for (const group of productGroups) {
           identifier += 1;
 
+          // draws in V1's order: recipient, dateCreated, statusHistory, dateOfExpense, funding, vendor, description, productCosts
           const recipient = this.faker.helpers.arrayElement(recipients);
 
           const dateCreated =
@@ -225,44 +250,92 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
           );
           const totalCost = productCosts.reduce((sum, cost) => sum + cost, 0);
 
+          // per-product draws: for each product, (otherReason if general) then name
+          const products: PlannedProduct[] = group.map((spec, productIndex) => {
+            const otherReasonId =
+              'material' in spec
+                ? undefined
+                : this.faker.helpers.arrayElement(reimbursementProductOtherReasons).otherReimbursementProductReasonId;
+
+            const name =
+              'material' in spec ? spec.material.name : this.faker.helpers.arrayElement(GENERAL_SUPPLY_PRODUCT_NAMES);
+
+            return { spec, cost: productCosts[productIndex], name, otherReasonId };
+          });
+
+          // material status is a pure function of statusHistory (same for every tied material in the group)
+          const materialStatusAfterTie = deriveMaterialStatusAfterTie(statusHistory);
+
+          // per-status-step actor draws, after the product draws (matches V1's loop order)
+          const plannedSteps: PlannedStatusStep[] = statusHistory.slice(1).map((step) => {
+            const actor = this.pickActorForStage(step.type, recipient, headApprovers, admins, financePersonnel);
+            return { ...step, actorId: actor.userId, actorFirstName: actor.firstName, actorLastName: actor.lastName };
+          });
+
+          // follow-up draws, in V1's order: delivery, then assignee, then extra comment
+          let delivery: PlannedDelivery | undefined;
+          if (dateOfExpense && !hasReachedStage(statusHistory, Reimbursement_Status_Type.DENIED)) {
+            // The DELIVERY_CHANCE boolean must be drawn here (inside the same guard V1 used)
+            // so the stream matches even when the guard is false and no delivery happens.
+            if (this.faker.datatype.boolean({ probability: DELIVERY_CHANCE })) {
+              const dateDelivered = clampDate(
+                this.faker.date.soon({ days: this.faker.number.int({ min: 1, max: 14 }), refDate: dateOfExpense }),
+                { start: dateOfExpense, end: now }
+              );
+              delivery = { dateDelivered };
+            }
+          }
+
+          let assigneeId: string | undefined;
+          if (hasReachedStage(statusHistory, Reimbursement_Status_Type.LEADERSHIP_APPROVED)) {
+            if (this.faker.datatype.boolean({ probability: ASSIGNEE_CHANCE })) {
+              assigneeId = this.faker.helpers.arrayElement(financePersonnel).userId;
+            }
+          }
+
+          let extraComment: PlannedExtraComment | undefined;
+          if (this.faker.datatype.boolean({ probability: EXTRA_COMMENT_CHANCE })) {
+            const commentAuthor = this.faker.helpers.arrayElement([recipient, ...financePersonnel]);
+            const text = this.faker.helpers.arrayElement(EXTRA_COMMENT_TEMPLATES);
+            extraComment = {
+              authorId: commentAuthor.userId,
+              text,
+              date: statusHistory[statusHistory.length - 1].date
+            };
+          }
+
           plannedRequests.push({
             identifier,
             recipient,
             dateCreated,
             statusHistory,
+            plannedSteps,
             dateOfExpense,
             indexCode,
             accountCode,
             vendorId: vendor.vendorId,
             description,
-            group,
-            productCosts,
-            totalCost
+            products,
+            totalCost,
+            materialStatusAfterTie,
+            delivery,
+            assigneeId,
+            extraComment
           });
         }
       }
     }
 
-    // Phase 2: execute the writes, N requests at a time
+    // Phase 2: pure writes, REQUEST_CONCURRENCY requests at a time. No faker access anywhere
+    // below this line - the writer methods are not passed `this.faker`, so concurrent resolution
+    // order provably cannot affect output.
     const reimbursementRequests: Reimbursement_Request[] = [];
     const reimbursedTotalsByRecipientId = new Map<string, { total: number; latestDate: Date }>();
 
     for (let i = 0; i < plannedRequests.length; i += REQUEST_CONCURRENCY) {
       const batch = plannedRequests.slice(i, i + REQUEST_CONCURRENCY);
 
-      const results = await Promise.all(
-        batch.map((planned) =>
-          this.createReimbursementRequest(
-            planned,
-            organizationId,
-            headApprovers,
-            admins,
-            financePersonnel,
-            reimbursementProductOtherReasons,
-            now
-          )
-        )
-      );
+      const results = await Promise.all(batch.map((planned) => this.writeReimbursementRequest(planned, organizationId)));
 
       for (const { createdRequest, reimbursed } of results) {
         reimbursementRequests.push(createdRequest);
@@ -277,36 +350,33 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
       }
     }
 
-    // Phase 3: aggregate Reimbursement rows, one per recipient
-    const reimbursementCreates = [...reimbursedTotalsByRecipientId.entries()]
-      .filter(() => this.faker.datatype.boolean({ probability: REIMBURSEMENT_CHANCE_PER_RECIPIENT }))
-      .map(([recipientId, { total, latestDate }]) => {
-        const amount = Math.round((total * this.faker.number.float({ min: 0.5, max: 1 })) / 100) * 100;
-        return this.prisma.reimbursement.create({
-          data: reimbursementCreateInput(organizationId, recipientId, amount, latestDate)
-        });
-      });
+    // Phase 3: aggregate Reimbursement rows, one per recipient. Draws are interleaved per
+    // recipient (boolean then float). Map iteration order is first-insertion
+    // order, which equals plan/request order, so the draw sequence is deterministic.
+    const reimbursementCreates: Promise<unknown>[] = [];
+    for (const [recipientId, { total, latestDate }] of reimbursedTotalsByRecipientId) {
+      // boolean and float are drawn together per recipient (V1 order), regardless of whether the
+      // boolean passes, so a skipped recipient still consumes only the boolean.
+      if (!this.faker.datatype.boolean({ probability: REIMBURSEMENT_CHANCE_PER_RECIPIENT })) continue;
+
+      const amount = Math.round((total * this.faker.number.float({ min: 0.5, max: 1 })) / 100) * 100;
+      reimbursementCreates.push(
+        this.prisma.reimbursement.create({ data: reimbursementCreateInput(organizationId, recipientId, amount, latestDate) })
+      );
+    }
 
     await Promise.all(reimbursementCreates);
 
     return { reimbursementRequests };
   }
 
-  /**
-   * Creates a single reimbursement request and everything hanging off it (products, status
-   * history, receipts, comments, delivery/assignee/etc). All the sub-writes below are
-   * independent of each other's created rows - the chronological ordering that matters is
-   * already baked into the `date` fields computed in Phase 1 - so they're fired concurrently
-   * rather than awaited one at a time.
-   */
-  private async createReimbursementRequest(
+  // Phase 2 writers. NONE of these receive or reference faker. Every value they persist
+  // was decided in Phase 1. They may fan writes out with Promise.all freely, because there are
+  // no random draws whose order could matter. Only true data dependencies are sequenced.
+
+  private async writeReimbursementRequest(
     planned: PlannedRequest,
-    organizationId: string,
-    headApprovers: FullUser[],
-    admins: FullUser[],
-    financePersonnel: FullUser[],
-    reimbursementProductOtherReasons: { otherReimbursementProductReasonId: string }[],
-    now: Date
+    organizationId: string
   ): Promise<{
     createdRequest: Reimbursement_Request;
     reimbursed?: { recipientId: string; totalCost: number; date: Date };
@@ -316,14 +386,18 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
       recipient,
       dateCreated,
       statusHistory,
+      plannedSteps,
       dateOfExpense,
       indexCode,
       accountCode,
       vendorId,
       description,
-      group,
-      productCosts,
-      totalCost
+      products,
+      totalCost,
+      materialStatusAfterTie,
+      delivery,
+      assigneeId,
+      extraComment
     } = planned;
 
     const createdRequest = await this.prisma.reimbursement_Request.create({
@@ -341,101 +415,57 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
       )
     });
 
-    // Products (and their reasons + tied-material status updates) are independent of each other.
-    const productWrites = group.map((spec, productIndex) => {
-      const otherReasonId =
-        'material' in spec
-          ? undefined
-          : this.faker.helpers.arrayElement(reimbursementProductOtherReasons).otherReimbursementProductReasonId;
+    const requestId = createdRequest.reimbursementRequestId;
 
-      return this.createReimbursementProduct(
-        spec,
-        productCosts[productIndex],
-        createdRequest.reimbursementRequestId,
-        indexCode.indexCodeId,
-        otherReasonId,
-        statusHistory
-      );
-    });
+    const productWrites = products.map((product) =>
+      this.writeProduct(product, requestId, indexCode.indexCodeId, materialStatusAfterTie)
+    );
 
-    // Status-history side effects (receipt / comment / status row) are independent per step,
-    // and independent across steps too - only the dates need to be in order, which they are.
-    const statusWrites = statusHistory
-      .slice(1)
-      .map((step) =>
-        this.applyStatusStep(
-          step,
-          createdRequest.reimbursementRequestId,
-          identifier,
-          recipient,
-          headApprovers,
-          admins,
-          financePersonnel
-        )
-      );
+    const statusWrites = plannedSteps.map((step) => this.writeStatusStep(step, requestId, identifier, recipient.userId));
 
     await Promise.all([...productWrites, ...statusWrites]);
 
-    // Post-processing conditionals: independent of each other, all depend only on createdRequest.
     const followUps: Promise<unknown>[] = [];
 
     if (hasReachedStage(statusHistory, Reimbursement_Status_Type.PENDING_SABO_SUBMISSION)) {
       followUps.push(
         this.prisma.reimbursement_Request.update({
-          where: { reimbursementRequestId: createdRequest.reimbursementRequestId },
+          where: { reimbursementRequestId: requestId },
           data: { saboId: `SABO-${identifier}` }
         })
       );
     }
 
-    if (
-      dateOfExpense &&
-      !hasReachedStage(statusHistory, Reimbursement_Status_Type.DENIED) &&
-      this.faker.datatype.boolean({ probability: DELIVERY_CHANCE })
-    ) {
-      const dateDelivered = clampDate(
-        this.faker.date.soon({ days: this.faker.number.int({ min: 1, max: 14 }), refDate: dateOfExpense }),
-        { start: dateOfExpense, end: now }
-      );
-
+    if (delivery) {
       followUps.push(
         this.prisma.reimbursement_Request.update({
-          where: { reimbursementRequestId: createdRequest.reimbursementRequestId },
-          data: { dateDelivered }
+          where: { reimbursementRequestId: requestId },
+          data: { dateDelivered: delivery.dateDelivered }
         }),
         this.prisma.reimbursement_Request_Comment.create({
           data: reimbursementRequestCommentCreateInput(
-            createdRequest.reimbursementRequestId,
+            requestId,
             recipient.userId,
             systemCommentText(recipient.firstName, recipient.lastName, 'Marked As Delivered'),
-            dateDelivered
+            delivery.dateDelivered
           )
         })
       );
     }
 
-    if (
-      hasReachedStage(statusHistory, Reimbursement_Status_Type.LEADERSHIP_APPROVED) &&
-      this.faker.datatype.boolean({ probability: ASSIGNEE_CHANCE })
-    ) {
+    if (assigneeId) {
       followUps.push(
         this.prisma.reimbursement_Request.update({
-          where: { reimbursementRequestId: createdRequest.reimbursementRequestId },
-          data: { assignee: { connect: { userId: this.faker.helpers.arrayElement(financePersonnel).userId } } }
+          where: { reimbursementRequestId: requestId },
+          data: { assignee: { connect: { userId: assigneeId } } }
         })
       );
     }
 
-    if (this.faker.datatype.boolean({ probability: EXTRA_COMMENT_CHANCE })) {
-      const commentAuthor = this.faker.helpers.arrayElement([recipient, ...financePersonnel]);
+    if (extraComment) {
       followUps.push(
         this.prisma.reimbursement_Request_Comment.create({
-          data: reimbursementRequestCommentCreateInput(
-            createdRequest.reimbursementRequestId,
-            commentAuthor.userId,
-            this.faker.helpers.arrayElement(EXTRA_COMMENT_TEMPLATES),
-            statusHistory[statusHistory.length - 1].date
-          )
+          data: reimbursementRequestCommentCreateInput(requestId, extraComment.authorId, extraComment.text, extraComment.date)
         })
       );
     }
@@ -453,18 +483,15 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
     return { createdRequest, reimbursed };
   }
 
-  // Creates one reimbursement product:
-  // its reason must be created first (product needs the id), then the product itself,
-  // then (for tied materials) the material status update - the latter two can run in
-  // parallel once the reason exists.
-  private async createReimbursementProduct(
-    spec: ReimbursementProductSpec<Material>,
-    cost: number,
+  // Reason must exist before the product (product needs its id); the product create and the tied-material update then run in parallel. No faker.
+  private async writeProduct(
+    product: PlannedProduct,
     reimbursementRequestId: string,
     indexCodeId: string,
-    otherReasonId: string | undefined,
-    statusHistory: ReimbursementStatusStep[]
+    materialStatusAfterTie: Material['status']
   ): Promise<void> {
+    const { spec, cost, name, otherReasonId } = product;
+
     const reasonCreateInput =
       'material' in spec
         ? wbsReimbursementProductReasonCreateInput(spec.material.wbsElementId)
@@ -472,12 +499,9 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
 
     const reason = await this.prisma.reimbursement_Product_Reason.create({ data: reasonCreateInput });
 
-    const productName =
-      'material' in spec ? spec.material.name : this.faker.helpers.arrayElement(GENERAL_SUPPLY_PRODUCT_NAMES);
-
     const productCreate = this.prisma.reimbursement_Product.create({
       data: reimbursementProductCreateInput(
-        productName,
+        name,
         cost,
         reimbursementRequestId,
         reason.reimbursementProductReasonId,
@@ -490,31 +514,26 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
       'material' in spec
         ? this.prisma.material.update({
             where: { materialId: spec.material.materialId },
-            data: { status: deriveMaterialStatusAfterTie(statusHistory) }
+            data: { status: materialStatusAfterTie }
           })
         : Promise.resolve();
 
     await Promise.all([productCreate, materialUpdate]);
   }
 
-  // Applies one status-history step's side effects: optional receipt, optional system comment,
-  // and the status row itself - all independent of each other.
-  private async applyStatusStep(
-    step: ReimbursementStatusStep,
+  // Applies one pre-planned status step: optional receipt, optional system comment, and the status row. Actor was chosen in Phase 1. No faker.
+  private async writeStatusStep(
+    step: PlannedStatusStep,
     reimbursementRequestId: string,
     identifier: number,
-    recipient: FullUser,
-    headApprovers: FullUser[],
-    admins: FullUser[],
-    financePersonnel: FullUser[]
+    recipientId: string
   ): Promise<void> {
-    const actor = this.pickActorForStage(step.type, recipient, headApprovers, admins, financePersonnel);
     const writes: Promise<unknown>[] = [];
 
     if (step.type === Reimbursement_Status_Type.PENDING_FINANCE) {
       writes.push(
         this.prisma.receipt.create({
-          data: receiptCreateInput(reimbursementRequestId, recipient.userId, identifier, step.date)
+          data: receiptCreateInput(reimbursementRequestId, recipientId, identifier, step.date)
         })
       );
     }
@@ -525,8 +544,8 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
         this.prisma.reimbursement_Request_Comment.create({
           data: reimbursementRequestCommentCreateInput(
             reimbursementRequestId,
-            actor.userId,
-            systemCommentText(actor.firstName, actor.lastName, action),
+            step.actorId,
+            systemCommentText(step.actorFirstName, step.actorLastName, action),
             step.date
           )
         })
@@ -537,7 +556,7 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
       this.prisma.reimbursement_Status.create({
         data: {
           type: step.type,
-          userId: actor.userId,
+          userId: step.actorId,
           dateCreated: step.date,
           reimbursementRequestId
         }
@@ -547,6 +566,7 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
     await Promise.all(writes);
   }
 
+  // pickActorForStage is only ever called during Phase 1 planning now.
   private pickActorForStage(
     stage: Reimbursement_Status_Type,
     recipient: FullUser,
