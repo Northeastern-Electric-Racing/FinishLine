@@ -88,7 +88,7 @@ type PlannedProduct = {
 };
 
 type PlannedStatusStep = ReimbursementStatusStep & { actorId: string; actorFirstName: string; actorLastName: string };
-type PlannedDelivery = { dateDelivered: Date }
+type PlannedDelivery = { dateDelivered: Date };
 type PlannedExtraComment = { authorId: string; text: string; date: Date };
 
 // Precomputed, synchronous inputs for a single reimbursement request - no DB access, no faker in Phase 2.
@@ -465,7 +465,12 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
     if (extraComment) {
       followUps.push(
         this.prisma.reimbursement_Request_Comment.create({
-          data: reimbursementRequestCommentCreateInput(requestId, extraComment.authorId, extraComment.text, extraComment.date)
+          data: reimbursementRequestCommentCreateInput(
+            requestId,
+            extraComment.authorId,
+            extraComment.text,
+            extraComment.date
+          )
         })
       );
     }
