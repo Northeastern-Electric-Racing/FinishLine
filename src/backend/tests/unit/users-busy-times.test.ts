@@ -1,5 +1,8 @@
 import { Calendar, Organization, User } from '@prisma/client';
 import { vi } from 'vitest';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+import timezone from 'dayjs/plugin/timezone.js';
 import { EventType } from 'shared';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import { batmanAppAdmin, wonderwomanGuest, robinMember } from '../test-data/users.test-data';
@@ -8,6 +11,11 @@ import CalendarService from '../../src/services/calendar.services';
 import prisma from '../../src/prisma/prisma';
 import { encrypt } from '../../src/utils/encryption.utils';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const BUSINESS_TIMEZONE = 'America/New_York';
 
 // avoids a real DNS lookup in validateIcsUrl's SSRF host check - resolves to an arbitrary public address
 vi.mock('node:dns/promises', () => ({
@@ -24,8 +32,8 @@ describe('Get User Busy Times', () => {
   // range covers exactly one UTC day
   const startDate = new Date(Date.UTC(2026, 6, 20));
   const endDate = new Date(Date.UTC(2026, 6, 21));
-  // local components so it lines up with the local-midnight day boundary busyIntervalsToSlots computes
-  const localAt = (hour: number): Date => new Date(2026, 6, 20, hour, 0, 0, 0);
+  // Eastern-time components so it lines up with the Eastern-midnight day boundary busyIntervalsToSlots computes
+  const localAt = (hour: number): Date => dayjs.tz('2026-07-20', BUSINESS_TIMEZONE).add(hour, 'hour').toDate();
 
   beforeEach(async () => {
     organization = await createTestOrganization();
@@ -196,8 +204,8 @@ describe('Get User Busy Times', () => {
       'BEGIN:VEVENT',
       'UID:test-event-1@example.com',
       'DTSTAMP:20260701T000000Z',
-      'DTSTART:20260720T160000',
-      'DTEND:20260720T170000',
+      'DTSTART;TZID=America/New_York:20260720T160000',
+      'DTEND;TZID=America/New_York:20260720T170000',
       'SUMMARY:External Meeting',
       'END:VEVENT',
       'END:VCALENDAR',
