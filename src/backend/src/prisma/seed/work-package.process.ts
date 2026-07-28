@@ -159,7 +159,8 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
         blocker && daysBetween({ start: blocker.timeline.end, end: timeline.end }) >= DAYS_PER_WEEK
           ? blockerIndex
           : undefined;
-      const effectiveBlockerEnd = effectiveBlockerIndex !== undefined ? planned[effectiveBlockerIndex].timeline.end : undefined;
+      const effectiveBlockerEnd =
+        effectiveBlockerIndex !== undefined ? planned[effectiveBlockerIndex].timeline.end : undefined;
 
       const wpTimeline = generateWorkPackageTimeline(this.faker, timeline, i === 0, effectiveBlockerEnd);
 
