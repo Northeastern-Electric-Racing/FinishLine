@@ -218,4 +218,5 @@ export type ExceptionObjectNames =
   | 'Meeting Attendance'
   | 'Task Label'
   | 'Notification Channel'
-  | 'Dashboard';
+  | 'Dashboard'
+  | 'Team Join Request';

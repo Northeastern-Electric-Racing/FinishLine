@@ -26,8 +26,8 @@ const Home: React.FC = () => {
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;
   if (teamsIsLoading || !teams) return <LoadingIndicator />;
 
-  // a new member stays on their own dashboard until they join a team or are promoted off the Guest
-  // role -- either one means they've graduated out of the new member experience
+  // a new member stays on their own dashboard until they join a team -- the moment they're added
+  // (approval adds them to team.members immediately) they graduate to the standard dashboard
   const isNewMember = completedOnboarding && isGuest(user.role) && teams.length === 0;
 
   return (

@@ -166,6 +166,10 @@ const teamTypesCreate = () => `${teamTypes()}/create`;
 const teamTypeEdit = (id: string) => `${teamTypes()}/${id}/edit`;
 const teamTypeSetImage = (id: string) => `${teamTypes()}/${id}/set-image`;
 const myTeamAsHead = () => `${teams()}/my-team-as-head`;
+const myTeamJoinRequests = () => `${teams()}/join-requests/mine`;
+const teamsPendingJoinRequests = (id: string) => `${teamsById(id)}/join-requests`;
+const teamsCreateJoinRequest = (id: string) => `${teamsById(id)}/join-request`;
+const teamsReviewJoinRequest = (teamJoinRequestId: string) => `${teams()}/join-request/${teamJoinRequestId}/review`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -680,6 +684,10 @@ export const apiUrls = {
   teamTypeEdit,
   teamTypeSetImage,
   myTeamAsHead,
+  myTeamJoinRequests,
+  teamsPendingJoinRequests,
+  teamsCreateJoinRequest,
+  teamsReviewJoinRequest,
 
   descriptionBulletsCheck,
   descriptionBulletTypes,

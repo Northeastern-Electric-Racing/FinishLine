@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
-import { Team, TeamBase, TeamPreview } from 'shared';
+import { Team, TeamBase, TeamJoinRequest, TeamPreview } from 'shared';
 import {
   getAllTeams,
   getSingleTeam,
@@ -19,7 +19,11 @@ import {
   getUsersTeams,
   setTeamSlackId,
   getMyTeamAsHead,
-  getAllTeamPreviews
+  getAllTeamPreviews,
+  getMyTeamJoinRequests,
+  getPendingTeamJoinRequests,
+  createTeamJoinRequest,
+  reviewTeamJoinRequest
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {
@@ -198,4 +202,56 @@ export const useMyTeamAsHead = () => {
     const { data } = await getMyTeamAsHead();
     return data;
   });
+};
+
+export const useMyTeamJoinRequests = () => {
+  return useQuery<TeamJoinRequest[], Error>(['teams', 'join-requests', 'mine'], async () => {
+    const { data } = await getMyTeamJoinRequests();
+    return data;
+  });
+};
+
+export const usePendingTeamJoinRequests = (teamId: string) => {
+  return useQuery<TeamJoinRequest[], Error>(['teams', 'join-requests', teamId], async () => {
+    const { data } = await getPendingTeamJoinRequests(teamId);
+    return data;
+  });
+};
+
+export const useCreateTeamJoinRequest = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<TeamJoinRequest, Error, void>(
+    ['teams', 'join-requests', 'create'],
+    async () => {
+      const { data } = await createTeamJoinRequest(teamId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
+export interface ReviewTeamJoinRequestPayload {
+  teamJoinRequestId: string;
+  approved: boolean;
+  denialReason?: string;
+}
+
+export const useReviewTeamJoinRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TeamJoinRequest, Error, ReviewTeamJoinRequestPayload>(
+    ['teams', 'join-requests', 'review'],
+    async ({ teamJoinRequestId, approved, denialReason }: ReviewTeamJoinRequestPayload) => {
+      const { data } = await reviewTeamJoinRequest(teamJoinRequestId, approved, denialReason);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
 };

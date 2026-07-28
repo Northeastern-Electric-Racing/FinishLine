@@ -1,10 +1,24 @@
-import { isAdmin, isHead, TeamDropdownItem, Team, TeamPreview, TeamType, User, WbsElementStatus } from 'shared';
+import {
+  isAdmin,
+  isHead,
+  TeamDropdownItem,
+  Team,
+  TeamPreview,
+  TeamType,
+  TeamJoinRequest,
+  User,
+  WbsElementStatus
+} from 'shared';
 import { Organization } from '@prisma/client';
 import prisma from '../prisma/prisma.js';
 import { getTeamDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
 import { teamDropdownTransformer } from '../transformers/dropdown.transformer.js';
 import { calculateProjectStatus } from '../utils/projects.utils.js';
-import teamTransformer, { teamBaseTransformer, teamPreviewTransformer } from '../transformers/teams.transformer.js';
+import teamTransformer, {
+  teamBaseTransformer,
+  teamPreviewTransformer,
+  teamJoinRequestTransformer
+} from '../transformers/teams.transformer.js';
 import {
   NotFoundException,
   AccessDeniedException,
@@ -16,7 +30,12 @@ import {
 import { getPrismaQueryUserIds, getUsers, userHasPermission } from '../utils/users.utils.js';
 import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils.js';
-import { getTeamBaseQueryArgs, getTeamPreviewQueryArgs, getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
+import {
+  getTeamBaseQueryArgs,
+  getTeamJoinRequestQueryArgs,
+  getTeamPreviewQueryArgs,
+  getTeamQueryArgs
+} from '../prisma-query-args/teams.query-args.js';
 import { uploadFile } from '../utils/google-integration.utils.js';
 import { teamTypeTransformer } from '../transformers/team-types.transformer.js';
 import { TeamBase } from '../../../shared/src/types/team-types.js';
@@ -401,6 +420,162 @@ export default class TeamsService {
     });
 
     return teamTransformer(updateTeam);
+  }
+
+  /**
+   * Creates a request for the submitter to join the given team
+   * @param submitter the user requesting to join the team
+   * @param teamId the id of the team to request to join
+   * @param organization the organization the team belongs to
+   * @throws DeletedException if the team is archived
+   * @throws HttpException if the submitter is already part of the team, or already has a pending request for it
+   * @returns the created team join request
+   */
+  static async createTeamJoinRequest(submitter: User, teamId: string, organization: Organization): Promise<TeamJoinRequest> {
+    const team = await TeamsService.getSingleTeam(teamId, organization);
+    if (team.dateArchived) throw new DeletedException('Team', teamId);
+
+    const isAlreadyOnTeam =
+      team.head.userId === submitter.userId ||
+      team.leads.some((lead) => lead.userId === submitter.userId) ||
+      team.members.some((member) => member.userId === submitter.userId);
+    if (isAlreadyOnTeam) throw new HttpException(400, 'You are already part of this team');
+
+    const existingPendingRequest = await prisma.team_Join_Request.findFirst({
+      where: { userId: submitter.userId, teamId, status: 'PENDING' }
+    });
+    if (existingPendingRequest) throw new HttpException(400, 'You already have a pending request to join this team');
+
+    const created = await prisma.team_Join_Request.create({
+      data: { userId: submitter.userId, teamId },
+      ...getTeamJoinRequestQueryArgs(organization.organizationId)
+    });
+
+    return teamJoinRequestTransformer(created);
+  }
+
+  /**
+   * Gets every team join request made by the given user, across all teams and statuses
+   * @param user the user to get join requests for
+   * @param organization the organization the user is in
+   * @returns the user's team join requests, most recently requested first
+   */
+  static async getMyTeamJoinRequests(user: User, organization: Organization): Promise<TeamJoinRequest[]> {
+    const requests = await prisma.team_Join_Request.findMany({
+      where: { userId: user.userId, team: { organizationId: organization.organizationId } },
+      ...getTeamJoinRequestQueryArgs(organization.organizationId),
+      orderBy: { dateRequested: 'desc' }
+    });
+
+    return requests.map(teamJoinRequestTransformer);
+  }
+
+  /**
+   * Gets the pending team join requests for a given team
+   * @param teamId the id of the team to get pending join requests for
+   * @param reviewer the user requesting to view the pending requests
+   * @param organization the organization the team belongs to
+   * @throws AccessDeniedException if the reviewer isn't an admin, the team head, or a team lead
+   * @returns the team's pending join requests, oldest first
+   */
+  static async getPendingTeamJoinRequests(
+    teamId: string,
+    reviewer: User,
+    organization: Organization
+  ): Promise<TeamJoinRequest[]> {
+    const team = await TeamsService.getSingleTeam(teamId, organization);
+    await TeamsService.validateJoinRequestReviewer(reviewer, team, organization);
+
+    const requests = await prisma.team_Join_Request.findMany({
+      where: { teamId, status: 'PENDING' },
+      ...getTeamJoinRequestQueryArgs(organization.organizationId),
+      orderBy: { dateRequested: 'asc' }
+    });
+
+    return requests.map(teamJoinRequestTransformer);
+  }
+
+  /**
+   * Approves or denies a pending team join request. Approving adds the requester to the team's members.
+   * @param reviewer the user reviewing the request
+   * @param teamJoinRequestId the id of the request being reviewed
+   * @param approved whether the request is being approved or denied
+   * @param denialReason an optional reason for denial, ignored if approved
+   * @param organization the organization the request's team belongs to
+   * @throws NotFoundException if the request doesn't exist
+   * @throws InvalidOrganizationException if the request's team isn't in the given organization
+   * @throws HttpException if the request has already been reviewed
+   * @throws AccessDeniedException if the reviewer isn't an admin, the team head, or a team lead
+   * @returns the updated team join request
+   */
+  static async reviewTeamJoinRequest(
+    reviewer: User,
+    teamJoinRequestId: string,
+    approved: boolean,
+    denialReason: string | undefined,
+    organization: Organization
+  ): Promise<TeamJoinRequest> {
+    const request = await prisma.team_Join_Request.findUnique({
+      where: { teamJoinRequestId },
+      include: { team: true }
+    });
+    if (!request) throw new NotFoundException('Team Join Request', teamJoinRequestId);
+    if (request.team.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Team Join Request');
+    }
+    if (request.status !== 'PENDING') throw new HttpException(400, 'This request has already been reviewed');
+
+    const team = await TeamsService.getSingleTeam(request.teamId, organization);
+    await TeamsService.validateJoinRequestReviewer(reviewer, team, organization);
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const updatedRequest = await tx.team_Join_Request.update({
+        where: { teamJoinRequestId },
+        data: {
+          status: approved ? 'APPROVED' : 'DENIED',
+          reviewedByUserId: reviewer.userId,
+          dateReviewed: new Date(),
+          denialReason: approved ? null : denialReason
+        },
+        ...getTeamJoinRequestQueryArgs(organization.organizationId)
+      });
+
+      if (approved) {
+        await tx.team.update({
+          where: { teamId: request.teamId },
+          data: { members: { connect: { userId: request.userId } } }
+        });
+      }
+
+      return updatedRequest;
+    });
+
+    return teamJoinRequestTransformer(updated);
+  }
+
+  /**
+   * Validates that the given user is allowed to review join requests for the given team
+   * @param reviewer the user attempting to review a join request
+   * @param team the team the join request is for
+   * @param organization the organization the team belongs to
+   * @throws AccessDeniedException if the reviewer isn't an admin, the team head, or a team lead
+   */
+  private static async validateJoinRequestReviewer(
+    reviewer: User,
+    team: { head: { userId: string }; leads: { userId: string }[] },
+    organization: Organization
+  ): Promise<void> {
+    const isTeamLead = team.leads.some((lead) => lead.userId === reviewer.userId);
+
+    if (
+      !(await userHasPermission(reviewer.userId, organization.organizationId, isAdmin)) &&
+      reviewer.userId !== team.head.userId &&
+      !isTeamLead
+    ) {
+      throw new AccessDeniedException(
+        'you must be an admin, the team head, or a team lead to review join requests for this team'
+      );
+    }
   }
 
   /**

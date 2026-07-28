@@ -2,6 +2,8 @@ import { Box, Grid, ListItemIcon, Menu, MenuItem, Stack, Typography } from '@mui
 import { useArchiveTeam, useSingleTeam } from '../../hooks/teams.hooks';
 import { useParams } from 'react-router-dom';
 import TeamMembersPageBlock from './TeamMembersPageBlock';
+import TeamJoinRequestsPageBlock from './TeamJoinRequestsPageBlock';
+import RequestToJoinButton from './RequestToJoinButton';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
@@ -180,7 +182,8 @@ const TeamSpecificPage: React.FC = () => {
   return (
     <PageLayout
       headerRight={
-        <Stack direction="row" spacing={2} justifyContent="flex-end">
+        <Stack direction="row" spacing={2} justifyContent="flex-end" alignItems="center">
+          <RequestToJoinButton team={data} />
           <AttendanceButton />
           <SetDivisionButton />
           {TeamActionsDropdown}
@@ -194,15 +197,12 @@ const TeamSpecificPage: React.FC = () => {
           </Box>
         ) : null
       }
-      previousPages={
-        isGuest(user.role) && data.teamType
-          ? [{ name: data.teamType.name, route: `${routes.TEAMS}/${data.teamType.teamTypeId}` }]
-          : [{ name: 'Teams', route: routes.TEAMS }]
-      }
+      previousPages={[{ name: 'Teams', route: routes.TEAMS }]}
     >
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <TeamMembersPageBlock team={data} />
+          <TeamJoinRequestsPageBlock team={data} />
           <PageBlock title={'Active Projects'}>
             <Grid container spacing={2}>
               {data.projects
