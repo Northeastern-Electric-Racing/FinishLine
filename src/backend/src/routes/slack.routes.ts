@@ -145,6 +145,22 @@ if (slackApp) {
     }
   });
 
+  // Register interactive action handler for team join request approval
+  slackApp.action('approve_team_join_request', async ({ ack, body, logger, respond }: any) => {
+    await ack();
+
+    try {
+      if (!validateSlackActionBody(body)) {
+        logger.error('Invalid Slack action body structure');
+        return;
+      }
+
+      await SlackController.handleApproveTeamJoinRequestAction(body, respond);
+    } catch (error) {
+      logger.error('Error handling approve_team_join_request action:', error);
+    }
+  });
+
   // Error handler
   slackApp.error(async (error: Error) => {
     console.error('Slack app error:', error);

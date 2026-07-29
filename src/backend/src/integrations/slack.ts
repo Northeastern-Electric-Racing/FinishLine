@@ -457,14 +457,14 @@ export const getWorkspaceId = async () => {
 /**
  * Sends a slack ephemeral message to a user
  * @param channelId - the channel id of the channel to send to
- * @param threadTs - the timestamp of the thread to send to
+ * @param threadTs - the timestamp of the thread to send to, if this ephemeral should be a threaded reply
  * @param userId - the id of the user to send to
  * @param text - the text of the message to send (should always be populated in case blocks can't be rendered, but if blocks render text will not)
  * @param blocks - the blocks of the message to send
  */
 export async function sendEphemeralMessage(
   channelId: string,
-  threadTs: string,
+  threadTs: string | undefined,
   userId: string,
   text: string,
   blocks: any[]
@@ -476,7 +476,7 @@ export async function sendEphemeralMessage(
     await client.chat.postEphemeral({
       channel: channelId,
       user: userId,
-      thread_ts: threadTs,
+      ...(threadTs ? { thread_ts: threadTs } : {}),
       text,
       blocks
     });

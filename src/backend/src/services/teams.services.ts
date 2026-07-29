@@ -28,6 +28,7 @@ import {
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
 import { getPrismaQueryUserIds, getUsers, userHasPermission } from '../utils/users.utils.js';
+import { sendTeamJoinRequestNotification } from '../utils/slack.utils.js';
 import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils.js';
 import {
@@ -451,7 +452,17 @@ export default class TeamsService {
       ...getTeamJoinRequestQueryArgs(organization.organizationId)
     });
 
-    return teamJoinRequestTransformer(created);
+    const transformed = teamJoinRequestTransformer(created);
+
+    // best-effort: a Slack outage/rate-limit shouldn't make request creation look like it failed
+    // when the request itself was already saved successfully
+    try {
+      await sendTeamJoinRequestNotification(transformed, team, organization);
+    } catch (error: unknown) {
+      console.error('Error sending team join request Slack notification:', error);
+    }
+
+    return transformed;
   }
 
   /**
