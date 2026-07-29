@@ -29,7 +29,7 @@ interface NERAutocompleteProps {
   required?: boolean;
   disabled?: boolean;
   noOptionsText?: React.ReactNode;
-  onInputChange?: (event: React.SyntheticEvent, value:string) => void;
+  onInputChange?: (event: React.SyntheticEvent, value: string) => void;
 }
 
 const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
