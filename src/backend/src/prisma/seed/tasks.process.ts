@@ -1,11 +1,10 @@
 import { Task } from '@prisma/client';
 import { SeedProcess } from '../processes/seed-process.js';
-import { ProjectOutput, ProjectProcess } from './project.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { WorkPackageOutput, WorkPackageProcess } from './work-package.process.js';
 import { SeedTaskParent, assigneeCountForTask, createSeedTask, taskCountForProject } from '../factories/tasks.factory.js';
 
-type TaskInput = ProjectOutput & UsersOutput & WorkPackageOutput;
+type TaskInput = UsersOutput & WorkPackageOutput;
 
 export type TaskOutput = {
   tasks: Task[];
@@ -16,11 +15,11 @@ const WP_ATTACH_PROBABILITY = 0.4;
 
 export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
   dependencies() {
-    return [ProjectProcess, UsersProcess, WorkPackageProcess];
+    return [UsersProcess, WorkPackageProcess];
   }
 
   async run({
-    projects,
+    projectsWithTimeline,
     members,
     leadership,
     heads,
@@ -28,7 +27,7 @@ export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
     appAdmins,
     workPackagesByProjectId
   }: TaskInput): Promise<TaskOutput> {
-    if (projects.length === 0) {
+    if (projectsWithTimeline.length === 0) {
       throw new Error('TaskProcess requires at least one project.');
     }
 
@@ -40,7 +39,7 @@ export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
 
     const tasks: Task[] = [];
 
-    for (const { project, timeline } of projects) {
+    for (const { project, timeline } of projectsWithTimeline) {
       const projectWorkPackages = workPackagesByProjectId[project.projectId] ?? [];
       const taskCount = taskCountForProject(this.faker);
 
