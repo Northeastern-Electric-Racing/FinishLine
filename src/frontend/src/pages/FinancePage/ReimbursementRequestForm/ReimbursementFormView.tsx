@@ -120,7 +120,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [showAddRefundSourceModal, setShowAddRefundSourceModal] = useState(false);
   const [newVendorName, setNewVendorName] = useState<string>('');
-  const [showCreateVendorField, setShowCreateVendorField] = useState<boolean>(false);
   const { mutateAsync: createVendor } = useCreateVendor();
   const user = useCurrentUser();
 
@@ -342,69 +341,47 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       const mappedVendors = allVendors
                         .sort((a, b) => a.name.localeCompare(b.name))
                         .map(vendorsToAutocomplete);
+
+                      const handleCreateVendor = async () => {
+                        const name = newVendorName.trim();
+                        if (!name) return;
+                        try {
+                          const created = await createVendor({ name });
+                          setValue('vendorId', created.vendorId);
+                          onChange(created.vendorId);
+                          toast.success(`Vendor '${created.name}' created.`);
+                        } catch (err: any) {
+                          toast.error(err.message || 'Failed to create vendor');
+                        }
+                      };
+
                       return (
-                        <Box>
-                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                            <Box sx={{ flex: 1 }}>
-                              <NERAutocomplete
-                                id="vendor-autocomplete"
-                                options={mappedVendors}
-                                value={mappedVendors.find((v) => v.id === value) || null}
-                                onChange={(_, newValue) => {
-                                  if (newValue) {
-                                    onChange(newValue.id);
-                                  }
-                                }}
-                                size="small"
-                                placeholder="Select Existing Vendor"
-                                errorMessage={errors.vendorId}
-                              />
-                            </Box>
-                            <Typography fontWeight="bold" sx={{ whiteSpace: 'nowrap', lineHeight: 1 }}>
-                              OR
-                            </Typography>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              onClick={() => setShowCreateVendorField((prev) => !prev)}
-                              sx={{ whiteSpace: 'nowrap' }}
-                            >
-                              {showCreateVendorField ? 'Cancel' : 'Create Vendor'}
-                            </Button>
-                          </Box>
-                          {showCreateVendorField && (
-                            <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                              <TextField
-                                value={newVendorName}
-                                onChange={(e) => setNewVendorName(e.target.value)}
-                                placeholder="New Vendor Name"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                              />
+                        <NERAutocomplete
+                          id="vendor-autocomplete"
+                          options={mappedVendors}
+                          value={mappedVendors.find((v) => v.id === value) || null}
+                          onChange={(_, newValue) => {
+                            onChange(newValue ? newValue.id : '');
+                          }}
+                          onInputChange={(_, inputValue) => setNewVendorName(inputValue)}
+                          noOptionsText={
+                            newVendorName.trim() ? (
                               <Button
-                                variant="contained"
+                                variant="text"
                                 size="small"
-                                disabled={!newVendorName.trim()}
-                                onClick={async () => {
-                                  try {
-                                    const created = await createVendor({ name: newVendorName.trim() });
-                                    setValue('vendorId', created.vendorId);
-                                    onChange(created.vendorId);
-                                    setNewVendorName('');
-                                    setShowCreateVendorField(false);
-                                    toast.success(`Vendor '${created.name}' created.`);
-                                  } catch (err: any) {
-                                    toast.error(err.message || 'Failed to create vendor');
-                                  }
-                                }}
-                                sx={{ whiteSpace: 'nowrap' }}
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={handleCreateVendor}
                               >
-                                Save
+                                Add "{newVendorName.trim()}" as a new vendor
                               </Button>
-                            </Box>
-                          )}
-                        </Box>
+                            ) : (
+                              'No options'
+                            )
+                          }
+                          size="small"
+                          placeholder="Select Existing Vendor"
+                          errorMessage={errors.vendorId}
+                        />
                       );
                     }}
                   />
