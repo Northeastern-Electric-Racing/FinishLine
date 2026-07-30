@@ -18,7 +18,6 @@ import {
   generateActiveYears,
   generateProspectiveStatus,
   generateProspectiveTaskNote,
-  generateSponsorTaskNote,
   generateSponsorValue,
   generateTaskCount,
   generateValueTypes,
