@@ -8,6 +8,7 @@ import ErrorPage from '../../ErrorPage';
 import { AdminChecklist } from './Checklists/AdminChecklist';
 import OnboardingConfigSection from './OnboardingConfigSection';
 import NewMemberFAQTable from './NewMemberFAQ/NewMemberFAQTable';
+import NewMemberDashboardUsefulLinksSection from './NewMemberDashboardUsefulLinksSection';
 import { Checklist } from 'shared';
 
 type GroupedChecklists = Record<string, Checklist[]>; // Change made here
@@ -68,15 +69,18 @@ const AdminToolsOnboardingConfig: React.FC = () => {
               );
             })}
           </Box>
-        </Grid>
-        <Grid item xs={12} md={5} sx={{ width: '100%', mt: 0.5 }}>
-          <OnboardingConfigSection />
+          <Box sx={{ mt: 2.5 }}>
+            <NewMemberDashboardUsefulLinksSection />
+          </Box>
           <Box sx={{ mt: 3 }}>
             <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor="white">
               New Member FAQs
             </Typography>
             <NewMemberFAQTable />
           </Box>
+        </Grid>
+        <Grid item xs={12} md={5} sx={{ width: '100%', mt: 0.5 }}>
+          <OnboardingConfigSection />
         </Grid>
       </Grid>
     </Box>

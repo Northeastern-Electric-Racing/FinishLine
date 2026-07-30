@@ -96,7 +96,7 @@ const OnboardingConfigSection: React.FC = () => {
               marginBottom: '12px'
             }}
           >
-            New Member Events Image
+            Onboarding Image
           </Typography>
           {isUploading || imageIsLoading ? (
             <Box sx={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -108,7 +108,7 @@ const OnboardingConfigSection: React.FC = () => {
                 <Box
                   component="img"
                   sx={{ display: 'block', maxWidth: '100%', maxHeight: '200px', mb: 1, objectFit: 'contain' }}
-                  alt="New Member Event"
+                  alt="Onboarding"
                   src={URL.createObjectURL(newMemberImageBlob)}
                 />
               )}
@@ -149,30 +149,6 @@ const OnboardingConfigSection: React.FC = () => {
           </Typography>
           <LinkTypeTable isOnOnboardingDashboard />
           <UsefulLinksTable isOnOnboardingDashboard />
-        </Box>
-      </Grid>
-      <Grid item>
-        <Box
-          sx={{
-            backgroundColor: (theme) => theme.palette.background.paper,
-            height: '100%',
-            borderRadius: '10px',
-            padding: '16px',
-            width: '100%'
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              color: 'white',
-              fontWeight: 'bold',
-              marginBottom: '12px'
-            }}
-          >
-            New Member Dashboard Useful Links
-          </Typography>
-          <LinkTypeTable isOnNewMemberDashboard />
-          <UsefulLinksTable isOnNewMemberDashboard />
         </Box>
       </Grid>
       <Grid item>

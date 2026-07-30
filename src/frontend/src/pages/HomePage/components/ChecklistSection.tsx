@@ -55,7 +55,7 @@ const ChecklistSection: React.FC<ChecklistSectionProps> = ({ usersChecklists, ch
               }}
             >
               <Typography variant="h5" sx={{ mb: 2 }}>
-                New Member Events
+                Onboarding Image
               </Typography>
               <Box
                 component="img"
@@ -66,7 +66,7 @@ const ChecklistSection: React.FC<ChecklistSectionProps> = ({ usersChecklists, ch
                   objectFit: 'contain',
                   borderRadius: '8px'
                 }}
-                alt="New Member Events"
+                alt="Onboarding"
                 src={newMemberImageUrl}
               />
             </Box>

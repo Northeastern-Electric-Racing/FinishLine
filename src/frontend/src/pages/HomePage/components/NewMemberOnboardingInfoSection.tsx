@@ -1,5 +1,4 @@
-import { Grid, Typography, ListItem, List, Link, useTheme } from '@mui/material';
-import { Box } from '@mui/system';
+import { Grid } from '@mui/material';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -8,6 +7,7 @@ import NewMemberMilestonesWidget from './NewMemberMilestonesWidget';
 import NewMemberEventsWidget from './NewMemberEventsWidget';
 import NewMemberSlackWidget from './NewMemberSlackWidget';
 import NewMemberUsefulLinksWidget from './NewMemberUsefulLinksWidget';
+import NewMemberContactsWidget from './NewMemberContactsWidget';
 
 interface NewMemberOnboardingInfoSectionProps {
   /** 'full' (default) shows every widget, for the new member dashboard. 'checklist' shows only
@@ -16,7 +16,6 @@ interface NewMemberOnboardingInfoSectionProps {
 }
 
 const NewMemberOnboardingInfoSection: React.FC<NewMemberOnboardingInfoSectionProps> = ({ variant = 'full' }) => {
-  const theme = useTheme();
   const {
     data: organization,
     isLoading: organizationIsLoading,
@@ -31,62 +30,31 @@ const NewMemberOnboardingInfoSection: React.FC<NewMemberOnboardingInfoSectionPro
   if (!organization || organizationIsLoading) return <LoadingIndicator />;
 
   return (
-    <Grid container item sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+    <Grid container item sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, width: '100%' }}>
       <OnboardingBlock organization={organization} />
       {variant === 'full' && (
         <>
-          <Grid item>
+          <Grid item sx={{ width: '100%' }}>
             <NewMemberEventsWidget />
           </Grid>
-          <Grid item>
+          <Grid item sx={{ width: '100%' }}>
             <NewMemberMilestonesWidget />
           </Grid>
-          <Grid item>
+          <Grid item sx={{ width: '100%' }}>
             <NewMemberSlackWidget />
           </Grid>
         </>
       )}
-      <Grid item>
-        <NewMemberUsefulLinksWidget
-          dashboardFlag={variant === 'checklist' ? 'isOnOnboardingDashboard' : 'isOnNewMemberDashboard'}
-        />
-      </Grid>
-      <Grid item>
-        <Box
-          sx={{
-            height: '100%',
-            borderRadius: '10px',
-            width: '100%',
-            background: theme.palette.background.paper
-          }}
-        >
-          <Typography variant="h5" ml={2} pt={2}>
-            Questions?
-          </Typography>
-          <Typography sx={{ mt: 1, ml: 2, fontWeight: 'bold' }}>Feel free to contact:</Typography>
-          <List sx={{ listStyleType: 'disc', pl: 2 }}>
-            {organization.contacts.map((contact) => {
-              return (
-                <ListItem key={`${contact.user.userId}-${contact.title}`} sx={{ display: 'list-item', padding: 0.5, ml: 2 }}>
-                  {contact.user.firstName} {contact.user.lastName} - {contact.title}
-                </ListItem>
-              );
-            })}
-          </List>
-          {organization.slackWorkspaceId && (
-            <Typography sx={{ ml: 2, pb: 2 }}>
-              You can find them on{' '}
-              <Link
-                href={`https://app.slack.com/client/${organization.slackWorkspaceId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Slack
-              </Link>
-            </Typography>
-          )}
-        </Box>
-      </Grid>
+      {variant === 'checklist' && (
+        <>
+          <Grid item sx={{ width: '100%' }}>
+            <NewMemberUsefulLinksWidget dashboardFlag="isOnOnboardingDashboard" />
+          </Grid>
+          <Grid item sx={{ width: '100%' }}>
+            <NewMemberContactsWidget />
+          </Grid>
+        </>
+      )}
     </Grid>
   );
 };

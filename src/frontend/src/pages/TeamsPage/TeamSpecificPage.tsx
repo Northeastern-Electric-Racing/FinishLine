@@ -89,7 +89,13 @@ const TeamSpecificPage: React.FC = () => {
   );
 
   const SetDivisionButton = () => (
-    <NERButton variant="contained" onClick={() => setShowTeamTypeModal(true)} disabled={!isAdmin(user.role)}>
+    <NERButton
+      variant="contained"
+      size="medium"
+      onClick={() => setShowTeamTypeModal(true)}
+      disabled={!isAdmin(user.role)}
+      sx={{ whiteSpace: 'nowrap' }}
+    >
       Set Division
     </NERButton>
   );
@@ -110,11 +116,23 @@ const TeamSpecificPage: React.FC = () => {
 
   const AttendanceButton = () =>
     ongoingAttendance ? (
-      <NERButton variant="contained" onClick={() => setShowCloseAttendanceConfirm(true)} disabled={!isAttendanceAuthorized}>
+      <NERButton
+        variant="contained"
+        size="medium"
+        onClick={() => setShowCloseAttendanceConfirm(true)}
+        disabled={!isAttendanceAuthorized}
+        sx={{ whiteSpace: 'nowrap' }}
+      >
         Close Attendance
       </NERButton>
     ) : (
-      <NERButton variant="contained" onClick={() => setShowTakeAttendanceModal(true)} disabled={!isAttendanceAuthorized}>
+      <NERButton
+        variant="contained"
+        size="medium"
+        onClick={() => setShowTakeAttendanceModal(true)}
+        disabled={!isAttendanceAuthorized}
+        sx={{ whiteSpace: 'nowrap' }}
+      >
         Take Attendance
       </NERButton>
     );
@@ -147,9 +165,11 @@ const TeamSpecificPage: React.FC = () => {
       <NERButton
         endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
         variant="contained"
+        size="medium"
         id="project-actions-dropdown"
         onClick={handleClick}
         disabled={isGuest(user.role)}
+        sx={{ whiteSpace: 'nowrap' }}
       >
         Actions
       </NERButton>

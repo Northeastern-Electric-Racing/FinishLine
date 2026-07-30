@@ -12,6 +12,8 @@ import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import NewMemberOnboardingInfoSection from './components/NewMemberOnboardingInfoSection';
 import NewMemberFAQsSection from './components/NewMemberFAQsSection';
 import NewMemberChecklistSummaryWidget from './components/NewMemberChecklistSummaryWidget';
+import NewMemberUsefulLinksWidget from './components/NewMemberUsefulLinksWidget';
+import NewMemberContactsWidget from './components/NewMemberContactsWidget';
 
 const NewMemberHomePage = () => {
   const { setCurrentHomePage } = useHomePageContext();
@@ -48,14 +50,20 @@ const NewMemberHomePage = () => {
         <Grid item xs={12} md={8} sx={{ padding: 2 }}>
           <NewMemberOnboardingInfoSection />
         </Grid>
-        <Grid item xs={12} md={4} sx={{ padding: 2 }}>
-          <Typography sx={{ fontSize: '1.5em', mb: 1 }}>FAQs</Typography>
-          <NewMemberFAQsSection />
-        </Grid>
-      </Grid>
-      <Grid container display={'flex'}>
-        <Grid item xs={12} sx={{ padding: 2 }}>
-          <NewMemberChecklistSummaryWidget />
+        <Grid item xs={12} md={4} sx={{ padding: 2, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          <Grid item sx={{ width: '100%' }}>
+            <Typography sx={{ fontSize: '1.5em', mb: 1 }}>FAQs</Typography>
+            <NewMemberFAQsSection />
+          </Grid>
+          <Grid item sx={{ width: '100%' }}>
+            <NewMemberChecklistSummaryWidget />
+          </Grid>
+          <Grid item sx={{ width: '100%' }}>
+            <NewMemberUsefulLinksWidget dashboardFlag="isOnNewMemberDashboard" />
+          </Grid>
+          <Grid item sx={{ width: '100%' }}>
+            <NewMemberContactsWidget />
+          </Grid>
         </Grid>
       </Grid>
     </PageLayout>

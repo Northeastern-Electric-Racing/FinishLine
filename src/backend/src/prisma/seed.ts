@@ -410,13 +410,7 @@ const performSeed: () => Promise<void> = async () => {
     'This is the electrical team',
     ner
   );
-  const business = await TeamsService.createTeamType(
-    batman,
-    'Business',
-    'AttachMoney',
-    'This is the business team',
-    ner
-  );
+  const business = await TeamsService.createTeamType(batman, 'Business', 'AttachMoney', 'This is the business team', ner);
 
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(

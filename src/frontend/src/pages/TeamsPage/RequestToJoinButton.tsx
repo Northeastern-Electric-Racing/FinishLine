@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Chip, Typography } from '@mui/material';
+import { Chip, Tooltip } from '@mui/material';
 import { isGuest, TeamPreview } from 'shared';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -54,24 +54,27 @@ const RequestToJoinButton: React.FC<RequestToJoinButtonProps> = ({ team }) => {
     return <Chip label="Request Pending" color="warning" />;
   }
 
-  if (latestRequest?.status === 'DENIED') {
-    return (
-      <Box display="flex" alignItems="center" gap={1}>
-        <NERButton variant="contained" disabled={createIsLoading} onClick={handleRequest}>
-          Request to Join
-        </NERButton>
-        <Typography variant="caption" color="error">
-          Previous request denied{latestRequest.denialReason ? `: ${latestRequest.denialReason}` : ''}
-        </Typography>
-      </Box>
-    );
-  }
-
-  return (
-    <NERButton variant="contained" disabled={createIsLoading} onClick={handleRequest}>
+  const button = (
+    <NERButton
+      variant="contained"
+      size="medium"
+      disabled={createIsLoading}
+      onClick={handleRequest}
+      sx={{ whiteSpace: 'nowrap' }}
+    >
       Request to Join
     </NERButton>
   );
+
+  if (latestRequest?.status === 'DENIED') {
+    return (
+      <Tooltip title={`Previous request denied${latestRequest.denialReason ? `: ${latestRequest.denialReason}` : ''}`}>
+        {button}
+      </Tooltip>
+    );
+  }
+
+  return button;
 };
 
 export default RequestToJoinButton;
