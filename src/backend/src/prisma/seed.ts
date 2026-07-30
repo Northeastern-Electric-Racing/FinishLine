@@ -410,22 +410,45 @@ const performSeed: () => Promise<void> = async () => {
     'This is the electrical team',
     ner
   );
+  const business = await TeamsService.createTeamType(
+    batman,
+    'Business',
+    'AttachMoney',
+    'This is the business team',
+    ner
+  );
 
   /** Creating Teams */
-  const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId, organizationId));
+  const justiceLeague: Team = await prisma.team.create(
+    dbSeedAllTeams.justiceLeague(batman.userId, mechanical.teamTypeId, organizationId)
+  );
   const avatarBenders: Team = await prisma.team.create(
     dbSeedAllTeams.avatarBenders(aang.userId, software.teamTypeId, organizationId)
   );
-  const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId, organizationId));
-  const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId, organizationId));
+  const ravens: Team = await prisma.team.create(
+    dbSeedAllTeams.ravens(johnHarbaugh.userId, software.teamTypeId, organizationId)
+  );
+  const orioles: Team = await prisma.team.create(
+    dbSeedAllTeams.orioles(brandonHyde.userId, business.teamTypeId, organizationId)
+  );
   const huskies: Team = await prisma.team.create(
     dbSeedAllTeams.huskies(thomasEmrax.userId, electrical.teamTypeId, organizationId)
   );
-  const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId, organizationId));
-  const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId, organizationId));
-  const slackBotTeam: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId, organizationId));
-  const krustykrabTeam: Team = await prisma.team.create(dbSeedAllTeams.krustyKrabers(mrKrabs.userId, organizationId));
-  const penguinTeam: Team = await prisma.team.create(dbSeedAllTeams.penguinsOfMadagascar(skipper.userId, organizationId));
+  const plLegends: Team = await prisma.team.create(
+    dbSeedAllTeams.plLegends(cristianoRonaldo.userId, electrical.teamTypeId, organizationId)
+  );
+  const financeTeam: Team = await prisma.team.create(
+    dbSeedAllTeams.financeTeam(monopolyMan.userId, business.teamTypeId, organizationId)
+  );
+  const slackBotTeam: Team = await prisma.team.create(
+    dbSeedAllTeams.meanGirls(regina.userId, mechanical.teamTypeId, organizationId)
+  );
+  const krustykrabTeam: Team = await prisma.team.create(
+    dbSeedAllTeams.krustyKrabers(mrKrabs.userId, software.teamTypeId, organizationId)
+  );
+  const penguinTeam: Team = await prisma.team.create(
+    dbSeedAllTeams.penguinsOfMadagascar(skipper.userId, electrical.teamTypeId, organizationId)
+  );
   /** Setting Team Members */
   await TeamsService.setTeamMembers(
     batman,
@@ -636,6 +659,11 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, ner, false, false, true);
+
+  /** New Member Dashboard link types */
+  await ProjectsService.createLinkType(batman, 'NER Handbook', 'menu_book', true, ner, false, true, false);
+  await ProjectsService.createLinkType(batman, 'Team Directory', 'groups', true, ner, false, true, false);
+  await ProjectsService.createLinkType(batman, 'NER Merch Store', 'storefront', true, ner, false, true, false);
 
   /**
    * Projects
@@ -3345,6 +3373,21 @@ const performSeed: () => Promise<void> = async () => {
       linkId: '4',
       linkTypeName: 'NER Instagram',
       url: 'https://www.instagram.com/nuelectricracing/'
+    },
+    {
+      linkId: '5',
+      linkTypeName: 'NER Handbook',
+      url: 'https://electricracing.northeastern.edu/handbook'
+    },
+    {
+      linkId: '6',
+      linkTypeName: 'Team Directory',
+      url: 'https://electricracing.northeastern.edu/teams'
+    },
+    {
+      linkId: '7',
+      linkTypeName: 'NER Merch Store',
+      url: 'https://electricracing.northeastern.edu/store'
     }
   ]);
 
@@ -3353,6 +3396,8 @@ const performSeed: () => Promise<void> = async () => {
     ner,
     'Thank you for applying to Northeastern Electric Racing! After reviewing your application, we are very excited to officially welcome you to our team.'
   );
+
+  await OrganizationsService.setNewMemberSlackChannelId('C06HR7WTTKM', batman, organizationId);
 
   await OrganizationsService.updateOrganizationContacts(batman, ner, [
     { userId: batman.userId, title: 'Chief Software Engineer' },
@@ -3450,6 +3495,24 @@ const performSeed: () => Promise<void> = async () => {
     batman,
     'How do I get access to the shop?',
     'Complete the safety training checklist item and a lead will grant you access.',
+    ner,
+    false,
+    true,
+    false
+  );
+  await RecruitmentServices.createOrganizationFaq(
+    batman,
+    'How long until I officially join a team?',
+    'Once your join request is approved by a lead, head, or admin, you become a full member of that team right away.',
+    ner,
+    false,
+    true,
+    false
+  );
+  await RecruitmentServices.createOrganizationFaq(
+    batman,
+    'Can I request to join more than one team?',
+    "Yes! You can submit a request to join any team you're interested in, even after you've already joined one.",
     ner,
     false,
     true,
