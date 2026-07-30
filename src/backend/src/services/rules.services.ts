@@ -76,7 +76,7 @@ export default class RulesService {
         throw new NotFoundException('Car', carNumber);
       }
 
-      carId = car.carId;
+      ({ carId } = car);
     }
 
     const activeRuleset = await prisma.ruleset.findFirst({
