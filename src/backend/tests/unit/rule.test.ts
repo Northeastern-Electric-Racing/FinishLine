@@ -611,6 +611,48 @@ describe('Create Rules Tests', () => {
       expect(rulesets[0].name).toBe('2025 FSAE Rules2');
       expect(rulesets[1].name).toBe('2025 FSAE Rules');
     });
+
+    it('Successful get rulesets by ruleset types filtered by car', async () => {
+      const otherCar = await prisma.car.create({
+        data: {
+          wbsElement: {
+            create: {
+              name: 'Other Car',
+              carNumber: 1,
+              projectNumber: 0,
+              workPackageNumber: 0,
+              organizationId: orgId
+            }
+          }
+        }
+      });
+
+      const otherCarRuleset = await prisma.ruleset.create({
+        data: {
+          fileId: 'other-car-file-id',
+          name: 'Other Car FSAE Rules',
+          active: false,
+          rulesetType: { connect: { rulesetTypeId: rulesetType.rulesetTypeId } },
+          car: { connect: { carId: otherCar.carId } },
+          createdBy: { connect: { userId: batman.userId } }
+        }
+      });
+
+      // 2 total rulesets for this type
+      const allRulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
+      expect(allRulesets.length).toBe(2);
+
+      // 1 ruleset when filtered to the original car
+      const originalCarRulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId, carId);
+      expect(originalCarRulesets.length).toBe(1);
+      expect(originalCarRulesets[0].rulesetId).toBe(rulesetId);
+
+      const otherCarRulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId, otherCar.carId);
+
+      // 1 ruleset when filtered to the other car
+      expect(otherCarRulesets.length).toBe(1);
+      expect(otherCarRulesets[0].rulesetId).toBe(otherCarRuleset.rulesetId);
+    });
   });
 
   describe('Get Child Rules', () => {
@@ -826,6 +868,52 @@ describe('Create Rules Tests', () => {
       await expect(
         async () => await RulesService.updateRuleset(batman, orgId, ruleset2.rulesetId, 'name', true)
       ).rejects.toThrow(new HttpException(400, 'There is already an active ruleset for this ruleset type and car'));
+    });
+    it('Update active ruleset successful with active ruleset for a different car', async () => {
+      // ensure ruleset for car 0 already has an active ruleset
+      const originalRulesetBefore = await prisma.ruleset.findUniqueOrThrow({ where: { rulesetId } });
+      expect(originalRulesetBefore.active).toBe(true);
+
+      const otherCar = await prisma.car.create({
+        data: {
+          wbsElement: {
+            create: {
+              name: 'Other Car',
+              carNumber: 1,
+              projectNumber: 0,
+              workPackageNumber: 0,
+              organizationId: orgId
+            }
+          }
+        },
+        include: { wbsElement: true }
+      });
+
+      // create inactive ruleset for the other car, under the same ruleset type as the already active car 0 ruleset
+      const otherCarRuleset = await RulesService.createRuleset(
+        superman,
+        organization,
+        'other car ruleset name',
+        rulesetType.rulesetTypeId,
+        otherCar.wbsElement.carNumber,
+        false,
+        'fileId'
+      );
+
+      // activating another car's ruleset should succeed since "already active" check is scoped per car
+      const updatedOtherCarRuleset = await RulesService.updateRuleset(
+        batman,
+        orgId,
+        otherCarRuleset.rulesetId,
+        'name',
+        true
+      );
+      expect(updatedOtherCarRuleset.active).toBe(true);
+
+      // original car's ruleset is untouched
+      // two active rulesets for one ruleset type but different cars
+      const originalRulesetAfter = await prisma.ruleset.findUniqueOrThrow({ where: { rulesetId } });
+      expect(originalRulesetAfter.active).toBe(true);
     });
   });
 });
@@ -1481,6 +1569,38 @@ describe('Rule Tests', () => {
 
       expect(activeRuleset.name).toBe('FSAE Rules 2025');
       expect(activeRuleset.active).toBe(true);
+    });
+
+    it('Fails if the given carNumber does not exist in the org', async () => {
+      await expect(RulesService.getActiveRuleset(admin, fsaeRulesetType.rulesetTypeId, organization, 999)).rejects.toThrow(
+        new NotFoundException('Car', 999)
+      );
+    });
+
+    it('Scopes the active ruleset to the given car when multiple cars each have their own active ruleset', async () => {
+      // fsaeRulesetType contains two active ruleset, one for carA one for carB
+      const carA = await createUniqueCar(orgId);
+      const carB = await createUniqueCar(orgId);
+      await setupRules(carA);
+      await setupRules(carB);
+
+      // fetching carA's active ruleset returns carA's, not carB's, even though both are active for the same ruleset type
+      const activeRulesetForCarA = await RulesService.getActiveRuleset(
+        admin,
+        fsaeRulesetType.rulesetTypeId,
+        organization,
+        carA.wbsElement.carNumber
+      );
+      expect(activeRulesetForCarA.car.carId).toBe(carA.carId);
+
+      // asking for carB's active ruleset must return carB's, not carA's
+      const activeRulesetForCarB = await RulesService.getActiveRuleset(
+        admin,
+        fsaeRulesetType.rulesetTypeId,
+        organization,
+        carB.wbsElement.carNumber
+      );
+      expect(activeRulesetForCarB.car.carId).toBe(carB.carId);
     });
   });
 
