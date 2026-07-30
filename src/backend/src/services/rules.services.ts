@@ -1068,8 +1068,7 @@ export default class RulesService {
           organizationId: organization.organizationId,
           dateDeleted: null
         }
-      },
-      include: { wbsElement: true }
+      }
     });
 
     if (!car) {

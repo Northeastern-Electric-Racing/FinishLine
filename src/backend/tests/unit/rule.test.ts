@@ -855,7 +855,8 @@ describe('Create Rules Tests', () => {
         async () => await RulesService.updateRuleset(wonderwoman, orgId, rulesetId, 'name', false)
       ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update ruleset status'));
     });
-    it('update ruleset status - fails if one is already active in same type', async () => {
+    it('update ruleset status - fails if another ruleset for the same car and type is already active', async () => {
+      // car 0 already has an active ruleset, so activating ruleset2 for car 0 should fail
       const ruleset2 = await RulesService.createRuleset(
         superman,
         organization,
@@ -1572,6 +1573,8 @@ describe('Rule Tests', () => {
     });
 
     it('Fails if the given carNumber does not exist in the org', async () => {
+      await setupRules(await createUniqueCar(orgId));
+
       await expect(RulesService.getActiveRuleset(admin, fsaeRulesetType.rulesetTypeId, organization, 999)).rejects.toThrow(
         new NotFoundException('Car', 999)
       );
