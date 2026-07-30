@@ -37,6 +37,7 @@ import {
 import { countRulesToDelete, compareRuleCodes } from '../../utils/rules.utils';
 import { Rule } from 'shared';
 import { useToast } from '../../hooks/toasts.hooks';
+import { useRuleTreeNavigation } from './useRuleTreeNavigation';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
@@ -94,6 +95,8 @@ const RulesetEditPage: React.FC = () => {
   const { mutateAsync: removeRuleImageMutation } = useRemoveRuleImage();
 
   const rulesById = useMemo(() => new Map((allRules ?? []).map((r) => [r.ruleId, r])), [allRules]);
+
+  const { expandedIds, toggleExpand, expandAll, collapseAll, areAllExpanded } = useRuleTreeNavigation(allRules ?? []);
 
   const tabs = [
     { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
@@ -314,7 +317,7 @@ const RulesetEditPage: React.FC = () => {
         }
       ]}
       tabs={
-        <Box sx={{ width: 'fit-content', mt: 2 }}>
+        <Box sx={{ width: '100%', mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <FullPageTabs
             setTab={setTabValue}
             tabsLabels={tabs}
@@ -322,6 +325,11 @@ const RulesetEditPage: React.FC = () => {
             defaultTab={defaultTab}
             id="rules-tabs"
           />
+          {tabValue === 0 && (
+            <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
+              {areAllExpanded ? 'Collapse All' : 'Expand All'}
+            </NERButton>
+          )}
         </Box>
       }
     >
@@ -456,6 +464,8 @@ const RulesetEditPage: React.FC = () => {
                       hoverColor={theme.palette.grey[700]}
                       rowHeight="10px"
                       verticalPadding="5px"
+                      expandedIds={expandedIds}
+                      onToggleExpand={toggleExpand}
                     />
                   ))}
                 </TableBody>

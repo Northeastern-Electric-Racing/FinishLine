@@ -8,17 +8,25 @@ import UpdateStatusPopover from '../../ProjectDetailPage/ProjectViewContainer/Pr
 import { useSetRuleCompletion } from '../../../hooks/rules.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
-import { useRuleTreeNavigation } from '../useRuleTreeNavigation';
 
 interface RulesetGeneralViewProps {
   allRules: Rule[];
   rulesetId: string;
+  expandedIds: Set<string>;
+  toggleExpand: (ruleId: string) => void;
+  navigateToRule: (ruleId: string) => void;
 }
 
 /**
  * general view for displaying all top-level rules as dropdowns
  */
-const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rulesetId }) => {
+const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
+  allRules,
+  rulesetId,
+  expandedIds,
+  toggleExpand,
+  navigateToRule
+}) => {
   const theme = useTheme();
   const toast = useToast();
   const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
@@ -35,9 +43,6 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({ allRules, rules
   // Sort once by rule code so both top-level rows and their children render in a stable numeric order.
   const sortedRules = useMemo(() => [...allRules].sort(compareRuleCodes), [allRules]);
   const topLevelRules = useMemo(() => sortedRules.filter((rule) => !rule.parentRule), [sortedRules]);
-
-  // Expand ancestors + scroll for referenced rules.
-  const { expandedIds, toggleExpand, navigateToRule } = useRuleTreeNavigation(sortedRules);
 
   const handleStatusClose = () => {
     setStatusPopoverAnchor(null);
