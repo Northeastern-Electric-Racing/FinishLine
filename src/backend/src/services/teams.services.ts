@@ -7,7 +7,8 @@ import {
   TeamType,
   TeamJoinRequest,
   User,
-  WbsElementStatus
+  WbsElementStatus,
+  RoleEnum
 } from 'shared';
 import { Organization } from '@prisma/client';
 import prisma from '../prisma/prisma.js';
@@ -556,6 +557,18 @@ export default class TeamsService {
           where: { teamId: request.teamId },
           data: { members: { connect: { userId: request.userId } } }
         });
+
+        // approval makes a guest a full member -- existing members/leadership/etc. keep their rank
+        const requesterRole = await tx.role.findFirst({
+          where: { userId: request.userId, organizationId: organization.organizationId }
+        });
+        if (!requesterRole || requesterRole.roleType === RoleEnum.GUEST) {
+          await tx.role.upsert({
+            where: { uniqueRole: { userId: request.userId, organizationId: organization.organizationId } },
+            update: { roleType: RoleEnum.MEMBER },
+            create: { userId: request.userId, organizationId: organization.organizationId, roleType: RoleEnum.MEMBER }
+          });
+        }
       }
 
       return updatedRequest;
