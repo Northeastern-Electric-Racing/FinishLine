@@ -12,6 +12,7 @@ export const PROSPECTIVE_HAS_TASKS_CHANCE = 0.35;
 export const TASK_DONE_CHANCE = 0.4;
 export const TASK_ASSIGNEE_CHANCE = 0.7;
 export const TASK_NOTIFY_CHANCE = 0.5;
+
 export const ACTIVE_YEAR_DETERIORATION = 0.5;
 
 export const SPONSOR_TIER_FIXTURES: { name: string; colorHexCode: string; minSupportValue: number }[] = [
@@ -25,8 +26,6 @@ export const SPONSOR_TIER_FIXTURES: { name: string; colorHexCode: string; minSup
   { name: 'Elite Diamond', colorHexCode: '#313493', minSupportValue: 10000 }
 ];
 
-// Tiers a "real" contributing sponsor can be weighted into (excludes the special Discount/Grant/
-// Unassigned buckets, which are handled as their own less-common cases).
 const CONTRIBUTING_TIER_WEIGHTS: { tierName: string; weight: number }[] = [
   { tierName: 'Black Flag', weight: 35 },
   { tierName: 'Red Line', weight: 20 },
@@ -104,7 +103,7 @@ export const generateActiveYears = (faker: Faker, joinDate: Date, now: Date): nu
     }) &&
     activeYear + 1 <= currentYear
   ) {
-    activeYear = activeYear++;
+    activeYear++;
     years.push(activeYear);
   }
   return years;
@@ -189,7 +188,8 @@ export const prospectiveSponsorCreateInput = (
   firstContactMethod: First_Contact_Method | undefined,
   contactorUserId: string | undefined,
   contactId: string | undefined,
-  notes: string | undefined
+  notes: string | undefined,
+  dateDeleted: Date | undefined
 ): Prisma.Prospective_SponsorCreateInput => ({
   organizationName,
   status,
@@ -197,6 +197,7 @@ export const prospectiveSponsorCreateInput = (
   lastContactDate: lastContactDate ?? null,
   firstContactMethod: firstContactMethod ?? null,
   notes: notes ?? null,
+  dateDeleted: dateDeleted ?? null,
   organization: { connect: { organizationId } },
   ...(contactorUserId ? { contactor: { connect: { userId: contactorUserId } } } : {}),
   ...(contactId ? { contact: { connect: { sponsorContactId: contactId } } } : {})

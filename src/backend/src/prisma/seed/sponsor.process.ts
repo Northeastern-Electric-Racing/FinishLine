@@ -18,6 +18,7 @@ import {
   generateActiveYears,
   generateProspectiveStatus,
   generateProspectiveTaskNote,
+  generateSponsorTaskNote,
   generateSponsorValue,
   generateTaskCount,
   generateValueTypes,
@@ -47,7 +48,6 @@ export type SponsorOutput = {
 };
 
 const SPONSOR_CONCURRENCY = 8;
-
 type PlannedTask = {
   dueDate: Date;
   notifyDate: Date | undefined;
@@ -55,7 +55,6 @@ type PlannedTask = {
   done: boolean;
   assigneeUserId: string | undefined;
 };
-
 type PlannedSponsor = {
   name: string;
   contact: { name: string; email?: string; phone?: string; position?: string };
@@ -65,6 +64,17 @@ type PlannedSponsor = {
   sponsorValue: number;
   joinDate: Date;
   dateCreated: Date;
+  activeYears: number[];
+  taxExempt: boolean;
+  sponsorNotes: string | undefined;
+  tasks: PlannedTask[];
+};
+type PlannedConversion = {
+  sponsorTierName: string;
+  activeStatus: boolean;
+  valueTypes: Sponsor_Value_Type[];
+  sponsorValue: number;
+  joinDate: Date;
   activeYears: number[];
   taxExempt: boolean;
   sponsorNotes: string | undefined;
@@ -81,6 +91,8 @@ type PlannedProspective = {
   contact: { name: string; email?: string; phone?: string; position?: string } | undefined;
   notes: string | undefined;
   tasks: PlannedTask[];
+  dateDeleted: Date | undefined;
+  conversion: PlannedConversion | undefined;
 };
 
 export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
@@ -138,7 +150,8 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
         this.faker.datatype.boolean({ probability: SPONSOR_HAS_TASKS_CHANCE }),
         dateCreated,
         now,
-        assignableUsers
+        assignableUsers,
+        () => generateSponsorTaskNote(this.faker)
       );
 
       plannedSponsors.push({
@@ -194,8 +207,39 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
         this.faker.datatype.boolean({ probability: PROSPECTIVE_HAS_TASKS_CHANCE }),
         dateCreated,
         now,
-        assignableUsers
+        assignableUsers,
+        () => generateProspectiveTaskNote(this.faker)
       );
+
+      // An ACCEPTED prospective converts into a real Sponsor: the prospective is soft-deleted
+      // (dateDeleted = acceptance date) and a Sponsor is created reusing this prospective's
+      // contact.
+      let dateDeleted: Date | undefined;
+      let conversion: PlannedConversion | undefined;
+      if (status === Prospective_Sponsor_Status.ACCEPTED) {
+        const acceptedFrom = lastContactDate ?? dateCreated;
+        dateDeleted = this.faker.date.between({ from: acceptedFrom, to: now });
+
+        const sponsorTierName = chooseSponsorTierName(this.faker);
+        const tierMin = minSupportByName.get(sponsorTierName) ?? 0;
+        conversion = {
+          sponsorTierName,
+          activeStatus: this.faker.datatype.boolean({ probability: ACTIVE_SPONSOR_CHANCE }),
+          valueTypes: generateValueTypes(this.faker),
+          sponsorValue: generateSponsorValue(this.faker, tierMin),
+          joinDate: dateDeleted,
+          activeYears: generateActiveYears(this.faker, dateDeleted, now),
+          taxExempt: this.faker.datatype.boolean({ probability: TAX_EXEMPT_CHANCE }),
+          sponsorNotes: this.faker.datatype.boolean({ probability: 0.4 }) ? this.faker.lorem.sentence() : undefined,
+          tasks: this.planTasks(
+            this.faker.datatype.boolean({ probability: SPONSOR_HAS_TASKS_CHANCE }),
+            dateDeleted,
+            now,
+            assignableUsers,
+            () => generateSponsorTaskNote(this.faker)
+          )
+        };
+      }
 
       plannedProspectives.push({
         organizationName,
@@ -206,7 +250,9 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
         contactorUserId,
         contact,
         notes,
-        tasks
+        tasks,
+        dateDeleted,
+        conversion
       });
     }
 
@@ -220,14 +266,25 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
     const prospectiveSponsors: Prospective_Sponsor[] = [];
     for (let i = 0; i < plannedProspectives.length; i += SPONSOR_CONCURRENCY) {
       const batch = plannedProspectives.slice(i, i + SPONSOR_CONCURRENCY);
-      const created = await Promise.all(batch.map((planned) => this.writeProspective(planned, organizationId)));
-      prospectiveSponsors.push(...created);
+      const results = await Promise.all(
+        batch.map((planned) => this.writeProspective(planned, organizationId, tierIdByName))
+      );
+      for (const { prospective, convertedSponsor } of results) {
+        prospectiveSponsors.push(prospective);
+        if (convertedSponsor) sponsors.push(convertedSponsor);
+      }
     }
 
     return { sponsorTiers, sponsors, prospectiveSponsors };
   }
 
-  private planTasks(hasTasks: boolean, createdAfter: Date, now: Date, assignableUsers: FullUser[]): PlannedTask[] {
+  private planTasks(
+    hasTasks: boolean,
+    createdAfter: Date,
+    now: Date,
+    assignableUsers: FullUser[],
+    noteFor: () => string
+  ): PlannedTask[] {
     if (!hasTasks) return [];
 
     const count = generateTaskCount(this.faker);
@@ -245,7 +302,7 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
         ? this.faker.helpers.arrayElement(assignableUsers).userId
         : undefined;
 
-      tasks.push({ dueDate, notifyDate, notes: generateProspectiveTaskNote(this.faker), done, assigneeUserId });
+      tasks.push({ dueDate, notifyDate, notes: noteFor(), done, assigneeUserId });
     }
     return tasks;
   }
@@ -302,7 +359,11 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
     return sponsor;
   }
 
-  private async writeProspective(planned: PlannedProspective, organizationId: string): Promise<Prospective_Sponsor> {
+  private async writeProspective(
+    planned: PlannedProspective,
+    organizationId: string,
+    tierIdByName: Map<string, Sponsor_Tier>
+  ): Promise<{ prospective: Prospective_Sponsor; convertedSponsor?: Sponsor }> {
     let contactId: string | undefined;
     if (planned.contact) {
       const contact = await this.prisma.sponsor_Contact.create({
@@ -326,7 +387,8 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
         planned.firstContactMethod,
         planned.contactorUserId,
         contactId,
-        planned.notes
+        planned.notes,
+        planned.dateDeleted
       )
     });
 
@@ -345,6 +407,47 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
       )
     );
 
-    return prospective;
+    let convertedSponsor: Sponsor | undefined;
+    if (planned.conversion) {
+      if (!contactId) throw new Error(`Converted prospective ${planned.organizationName} has no contact to reuse.`);
+
+      const conv = planned.conversion;
+      const tier = tierIdByName.get(conv.sponsorTierName);
+      if (!tier) throw new Error(`Missing seeded tier ${conv.sponsorTierName}`);
+
+      convertedSponsor = await this.prisma.sponsor.create({
+        data: sponsorCreateInput(
+          organizationId,
+          planned.organizationName,
+          contactId,
+          tier.sponsorTierId,
+          conv.activeStatus,
+          conv.valueTypes,
+          conv.sponsorValue,
+          conv.joinDate,
+          conv.joinDate,
+          conv.activeYears,
+          conv.taxExempt,
+          conv.sponsorNotes
+        )
+      });
+
+      await Promise.all(
+        conv.tasks.map((task) =>
+          this.prisma.sponsor_Task.create({
+            data: sponsorTaskCreateInput(
+              { sponsorId: convertedSponsor!.sponsorId },
+              task.dueDate,
+              task.notifyDate,
+              task.notes,
+              task.done,
+              task.assigneeUserId
+            )
+          })
+        )
+      );
+    }
+
+    return { prospective, convertedSponsor };
   }
 }
