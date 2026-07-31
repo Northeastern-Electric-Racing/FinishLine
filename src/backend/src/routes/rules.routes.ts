@@ -1,13 +1,18 @@
 import express from 'express';
 import RulesController from '../controllers/rules.controllers.js';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
 import { MAX_FILE_SIZE } from 'shared';
 import multer, { memoryStorage } from 'multer';
 
 const rulesRouter = express.Router();
 
-rulesRouter.get('/rulesetType/:rulesetTypeId/active', RulesController.getActiveRuleset);
+rulesRouter.get(
+  '/rulesetType/:rulesetTypeId/active',
+  query('carNumber').optional().isInt(),
+  validateInputs,
+  RulesController.getActiveRuleset
+);
 rulesRouter.get('/ruleset/:rulesetId', RulesController.getRulesetById);
 
 rulesRouter.post(

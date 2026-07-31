@@ -35,6 +35,7 @@ import {
   getRulesetType
 } from '../apis/rules.api';
 import { useToast } from './toasts.hooks';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Hook to supply all ruleset types.
@@ -47,14 +48,15 @@ export const useAllRulesetTypes = () => {
 };
 
 /**
- * Hook to get the active ruleset for a given ruleset type.
+ * Hook to get the active ruleset for a given ruleset type scoped to a car
+ * Each car can have its own active ruleset per ruleset type.
  */
-export const useActiveRuleset = (rulesetTypeId: string) => {
+export const useActiveRuleset = (rulesetTypeId: string, carNumber?: number) => {
   return useQuery<Ruleset | undefined, Error>(
-    ['rules', 'activeRuleset', rulesetTypeId],
+    ['rules', 'activeRuleset', rulesetTypeId, carNumber],
     async () => {
       try {
-        const { data } = await getActiveRuleset(rulesetTypeId);
+        const { data } = await getActiveRuleset(rulesetTypeId, carNumber);
         return data;
       } catch {
         // Return undefined if no active ruleset exists
@@ -375,10 +377,14 @@ export const useSetRuleCompletion = (rulesetId: string, projectId: string) => {
  * @returns Query result containing Rulesets data, loading state, and error state.
  */
 export const useRulesetsByType = (rulesetTypeId: string) => {
-  return useQuery<Ruleset[], Error>(['rulesets', rulesetTypeId], async () => {
-    const { data } = await getRulesetsByRulesetType(rulesetTypeId);
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<Ruleset[], Error>(
+    ['rulesets', rulesetTypeId, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getRulesetsByRulesetType(rulesetTypeId);
+      return data;
+    }
+  );
 };
 
 /**
