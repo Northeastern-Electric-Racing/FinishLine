@@ -1,7 +1,6 @@
 import { Prisma, Task, Task_Label, Task_Status } from '@prisma/client';
 import { SeedProcess } from '../processes/seed-process.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
-import { ProjectOutput, ProjectProcess } from './project.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { WorkPackageOutput, WorkPackageProcess } from './work-package.process.js';
 import {
@@ -13,7 +12,7 @@ import {
   taskLabelCreateInputs
 } from '../factories/tasks.factory.js';
 
-type TaskInput = OrganizationOutput & ProjectOutput & UsersOutput & WorkPackageOutput;
+type TaskInput = OrganizationOutput & UsersOutput & WorkPackageOutput;
 
 export type TaskOutput = {
   tasks: Task[];
@@ -31,12 +30,12 @@ type TaskDraft = {
 
 export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
   dependencies() {
-    return [OrganizationProcess, ProjectProcess, UsersProcess, WorkPackageProcess];
+    return [OrganizationProcess, UsersProcess, WorkPackageProcess];
   }
 
   async run({
     organization,
-    projects,
+    projectsWithTimeline,
     members,
     leadership,
     heads,
@@ -44,7 +43,7 @@ export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
     appAdmins,
     workPackagesByProjectId
   }: TaskInput): Promise<TaskOutput> {
-    if (projects.length === 0) {
+    if (projectsWithTimeline.length === 0) {
       throw new Error('TaskProcess requires at least one project.');
     }
 
@@ -91,7 +90,7 @@ export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
       return eligible.length === 0 ? [] : [this.faker.helpers.arrayElement(eligible)];
     };
 
-    for (const { project, timeline } of projects) {
+    for (const { project, timeline } of projectsWithTimeline) {
       const projectWorkPackages = workPackagesByProjectId[project.projectId] ?? [];
       const taskCount = taskCountForProject(this.faker);
 

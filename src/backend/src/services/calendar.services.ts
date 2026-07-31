@@ -357,7 +357,7 @@ export default class CalendarService {
     }
 
     // Validate notificationChannelIds
-    await validateNotificationChannelIds(organization, submitter, notificationChannelIds);
+    await validateNotificationChannelIds(submitter, notificationChannelIds);
 
     // Validate shopIds
     if (shopIds.length > 0) {
@@ -695,7 +695,7 @@ export default class CalendarService {
     const addedNotificationChannelIds = notificationChannelIds.filter(
       (id) => !foundEvent.notificationChannelIds.includes(id)
     );
-    await validateNotificationChannelIds(organization, submitter, addedNotificationChannelIds);
+    await validateNotificationChannelIds(submitter, addedNotificationChannelIds);
 
     // Validate shopIds
     if (shopIds.length > 0) {

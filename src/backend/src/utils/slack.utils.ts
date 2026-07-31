@@ -393,24 +393,18 @@ export const sendAndGetSlackCRNotifications = async (
 };
 
 /**
- * Resolves whether a user can use the given Slack channel as a notification channel: only
+ * Checks whether a user can use the given Slack channel as a notification channel: only
  * allowed if the user's Slack id is a member of the channel, regardless of whether it's
- * public or private. Fails closed (denies access) if the channel can't be resolved from Slack.
+ * public or private.
  * @param slackId the requesting user's Slack id, or undefined if they have none linked
  * @param channelId the Slack channel id to check
- * @returns the channel's name (if it could be resolved) and whether the user has access to it
+ * @returns whether the user is a member of the channel
  */
-export const getNotificationChannelAccessForUser = async (
-  slackId: string | undefined,
-  channelId: string
-): Promise<{ channelName?: string; hasAccess: boolean }> => {
-  const channelName = await getChannelName(channelId);
-  if (!channelName) return { channelName: undefined, hasAccess: false };
-
-  if (!slackId) return { channelName, hasAccess: false };
+export const isSlackChannelMember = async (slackId: string | undefined, channelId: string): Promise<boolean> => {
+  if (!slackId) return false;
 
   const members = await getUsersInChannel(channelId);
-  return { channelName, hasAccess: members.includes(slackId) };
+  return members.includes(slackId);
 };
 
 export const buildSlackMentionPrefix = (mention: SlackMentionType, memberSlackIds: string[]): string => {
@@ -469,13 +463,18 @@ export const sendSlackEventNotifications = async (
     if (sentNotifications) notifications.push(...sentNotifications);
   });
 
-  const channelCompletion: Promise<void>[] = notificationChannelIds.map(async (channelId) => {
-    const sentNotifications: { channelId: string; ts: string }[] = await sendSlackEventNotificationToChannel(
-      channelId,
-      message
-    );
-    if (sentNotifications) notifications.push(...sentNotifications);
-  });
+  // Skip any notification channel that's the same Slack channel as one of the teams above, so a
+  // channel that's both a team's channel and a selected notification channel is only pinged once
+  const teamChannelIds = new Set(teams.map((team) => team.slackId));
+  const channelCompletion: Promise<void>[] = notificationChannelIds
+    .filter((channelId) => !teamChannelIds.has(channelId))
+    .map(async (channelId) => {
+      const sentNotifications: { channelId: string; ts: string }[] = await sendSlackEventNotificationToChannel(
+        channelId,
+        message
+      );
+      if (sentNotifications) notifications.push(...sentNotifications);
+    });
 
   await Promise.all([...completion, ...channelCompletion]);
 
