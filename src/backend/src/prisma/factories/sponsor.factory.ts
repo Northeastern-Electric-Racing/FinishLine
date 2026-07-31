@@ -103,8 +103,7 @@ export const generateActiveYears = (faker: Faker, joinDate: Date, now: Date): nu
     }) &&
     activeYear + 1 <= currentYear
   ) {
-    activeYear++;
-    years.push(activeYear);
+    years.push(++activeYear);
   }
   return years;
 };
