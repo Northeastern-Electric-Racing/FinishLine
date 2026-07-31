@@ -217,6 +217,7 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
       let dateDeleted: Date | undefined;
       let conversion: PlannedConversion | undefined;
       if (status === Prospective_Sponsor_Status.ACCEPTED) {
+        // Given that there is contact, we will put that as our from date
         const acceptedFrom = lastContactDate ?? dateCreated;
         dateDeleted = this.faker.date.between({ from: acceptedFrom, to: now });
 
