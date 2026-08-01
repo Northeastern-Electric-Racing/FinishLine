@@ -379,7 +379,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                             )
                           }
                           size="small"
-                          placeholder="Select Existing Vendor"
+                          placeholder="Select Vendor"
                           errorMessage={errors.vendorId}
                         />
                       );
