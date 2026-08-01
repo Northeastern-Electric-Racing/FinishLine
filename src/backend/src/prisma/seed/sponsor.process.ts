@@ -212,8 +212,7 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
       );
 
       // An ACCEPTED prospective converts into a real Sponsor: the prospective is soft-deleted
-      // (dateDeleted = acceptance date) and a Sponsor is created reusing this prospective's
-      // contact.
+      // (dateDeleted = acceptance date) and a Sponsor is created with a new contact.
       let dateDeleted: Date | undefined;
       let conversion: PlannedConversion | undefined;
       if (status === Prospective_Sponsor_Status.ACCEPTED) {
@@ -410,17 +409,26 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
 
     let convertedSponsor: Sponsor | undefined;
     if (planned.conversion) {
-      if (!contactId) throw new Error(`Converted prospective ${planned.organizationName} has no contact to reuse.`);
+      if (!planned.contact) throw new Error(`Converted prospective ${planned.organizationName} has no contact to copy.`);
 
       const conv = planned.conversion;
       const tier = tierIdByName.get(conv.sponsorTierName);
       if (!tier) throw new Error(`Missing seeded tier ${conv.sponsorTierName}`);
 
+      const sponsorContact = await this.prisma.sponsor_Contact.create({
+        data: sponsorContactCreateInput(
+          planned.contact.name,
+          planned.contact.email,
+          planned.contact.phone,
+          planned.contact.position
+        )
+      });
+
       convertedSponsor = await this.prisma.sponsor.create({
         data: sponsorCreateInput(
           organizationId,
           planned.organizationName,
-          contactId,
+          sponsorContact.sponsorContactId,
           tier.sponsorTierId,
           conv.activeStatus,
           conv.valueTypes,
