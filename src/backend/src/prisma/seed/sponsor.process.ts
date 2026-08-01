@@ -117,13 +117,14 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
     const tierIdByName = new Map(sponsorTiers.map((tier) => [tier.name, tier]));
     const minSupportByName = new Map(SPONSOR_TIER_FIXTURES.map((tier) => [tier.name, tier.minSupportValue]));
 
+    const usedCompanyNames = new Set<string>();
+
     const plannedSponsors: PlannedSponsor[] = [];
-    const usedSponsorNames = new Set<string>();
 
     for (let i = 0; i < SPONSOR_COUNT; i++) {
       let name = this.faker.company.name();
-      while (usedSponsorNames.has(name)) name = `${this.faker.company.name()} ${this.faker.string.alpha(2)}`;
-      usedSponsorNames.add(name);
+      while (usedCompanyNames.has(name)) name = `${this.faker.company.name()} ${this.faker.string.alpha(2)}`;
+      usedCompanyNames.add(name);
 
       const contactName = this.faker.person.fullName();
       const contact = {
@@ -171,13 +172,12 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
     }
 
     const plannedProspectives: PlannedProspective[] = [];
-    const usedProspectiveNames = new Set<string>();
 
     for (let i = 0; i < PROSPECTIVE_SPONSOR_COUNT; i++) {
       let organizationName = this.faker.company.name();
-      while (usedProspectiveNames.has(organizationName))
+      while (usedCompanyNames.has(organizationName))
         organizationName = `${this.faker.company.name()} ${this.faker.string.alpha(2)}`;
-      usedProspectiveNames.add(organizationName);
+      usedCompanyNames.add(organizationName);
 
       const status = generateProspectiveStatus(this.faker);
       const dateCreated = this.faker.date.between({ from: addDaysToDate(now, -365), to: now });
