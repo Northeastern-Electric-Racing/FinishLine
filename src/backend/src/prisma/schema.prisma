@@ -1391,7 +1391,6 @@ model Organization {
   advisor                                User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
   advisorId                              String?
   description                            String    @default("")
-  newMemberImageId                       String?
   logoImageId                            String?
   slackWorkspaceId                       String?
   applicationLink                        String?
@@ -1399,8 +1398,6 @@ model Organization {
   partReviewSampleImageId                String?
   partReviewGuideLink                    String?
   sponsorshipNotificationsSlackChannelId String?
-  newMemberSlackChannelId                String?
-  newMemberSlackChannelName              String?
   platformDescription                    String    @default("")
   platformLogoImageId                    String?
 

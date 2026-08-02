@@ -38,10 +38,8 @@ const Home: React.FC = () => {
         [routes.HOME_PNM, routes.HOME_ONBOARDING, routes.HOME_NEW_MEMBER].map((path) => (
           <Redirect exact key={path} path={path} to={routes.HOME} />
         ))}
-      {isNewMember &&
-        [routes.HOME_PNM, routes.HOME_ONBOARDING].map((path) => (
-          <Redirect exact key={path} path={path} to={routes.HOME_NEW_MEMBER} />
-        ))}
+      {/* new members can still visit HOME_ONBOARDING to look back at what they completed */}
+      {isNewMember && <Redirect exact path={routes.HOME_PNM} to={routes.HOME_NEW_MEMBER} />}
       {onOnboarding && !completedOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_PNM} />}
       {isNewMember && <Redirect exact path={routes.HOME} to={routes.HOME_NEW_MEMBER} />}
       <Route exact path={routes.HOME_SELECT_SUBTEAM} component={SelectSubteamPage} />

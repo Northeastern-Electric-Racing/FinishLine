@@ -3,26 +3,17 @@ import { Box } from '@mui/system';
 import UsefulLinksTable from './UsefulLinks/UsefulLinksTable';
 import LinkTypeTable from '../ProjectsConfig/LinkTypes/LinkTypeTable';
 import NewMemberMilestoneTable from '../RecruitmentConfig/NewMemberMilestoneTable';
-import {
-  useCurrentOrganization,
-  useOrganizationNewMemberImage,
-  useSetOrganizationNewMemberImage
-} from '../../../hooks/organizations.hooks';
+import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 import UpdateOnboardingContactsModal from './UpdateContactsModal';
 import OnboardingBlock from './OnboardingBlock';
-import NERUploadButton from '../../../components/NERUploadButton';
-import { useToast } from '../../../hooks/toasts.hooks';
-import { MAX_FILE_SIZE } from 'shared';
 
 const OnboardingConfigSection: React.FC = () => {
   const theme = useTheme();
   const [showModal, setShowModal] = useState(false);
-  const [addedImage, setAddedImage] = useState<File | undefined>(undefined);
-  const toast = useToast();
 
   const {
     data: organization,
@@ -31,37 +22,8 @@ const OnboardingConfigSection: React.FC = () => {
     error: organizationError
   } = useCurrentOrganization();
 
-  const {
-    data: newMemberImageBlob,
-    isLoading: imageIsLoading,
-    error: imageError,
-    isError: imageIsError
-  } = useOrganizationNewMemberImage();
-  const { mutateAsync: uploadNewMemberImage, isLoading: isUploading } = useSetOrganizationNewMemberImage();
-
-  const handleImageUpload = async () => {
-    if (!addedImage) return;
-
-    if (addedImage.size >= MAX_FILE_SIZE) {
-      toast.error(`File must be less than ${MAX_FILE_SIZE / 1024 / 1024} MB`, 5000);
-      return;
-    }
-
-    try {
-      await uploadNewMemberImage(addedImage);
-      setAddedImage(undefined);
-      toast.success('Image uploaded successfully!');
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to upload image');
-    }
-  };
-
   if (organizationIsError) {
     return <ErrorPage message={organizationError.message} />;
-  }
-
-  if (imageIsError) {
-    return <ErrorPage message={imageError.message} />;
   }
 
   if (!organization || organizationIsLoading) return <LoadingIndicator />;
@@ -79,54 +41,6 @@ const OnboardingConfigSection: React.FC = () => {
       }}
     >
       <OnboardingBlock organization={organization} isAdmin={true} />
-      <Grid item>
-        <Box
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: '10px',
-            padding: '16px',
-            width: '100%'
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              color: 'white',
-              fontWeight: 'bold',
-              marginBottom: '12px'
-            }}
-          >
-            Onboarding Image
-          </Typography>
-          {isUploading || imageIsLoading ? (
-            <Box sx={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <LoadingIndicator />
-            </Box>
-          ) : (
-            <>
-              {!addedImage && newMemberImageBlob && (
-                <Box
-                  component="img"
-                  sx={{ display: 'block', maxWidth: '100%', maxHeight: '200px', mb: 1, objectFit: 'contain' }}
-                  alt="Onboarding"
-                  src={URL.createObjectURL(newMemberImageBlob)}
-                />
-              )}
-              <NERUploadButton
-                dataTypeId="newMemberImage"
-                handleFileChange={(e) => {
-                  if (e.target.files) {
-                    setAddedImage(e.target.files[0]);
-                  }
-                }}
-                onSubmit={handleImageUpload}
-                addedImage={addedImage}
-                setAddedImage={setAddedImage}
-              />
-            </>
-          )}
-        </Box>
-      </Grid>
       <Grid item>
         <Box
           sx={{

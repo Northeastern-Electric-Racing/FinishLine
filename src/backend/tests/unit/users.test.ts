@@ -10,12 +10,6 @@ import {
 import UsersService from '../../src/services/users.services.js';
 import { NotFoundException, AccessDeniedException } from '../../src/utils/errors.utils.js';
 import { RoleEnum } from 'shared';
-import { vi, Mock } from 'vitest';
-import { validateSlackUserId } from '../../src/integrations/slack.js';
-
-vi.mock('../../src/integrations/slack.js', () => ({
-  validateSlackUserId: vi.fn()
-}));
 
 describe('User Tests', () => {
   let orgId: string;
@@ -127,40 +121,19 @@ describe('User Tests', () => {
   });
 
   describe('Update User Settings', () => {
-    afterEach(() => {
-      vi.unstubAllEnvs();
-      vi.clearAllMocks();
-    });
-
-    it('throws when slack bot token is not set, regardless of slackId', async () => {
-      vi.stubEnv('SLACK_BOT_TOKEN', '');
-
+    it('throws when the slack id has an invalid format', async () => {
       const testUser = await createTestUser(batmanAppAdmin, orgId);
 
       await expect(async () => await UsersService.updateUserSettings(testUser, 'DARK', 'la la la')).rejects.toThrow(
-        'Slack integration not configured'
-      );
-    });
-
-    it('throws when slack bot token is set and the id is invalid', async () => {
-      vi.stubEnv('SLACK_BOT_TOKEN', 'fake-token');
-      (validateSlackUserId as Mock).mockResolvedValue(false);
-
-      const testUser = await createTestUser(batmanAppAdmin, orgId);
-
-      await expect(async () => await UsersService.updateUserSettings(testUser, 'DARK', 'blahID')).rejects.toThrow(
         'Invalid Slack ID'
       );
     });
 
-    it('saves successfully when slack bot token is set and id is valid', async () => {
-      vi.stubEnv('SLACK_BOT_TOKEN', 'fake-token');
-      (validateSlackUserId as Mock).mockResolvedValue(true);
-
+    it('saves successfully when the slack id has a valid format', async () => {
       const testUser = await createTestUser(batmanAppAdmin, orgId);
-      const result = await UsersService.updateUserSettings(testUser, 'DARK', 'UIDVALID');
+      const result = await UsersService.updateUserSettings(testUser, 'DARK', 'U1234ABCD');
 
-      expect(result.slackId).toBe('UIDVALID');
+      expect(result.slackId).toBe('U1234ABCD');
     });
   });
 });

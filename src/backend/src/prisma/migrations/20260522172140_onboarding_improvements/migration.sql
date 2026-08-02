@@ -83,9 +83,5 @@ ALTER TABLE "Team_Join_Request" ADD CONSTRAINT "Team_Join_Request_teamId_fkey" F
 ALTER TABLE "Team_Join_Request" ADD CONSTRAINT "Team_Join_Request_reviewedByUserId_fkey" FOREIGN KEY ("reviewedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AlterTable
-ALTER TABLE "Organization" ADD COLUMN "newMemberSlackChannelId" TEXT,
-ADD COLUMN "newMemberSlackChannelName" TEXT;
-
--- AlterTable
 ALTER TABLE "Link_Type" ADD COLUMN "isOnOnboardingDashboard" BOOLEAN NOT NULL DEFAULT false;
 

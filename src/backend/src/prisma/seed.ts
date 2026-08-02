@@ -3391,8 +3391,6 @@ const performSeed: () => Promise<void> = async () => {
     'Thank you for applying to Northeastern Electric Racing! After reviewing your application, we are very excited to officially welcome you to our team.'
   );
 
-  await OrganizationsService.setNewMemberSlackChannelId('C06HR7WTTKM', batman, organizationId);
-
   await OrganizationsService.updateOrganizationContacts(batman, ner, [
     { userId: batman.userId, title: 'Chief Software Engineer' },
     { userId: thomasEmrax.userId, title: 'Chief Mechanical Engineer' },

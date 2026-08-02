@@ -45,11 +45,11 @@ const NewMemberUsefulLinksWidget: React.FC<NewMemberUsefulLinksWidgetProps> = ({
                 variant="contained"
                 fullWidth
                 sx={{
-                  backgroundColor: '#616161',
+                  backgroundColor: '#ef4345',
                   color: 'white',
                   borderRadius: '10px',
                   padding: 2.5,
-                  '&:hover': { backgroundColor: '#ef4345' }
+                  '&:hover': { backgroundColor: '#b0191a' }
                 }}
                 href={link.url}
                 target="_blank"

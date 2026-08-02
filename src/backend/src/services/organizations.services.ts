@@ -5,12 +5,10 @@ import {
   NotificationChannelPreview,
   ProjectPreview,
   RoleEnum,
-  SlackMessagePreview,
   isAdmin,
   isAtLeastRank,
   User
 } from 'shared';
-import { getChannelName, getRecentChannelMessages } from '../integrations/slack.js';
 import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
@@ -315,57 +313,6 @@ export default class OrganizationsService {
   }
 
   /**
-   * Sets the new member image for an organization, User must be admin
-   * @param newMemberImage the image which will be uploaded and have its id stored in the org
-   * @param submitter the user submitting the image
-   * @param organization the organization whose new member image is being set
-   * @returns the updated organization
-   * @throws if the user is not an admin
-   */
-  static async setNewMemberImage(
-    newMemberImage: Express.Multer.File,
-    submitter: User,
-    organization: Organization
-  ): Promise<Organization> {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('update new member image');
-    }
-
-    const newMemberImageData = await uploadFile(newMemberImage);
-
-    // Ensure name exists for frontend display purposes
-    if (!newMemberImageData?.name) {
-      throw new HttpException(500, 'Image Name not found');
-    }
-
-    const updatedOrg = await prisma.organization.update({
-      where: { organizationId: organization.organizationId },
-      data: {
-        newMemberImageId: newMemberImageData.id
-      }
-    });
-
-    return updatedOrg;
-  }
-
-  /**
-   * Gets the new member image of the organization
-   * @param organizationId the id of the organization
-   * @returns the id of the image
-   */
-  static async getNewMemberImage(organizationId: string): Promise<string | null> {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    return organization.newMemberImageId;
-  }
-
-  /**
    * Sets the description of a given organization.
    * @param description the new description
    * @param submitter the user making the change (must be admin)
@@ -530,45 +477,6 @@ export default class OrganizationsService {
         hasAccess: await isSlackChannelMember(slackId, channel.id)
       }))
     );
-  }
-
-  /**
-   * Sets the organization's designated new member Slack channel, shown on the new member dashboard.
-   * The channel's display name is resolved and stored alongside its id at set-time, since it rarely
-   * changes -- this avoids re-resolving it from Slack on every dashboard load/poll.
-   * @param channelId the slack id of the channel
-   * @param submitter the user making the change
-   * @param organizationId the organization to update
-   * @returns the updated organization
-   */
-  static async setNewMemberSlackChannelId(
-    channelId: string,
-    submitter: User,
-    organizationId: string
-  ): Promise<Organization> {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('set new member slack channel id');
-    }
-
-    const channelName = await getChannelName(channelId);
-
-    const updatedOrg = await prisma.organization.update({
-      where: { organizationId },
-      data: { newMemberSlackChannelId: channelId, newMemberSlackChannelName: channelName }
-    });
-
-    return updatedOrg;
-  }
-
-  /**
-   * Gets the 3 most recent messages from the organization's designated new member Slack channel
-   * @param organization the organization to get new member slack messages for
-   * @returns the most recent messages in the channel, or an empty array if no channel is configured
-   */
-  static async getNewMemberSlackMessages(organization: Organization): Promise<SlackMessagePreview[]> {
-    if (!organization.newMemberSlackChannelId) return [];
-
-    return getRecentChannelMessages(organization.newMemberSlackChannelId, 3);
   }
 
   /**

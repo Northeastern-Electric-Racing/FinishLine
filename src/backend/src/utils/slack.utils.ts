@@ -727,11 +727,11 @@ export const sendStandardCRCreatedNotification = async (
 };
 
 /**
- * Sends an ephemeral "Approve this join request?" Slack message with an approve button to each
- * team join request reviewer (team head, team leads, and org admins) who is a member of the
- * team's Slack channel. Unlike CRs, there's no prior message to thread this off of, so it's sent
- * as a fresh (non-threaded) ephemeral. Denying (or approving without Slack) still happens in the
- * app -- reviewTeamJoinRequest still enforces real auth on click.
+ * Sends an ephemeral "Approve this join request?" Slack message with an approve button to the
+ * team head, if they're a member of the team's Slack channel. Leads and admins can still
+ * approve/deny from the app, but don't get pinged in Slack. Unlike CRs, there's no prior message
+ * to thread this off of, so it's sent as a fresh (non-threaded) ephemeral. Denying (or approving
+ * without Slack) still happens in the app -- reviewTeamJoinRequest still enforces real auth on click.
  */
 export const sendTeamJoinRequestNotification = async (
   teamJoinRequest: TeamJoinRequest,
@@ -741,26 +741,12 @@ export const sendTeamJoinRequestNotification = async (
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return;
   if (!team.slackId) return;
 
+  // only the team head gets the ephemeral DM -- leads and admins can still approve/deny from the app,
+  // but don't get pinged in Slack
   const headSlackId = await getUserSlackId(team.head.userId);
-  const leadSlackIds = (await Promise.all(team.leads.map((lead) => getUserSlackId(lead.userId)))).filter(
-    (id): id is string => !!id
-  );
+  if (!headSlackId) return;
 
-  const admins = await prisma.user.findMany({
-    where: {
-      roles: {
-        some: {
-          roleType: { in: ['ADMIN', 'APP_ADMIN'] },
-          organizationId: organization.organizationId
-        }
-      }
-    },
-    include: { userSettings: true }
-  });
-  const adminSlackIds = admins.map((admin) => admin.userSettings?.slackId).filter((id): id is string => !!id);
-
-  const allSlackIds = new Set([...(headSlackId ? [headSlackId] : []), ...leadSlackIds, ...adminSlackIds]);
-  if (allSlackIds.size === 0) return;
+  const allSlackIds = new Set([headSlackId]);
 
   const membersInChannel = new Set(await getUsersInChannel(team.slackId));
 
@@ -792,6 +778,27 @@ export const sendTeamJoinRequestNotification = async (
       .filter((slackId) => membersInChannel.has(slackId))
       .map((slackId) => sendEphemeralMessage(team.slackId, undefined, slackId, messageText, approveBlocks))
   );
+};
+
+/**
+ * DMs the requester once their team join request has been reviewed, letting them know whether
+ * they were approved or denied.
+ */
+export const sendTeamJoinRequestReviewedNotification = async (
+  teamJoinRequest: TeamJoinRequest,
+  team: SharedTeam,
+  approved: boolean
+): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return;
+
+  const requesterSlackId = await getUserSlackId(teamJoinRequest.user.userId);
+  if (!requesterSlackId) return;
+
+  const messageText = approved
+    ? `Your request to join ${team.teamName} has been approved! Welcome to the team.`
+    : `Your request to join ${team.teamName} has been denied.`;
+
+  await sendMessage(requesterSlackId, messageText);
 };
 
 /**

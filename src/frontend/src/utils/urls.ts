@@ -380,8 +380,6 @@ const organizationsSetPlatformDescription = () => `${organizations()}/platform-d
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
-const organizationsNewMemberImage = () => `${organizations()}/new-member-image`;
-const organizationsSetNewMemberImage = () => `${organizations()}/new-member-image/update`;
 const organizationsPlatformLogoImage = () => `${organizations()}/platform-logo`;
 const organizationsSetPlatformLogoImage = () => `${organizationsPlatformLogoImage()}/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
@@ -389,8 +387,6 @@ const organizationsSetWorkspaceId = () => `${organizations()}/workspaceId/set`;
 const organizationsGetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/get`;
 const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-review-guide-link/set`;
 const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizations()}/sponsorshipChannelId/set`;
-const organizationsSetNewMemberSlackChannelId = () => `${organizations()}/newMemberSlackChannelId/set`;
-const organizationsNewMemberSlackMessages = () => `${organizations()}/new-member-slack-messages`;
 const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
 const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
 const organizationsNotificationChannels = () => `${organizations()}/notification-channels`;
@@ -819,8 +815,6 @@ export const apiUrls = {
   organizationsSetPlatformDescription,
   organizationsLogoImage,
   organizationsSetLogoImage,
-  organizationsNewMemberImage,
-  organizationsSetNewMemberImage,
   organizationsPlatformLogoImage,
   organizationsSetPlatformLogoImage,
   organizationsSetFeaturedProjects,
@@ -828,8 +822,6 @@ export const apiUrls = {
   organizationsGetPartReviewGuideLink,
   organizationsSetPartReviewGuideLink,
   organizationsSetSlackSponsorshipNotificationChannelId,
-  organizationsSetNewMemberSlackChannelId,
-  organizationsNewMemberSlackMessages,
   organizationsFinanceDelegates,
   organizationsSetFinanceDelegates,
   organizationsNotificationChannels,

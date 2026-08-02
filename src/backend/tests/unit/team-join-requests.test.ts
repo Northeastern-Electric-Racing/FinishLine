@@ -99,13 +99,11 @@ describe('Team Join Request Tests', () => {
   });
 
   describe('Get Pending Team Join Requests', () => {
-    it('fails if the reviewer is not an admin, the head, or a lead', async () => {
+    it('fails if the reviewer is not an admin or the head', async () => {
       await expect(
         async () => await TeamsService.getPendingTeamJoinRequests(team.teamId, outsider, organization)
       ).rejects.toThrow(
-        new AccessDeniedException(
-          'you must be an admin, the team head, or a team lead to review join requests for this team'
-        )
+        new AccessDeniedException('you must be an admin or the team head to review join requests for this team')
       );
     });
 
@@ -117,12 +115,14 @@ describe('Team Join Request Tests', () => {
       expect(result).toHaveLength(1);
     });
 
-    it('succeeds for a team lead', async () => {
+    it('fails for a team lead', async () => {
       await TeamsService.createTeamJoinRequest(requester, team.teamId, organization);
 
-      const result = await TeamsService.getPendingTeamJoinRequests(team.teamId, lead, organization);
-
-      expect(result).toHaveLength(1);
+      await expect(
+        async () => await TeamsService.getPendingTeamJoinRequests(team.teamId, lead, organization)
+      ).rejects.toThrow(
+        new AccessDeniedException('you must be an admin or the team head to review join requests for this team')
+      );
     });
 
     it('only returns requests that are still pending', async () => {
@@ -151,16 +151,24 @@ describe('Team Join Request Tests', () => {
       ).rejects.toThrow(new HttpException(400, 'This request has already been reviewed'));
     });
 
-    it('fails if the reviewer is not an admin, the head, or a lead', async () => {
+    it('fails if the reviewer is not an admin or the head', async () => {
       const created = await TeamsService.createTeamJoinRequest(requester, team.teamId, organization);
 
       await expect(
         async () =>
           await TeamsService.reviewTeamJoinRequest(outsider, created.teamJoinRequestId, true, undefined, organization)
       ).rejects.toThrow(
-        new AccessDeniedException(
-          'you must be an admin, the team head, or a team lead to review join requests for this team'
-        )
+        new AccessDeniedException('you must be an admin or the team head to review join requests for this team')
+      );
+    });
+
+    it('fails for a team lead', async () => {
+      const created = await TeamsService.createTeamJoinRequest(requester, team.teamId, organization);
+
+      await expect(
+        async () => await TeamsService.reviewTeamJoinRequest(lead, created.teamJoinRequestId, true, undefined, organization)
+      ).rejects.toThrow(
+        new AccessDeniedException('you must be an admin or the team head to review join requests for this team')
       );
     });
 

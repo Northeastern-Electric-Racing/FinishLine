@@ -34,10 +34,10 @@ const TeamJoinRequestsPageBlock: React.FC<TeamJoinRequestsPageBlockProps> = ({ t
   } = usePendingTeamJoinRequests(team.teamId);
   const { mutateAsync: reviewRequest, isLoading: reviewIsLoading } = useReviewTeamJoinRequest();
 
-  const hasPerms = isAdmin(user.role) || user.userId === team.head.userId;
-  const editMembersPerms = hasPerms || team.leads.map((lead) => lead.userId).includes(user.userId);
+  // only admins and the team head can review join requests -- team leads cannot
+  const canReviewJoinRequests = isAdmin(user.role) || user.userId === team.head.userId;
 
-  if (!editMembersPerms) return null;
+  if (!canReviewJoinRequests) return null;
 
   if (joinRequestsIsError) return <ErrorPage message={joinRequestsError?.message} />;
   if (joinRequestsIsLoading || !joinRequests) return <LoadingIndicator />;

@@ -1,5 +1,5 @@
 import axios from '../utils/axios';
-import { NotificationChannelPreview, Organization, ProjectPreview, SlackMessagePreview } from 'shared';
+import { NotificationChannelPreview, Organization, ProjectPreview } from 'shared';
 import { apiUrls } from '../utils/urls';
 import {
   ApplicationLinkPayload,
@@ -58,18 +58,6 @@ export const setOrganizationLogo = async (file: File) => {
   const formData = new FormData();
   formData.append('logo', file);
   return axios.post(apiUrls.organizationsSetLogoImage(), formData);
-};
-
-export const setOrganizationNewMemberImage = async (file: File) => {
-  const formData = new FormData();
-  formData.append('newMemberImage', file);
-  return axios.post(apiUrls.organizationsSetNewMemberImage(), formData);
-};
-
-export const getOrganizationNewMemberImage = async () => {
-  return axios.get<string>(apiUrls.organizationsNewMemberImage(), {
-    transformResponse: (data) => JSON.parse(data)
-  });
 };
 
 export const setOrganizationPlatformLogoImage = async (file: File) => {
@@ -142,25 +130,6 @@ export const updateApplicationLink = (payload: ApplicationLinkPayload) => {
 export const setSlackSponsorshipNotificationSlackChannelId = (payload: ChannelIdPayload) => {
   return axios.post(apiUrls.organizationsSetSlackSponsorshipNotificationChannelId(), {
     ...payload
-  });
-};
-
-/**
- * Sets the organization's designated new member Slack channel
- * @param payload contains the channel id
- */
-export const setNewMemberSlackChannelId = (payload: ChannelIdPayload) => {
-  return axios.post(apiUrls.organizationsSetNewMemberSlackChannelId(), {
-    ...payload
-  });
-};
-
-/**
- * Gets the 3 most recent messages from the organization's designated new member Slack channel
- */
-export const getNewMemberSlackMessages = () => {
-  return axios.get<SlackMessagePreview[]>(apiUrls.organizationsNewMemberSlackMessages(), {
-    transformResponse: (data) => JSON.parse(data)
   });
 };
 

@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { NotificationChannelPreview, Organization, ProjectPreview, SlackMessagePreview, User } from 'shared';
+import { NotificationChannelPreview, Organization, ProjectPreview, User } from 'shared';
 import {
   getFeaturedProjects,
   getCurrentOrganization,
@@ -17,12 +17,8 @@ import {
   getPartReviewGuideLink,
   setPartReviewGuideLink,
   setSlackSponsorshipNotificationSlackChannelId,
-  setNewMemberSlackChannelId,
-  getNewMemberSlackMessages,
   getFinanceDelegates,
   setFinanceDelegates,
-  setOrganizationNewMemberImage,
-  getOrganizationNewMemberImage,
   setOrganizationPlatformLogoImage,
   getNotificationChannels
 } from '../apis/organizations.api';
@@ -219,26 +215,6 @@ export const useOrganizationLogo = () => {
   });
 };
 
-export const useOrganizationNewMemberImage = () => {
-  return useQuery<Blob | undefined, Error>(['organizations', 'new-member-image'], async () => {
-    const { data: fileId } = await getOrganizationNewMemberImage();
-    if (!fileId) {
-      return;
-    }
-    return await downloadGoogleImage(fileId);
-  });
-};
-
-export const useSetOrganizationNewMemberImage = () => {
-  const queryClient = useQueryClient();
-  return useMutation<Organization, Error, File>(['organizations', 'new-member-image'], async (file: File) => {
-    const { data } = await setOrganizationNewMemberImage(file);
-    queryClient.invalidateQueries(['organizations']);
-    queryClient.invalidateQueries(['organizations', 'new-member-image']);
-    return data;
-  });
-};
-
 export const useSetOrganizationPlatformLogoImage = () => {
   const queryClient = useQueryClient();
   return useMutation<Organization, Error, File>(['organizations', 'platform-logo'], async (file: File) => {
@@ -302,39 +278,6 @@ export const useNotificationChannels = () => {
     const { data } = await getNotificationChannels();
     return data;
   });
-};
-
-export const useSetNewMemberSlackChannelId = () => {
-  const queryClient = useQueryClient();
-  return useMutation<Organization, Error, string>(
-    ['organizations', 'new-member-slack-channel'],
-    async (channelId: string) => {
-      const { data } = await setNewMemberSlackChannelId({ channelId });
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['organizations']);
-      }
-    }
-  );
-};
-
-/**
- * Custom React Hook to get the 3 most recent messages from the new member Slack channel.
- * Polls periodically so the widget reflects new messages without a page reload.
- */
-export const useNewMemberSlackMessages = () => {
-  return useQuery<SlackMessagePreview[], Error>(
-    ['organizations', 'new-member-slack-messages'],
-    async () => {
-      const { data } = await getNewMemberSlackMessages();
-      return data;
-    },
-    {
-      refetchInterval: 60000
-    }
-  );
 };
 
 export const useGetFinanceDelegates = () => {

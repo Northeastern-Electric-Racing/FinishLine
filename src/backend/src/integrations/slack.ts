@@ -1,7 +1,6 @@
 import bolt from '@slack/bolt';
 import type { App, ExpressReceiver } from '@slack/bolt';
 import { LRUCache } from 'lru-cache';
-import { SlackMessagePreview } from 'shared';
 import { HttpException } from '../utils/errors.utils.js';
 
 const { App: AppClass, ExpressReceiver: ExpressReceiverClass } = bolt;
@@ -508,93 +507,3 @@ export const getReceiver = (): ExpressReceiver | null => {
 // Export the getters for any direct usage if needed
 export { getSlackClient };
 export default getSlackClient;
-
-/**
- * Fetches the most recent real (non-system) messages posted in a Slack channel, newest first,
- * with each message's author name and a permalink back to it in Slack resolved.
- * @param channelId the id of the slack channel to fetch messages from
- * @param limit the maximum number of recent messages to fetch
- * @returns the most recent messages in the channel, newest first
- */
-const fetchRecentChannelMessages = async (key: string): Promise<SlackMessagePreview[]> => {
-  const [channelId, limitStr] = key.split(':');
-  const limit = Number(limitStr);
-
-  const client = getSlackClient();
-  if (!client) {
-    throw new HttpException(500, 'Slack integration not configured');
-  }
-
-  try {
-    const historyRes = await client.conversations.history({ channel: channelId, limit });
-    if (!historyRes.ok || !historyRes.messages) {
-      throw new Error(historyRes.error ?? 'unknown error fetching channel history');
-    }
-
-    const realMessages = historyRes.messages.filter((message: any) => !message.subtype && message.text && message.ts);
-
-    return await Promise.all(
-      realMessages.map(async (message: any) => {
-        const [userName, permalinkRes] = await Promise.all([
-          message.user ? getUserName(message.user) : undefined,
-          client.chat.getPermalink({ channel: channelId, message_ts: message.ts })
-        ]);
-
-        return {
-          text: message.text,
-          userName,
-          timestamp: new Date(Number(message.ts) * 1000).toISOString(),
-          permalink: permalinkRes.permalink as string
-        };
-      })
-    );
-  } catch (error) {
-    throw new HttpException(
-      500,
-      `Failed to fetch recent Slack messages: ${(error as any)?.data?.error ?? (error as Error).message}`
-    );
-  }
-};
-
-/**
- * Caches recent channel messages briefly, keyed by `${channelId}:${limit}`. This is the
- * important one for widgets that poll on a timer: every viewer asking for the same channel
- * shares one Slack request per TTL window instead of hitting Slack once per viewer per poll.
- * TTL matches the frontend's poll interval so a single viewer's repeat polls hit cache too,
- * not just concurrent polls from different viewers.
- */
-const recentChannelMessagesCache = new LRUCache<string, SlackMessagePreview[]>({
-  max: 100,
-  ttl: 1000 * 60, // 60 seconds
-  fetchMethod: fetchRecentChannelMessages
-});
-
-/**
- * Fetches the most recent real (non-system) messages posted in a Slack channel, newest first,
- * with each message's author name and a permalink back to it in Slack resolved. Results are
- * cached briefly, and concurrent/near-concurrent callers for the same channel share a single
- * slack request rather than each hitting Slack independently.
- * @param channelId the id of the slack channel to fetch messages from
- * @param limit the maximum number of recent messages to fetch
- * @returns the most recent messages in the channel, newest first
- */
-export const getRecentChannelMessages = async (channelId: string, limit: number): Promise<SlackMessagePreview[]> => {
-  return (await recentChannelMessagesCache.fetch(`${channelId}:${limit}`)) ?? [];
-};
-
-/**
- * Validates that a given Slack user id exists in the workspace
- * All slack ids start with U. If you pass a valid user id to users.info, it returns ok: true; throws error otherwise.
- * @param slackId the Slack user id to validate
- * @returns true if the user exists, false otherwise
- */
-export const validateSlackUserId = async (slackId: string): Promise<boolean> => {
-  const client = getSlackClient();
-  if (!client) return false;
-  try {
-    const res = await client.users.info({ user: slackId });
-    return res.ok === true;
-  } catch (error) {
-    return false;
-  }
-};

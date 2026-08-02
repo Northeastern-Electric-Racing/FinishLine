@@ -27,8 +27,19 @@ const NewMemberMilestonesWidget: React.FC = () => {
         sortedMilestones.map((milestone) => {
           const isPast = isPastEvent(new Date(milestone.dateOfEvent), new Date());
           return (
-            <Box key={milestone.milestoneId} sx={{ opacity: isPast ? 0.5 : 1 }}>
-              <Typography variant="caption" color="text.secondary">
+            <Box
+              key={milestone.milestoneId}
+              sx={{
+                width: '100%',
+                opacity: isPast ? 0.5 : 1,
+                borderLeft: '4px solid #ef4345',
+                borderRadius: '4px',
+                backgroundColor: 'rgba(239, 67, 69, 0.08)',
+                px: 1.5,
+                py: 1
+              }}
+            >
+              <Typography variant="caption" fontWeight="bold" sx={{ color: '#ef4345' }}>
                 {formatDateOnly(new Date(milestone.dateOfEvent), 'MMMM D, YYYY')}
               </Typography>
               <Typography variant="body1" fontWeight="bold">

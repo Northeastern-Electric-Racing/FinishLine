@@ -10,10 +10,3 @@ export interface Announcement {
   slackChannelName: string;
   dateDeleted?: Date;
 }
-
-export interface SlackMessagePreview {
-  text: string;
-  userName?: string;
-  timestamp: string;
-  permalink: string;
-}

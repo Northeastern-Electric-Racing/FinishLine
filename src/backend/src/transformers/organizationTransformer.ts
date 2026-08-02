@@ -5,7 +5,6 @@ export const organizationTransformer = (organization: Organization): Organizatio
   return {
     ...organization,
     applicationLink: organization.applicationLink ?? undefined,
-    newMemberImageId: organization.newMemberImageId ?? undefined,
     platformDescription: organization.platformDescription,
     platformLogoImageId: organization.platformLogoImageId ?? undefined
   };

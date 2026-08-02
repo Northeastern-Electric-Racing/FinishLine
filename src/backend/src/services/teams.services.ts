@@ -29,7 +29,7 @@ import {
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
 import { getPrismaQueryUserIds, getUsers, userHasPermission } from '../utils/users.utils.js';
-import { sendTeamJoinRequestNotification } from '../utils/slack.utils.js';
+import { sendTeamJoinRequestNotification, sendTeamJoinRequestReviewedNotification } from '../utils/slack.utils.js';
 import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils.js';
 import {
@@ -487,7 +487,7 @@ export default class TeamsService {
    * @param teamId the id of the team to get pending join requests for
    * @param reviewer the user requesting to view the pending requests
    * @param organization the organization the team belongs to
-   * @throws AccessDeniedException if the reviewer isn't an admin, the team head, or a team lead
+   * @throws AccessDeniedException if the reviewer isn't an admin or the team head
    * @returns the team's pending join requests, oldest first
    */
   static async getPendingTeamJoinRequests(
@@ -517,7 +517,7 @@ export default class TeamsService {
    * @throws NotFoundException if the request doesn't exist
    * @throws InvalidOrganizationException if the request's team isn't in the given organization
    * @throws HttpException if the request has already been reviewed
-   * @throws AccessDeniedException if the reviewer isn't an admin, the team head, or a team lead
+   * @throws AccessDeniedException if the reviewer isn't an admin or the team head
    * @returns the updated team join request
    */
   static async reviewTeamJoinRequest(
@@ -574,31 +574,35 @@ export default class TeamsService {
       return updatedRequest;
     });
 
-    return teamJoinRequestTransformer(updated);
+    const transformed = teamJoinRequestTransformer(updated);
+
+    try {
+      await sendTeamJoinRequestReviewedNotification(transformed, team, approved);
+    } catch (error: unknown) {
+      console.error('Error sending team join request reviewed Slack notification:', error);
+    }
+
+    return transformed;
   }
 
   /**
-   * Validates that the given user is allowed to review join requests for the given team
+   * Validates that the given user is allowed to review join requests for the given team.
+   * Only admins and the team head can review -- team leads cannot.
    * @param reviewer the user attempting to review a join request
    * @param team the team the join request is for
    * @param organization the organization the team belongs to
-   * @throws AccessDeniedException if the reviewer isn't an admin, the team head, or a team lead
+   * @throws AccessDeniedException if the reviewer isn't an admin or the team head
    */
   private static async validateJoinRequestReviewer(
     reviewer: User,
-    team: { head: { userId: string }; leads: { userId: string }[] },
+    team: { head: { userId: string } },
     organization: Organization
   ): Promise<void> {
-    const isTeamLead = team.leads.some((lead) => lead.userId === reviewer.userId);
-
     if (
       !(await userHasPermission(reviewer.userId, organization.organizationId, isAdmin)) &&
-      reviewer.userId !== team.head.userId &&
-      !isTeamLead
+      reviewer.userId !== team.head.userId
     ) {
-      throw new AccessDeniedException(
-        'you must be an admin, the team head, or a team lead to review join requests for this team'
-      );
+      throw new AccessDeniedException('you must be an admin or the team head to review join requests for this team');
     }
   }
 

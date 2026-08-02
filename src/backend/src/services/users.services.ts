@@ -15,7 +15,8 @@ import {
   isAtLeastRank,
   BusySlots,
   IcsBusyInterval,
-  MemberDropdownItem
+  MemberDropdownItem,
+  isValidSlackUserIdFormat
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { getMemberDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
@@ -36,7 +37,6 @@ import authenticatedUserTransformer from '../transformers/auth-user.transformer.
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
 import taskTransformer from '../transformers/tasks.transformer.js';
 import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
-import { validateSlackUserId } from '../integrations/slack.js';
 import { encrypt, decrypt } from '../utils/encryption.utils.js';
 
 export default class UsersService {
@@ -222,14 +222,8 @@ export default class UsersService {
    * @throws if the user does not exist
    */
   static async updateUserSettings(user: User, defaultTheme: ThemeName, slackId: string): Promise<User_Settings> {
-    if (slackId) {
-      if (!process.env.SLACK_BOT_TOKEN) {
-        throw new HttpException(500, 'Slack integration not configured');
-      }
-      const isValid = await validateSlackUserId(slackId);
-      if (!isValid) {
-        throw new HttpException(400, 'Invalid Slack ID');
-      }
+    if (slackId && !isValidSlackUserIdFormat(slackId)) {
+      throw new HttpException(400, 'Invalid Slack ID');
     }
     const { userId } = user;
 

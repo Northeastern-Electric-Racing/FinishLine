@@ -6,6 +6,7 @@ import { useHomePageContext } from '../../app/HomePageContext';
 import ChecklistSection from './components/ChecklistSection';
 import NewMemberOnboardingInfoSection from './components/NewMemberOnboardingInfoSection';
 import ConfirmOnboardingChecklistModal from './components/ConfirmOnboardingChecklistModal';
+import SetSlackIdModal from './components/SetSlackIdModal';
 import { NERButton } from '../../components/NERButton';
 import { useCheckedChecklists, useUsersChecklists, useChecklistProgress } from '../../hooks/onboarding.hook';
 import { useHistory } from 'react-router-dom';
@@ -15,14 +16,30 @@ import OnboardingProgressBar from '../../components/OnboardingProgressBar';
 import ErrorPage from '../ErrorPage';
 import { useCompleteOnboarding } from '../../hooks/team-types.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { SlackIdGateProvider, useSlackIdGate } from './SlackIdGateContext';
 
-const OnboardingHomePage = () => {
+const OnboardingHomePage = () => (
+  <SlackIdGateProvider>
+    <OnboardingHomePageContent />
+  </SlackIdGateProvider>
+);
+
+const OnboardingHomePageContent = () => {
   const history = useHistory();
   const auth = useAuth();
+  const user = useCurrentUser();
+  const { hasSlackId, isLoading: slackIdIsLoading } = useSlackIdGate();
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isSlackIdModalOpen, setSlackIdModalOpen] = useState(false);
   const { setCurrentHomePage } = useHomePageContext();
   const { data: organization, isLoading: organizationIsLoading } = useCurrentOrganization();
   const theme = useTheme();
+
+  // new members can revisit this page to look back at what they completed -- the "Finished?"
+  // button must not be clickable again, since completeOnboarding() would re-derive
+  // onboardedTeamTypeIds from onboardingTeamTypes (now empty) and wipe their completed status
+  const alreadyCompletedOnboarding = user.onboardedTeamTypeIds.length > 0;
 
   useEffect(() => {
     setCurrentHomePage('onboarding');
@@ -65,12 +82,23 @@ const OnboardingHomePage = () => {
     return <LoadingIndicator />;
   }
 
-  const handleOpenModal = () => {
+  const handleFinishedClick = () => {
+    if (!hasSlackId) {
+      setSlackIdModalOpen(true);
+      return;
+    }
     setModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
+  };
+
+  const handleSlackIdSuccess = async () => {
+    setSlackIdModalOpen(false);
+    // they just had to set their Slack ID to get here, so there's nothing left to confirm --
+    // skip the "are you sure?" modal and finish onboarding right away
+    await handleConfirmModal();
   };
 
   const handleConfirmModal = async () => {
@@ -84,13 +112,24 @@ const OnboardingHomePage = () => {
   return (
     <PageLayout title="Home" hidePageTitle>
       <Grid container display={'flex'} alignItems={'center'} marginLeft={2} marginTop={4}>
-        <Grid item xs={12} md={7}>
-          <Typography sx={{ fontSize: '2.5em' }}>Welcome to the {organization.name} Team</Typography>
+        <Grid item xs={12} md={9}>
+          <Typography sx={{ fontSize: '2em' }}>Welcome to {organization.name} Onboarding</Typography>
+          {organization.onboardingText && (
+            <Typography sx={{ fontSize: '1.1em', mt: 1 }} color="text.secondary">
+              {organization.onboardingText}
+            </Typography>
+          )}
         </Grid>
-        <Grid item xs={12} md={5} display={'flex'} justifyContent={'flex-end'} paddingRight={3}>
-          <NERButton variant="contained" disabled={progress < 100} onClick={handleOpenModal}>
-            Finished?
-          </NERButton>
+        <Grid item xs={12} md={3} display={'flex'} justifyContent={'flex-end'} paddingRight={3}>
+          {alreadyCompletedOnboarding ? (
+            <NERButton variant="contained" onClick={() => history.push(routes.HOME_NEW_MEMBER)}>
+              Back to New Member Dashboard
+            </NERButton>
+          ) : (
+            <NERButton variant="contained" disabled={progress < 100 || slackIdIsLoading} onClick={handleFinishedClick}>
+              Finished?
+            </NERButton>
+          )}
         </Grid>
       </Grid>
       <Grid
@@ -151,6 +190,13 @@ const OnboardingHomePage = () => {
           onHide={handleCloseModal}
           onConfirm={handleConfirmModal}
           title="Confirm Onboarding Checklist"
+        />
+      )}
+      {isSlackIdModalOpen && (
+        <SetSlackIdModal
+          open={isSlackIdModalOpen}
+          onHide={() => setSlackIdModalOpen(false)}
+          onSuccess={handleSlackIdSuccess}
         />
       )}
     </PageLayout>

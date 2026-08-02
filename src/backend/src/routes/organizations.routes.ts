@@ -51,12 +51,6 @@ organizationRouter.post(
 );
 
 organizationRouter.post(
-  '/new-member-image/update',
-  upload.single('newMemberImage'),
-  OrganizationsController.setNewMemberImage
-);
-organizationRouter.get('/new-member-image', OrganizationsController.getOrganizationNewMemberImage);
-organizationRouter.post(
   '/description/set',
   body('description').isString(),
   validateInputs,
@@ -87,15 +81,6 @@ organizationRouter.post(
 );
 
 organizationRouter.get('/notification-channels', OrganizationsController.getNotificationChannels);
-
-organizationRouter.post(
-  '/newMemberSlackChannelId/set',
-  nonEmptyString(body('channelId')),
-  validateInputs,
-  OrganizationsController.setNewMemberSlackChannelId
-);
-
-organizationRouter.get('/new-member-slack-messages', OrganizationsController.getNewMemberSlackMessages);
 
 organizationRouter.get('/finance-delegates', OrganizationsController.getFinanceDelegates);
 organizationRouter.post(
