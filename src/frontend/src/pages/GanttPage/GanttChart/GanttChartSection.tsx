@@ -12,7 +12,7 @@ import {
   RequestEventChange
 } from '../../../utils/gantt.utils';
 import { Box } from '@mui/material';
-import { MutableRefObject, useCallback, useRef, useState } from 'react';
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
 import { ArcherContainer, ArcherContainerRef } from 'react-archer';
@@ -27,6 +27,8 @@ interface GanttChartSectionProps<T> {
   onAddTaskPressed: (parentTask: GanttTask<T>) => void;
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
+  onToggle: () => void;
+  registerArcherRef: (collectionId: string) => (el: ArcherContainerRef | null) => void;
 }
 
 interface GanttTooltipLayerProps {
@@ -66,12 +68,30 @@ const GanttChartSection = <T,>({
   highlightedChange,
   onAddTaskPressed,
   highlightSubtaskComparator,
-  highlightTaskComparator
+  highlightTaskComparator,
+  onToggle,
+  registerArcherRef
 }: GanttChartSectionProps<T>) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
+  const treeContainerRef = useRef<HTMLDivElement>(null);
 
-  const archerRef = useRef<ArcherContainerRef>(null);
-  const handleToggle = useCallback(() => archerRef.current?.refreshScreen(), []);
+  useEffect(() => {
+    const node = treeContainerRef.current;
+    if (!node) return;
+
+    let frame: number;
+    const observer = new ResizeObserver(() => {
+      // rAF here avoids "ResizeObserver loop" warnings and batches rapid-fire events
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => onToggle());
+    });
+
+    observer.observe(node);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [onToggle]);
 
   const updateTooltip = useRef<(options: OnMouseOverOptions | undefined, y?: number) => void>(() => {});
 
@@ -95,9 +115,9 @@ const GanttChartSection = <T,>({
   );
 
   return (
-    <ArcherContainer strokeColor="#ef4545">
+    <ArcherContainer strokeColor="#ef4545" ref={registerArcherRef(tasks[0].id)}>
       <Box sx={{ width: 'fit-content' }}>
-        <Box sx={{ mt: '1rem', width: 'fit-content' }}>
+        <Box ref={treeContainerRef} sx={{ mt: '1rem', width: 'fit-content' }}>
           {tasks.map((task) => {
             return (
               <Box key={task.id} display="flex" alignItems="center">
@@ -112,7 +132,7 @@ const GanttChartSection = <T,>({
                   highlightedChange={highlightedChange}
                   highlightSubtaskComparator={highlightSubtaskComparator}
                   highlightTaskComparator={highlightTaskComparator}
-                  onToggle={handleToggle}
+                  onToggle={onToggle}
                 />
               </Box>
             );

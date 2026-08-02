@@ -4,19 +4,24 @@ import GanttChartSection from './GanttChartSection';
 import { GanttCollection } from '../../../utils/gantt.utils';
 import { useState } from 'react';
 import { GanttEditability } from './GanttChart';
+import { ArcherContainerRef } from 'react-archer/lib/ArcherContainer/ArcherContainer.types';
 
 interface GanttChartCollectionSectionProps<E, T> {
   startDate: Date;
   endDate: Date;
   collection: GanttCollection<E, T>;
   editability?: GanttEditability<E, T>;
+  onToggle: () => void;
+  registerArcherRef: (taskId: string) => (el: ArcherContainerRef | null) => void;
 }
 
 const GanttChartCollectionSection = <E, T>({
   startDate,
   endDate,
   collection,
-  editability
+  editability,
+  onToggle,
+  registerArcherRef
 }: GanttChartCollectionSectionProps<E, T>) => {
   const theme = useTheme();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -40,6 +45,9 @@ const GanttChartCollectionSection = <E, T>({
     width: 'fit-content',
     height: '30px'
   };
+
+  const Toggle = onToggle;
+  const registerArcher = registerArcherRef;
 
   const handleSave = () => {
     editability?.onSavePressed();
@@ -94,6 +102,8 @@ const GanttChartCollectionSection = <E, T>({
           onAddTaskPressed={editability?.onNewSubTaskPressed ?? ignore}
           highlightSubtaskComparator={editability?.highlightSubtaskComparator ?? ignoreBool}
           highlightTaskComparator={editability?.highlightTaskComparator ?? ignoreBool}
+          onToggle={Toggle}
+          registerArcherRef={registerArcher}
         />
       </Box>
     </Box>
