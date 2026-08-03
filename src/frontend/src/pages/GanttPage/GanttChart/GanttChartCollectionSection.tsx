@@ -46,9 +46,6 @@ const GanttChartCollectionSection = <E, T>({
     height: '30px'
   };
 
-  const Toggle = onToggle;
-  const registerArcher = registerArcherRef;
-
   const handleSave = () => {
     editability?.onSavePressed();
     setIsEditMode(false);
@@ -102,8 +99,8 @@ const GanttChartCollectionSection = <E, T>({
           onAddTaskPressed={editability?.onNewSubTaskPressed ?? ignore}
           highlightSubtaskComparator={editability?.highlightSubtaskComparator ?? ignoreBool}
           highlightTaskComparator={editability?.highlightTaskComparator ?? ignoreBool}
-          onToggle={Toggle}
-          registerArcherRef={registerArcher}
+          onToggle={onToggle}
+          registerArcherRef={registerArcherRef}
         />
       </Box>
     </Box>

@@ -41,9 +41,10 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
 
   const today = new Date(new Date().setHours(0, 0, 0, 0));
   const currentWeekCol = days.findIndex((day) => toDateString(day) === toDateString(getMonday(today))) + 1;
-  const onToggle = editability?.onToggle;
-  if (!onToggle) throw Error;
-  const registerArcherRef = editability?.registerArcherRef;
+  const onToggle = editability?.onToggle ? editability?.onToggle : () => {};
+  const registerArcherRef = editability?.registerArcherRef
+    ? editability?.registerArcherRef
+    : (_collectionId: string) => (_el: ArcherContainerRef | null) => {};
   const daysIntoWeek = differenceInDays(today, getMonday(today));
   const dailyOffset = daysIntoWeek * (parseFloat(GANTT_CHART_CELL_SIZE) / 7);
 
