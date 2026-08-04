@@ -121,6 +121,7 @@ rulesRouter.post(
   nonEmptyString(body('fileId')),
   nonEmptyString(body('parserType')), // 'FSAE' or 'FHE'
   body('firstRulePage').optional().isInt({ min: 1 }),
+  body('footerText').optional().isString(),
   validateInputs,
   RulesController.parseRuleset
 );

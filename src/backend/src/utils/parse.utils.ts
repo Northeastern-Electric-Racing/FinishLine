@@ -25,7 +25,8 @@ const makePageRenderer = (firstRulePage?: number) => {
 export const parseRulesFromPdf = async (
   buffer: Buffer,
   parserType: 'FSAE' | 'FHE',
-  firstRulePage?: number
+  firstRulePage?: number,
+  footerText?: string
 ): Promise<ParsedRule[]> => {
   const options = {
     // max page number to parse, 0 = all pages
@@ -37,12 +38,23 @@ export const parseRulesFromPdf = async (
   const pdfData = await pdf(buffer, options);
 
   if (parserType === 'FSAE') {
-    return parseFSAERules(pdfData.text);
+    return parseFSAERules(pdfData.text, footerText);
   }
   if (parserType === 'FHE') {
-    return parseFHERules(pdfData.text);
+    return parseFHERules(pdfData.text, footerText);
   }
   throw new Error(`Invalid parser type: ${parserType}. Must be 'FSAE' or 'FHE'`);
+};
+
+/**
+ * Checks whether a line is a repeated page header/footer that should be excluded from rule content,
+ * based on user-supplied footer text rather than a hardcoded pattern.
+ * @param line line to check
+ * @param footerText substring (case-insensitive) that identifies a header/footer line
+ */
+const isFooterLine = (line: string, footerText?: string): boolean => {
+  if (!footerText) return false;
+  return line.toLowerCase().includes(footerText.toLowerCase());
 };
 
 /**
@@ -164,7 +176,7 @@ const handleDuplicateCodes = (rules: ParsedRule[]): ParsedRule[] => {
 
 /**************** FSAE ****************/
 
-const parseFSAERules = (text: string): ParsedRule[] => {
+const parseFSAERules = (text: string, footerText?: string): ParsedRule[] => {
   const rules: ParsedRule[] = [];
   const lines = text.split('\n');
 
@@ -181,7 +193,7 @@ const parseFSAERules = (text: string): ParsedRule[] => {
     if (!trimmedLine) continue;
 
     // Skip page headers/footers
-    if (isHeaderFooterFSAE(trimmedLine)) {
+    if (isFooterLine(trimmedLine, footerText)) {
       continue;
     }
 
@@ -227,30 +239,6 @@ const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
 };
 
 /**
- * Checks if a line is a page header/footer that should be skipped
- * @param line line to check
- * @returns true if line should be skipped
- */
-const isHeaderFooterFSAE = (line: string): boolean => {
-  const trimmed = line.trim();
-
-  // Match FSAE headers like "Formula SAE® Rules 2025 © 2024 SAE International Page 7 of 143 Version 1.0 31 Aug 2024"
-  if (/Formula SAE.*Rules.*\d{4}.*SAE International.*Page \d+ of \d+/i.test(trimmed)) {
-    return true;
-  }
-  // Match standalone page numbers
-  if (/^Page \d+ of \d+$/i.test(trimmed)) {
-    return true;
-  }
-  // Match version strings
-  if (/^Version \d+\.\d+.*\d{1,2}\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}$/i.test(trimmed)) {
-    return true;
-  }
-
-  return false;
-};
-
-/**
  * Updates rules to point to nearest existing parent if their assigned parent doesn't exist.
  * D.8.1.2 -> checks for D.8.1, if missing goes to D.8, then D
  * @param rules array of parsed rules
@@ -281,7 +269,7 @@ const fixOrphanedRulesFSAE = (rules: ParsedRule[]): ParsedRule[] => {
 
 /**************** FHE *****************/
 
-const parseFHERules = (text: string): ParsedRule[] => {
+const parseFHERules = (text: string, footerText?: string): ParsedRule[] => {
   const rules: ParsedRule[] = [];
   const lines = text.split('\n');
   let currentRule: { code: string; text: string } | null = null;
@@ -296,10 +284,8 @@ const parseFHERules = (text: string): ParsedRule[] => {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
 
-    // Skip repeated running header (e.g. "2025 Formula Hybrid + Electric Rules")
-    if (/^\d{4}\s+Formula Hybrid.*Rules/i.test(trimmedLine)) {
-      saveCurrentRule();
-      currentRule = null;
+    // Skip repeated running footer (e.g. "2025 Formula Hybrid + Electric Rules")
+    if (isFooterLine(trimmedLine, footerText)) {
       continue;
     }
 

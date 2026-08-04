@@ -36,7 +36,15 @@ interface NewFileFormData {
   carNumber: number;
   parserType: 'FSAE' | 'FHE';
   firstRulePage?: number;
+  footerText?: string;
 }
+
+// Default for footer text to exclude from parsing, based on parser type.
+// Excluded from parsed rule content
+const DEFAULT_FOOTER_TEXT: Record<'FSAE' | 'FHE', string> = {
+  FSAE: 'SAE International',
+  FHE: 'Formula Hybrid'
+};
 
 interface ButtonGroupProps {
   options: string[];
@@ -63,7 +71,8 @@ const schema = yup.object({
   name: yup.string().required('Name is required'),
   carNumber: yup.number().min(0).required('Car is required'),
   parserType: yup.string().oneOf(['FSAE', 'FHE']).required('Parser type is required'),
-  firstRulePage: yup.number().min(1, 'Minimum is page 1').integer('Must be a whole number').optional()
+  firstRulePage: yup.number().min(1, 'Minimum is page 1').integer('Must be a whole number').optional(),
+  footerText: yup.string().optional()
 });
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({ options, value, onChange }) => {
@@ -121,7 +130,8 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
       name: '',
       carNumber: 100,
       parserType: 'FSAE',
-      firstRulePage: undefined
+      firstRulePage: undefined,
+      footerText: DEFAULT_FOOTER_TEXT.FSAE
     }
   });
 
@@ -263,7 +273,15 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
                 name="parserType"
                 control={control}
                 render={({ field: { onChange, value } }) => (
-                  <ButtonGroup options={['FSAE', 'FHE']} value={value} onChange={(val) => onChange(val as 'FSAE' | 'FHE')} />
+                  <ButtonGroup
+                    options={['FSAE', 'FHE']}
+                    value={value}
+                    onChange={(val) => {
+                      const parserType = val as 'FSAE' | 'FHE';
+                      onChange(parserType);
+                      setValue('footerText', DEFAULT_FOOTER_TEXT[parserType]);
+                    }}
+                  />
                 )}
               />
               <FormHelperText error>{errors.parserType?.message}</FormHelperText>
@@ -335,11 +353,17 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
               </FormControl>
 
               {/* Footer Formatting */}
-              <FormControl sx={{ whiteSpace: 'nowrap' }}>
+              <FormControl error={!!errors.footerText} sx={{ whiteSpace: 'nowrap' }}>
                 <FormLabel sx={sectionHeaderStyle}>Footer Format:</FormLabel>
-                <TextField size="small" disabled sx={{ width: 160 }} />
-                <FormHelperText sx={{ whiteSpace: 'nowrap', mt: 0, ml: 0 }}>
-                  Footer text to be excluded from parsing
+                <Controller
+                  name="footerText"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField {...field} size="small" error={!!errors.footerText} sx={{ width: 160 }} />
+                  )}
+                />
+                <FormHelperText error={!!errors.footerText} sx={{ whiteSpace: 'nowrap', mt: 0, ml: 0 }}>
+                  {errors.footerText?.message ?? 'Footer text to be excluded from parsing'}
                 </FormHelperText>
               </FormControl>
             </AccordionDetails>

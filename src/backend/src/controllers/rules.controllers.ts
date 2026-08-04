@@ -338,7 +338,7 @@ export default class RulesController {
 
   static async parseRuleset(req: Request, res: Response, next: NextFunction) {
     try {
-      const { fileId, parserType, firstRulePage } = req.body;
+      const { fileId, parserType, firstRulePage, footerText } = req.body;
       const { rulesetId } = req.params as Record<string, string>;
 
       const parseResult = await RulesService.parseRuleset(
@@ -347,7 +347,8 @@ export default class RulesController {
         fileId,
         rulesetId,
         parserType,
-        firstRulePage
+        firstRulePage,
+        footerText
       );
 
       res.status(200).json(parseResult);

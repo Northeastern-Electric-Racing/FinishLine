@@ -132,6 +132,7 @@ export interface ParseRulesetPayload {
   fileId: string;
   parserType: 'FSAE' | 'FHE';
   firstRulePage?: number;
+  footerText?: string;
 }
 
 export interface CreateRulesetPayload {
