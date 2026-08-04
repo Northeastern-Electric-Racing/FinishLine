@@ -120,6 +120,7 @@ rulesRouter.post(
   '/ruleset/:rulesetId/parse',
   nonEmptyString(body('fileId')),
   nonEmptyString(body('parserType')), // 'FSAE' or 'FHE'
+  body('firstRulePage').optional().isInt({ min: 1 }),
   validateInputs,
   RulesController.parseRuleset
 );

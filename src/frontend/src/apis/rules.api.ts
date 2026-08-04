@@ -234,7 +234,8 @@ export const createRuleset = (payload: CreateRulesetPayload) => {
 export const parseRuleset = (payload: ParseRulesetPayload) => {
   return axios.post<SharedRule[]>(apiUrls.parseRuleset(payload.rulesetId), {
     fileId: payload.fileId,
-    parserType: payload.parserType
+    parserType: payload.parserType,
+    firstRulePage: payload.firstRulePage
   });
 };
 

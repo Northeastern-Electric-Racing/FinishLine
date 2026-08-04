@@ -6,12 +6,33 @@ export interface ParsedRule {
   parentRuleCode?: string;
 }
 
-export const parseRulesFromPdf = async (buffer: Buffer, parserType: 'FSAE' | 'FHE'): Promise<ParsedRule[]> => {
+const defaultPageRender = pdf.DEFAULT_OPTIONS.pagerender!;
+
+/**
+ * Skip text extraction for pages before firstRulePage.
+ * Useful for skipping TOC and other beginning content.
+ *
+ * @param firstRulePage page number to start parsing rules from (1-indexed)
+ */
+const makePageRenderer = (firstRulePage?: number) => {
+  if (!firstRulePage || firstRulePage <= 1) return defaultPageRender;
+  return (pageData: { pageNumber: number }) => {
+    if (pageData.pageNumber < firstRulePage) return '';
+    return defaultPageRender(pageData);
+  };
+};
+
+export const parseRulesFromPdf = async (
+  buffer: Buffer,
+  parserType: 'FSAE' | 'FHE',
+  firstRulePage?: number
+): Promise<ParsedRule[]> => {
   const options = {
     // max page number to parse, 0 = all pages
     max: 0,
     // errors: 0, warnings: 1, infos: 5
-    verbosityLevel: 0 as const
+    verbosityLevel: 0 as const,
+    pagerender: makePageRenderer(firstRulePage)
   };
   const pdfData = await pdf(buffer, options);
 
@@ -164,11 +185,6 @@ const parseFSAERules = (text: string): ParsedRule[] => {
       continue;
     }
 
-    // Skip table of contents
-    if (/\.{4,}\s+\d+\s*$/.test(trimmedLine)) {
-      continue;
-    }
-
     // Check if this line starts a new rule
     const rule = parseRuleNumberFSAE(trimmedLine);
     if (rule) {
@@ -268,7 +284,6 @@ const fixOrphanedRulesFSAE = (rules: ParsedRule[]): ParsedRule[] => {
 const parseFHERules = (text: string): ParsedRule[] => {
   const rules: ParsedRule[] = [];
   const lines = text.split('\n');
-  let inRulesSection = false;
   let currentRule: { code: string; text: string } | null = null;
 
   const saveCurrentRule = () => {
@@ -280,29 +295,25 @@ const parseFHERules = (text: string): ParsedRule[] => {
   for (const line of lines) {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
-    if (/^Index of Tables/i.test(trimmedLine)) {
-      inRulesSection = true;
-    }
-    // Skip table of contents
-    if (inRulesSection) {
-      if (/^2025 Formula Hybrid.*Rules/i.test(trimmedLine)) {
-        saveCurrentRule();
-        currentRule = null;
-        continue;
-      }
 
-      // Check if this line starts a new rule
-      const rule = parseRuleNumberFHE(trimmedLine);
-      if (rule) {
-        saveCurrentRule();
-        currentRule = {
-          code: rule.ruleCode,
-          text: rule.ruleContent
-        };
-      } else if (currentRule) {
-        // Append to existing rule
-        currentRule.text += ' ' + trimmedLine;
-      }
+    // Skip repeated running header (e.g. "2025 Formula Hybrid + Electric Rules")
+    if (/^\d{4}\s+Formula Hybrid.*Rules/i.test(trimmedLine)) {
+      saveCurrentRule();
+      currentRule = null;
+      continue;
+    }
+
+    // Check if this line starts a new rule
+    const rule = parseRuleNumberFHE(trimmedLine);
+    if (rule) {
+      saveCurrentRule();
+      currentRule = {
+        code: rule.ruleCode,
+        text: rule.ruleContent
+      };
+    } else if (currentRule) {
+      // Append to existing rule
+      currentRule.text += ' ' + trimmedLine;
     }
   }
   saveCurrentRule();

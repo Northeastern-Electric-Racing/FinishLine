@@ -1,11 +1,25 @@
 import NERFormModal from '../../../components/NERFormModal';
 import { useForm, Controller } from 'react-hook-form';
-import { Box, FormControl, TextField, Typography, FormLabel, FormHelperText, Button, Select, MenuItem } from '@mui/material';
+import {
+  Box,
+  FormControl,
+  TextField,
+  Typography,
+  FormLabel,
+  FormHelperText,
+  Button,
+  Select,
+  MenuItem,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { FileUpload } from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { MAX_FILE_SIZE } from 'shared';
 import { useUploadRulesetFile } from '../../../hooks/rules.hooks';
 import { useGetAllCars } from '../../../hooks/cars.hooks';
@@ -21,6 +35,7 @@ interface NewFileFormData {
   name: string;
   carNumber: number;
   parserType: 'FSAE' | 'FHE';
+  firstRulePage?: number;
 }
 
 interface ButtonGroupProps {
@@ -47,7 +62,8 @@ const schema = yup.object({
   fileId: yup.string().required('File is required'),
   name: yup.string().required('Name is required'),
   carNumber: yup.number().min(0).required('Car is required'),
-  parserType: yup.string().oneOf(['FSAE', 'FHE']).required('Parser type is required')
+  parserType: yup.string().oneOf(['FSAE', 'FHE']).required('Parser type is required'),
+  firstRulePage: yup.number().min(1, 'Minimum is page 1').integer('Must be a whole number').optional()
 });
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({ options, value, onChange }) => {
@@ -88,6 +104,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
   const toast = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [additionalOptionsOpen, setAdditionalOptionsOpen] = useState(false);
   const { mutateAsync: uploadFile } = useUploadRulesetFile();
   const { data: cars, isLoading: carsLoading, isError: carsError } = useGetAllCars();
 
@@ -103,7 +120,8 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
       fileId: '',
       name: '',
       carNumber: 100,
-      parserType: 'FSAE'
+      parserType: 'FSAE',
+      firstRulePage: undefined
     }
   });
 
@@ -168,12 +186,14 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
   const handleModalClose = () => {
     setFile(null);
     reset();
+    setAdditionalOptionsOpen(false);
     onHide();
   };
 
   const handleReset = () => {
     setFile(null);
     reset();
+    setAdditionalOptionsOpen(false);
   };
 
   return (
@@ -190,7 +210,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
     >
       <Box>
         <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
-          <Box sx={{ display: 'flex', gap: 3 }}>
+          <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
             {/* File Upload */}
             <FormControl sx={{ flex: 2 }} error={!!errors.fileId}>
               <FormLabel sx={sectionHeaderStyle}>Upload Ruleset File:</FormLabel>
@@ -262,6 +282,68 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
             />
             <FormHelperText error>{errors.name?.message}</FormHelperText>
           </FormControl>
+
+          {/* Additional Options */}
+          <Accordion
+            expanded={additionalOptionsOpen}
+            onChange={(_e, isExpanded) => setAdditionalOptionsOpen(isExpanded)}
+            disableGutters
+            elevation={0}
+            square
+            sx={{
+              backgroundColor: 'transparent',
+              backgroundImage: 'none',
+              '&:before': { display: 'none' }
+            }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              sx={{
+                flexDirection: 'row-reverse',
+                gap: 1,
+                minHeight: 'unset',
+                px: 0,
+                '& .MuiAccordionSummary-content': { my: 0 }
+              }}
+            >
+              <Typography variant="body2" fontWeight="bold">
+                Additional Options
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ display: 'flex', gap: 3, alignItems: 'flex-start', px: 0 }}>
+              {/* First Rule Page */}
+              <FormControl error={!!errors.firstRulePage} sx={{ whiteSpace: 'nowrap' }}>
+                <FormLabel sx={sectionHeaderStyle}>First Page:</FormLabel>
+                <Controller
+                  name="firstRulePage"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <TextField
+                      type="number"
+                      size="small"
+                      value={value ?? ''}
+                      onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                      slotProps={{ htmlInput: { min: 1 } }}
+                      error={!!errors.firstRulePage}
+                      sx={{ width: 160 }}
+                    />
+                  )}
+                />
+                <FormHelperText error={!!errors.firstRulePage} sx={{ whiteSpace: 'nowrap', mt: 0, ml: 0 }}>
+                  {errors.firstRulePage?.message ?? 'Optional, skips earlier pages'}
+                </FormHelperText>
+              </FormControl>
+
+              {/* Footer Formatting */}
+              <FormControl sx={{ whiteSpace: 'nowrap' }}>
+                <FormLabel sx={sectionHeaderStyle}>Footer Format:</FormLabel>
+                <TextField size="small" disabled sx={{ width: 160 }} />
+                <FormHelperText sx={{ whiteSpace: 'nowrap', mt: 0, ml: 0 }}>
+                  Footer text to be excluded from parsing
+                </FormHelperText>
+              </FormControl>
+            </AccordionDetails>
+          </Accordion>
         </Box>
       </Box>
     </NERFormModal>
