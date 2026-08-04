@@ -236,6 +236,8 @@ const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
   const rulePattern = /^([A-Z]{1,4}(?:\.[\d]+)+)\s+(.+)$/;
   // Match section patterns like "GR - GENERAL REGULATIONS or PS - PRE-COMPETITION SUBMISSIONS"
   const sectionPattern = /^([A-Z]{1,4})\s*-\s*(.+)$/;
+  // Match a rule code alone on its own line, with body text starting on the next line
+  const bareCodePattern = /^([A-Z]{1,4}(?:\.[\d]+)+)$/;
 
   const match = line.match(rulePattern) || line.match(sectionPattern);
   if (match) {
@@ -245,6 +247,15 @@ const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
       ruleContent: cleanContent
     };
   }
+
+  const bareMatch = line.match(bareCodePattern);
+  if (bareMatch) {
+    return {
+      ruleCode: bareMatch[1],
+      ruleContent: ''
+    };
+  }
+
   return null;
 };
 
@@ -328,6 +339,8 @@ const parseRuleNumberFHE = (line: string): ParsedRule | null => {
   const rulePattern = /^(\d+[A-Z]+\d+(?:\.\d+)*)\s+(.+)$/;
   // Match FHE rule codes with no leading digit, like "EV5.6" (e.g. Electric Vehicle sections)
   const plainLetterPattern = /^([A-Z]{1,4}\d+(?:\.\d+)*)\s+(.+)$/;
+  // Match a rule code alone on its own line, with body text starting on the next line
+  const bareCodePattern = /^(\d+[A-Z]+\d+(?:\.\d+)*|[A-Z]{1,4}\d+(?:\.\d+)*)$/;
 
   // "PART A1 - ADMINISTRATIVE REGULATIONS" removes "PART" and captures "A1" as rule code, rest as content
   const partMatch = line.match(/^PART\s+([A-Z0-9]+)\s+-\s+(.+)$/);
@@ -353,6 +366,14 @@ const parseRuleNumberFHE = (line: string): ParsedRule | null => {
     return {
       ruleCode: match[1],
       ruleContent: match[2]
+    };
+  }
+
+  const bareMatch = line.match(bareCodePattern);
+  if (bareMatch) {
+    return {
+      ruleCode: bareMatch[1],
+      ruleContent: ''
     };
   }
 
