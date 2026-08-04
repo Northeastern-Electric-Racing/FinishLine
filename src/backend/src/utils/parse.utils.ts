@@ -49,12 +49,19 @@ export const parseRulesFromPdf = async (
 /**
  * Checks whether a line is a repeated page header/footer that should be excluded from rule content,
  * based on user-supplied footer text rather than a hardcoded pattern.
+ * footerText may contain multiple newline-separated phrases (e.g. Formula SAE® Rules 2026 and 2025 SAE International);
+ * a line is excluded if it contains any one of the phrases
  * @param line line to check
- * @param footerText substring (case-insensitive) that identifies a header/footer line
+ * @param footerText newline-separated substrings (case-insensitive) that identify header/footers and other excluded phrases
  */
 const isFooterLine = (line: string, footerText?: string): boolean => {
   if (!footerText) return false;
-  return line.toLowerCase().includes(footerText.toLowerCase());
+  const lowerLine = line.toLowerCase();
+  const phrases = footerText
+    .split('\n')
+    .map((phrase) => phrase.trim().toLowerCase())
+    .filter(Boolean);
+  return phrases.some((phrase) => lowerLine.includes(phrase));
 };
 
 /**

@@ -39,10 +39,10 @@ interface NewFileFormData {
   footerText?: string;
 }
 
-// Default for footer text to exclude from parsing, based on parser type.
-// Excluded from parsed rule content
+// Default footer text to exclude from parsing, based on parser type.
+// Each line is matched independently, so multiple phrases can be excluded at once.
 const DEFAULT_FOOTER_TEXT: Record<'FSAE' | 'FHE', string> = {
-  FSAE: 'SAE International',
+  FSAE: 'Formula SAE\nSAE International',
   FHE: 'Formula Hybrid'
 };
 
@@ -331,7 +331,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
             <AccordionDetails sx={{ display: 'flex', gap: 3, alignItems: 'flex-start', px: 0 }}>
               {/* First Rule Page */}
               <FormControl error={!!errors.firstRulePage} sx={{ whiteSpace: 'nowrap' }}>
-                <FormLabel sx={sectionHeaderStyle}>First Page:</FormLabel>
+                <FormLabel sx={sectionHeaderStyle}>First Page #:</FormLabel>
                 <Controller
                   name="firstRulePage"
                   control={control}
@@ -347,23 +347,36 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
                     />
                   )}
                 />
-                <FormHelperText error={!!errors.firstRulePage} sx={{ whiteSpace: 'nowrap', mt: 0, ml: 0 }}>
+                <FormHelperText error={!!errors.firstRulePage} sx={{ whiteSpace: 'nowrap', mt: 0.5, ml: 0 }}>
                   {errors.firstRulePage?.message ?? 'Optional, skips earlier pages'}
                 </FormHelperText>
               </FormControl>
 
-              {/* Footer Formatting */}
+              {/* Excluded Phrases Formatting */}
               <FormControl error={!!errors.footerText} sx={{ whiteSpace: 'nowrap' }}>
-                <FormLabel sx={sectionHeaderStyle}>Footer Format:</FormLabel>
+                <FormLabel sx={sectionHeaderStyle}>Excluded Phrases:</FormLabel>
                 <Controller
                   name="footerText"
                   control={control}
                   render={({ field }) => (
-                    <TextField {...field} size="small" error={!!errors.footerText} sx={{ width: 160 }} />
+                    <TextField
+                      {...field}
+                      size="small"
+                      multiline
+                      minRows={2}
+                      error={!!errors.footerText}
+                      sx={{ width: 160 }}
+                    />
                   )}
                 />
-                <FormHelperText error={!!errors.footerText} sx={{ whiteSpace: 'nowrap', mt: 0, ml: 0 }}>
-                  {errors.footerText?.message ?? 'Footer text to be excluded from parsing'}
+                <FormHelperText error={!!errors.footerText} sx={{ whiteSpace: 'nowrap', mt: 0.5, ml: 0 }}>
+                  {errors.footerText?.message ?? (
+                    <>
+                      One phrase per line
+                      <br />
+                      Skipped when parsing
+                    </>
+                  )}
                 </FormHelperText>
               </FormControl>
             </AccordionDetails>
