@@ -47,21 +47,25 @@ export const parseRulesFromPdf = async (
 };
 
 /**
- * Checks whether a line is a repeated page header/footer that should be excluded from rule content,
- * based on user-supplied footer text rather than a hardcoded pattern.
- * footerText may contain multiple newline-separated phrases (e.g. Formula SAE® Rules 2026 and 2025 SAE International);
- * a line is excluded if it contains any one of the phrases
- * @param line line to check
- * @param footerText newline-separated substrings (case-insensitive) that identify header/footers and other excluded phrases
+ * Remove user-supplied excluded phrases from a line, keeping the rest of the content.
+ * excludedText may contain multiple newline-separated phrases (e.g. Formula SAE® Rules 2026 and 2025 SAE International);
+ * matching is case-sensitive, so phrases should be entered exactly as they appear in the PDF.
+ * @param line line to strip
+ * @param excludedText newline-separated substrings to remove
+ * @returns the line with excluded phrases removed; unchanged if excludedText is empty or excluded phrases not found
  */
-const isFooterLine = (line: string, footerText?: string): boolean => {
-  if (!footerText) return false;
-  const lowerLine = line.toLowerCase();
-  const phrases = footerText
+const stripExcluded = (line: string, excludedText?: string): string => {
+  if (!excludedText) return line;
+  const phrases = excludedText
     .split('\n')
-    .map((phrase) => phrase.trim().toLowerCase())
+    .map((phrase) => phrase.trim())
     .filter(Boolean);
-  return phrases.some((phrase) => lowerLine.includes(phrase));
+
+  let result = line;
+  for (const phrase of phrases) {
+    result = result.replaceAll(phrase, ' ');
+  }
+  return result.replace(/\s+/g, ' ').trim();
 };
 
 /**
@@ -199,13 +203,12 @@ const parseFSAERules = (text: string, footerText?: string): ParsedRule[] => {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
 
-    // Skip page headers/footers
-    if (isFooterLine(trimmedLine, footerText)) {
-      continue;
-    }
+    // Strip excluded phrases, keeping any real content
+    const cleanedLine = stripExcluded(trimmedLine, footerText);
+    if (!cleanedLine) continue;
 
     // Check if this line starts a new rule
-    const rule = parseRuleNumberFSAE(trimmedLine);
+    const rule = parseRuleNumberFSAE(cleanedLine);
     if (rule) {
       saveCurrentRule();
       currentRule = {
@@ -213,7 +216,7 @@ const parseFSAERules = (text: string, footerText?: string): ParsedRule[] => {
         text: rule.ruleContent
       };
     } else if (currentRule) {
-      currentRule.text += ' ' + trimmedLine; // else append to existing rule
+      currentRule.text += ' ' + cleanedLine; // else append to existing rule
     }
   }
   saveCurrentRule();
@@ -291,13 +294,12 @@ const parseFHERules = (text: string, footerText?: string): ParsedRule[] => {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
 
-    // Skip repeated running footer (e.g. "2025 Formula Hybrid + Electric Rules")
-    if (isFooterLine(trimmedLine, footerText)) {
-      continue;
-    }
+    // Strip excluded phrases (e.g. repeated header/footer "2025 Formula Hybrid + Electric Rules"), keeping any real content
+    const cleanedLine = stripExcluded(trimmedLine, footerText);
+    if (!cleanedLine) continue;
 
     // Check if this line starts a new rule
-    const rule = parseRuleNumberFHE(trimmedLine);
+    const rule = parseRuleNumberFHE(cleanedLine);
     if (rule) {
       saveCurrentRule();
       currentRule = {
@@ -306,7 +308,7 @@ const parseFHERules = (text: string, footerText?: string): ParsedRule[] => {
       };
     } else if (currentRule) {
       // Append to existing rule
-      currentRule.text += ' ' + trimmedLine;
+      currentRule.text += ' ' + cleanedLine;
     }
   }
   saveCurrentRule();
@@ -324,6 +326,8 @@ const parseFHERules = (text: string, footerText?: string): ParsedRule[] => {
 const parseRuleNumberFHE = (line: string): ParsedRule | null => {
   // Match FHE rule patterns like "1T3.17.1" followed by text
   const rulePattern = /^(\d+[A-Z]+\d+(?:\.\d+)*)\s+(.+)$/;
+  // Match FHE rule codes with no leading digit, like "EV5.6" (e.g. Electric Vehicle sections)
+  const plainLetterPattern = /^([A-Z]{1,4}\d+(?:\.\d+)*)\s+(.+)$/;
 
   // "PART A1 - ADMINISTRATIVE REGULATIONS" removes "PART" and captures "A1" as rule code, rest as content
   const partMatch = line.match(/^PART\s+([A-Z0-9]+)\s+-\s+(.+)$/);
@@ -344,7 +348,7 @@ const parseRuleNumberFHE = (line: string): ParsedRule | null => {
     };
   }
 
-  const match = line.match(rulePattern);
+  const match = line.match(rulePattern) || line.match(plainLetterPattern);
   if (match) {
     return {
       ruleCode: match[1],
