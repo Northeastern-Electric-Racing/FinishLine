@@ -37,7 +37,6 @@ const RulesetPage: React.FC = () => {
     carNumber: number;
     parserType: string;
     firstRulePage?: number;
-    footerText?: string;
   }) => {
     setAddFileModalShow(false);
     toast.info('Creating ruleset and parsing rules...');
@@ -64,8 +63,7 @@ const RulesetPage: React.FC = () => {
         rulesetId,
         fileId: data.fileId,
         parserType: data.parserType as 'FSAE' | 'FHE',
-        firstRulePage: data.firstRulePage,
-        footerText: data.footerText
+        firstRulePage: data.firstRulePage
       });
       toast.success(`Successfully parsed ${parsedRules.length} rules!`);
     } catch (e) {

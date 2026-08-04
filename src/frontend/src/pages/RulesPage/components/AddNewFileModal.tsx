@@ -36,15 +36,7 @@ interface NewFileFormData {
   carNumber: number;
   parserType: 'FSAE' | 'FHE';
   firstRulePage?: number;
-  footerText?: string;
 }
-
-// Default footer text to exclude from parsing, based on parser type.
-// Each line is matched independently, so multiple phrases can be excluded at once.
-const DEFAULT_FOOTER_TEXT: Record<'FSAE' | 'FHE', string> = {
-  FSAE: 'Formula SAE\nSAE International',
-  FHE: 'Formula Hybrid'
-};
 
 interface ButtonGroupProps {
   options: string[];
@@ -71,8 +63,7 @@ const schema = yup.object({
   name: yup.string().required('Name is required'),
   carNumber: yup.number().min(0).required('Car is required'),
   parserType: yup.string().oneOf(['FSAE', 'FHE']).required('Parser type is required'),
-  firstRulePage: yup.number().min(1, 'Minimum is page 1').integer('Must be a whole number').optional(),
-  footerText: yup.string().optional()
+  firstRulePage: yup.number().min(1, 'Minimum is page 1').integer('Must be a whole number').optional()
 });
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({ options, value, onChange }) => {
@@ -130,8 +121,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
       name: '',
       carNumber: 100,
       parserType: 'FSAE',
-      firstRulePage: undefined,
-      footerText: DEFAULT_FOOTER_TEXT.FSAE
+      firstRulePage: undefined
     }
   });
 
@@ -273,15 +263,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
                 name="parserType"
                 control={control}
                 render={({ field: { onChange, value } }) => (
-                  <ButtonGroup
-                    options={['FSAE', 'FHE']}
-                    value={value}
-                    onChange={(val) => {
-                      const parserType = val as 'FSAE' | 'FHE';
-                      onChange(parserType);
-                      setValue('footerText', DEFAULT_FOOTER_TEXT[parserType]);
-                    }}
-                  />
+                  <ButtonGroup options={['FSAE', 'FHE']} value={value} onChange={(val) => onChange(val as 'FSAE' | 'FHE')} />
                 )}
               />
               <FormHelperText error>{errors.parserType?.message}</FormHelperText>
@@ -349,34 +331,6 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
                 />
                 <FormHelperText error={!!errors.firstRulePage} sx={{ whiteSpace: 'nowrap', mt: 0.5, ml: 0 }}>
                   {errors.firstRulePage?.message ?? 'Optional, skips earlier pages'}
-                </FormHelperText>
-              </FormControl>
-
-              {/* Excluded Phrases Formatting */}
-              <FormControl error={!!errors.footerText} sx={{ whiteSpace: 'nowrap' }}>
-                <FormLabel sx={sectionHeaderStyle}>Excluded Phrases:</FormLabel>
-                <Controller
-                  name="footerText"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      size="small"
-                      multiline
-                      minRows={2}
-                      error={!!errors.footerText}
-                      sx={{ width: 160 }}
-                    />
-                  )}
-                />
-                <FormHelperText error={!!errors.footerText} sx={{ whiteSpace: 'nowrap', mt: 0.5, ml: 0 }}>
-                  {errors.footerText?.message ?? (
-                    <>
-                      One phrase per line
-                      <br />
-                      Skipped when parsing
-                    </>
-                  )}
                 </FormHelperText>
               </FormControl>
             </AccordionDetails>

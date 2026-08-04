@@ -25,8 +25,7 @@ const makePageRenderer = (firstRulePage?: number) => {
 export const parseRulesFromPdf = async (
   buffer: Buffer,
   parserType: 'FSAE' | 'FHE',
-  firstRulePage?: number,
-  footerText?: string
+  firstRulePage?: number
 ): Promise<ParsedRule[]> => {
   const options = {
     // max page number to parse, 0 = all pages
@@ -38,35 +37,20 @@ export const parseRulesFromPdf = async (
   const pdfData = await pdf(buffer, options);
 
   if (parserType === 'FSAE') {
-    return parseFSAERules(pdfData.text, footerText);
+    return parseFSAERules(pdfData.text);
   }
   if (parserType === 'FHE') {
-    return parseFHERules(pdfData.text, footerText);
+    return parseFHERules(pdfData.text);
   }
   throw new Error(`Invalid parser type: ${parserType}. Must be 'FSAE' or 'FHE'`);
 };
 
 /**
- * Remove user-supplied excluded phrases from a line, keeping the rest of the content.
- * excludedText may contain multiple newline-separated phrases (e.g. Formula SAE® Rules 2026 and 2025 SAE International);
- * matching is case-sensitive, so phrases should be entered exactly as they appear in the PDF.
- * @param line line to strip
- * @param excludedText newline-separated substrings to remove
- * @returns the line with excluded phrases removed; unchanged if excludedText is empty or excluded phrases not found
+ * Checks whether a line is nothing but a page number (e.g. "7" or "Page 7 of 143")
+ * the only content ever automatically excluded; safe to skip without risking dropping anything real
+ * @param line line to check
  */
-const stripExcluded = (line: string, excludedText?: string): string => {
-  if (!excludedText) return line;
-  const phrases = excludedText
-    .split('\n')
-    .map((phrase) => phrase.trim())
-    .filter(Boolean);
-
-  let result = line;
-  for (const phrase of phrases) {
-    result = result.replaceAll(phrase, ' ');
-  }
-  return result.replace(/\s+/g, ' ').trim();
-};
+const isPageNumberLine = (line: string): boolean => /^\d+$/.test(line) || /^Page\s+\d+\s+of\s+\d+$/i.test(line);
 
 /**
  * Extracts lettered sub-rules from rule content (a, b, c, etc.)
@@ -187,11 +171,13 @@ const handleDuplicateCodes = (rules: ParsedRule[]): ParsedRule[] => {
 
 /**************** FSAE ****************/
 
-const parseFSAERules = (text: string, footerText?: string): ParsedRule[] => {
+const parseFSAERules = (text: string): ParsedRule[] => {
   const rules: ParsedRule[] = [];
   const lines = text.split('\n');
 
   let currentRule: { code: string; text: string } | null = null;
+  let unparsedText = '';
+  let unparsedCount = 0;
 
   const saveCurrentRule = () => {
     if (!currentRule) return;
@@ -199,27 +185,43 @@ const parseFSAERules = (text: string, footerText?: string): ParsedRule[] => {
     rules.push(...parsedRules);
   };
 
+  // Text encountered with no rule open yet would otherwise disappear (e.g. before the first
+  // recognized rule) - keep it as its own top-level rule under an abstract code instead of dropping it.
+  const saveUnparsed = () => {
+    if (!unparsedText.trim()) return;
+    unparsedCount += 1;
+    rules.push({
+      ruleCode: `UNPARSED.${unparsedCount}`,
+      ruleContent: unparsedText.trim(),
+      parentRuleCode: undefined
+    });
+    unparsedText = '';
+  };
+
   for (const line of lines) {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
 
-    // Strip excluded phrases, keeping any real content
-    const cleanedLine = stripExcluded(trimmedLine, footerText);
-    if (!cleanedLine) continue;
+    // Skip bare page numbers - the only content ever automatically excluded
+    if (isPageNumberLine(trimmedLine)) continue;
 
     // Check if this line starts a new rule
-    const rule = parseRuleNumberFSAE(cleanedLine);
+    const rule = parseRuleNumberFSAE(trimmedLine);
     if (rule) {
       saveCurrentRule();
+      saveUnparsed();
       currentRule = {
         code: rule.ruleCode,
         text: rule.ruleContent
       };
     } else if (currentRule) {
-      currentRule.text += ' ' + cleanedLine; // else append to existing rule
+      currentRule.text += ' ' + trimmedLine; // else append to existing rule
+    } else {
+      unparsedText += (unparsedText ? ' ' : '') + trimmedLine;
     }
   }
   saveCurrentRule();
+  saveUnparsed();
 
   const fixedRules = fixOrphanedRulesFSAE(rules);
   return handleDuplicateCodes(fixedRules);
@@ -290,10 +292,12 @@ const fixOrphanedRulesFSAE = (rules: ParsedRule[]): ParsedRule[] => {
 
 /**************** FHE *****************/
 
-const parseFHERules = (text: string, footerText?: string): ParsedRule[] => {
+const parseFHERules = (text: string): ParsedRule[] => {
   const rules: ParsedRule[] = [];
   const lines = text.split('\n');
   let currentRule: { code: string; text: string } | null = null;
+  let unparsedText = '';
+  let unparsedCount = 0;
 
   const saveCurrentRule = () => {
     if (!currentRule) return;
@@ -301,28 +305,44 @@ const parseFHERules = (text: string, footerText?: string): ParsedRule[] => {
     rules.push(...parsedRules);
   };
 
+  // Text encountered with no rule open yet would otherwise disappear (e.g. before the first
+  // recognized rule) - keep it as its own top-level rule under an abstract code instead of dropping it.
+  const saveUnparsed = () => {
+    if (!unparsedText.trim()) return;
+    unparsedCount += 1;
+    rules.push({
+      ruleCode: `UNPARSED.${unparsedCount}`,
+      ruleContent: unparsedText.trim(),
+      parentRuleCode: undefined
+    });
+    unparsedText = '';
+  };
+
   for (const line of lines) {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
 
-    // Strip excluded phrases (e.g. repeated header/footer "2025 Formula Hybrid + Electric Rules"), keeping any real content
-    const cleanedLine = stripExcluded(trimmedLine, footerText);
-    if (!cleanedLine) continue;
+    // Skip bare page numbers - the only content ever automatically excluded
+    if (isPageNumberLine(trimmedLine)) continue;
 
     // Check if this line starts a new rule
-    const rule = parseRuleNumberFHE(cleanedLine);
+    const rule = parseRuleNumberFHE(trimmedLine);
     if (rule) {
       saveCurrentRule();
+      saveUnparsed();
       currentRule = {
         code: rule.ruleCode,
         text: rule.ruleContent
       };
     } else if (currentRule) {
       // Append to existing rule
-      currentRule.text += ' ' + cleanedLine;
+      currentRule.text += ' ' + trimmedLine;
+    } else {
+      unparsedText += (unparsedText ? ' ' : '') + trimmedLine;
     }
   }
   saveCurrentRule();
+  saveUnparsed();
 
   const fixedRules = fixOrphanedRulesFHE(rules);
   return handleDuplicateCodes(fixedRules);
