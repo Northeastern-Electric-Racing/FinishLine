@@ -52,18 +52,22 @@ export const parseRulesFromPdf = async (
  */
 const isPageNumberLine = (line: string): boolean => /^\d+$/.test(line) || /^Page\s+\d+\s+of\s+\d+$/i.test(line);
 
+// Collapses embedded newlines back into normal text for final rule content.
+// Kept so extractSubRules can tell real line starts from mid-sentence text.
+const normalizeContent = (text: string): string => text.replace(/\s+/g, ' ').trim();
+
 /**
- * Extracts lettered sub-rules from rule content (a, b, c, etc.)
- * "EV.5.2 Main text a. Sub-rule" becomes:
+ * Extracts lettered sub-rules from rule content (a, b, c, etc.) when sub-rule starts on its own line.
+ * "EV.5.2 Main text\na. Sub-rule" becomes:
  * - EV.5.2 Main text
  * - EV.5.2.a Sub-rule
- * If no subrules exist, returns the original rule
+ * If no subrules exist, returns the original rule.
  * @param ruleCode parent rule code
  * @param content rule content to extract from
  * @returns array of parsed rules including main rule and any subrules
  */
 const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
-  const letterPattern = /\s+([a-z])\.\s+/g;
+  const letterPattern = /(?:^|:\s)\s*([a-z])\.\s+/gm;
   const matches = [...content.matchAll(letterPattern)];
 
   if (matches.length === 0) {
@@ -71,7 +75,7 @@ const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
     return [
       {
         ruleCode,
-        ruleContent: content.trim(),
+        ruleContent: normalizeContent(content),
         parentRuleCode: findParentRuleCode(ruleCode)
       }
     ];
@@ -80,7 +84,7 @@ const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
 
   // Extract the main rule content (everything before the first lettered item)
   const firstMatchIndex = matches[0].index!;
-  const mainContent = content.substring(0, firstMatchIndex).trim();
+  const mainContent = normalizeContent(content.substring(0, firstMatchIndex));
 
   // add main rule
   subRules.push({
@@ -96,7 +100,7 @@ const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
 
     // Find where this sub-rule ends (either at next letter or end of rule content)
     const endIndex = i < matches.length - 1 ? matches[i + 1].index! : content.length;
-    const subRuleContent = content.substring(startIndex, endIndex).trim();
+    const subRuleContent = normalizeContent(content.substring(startIndex, endIndex));
     const subRuleCode = `${ruleCode}.${letter}`;
 
     subRules.push({
@@ -215,7 +219,7 @@ const parseFSAERules = (text: string): ParsedRule[] => {
         text: rule.ruleContent
       };
     } else if (currentRule) {
-      currentRule.text += ' ' + trimmedLine; // else append to existing rule
+      currentRule.text += '\n' + trimmedLine; // else append to existing rule
     } else {
       unparsedText += (unparsedText ? ' ' : '') + trimmedLine;
     }
@@ -336,7 +340,7 @@ const parseFHERules = (text: string): ParsedRule[] => {
       };
     } else if (currentRule) {
       // Append to existing rule
-      currentRule.text += ' ' + trimmedLine;
+      currentRule.text += '\n' + trimmedLine;
     } else {
       unparsedText += (unparsedText ? ' ' : '') + trimmedLine;
     }
