@@ -96,34 +96,6 @@ export const useUnassignedRulesForRuleset = (rulesetId: string, projectId: strin
   );
 };
 
-/**
- * Hook to get child rules of a rule.
- */
-export const useChildRules = (ruleId: string) => {
-  return useQuery<SharedRule[], Error>(
-    ['rules', 'children', ruleId],
-    async () => {
-      const { data } = await getChildRules(ruleId);
-      return data;
-    },
-    { enabled: !!ruleId }
-  );
-};
-
-/**
- * Hook to get top-level rules for a ruleset.
- */
-export const useTopLevelRules = (rulesetId: string) => {
-  return useQuery<SharedRule[], Error>(
-    ['rules', 'topLevel', rulesetId],
-    async () => {
-      const { data } = await getTopLevelRules(rulesetId);
-      return data;
-    },
-    { enabled: !!rulesetId }
-  );
-};
-
 interface CreateRulesetTypePayload {
   name: string;
 }
@@ -366,6 +338,8 @@ export const useSetRuleCompletion = (rulesetId: string, projectId: string) => {
         queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
         queryClient.invalidateQueries(['rules', 'unassigned']);
         queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
+        queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
+        queryClient.invalidateQueries(['rules', 'children']);
       }
     }
   );
@@ -395,14 +369,14 @@ export const useDeleteRule = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  return useMutation<void, Error, string>(
+  return useMutation<void, Error, { ruleId: string; totalRulesToDelete: number }>(
     ['rules', 'delete'],
-    async (ruleId: string) => {
+    async ({ ruleId }) => {
       await deleteRule(ruleId);
     },
     {
-      onSuccess: () => {
-        toast.success('Rule deleted successfully');
+      onSuccess: (_data, { totalRulesToDelete }) => {
+        toast.success(`${totalRulesToDelete} ${totalRulesToDelete === 1 ? 'rule' : 'rules'} deleted successfully`);
         queryClient.invalidateQueries(['rules']);
         queryClient.invalidateQueries(['rulesets']);
       },
