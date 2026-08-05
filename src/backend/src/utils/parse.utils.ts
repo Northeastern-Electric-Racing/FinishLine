@@ -14,7 +14,7 @@ const defaultPageRender = pdf.DEFAULT_OPTIONS.pagerender!;
  *
  * @param firstRulePage page number to start parsing rules from (1-indexed)
  */
-const makePageRenderer = (firstRulePage?: number) => {
+export const makePageRenderer = (firstRulePage?: number) => {
   if (!firstRulePage || firstRulePage <= 1) return defaultPageRender;
   return (pageData: { pageNumber: number }) => {
     if (pageData.pageNumber < firstRulePage) return '';
@@ -50,11 +50,10 @@ export const parseRulesFromPdf = async (
  * the only content ever automatically excluded; safe to skip without risking dropping anything real
  * @param line line to check
  */
-const isPageNumberLine = (line: string): boolean => /^\d+$/.test(line) || /^Page\s+\d+\s+of\s+\d+$/i.test(line);
+export const isPageNumberLine = (line: string): boolean => /^\d+$/.test(line) || /^Page\s+\d+\s+of\s+\d+$/i.test(line);
 
-// Collapses embedded newlines back into normal text for final rule content.
-// Kept so extractSubRules can tell real line starts from mid-sentence text.
-const normalizeContent = (text: string): string => text.replace(/\s+/g, ' ').trim();
+// clean up whitespace and newlines in rule content
+export const normalizeContent = (text: string): string => text.replace(/\s+/g, ' ').trim();
 
 /**
  * Extracts lettered sub-rules from rule content (a, b, c, etc.) when sub-rule starts on its own line.
@@ -66,8 +65,9 @@ const normalizeContent = (text: string): string => text.replace(/\s+/g, ' ').tri
  * @param content rule content to extract from
  * @returns array of parsed rules including main rule and any subrules
  */
-const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
-  const letterPattern = /(?:^|:\s)\s*([a-z])\.\s+/gm;
+export const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
+  // "a." and "(a)" subrule styles
+  const letterPattern = /(?<=^|:\s)\s*(?:([a-z])\.|\(([a-z])\))\s+/gm;
   const matches = [...content.matchAll(letterPattern)];
 
   if (matches.length === 0) {
@@ -95,7 +95,8 @@ const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
 
   // Extract lettered sub-rules
   for (let i = 0; i < matches.length; i++) {
-    const [, letter] = matches[i];
+    const [, dotLetter, parenLetter] = matches[i];
+    const letter = dotLetter ?? parenLetter;
     const startIndex = matches[i].index! + matches[i][0].length;
 
     // Find where this sub-rule ends (either at next letter or end of rule content)
@@ -120,7 +121,7 @@ const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
  * @param ruleCode rule code to find a parent for
  * @returns Parent rule code, or undefined if top level
  */
-const findParentRuleCode = (ruleCode: string): string | undefined => {
+export const findParentRuleCode = (ruleCode: string): string | undefined => {
   const parts = ruleCode.split('.');
   if (parts.length <= 1) {
     return undefined;
@@ -134,7 +135,7 @@ const findParentRuleCode = (ruleCode: string): string | undefined => {
  * @param rules array of parsed rules
  * @returns array of rules without duplicate rule codes and updated parent references
  */
-const handleDuplicateCodes = (rules: ParsedRule[]): ParsedRule[] => {
+export const handleDuplicateCodes = (rules: ParsedRule[]): ParsedRule[] => {
   const seenRuleCodes = new Map<string, number>();
   const codeMapping = new Map<string, string>(); // Maps original code to new code for duplicates
 
@@ -175,7 +176,7 @@ const handleDuplicateCodes = (rules: ParsedRule[]): ParsedRule[] => {
 
 /**************** FSAE ****************/
 
-const parseFSAERules = (text: string): ParsedRule[] => {
+export const parseFSAERules = (text: string): ParsedRule[] => {
   const rules: ParsedRule[] = [];
   const lines = text.split('\n');
 
@@ -237,7 +238,7 @@ const parseFSAERules = (text: string): ParsedRule[] => {
  * @param line single line in the extracted text from the ruleset pdf
  * @returns rule code and content, or null if this line does not start a new rule
  */
-const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
+export const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
   // Match rule patterns like "GR.1.1" followed by text
   const rulePattern = /^([A-Z]{1,4}(?:\.[\d]+)+)\s+(.+)$/;
   // Match section patterns like "GR - GENERAL REGULATIONS or PS - PRE-COMPETITION SUBMISSIONS"
@@ -271,7 +272,7 @@ const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
  * @param rules array of parsed rules
  * @returns rules with corrected parent references
  */
-const fixOrphanedRulesFSAE = (rules: ParsedRule[]): ParsedRule[] => {
+export const fixOrphanedRulesFSAE = (rules: ParsedRule[]): ParsedRule[] => {
   const existingCodes = new Set(rules.map((r) => r.ruleCode));
 
   return rules.map((rule) => {
@@ -296,7 +297,7 @@ const fixOrphanedRulesFSAE = (rules: ParsedRule[]): ParsedRule[] => {
 
 /**************** FHE *****************/
 
-const parseFHERules = (text: string): ParsedRule[] => {
+export const parseFHERules = (text: string): ParsedRule[] => {
   const rules: ParsedRule[] = [];
   const lines = text.split('\n');
   let currentRule: { code: string; text: string } | null = null;
@@ -358,7 +359,7 @@ const parseFHERules = (text: string): ParsedRule[] => {
  * @param line single line in the extracted text from the ruleset pdf
  * @returns rule code and content, or null if this line does not start a new rule
  */
-const parseRuleNumberFHE = (line: string): ParsedRule | null => {
+export const parseRuleNumberFHE = (line: string): ParsedRule | null => {
   // Match FHE rule patterns like "1T3.17.1" followed by text
   const rulePattern = /^(\d+[A-Z]+\d+(?:\.\d+)*)\s+(.+)$/;
   // Match FHE rule codes with no leading digit, like "EV5.6" (e.g. Electric Vehicle sections)
@@ -411,7 +412,7 @@ const parseRuleNumberFHE = (line: string): ParsedRule | null => {
  * @param rules array of parsed rules
  * @returns rules with corrected parent references
  */
-const fixOrphanedRulesFHE = (rules: ParsedRule[]): ParsedRule[] => {
+export const fixOrphanedRulesFHE = (rules: ParsedRule[]): ParsedRule[] => {
   const existingCodes = new Set(rules.map((r) => r.ruleCode));
 
   return rules.map((rule) => {
