@@ -13,7 +13,7 @@ import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import { routes } from '../../utils/routes';
 import { NERButton } from '../../components/NERButton';
 import NewMemberOnboardingInfoSection from './components/NewMemberOnboardingInfoSection';
-import NewMemberFAQsSection from './components/NewMemberFAQsSection';
+import NewMemberMilestonesAndFAQsSection from './components/NewMemberMilestonesAndFAQsSection';
 import NewMemberUsefulLinksWidget from './components/NewMemberUsefulLinksWidget';
 
 const NewMemberHomePage = () => {
@@ -42,7 +42,7 @@ const NewMemberHomePage = () => {
     <PageLayout title="Home" hidePageTitle>
       <Grid container display={'flex'} alignItems={'center'} marginLeft={2} marginTop={4}>
         <Grid item xs={12} md={9}>
-          <Typography sx={{ fontSize: '2em' }}>Welcome to {organization.name} New Member Dashboard</Typography>
+          <Typography variant="h4">Welcome to {organization.name} New Member Dashboard</Typography>
           <Typography sx={{ fontSize: '1.1em', mt: 1 }} color="text.secondary">
             You're ready to become a member! Check out the resources below to get started.
           </Typography>
@@ -52,22 +52,23 @@ const NewMemberHomePage = () => {
         </Grid>
       </Grid>
       <Grid container display={'flex'}>
-        <Grid item xs={12} md={8} sx={{ padding: 2 }}>
+        <Grid item xs={12} md={8} sx={{ padding: 2, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           <NewMemberOnboardingInfoSection />
-        </Grid>
-        <Grid item xs={12} md={4} sx={{ padding: 2, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          <Grid item sx={{ width: '100%' }}>
-            <Typography sx={{ fontSize: '1.5em', mb: 1 }}>FAQs</Typography>
-            <NewMemberFAQsSection />
-          </Grid>
           <Grid item sx={{ width: '100%' }}>
             <NewMemberUsefulLinksWidget dashboardFlag="isOnNewMemberDashboard" />
           </Grid>
           <Grid item sx={{ width: '100%' }}>
             <NERButton variant="contained" fullWidth onClick={() => history.push(routes.HOME_ONBOARDING)}>
-              View My Completed Onboarding Checklist
+              Click Me to View Your Completed Onboarding Checklist
             </NERButton>
           </Grid>
+        </Grid>
+        <Grid item xs={12} md={4} sx={{ padding: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ mt: 0, mb: 0 }}>
+              <NewMemberMilestonesAndFAQsSection />
+            </Box>
+          </Box>
         </Grid>
       </Grid>
     </PageLayout>

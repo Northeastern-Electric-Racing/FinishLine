@@ -29,9 +29,9 @@ const NewMemberEventsWidget: React.FC = () => {
         ? (events ?? [])
         : (events ?? []).filter((event) => event.teamType && selectedTeamTypeIds.includes(event.teamType.teamTypeId));
 
-    return eventsToNextEventInstance(filteredEvents).sort(
-      (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-    );
+    return eventsToNextEventInstance(filteredEvents)
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+      .slice(0, 3);
   }, [events, selectedTeamTypeIds]);
 
   const toggleTeamType = (teamTypeId: string) => {

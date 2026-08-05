@@ -1,5 +1,4 @@
 import { Grid } from '@mui/material';
-import NewMemberMilestonesWidget from './NewMemberMilestonesWidget';
 import NewMemberEventsWidget from './NewMemberEventsWidget';
 import NewMemberUsefulLinksWidget from './NewMemberUsefulLinksWidget';
 import NewMemberContactsWidget from './NewMemberContactsWidget';
@@ -14,14 +13,9 @@ const NewMemberOnboardingInfoSection: React.FC<NewMemberOnboardingInfoSectionPro
   return (
     <Grid container item sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, width: '100%' }}>
       {variant === 'full' && (
-        <>
-          <Grid item sx={{ width: '100%' }}>
-            <NewMemberEventsWidget />
-          </Grid>
-          <Grid item sx={{ width: '100%' }}>
-            <NewMemberMilestonesWidget />
-          </Grid>
-        </>
+        <Grid item sx={{ width: '100%' }}>
+          <NewMemberEventsWidget />
+        </Grid>
       )}
       {variant === 'checklist' && (
         <>

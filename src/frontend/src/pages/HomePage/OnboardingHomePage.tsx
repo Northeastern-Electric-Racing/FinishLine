@@ -113,7 +113,7 @@ const OnboardingHomePageContent = () => {
     <PageLayout title="Home" hidePageTitle>
       <Grid container display={'flex'} alignItems={'center'} marginLeft={2} marginTop={4}>
         <Grid item xs={12} md={9}>
-          <Typography sx={{ fontSize: '2em' }}>Welcome to {organization.name} Onboarding</Typography>
+          <Typography variant="h3">Welcome to {organization.name} Onboarding</Typography>
           {organization.onboardingText && (
             <Typography sx={{ fontSize: '1.1em', mt: 1 }} color="text.secondary">
               {organization.onboardingText}
