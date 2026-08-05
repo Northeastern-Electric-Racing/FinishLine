@@ -419,24 +419,37 @@ export const partCreateInput = (
   projectId: string,
   index: number,
   timeline: DateRange,
-  creators: PartActor[],
+  now: Date,
+  eligibleCreators: PartActor[],
+  assignablePool: PartActor[],
   reviewers: PartActor[],
   tagIds: string[]
 ): Prisma.PartCreateInput => {
+  // createdAt/completedAt fields always reflect real wall-clock time at insert in the real app, so
+  // nothing here can be dated later than "now" - cap the window's end even though the caller
+  // already skips projects that haven't started (timeline.end can still be in the future for an
+  // ongoing project).
+  const window: DateRange = { start: timeline.start, end: new Date(Math.min(timeline.end.getTime(), now.getTime())) };
+
   const status = partStatus(faker);
-  const createdAt = generateRandomDate(faker, timeline.start, timeline.end);
+  const createdAt = generateRandomDate(faker, window.start, window.end);
   const commonName = faker.helpers.arrayElement(PART_COMMON_NAMES);
   const description = faker.datatype.boolean({ probability: 0.5 })
     ? faker.helpers.arrayElement(PART_DESCRIPTIONS)
     : undefined;
 
-  const creatorId = faker.helpers.arrayElement(creators).userId;
-  const assignees = faker.helpers.arrayElements(creators, Math.min(assigneeCountForPart(faker), creators.length));
+  // createPart requires the creator to be leadership+ or on one of the project's teams, but
+  // assignees have no such restriction - so they draw from the full assignable pool.
+  const creatorId = faker.helpers.arrayElement(eligibleCreators).userId;
+  const assignees = faker.helpers.arrayElements(
+    assignablePool,
+    Math.min(assigneeCountForPart(faker), assignablePool.length)
+  );
   const selectedTagIds = faker.helpers.arrayElements(tagIds, Math.min(tagCountForPart(faker), tagIds.length));
 
   const authors = assignees.length > 0 ? assignees : [{ userId: creatorId }];
-  const submissions = buildSubmissions(faker, status, createdAt, timeline, authors, reviewers);
-  const requests = buildRequests(faker, status, createdAt, timeline, authors, reviewers);
+  const submissions = buildSubmissions(faker, status, createdAt, window, authors, reviewers);
+  const requests = buildRequests(faker, status, createdAt, window, authors, reviewers);
 
   // createSubmission copies the first submission's first file into previewImageId when unset.
   const previewImageId = submissions[0]?.fileIds[0];
