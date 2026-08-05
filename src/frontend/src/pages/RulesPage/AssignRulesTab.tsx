@@ -27,16 +27,9 @@ import { NERButton } from '../../components/NERButton';
 import NERModal from '../../components/NERModal';
 import WarningIcon from '@mui/icons-material/Warning';
 import RuleRow from './RuleRow';
-import { useBulkToggleRuleTeam } from '../../hooks/rules.hooks';
+import { useBulkToggleRuleTeam, useGetTopLevelRules, useEnsureAllRulesLoaded } from '../../hooks/rules.hooks';
 import { compareRuleCodes } from '../../utils/rules.utils';
 import { getAncestorIds, getRuleAndDescendantIds, getDescendantLeafRules } from '../../utils/rules.utils';
-
-/*
- * Props for the assign rules tab.
- */
-interface AssignRulesTabProps {
-  rules: Rule[];
-}
 
 /*
  * Props for the team row.
@@ -83,7 +76,7 @@ const TeamRow: React.FC<TeamRowProps> = ({ team, backgroundColor, hoverColor, on
  * Tab component for assigning rules to teams.
  * Displays teams and rules side-by-side for selection.
  */
-const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
+const AssignRulesTab: React.FC = () => {
   const theme = useTheme();
   const history = useHistory();
   const { rulesetId } = useParams<{ rulesetId: string }>();
@@ -101,6 +94,28 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
 
   const { data: teams, isLoading: teamsLoading, isError: teamsError, error: teamsErrorData } = useAllTeams();
   const { mutate: bulkToggle, isLoading: isSaving } = useBulkToggleRuleTeam();
+
+  // Top-level rules render immediately; subrules are fetched as rows are expanded
+  const {
+    data: topLevelRules,
+    isError: isTopLevelRulesError,
+    error: topLevelRulesError,
+    isLoading: isTopLevelRulesLoading
+  } = useGetTopLevelRules(rulesetId);
+
+  // Loaded fresh on every mount so it reflects any edits just made
+  const ensureAllRulesLoaded = useEnsureAllRulesLoaded(rulesetId);
+  const [rules, setRules] = useState<Rule[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    ensureAllRulesLoaded().then((loadedRules) => {
+      if (!cancelled) setRules(loadedRules);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [ensureAllRulesLoaded]);
 
   // background refetches ensure current toggles remain
   const hasPendingChangesRef = useRef(false);
@@ -295,11 +310,15 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
     return <ErrorPage message={teamsErrorData?.message} error={teamsErrorData} />;
   }
 
-  if (teamsLoading) {
+  if (isTopLevelRulesError) {
+    return <ErrorPage error={topLevelRulesError} />;
+  }
+
+  if (teamsLoading || isTopLevelRulesLoading || !topLevelRules) {
     return <LoadingIndicator />;
   }
 
-  const topLevelRules = rules.filter((rule) => !rule.parentRule).sort(compareRuleCodes);
+  const sortedTopLevelRules = [...topLevelRules].sort(compareRuleCodes);
 
   return (
     <Box sx={{ paddingBottom: '100px' }}>
@@ -350,11 +369,10 @@ const AssignRulesTab: React.FC<AssignRulesTabProps> = ({ rules }) => {
           >
             <Table sx={{ borderCollapse: 'collapse' }}>
               <TableBody sx={{ backgroundColor: theme.palette.grey[500] }}>
-                {topLevelRules.map((rule) => (
+                {sortedTopLevelRules.map((rule) => (
                   <RuleRow
                     key={rule.ruleId}
                     rule={rule}
-                    allRules={rules}
                     backgroundColor={(r) => rowBackgroundColor(isRuleSelected(r))}
                     hoverColor={(r) => rowHoverColor(isRuleSelected(r))}
                     textColor={theme.palette.common.black}
