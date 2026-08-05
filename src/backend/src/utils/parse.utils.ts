@@ -46,11 +46,22 @@ export const parseRulesFromPdf = async (
 };
 
 /**
- * Checks whether a line is nothing but a page number (e.g. "7" or "Page 7 of 143")
- * the only content ever automatically excluded; safe to skip without risking dropping anything real
+ * Checks whether a line is only a page number (e.g. "7" or "Page 7 of 143").
+ * Safe to skip without risking dropping rule content.
  * @param line line to check
  */
-export const isPageNumberLine = (line: string): boolean => /^\d+$/.test(line) || /^Page\s+\d+\s+of\s+\d+$/i.test(line);
+export const isPageNumberLine = (line: string): boolean => /^\d+$/.test(line);
+
+/**
+ * Removes "Page X of Y" wherever it occurs in a line
+ * @param line line to strip
+ * @returns the line with any "Page X of Y" occurrences removed and whitespace collapsed
+ */
+export const stripPageNumberPhrase = (line: string): string =>
+  line
+    .replace(/Page\s+\d+\s+of\s+\d+/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 // clean up whitespace and newlines in rule content
 export const normalizeContent = (text: string): string => text.replace(/\s+/g, ' ').trim();
@@ -174,9 +185,19 @@ export const handleDuplicateCodes = (rules: ParsedRule[]): ParsedRule[] => {
   });
 };
 
-/**************** FSAE ****************/
-
-export const parseFSAERules = (text: string): ParsedRule[] => {
+/**
+ * Shared line-by-line parsing loop used by FSAE and FHE parsers.
+ * Parsers differ in how rule code is recognized and logic for orphaned parent ref fixes.
+ * @param text full extracted PDF text to parse
+ * @param parseRuleNumber recognizes whether a line starts a new rule (FSAE- or FHE-specific)
+ * @param fixOrphanedRules re-parents rules whose inferred parent code doesn't exist (FSAE- or FHE-specific)
+ * @returns array of parsed rules
+ */
+const parseRules = (
+  text: string,
+  parseRuleNumber: (line: string) => ParsedRule | null,
+  fixOrphanedRules: (rules: ParsedRule[]) => ParsedRule[]
+): ParsedRule[] => {
   const rules: ParsedRule[] = [];
   const lines = text.split('\n');
 
@@ -207,11 +228,12 @@ export const parseFSAERules = (text: string): ParsedRule[] => {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
 
-    // Skip bare page numbers - the only content ever automatically excluded
-    if (isPageNumberLine(trimmedLine)) continue;
+    // Remove "Page X of Y", then if nothing real remains or just a page number left, skip entire line
+    const cleanedLine = stripPageNumberPhrase(trimmedLine);
+    if (!cleanedLine || isPageNumberLine(cleanedLine)) continue;
 
     // Check if this line starts a new rule
-    const rule = parseRuleNumberFSAE(trimmedLine);
+    const rule = parseRuleNumber(cleanedLine);
     if (rule) {
       saveCurrentRule();
       saveUnparsed();
@@ -220,17 +242,21 @@ export const parseFSAERules = (text: string): ParsedRule[] => {
         text: rule.ruleContent
       };
     } else if (currentRule) {
-      currentRule.text += '\n' + trimmedLine; // else append to existing rule
+      currentRule.text += '\n' + cleanedLine; // else append to existing rule
     } else {
-      unparsedText += (unparsedText ? ' ' : '') + trimmedLine;
+      unparsedText += (unparsedText ? ' ' : '') + cleanedLine;
     }
   }
   saveCurrentRule();
   saveUnparsed();
 
-  const fixedRules = fixOrphanedRulesFSAE(rules);
+  const fixedRules = fixOrphanedRules(rules);
   return handleDuplicateCodes(fixedRules);
 };
+
+/**************** FSAE ****************/
+
+export const parseFSAERules = (text: string): ParsedRule[] => parseRules(text, parseRuleNumberFSAE, fixOrphanedRulesFSAE);
 
 /**
  * Determines if this line starts a new rule, if so extracts code and content of the rule
@@ -297,61 +323,7 @@ export const fixOrphanedRulesFSAE = (rules: ParsedRule[]): ParsedRule[] => {
 
 /**************** FHE *****************/
 
-export const parseFHERules = (text: string): ParsedRule[] => {
-  const rules: ParsedRule[] = [];
-  const lines = text.split('\n');
-  let currentRule: { code: string; text: string } | null = null;
-  let unparsedText = '';
-  let unparsedCount = 0;
-
-  const saveCurrentRule = () => {
-    if (!currentRule) return;
-    const parsedRules = extractSubRules(currentRule.code, currentRule.text);
-    rules.push(...parsedRules);
-  };
-
-  // Text encountered with no rule open yet would otherwise disappear (e.g. before the first
-  // recognized rule) - keep it as its own top-level rule under an abstract code instead of dropping it.
-  const saveUnparsed = () => {
-    if (!unparsedText.trim()) return;
-    unparsedCount += 1;
-    rules.push({
-      ruleCode: `UNPARSED.${unparsedCount}`,
-      ruleContent: unparsedText.trim(),
-      parentRuleCode: undefined
-    });
-    unparsedText = '';
-  };
-
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    if (!trimmedLine) continue;
-
-    // Skip bare page numbers - the only content ever automatically excluded
-    if (isPageNumberLine(trimmedLine)) continue;
-
-    // Check if this line starts a new rule
-    const rule = parseRuleNumberFHE(trimmedLine);
-    if (rule) {
-      saveCurrentRule();
-      saveUnparsed();
-      currentRule = {
-        code: rule.ruleCode,
-        text: rule.ruleContent
-      };
-    } else if (currentRule) {
-      // Append to existing rule
-      currentRule.text += '\n' + trimmedLine;
-    } else {
-      unparsedText += (unparsedText ? ' ' : '') + trimmedLine;
-    }
-  }
-  saveCurrentRule();
-  saveUnparsed();
-
-  const fixedRules = fixOrphanedRulesFHE(rules);
-  return handleDuplicateCodes(fixedRules);
-};
+export const parseFHERules = (text: string): ParsedRule[] => parseRules(text, parseRuleNumberFHE, fixOrphanedRulesFHE);
 
 /**
  * Determines if this line starts a new rule, if so extracts code and content of the rule

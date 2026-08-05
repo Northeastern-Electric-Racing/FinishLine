@@ -2,6 +2,7 @@ import { vi } from 'vitest';
 import {
   ParsedRule,
   isPageNumberLine,
+  stripPageNumberPhrase,
   normalizeContent,
   findParentRuleCode,
   handleDuplicateCodes,
@@ -23,17 +24,34 @@ describe('Parse Utils Tests', () => {
       expect(isPageNumberLine('143')).toBe(true);
     });
 
-    it('matches "Page X of Y", case-insensitively', () => {
-      expect(isPageNumberLine('Page 7 of 143')).toBe(true);
-      expect(isPageNumberLine('page 7 of 143')).toBe(true);
-    });
-
     it('does not match a real rule line', () => {
       expect(isPageNumberLine('T.1.1 Some requirement text')).toBe(false);
     });
 
     it('does not match a line that merely contains a number', () => {
       expect(isPageNumberLine('See page 7 for details')).toBe(false);
+    });
+  });
+
+  describe('stripPageNumberPhrase', () => {
+    it('removes "Page X of Y" when it is the whole line', () => {
+      expect(stripPageNumberPhrase('Page 7 of 143')).toBe('');
+    });
+
+    it('matches case-insensitively', () => {
+      expect(stripPageNumberPhrase('page 7 of 143')).toBe('');
+    });
+
+    it('removes "Page X of Y" embedded in a longer line, keeping the real content on both sides', () => {
+      const line =
+        'Violations on Intent The violation of the intent of a rule will be considered a violation of the rule itself Formula SAE® Rules 2026 © 2025 SAE International Page 8 of 145 Version 1.0 10 Sept 2025';
+      expect(stripPageNumberPhrase(line)).toBe(
+        'Violations on Intent The violation of the intent of a rule will be considered a violation of the rule itself Formula SAE® Rules 2026 © 2025 SAE International Version 1.0 10 Sept 2025'
+      );
+    });
+
+    it('leaves a line unchanged when it does not contain the phrase', () => {
+      expect(stripPageNumberPhrase('GR.1.1 Cars must have a roll bar.')).toBe('GR.1.1 Cars must have a roll bar.');
     });
   });
 
@@ -363,7 +381,7 @@ vi.mock('pdf-parse-new', () => {
   return { default: fn };
 });
 
-describe('parseRulesFromPdf (mocked pdf-parse-new)', () => {
+describe('Parsing pdf Tests', () => {
   describe('makePageRenderer', () => {
     beforeEach(() => {
       (globalThis as any).__testPages = ['page one text', 'page two text', 'page three text'];
