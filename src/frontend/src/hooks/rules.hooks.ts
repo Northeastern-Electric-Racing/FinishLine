@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { ProjectRule, Rule as SharedRule, Ruleset, RulesetType } from 'shared';
 import {
@@ -650,7 +651,7 @@ const fetchAllChildRules = async (rule: SharedRule, allRules: SharedRule[]): Pro
  * Hook to get all rules for a ruleset by fetching top-level rules
  * and recursively fetching all children
  */
-export const useAllRulesForRuleset = (rulesetId: string) => {
+export const useAllRulesForRuleset = (rulesetId: string, enabled: boolean = true) => {
   return useQuery<SharedRule[], Error>(
     ['rules', 'allRules', rulesetId],
     async () => {
@@ -663,6 +664,38 @@ export const useAllRulesForRuleset = (rulesetId: string) => {
 
       return allRules;
     },
-    { enabled: !!rulesetId }
+    { enabled: !!rulesetId && enabled }
   );
+};
+
+/**
+ * Loads the full rule tree on demand, for actions like "Expand All" that need every rule at once.
+ */
+export const useEnsureAllRulesLoaded = (rulesetId: string) => {
+  const queryClient = useQueryClient();
+
+  return useCallback(async (): Promise<SharedRule[]> => {
+    const topLevelRules = await queryClient.fetchQuery(['rules', 'top-level', rulesetId], async () => {
+      const { data } = await getTopLevelRules(rulesetId);
+      return data;
+    });
+
+    const allRules: SharedRule[] = [...topLevelRules];
+
+    const fetchChildren = async (rule: SharedRule): Promise<void> => {
+      if (rule.subRuleIds.length === 0) return;
+
+      const children = await queryClient.fetchQuery(['rules', 'children', rule.ruleId], async () => {
+        const { data } = await getChildRules(rule.ruleId);
+        return data;
+      });
+      allRules.push(...children);
+
+      await Promise.all(children.map(fetchChildren));
+    };
+
+    await Promise.all(topLevelRules.map(fetchChildren));
+
+    return allRules;
+  }, [queryClient, rulesetId]);
 };

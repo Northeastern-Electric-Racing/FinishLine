@@ -9,7 +9,7 @@ import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import RulesetGeneralView from './components/RulesetGeneralView';
 import RulesetTeamView from './components/RulesetTeamView';
-import { useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
+import { useSingleRuleset, useAllRulesForRuleset, useGetTopLevelRules, useEnsureAllRulesLoaded } from '../../hooks/rules.hooks';
 import { useRuleTreeNavigation } from './useRuleTreeNavigation';
 import { useTeamRuleOrganization } from './useTeamRuleOrganization';
 
@@ -29,15 +29,27 @@ const RulesetViewPage = () => {
     isLoading: isRulesetLoading
   } = useSingleRuleset(rulesetId!);
 
+  // General View only needs top-level rules on first render; subrules fetched as dropdowns are expanded
+  const {
+    data: topLevelRules,
+    isError: isTopLevelRulesError,
+    error: topLevelRulesError,
+    isLoading: isTopLevelRulesLoading
+  } = useGetTopLevelRules(rulesetId!);
+
   const {
     data: allRules,
     isError: isRulesError,
     error: rulesError,
     isLoading: isRulesLoading
-  } = useAllRulesForRuleset(rulesetId!);
+  } = useAllRulesForRuleset(rulesetId!, tabIndex === 1);
+
+  // Expand All / cross-reference jumps need the whole tree, so load it on demand rather than up front
+  const ensureAllRulesLoaded = useEnsureAllRulesLoaded(rulesetId!);
 
   const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded } = useRuleTreeNavigation(
-    allRules ?? []
+    topLevelRules ?? [],
+    ensureAllRulesLoaded
   );
 
   const {
@@ -58,15 +70,19 @@ const RulesetViewPage = () => {
     return <ErrorPage error={rulesetError} />;
   }
 
-  if (isRulesError) {
+  if (isTopLevelRulesError) {
+    return <ErrorPage error={topLevelRulesError} />;
+  }
+
+  if (tabIndex === 1 && isRulesError) {
     return <ErrorPage error={rulesError} />;
   }
 
-  if (isRulesetLoading || isRulesLoading) {
+  if (isRulesetLoading || isTopLevelRulesLoading) {
     return <LoadingIndicator />;
   }
 
-  if (!ruleset || !allRules) {
+  if (!ruleset || !topLevelRules) {
     return <LoadingIndicator />;
   }
 
@@ -109,12 +125,14 @@ const RulesetViewPage = () => {
         <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
           {tabIndex === 0 ? (
             <RulesetGeneralView
-              allRules={allRules}
+              topLevelRules={topLevelRules}
               rulesetId={rulesetId!}
               expandedIds={expandedIds}
               toggleExpand={toggleExpand}
               navigateToRule={navigateToRule}
             />
+          ) : isRulesLoading || !allRules ? (
+            <LoadingIndicator />
           ) : (
             <RulesetTeamView
               topLevelItems={teamTopLevelItems}
