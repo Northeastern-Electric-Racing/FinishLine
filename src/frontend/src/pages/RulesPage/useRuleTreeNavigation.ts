@@ -26,11 +26,18 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
 
   const areAllExpanded = expandableIds.size > 0 && [...expandableIds].every((id) => expandedIds.has(id));
 
+  const [isLoadingFullTree, setIsLoadingFullTree] = useState(false);
+
   const expandAll = useCallback(async () => {
     if (loadFullTree) {
-      const allRules = await loadFullTree();
-      const allExpandableIds = allRules.filter((r) => r.subRuleIds.length > 0).map((r) => r.ruleId);
-      setExpandedIds(new Set(allExpandableIds));
+      setIsLoadingFullTree(true);
+      try {
+        const allRules = await loadFullTree();
+        const allExpandableIds = allRules.filter((r) => r.subRuleIds.length > 0).map((r) => r.ruleId);
+        setExpandedIds(new Set(allExpandableIds));
+      } finally {
+        setIsLoadingFullTree(false);
+      }
       return;
     }
     setExpandedIds(new Set(expandableIds));
@@ -58,11 +65,16 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
   const navigateToRule = useCallback(
     async (targetId: string) => {
       if (loadFullTree) {
-        const allRules = await loadFullTree();
-        if (!allRules.some((r) => r.ruleId === targetId)) return; // ensure target rule exists in this view
-        const ancestors = getAncestorIds(targetId, allRules);
-        setExpandedIds((prev) => new Set([...prev, ...ancestors, targetId]));
-        setPendingScrollId(targetId); // queue the scroll
+        setIsLoadingFullTree(true);
+        try {
+          const allRules = await loadFullTree();
+          if (!allRules.some((r) => r.ruleId === targetId)) return; // ensure target rule exists in this view
+          const ancestors = getAncestorIds(targetId, allRules);
+          setExpandedIds((prev) => new Set([...prev, ...ancestors, targetId]));
+          setPendingScrollId(targetId); // queue the scroll
+        } finally {
+          setIsLoadingFullTree(false);
+        }
         return;
       }
       if (!ruleIds.has(targetId)) return; // ensure target rule exists in this view
@@ -83,5 +95,5 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
     }
   }, [pendingScrollId, expandedIds]);
 
-  return { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded };
+  return { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded, isLoadingFullTree };
 };

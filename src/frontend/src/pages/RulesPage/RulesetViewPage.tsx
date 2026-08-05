@@ -4,6 +4,7 @@ import PageLayout from '../../components/PageLayout';
 import { NERButton } from '../../components/NERButton';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
+import { CircularProgress } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -47,10 +48,8 @@ const RulesetViewPage = () => {
   // Expand All / cross-reference jumps need the whole tree, so load it on demand rather than up front
   const ensureAllRulesLoaded = useEnsureAllRulesLoaded(rulesetId!);
 
-  const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded } = useRuleTreeNavigation(
-    topLevelRules ?? [],
-    ensureAllRulesLoaded
-  );
+  const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded, isLoadingFullTree } =
+    useRuleTreeNavigation(topLevelRules ?? [], ensureAllRulesLoaded);
 
   const {
     topLevelItems: teamTopLevelItems,
@@ -110,9 +109,12 @@ const RulesetViewPage = () => {
               />
             </Box>
             {tabIndex === 0 && (
-              <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
-                {areAllExpanded ? 'Collapse All' : 'Expand All'}
-              </NERButton>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {isLoadingFullTree && <CircularProgress size={20} />}
+                <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
+                  {areAllExpanded ? 'Collapse All' : 'Expand All'}
+                </NERButton>
+              </Box>
             )}
             {tabIndex === 1 && (
               <NERButton variant="outlined" onClick={teamAreAllExpanded ? teamCollapseAll : teamExpandAll}>
