@@ -1,4 +1,4 @@
-import { Grid, Typography } from '@mui/material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
 import TimelineSeparator from '@mui/lab/TimelineSeparator';
@@ -12,6 +12,7 @@ import { useNewMemberMilestones } from '../../../hooks/recruitment.hooks';
 import { isPastEvent } from '../../../utils/datetime.utils';
 
 const NewMemberMilestonesWidget: React.FC = () => {
+  const theme = useTheme();
   const { data: milestones, isLoading, isError, error } = useNewMemberMilestones();
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -43,28 +44,34 @@ const NewMemberMilestonesWidget: React.FC = () => {
     flexGrow: 1
   });
 
-  // shrink the text as there are more milestones to fit, so the timeline doesn't overflow --
-  // stays at the max size for a handful of milestones, then scales down with a floor so it never
-  // becomes unreadable
-  const milestoneCount = sortedMilestones.length;
-  const nameFontSize = Math.max(12, Math.min(20, 20 - (milestoneCount - 3) * 1.5));
-  const bodyFontSize = Math.max(10, Math.min(18, 18 - (milestoneCount - 3) * 1.5));
-
   return (
     <Grid
       container
       sx={{
-        maxHeight: 'calc(100vh - 200px)',
-        minHeight: 'calc(100vh - 250px)',
+        maxHeight: 'calc(100vh - 250px)',
+        overflowY: 'auto',
         alignItems: 'stretch',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        '&::-webkit-scrollbar': {
+          width: '20px'
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: theme.palette.primary.main,
+          borderRadius: '20px',
+          border: '6px solid transparent',
+          backgroundClip: 'content-box'
+        },
+        scrollbarWidth: 'auto',
+        scrollbarColor: `${theme.palette.primary.main} transparent`
       }}
     >
       <Timeline
         position="alternate"
         sx={{
-          flex: 1,
-          minHeight: '100%'
+          flex: 1
         }}
       >
         {sortedMilestones.map((milestone, index) => (
@@ -74,13 +81,13 @@ const NewMemberMilestonesWidget: React.FC = () => {
               {index < milestones.length - 1 && <TimelineConnector sx={getConnectorStyle(milestone.dateOfEvent)} />}
             </TimelineSeparator>
             <TimelineContent>
-              <Typography variant="h1" sx={{ fontSize: nameFontSize, fontWeight: 'bold' }}>
+              <Typography variant="h1" sx={{ fontSize: 20, fontWeight: 'bold' }}>
                 {milestone.name}
               </Typography>
-              <Typography variant="body1" sx={{ fontSize: bodyFontSize }}>
+              <Typography variant="body1" sx={{ fontSize: 18 }}>
                 {formatDateOnly(milestone.dateOfEvent, 'MMMM D, YYYY')}
               </Typography>
-              <Typography variant="body1" sx={{ fontSize: bodyFontSize }}>
+              <Typography variant="body1" sx={{ fontSize: 18 }}>
                 {milestone.description}
               </Typography>
             </TimelineContent>

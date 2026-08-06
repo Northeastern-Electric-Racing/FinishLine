@@ -3445,6 +3445,54 @@ const performSeed: () => Promise<void> = async () => {
     newMemberDashboardOnly,
     ner
   );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Team Kickoff Meeting',
+    'Meet your new subteam and lead',
+    daysFromNow(37),
+    newMemberDashboardOnly,
+    ner
+  );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Design Review Shadow',
+    'Sit in on a design review to see how the team works',
+    daysFromNow(45),
+    newMemberDashboardOnly,
+    ner
+  );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'First Project Assignment',
+    'Get assigned your first project task',
+    daysFromNow(52),
+    newMemberDashboardOnly,
+    ner
+  );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Shop Certification',
+    'Complete machine certification for shop tools',
+    daysFromNow(60),
+    newMemberDashboardOnly,
+    ner
+  );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Mid-Semester Check-In',
+    'Meet with your lead to discuss progress',
+    daysFromNow(75),
+    newMemberDashboardOnly,
+    ner
+  );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'End of Semester Showcase',
+    'Present what you worked on this semester',
+    daysFromNow(100),
+    newMemberDashboardOnly,
+    ner
+  );
 
   await RecruitmentServices.createOrganizationFaq(
     batman,
