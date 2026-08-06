@@ -92,31 +92,6 @@ export default class RulesService {
   }
 
   /**
-   * Gets a single ruleset by its ID
-   * @param rulesetId  The ID of the ruleset to retrieve
-   * @param organizationId The ID of the organization the ruleset belongs to
-   * @returns The ruleset if found, otherwise throws an error
-   */
-  static async getRulesetById(rulesetId: string, organizationId: string): Promise<Ruleset> {
-    const ruleset = await prisma.ruleset.findFirst({
-      where: {
-        rulesetId,
-        deletedByUserId: null,
-        rulesetType: {
-          organizationId
-        }
-      },
-      ...getRulesetQueryArgs()
-    });
-
-    if (!ruleset) {
-      throw new NotFoundException('Ruleset', rulesetId);
-    }
-
-    return rulesetTransformer(ruleset);
-  }
-
-  /**
    * Throws if a rule with the given code already exists in the given ruleset
    * @param rulesetId The ruleset to check for an existing rule code
    * @param ruleCode The trimmed rule code to check

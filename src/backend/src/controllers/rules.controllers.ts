@@ -21,16 +21,6 @@ export default class RulesController {
     }
   }
 
-  static async getRulesetById(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { rulesetId } = req.params as Record<string, string>;
-      const ruleset = await RulesService.getRulesetById(rulesetId, req.organization.organizationId);
-      res.status(200).json(ruleset);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   static async createRule(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleCode, ruleContent, rulesetId, parentRuleId, referencedRules, imageFileIds } = req.body;

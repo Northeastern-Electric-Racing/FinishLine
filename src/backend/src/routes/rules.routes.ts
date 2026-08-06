@@ -13,8 +13,6 @@ rulesRouter.get(
   validateInputs,
   RulesController.getActiveRuleset
 );
-rulesRouter.get('/ruleset/:rulesetId', RulesController.getRulesetById);
-
 rulesRouter.post(
   '/rule/create',
   nonEmptyString(body('ruleCode')),
