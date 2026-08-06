@@ -117,9 +117,12 @@ const RulesetViewPage = () => {
               </Box>
             )}
             {tabIndex === 1 && (
-              <NERButton variant="outlined" onClick={teamAreAllExpanded ? teamCollapseAll : teamExpandAll}>
-                {teamAreAllExpanded ? 'Collapse All' : 'Expand All'}
-              </NERButton>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {isRulesLoading && <CircularProgress size={20} />}
+                <NERButton variant="outlined" onClick={teamAreAllExpanded ? teamCollapseAll : teamExpandAll}>
+                  {teamAreAllExpanded ? 'Collapse All' : 'Expand All'}
+                </NERButton>
+              </Box>
             )}
           </Box>
         }

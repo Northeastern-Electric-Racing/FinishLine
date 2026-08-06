@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Button, Paper, Table, TableBody, TableContainer, TextField, useTheme } from '@mui/material';
+import { Box, Button, CircularProgress, Paper, Table, TableBody, TableContainer, TextField, useTheme } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -111,7 +111,7 @@ const RulesetEditPage: React.FC = () => {
   // Expand All needs whole tree, so load it on demand rather than up front
   const ensureAllRulesLoaded = useEnsureAllRulesLoaded(rulesetId!);
 
-  const { expandedIds, toggleExpand, expandAll, collapseAll, areAllExpanded } = useRuleTreeNavigation(
+  const { expandedIds, toggleExpand, expandAll, collapseAll, areAllExpanded, isLoadingFullTree } = useRuleTreeNavigation(
     topLevelRules ?? [],
     ensureAllRulesLoaded
   );
@@ -239,7 +239,10 @@ const RulesetEditPage: React.FC = () => {
     if (!ruleToDelete) return;
 
     try {
-      await deleteRuleMutation({ ruleId: ruleToDelete.ruleId, totalRulesToDelete: countRulesToDelete(ruleToDelete, allRules ?? []) });
+      await deleteRuleMutation({
+        ruleId: ruleToDelete.ruleId,
+        totalRulesToDelete: countRulesToDelete(ruleToDelete, allRules ?? [])
+      });
       setDeleteModalOpen(false);
       setRuleToDelete(null);
     } catch (err) {
@@ -348,9 +351,12 @@ const RulesetEditPage: React.FC = () => {
             id="rules-tabs"
           />
           {tabValue === 0 && (
-            <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
-              {areAllExpanded ? 'Collapse All' : 'Expand All'}
-            </NERButton>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {isLoadingFullTree && <CircularProgress size={20} />}
+              <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
+                {areAllExpanded ? 'Collapse All' : 'Expand All'}
+              </NERButton>
+            </Box>
           )}
         </Box>
       }
@@ -623,7 +629,7 @@ const RulesetEditPage: React.FC = () => {
         ) : isRulesLoading || !allRules ? (
           <LoadingIndicator />
         ) : (
-          <AssignRulesTab rules={allRules} />
+          <AssignRulesTab />
         )}
       </Box>
     </PageLayout>

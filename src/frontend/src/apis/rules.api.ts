@@ -145,6 +145,15 @@ export const getTopLevelRules = (rulesetId: string) => {
 };
 
 /**
+ * Gets every rule in a ruleset (top-level and all descendants) in a single request
+ */
+export const getAllRulesForRuleset = (rulesetId: string) => {
+  return axios.get<SharedRule[]>(apiUrls.rulesAllRules(rulesetId), {
+    transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
+  });
+};
+
+/**
  * Fetch rulesets by type
  */
 export const getRulesetsByRulesetType = (rulesetTypeId: string) => {

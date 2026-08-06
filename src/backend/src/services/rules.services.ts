@@ -35,22 +35,6 @@ import {
 import { ParsedRule, parseRulesFromPdf } from '../utils/parse.utils.js';
 import { uploadFile, downloadFile } from '../utils/google-integration.utils.js';
 
-/**
- * Recursively rolls up a rule's completion: a leaf uses its own isComplete,
- * a parent is complete only if every descendant leaf is complete.
- */
-const computeRuleCompletion = async (ruleId: string, isComplete: boolean): Promise<boolean> => {
-  const children = await prisma.rule.findMany({
-    where: { parentRuleId: ruleId, dateDeleted: null },
-    select: { ruleId: true, isComplete: true }
-  });
-
-  if (children.length === 0) return isComplete;
-
-  const childCompletions = await Promise.all(children.map((child) => computeRuleCompletion(child.ruleId, child.isComplete)));
-  return childCompletions.every(Boolean);
-};
-
 export default class RulesService {
   /**
    * Gets the active ruleset for the given ruleset type ID and car
@@ -1328,10 +1312,7 @@ export default class RulesService {
       ...getRulePreviewQueryArgs()
     });
 
-    const rolledUpSubRules = await Promise.all(
-      subRules.map(async (rule) => ({ ...rule, isComplete: await computeRuleCompletion(rule.ruleId, rule.isComplete) }))
-    );
-    return rolledUpSubRules.map((rule) => ruleTransformer(rule));
+    return subRules.map((rule) => ruleTransformer(rule));
   }
 
   /**
@@ -1562,10 +1543,50 @@ export default class RulesService {
       ...getRulePreviewQueryArgs()
     });
 
-    const rolledUpRules = await Promise.all(
-      rules.map(async (rule) => ({ ...rule, isComplete: await computeRuleCompletion(rule.ruleId, rule.isComplete) }))
-    );
-    return rolledUpRules.map(ruleTransformer);
+    return rules.map(ruleTransformer);
+  }
+
+  /**
+   * Gets every rule in a ruleset in a single query instead of walking it level by level.
+   * @param rulesetId id of ruleset
+   * @param organizationId the organization the ruleset belongs to
+   * @returns a flat array of every rule in the ruleset
+   */
+  static async getAllRulesForRuleset(rulesetId: string, organizationId: string): Promise<SharedRule[]> {
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      select: {
+        dateDeleted: true,
+        rulesetType: {
+          select: {
+            organizationId: true
+          }
+        }
+      }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.dateDeleted) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.rulesetType.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const rules = await prisma.rule.findMany({
+      where: {
+        rulesetId,
+        dateDeleted: null
+      },
+      orderBy: { ruleCode: 'asc' },
+      ...getRulePreviewQueryArgs()
+    });
+
+    return rules.map(ruleTransformer);
   }
 
   /**

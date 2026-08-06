@@ -17,6 +17,7 @@ import {
   setRuleCompletion,
   getChildRules,
   getTopLevelRules,
+  getAllRulesForRuleset,
   toggleRuleTeam,
   getTeamRulesInRulesetType,
   parseRuleset,
@@ -608,35 +609,14 @@ export const useUploadRulesetFile = () => {
 };
 
 /**
- * Helper function to recursively fetch all child rules
- */
-const fetchAllChildRules = async (rule: SharedRule, allRules: SharedRule[]): Promise<void> => {
-  if (rule.subRuleIds.length === 0) return;
-
-  const { data: children } = await getChildRules(rule.ruleId);
-  allRules.push(...children);
-
-  for (const child of children) {
-    await fetchAllChildRules(child, allRules);
-  }
-};
-
-/**
- * Hook to get all rules for a ruleset by fetching top-level rules
- * and recursively fetching all children
+ * Hook to get every rule in a ruleset (top-level and all descendants) in a single request.
  */
 export const useAllRulesForRuleset = (rulesetId: string, enabled: boolean = true) => {
   return useQuery<SharedRule[], Error>(
     ['rules', 'allRules', rulesetId],
     async () => {
-      const { data: topLevelRules } = await getTopLevelRules(rulesetId);
-      const allRules: SharedRule[] = [...topLevelRules];
-
-      for (const rule of topLevelRules) {
-        await fetchAllChildRules(rule, allRules);
-      }
-
-      return allRules;
+      const { data } = await getAllRulesForRuleset(rulesetId);
+      return data;
     },
     { enabled: !!rulesetId && enabled }
   );
@@ -649,26 +629,26 @@ export const useEnsureAllRulesLoaded = (rulesetId: string) => {
   const queryClient = useQueryClient();
 
   return useCallback(async (): Promise<SharedRule[]> => {
-    const topLevelRules = await queryClient.fetchQuery(['rules', 'top-level', rulesetId], async () => {
-      const { data } = await getTopLevelRules(rulesetId);
+    const allRules = await queryClient.fetchQuery(['rules', 'allRules', rulesetId], async () => {
+      const { data } = await getAllRulesForRuleset(rulesetId);
       return data;
     });
 
-    const allRules: SharedRule[] = [...topLevelRules];
+    // Build a map of parentId -> children for all rules in this ruleset
+    const childrenByParentId = new Map<string, SharedRule[]>();
+    allRules.forEach((rule) => {
+      const parentId = rule.parentRule?.ruleId;
+      if (!parentId) return;
+      const siblings = childrenByParentId.get(parentId) ?? [];
+      siblings.push(rule);
+      childrenByParentId.set(parentId, siblings);
+    });
 
-    const fetchChildren = async (rule: SharedRule): Promise<void> => {
-      if (rule.subRuleIds.length === 0) return;
-
-      const children = await queryClient.fetchQuery(['rules', 'children', rule.ruleId], async () => {
-        const { data } = await getChildRules(rule.ruleId);
-        return data;
+    allRules
+      .filter((rule) => rule.subRuleIds.length > 0)
+      .forEach((rule) => {
+        queryClient.setQueryData(['rules', 'children', rule.ruleId], childrenByParentId.get(rule.ruleId) ?? []);
       });
-      allRules.push(...children);
-
-      await Promise.all(children.map(fetchChildren));
-    };
-
-    await Promise.all(topLevelRules.map(fetchChildren));
 
     return allRules;
   }, [queryClient, rulesetId]);
