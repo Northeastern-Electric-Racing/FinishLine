@@ -19,7 +19,6 @@ import {
   getTopLevelRules,
   getAllRulesForRuleset,
   toggleRuleTeam,
-  getTeamRulesInRulesetType,
   parseRuleset,
   uploadRulesetFile,
   getRulesetsByRulesetType,
@@ -31,7 +30,6 @@ import {
   deleteRuleset,
   deleteRulesetType,
   createRuleset,
-  getRulesetById,
   createRule,
   getSingleRuleset,
   getRulesetType
@@ -145,22 +143,7 @@ export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
 };
 
 /**
- * Hook to get a ruleset by ID.
- * (Kept because some parts of the app may still call getRulesetById)
- */
-export const useGetRuleset = (rulesetId: string) => {
-  return useQuery<Ruleset, Error>(
-    ['ruleset', rulesetId],
-    async () => {
-      const { data } = await getRulesetById(rulesetId);
-      return data;
-    },
-    { enabled: !!rulesetId }
-  );
-};
-
-/**
- * Hook to get a single ruleset by ID (kept for compatibility with feature branch usage)
+ * Hook to get a single ruleset by ID
  */
 export const useSingleRuleset = (rulesetId: string) => {
   return useQuery<Ruleset, Error>(
@@ -170,22 +153,6 @@ export const useSingleRuleset = (rulesetId: string) => {
       return data;
     },
     { enabled: !!rulesetId }
-  );
-};
-
-export const useToggleRuleTeam = () => {
-  const queryClient = useQueryClient();
-  return useMutation<SharedRule, Error, { ruleId: string; teamId: string }>(
-    ['rules', 'toggle-team'],
-    async ({ ruleId, teamId }) => {
-      const { data } = await toggleRuleTeam(ruleId, teamId);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['rules']);
-      }
-    }
   );
 };
 
@@ -235,13 +202,6 @@ export const useBulkToggleRuleTeam = () => {
       }
     }
   );
-};
-
-export const useGetTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => {
-  return useQuery<SharedRule[], Error>(['rules', 'team-rules', rulesetTypeId, teamId], async () => {
-    const { data } = await getTeamRulesInRulesetType(rulesetTypeId, teamId);
-    return data;
-  });
 };
 
 /**
@@ -389,7 +349,7 @@ export const useDeleteRule = () => {
 };
 
 /**
- * React Query hook to edit a rule's content
+ * React Query hook to edit a rule's content and/or code
  */
 export const useEditRule = () => {
   const queryClient = useQueryClient();
@@ -558,12 +518,16 @@ export const useDeleteRulesetType = () => {
   );
 };
 
+/**
+ * Hook to get a single ruleset type by ID
+ */
 export const useRulesetType = (rulesetTypeId: string) => {
   return useQuery<RulesetType, Error>(['rulesetType', rulesetTypeId], async () => {
     const { data } = await getRulesetType(rulesetTypeId);
     return data;
   });
 };
+
 export const useCreateRuleset = () => {
   const queryClient = useQueryClient();
   return useMutation<Ruleset, Error, CreateRulesetPayload>(
@@ -625,7 +589,7 @@ export const useAllRulesForRuleset = (rulesetId: string, enabled: boolean = true
 /**
  * Loads the full rule tree on demand, for actions like "Expand All" that need every rule at once.
  */
-export const useEnsureAllRulesLoaded = (rulesetId: string) => {
+export const useFetchFullRuleTree = (rulesetId: string) => {
   const queryClient = useQueryClient();
 
   return useCallback(async (): Promise<SharedRule[]> => {

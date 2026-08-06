@@ -34,7 +34,7 @@ import {
   useSingleRuleset,
   useAllRulesForRuleset,
   useGetTopLevelRules,
-  useEnsureAllRulesLoaded
+  useFetchFullRuleTree
 } from '../../hooks/rules.hooks';
 import { countRulesToDelete, compareRuleCodes } from '../../utils/rules.utils';
 import { Rule } from 'shared';
@@ -109,11 +109,11 @@ const RulesetEditPage: React.FC = () => {
   const rulesById = useMemo(() => new Map((allRules ?? []).map((r) => [r.ruleId, r])), [allRules]);
 
   // Expand All needs whole tree, so load it on demand rather than up front
-  const ensureAllRulesLoaded = useEnsureAllRulesLoaded(rulesetId!);
+  const fetchFullRuleTree = useFetchFullRuleTree(rulesetId!);
 
   const { expandedIds, toggleExpand, expandAll, collapseAll, areAllExpanded, isLoadingFullTree } = useRuleTreeNavigation(
     topLevelRules ?? [],
-    ensureAllRulesLoaded
+    fetchFullRuleTree
   );
 
   const tabs = [

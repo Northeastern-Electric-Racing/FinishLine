@@ -10,7 +10,7 @@ import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import RulesetGeneralView from './components/RulesetGeneralView';
 import RulesetTeamView from './components/RulesetTeamView';
-import { useSingleRuleset, useAllRulesForRuleset, useGetTopLevelRules, useEnsureAllRulesLoaded } from '../../hooks/rules.hooks';
+import { useSingleRuleset, useAllRulesForRuleset, useGetTopLevelRules, useFetchFullRuleTree } from '../../hooks/rules.hooks';
 import { useRuleTreeNavigation } from './useRuleTreeNavigation';
 import { useTeamRuleOrganization } from './useTeamRuleOrganization';
 
@@ -46,10 +46,10 @@ const RulesetViewPage = () => {
   } = useAllRulesForRuleset(rulesetId!, tabIndex === 1);
 
   // Expand All / cross-reference jumps need the whole tree, so load it on demand rather than up front
-  const ensureAllRulesLoaded = useEnsureAllRulesLoaded(rulesetId!);
+  const fetchFullRuleTree = useFetchFullRuleTree(rulesetId!);
 
   const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded, isLoadingFullTree } =
-    useRuleTreeNavigation(topLevelRules ?? [], ensureAllRulesLoaded);
+    useRuleTreeNavigation(topLevelRules ?? [], fetchFullRuleTree);
 
   const {
     topLevelItems: teamTopLevelItems,

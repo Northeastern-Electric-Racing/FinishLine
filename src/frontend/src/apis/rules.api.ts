@@ -15,15 +15,6 @@ import {
 } from './transformers/rules.transformers';
 
 /**
- * Gets a ruleset by its ID
- */
-export const getRulesetById = (rulesetId: string) => {
-  return axios.get<Ruleset>(apiUrls.rulesetById(rulesetId), {
-    transformResponse: (data) => JSON.parse(data)
-  });
-};
-
-/**
  * Gets a single ruleset by ID (dashboard usage)
  */
 export const getSingleRuleset = (rulesetId: string) => {
@@ -37,13 +28,6 @@ export const getSingleRuleset = (rulesetId: string) => {
  */
 export const toggleRuleTeam = (ruleId: string, teamId: string) => {
   return axios.post<SharedRule>(apiUrls.rulesToggleTeam(ruleId), { teamId });
-};
-
-/**
- * Gets all rules assigned to a team for a specific ruleset type
- */
-export const getTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => {
-  return axios.get<SharedRule[]>(apiUrls.rulesTeamRulesInRulesetType(rulesetTypeId, teamId));
 };
 
 /**

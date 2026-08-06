@@ -27,7 +27,7 @@ import { NERButton } from '../../components/NERButton';
 import NERModal from '../../components/NERModal';
 import WarningIcon from '@mui/icons-material/Warning';
 import RuleRow from './RuleRow';
-import { useBulkToggleRuleTeam, useGetTopLevelRules, useEnsureAllRulesLoaded } from '../../hooks/rules.hooks';
+import { useBulkToggleRuleTeam, useGetTopLevelRules, useFetchFullRuleTree } from '../../hooks/rules.hooks';
 import { compareRuleCodes } from '../../utils/rules.utils';
 import { getAncestorIds, getRuleAndDescendantIds, getDescendantLeafRules } from '../../utils/rules.utils';
 
@@ -104,18 +104,18 @@ const AssignRulesTab: React.FC = () => {
   } = useGetTopLevelRules(rulesetId);
 
   // Loaded fresh on every mount so it reflects any edits just made
-  const ensureAllRulesLoaded = useEnsureAllRulesLoaded(rulesetId);
+  const fetchFullRuleTree = useFetchFullRuleTree(rulesetId);
   const [rules, setRules] = useState<Rule[]>([]);
 
   useEffect(() => {
     let cancelled = false;
-    ensureAllRulesLoaded().then((loadedRules) => {
+    fetchFullRuleTree().then((loadedRules) => {
       if (!cancelled) setRules(loadedRules);
     });
     return () => {
       cancelled = true;
     };
-  }, [ensureAllRulesLoaded]);
+  }, [fetchFullRuleTree]);
 
   // background refetches ensure current toggles remain
   const hasPendingChangesRef = useRef(false);
