@@ -149,7 +149,6 @@ export const generateSubtaskCount = (faker: Faker): number =>
 export const generateRecentDate = (faker: Faker, now: Date): Date =>
   faker.date.between({ from: addDaysToDate(now, -120), to: now });
 
-
 export const faqCreateInput = (
   organizationId: string,
   question: string,
