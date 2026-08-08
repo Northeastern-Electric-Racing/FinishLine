@@ -44,6 +44,7 @@ import {
   POPUP_COUNT,
   popUpCreateInput
 } from '../factories/organization-content.factory.js';
+import { clampDate } from '../dates.js';
 
 type OrganizationContentInput = OrganizationOutput & UsersOutput & ConfigDataOutput;
 
@@ -129,14 +130,16 @@ export class OrganizationContentProcess extends SeedProcess<OrganizationContentI
       })
     );
 
+    const dateMessageSent = generateRecentDate(this.faker, now);
+
     const plannedAnnouncements = Array.from({ length: ANNOUNCEMENT_COUNT }, (_, i) => ({
       text: generateAnnouncementText(this.faker),
       senderName: generateSenderName(this.faker),
       slackChannelName: chooseSlackChannel(this.faker),
       slackEventId: `seed-slack-event-${i}`,
-      dateMessageSent: generateRecentDate(this.faker, now),
+      dateMessageSent,
       dateDeleted: this.faker.datatype.boolean({ probability: DELETED_CONTENT_CHANCE })
-        ? generateRecentDate(this.faker, now)
+        ? this.faker.date.between({ from: dateMessageSent, to: now })
         : undefined
     }));
 
@@ -162,14 +165,14 @@ export class OrganizationContentProcess extends SeedProcess<OrganizationContentI
         content: generateChecklistRootContent(this.faker),
         itemType: Checklist_Item_Type.TASK,
         isOptional: this.faker.datatype.boolean({ probability: 0.2 }),
-        displayIndex: rootIndex,
+        displayIndex: rootIndex + 1,
         dateCreated: rootDate,
         teamTypeId,
         children: Array.from({ length: childCount }, (_, childIndex) => ({
           content: generateChecklistSubtaskContent(this.faker),
           itemType: Checklist_Item_Type.TASK,
           isOptional: this.faker.datatype.boolean({ probability: 0.3 }),
-          displayIndex: childIndex,
+          displayIndex: childIndex + 1,
           dateCreated: rootDate
         }))
       };
