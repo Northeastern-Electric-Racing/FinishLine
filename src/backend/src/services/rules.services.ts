@@ -722,13 +722,13 @@ export default class RulesService {
     return rulesetTransformer(deletedRuleset);
   }
 
-  static async getAllRulesetTypes(organization: Organization): Promise<RulesetType[]> {
+  static async getAllRulesetTypes(organization: Organization, carId?: string): Promise<RulesetType[]> {
     const rulesets = await prisma.ruleset_Type.findMany({
       where: {
         organizationId: organization.organizationId,
         deletedByUserId: null
       },
-      ...getRulesetTypeQueryArgs()
+      ...getRulesetTypeQueryArgs(carId)
     });
     return rulesets.map(rulesetTypeTransformer);
   }
@@ -737,16 +737,17 @@ export default class RulesService {
    * Gets a ruleset type for a given ruleset type ID
    * @param rulesetTypeId id of ruleset type
    * @param organizationId id of organization
+   * @param carId optional id of the car to scope revision file counts to
    * @returns ruleset type associated with provided ruleset type ID
    */
-  static async getRulesetType(rulesetTypeId: string, organizationId: string): Promise<RulesetType> {
+  static async getRulesetType(rulesetTypeId: string, organizationId: string, carId?: string): Promise<RulesetType> {
     const rulesetType = await prisma.ruleset_Type.findUnique({
       where: {
         rulesetTypeId,
         organizationId,
         deletedBy: null
       },
-      ...getRulesetTypeQueryArgs()
+      ...getRulesetTypeQueryArgs(carId)
     });
 
     if (!organizationId) {

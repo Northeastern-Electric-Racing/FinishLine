@@ -119,9 +119,9 @@ export const getRulesetPreviewQueryArgs = () =>
 
 export type RulesetTypeQueryArgs = ReturnType<typeof getRulesetTypeQueryArgs>;
 
-export const getRulesetTypeQueryArgs = () =>
+export const getRulesetTypeQueryArgs = (carId?: string) =>
   Prisma.validator<Prisma.Ruleset_TypeDefaultArgs>()({
     include: {
-      revisionFiles: true
+      revisionFiles: { where: carId ? { carId } : {} }
     }
   });

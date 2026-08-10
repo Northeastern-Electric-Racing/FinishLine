@@ -39,12 +39,17 @@ import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Hook to supply all ruleset types.
+ * Revision file counts are scoped to the globally selected car.
  */
 export const useAllRulesetTypes = () => {
-  return useQuery<RulesetType[], Error>(['rules', 'rulesetTypes'], async () => {
-    const { data } = await getAllRulesetTypes();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<RulesetType[], Error>(
+    ['rules', 'rulesetTypes', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllRulesetTypes();
+      return data;
+    }
+  );
 };
 
 /**
