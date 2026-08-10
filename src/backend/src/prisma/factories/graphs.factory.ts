@@ -148,13 +148,18 @@ export const planGraphCollections = (
   faker: Faker,
   count: number,
   creators: GraphActor[],
-  span: DateRange
+  span: DateRange,
+  now: Date
 ): GraphCollectionPlan[] => {
   const titles = faker.helpers.shuffle([...GRAPH_COLLECTION_TITLES]);
+  // dateCreated/dateDeleted are real insertion timestamps, unlike startDate/endDate below (which
+  // are just query-filter bounds a user can legitimately set into the future) - the car span can
+  // extend past today for an ongoing car's season, so this must be capped at now.
+  const creationEnd = new Date(Math.min(span.end.getTime(), now.getTime()));
 
   return Array.from({ length: count }, (_, i) => {
     const creatorId = faker.helpers.arrayElement(creators).userId;
-    const dateCreated = generateRandomDate(faker, span.start, span.end);
+    const dateCreated = generateRandomDate(faker, span.start, creationEnd);
     const deleted = faker.datatype.boolean({ probability: 0.3 });
 
     return {
@@ -162,7 +167,7 @@ export const planGraphCollections = (
       viewPermissions: pickViewPermissions(faker),
       creatorId,
       dateCreated,
-      ...(deleted ? { dateDeleted: generateRandomDate(faker, dateCreated, span.end), deleterId: creatorId } : {})
+      ...(deleted ? { dateDeleted: generateRandomDate(faker, dateCreated, creationEnd), deleterId: creatorId } : {})
     };
   });
 };
@@ -171,7 +176,7 @@ const planGraph = (
   faker: Faker,
   creators: GraphActor[],
   cars: GraphCarRef[],
-  span: DateRange,
+  creationWindow: DateRange,
   collectionIndex?: number
 ): GraphPlan => {
   const graphType = pickGraphType(faker);
@@ -179,6 +184,9 @@ const planGraph = (
 
   const hasDateRange = faker.datatype.boolean({ probability: 0.2 });
   const rangeCar = connectedCars[0] ?? faker.helpers.arrayElement(cars);
+  // startDate/endDate are query-filter bounds (e.g. "show data through end of season"), not
+  // creation timestamps - a future value here is a normal, valid filter, so this intentionally
+  // uses the car's own raw dateRange rather than creationWindow.
   const dateRange = hasDateRange ? { startDate: rangeCar.dateRange.start, endDate: rangeCar.dateRange.end } : {};
 
   return {
@@ -188,7 +196,7 @@ const planGraph = (
     measure: pickMeasure(faker),
     specialPermissions: pickSpecialPermissions(faker, graphType),
     creatorId: faker.helpers.arrayElement(creators).userId,
-    dateCreated: generateRandomDate(faker, span.start, span.end),
+    dateCreated: generateRandomDate(faker, creationWindow.start, creationWindow.end),
     carIds: connectedCars.map((car) => car.carId),
     ...dateRange,
     ...(collectionIndex !== undefined ? { collectionIndex } : {})
@@ -197,23 +205,33 @@ const planGraph = (
 
 export const planGraphs = (
   faker: Faker,
-  collectionCount: number,
+  collectionPlans: GraphCollectionPlan[],
   standaloneCount: number,
   creators: GraphActor[],
   cars: GraphCarRef[],
-  span: DateRange
+  span: DateRange,
+  now: Date
 ): GraphPlan[] => {
   const graphs: GraphPlan[] = [];
+  // createGraph rejects assigning a new graph to an already-deleted collection, so a graph's own
+  // dateCreated must fall within its collection's [dateCreated, dateDeleted ?? now] window - not
+  // just anywhere in the overall car span.
+  const standaloneWindow: DateRange = { start: span.start, end: new Date(Math.min(span.end.getTime(), now.getTime())) };
 
-  for (let collectionIndex = 0; collectionIndex < collectionCount; collectionIndex++) {
+  collectionPlans.forEach((collectionPlan, collectionIndex) => {
     const count = graphsPerCollection(faker);
+    const creationWindow: DateRange = {
+      start: collectionPlan.dateCreated,
+      end: collectionPlan.dateDeleted ?? standaloneWindow.end
+    };
+
     for (let i = 0; i < count; i++) {
-      graphs.push(planGraph(faker, creators, cars, span, collectionIndex));
+      graphs.push(planGraph(faker, creators, cars, creationWindow, collectionIndex));
     }
-  }
+  });
 
   for (let i = 0; i < standaloneCount; i++) {
-    graphs.push(planGraph(faker, creators, cars, span));
+    graphs.push(planGraph(faker, creators, cars, standaloneWindow));
   }
 
   return graphs;

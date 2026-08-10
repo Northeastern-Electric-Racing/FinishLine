@@ -43,11 +43,12 @@ export class GraphProcess extends SeedProcess<GraphInput, GraphOutput> {
 
     const carRefs: GraphCarRef[] = cars.map(({ car, dateRange }) => ({ carId: car.carId, dateRange }));
     const span = carSpan(carRefs);
+    const now = new Date();
 
     const collectionCount = graphCollectionCountForOrg(this.faker);
-    const collectionPlans = planGraphCollections(this.faker, collectionCount, creators, span);
+    const collectionPlans = planGraphCollections(this.faker, collectionCount, creators, span, now);
     const standaloneCount = standaloneGraphCountForOrg(this.faker);
-    const graphPlans = planGraphs(this.faker, collectionCount, standaloneCount, creators, carRefs, span);
+    const graphPlans = planGraphs(this.faker, collectionPlans, standaloneCount, creators, carRefs, span, now);
 
     const graphCollections = await Promise.all(
       collectionPlans.map((plan) =>
