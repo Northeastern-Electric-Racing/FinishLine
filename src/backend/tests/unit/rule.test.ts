@@ -2095,6 +2095,132 @@ describe('Rule Tests', () => {
     });
   });
 
+  describe('Get All Rules For Ruleset', () => {
+    it('Successfully gets every rule in a ruleset, including children', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule, leafRule1, leafRule2, referencedRule, referencingRule } = await setupRules(car);
+
+      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+
+      expect(rules.length).toEqual(5);
+      const ruleIds = rules.map((r) => r.ruleId);
+      expect(ruleIds).toContain(topLevelRule.ruleId);
+      expect(ruleIds).toContain(leafRule1.ruleId);
+      expect(ruleIds).toContain(leafRule2.ruleId);
+      expect(ruleIds).toContain(referencedRule.ruleId);
+      expect(ruleIds).toContain(referencingRule.ruleId);
+    });
+
+    it('Returns parent/subRuleIds correctly for rules at every depth', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+
+      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+
+      const topRule = rules.find((r) => r.ruleId === topLevelRule.ruleId);
+      const leaf1 = rules.find((r) => r.ruleId === leafRule1.ruleId);
+      const leaf2 = rules.find((r) => r.ruleId === leafRule2.ruleId);
+
+      expect(topRule?.parentRule).toBeUndefined();
+      expect(topRule?.subRuleIds).toContain(leafRule1.ruleId);
+      expect(topRule?.subRuleIds).toContain(leafRule2.ruleId);
+
+      expect(leaf1?.parentRule?.ruleId).toBe(topLevelRule.ruleId);
+      expect(leaf2?.parentRule?.ruleId).toBe(topLevelRule.ruleId);
+    });
+
+    it('Does not return rules from a different ruleset', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, ruleset2, topLevelRule } = await setupRules(car);
+
+      const otherRule = await prisma.rule.create({
+        data: {
+          ruleCode: 'Z',
+          ruleContent: 'Different ruleset rule',
+          imageFileIds: [],
+          ruleset: { connect: { rulesetId: ruleset2.rulesetId } },
+          createdBy: { connect: { userId: admin.userId } }
+        }
+      });
+
+      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+
+      expect(rules.find((r) => r.ruleId === topLevelRule.ruleId)).toBeDefined();
+      expect(rules.find((r) => r.ruleId === otherRule.ruleId)).toBeUndefined();
+    });
+
+    it('Does not return deleted rules', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, leafRule1 } = await setupRules(car);
+
+      await prisma.rule.update({
+        where: { ruleId: leafRule1.ruleId },
+        data: { dateDeleted: new Date(), deletedByUserId: admin.userId }
+      });
+
+      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      expect(rules.find((r) => r.ruleId === leafRule1.ruleId)).toBeUndefined();
+    });
+
+    it('Returns rules ordered by ruleCode ascending', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+
+      for (let i = 0; i < rules.length - 1; i++) {
+        expect(rules[i].ruleCode <= rules[i + 1].ruleCode).toBe(true);
+      }
+    });
+
+    it('Returns an empty array when the ruleset has no rules', async () => {
+      const car = await createUniqueCar(orgId);
+      const ruleset = await prisma.ruleset.create({
+        data: {
+          name: 'Empty Ruleset',
+          fileId: 'empty-ruleset-all',
+          active: true,
+          car: { connect: { carId: car.carId } },
+          createdBy: { connect: { userId: admin.userId } },
+          rulesetType: { connect: { rulesetTypeId: fsaeRulesetType.rulesetTypeId } }
+        }
+      });
+
+      const rules = await RulesService.getAllRulesForRuleset(ruleset.rulesetId, organization.organizationId);
+      expect(rules.length).toEqual(0);
+    });
+
+    it('Fails when ruleset does not exist', async () => {
+      await expect(RulesService.getAllRulesForRuleset('fake-ruleset-id', organization.organizationId)).rejects.toThrow(
+        new NotFoundException('Ruleset', 'fake-ruleset-id')
+      );
+    });
+
+    it('Fails when ruleset is deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      await prisma.ruleset.update({
+        where: { rulesetId: ruleset1.rulesetId },
+        data: { active: false }
+      });
+      await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
+
+      await expect(RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId)).rejects.toThrow(
+        new DeletedException('Ruleset', ruleset1.rulesetId)
+      );
+    });
+
+    it('Fails if ruleset is in the wrong org', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      await expect(RulesService.getAllRulesForRuleset(ruleset1.rulesetId, otherOrg.organizationId)).rejects.toThrow(
+        InvalidOrganizationException
+      );
+    });
+  });
+
   describe('Get Ruleset Type', () => {
     it('Successfully gets a ruleset type by ID', async () => {
       const rulesetType = await RulesService.getRulesetType(fsaeRulesetType.rulesetTypeId, organization.organizationId);

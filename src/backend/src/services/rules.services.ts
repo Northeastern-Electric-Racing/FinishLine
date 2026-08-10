@@ -715,7 +715,7 @@ export default class RulesService {
 
     const deletedRuleset = await prisma.ruleset.update({
       where: { rulesetId },
-      data: { deletedBy: { connect: { userId: deleterId } }, active: false },
+      data: { dateDeleted: new Date(), deletedBy: { connect: { userId: deleterId } }, active: false },
       ...getRulesetQueryArgs()
     });
 

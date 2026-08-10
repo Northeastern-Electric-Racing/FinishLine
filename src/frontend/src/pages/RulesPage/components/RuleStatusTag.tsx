@@ -24,7 +24,7 @@ interface RuleStatusTagProps {
  * info tooltip with who completed it and in which project.
  */
 const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, allRules, onClick, popoverOpen = false }) => {
-  // Determine completion status based on whether all rules are provided (general view) or just the rule itself (project view)
+  // Determine completion status based on whether all rules are provided (general view) or just the rule itself
   const isComplete = allRules ? isRuleComplete(rule, allRules) : rule.isComplete;
   const { label, color } = getRuleStatusConfig(isComplete);
 
