@@ -22,6 +22,10 @@ import { WorkPackageProcess } from './seed/work-package.process.js';
 import { ChangeRequestProcess } from './seed/change-request.process.js';
 import { EventProcess } from './seed/event.process.js';
 import { ReimbursementRequestProcess } from './seed/reimbursement-request.process.js';
+import { SponsorProcess } from './seed/sponsor.process.js';
+import { PartProcess } from './seed/parts.process.js';
+import { OrganizationContentProcess } from './seed/organization-content.process.js';
+import { GraphProcess } from './seed/graphs.process.js';
 
 const prisma = new PrismaClient();
 
@@ -43,7 +47,11 @@ await new SeedRunner()
     new EventProcess(),
     new TaskProcess(),
     new ChangeRequestProcess(),
-    new ReimbursementRequestProcess()
+    new ReimbursementRequestProcess(),
+    new PartProcess(),
+    new SponsorProcess(),
+    new OrganizationContentProcess(),
+    new GraphProcess()
   )
   .run();
 
