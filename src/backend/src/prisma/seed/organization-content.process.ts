@@ -129,18 +129,22 @@ export class OrganizationContentProcess extends SeedProcess<OrganizationContentI
       })
     );
 
-    const dateMessageSent = generateRecentDate(this.faker, now);
-
-    const plannedAnnouncements = Array.from({ length: ANNOUNCEMENT_COUNT }, (_, i) => ({
-      text: generateAnnouncementText(this.faker),
-      senderName: generateSenderName(this.faker),
-      slackChannelName: chooseSlackChannel(this.faker),
-      slackEventId: `seed-slack-event-${i}`,
-      dateMessageSent,
-      dateDeleted: this.faker.datatype.boolean({ probability: DELETED_CONTENT_CHANCE })
-        ? this.faker.date.between({ from: dateMessageSent, to: now })
-        : undefined
-    }));
+    const plannedAnnouncements = Array.from({ length: ANNOUNCEMENT_COUNT }, (_, i) => {
+      const dateMessageSent = generateRecentDate(this.faker, now);
+      return {
+        text: generateAnnouncementText(this.faker),
+        senderName: generateSenderName(this.faker),
+        slackChannelName: chooseSlackChannel(this.faker),
+        slackEventId: `seed-slack-event-${i}`,
+        dateMessageSent,
+        // deleteAnnouncement always stamps dateDeleted onto an already-existing row, so it can
+        // never be earlier than the message it's deleting - draw it from [dateMessageSent, now]
+        // rather than independently, which could otherwise put dateDeleted before dateMessageSent.
+        dateDeleted: this.faker.datatype.boolean({ probability: DELETED_CONTENT_CHANCE })
+          ? this.faker.date.between({ from: dateMessageSent, to: now })
+          : undefined
+      };
+    });
 
     const plannedPopUps = Array.from({ length: POPUP_COUNT }, () => {
       const popUp = choosePopUp(this.faker);
