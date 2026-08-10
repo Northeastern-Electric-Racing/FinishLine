@@ -53,7 +53,7 @@ export const useAllRulesetTypes = () => {
 };
 
 /**
- * Hook to get the active ruleset for a given ruleset type scoped to a car
+ * Hook to get the active ruleset for a given ruleset type scoped to a car.
  * Each car can have its own active ruleset per ruleset type.
  */
 export const useActiveRuleset = (rulesetTypeId: string, carNumber?: number) => {
@@ -127,6 +127,9 @@ export interface CreateRulePayload {
   imageFileIds?: string[];
 }
 
+/**
+ * Hook to get all top level rules for a given ruleset.
+ */
 export const useGetTopLevelRules = (rulesetId: string) => {
   return useQuery<SharedRule[], Error>(['rules', 'top-level', rulesetId], async () => {
     const { data } = await getTopLevelRules(rulesetId);
@@ -134,6 +137,9 @@ export const useGetTopLevelRules = (rulesetId: string) => {
   });
 };
 
+/**
+ * Hook to get direct child rules for a given rule.
+ */
 export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
   return useQuery<SharedRule[], Error>(
     ['rules', 'children', ruleId],
@@ -148,7 +154,7 @@ export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
 };
 
 /**
- * Hook to get a single ruleset by ID
+ * Hook to get a single ruleset by ID.
  */
 export const useSingleRuleset = (rulesetId: string) => {
   return useQuery<Ruleset, Error>(
@@ -162,8 +168,8 @@ export const useSingleRuleset = (rulesetId: string) => {
 };
 
 /**
- * Hook to toggle multiple rule-team assignments in bulk
- * Processes each toggle sequentially and returns aggregate results
+ * Hook to toggle multiple rule-team assignments in bulk.
+ * Processes each toggle sequentially and returns aggregate results.
  */
 export const useBulkToggleRuleTeam = () => {
   const queryClient = useQueryClient();
@@ -229,7 +235,7 @@ export const useCreateRulesetType = () => {
 };
 
 /**
- * Custom React Hook to create a new rule
+ * Custom React Hook to create a new rule for a given ruleset.
  */
 export const useCreateRule = () => {
   const queryClient = useQueryClient();
@@ -329,7 +335,7 @@ export const useRulesetsByType = (rulesetTypeId: string) => {
 };
 
 /**
- * React Query hook to delete a rule
+ * React Query hook to delete a rule.
  */
 export const useDeleteRule = () => {
   const queryClient = useQueryClient();
@@ -354,7 +360,7 @@ export const useDeleteRule = () => {
 };
 
 /**
- * React Query hook to edit a rule's content and/or code
+ * React Query hook to edit a rule's content and/or code.
  */
 export const useEditRule = () => {
   const queryClient = useQueryClient();
@@ -380,7 +386,7 @@ export const useEditRule = () => {
 };
 
 /**
- * React Query hook to upload an image and attach it to a rule
+ * React Query hook to upload an image and attach it to a rule.
  */
 export const useAddRuleImage = () => {
   const queryClient = useQueryClient();
@@ -408,7 +414,7 @@ export const useAddRuleImage = () => {
 };
 
 /**
- * React Query hook to remove an image from a rule
+ * React Query hook to remove an image from a rule.
  */
 export const useRemoveRuleImage = () => {
   const queryClient = useQueryClient();
@@ -439,7 +445,7 @@ export const useRemoveRuleImage = () => {
 };
 
 /**
- * React Query hook to add referenced rules to a rule
+ * React Query hook to add referenced rules to a rule.
  */
 export const useAddRuleReferences = () => {
   const queryClient = useQueryClient();
@@ -459,7 +465,7 @@ export const useAddRuleReferences = () => {
 };
 
 /**
- * React Query hook to remove referenced rules from a rule
+ * React Query hook to remove referenced rules from a rule.
  */
 export const useRemoveRuleReferences = () => {
   const queryClient = useQueryClient();
@@ -478,6 +484,9 @@ export const useRemoveRuleReferences = () => {
   );
 };
 
+/**
+ * React Query hook to update a ruleset.
+ */
 export const useUpdateRuleset = () => {
   const queryClient = useQueryClient();
   return useMutation<Ruleset, Error, { rulesetId: string; name: string; isActive: boolean }>(
@@ -494,6 +503,9 @@ export const useUpdateRuleset = () => {
   );
 };
 
+/**
+ * React Query hook to delete a ruleset.
+ */
 export const useDeleteRuleset = () => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string>(
@@ -509,6 +521,9 @@ export const useDeleteRuleset = () => {
   );
 };
 
+/**
+ * React Query hook to delete a ruleset type.
+ */
 export const useDeleteRulesetType = () => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string>(
@@ -524,7 +539,7 @@ export const useDeleteRulesetType = () => {
 };
 
 /**
- * Hook to get a single ruleset type by ID
+ * Hook to get a single ruleset type by ID.
  */
 export const useRulesetType = (rulesetTypeId: string) => {
   return useQuery<RulesetType, Error>(['rulesetType', rulesetTypeId], async () => {
@@ -533,6 +548,9 @@ export const useRulesetType = (rulesetTypeId: string) => {
   });
 };
 
+/**
+ * Hook to create a new ruleset.
+ */
 export const useCreateRuleset = () => {
   const queryClient = useQueryClient();
   return useMutation<Ruleset, Error, CreateRulesetPayload>(
@@ -550,6 +568,9 @@ export const useCreateRuleset = () => {
   );
 };
 
+/**
+ * Parses an uploaded file and returns the parsed rules.
+ */
 export const useParseRuleset = () => {
   const queryClient = useQueryClient();
   return useMutation<SharedRule[], Error, ParseRulesetPayload>(
@@ -568,7 +589,7 @@ export const useParseRuleset = () => {
 };
 
 /**
- * Uploads a file to the drive and returns the fileId
+ * Uploads a file to the drive and returns the fileId.
  */
 export const useUploadRulesetFile = () => {
   return useMutation<string, Error, File>(['ruleset-file', 'upload'], async (file: File) => {
@@ -592,7 +613,7 @@ export const useAllRulesForRuleset = (rulesetId: string, enabled: boolean = true
 };
 
 /**
- * Loads the full rule tree on demand, for actions like "Expand All" that need every rule at once.
+ * Loads the full rule tree, for actions like "Expand All" that need every rule at once.
  */
 export const useFetchFullRuleTree = (rulesetId: string) => {
   const queryClient = useQueryClient();

@@ -45,7 +45,7 @@ const RulesetViewPage = () => {
     isLoading: isRulesLoading
   } = useAllRulesForRuleset(rulesetId!, tabIndex === 1);
 
-  // Expand All / cross-reference jumps need the whole tree, so load it on demand rather than up front
+  // Expand All needs the whole tree, load it on click instead of on page load
   const fetchFullRuleTree = useFetchFullRuleTree(rulesetId!);
 
   const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded, isLoadingFullTree } =
