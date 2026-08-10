@@ -62,7 +62,6 @@ rulesRouter.post(
 );
 
 rulesRouter.get('/rulesetTypes', RulesController.getAllRulesetTypes);
-rulesRouter.get('/ruleset/:rulesetId/rules/unassigned', RulesController.getUnassignedRules);
 rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
 rulesRouter.post('/projectRule/:projectRuleId/delete', RulesController.deleteProjectRule);
 
@@ -93,7 +92,6 @@ rulesRouter.post(
   RulesController.createRuleset
 );
 rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
-rulesRouter.get('/:rulesetTypeId/team/:teamId', RulesController.getTeamRulesInRulesetType);
 
 rulesRouter.post(
   '/ruleset/:rulesetId/update',

@@ -116,3 +116,12 @@ export const getRulesetPreviewQueryArgs = () =>
       }
     }
   });
+
+export type RulesetTypeQueryArgs = ReturnType<typeof getRulesetTypeQueryArgs>;
+
+export const getRulesetTypeQueryArgs = () =>
+  Prisma.validator<Prisma.Ruleset_TypeDefaultArgs>()({
+    include: {
+      revisionFiles: true
+    }
+  });
