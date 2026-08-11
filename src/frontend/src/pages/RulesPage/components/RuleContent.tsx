@@ -68,17 +68,17 @@ const RuleImages: React.FC<RuleImagesProps> = ({ rule, onImageRemove }) => {
 
   return (
     <>
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, flexWrap: 'wrap', mt: 1 }}>
         {imageUrls.map(
           (image, index) =>
             image.url && (
-              <Box key={image.id} sx={{ position: 'relative', width: 48, height: 48 }}>
+              <Box key={image.id} sx={{ position: 'relative', display: 'inline-flex' }}>
                 <Box
                   component="img"
                   src={image.url}
                   alt="Rule attachment"
                   onClick={() => setPreviewIndex(index)}
-                  sx={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 1, cursor: 'pointer' }}
+                  sx={{ maxWidth: 300, maxHeight: 300, borderRadius: 1, cursor: 'pointer', display: 'block' }}
                 />
                 {onImageRemove && (
                   <IconButton
