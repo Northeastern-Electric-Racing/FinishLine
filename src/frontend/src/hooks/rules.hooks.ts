@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { ProjectRule, Rule as SharedRule, Ruleset, RulesetType } from 'shared';
 import {
@@ -16,8 +17,8 @@ import {
   setRuleCompletion,
   getChildRules,
   getTopLevelRules,
+  getAllRulesForRuleset,
   toggleRuleTeam,
-  getTeamRulesInRulesetType,
   parseRuleset,
   uploadRulesetFile,
   getRulesetsByRulesetType,
@@ -29,7 +30,6 @@ import {
   deleteRuleset,
   deleteRulesetType,
   createRuleset,
-  getRulesetById,
   createRule,
   getSingleRuleset,
   getRulesetType
@@ -39,16 +39,21 @@ import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Hook to supply all ruleset types.
+ * Revision file counts are scoped to the globally selected car.
  */
 export const useAllRulesetTypes = () => {
-  return useQuery<RulesetType[], Error>(['rules', 'rulesetTypes'], async () => {
-    const { data } = await getAllRulesetTypes();
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<RulesetType[], Error>(
+    ['rules', 'rulesetTypes', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllRulesetTypes();
+      return data;
+    }
+  );
 };
 
 /**
- * Hook to get the active ruleset for a given ruleset type scoped to a car
+ * Hook to get the active ruleset for a given ruleset type scoped to a car.
  * Each car can have its own active ruleset per ruleset type.
  */
 export const useActiveRuleset = (rulesetTypeId: string, carNumber?: number) => {
@@ -95,34 +100,6 @@ export const useUnassignedRulesForRuleset = (rulesetId: string, projectId: strin
   );
 };
 
-/**
- * Hook to get child rules of a rule.
- */
-export const useChildRules = (ruleId: string) => {
-  return useQuery<SharedRule[], Error>(
-    ['rules', 'children', ruleId],
-    async () => {
-      const { data } = await getChildRules(ruleId);
-      return data;
-    },
-    { enabled: !!ruleId }
-  );
-};
-
-/**
- * Hook to get top-level rules for a ruleset.
- */
-export const useTopLevelRules = (rulesetId: string) => {
-  return useQuery<SharedRule[], Error>(
-    ['rules', 'topLevel', rulesetId],
-    async () => {
-      const { data } = await getTopLevelRules(rulesetId);
-      return data;
-    },
-    { enabled: !!rulesetId }
-  );
-};
-
 interface CreateRulesetTypePayload {
   name: string;
 }
@@ -150,6 +127,9 @@ export interface CreateRulePayload {
   imageFileIds?: string[];
 }
 
+/**
+ * Hook to get all top level rules for a given ruleset.
+ */
 export const useGetTopLevelRules = (rulesetId: string) => {
   return useQuery<SharedRule[], Error>(['rules', 'top-level', rulesetId], async () => {
     const { data } = await getTopLevelRules(rulesetId);
@@ -157,6 +137,9 @@ export const useGetTopLevelRules = (rulesetId: string) => {
   });
 };
 
+/**
+ * Hook to get direct child rules for a given rule.
+ */
 export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
   return useQuery<SharedRule[], Error>(
     ['rules', 'children', ruleId],
@@ -171,22 +154,7 @@ export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
 };
 
 /**
- * Hook to get a ruleset by ID.
- * (Kept because some parts of the app may still call getRulesetById)
- */
-export const useGetRuleset = (rulesetId: string) => {
-  return useQuery<Ruleset, Error>(
-    ['ruleset', rulesetId],
-    async () => {
-      const { data } = await getRulesetById(rulesetId);
-      return data;
-    },
-    { enabled: !!rulesetId }
-  );
-};
-
-/**
- * Hook to get a single ruleset by ID (kept for compatibility with feature branch usage)
+ * Hook to get a single ruleset by ID.
  */
 export const useSingleRuleset = (rulesetId: string) => {
   return useQuery<Ruleset, Error>(
@@ -199,25 +167,9 @@ export const useSingleRuleset = (rulesetId: string) => {
   );
 };
 
-export const useToggleRuleTeam = () => {
-  const queryClient = useQueryClient();
-  return useMutation<SharedRule, Error, { ruleId: string; teamId: string }>(
-    ['rules', 'toggle-team'],
-    async ({ ruleId, teamId }) => {
-      const { data } = await toggleRuleTeam(ruleId, teamId);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['rules']);
-      }
-    }
-  );
-};
-
 /**
- * Hook to toggle multiple rule-team assignments in bulk
- * Processes each toggle sequentially and returns aggregate results
+ * Hook to toggle multiple rule-team assignments in bulk.
+ * Processes each toggle sequentially and returns aggregate results.
  */
 export const useBulkToggleRuleTeam = () => {
   const queryClient = useQueryClient();
@@ -263,13 +215,6 @@ export const useBulkToggleRuleTeam = () => {
   );
 };
 
-export const useGetTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => {
-  return useQuery<SharedRule[], Error>(['rules', 'team-rules', rulesetTypeId, teamId], async () => {
-    const { data } = await getTeamRulesInRulesetType(rulesetTypeId, teamId);
-    return data;
-  });
-};
-
 /**
  * Hook to create a new ruleset type.
  */
@@ -290,7 +235,7 @@ export const useCreateRulesetType = () => {
 };
 
 /**
- * Custom React Hook to create a new rule
+ * Custom React Hook to create a new rule for a given ruleset.
  */
 export const useCreateRule = () => {
   const queryClient = useQueryClient();
@@ -365,6 +310,8 @@ export const useSetRuleCompletion = (rulesetId: string, projectId: string) => {
         queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
         queryClient.invalidateQueries(['rules', 'unassigned']);
         queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
+        queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
+        queryClient.invalidateQueries(['rules', 'children']);
       }
     }
   );
@@ -388,20 +335,20 @@ export const useRulesetsByType = (rulesetTypeId: string) => {
 };
 
 /**
- * React Query hook to delete a rule
+ * React Query hook to delete a rule.
  */
 export const useDeleteRule = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  return useMutation<void, Error, string>(
+  return useMutation<void, Error, { ruleId: string; totalRulesToDelete: number }>(
     ['rules', 'delete'],
-    async (ruleId: string) => {
+    async ({ ruleId }) => {
       await deleteRule(ruleId);
     },
     {
-      onSuccess: () => {
-        toast.success('Rule deleted successfully');
+      onSuccess: (_data, { totalRulesToDelete }) => {
+        toast.success(`${totalRulesToDelete} ${totalRulesToDelete === 1 ? 'rule' : 'rules'} deleted successfully`);
         queryClient.invalidateQueries(['rules']);
         queryClient.invalidateQueries(['rulesets']);
       },
@@ -413,7 +360,7 @@ export const useDeleteRule = () => {
 };
 
 /**
- * React Query hook to edit a rule's content
+ * React Query hook to edit a rule's content and/or code.
  */
 export const useEditRule = () => {
   const queryClient = useQueryClient();
@@ -439,7 +386,7 @@ export const useEditRule = () => {
 };
 
 /**
- * React Query hook to upload an image and attach it to a rule
+ * React Query hook to upload an image and attach it to a rule.
  */
 export const useAddRuleImage = () => {
   const queryClient = useQueryClient();
@@ -467,7 +414,7 @@ export const useAddRuleImage = () => {
 };
 
 /**
- * React Query hook to remove an image from a rule
+ * React Query hook to remove an image from a rule.
  */
 export const useRemoveRuleImage = () => {
   const queryClient = useQueryClient();
@@ -498,7 +445,7 @@ export const useRemoveRuleImage = () => {
 };
 
 /**
- * React Query hook to add referenced rules to a rule
+ * React Query hook to add referenced rules to a rule.
  */
 export const useAddRuleReferences = () => {
   const queryClient = useQueryClient();
@@ -518,7 +465,7 @@ export const useAddRuleReferences = () => {
 };
 
 /**
- * React Query hook to remove referenced rules from a rule
+ * React Query hook to remove referenced rules from a rule.
  */
 export const useRemoveRuleReferences = () => {
   const queryClient = useQueryClient();
@@ -537,6 +484,9 @@ export const useRemoveRuleReferences = () => {
   );
 };
 
+/**
+ * React Query hook to update a ruleset.
+ */
 export const useUpdateRuleset = () => {
   const queryClient = useQueryClient();
   return useMutation<Ruleset, Error, { rulesetId: string; name: string; isActive: boolean }>(
@@ -553,6 +503,9 @@ export const useUpdateRuleset = () => {
   );
 };
 
+/**
+ * React Query hook to delete a ruleset.
+ */
 export const useDeleteRuleset = () => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string>(
@@ -568,6 +521,9 @@ export const useDeleteRuleset = () => {
   );
 };
 
+/**
+ * React Query hook to delete a ruleset type.
+ */
 export const useDeleteRulesetType = () => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string>(
@@ -582,12 +538,19 @@ export const useDeleteRulesetType = () => {
   );
 };
 
+/**
+ * Hook to get a single ruleset type by ID.
+ */
 export const useRulesetType = (rulesetTypeId: string) => {
   return useQuery<RulesetType, Error>(['rulesetType', rulesetTypeId], async () => {
     const { data } = await getRulesetType(rulesetTypeId);
     return data;
   });
 };
+
+/**
+ * Hook to create a new ruleset.
+ */
 export const useCreateRuleset = () => {
   const queryClient = useQueryClient();
   return useMutation<Ruleset, Error, CreateRulesetPayload>(
@@ -605,6 +568,9 @@ export const useCreateRuleset = () => {
   );
 };
 
+/**
+ * Parses an uploaded file and returns the parsed rules.
+ */
 export const useParseRuleset = () => {
   const queryClient = useQueryClient();
   return useMutation<SharedRule[], Error, ParseRulesetPayload>(
@@ -623,7 +589,7 @@ export const useParseRuleset = () => {
 };
 
 /**
- * Uploads a file to the drive and returns the fileId
+ * Uploads a file to the drive and returns the fileId.
  */
 export const useUploadRulesetFile = () => {
   return useMutation<string, Error, File>(['ruleset-file', 'upload'], async (file: File) => {
@@ -633,36 +599,47 @@ export const useUploadRulesetFile = () => {
 };
 
 /**
- * Helper function to recursively fetch all child rules
+ * Hook to get every rule in a ruleset (top-level and all descendants) in a single request.
  */
-const fetchAllChildRules = async (rule: SharedRule, allRules: SharedRule[]): Promise<void> => {
-  if (rule.subRuleIds.length === 0) return;
-
-  const { data: children } = await getChildRules(rule.ruleId);
-  allRules.push(...children);
-
-  for (const child of children) {
-    await fetchAllChildRules(child, allRules);
-  }
-};
-
-/**
- * Hook to get all rules for a ruleset by fetching top-level rules
- * and recursively fetching all children
- */
-export const useAllRulesForRuleset = (rulesetId: string) => {
+export const useAllRulesForRuleset = (rulesetId: string, enabled: boolean = true) => {
   return useQuery<SharedRule[], Error>(
     ['rules', 'allRules', rulesetId],
     async () => {
-      const { data: topLevelRules } = await getTopLevelRules(rulesetId);
-      const allRules: SharedRule[] = [...topLevelRules];
-
-      for (const rule of topLevelRules) {
-        await fetchAllChildRules(rule, allRules);
-      }
-
-      return allRules;
+      const { data } = await getAllRulesForRuleset(rulesetId);
+      return data;
     },
-    { enabled: !!rulesetId }
+    { enabled: !!rulesetId && enabled }
   );
+};
+
+/**
+ * Loads the full rule tree, for actions like "Expand All" that need every rule at once.
+ */
+export const useFetchFullRuleTree = (rulesetId: string) => {
+  const queryClient = useQueryClient();
+
+  return useCallback(async (): Promise<SharedRule[]> => {
+    const allRules = await queryClient.fetchQuery(['rules', 'allRules', rulesetId], async () => {
+      const { data } = await getAllRulesForRuleset(rulesetId);
+      return data;
+    });
+
+    // Build a map of parentId -> children for all rules in this ruleset
+    const childrenByParentId = new Map<string, SharedRule[]>();
+    allRules.forEach((rule) => {
+      const parentId = rule.parentRule?.ruleId;
+      if (!parentId) return;
+      const siblings = childrenByParentId.get(parentId) ?? [];
+      siblings.push(rule);
+      childrenByParentId.set(parentId, siblings);
+    });
+
+    allRules
+      .filter((rule) => rule.subRuleIds.length > 0)
+      .forEach((rule) => {
+        queryClient.setQueryData(['rules', 'children', rule.ruleId], childrenByParentId.get(rule.ruleId) ?? []);
+      });
+
+    return allRules;
+  }, [queryClient, rulesetId]);
 };

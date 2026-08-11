@@ -10,7 +10,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
 
 interface RulesetGeneralViewProps {
-  allRules: Rule[];
+  topLevelRules: Rule[];
   rulesetId: string;
   expandedIds: Set<string>;
   toggleExpand: (ruleId: string) => void;
@@ -18,10 +18,11 @@ interface RulesetGeneralViewProps {
 }
 
 /**
- * general view for displaying all top-level rules as dropdowns
+ * General view for displaying all top-level rules as dropdowns.
+ * Subrules are fetched only when a rule is expanded.
  */
 const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
-  allRules,
+  topLevelRules,
   rulesetId,
   expandedIds,
   toggleExpand,
@@ -40,9 +41,8 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   // Completion in general view is for the whole ruleset, so no projectId is passed in
   const { mutateAsync: setCompletion } = useSetRuleCompletion(rulesetId, '');
 
-  // Sort once by rule code so both top-level rows and their children render in a stable numeric order.
-  const sortedRules = useMemo(() => [...allRules].sort(compareRuleCodes), [allRules]);
-  const topLevelRules = useMemo(() => sortedRules.filter((rule) => !rule.parentRule), [sortedRules]);
+  // Sort once by rule code so top-level rows render in a stable numeric order.
+  const sortedTopLevelRules = useMemo(() => [...topLevelRules].sort(compareRuleCodes), [topLevelRules]);
 
   const handleStatusClose = () => {
     setStatusPopoverAnchor(null);
@@ -65,18 +65,16 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
       <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor }}>
         <Table sx={{ borderCollapse: 'separate', borderSpacing: '0 8px', backgroundColor }}>
           <TableBody>
-            {topLevelRules.map((rule) => (
+            {sortedTopLevelRules.map((rule) => (
               <RuleRow
                 key={rule.ruleId}
                 rule={rule}
-                allRules={sortedRules}
                 expandedIds={expandedIds}
                 onToggleExpand={toggleExpand}
                 middleContent={(r) => <RuleContent rule={r} onReferenceClick={navigateToRule} color={tableTextColor} />}
                 rightContent={(r) => (
                   <RuleStatusTag
                     rule={r}
-                    allRules={sortedRules}
                     popoverOpen={selectedRule?.ruleId === r.ruleId && Boolean(statusPopoverAnchor)}
                     onClick={(e) => {
                       setSelectedRule(r);

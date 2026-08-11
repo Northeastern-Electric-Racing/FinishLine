@@ -4,12 +4,13 @@ import PageLayout from '../../components/PageLayout';
 import { NERButton } from '../../components/NERButton';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
+import { CircularProgress } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import RulesetGeneralView from './components/RulesetGeneralView';
 import RulesetTeamView from './components/RulesetTeamView';
-import { useSingleRuleset, useAllRulesForRuleset } from '../../hooks/rules.hooks';
+import { useSingleRuleset, useAllRulesForRuleset, useGetTopLevelRules, useFetchFullRuleTree } from '../../hooks/rules.hooks';
 import { useRuleTreeNavigation } from './useRuleTreeNavigation';
 import { useTeamRuleOrganization } from './useTeamRuleOrganization';
 
@@ -29,16 +30,26 @@ const RulesetViewPage = () => {
     isLoading: isRulesetLoading
   } = useSingleRuleset(rulesetId!);
 
+  // General View only needs top-level rules on first render; subrules fetched as dropdowns are expanded
+  const {
+    data: topLevelRules,
+    isError: isTopLevelRulesError,
+    error: topLevelRulesError,
+    isLoading: isTopLevelRulesLoading
+  } = useGetTopLevelRules(rulesetId!);
+
   const {
     data: allRules,
     isError: isRulesError,
     error: rulesError,
     isLoading: isRulesLoading
-  } = useAllRulesForRuleset(rulesetId!);
+  } = useAllRulesForRuleset(rulesetId!, tabIndex === 1);
 
-  const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded } = useRuleTreeNavigation(
-    allRules ?? []
-  );
+  // Expand All needs the whole tree, load it on click instead of on page load
+  const fetchFullRuleTree = useFetchFullRuleTree(rulesetId!);
+
+  const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded, isLoadingFullTree } =
+    useRuleTreeNavigation(topLevelRules ?? [], fetchFullRuleTree);
 
   const {
     topLevelItems: teamTopLevelItems,
@@ -58,15 +69,19 @@ const RulesetViewPage = () => {
     return <ErrorPage error={rulesetError} />;
   }
 
-  if (isRulesError) {
+  if (isTopLevelRulesError) {
+    return <ErrorPage error={topLevelRulesError} />;
+  }
+
+  if (tabIndex === 1 && isRulesError) {
     return <ErrorPage error={rulesError} />;
   }
 
-  if (isRulesetLoading || isRulesLoading) {
+  if (isRulesetLoading || isTopLevelRulesLoading) {
     return <LoadingIndicator />;
   }
 
-  if (!ruleset || !allRules) {
+  if (!ruleset || !topLevelRules) {
     return <LoadingIndicator />;
   }
 
@@ -94,14 +109,20 @@ const RulesetViewPage = () => {
               />
             </Box>
             {tabIndex === 0 && (
-              <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
-                {areAllExpanded ? 'Collapse All' : 'Expand All'}
-              </NERButton>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {isLoadingFullTree && <CircularProgress size={20} />}
+                <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
+                  {areAllExpanded ? 'Collapse All' : 'Expand All'}
+                </NERButton>
+              </Box>
             )}
             {tabIndex === 1 && (
-              <NERButton variant="outlined" onClick={teamAreAllExpanded ? teamCollapseAll : teamExpandAll}>
-                {teamAreAllExpanded ? 'Collapse All' : 'Expand All'}
-              </NERButton>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {isRulesLoading && <CircularProgress size={20} />}
+                <NERButton variant="outlined" onClick={teamAreAllExpanded ? teamCollapseAll : teamExpandAll}>
+                  {teamAreAllExpanded ? 'Collapse All' : 'Expand All'}
+                </NERButton>
+              </Box>
             )}
           </Box>
         }
@@ -109,12 +130,14 @@ const RulesetViewPage = () => {
         <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
           {tabIndex === 0 ? (
             <RulesetGeneralView
-              allRules={allRules}
+              topLevelRules={topLevelRules}
               rulesetId={rulesetId!}
               expandedIds={expandedIds}
               toggleExpand={toggleExpand}
               navigateToRule={navigateToRule}
             />
+          ) : isRulesLoading || !allRules ? (
+            <LoadingIndicator />
           ) : (
             <RulesetTeamView
               topLevelItems={teamTopLevelItems}
