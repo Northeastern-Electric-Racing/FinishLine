@@ -77,8 +77,9 @@ export const normalizeContent = (text: string): string => text.replace(/\s+/g, '
  * @returns array of parsed rules including main rule and any subrules
  */
 export const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
-  // "a." and "(a)" subrule styles
-  const letterPattern = /(?<=^|:\s)\s*(?:([a-z])\.|\(([a-z])\))\s+/gm;
+  // "a." and "(a)" styles mark a subrule at a line start or after a colon
+  // "a)" style marks a subrule if following any whitespace
+  const letterPattern = /(?:(?<=^|:\s)([a-z])\.|(?<=^|:\s)\(([a-z])\)|(?<=^|\s)([a-z])\))\s+/gm;
   const matches = [...content.matchAll(letterPattern)];
 
   if (matches.length === 0) {
@@ -106,8 +107,8 @@ export const extractSubRules = (ruleCode: string, content: string): ParsedRule[]
 
   // Extract lettered sub-rules
   for (let i = 0; i < matches.length; i++) {
-    const [, dotLetter, parenLetter] = matches[i];
-    const letter = dotLetter ?? parenLetter;
+    const [, dotLetter, parenLetter, bareLetter] = matches[i];
+    const letter = dotLetter ?? parenLetter ?? bareLetter;
     const startIndex = matches[i].index! + matches[i][0].length;
 
     // Find where this sub-rule ends (either at next letter or end of rule content)
