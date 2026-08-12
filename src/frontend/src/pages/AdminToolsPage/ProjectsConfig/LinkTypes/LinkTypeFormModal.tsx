@@ -74,12 +74,12 @@ const LinkTypeFormModal = ({
   const onFormSubmit = async (data: LinkTypeCreatePayload) => {
     try {
       await onSubmit(data);
+      handleClose();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    handleClose();
   };
 
   const tooltipMessage = (

@@ -18,6 +18,7 @@ import { useCompleteOnboarding } from '../../hooks/team-types.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { SlackIdGateProvider, useSlackIdGate } from './SlackIdGateContext';
+import { useToast } from '../../hooks/toasts.hooks';
 
 const OnboardingHomePage = () => (
   <SlackIdGateProvider>
@@ -29,11 +30,17 @@ const OnboardingHomePageContent = () => {
   const history = useHistory();
   const auth = useAuth();
   const user = useCurrentUser();
-  const { hasSlackId, isLoading: slackIdIsLoading } = useSlackIdGate();
+  const toast = useToast();
+  const { hasSlackId, isLoading: slackIdIsLoading, isError: slackIdIsError } = useSlackIdGate();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isSlackIdModalOpen, setSlackIdModalOpen] = useState(false);
   const { setCurrentHomePage } = useHomePageContext();
-  const { data: organization, isLoading: organizationIsLoading } = useCurrentOrganization();
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    isError: organizationIsError,
+    error: organizationError
+  } = useCurrentOrganization();
   const theme = useTheme();
 
   // new members can revisit this page to look back at what they completed -- the "Finished?"
@@ -71,6 +78,10 @@ const OnboardingHomePageContent = () => {
     return <ErrorPage error={checkedChecklistsError} />;
   }
 
+  if (organizationIsError) {
+    return <ErrorPage error={organizationError} />;
+  }
+
   if (
     !organization ||
     usersChecklistsIsLoading ||
@@ -83,6 +94,10 @@ const OnboardingHomePageContent = () => {
   }
 
   const handleFinishedClick = () => {
+    if (slackIdIsError) {
+      toast.error('Unable to determine your Slack ID status. Please try again.');
+      return;
+    }
     if (!hasSlackId) {
       setSlackIdModalOpen(true);
       return;
@@ -94,19 +109,28 @@ const OnboardingHomePageContent = () => {
     setModalOpen(false);
   };
 
-  const handleSlackIdSuccess = async () => {
-    setSlackIdModalOpen(false);
-    // they just had to set their Slack ID to get here, so there's nothing left to confirm --
-    // skip the "are you sure?" modal and finish onboarding right away
-    await handleConfirmModal();
+  const handleConfirmModal = async () => {
+    try {
+      await completeOnboarding();
+      // the logged-in user object is plain client state, not refetched automatically,
+      // so it needs to be refreshed here for Home.tsx's routing to see the completed onboarding status
+      await auth.signInCurrent();
+      history.push(routes.HOME);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+      throw error;
+    }
   };
 
-  const handleConfirmModal = async () => {
-    await completeOnboarding();
-    // the logged-in user object is plain client state, not refetched automatically,
-    // so it needs to be refreshed here for Home.tsx's routing to see the completed onboarding status
-    await auth.signInCurrent();
-    history.push(routes.HOME);
+  const handleSlackIdSuccess = async () => {
+    // they just had to set their Slack ID to get here, so there's nothing left to confirm --
+    // skip the "are you sure?" modal and finish onboarding right away. Only close the Slack-ID
+    // modal once onboarding has actually finished, so a failure leaves the user somewhere they
+    // can retry from instead of silently vanishing.
+    await handleConfirmModal();
+    setSlackIdModalOpen(false);
   };
 
   return (

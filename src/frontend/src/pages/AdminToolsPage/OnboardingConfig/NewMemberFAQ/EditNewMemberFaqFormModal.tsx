@@ -1,8 +1,7 @@
-import ErrorPage from '../../../ErrorPage';
-import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { FrequentlyAskedQuestion } from 'shared';
-import { useEditFaq } from '../../../../hooks/recruitment.hooks';
+import { FaqPayload, useEditFaq } from '../../../../hooks/recruitment.hooks';
 import FaqFormModal from '../../RecruitmentConfig/FaqFormModal';
+import { useToast } from '../../../../hooks/toasts.hooks';
 
 interface EditNewMemberFaqFormModalProps {
   open: boolean;
@@ -11,12 +10,21 @@ interface EditNewMemberFaqFormModalProps {
 }
 
 const EditNewMemberFaqFormModal = ({ open, handleClose, faq }: EditNewMemberFaqFormModalProps) => {
-  const { isLoading, isError, error, mutateAsync } = useEditFaq(faq.faqId);
+  const { mutateAsync } = useEditFaq(faq.faqId);
+  const toast = useToast();
 
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading) return <LoadingIndicator />;
+  const onSubmit = async (data: FaqPayload) => {
+    try {
+      return await mutateAsync(data);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+      throw error;
+    }
+  };
 
-  return <FaqFormModal open={open} handleClose={handleClose} onSubmit={mutateAsync} defaultValues={faq} />;
+  return <FaqFormModal open={open} handleClose={handleClose} onSubmit={onSubmit} defaultValues={faq} />;
 };
 
 export default EditNewMemberFaqFormModal;

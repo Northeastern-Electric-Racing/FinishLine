@@ -25,7 +25,7 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
     toggleChecklist(
       { checklistId: subtaskId },
       {
-        onError: (error: any) => {
+        onError: (error: Error) => {
           toast.error(error.message);
         }
       }

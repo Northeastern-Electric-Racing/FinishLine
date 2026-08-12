@@ -21,10 +21,10 @@ const NewMemberFAQTable = () => {
   const toast = useToast();
 
   const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useNewMemberFaqs();
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     setFaqToDelete(undefined);
     try {
-      deleteFaq(id);
+      await deleteFaq(id);
       toast.success('Faq deleted successfully');
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -33,8 +33,8 @@ const NewMemberFAQTable = () => {
     }
   };
 
-  if (!faqs || faqsIsLoading) return <LoadingIndicator />;
   if (faqsIsError) return <ErrorPage message={faqsError.message} />;
+  if (!faqs || faqsIsLoading) return <LoadingIndicator />;
 
   const FAQsRows = faqs.map((faq: FrequentlyAskedQuestion, index: number) => (
     <TableRow key={faq.faqId}>
@@ -47,10 +47,10 @@ const NewMemberFAQTable = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           borderBottom: index === faqs.length - 1 ? 'none' : 'default',
-          minHeight: '50px'
+          minHeight: '3.125rem'
         }}
       >
-        <Typography sx={{ maxWidth: 300 }}>{faq.answer}</Typography>
+        <Typography sx={{ maxWidth: { xs: '100%', sm: 300 } }}>{faq.answer}</Typography>
         <Box sx={{ display: 'flex' }}>
           <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setFaqEditing(faq)}>
             <EditIcon />

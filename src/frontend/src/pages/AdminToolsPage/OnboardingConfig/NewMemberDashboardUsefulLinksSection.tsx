@@ -1,3 +1,4 @@
+import React from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import UsefulLinksTable from './UsefulLinks/UsefulLinksTable';
 import LinkTypeTable from '../ProjectsConfig/LinkTypes/LinkTypeTable';

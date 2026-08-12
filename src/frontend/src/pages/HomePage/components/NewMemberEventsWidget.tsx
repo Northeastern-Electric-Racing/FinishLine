@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Box, Checkbox, FormControlLabel, FormGroup, Typography, useTheme } from '@mui/material';
 import { formatEventTime } from 'shared';
 import ErrorPage from '../../ErrorPage';

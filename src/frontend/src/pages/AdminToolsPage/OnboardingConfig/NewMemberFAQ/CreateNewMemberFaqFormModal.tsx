@@ -1,8 +1,6 @@
-import ErrorPage from '../../../ErrorPage';
-import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { useCreateNewMemberFaq } from '../../../../hooks/recruitment.hooks';
-import React from 'react';
+import { FaqPayload, useCreateNewMemberFaq } from '../../../../hooks/recruitment.hooks';
 import FaqFormModal from '../../RecruitmentConfig/FaqFormModal';
+import { useToast } from '../../../../hooks/toasts.hooks';
 
 interface CreateNewMemberFaqFormModalProps {
   open: boolean;
@@ -10,12 +8,21 @@ interface CreateNewMemberFaqFormModalProps {
 }
 
 const CreateNewMemberFaqFormModal = ({ open, handleClose }: CreateNewMemberFaqFormModalProps) => {
-  const { isLoading, isError, error, mutateAsync } = useCreateNewMemberFaq();
+  const { mutateAsync } = useCreateNewMemberFaq();
+  const toast = useToast();
 
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading) return <LoadingIndicator />;
+  const onSubmit = async (data: FaqPayload) => {
+    try {
+      return await mutateAsync(data);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+      throw error;
+    }
+  };
 
-  return <FaqFormModal open={open} handleClose={handleClose} onSubmit={mutateAsync} />;
+  return <FaqFormModal open={open} handleClose={handleClose} onSubmit={onSubmit} />;
 };
 
 export default CreateNewMemberFaqFormModal;

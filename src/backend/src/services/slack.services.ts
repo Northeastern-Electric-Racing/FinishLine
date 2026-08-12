@@ -343,7 +343,8 @@ export default class SlackServices {
         where: {
           userSettings: {
             slackId: userSlackId
-          }
+          },
+          roles: { some: { organizationId: teamJoinRequest.team.organizationId } }
         },
         ...getUserQueryArgs(teamJoinRequest.team.organizationId)
       });
@@ -372,7 +373,7 @@ export default class SlackServices {
       if (error instanceof AccessDeniedException) {
         await respond({
           response_type: 'ephemeral',
-          text: `❌ You're not authorized to approve this request. Only admins, the team head, or team leads can approve.`
+          text: `❌ You're not authorized to approve this request. Only admins or the team head can approve.`
         });
       } else if (error instanceof NotFoundException || error instanceof HttpException) {
         await respond({

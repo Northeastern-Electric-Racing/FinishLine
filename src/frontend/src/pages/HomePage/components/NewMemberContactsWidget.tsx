@@ -1,3 +1,4 @@
+import React from 'react';
 import { Box, Link, List, ListItem, Typography, useTheme } from '@mui/material';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';

@@ -26,6 +26,8 @@ projectRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('iconName')),
   body('required').isBoolean(),
+  body('isOnNewMemberDashboard').isBoolean(),
+  body('isOnOnboardingDashboard').isBoolean(),
   validateInputs,
   ProjectsController.createLinkType
 );
@@ -34,6 +36,8 @@ projectRouter.post(
   nonEmptyString(body('name').optional()),
   nonEmptyString(body('iconName')),
   body('required').isBoolean(),
+  body('isOnNewMemberDashboard').isBoolean(),
+  body('isOnOnboardingDashboard').isBoolean(),
   validateInputs,
   ProjectsController.editLinkType
 );

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Grid } from '@mui/material';
 import NewMemberEventsWidget from './NewMemberEventsWidget';
 import NewMemberUsefulLinksWidget from './NewMemberUsefulLinksWidget';

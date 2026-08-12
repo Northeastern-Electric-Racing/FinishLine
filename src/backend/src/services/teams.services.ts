@@ -541,16 +541,21 @@ export default class TeamsService {
     await TeamsService.validateJoinRequestReviewer(reviewer, team, organization);
 
     const updated = await prisma.$transaction(async (tx) => {
-      const updatedRequest = await tx.team_Join_Request.update({
-        where: { teamJoinRequestId },
+      // Re-check PENDING status atomically as part of the update to avoid a race where
+      // two reviews are submitted concurrently and both pass the earlier status check.
+      const updateResult = await tx.team_Join_Request.updateMany({
+        where: { teamJoinRequestId, status: 'PENDING' },
         data: {
           status: approved ? 'APPROVED' : 'DENIED',
           reviewedByUserId: reviewer.userId,
           dateReviewed: new Date(),
           denialReason: approved ? null : denialReason
-        },
-        ...getTeamJoinRequestQueryArgs(organization.organizationId)
+        }
       });
+
+      if (updateResult.count === 0) {
+        throw new HttpException(400, 'This request has already been reviewed');
+      }
 
       if (approved) {
         await tx.team.update({
@@ -571,7 +576,10 @@ export default class TeamsService {
         }
       }
 
-      return updatedRequest;
+      return tx.team_Join_Request.findUniqueOrThrow({
+        where: { teamJoinRequestId },
+        ...getTeamJoinRequestQueryArgs(organization.organizationId)
+      });
     });
 
     const transformed = teamJoinRequestTransformer(updated);

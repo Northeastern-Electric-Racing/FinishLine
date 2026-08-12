@@ -21,10 +21,10 @@ const FAQsTable = () => {
   const toast = useToast();
 
   const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useRecruitingFaqs();
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     setFaqToDelete(undefined);
     try {
-      deleteFaq(id);
+      await deleteFaq(id);
       toast.success('Faq deleted successfully');
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -33,8 +33,8 @@ const FAQsTable = () => {
     }
   };
 
-  if (!faqs || faqsIsLoading) return <LoadingIndicator />;
   if (faqsIsError) return <ErrorPage message={faqsError.message} />;
+  if (!faqs || faqsIsLoading) return <LoadingIndicator />;
 
   const FAQsRows = faqs.map((faq: FrequentlyAskedQuestion, index: number) => (
     <TableRow key={faq.faqId}>

@@ -36,6 +36,7 @@ teamsRouter.post('/:teamId/join-request', TeamsController.createTeamJoinRequest)
 teamsRouter.post(
   '/join-request/:teamJoinRequestId/review',
   body('approved').isBoolean(),
+  body('denialReason').optional().isString(),
   validateInputs,
   TeamsController.reviewTeamJoinRequest
 );

@@ -35,13 +35,14 @@ const GuestOrganizationInfo = () => {
     isError: usefulLinksIsError,
     error: usefulLinksError
   } = useAllUsefulLinks();
-  const { data: linkTypes, isLoading: linkTypesIsLoading } = useAllLinkTypes();
+  const { data: linkTypes, isLoading: linkTypesIsLoading, isError: linkTypesIsError, error: linkTypesError } = useAllLinkTypes();
+
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
+  if (linkTypesIsError) return <ErrorPage message={linkTypesError?.message} />;
 
   if (isLoading || !organization) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
-
   if (!links || usefulLinksIsLoading || !linkTypes || linkTypesIsLoading) return <LoadingIndicator />;
-  if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
 
   const usefulLinks = links?.filter((link) => link.linkType.isOnGuestHomePage);
 

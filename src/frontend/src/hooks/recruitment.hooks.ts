@@ -101,7 +101,7 @@ export const useEditMilestone = (id: string) => {
 
 export const useDeleteMilestone = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, string>(
     ['milestones', 'delete'],
     async (milestoneId: string) => {
       const { data } = await deleteMilestone(milestoneId);
@@ -186,7 +186,7 @@ export const useEditFaq = (id: string) => {
 
 export const useDeleteFAQ = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, string>(
     ['faqs', 'delete'],
     async (faqId: string) => {
       const { data } = await deleteFaq(faqId);
@@ -209,7 +209,7 @@ export const useAllGuestDefinitions = () => {
 
 export const useDeleteGuestDefinition = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, string>(
     ['guestdefinitions', 'delete'],
     async (definitionId: string) => {
       const { data } = await deleteGuestDefinition(definitionId);

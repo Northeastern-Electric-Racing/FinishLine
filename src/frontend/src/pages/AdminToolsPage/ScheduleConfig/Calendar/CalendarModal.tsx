@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box, Checkbox, FormControl, FormControlLabel, FormHelperText, Typography } from '@mui/material';
 import NERFormModal from '../../../../components/NERFormModal';
 import ReactHookTextField from '../../../../components/ReactHookTextField';
@@ -26,7 +26,7 @@ const schema = yup.object({
 export interface BaseCalendarModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: CalendarFormValues) => Promise<Calendar | unknown> | Calendar | unknown;
+  onSubmit: (data: CalendarFormValues) => Promise<Calendar> | Calendar;
   initialValues?: Partial<CalendarFormValues>;
 }
 
@@ -45,7 +45,7 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
     defaultValues: { name: '', description: '', colorHexCode: '', isNewMemberCalendar: false }
   });
 
-  const frozenValuesRef = React.useRef<CalendarFormValues>({
+  const frozenValuesRef = useRef<CalendarFormValues>({
     name: '',
     description: '',
     colorHexCode: '',

@@ -128,11 +128,11 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [openEditCalendar, setOpenEditCalendar] = useState(false);
   const [editingCalendar, setEditingCalendar] = useState<Calendar | undefined>(undefined);
 
-  if (shopsLoading || machinesLoading || eventTypesLoading || calendarsLoading) return <LoadingIndicator />;
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
   if (machinesError) return <ErrorPage message={(machinesErrorMsg as Error).message} />;
   if (eventTypesError) return <ErrorPage message={(eventTypesErrorMsg as Error).message} />;
   if (calendarsError) return <ErrorPage message={(calendarsErrorMsg as Error).message} />;
+  if (shopsLoading || machinesLoading || eventTypesLoading || calendarsLoading) return <LoadingIndicator />;
 
   return (
     <Box padding="5px">

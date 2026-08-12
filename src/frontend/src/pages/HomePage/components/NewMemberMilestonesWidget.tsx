@@ -1,3 +1,4 @@
+import React from 'react';
 import { Grid, Typography, useTheme } from '@mui/material';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';

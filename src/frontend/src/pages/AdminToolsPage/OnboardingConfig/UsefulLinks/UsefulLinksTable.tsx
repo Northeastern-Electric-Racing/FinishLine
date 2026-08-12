@@ -25,6 +25,7 @@ import CreateUsefulLinkModal from './CreateUsefulLinkModal';
 import EditUsefulLinkModal from './EditUsefulLinkModal';
 import { linkToLinkCreateArgs } from '../../../../utils/link.utils';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { useToast } from '../../../../hooks/toasts.hooks';
 
 interface UsefulLinksTableProps {
   isOnGuestHomePage?: boolean;
@@ -41,19 +42,33 @@ const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboa
     error: usefulLinksError
   } = useAllUsefulLinks();
   const { mutateAsync } = useSetUsefulLinks();
-  const { data: linkTypesBeforeFilter, isLoading: linkTypesIsLoading } = useAllLinkTypes();
+  const {
+    data: linkTypesBeforeFilter,
+    isLoading: linkTypesIsLoading,
+    isError: linkTypesIsError,
+    error: linkTypesError
+  } = useAllLinkTypes();
+  const toast = useToast();
 
   const [linkToDelete, setLinkToDelete] = useState<Link>();
   const [editingLink, setEditingLink] = useState<Link>();
   const [showCreateModel, setShowCreateModel] = useState<boolean>(false);
 
-  if (!links || usefulLinksIsLoading || !linkTypesBeforeFilter || linkTypesIsLoading) return <LoadingIndicator />;
   if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
+  if (linkTypesIsError) return <ErrorPage message={linkTypesError?.message} />;
+  if (!links || usefulLinksIsLoading || !linkTypesBeforeFilter || linkTypesIsLoading) return <LoadingIndicator />;
 
-  const handleDelete = (allLinks: Link[], linkToDelete: Link) => {
+  const handleDelete = async (allLinks: Link[], linkToDelete: Link) => {
     const updatedLinks = allLinks.filter((link) => link.linkId !== linkToDelete.linkId);
-    mutateAsync(linkToLinkCreateArgs(updatedLinks));
     setLinkToDelete(undefined);
+    try {
+      await mutateAsync(linkToLinkCreateArgs(updatedLinks));
+      toast.success('Link deleted successfully');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
   };
 
   const matchesDashboard = (linkType?: {

@@ -2,11 +2,13 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Box, TextField, Typography } from '@mui/material';
 import { isValidSlackUserIdFormat } from 'shared';
 import NERModal from '../../../components/NERModal';
 import ExternalLink from '../../../components/ExternalLink';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser, useSingleUserSettings, useUpdateUserSettings } from '../../../hooks/users.hooks';
 
@@ -19,7 +21,12 @@ interface SetSlackIdModalProps {
 const SetSlackIdModal: React.FC<SetSlackIdModalProps> = ({ open, onHide, onSuccess }) => {
   const toast = useToast();
   const user = useCurrentUser();
-  const { data: userSettings } = useSingleUserSettings(user.userId);
+  const {
+    data: userSettings,
+    isLoading: userSettingsIsLoading,
+    isError: userSettingsIsError,
+    error: userSettingsError
+  } = useSingleUserSettings(user.userId);
   const { mutateAsync, isLoading } = useUpdateUserSettings();
   const [slackId, setSlackId] = useState('');
   const [formatError, setFormatError] = useState(false);
@@ -40,6 +47,9 @@ const SetSlackIdModal: React.FC<SetSlackIdModalProps> = ({ open, onHide, onSucce
       }
     }
   };
+
+  if (userSettingsIsError) return <ErrorPage message={userSettingsError?.message} />;
+  if (userSettingsIsLoading || !userSettings) return <LoadingIndicator />;
 
   return (
     <NERModal

@@ -49,7 +49,7 @@ export const useAllTeams = () => {
 };
 
 export const useAllArchivedTeams = () => {
-  return useQuery<TeamPreview[], Error>(['teams', true], async () => {
+  return useQuery<TeamPreview[], Error>(['teams', 'archived'], async () => {
     const { data } = await getAllArchivedTeams();
     return data;
   });
@@ -63,7 +63,7 @@ export const useSingleTeam = (teamId: string) => {
 };
 
 export const useGetUsersTeams = () => {
-  return useQuery<Team[], Error>(['teams', true], async () => {
+  return useQuery<Team[], Error>(['teams', 'mine'], async () => {
     const { data } = await getUsersTeams();
     return data;
   });

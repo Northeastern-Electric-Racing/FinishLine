@@ -8,20 +8,26 @@ import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
 interface SlackIdGateContextProps {
   hasSlackId: boolean;
   isLoading: boolean;
+  isError: boolean;
+  error: Error | null;
 }
 
 const SlackIdGateContext = createContext<SlackIdGateContextProps | undefined>(undefined);
 
 /**
  * Tracks whether the current user has a Slack ID set, without rendering anything itself --
- * consumers decide what to do (e.g. show a popup) once they know the answer.
+ * consumers decide what to do (e.g. show a popup) once they know the answer. On error, hasSlackId
+ * is NOT assumed to be false -- consumers must check isError themselves rather than treating an
+ * error as "no Slack ID".
  */
 export const SlackIdGateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const user = useCurrentUser();
-  const { data: userSettings, isLoading } = useSingleUserSettings(user.userId);
+  const { data: userSettings, isLoading, isError, error } = useSingleUserSettings(user.userId);
   const hasSlackId = !!userSettings?.slackId;
 
-  return <SlackIdGateContext.Provider value={{ hasSlackId, isLoading }}>{children}</SlackIdGateContext.Provider>;
+  return (
+    <SlackIdGateContext.Provider value={{ hasSlackId, isLoading, isError, error }}>{children}</SlackIdGateContext.Provider>
+  );
 };
 
 export const useSlackIdGate = () => {

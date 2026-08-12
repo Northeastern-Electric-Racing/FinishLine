@@ -57,10 +57,10 @@ const MilestoneTable = ({
   if (milestonesIsError) return <ErrorPage message={milestonesError.message} />;
   if (milestonesIsLoading || !milestones) return <LoadingIndicator />;
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     setMilestoneToDelete(undefined);
     try {
-      deleteMilestone(id);
+      await deleteMilestone(id);
       toast.success('Milestone deleted successfully');
     } catch (e: unknown) {
       if (e instanceof Error) {

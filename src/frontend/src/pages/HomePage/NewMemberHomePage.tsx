@@ -48,7 +48,7 @@ const NewMemberHomePage = () => {
           </Typography>
         </Grid>
         <Grid item xs={12} md={3} display="flex" justifyContent="flex-end" paddingRight={3}>
-          <Box component="img" src="/NER-Logo-App-Icon.png" alt="NER Logo" sx={{ height: 80, width: 'auto' }} />
+          <Box component="img" src="/NER-Logo-App-Icon.png" alt="NER Logo" sx={{ height: '5rem', width: 'auto' }} />
         </Grid>
       </Grid>
       <Grid container display={'flex'}>

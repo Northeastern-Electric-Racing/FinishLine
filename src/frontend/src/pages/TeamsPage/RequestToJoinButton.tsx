@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import React from 'react';
 import { Chip, Tooltip } from '@mui/material';
 import { isGuest, TeamPreview } from 'shared';
 import { NERButton } from '../../components/NERButton';
@@ -10,6 +11,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { useCreateTeamJoinRequest, useMyTeamJoinRequests } from '../../hooks/teams.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 interface RequestToJoinButtonProps {
   team: TeamPreview;
@@ -18,7 +20,12 @@ interface RequestToJoinButtonProps {
 const RequestToJoinButton: React.FC<RequestToJoinButtonProps> = ({ team }) => {
   const user = useCurrentUser();
   const toast = useToast();
-  const { data: joinRequests, isLoading: joinRequestsIsLoading } = useMyTeamJoinRequests();
+  const {
+    data: joinRequests,
+    isLoading: joinRequestsIsLoading,
+    isError: joinRequestsIsError,
+    error: joinRequestsError
+  } = useMyTeamJoinRequests();
   const { mutateAsync, isLoading: createIsLoading } = useCreateTeamJoinRequest(team.teamId);
 
   const isAlreadyOnTeam =
@@ -33,6 +40,7 @@ const RequestToJoinButton: React.FC<RequestToJoinButtonProps> = ({ team }) => {
 
   if (isAlreadyOnTeam || team.dateArchived || isPreOnboardingGuest) return null;
 
+  if (joinRequestsIsError) return <ErrorPage message={joinRequestsError?.message} />;
   if (joinRequestsIsLoading || !joinRequests) return <LoadingIndicator />;
 
   const latestRequest = joinRequests
