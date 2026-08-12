@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "Rule_Status" AS ENUM ('PENDING', 'PASS', 'FAIL');
+
 -- CreateTable
 CREATE TABLE "Ruleset_Type" (
     "rulesetTypeId" TEXT NOT NULL,
@@ -36,9 +39,9 @@ CREATE TABLE "Rule" (
     "imageFileIds" TEXT[],
     "rulesetId" TEXT NOT NULL,
     "parentRuleId" TEXT,
-    "isComplete" BOOLEAN NOT NULL DEFAULT false,
-    "completedByUserId" TEXT,
-    "completedInProjectId" TEXT,
+    "status" "Rule_Status" NOT NULL DEFAULT 'PENDING',
+    "statusUpdatedByUserId" TEXT,
+    "statusUpdatedAt" TIMESTAMP(3),
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateUpdated" TIMESTAMP(3),
     "dateDeleted" TIMESTAMP(3),
@@ -54,6 +57,9 @@ CREATE TABLE "Project_Rule" (
     "projectRuleId" TEXT NOT NULL,
     "ruleId" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
+    "status" "Rule_Status" NOT NULL DEFAULT 'PENDING',
+    "statusUpdatedByUserId" TEXT,
+    "statusUpdatedAt" TIMESTAMP(3),
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdByUserId" TEXT NOT NULL,
     "dateDeleted" TIMESTAMP(3),
@@ -124,10 +130,7 @@ ALTER TABLE "Rule" ADD CONSTRAINT "Rule_rulesetId_fkey" FOREIGN KEY ("rulesetId"
 ALTER TABLE "Rule" ADD CONSTRAINT "Rule_parentRuleId_fkey" FOREIGN KEY ("parentRuleId") REFERENCES "Rule"("ruleId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Rule" ADD CONSTRAINT "Rule_completedByUserId_fkey" FOREIGN KEY ("completedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Rule" ADD CONSTRAINT "Rule_completedInProjectId_fkey" FOREIGN KEY ("completedInProjectId") REFERENCES "Project"("projectId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Rule" ADD CONSTRAINT "Rule_statusUpdatedByUserId_fkey" FOREIGN KEY ("statusUpdatedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Rule" ADD CONSTRAINT "Rule_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -143,6 +146,9 @@ ALTER TABLE "Project_Rule" ADD CONSTRAINT "Project_Rule_ruleId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "Project_Rule" ADD CONSTRAINT "Project_Rule_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("projectId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Project_Rule" ADD CONSTRAINT "Project_Rule_statusUpdatedByUserId_fkey" FOREIGN KEY ("statusUpdatedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Project_Rule" ADD CONSTRAINT "Project_Rule_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;

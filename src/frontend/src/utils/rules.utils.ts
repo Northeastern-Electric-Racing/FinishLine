@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Rule } from 'shared';
+import { Rule, RuleStatus } from 'shared';
 
 /**
  * Counts the total number of rules that will be deleted when deleting a rule, including
@@ -38,22 +38,33 @@ export const getDescendantLeafRules = (rule: Rule, allRules: Rule[]): Rule[] => 
 };
 
 /**
- * Whether a rule is complete. A leaf uses its own completion; a parent is
- * complete only if all of its descendant leaf rules are complete.
+ * A rule's status, rolled up from its descendant leaves. A leaf uses its own status; a parent
+ * rolls up with priority Fail > Pending > Pass: Fail if any leaf has failed, else Pending if any
+ * leaf is still pending, else Pass only once every leaf has passed.
  * @param rule - The rule to check
  * @param allRules - All rules in scope
- * @returns True if the rule (or all its leaves) are complete
+ * @returns The status of the rule (or its status computed by its leaves)
  */
-export const isRuleComplete = (rule: Rule, allRules: Rule[]): boolean => {
+export const getRuleStatus = (rule: Rule, allRules: Rule[]): RuleStatus => {
   const leafRules = getDescendantLeafRules(rule, allRules);
-  return leafRules.every((leafRule) => leafRule.isComplete);
+  if (leafRules.some((leafRule) => leafRule.status === RuleStatus.FAIL)) return RuleStatus.FAIL;
+  if (leafRules.some((leafRule) => leafRule.status === RuleStatus.PENDING)) return RuleStatus.PENDING;
+  return RuleStatus.PASS;
 };
 
 /**
- * Status chip label and color for a completion state.
+ * Status chip label and color for a rule status.
  */
-export const getRuleStatusConfig = (isComplete: boolean): { label: string; color: string } => {
-  return isComplete ? { label: 'Complete', color: '#4caf50' } : { label: 'Incomplete', color: '#f44336' };
+export const getRuleStatusConfig = (status: RuleStatus): { label: string; color: string } => {
+  switch (status) {
+    case RuleStatus.PASS:
+      return { label: 'Pass', color: '#4caf50' };
+    case RuleStatus.FAIL:
+      return { label: 'Fail', color: '#f44336' };
+    case RuleStatus.PENDING:
+    default:
+      return { label: 'Pending', color: '#9e9e9e' };
+  }
 };
 
 /**
@@ -202,5 +213,5 @@ export const makeSectionRow = (ruleId: string, ruleCode: string, subRuleIds: str
   parentRule: undefined,
   subRuleIds,
   referencedRules: [],
-  isComplete: false
+  status: RuleStatus.PENDING
 });

@@ -32,6 +32,15 @@ export const getRulePreviewQueryArgs = () =>
       projects: {
         where: { dateDeleted: null },
         select: {
+          projectRuleId: true,
+          status: true,
+          statusUpdatedAt: true,
+          statusUpdatedBy: {
+            select: {
+              firstName: true,
+              lastName: true
+            }
+          },
           project: {
             select: {
               projectId: true,
@@ -49,20 +58,10 @@ export const getRulePreviewQueryArgs = () =>
           }
         }
       },
-      completedBy: {
+      statusUpdatedBy: {
         select: {
           firstName: true,
           lastName: true
-        }
-      },
-      completedInProject: {
-        select: {
-          projectId: true,
-          wbsElement: {
-            select: {
-              name: true
-            }
-          }
         }
       }
     }
@@ -73,7 +72,13 @@ export type ProjectRuleQueryArgs = ReturnType<typeof getProjectRuleQueryArgs>;
 export const getProjectRuleQueryArgs = () =>
   Prisma.validator<Prisma.Project_RuleDefaultArgs>()({
     include: {
-      rule: getRulePreviewQueryArgs()
+      rule: getRulePreviewQueryArgs(),
+      statusUpdatedBy: {
+        select: {
+          firstName: true,
+          lastName: true
+        }
+      }
     }
   });
 

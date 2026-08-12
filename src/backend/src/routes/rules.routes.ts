@@ -2,7 +2,7 @@ import express from 'express';
 import RulesController from '../controllers/rules.controllers.js';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 import { body, query } from 'express-validator';
-import { MAX_FILE_SIZE } from 'shared';
+import { MAX_FILE_SIZE, RuleStatus } from 'shared';
 import multer, { memoryStorage } from 'multer';
 
 const rulesRouter = express.Router();
@@ -70,11 +70,16 @@ rulesRouter.post('/projectRule/:projectRuleId/delete', RulesController.deletePro
 
 rulesRouter.get('/rulesets/:rulesetTypeId', RulesController.getRulesetsByRulesetType);
 rulesRouter.post(
-  '/rule/:ruleId/setCompletion',
-  body('isComplete').isBoolean(),
-  body('projectId').optional().isString(),
+  '/rule/:ruleId/setStatus',
+  body('status').isIn(Object.values(RuleStatus)),
   validateInputs,
-  RulesController.setRuleCompletion
+  RulesController.setRuleStatus
+);
+rulesRouter.post(
+  '/projectRule/:projectRuleId/setStatus',
+  body('status').isIn(Object.values(RuleStatus)),
+  validateInputs,
+  RulesController.setProjectRuleStatus
 );
 
 rulesRouter.post(

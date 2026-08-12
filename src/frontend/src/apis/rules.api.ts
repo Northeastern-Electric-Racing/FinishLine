@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { ProjectRule, Rule as SharedRule, RulesetType, Ruleset } from 'shared';
+import { ProjectRule, Rule as SharedRule, RulesetType, Ruleset, RuleStatus } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateRulesetPayload, ParseRulesetPayload, CreateRulePayload } from '../hooks/rules.hooks';
 import {
@@ -117,13 +117,21 @@ export const deleteProjectRule = (projectRuleId: string) => {
 };
 
 /**
- * Sets a rule's completion. Completion is global to the rule.
+ * Sets a rule's general-view status. This status is independent of any project.
  * @param ruleId the rule to update
- * @param isComplete whether the rule is complete
- * @param projectId the project the rule was completed from (optional)
+ * @param status the new status of the rule
  */
-export const setRuleCompletion = (ruleId: string, isComplete: boolean, projectId?: string) => {
-  return axios.post<SharedRule>(apiUrls.rulesSetRuleCompletion(ruleId), { isComplete, projectId });
+export const setRuleStatus = (ruleId: string, status: RuleStatus) => {
+  return axios.post<SharedRule>(apiUrls.rulesSetRuleStatus(ruleId), { status });
+};
+
+/**
+ * Sets a rule's status within a single project. This status is local to that project.
+ * @param projectRuleId the project rule to update
+ * @param status the new status of the rule in this project
+ */
+export const setProjectRuleStatus = (projectRuleId: string, status: RuleStatus) => {
+  return axios.post<ProjectRule>(apiUrls.rulesSetProjectRuleStatus(projectRuleId), { status });
 };
 
 /**

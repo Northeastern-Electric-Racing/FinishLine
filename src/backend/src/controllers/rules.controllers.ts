@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services.js';
-import { ProjectRule, Rule, Ruleset } from 'shared';
+import { ProjectRule, Rule, Ruleset, RuleStatus } from 'shared';
 import { HttpException } from '../utils/errors.utils.js';
 
 export default class RulesController {
@@ -185,20 +185,32 @@ export default class RulesController {
     }
   }
 
-  static async setRuleCompletion(req: Request, res: Response, next: NextFunction) {
+  static async setRuleStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleId } = req.params as Record<string, string>;
-      const { isComplete, projectId } = req.body;
+      const { status } = req.body as { status: RuleStatus };
 
-      const rule: Rule = await RulesService.setRuleCompletion(
-        req.currentUser,
-        req.organization,
-        ruleId,
-        isComplete,
-        projectId
-      );
+      const rule: Rule = await RulesService.setRuleStatus(req.currentUser, req.organization, ruleId, status);
 
       res.status(200).json(rule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setProjectRuleStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectRuleId } = req.params as Record<string, string>;
+      const { status } = req.body as { status: RuleStatus };
+
+      const projectRule: ProjectRule = await RulesService.setProjectRuleStatus(
+        req.currentUser,
+        req.organization,
+        projectRuleId,
+        status
+      );
+
+      res.status(200).json(projectRule);
     } catch (error: unknown) {
       next(error);
     }

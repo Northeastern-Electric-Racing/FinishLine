@@ -29,6 +29,7 @@ import {
 } from '../../src/utils/errors.utils';
 import TeamsService from '../../src/services/teams.services';
 import ProjectsService from '../../src/services/projects.services';
+import { RuleStatus } from 'shared';
 
 describe('Create Rules Tests', () => {
   let orgId: string;
@@ -1124,7 +1125,7 @@ describe('Rule Tests', () => {
       expect(projectRule.rule.ruleId).toBe(topLevelRule.ruleId);
       expect(projectRule.rule.ruleCode).toBe(topLevelRule.ruleCode);
       expect(projectRule.projectId).toBe(project.projectId);
-      expect(projectRule.rule.isComplete).toBe(false);
+      expect(projectRule.status).toBe(RuleStatus.PENDING);
     });
     it('Creates a project rule successfully for a leaf rule', async () => {
       const car = await createUniqueCar(orgId);
@@ -1140,7 +1141,7 @@ describe('Rule Tests', () => {
       expect(projectRule.rule.ruleId).toBe(leafRule1.ruleId);
       expect(projectRule.rule.ruleCode).toBe(leafRule1.ruleCode);
       expect(projectRule.projectId).toBe(project.projectId);
-      expect(projectRule.rule.isComplete).toBe(false);
+      expect(projectRule.status).toBe(RuleStatus.PENDING);
     });
     it('Create project rule fails if user does not have permission', async () => {
       const car = await createUniqueCar(orgId);
@@ -1201,57 +1202,90 @@ describe('Rule Tests', () => {
       );
     });
 
-    // Setting Rule Completion
-    it('Marks a rule complete successfully and records who/where', async () => {
+    // Setting Rule Status (general view)
+    it('Marks a rule Pass in the general view and records who updated it', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
 
-      const updatedRule = await RulesService.setRuleCompletion(
-        admin,
-        organization,
-        topLevelRule.ruleId,
-        true,
-        project.projectId
-      );
+      const updatedRule = await RulesService.setRuleStatus(admin, organization, topLevelRule.ruleId, RuleStatus.PASS);
 
       expect(updatedRule.ruleId).toBe(topLevelRule.ruleId);
-      expect(updatedRule.isComplete).toBe(true);
-      expect(updatedRule.completedBy?.firstName).toBe(admin.firstName);
-      expect(updatedRule.completedBy?.lastName).toBe(admin.lastName);
-      expect(updatedRule.completedInProject?.projectId).toBe(project.projectId);
+      expect(updatedRule.status).toBe(RuleStatus.PASS);
+      expect(updatedRule.statusUpdatedBy?.firstName).toBe(admin.firstName);
+      expect(updatedRule.statusUpdatedBy?.lastName).toBe(admin.lastName);
+      expect(updatedRule.statusUpdatedAt).toBeInstanceOf(Date);
     });
 
-    it('Marks a rule complete without a project (general view)', async () => {
+    it('Marks a rule back to Pending in the general view and clears who/when', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
 
-      const updatedRule = await RulesService.setRuleCompletion(admin, organization, topLevelRule.ruleId, true);
+      await RulesService.setRuleStatus(admin, organization, topLevelRule.ruleId, RuleStatus.FAIL);
+      const updatedRule = await RulesService.setRuleStatus(admin, organization, topLevelRule.ruleId, RuleStatus.PENDING);
 
-      expect(updatedRule.isComplete).toBe(true);
-      expect(updatedRule.completedBy?.firstName).toBe(admin.firstName);
-      expect(updatedRule.completedInProject).toBeUndefined();
+      expect(updatedRule.status).toBe(RuleStatus.PENDING);
+      expect(updatedRule.statusUpdatedBy).toBeUndefined();
+      expect(updatedRule.statusUpdatedAt).toBeUndefined();
     });
 
-    it('Marks a rule incomplete and clears completion info', async () => {
-      const car = await createUniqueCar(orgId);
-      const { topLevelRule } = await setupRules(car);
-
-      await RulesService.setRuleCompletion(admin, organization, topLevelRule.ruleId, true, project.projectId);
-      const updatedRule = await RulesService.setRuleCompletion(admin, organization, topLevelRule.ruleId, false);
-
-      expect(updatedRule.isComplete).toBe(false);
-      expect(updatedRule.completedBy).toBeUndefined();
-      expect(updatedRule.completedInProject).toBeUndefined();
-    });
-
-    it('Set rule completion fails if user does not have permission', async () => {
+    it('Set rule status fails if user does not have permission', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
 
       await expect(
+        async () => await RulesService.setRuleStatus(nonLeadership, organization, topLevelRule.ruleId, RuleStatus.PASS)
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule status'));
+    });
+
+    // Setting Project Rule Status (per-project view)
+    it('Marks a rule Pass within a project and records who updated it', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+
+      const updatedProjectRule = await RulesService.setProjectRuleStatus(
+        admin,
+        organization,
+        projectRule.projectRuleId,
+        RuleStatus.PASS
+      );
+
+      expect(updatedProjectRule.projectRuleId).toBe(projectRule.projectRuleId);
+      expect(updatedProjectRule.status).toBe(RuleStatus.PASS);
+      expect(updatedProjectRule.statusUpdatedBy?.firstName).toBe(admin.firstName);
+      expect(updatedProjectRule.statusUpdatedBy?.lastName).toBe(admin.lastName);
+      expect(updatedProjectRule.statusUpdatedAt).toBeInstanceOf(Date);
+    });
+
+    it('Set project rule status fails if user does not have permission', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+
+      await expect(
         async () =>
-          await RulesService.setRuleCompletion(nonLeadership, organization, topLevelRule.ruleId, true, project.projectId)
-      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule completion'));
+          await RulesService.setProjectRuleStatus(nonLeadership, organization, projectRule.projectRuleId, RuleStatus.PASS)
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule status'));
+    });
+
+    it('A rule status in one project is independent of its general-view status and its status in other projects', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule, ruleset1 } = await setupRules(car);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      const project2 = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      const projectRule1 = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+      const projectRule2 = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project2.projectId);
+
+      await RulesService.setProjectRuleStatus(admin, organization, projectRule1.projectRuleId, RuleStatus.PASS);
+      await RulesService.setRuleStatus(admin, organization, topLevelRule.ruleId, RuleStatus.FAIL);
+
+      const projectRules2 = await RulesService.getProjectRules(ruleset1.rulesetId, project2.projectId, organization);
+      const rule2Entry = projectRules2.find((pr) => pr.projectRuleId === projectRule2.projectRuleId);
+
+      expect(rule2Entry?.status).toBe(RuleStatus.PENDING);
+      expect(rule2Entry?.rule.status).toBe(RuleStatus.FAIL);
     });
   });
 

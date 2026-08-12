@@ -3,6 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+export enum RuleStatus {
+  PENDING = 'PENDING',
+  PASS = 'PASS',
+  FAIL = 'FAIL'
+}
+
 export interface RulesetType {
   rulesetTypeId: string;
   name: string;
@@ -47,19 +53,32 @@ export interface Rule {
     projectId: string;
     projectName: string;
     teamIds: string[];
+    projectRuleId: string;
+    status: RuleStatus;
+    statusUpdatedBy?: {
+      firstName: string;
+      lastName: string;
+    };
+    statusUpdatedAt?: Date;
   }>;
-  isComplete: boolean;
-  completedBy?: {
+  status: RuleStatus;
+  statusUpdatedBy?: {
     firstName: string;
     lastName: string;
   };
-  completedInProject?: { projectId: string; projectName: string };
+  statusUpdatedAt?: Date;
 }
 
 export interface ProjectRule {
   projectRuleId: string;
   rule: Rule;
   projectId: string;
+  status: RuleStatus;
+  statusUpdatedBy?: {
+    firstName: string;
+    lastName: string;
+  };
+  statusUpdatedAt?: Date;
 }
 
 export interface RulesetPreview {

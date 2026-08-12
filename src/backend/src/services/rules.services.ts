@@ -8,7 +8,8 @@ import {
   User,
   Rule as SharedRule,
   isHead,
-  Ruleset
+  Ruleset,
+  RuleStatus
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -880,24 +881,22 @@ export default class RulesService {
   }
 
   /**
-   * Sets the completion of a rule. Completion is global to the rule, so marking it complete
-   * (or incomplete) is reflected everywhere the rule appears.
-   * @param submitter the user updating the completion
+   * Sets a rule's general-view status. This status is independent of any project.
+   * It is unaffected by the status of the rule in any project it's assigned to.
+   * @param submitter the user updating the status
    * @param organization the organization of the rule
    * @param ruleId the id of the rule to update
-   * @param isComplete whether the rule is complete or incomplete
-   * @param projectId the project the rule was completed from (optional - omitted if updated in general view)
-   * @returns the rule with updated completion
+   * @param status the new status of the rule
+   * @returns the rule with updated status
    */
-  static async setRuleCompletion(
+  static async setRuleStatus(
     submitter: User,
     organization: Organization,
     ruleId: string,
-    isComplete: boolean,
-    projectId?: string
+    status: RuleStatus
   ): Promise<SharedRule> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
-      throw new AccessDeniedException('You do not have permissions to update rule completion');
+      throw new AccessDeniedException('You do not have permissions to update rule status');
     }
 
     const rule = await prisma.rule.findUnique({
@@ -919,13 +918,68 @@ export default class RulesService {
 
     const updatedRule = await prisma.rule.update({
       where: { ruleId },
-      data: isComplete
-        ? { isComplete: true, completedByUserId: submitter.userId, completedInProjectId: projectId ?? null }
-        : { isComplete: false, completedByUserId: null, completedInProjectId: null },
+      data:
+        status === RuleStatus.PENDING
+          ? { status, statusUpdatedByUserId: null, statusUpdatedAt: null }
+          : { status, statusUpdatedByUserId: submitter.userId, statusUpdatedAt: new Date() },
       ...getRulePreviewQueryArgs()
     });
 
     return ruleTransformer(updatedRule);
+  }
+
+  /**
+   * Sets a rule's status within a single project. This status is local to that project.
+   * It does not affect the rule's general-view status, or its status in any other project.
+   * @param submitter the user updating the status
+   * @param organization the organization of the project rule
+   * @param projectRuleId the id of the project rule to update
+   * @param status the new status of the rule in this project
+   * @returns the project rule with updated status
+   */
+  static async setProjectRuleStatus(
+    submitter: User,
+    organization: Organization,
+    projectRuleId: string,
+    status: RuleStatus
+  ): Promise<ProjectRule> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('You do not have permissions to update rule status');
+    }
+
+    const projectRule = await prisma.project_Rule.findUnique({
+      where: { projectRuleId },
+      include: {
+        project: { include: { wbsElement: true } },
+        rule: { include: { ruleset: { include: { car: { include: { wbsElement: true } } } } } }
+      }
+    });
+
+    if (!projectRule) {
+      throw new NotFoundException('Project Rule', projectRuleId);
+    }
+
+    if (projectRule.dateDeleted) {
+      throw new DeletedException('Project Rule', projectRuleId);
+    }
+
+    if (
+      projectRule.project.wbsElement.organizationId !== organization.organizationId ||
+      projectRule.rule.ruleset.car.wbsElement.organizationId !== organization.organizationId
+    ) {
+      throw new InvalidOrganizationException('Project Rule');
+    }
+
+    const updatedProjectRule = await prisma.project_Rule.update({
+      where: { projectRuleId },
+      data:
+        status === RuleStatus.PENDING
+          ? { status, statusUpdatedByUserId: null, statusUpdatedAt: null }
+          : { status, statusUpdatedByUserId: submitter.userId, statusUpdatedAt: new Date() },
+      ...getProjectRuleQueryArgs()
+    });
+
+    return projectRuleTransformer(updatedProjectRule);
   }
 
   /**

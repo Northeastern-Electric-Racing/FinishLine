@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { ProjectRule, Rule as SharedRule, Ruleset, RulesetType } from 'shared';
+import { ProjectRule, Rule as SharedRule, Ruleset, RulesetType, RuleStatus } from 'shared';
 import {
   createRulesetType,
   getAllRulesetTypes,
@@ -13,7 +13,8 @@ import {
   getUnassignedRulesForRuleset,
   createProjectRule,
   deleteProjectRule,
-  setRuleCompletion,
+  setRuleStatus,
+  setProjectRuleStatus,
   getChildRules,
   getTopLevelRules,
   toggleRuleTeam,
@@ -350,14 +351,33 @@ export const useDeleteProjectRule = (rulesetId: string, projectId: string) => {
 };
 
 /**
- * Hook to set a rule's completion. Completion is global to the rule.
+ * Hook to set a rule's general-view status. This status is independent of any project.
  */
-export const useSetRuleCompletion = (rulesetId: string, projectId: string) => {
+export const useSetRuleStatus = (rulesetId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<SharedRule, Error, { ruleId: string; isComplete: boolean; projectId?: string }>(
-    ['rules', 'setCompletion'],
-    async ({ ruleId, isComplete, projectId: pId }) => {
-      const { data } = await setRuleCompletion(ruleId, isComplete, pId);
+  return useMutation<SharedRule, Error, { ruleId: string; status: RuleStatus }>(
+    ['rules', 'setStatus'],
+    async ({ ruleId, status }) => {
+      const { data } = await setRuleStatus(ruleId, status);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to set a rule's status within a single project. This status is local to that project.
+ */
+export const useSetProjectRuleStatus = (rulesetId: string, projectId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ProjectRule, Error, { projectRuleId: string; status: RuleStatus }>(
+    ['rules', 'setProjectRuleStatus'],
+    async ({ projectRuleId, status }) => {
+      const { data } = await setProjectRuleStatus(projectRuleId, status);
       return data;
     },
     {

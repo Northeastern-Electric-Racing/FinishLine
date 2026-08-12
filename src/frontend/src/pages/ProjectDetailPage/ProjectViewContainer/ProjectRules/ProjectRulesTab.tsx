@@ -19,7 +19,7 @@ import {
   IconButton,
   Tooltip
 } from '@mui/material';
-import { Project, ProjectRule, Rule } from 'shared';
+import { Project, ProjectRule, Rule, RuleStatus } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
@@ -31,7 +31,7 @@ import {
   useAllRulesetTypes,
   useActiveRuleset,
   useProjectRules,
-  useSetRuleCompletion,
+  useSetProjectRuleStatus,
   useCreateProjectRule
 } from '../../../../hooks/rules.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
@@ -77,7 +77,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   } = useProjectRules(activeRuleset?.rulesetId || '', project.id);
 
   // Mutations
-  const { mutateAsync: setCompletionMutation, isLoading: isUpdatingStatus } = useSetRuleCompletion(
+  const { mutateAsync: setStatusMutation, isLoading: isUpdatingStatus } = useSetProjectRuleStatus(
     activeRuleset?.rulesetId || '',
     project.id
   );
@@ -88,11 +88,13 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const teamId = project.teams[0]?.teamId || '';
   const teamNames = project.teams.map((team) => team.teamName);
 
-  // Convert project rules to rules for display
+  // Convert project rules to rules for display, merging in each rule's local status for this project
   // Sorted by rule code so both top-level rows and their children render in stable numeric order
   const projectRuleList = useMemo(() => {
     if (!projectRules) return [];
-    return projectRules.map((pr) => pr.rule).sort(compareRuleCodes);
+    return projectRules
+      .map((pr) => ({ ...pr.rule, status: pr.status, statusUpdatedBy: pr.statusUpdatedBy, statusUpdatedAt: pr.statusUpdatedAt }))
+      .sort(compareRuleCodes);
   }, [projectRules]);
 
   // Get top-level rules (rules without a parent)
@@ -107,11 +109,11 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded } =
     useRuleTreeNavigation(projectRuleList);
 
-  // Handle completion update
-  const handleStatusUpdate = async (ruleId: string, isComplete: boolean) => {
+  // Handle status update, local to this project
+  const handleStatusUpdate = async (projectRuleId: string, status: RuleStatus) => {
     try {
-      await setCompletionMutation({ ruleId, isComplete, projectId: project.id });
-      toast.success('Rule completion updated successfully');
+      await setStatusMutation({ projectRuleId, status });
+      toast.success('Rule status updated successfully');
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -371,7 +373,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         <UpdateStatusPopover
           anchorEl={statusPopoverAnchor}
           onClose={handleStatusPopoverClose}
-          rule={selectedProjectRule.rule}
+          id={selectedProjectRule.projectRuleId}
+          status={selectedProjectRule.status}
           onStatusChange={handleStatusUpdate}
         />
       )}

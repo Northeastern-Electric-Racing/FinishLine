@@ -15,7 +15,12 @@ export const ruleTransformer = (rule: Rule): Rule => {
   return {
     ...rule,
     subRuleIds: rule.subRuleIds || [],
-    referencedRules: rule.referencedRules || []
+    referencedRules: rule.referencedRules || [],
+    statusUpdatedAt: rule.statusUpdatedAt ? new Date(rule.statusUpdatedAt) : undefined,
+    projects: rule.projects?.map((project) => ({
+      ...project,
+      statusUpdatedAt: project.statusUpdatedAt ? new Date(project.statusUpdatedAt) : undefined
+    }))
   };
 };
 
@@ -28,7 +33,8 @@ export const ruleTransformer = (rule: Rule): Rule => {
 export const projectRuleTransformer = (projectRule: ProjectRule): ProjectRule => {
   return {
     ...projectRule,
-    rule: ruleTransformer(projectRule.rule)
+    rule: ruleTransformer(projectRule.rule),
+    statusUpdatedAt: projectRule.statusUpdatedAt ? new Date(projectRule.statusUpdatedAt) : undefined
   };
 };
 

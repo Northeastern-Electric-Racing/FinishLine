@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
-import { Rule } from 'shared';
+import { Rule, RuleStatus } from 'shared';
 import RuleRow from '../RuleRow';
 import RuleStatusTag from './RuleStatusTag';
 import RuleContent from './RuleContent';
+import RuleStatusHistoryModal from './RuleStatusHistoryModal';
 import UpdateStatusPopover from '../../ProjectDetailPage/ProjectViewContainer/ProjectRules/UpdateStatusPopover';
-import { useSetRuleCompletion } from '../../../hooks/rules.hooks';
+import { useSetRuleStatus } from '../../../hooks/rules.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
 
@@ -31,14 +32,15 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   const toast = useToast();
   const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
   const [selectedRule, setSelectedRule] = useState<Rule | null>(null);
+  const [historyModalRule, setHistoryModalRule] = useState<Rule | null>(null);
 
   const backgroundColor = theme.palette.background.default;
   const tableBackgroundColor = theme.palette.background.paper;
   const tableTextColor = theme.palette.text.primary;
   const tableHoverColor = theme.palette.action.hover;
 
-  // Completion in general view is for the whole ruleset, so no projectId is passed in
-  const { mutateAsync: setCompletion } = useSetRuleCompletion(rulesetId, '');
+  // Status in general view is independent of any project
+  const { mutateAsync: setStatus } = useSetRuleStatus(rulesetId);
 
   // Sort once by rule code so both top-level rows and their children render in a stable numeric order.
   const sortedRules = useMemo(() => [...allRules].sort(compareRuleCodes), [allRules]);
@@ -49,10 +51,10 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
     setSelectedRule(null);
   };
 
-  const handleStatusChange = async (ruleId: string, isComplete: boolean) => {
+  const handleStatusChange = async (ruleId: string, status: RuleStatus) => {
     try {
-      await setCompletion({ ruleId, isComplete });
-      toast.success('Rule completion updated successfully');
+      await setStatus({ ruleId, status });
+      toast.success('Rule status updated successfully');
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -82,6 +84,7 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
                       setSelectedRule(r);
                       setStatusPopoverAnchor(e.currentTarget);
                     }}
+                    onInfoClick={setHistoryModalRule}
                   />
                 )}
                 backgroundColor={tableBackgroundColor}
@@ -100,9 +103,14 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
         <UpdateStatusPopover
           anchorEl={statusPopoverAnchor}
           onClose={handleStatusClose}
-          rule={selectedRule}
+          id={selectedRule.ruleId}
+          status={selectedRule.status}
           onStatusChange={handleStatusChange}
         />
+      )}
+
+      {historyModalRule && (
+        <RuleStatusHistoryModal open onClose={() => setHistoryModalRule(null)} rule={historyModalRule} />
       )}
     </Box>
   );

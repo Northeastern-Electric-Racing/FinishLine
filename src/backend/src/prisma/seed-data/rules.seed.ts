@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import { Organization, PrismaClient } from '@prisma/client';
 import RulesService from '../../services/rules.services.js';
-import { User } from 'shared';
+import { User, RuleStatus } from 'shared';
 
 // ruleset types
 const rulesetTypeFSAE = (userCreatedId: string, organizationId: string): Prisma.Ruleset_TypeCreateInput => {
@@ -776,9 +776,9 @@ export const seedFsaeRules = async (
   await RulesService.toggleRuleTeam(IC81Rule.ruleId, huskyTeamId, batman, organization);
   await RulesService.createProjectRule(batman, organization, IC81Rule.ruleId, projectId);
 
-  // Add the leaf rule to the bodywork project and mark it complete.
-  await RulesService.createProjectRule(batman, organization, T112ARule.ruleId, projectId);
-  await RulesService.setRuleCompletion(batman, organization, T112ARule.ruleId, true, projectId);
+  // Add the leaf rule to the bodywork project and mark it as passed for that project.
+  const bodyworkT112AProjectRule = await RulesService.createProjectRule(batman, organization, T112ARule.ruleId, projectId);
+  await RulesService.setProjectRuleStatus(batman, organization, bodyworkT112AProjectRule.projectRuleId, RuleStatus.PASS);
 };
 
 export const ruleSeedData = {

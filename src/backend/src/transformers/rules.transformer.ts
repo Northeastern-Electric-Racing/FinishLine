@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { Rule, ProjectRule, Ruleset, RulesetType } from 'shared';
+import { Rule, ProjectRule, Ruleset, RulesetType, RuleStatus } from 'shared';
 import { RulesetQueryArgs, RulePreviewQueryArgs, ProjectRuleQueryArgs } from '../prisma-query-args/rules.query-args.js';
 
 export const ruleTransformer = (rule: Prisma.RuleGetPayload<RulePreviewQueryArgs>): Rule => {
@@ -23,21 +23,25 @@ export const ruleTransformer = (rule: Prisma.RuleGetPayload<RulePreviewQueryArgs
     projects: rule.projects?.map((projectRule) => ({
       projectId: projectRule.project.projectId,
       projectName: projectRule.project.wbsElement.name,
-      teamIds: projectRule.project.teams.map((team) => team.teamId)
+      teamIds: projectRule.project.teams.map((team) => team.teamId),
+      projectRuleId: projectRule.projectRuleId,
+      status: projectRule.status as RuleStatus,
+      statusUpdatedBy: projectRule.statusUpdatedBy
+        ? {
+            firstName: projectRule.statusUpdatedBy.firstName,
+            lastName: projectRule.statusUpdatedBy.lastName
+          }
+        : undefined,
+      statusUpdatedAt: projectRule.statusUpdatedAt ?? undefined
     })),
-    isComplete: rule.isComplete,
-    completedBy: rule.completedBy
+    status: rule.status as RuleStatus,
+    statusUpdatedBy: rule.statusUpdatedBy
       ? {
-          firstName: rule.completedBy.firstName,
-          lastName: rule.completedBy.lastName
+          firstName: rule.statusUpdatedBy.firstName,
+          lastName: rule.statusUpdatedBy.lastName
         }
       : undefined,
-    completedInProject: rule.completedInProject
-      ? {
-          projectId: rule.completedInProject.projectId,
-          projectName: rule.completedInProject.wbsElement.name
-        }
-      : undefined
+    statusUpdatedAt: rule.statusUpdatedAt ?? undefined
   };
 };
 
@@ -45,7 +49,15 @@ export const projectRuleTransformer = (projectRule: Prisma.Project_RuleGetPayloa
   return {
     projectRuleId: projectRule.projectRuleId,
     rule: ruleTransformer(projectRule.rule),
-    projectId: projectRule.projectId
+    projectId: projectRule.projectId,
+    status: projectRule.status as RuleStatus,
+    statusUpdatedBy: projectRule.statusUpdatedBy
+      ? {
+          firstName: projectRule.statusUpdatedBy.firstName,
+          lastName: projectRule.statusUpdatedBy.lastName
+        }
+      : undefined,
+    statusUpdatedAt: projectRule.statusUpdatedAt ?? undefined
   };
 };
 
