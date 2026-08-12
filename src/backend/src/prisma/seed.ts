@@ -29,7 +29,6 @@ import { GraphProcess } from './seed/graphs.process.js';
 
 const prisma = new PrismaClient();
 
-// ORDER MATTERS AT THE MOMENT. I am still looking into topological sort so that order won't matter here.
 await new SeedRunner()
   .withPrisma(prisma)
   .register(
