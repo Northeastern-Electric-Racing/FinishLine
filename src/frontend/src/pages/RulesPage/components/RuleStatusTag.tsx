@@ -10,7 +10,7 @@ import { getRuleStatusConfig, getRuleStatus } from '../../../utils/rules.utils';
 
 interface RuleStatusTagProps {
   rule: Rule;
-  allRules: Rule[];
+  allRules?: Rule[];
   // ability to update completion status
   onClick?: (event: React.MouseEvent<HTMLElement>) => void;
   // controls chevron direction when completion is interactive

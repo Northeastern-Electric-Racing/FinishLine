@@ -13,8 +13,6 @@ rulesRouter.get(
   validateInputs,
   RulesController.getActiveRuleset
 );
-rulesRouter.get('/ruleset/:rulesetId', RulesController.getRulesetById);
-
 rulesRouter.post(
   '/rule/create',
   nonEmptyString(body('ruleCode')),
@@ -64,7 +62,6 @@ rulesRouter.post(
 );
 
 rulesRouter.get('/rulesetTypes', RulesController.getAllRulesetTypes);
-rulesRouter.get('/ruleset/:rulesetId/rules/unassigned', RulesController.getUnassignedRules);
 rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
 rulesRouter.post('/projectRule/:projectRuleId/delete', RulesController.deleteProjectRule);
 
@@ -100,7 +97,6 @@ rulesRouter.post(
   RulesController.createRuleset
 );
 rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
-rulesRouter.get('/:rulesetTypeId/team/:teamId', RulesController.getTeamRulesInRulesetType);
 
 rulesRouter.post(
   '/ruleset/:rulesetId/update',
@@ -118,6 +114,7 @@ rulesRouter.get('/ruleset/:rulesetId/project/:projectId/rules', RulesController.
 
 rulesRouter.get('/:ruleId/subrules', RulesController.getChildRules);
 rulesRouter.get('/:rulesetId/parentRules', RulesController.getTopLevelRules);
+rulesRouter.get('/:rulesetId/allRules', RulesController.getAllRulesForRuleset);
 rulesRouter.get('/ruleset/:rulesetId', RulesController.getSingleRuleset);
 rulesRouter.get('/:rulesetTypeId', RulesController.getRulesetType);
 
