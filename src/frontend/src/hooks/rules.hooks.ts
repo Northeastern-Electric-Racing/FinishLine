@@ -648,7 +648,7 @@ const fetchAllChildRules = async (rule: SharedRule, allRules: SharedRule[]): Pro
 
 /**
  * Hook to get all rules for a ruleset by fetching top-level rules
- * and recursively fetching all children
+ * and recursively fetching all children.
  */
 export const useAllRulesForRuleset = (rulesetId: string) => {
   return useQuery<SharedRule[], Error>(
