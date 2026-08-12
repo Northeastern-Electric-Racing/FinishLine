@@ -15,15 +15,6 @@ import {
 } from './transformers/rules.transformers';
 
 /**
- * Gets a ruleset by its ID
- */
-export const getRulesetById = (rulesetId: string) => {
-  return axios.get<Ruleset>(apiUrls.rulesetById(rulesetId), {
-    transformResponse: (data) => JSON.parse(data)
-  });
-};
-
-/**
  * Gets a single ruleset by ID (dashboard usage)
  */
 export const getSingleRuleset = (rulesetId: string) => {
@@ -37,13 +28,6 @@ export const getSingleRuleset = (rulesetId: string) => {
  */
 export const toggleRuleTeam = (ruleId: string, teamId: string) => {
   return axios.post<SharedRule>(apiUrls.rulesToggleTeam(ruleId), { teamId });
-};
-
-/**
- * Gets all rules assigned to a team for a specific ruleset type
- */
-export const getTeamRulesInRulesetType = (rulesetTypeId: string, teamId: string) => {
-  return axios.get<SharedRule[]>(apiUrls.rulesTeamRulesInRulesetType(rulesetTypeId, teamId));
 };
 
 /**
@@ -140,6 +124,15 @@ export const getChildRules = (ruleId: string) => {
  */
 export const getTopLevelRules = (rulesetId: string) => {
   return axios.get<SharedRule[]>(apiUrls.rulesTopLevel(rulesetId), {
+    transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
+  });
+};
+
+/**
+ * Gets every rule in a ruleset (top-level and all descendants) in a single request
+ */
+export const getAllRulesForRuleset = (rulesetId: string) => {
+  return axios.get<SharedRule[]>(apiUrls.rulesAllRules(rulesetId), {
     transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
   });
 };

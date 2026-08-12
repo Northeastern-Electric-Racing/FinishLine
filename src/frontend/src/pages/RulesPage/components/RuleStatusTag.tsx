@@ -10,7 +10,7 @@ import { getRuleStatusConfig, isRuleComplete } from '../../../utils/rules.utils'
 
 interface RuleStatusTagProps {
   rule: Rule;
-  allRules: Rule[];
+  allRules?: Rule[];
   // ability to update completion status
   onClick?: (event: React.MouseEvent<HTMLElement>) => void;
   // controls chevron direction when completion is interactive
@@ -24,10 +24,11 @@ interface RuleStatusTagProps {
  * info tooltip with who completed it and in which project.
  */
 const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, allRules, onClick, popoverOpen = false }) => {
-  const isComplete = isRuleComplete(rule, allRules);
+  // Determine completion status based on whether all rules are provided (general view) or just the rule itself
+  const isComplete = allRules ? isRuleComplete(rule, allRules) : rule.isComplete;
   const { label, color } = getRuleStatusConfig(isComplete);
 
-  const isLeaf = !allRules.some((r) => r.parentRule?.ruleId === rule.ruleId);
+  const isLeaf = allRules ? !allRules.some((r) => r.parentRule?.ruleId === rule.ruleId) : rule.subRuleIds.length === 0;
   // Note: Info tooltip only says "Completed by {User}" if completed in general view
   const completedByName = rule.completedBy && `${rule.completedBy.firstName} ${rule.completedBy.lastName}`;
   const completionMessage = completedByName

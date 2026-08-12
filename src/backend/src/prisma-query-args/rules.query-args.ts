@@ -116,3 +116,12 @@ export const getRulesetPreviewQueryArgs = () =>
       }
     }
   });
+
+export type RulesetTypeQueryArgs = ReturnType<typeof getRulesetTypeQueryArgs>;
+
+export const getRulesetTypeQueryArgs = (carId?: string) =>
+  Prisma.validator<Prisma.Ruleset_TypeDefaultArgs>()({
+    include: {
+      revisionFiles: { where: carId ? { carId } : {} }
+    }
+  });

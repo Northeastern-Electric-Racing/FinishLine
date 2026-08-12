@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Button, Paper, Table, TableBody, TableContainer, TextField, useTheme } from '@mui/material';
+import { Box, Button, CircularProgress, Paper, Table, TableBody, TableContainer, TextField, useTheme } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -32,7 +32,9 @@ import {
   useRemoveRuleReferences,
   useRemoveRuleImage,
   useSingleRuleset,
-  useAllRulesForRuleset
+  useAllRulesForRuleset,
+  useGetTopLevelRules,
+  useFetchFullRuleTree
 } from '../../hooks/rules.hooks';
 import { countRulesToDelete, compareRuleCodes } from '../../utils/rules.utils';
 import { Rule } from 'shared';
@@ -83,12 +85,22 @@ const RulesetEditPage: React.FC = () => {
     error: rulesetError,
     isLoading: isRulesetLoading
   } = useSingleRuleset(rulesetId!);
+
+  // Edit Rules table only needs top-level rules to render immediately; subrules are fetched lazily as rows expand
+  const {
+    data: topLevelRules,
+    isError: isTopLevelRulesError,
+    error: topLevelRulesError,
+    isLoading: isTopLevelRulesLoading
+  } = useGetTopLevelRules(rulesetId!);
+
   const {
     data: allRules,
     isError: isRulesError,
     error: rulesError,
     isLoading: isRulesLoading
   } = useAllRulesForRuleset(rulesetId!);
+
   const { mutateAsync: deleteRuleMutation } = useDeleteRule();
   const { mutateAsync: editRuleMutation } = useEditRule();
   const { mutateAsync: removeRuleReferencesMutation } = useRemoveRuleReferences();
@@ -96,7 +108,13 @@ const RulesetEditPage: React.FC = () => {
 
   const rulesById = useMemo(() => new Map((allRules ?? []).map((r) => [r.ruleId, r])), [allRules]);
 
-  const { expandedIds, toggleExpand, expandAll, collapseAll, areAllExpanded } = useRuleTreeNavigation(allRules ?? []);
+  // Expand All needs whole tree, so load it on demand rather than up front
+  const fetchFullRuleTree = useFetchFullRuleTree(rulesetId!);
+
+  const { expandedIds, toggleExpand, expandAll, collapseAll, areAllExpanded, isLoadingFullTree } = useRuleTreeNavigation(
+    topLevelRules ?? [],
+    fetchFullRuleTree
+  );
 
   const tabs = [
     { tabUrlValue: 'edit-rules', tabName: 'Edit Rules' },
@@ -107,11 +125,15 @@ const RulesetEditPage: React.FC = () => {
     return <ErrorPage error={rulesetError} />;
   }
 
+  if (isTopLevelRulesError) {
+    return <ErrorPage error={topLevelRulesError} />;
+  }
+
   if (isRulesError) {
     return <ErrorPage error={rulesError} />;
   }
 
-  if (isRulesetLoading || isRulesLoading || !ruleset || !allRules) {
+  if (isRulesetLoading || isTopLevelRulesLoading || !ruleset || !topLevelRules) {
     return <LoadingIndicator />;
   }
 
@@ -206,7 +228,7 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleRemoveRule = (ruleId: string) => {
-    const rule = allRules.find((r) => r.ruleId === ruleId);
+    const rule = (allRules ?? []).find((r) => r.ruleId === ruleId);
     if (rule) {
       setRuleToDelete(rule);
       setDeleteModalOpen(true);
@@ -217,7 +239,10 @@ const RulesetEditPage: React.FC = () => {
     if (!ruleToDelete) return;
 
     try {
-      await deleteRuleMutation(ruleToDelete.ruleId);
+      await deleteRuleMutation({
+        ruleId: ruleToDelete.ruleId,
+        totalRulesToDelete: countRulesToDelete(ruleToDelete, allRules ?? [])
+      });
       setDeleteModalOpen(false);
       setRuleToDelete(null);
     } catch (err) {
@@ -231,7 +256,7 @@ const RulesetEditPage: React.FC = () => {
   };
 
   const handleEditRule = (ruleId: string) => {
-    const rule = allRules.find((r) => r.ruleId === ruleId);
+    const rule = (allRules ?? []).find((r) => r.ruleId === ruleId);
     if (rule) {
       setEditingRuleId(ruleId);
       setEditedContent(rule.ruleContent);
@@ -260,7 +285,7 @@ const RulesetEditPage: React.FC = () => {
       return;
     }
 
-    const currentRule = allRules.find((r) => r.ruleId === editingRuleId);
+    const currentRule = (allRules ?? []).find((r) => r.ruleId === editingRuleId);
     const warnings: string[] = [];
 
     if (currentRule && currentRule.ruleCode !== editedCode) {
@@ -268,7 +293,7 @@ const RulesetEditPage: React.FC = () => {
         warnings.push(`This code doesn't start with its parent rule's code: ${currentRule.parentRule.ruleCode}.`);
       }
 
-      const affectedCount = countRulesToDelete(currentRule, allRules) - 1;
+      const affectedCount = countRulesToDelete(currentRule, allRules ?? []) - 1;
       if (affectedCount > 0) {
         warnings.push(
           `This rule has ${affectedCount} child rule${affectedCount === 1 ? '' : 's'} whose code${
@@ -301,10 +326,10 @@ const RulesetEditPage: React.FC = () => {
     setEditedCode('');
   };
 
-  const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, allRules) : 0;
+  const totalRulesToDelete = ruleToDelete ? countRulesToDelete(ruleToDelete, allRules ?? []) : 0;
 
-  // Filter to only show top-level rules, sorted by rule code for stable numeric order
-  const topLevelRules = allRules.filter((rule) => !rule.parentRule).sort(compareRuleCodes);
+  // Sort top-level rules by rule code for stable numeric order
+  const sortedTopLevelRules = [...topLevelRules].sort(compareRuleCodes);
 
   return (
     <PageLayout
@@ -326,9 +351,12 @@ const RulesetEditPage: React.FC = () => {
             id="rules-tabs"
           />
           {tabValue === 0 && (
-            <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
-              {areAllExpanded ? 'Collapse All' : 'Expand All'}
-            </NERButton>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {isLoadingFullTree && <CircularProgress size={20} />}
+              <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
+                {areAllExpanded ? 'Collapse All' : 'Expand All'}
+              </NERButton>
+            </Box>
           )}
         </Box>
       }
@@ -339,11 +367,10 @@ const RulesetEditPage: React.FC = () => {
             <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
               <Table sx={{ borderCollapse: 'collapse' }}>
                 <TableBody sx={{ backgroundColor: theme.palette.grey[500] }}>
-                  {topLevelRules.map((rule) => (
+                  {sortedTopLevelRules.map((rule) => (
                     <RuleRow
                       key={rule.ruleId}
                       rule={rule}
-                      allRules={allRules}
                       leftContent={(currentRule, level, isExpanded, hasSubRules, toggleExpand) => {
                         const isEditing = editingRuleId === currentRule.ruleId;
                         return (
@@ -499,14 +526,14 @@ const RulesetEditPage: React.FC = () => {
               open={showAddReferencedRuleModal}
               onClose={() => setShowAddReferencedRuleModal(false)}
               ruleId={activeRuleId}
-              allRules={allRules}
+              allRules={allRules ?? []}
             />
 
             <AddImageModal
               open={showAddImageModal}
               onClose={() => setShowAddImageModal(false)}
               ruleId={activeRuleId}
-              allRules={allRules}
+              allRules={allRules ?? []}
             />
 
             <MismatchedRuleCodeModal
@@ -599,8 +626,10 @@ const RulesetEditPage: React.FC = () => {
               </Box>
             </Box>
           </Box>
+        ) : isRulesLoading || !allRules ? (
+          <LoadingIndicator />
         ) : (
-          <AssignRulesTab rules={allRules} />
+          <AssignRulesTab />
         )}
       </Box>
     </PageLayout>
