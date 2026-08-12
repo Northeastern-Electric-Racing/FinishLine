@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
 import { Rule } from 'shared';
 import RuleRow from '../RuleRow';
+import RuleContent from './RuleContent';
 
 interface RulesetTeamViewProps {
   topLevelItems: Rule[];
@@ -39,6 +40,7 @@ const RulesetTeamView: React.FC<RulesetTeamViewProps> = ({
                 key={item.ruleId}
                 rule={item}
                 allRules={rowsById}
+                middleContent={(r) => <RuleContent rule={r} color={tableTextColor} />}
                 rightContent={() => null}
                 backgroundColor={tableBackgroundColor}
                 textColor={tableTextColor}
