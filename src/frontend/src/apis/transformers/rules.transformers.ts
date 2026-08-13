@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ProjectRule, Rule, RulesetType, Ruleset } from 'shared';
+import { ProjectRule, Rule, RulesetType, Ruleset, RuleStatusHistoryEntry } from 'shared';
 
 /**
  * Transforms a rule to proper field types.
@@ -65,3 +65,14 @@ export const rulesetTransformer = (ruleset: Ruleset): Ruleset => {
     rulesetType: rulesetTypeTransformer(ruleset.rulesetType)
   };
 };
+
+/**
+ * Transforms a rule status history entry
+ *
+ * @param entry Incoming status history entry
+ * @returns Properly transformed status history entry.
+ */
+export const ruleStatusHistoryTransformer = (entry: RuleStatusHistoryEntry): RuleStatusHistoryEntry => ({
+  ...entry,
+  updatedAt: new Date(entry.updatedAt)
+});

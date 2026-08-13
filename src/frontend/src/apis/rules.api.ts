@@ -4,14 +4,15 @@
  */
 
 import axios from '../utils/axios';
-import { ProjectRule, Rule as SharedRule, RulesetType, Ruleset, RuleStatus } from 'shared';
+import { ProjectRule, Rule as SharedRule, RulesetType, Ruleset, RuleStatus, RuleStatusHistoryEntry } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateRulesetPayload, ParseRulesetPayload, CreateRulePayload } from '../hooks/rules.hooks';
 import {
   projectRuleTransformer,
   rulesetTransformer,
   rulesetTypeTransformer,
-  ruleTransformer
+  ruleTransformer,
+  ruleStatusHistoryTransformer
 } from './transformers/rules.transformers';
 
 /**
@@ -116,6 +117,18 @@ export const setRuleStatus = (ruleId: string, status: RuleStatus) => {
  */
 export const setProjectRuleStatus = (projectRuleId: string, status: RuleStatus) => {
   return axios.post<ProjectRule>(apiUrls.rulesSetProjectRuleStatus(projectRuleId), { status });
+};
+
+/**
+ * Gets a rule's full status history - every time it was marked PASS or FAIL.
+ * @param ruleId the rule to get history for
+ * @param projectRuleId if provided, scopes the history to just this project rule instead of every context the rule appears in
+ */
+export const getRuleStatusHistory = (ruleId: string, projectRuleId?: string) => {
+  return axios.get<RuleStatusHistoryEntry[]>(apiUrls.rulesGetStatusHistory(ruleId), {
+    params: { projectRuleId },
+    transformResponse: (data) => JSON.parse(data).map(ruleStatusHistoryTransformer)
+  });
 };
 
 /**

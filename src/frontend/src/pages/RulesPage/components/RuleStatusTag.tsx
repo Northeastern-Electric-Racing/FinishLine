@@ -36,9 +36,9 @@ const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, allRules, onClick, 
     statusUpdatedByName && rule.statusUpdatedAt
       ? `Marked ${label.toUpperCase()} by ${statusUpdatedByName} on ${formatTimestamp(rule.statusUpdatedAt)}`
       : '';
-  const hasProjectHistory = rule.projects?.some((project) => project.statusUpdatedAt) ?? false;
 
-  const showInfo = isLeaf && (onInfoClick ? Boolean(statusMessage) || hasProjectHistory : Boolean(statusMessage));
+  // hasStatusHistory persists even after the current status is reverted to PENDING
+  const showInfo = isLeaf && (onInfoClick ? rule.hasStatusHistory : Boolean(statusMessage));
 
   // only leafs are interactive
   const isInteractive = isLeaf && Boolean(onClick);

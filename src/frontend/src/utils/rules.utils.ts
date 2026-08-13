@@ -213,5 +213,6 @@ export const makeSectionRow = (ruleId: string, ruleCode: string, subRuleIds: str
   parentRule: undefined,
   subRuleIds,
   referencedRules: [],
-  status: RuleStatus.PENDING
+  status: RuleStatus.PENDING,
+  hasStatusHistory: false
 });

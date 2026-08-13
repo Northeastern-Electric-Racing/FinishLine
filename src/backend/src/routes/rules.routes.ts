@@ -78,6 +78,12 @@ rulesRouter.post(
   validateInputs,
   RulesController.setProjectRuleStatus
 );
+rulesRouter.get(
+  '/rule/:ruleId/status-history',
+  query('projectRuleId').optional().isString(),
+  validateInputs,
+  RulesController.getRuleStatusHistory
+);
 
 rulesRouter.post(
   '/rule/:ruleId/toggle-team',

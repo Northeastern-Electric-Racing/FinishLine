@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services.js';
-import { ProjectRule, Rule, Ruleset, RuleStatus } from 'shared';
+import { ProjectRule, Rule, Ruleset, RuleStatus, RuleStatusHistoryEntry } from 'shared';
 import { HttpException } from '../utils/errors.utils.js';
 
 export default class RulesController {
@@ -205,6 +205,24 @@ export default class RulesController {
       );
 
       res.status(200).json(projectRule);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getRuleStatusHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ruleId } = req.params as Record<string, string>;
+      const { projectRuleId } = req.query as { projectRuleId?: string };
+
+      const history: RuleStatusHistoryEntry[] = await RulesService.getRuleStatusHistory(
+        req.currentUser,
+        req.organization,
+        ruleId,
+        projectRuleId
+      );
+
+      res.status(200).json(history);
     } catch (error: unknown) {
       next(error);
     }

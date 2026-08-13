@@ -480,6 +480,7 @@ const rulesCreateProjectRule = () => `${rules()}/projectRule/create`;
 const rulesDeleteProjectRule = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/delete`;
 const rulesSetRuleStatus = (ruleId: string) => `${rules()}/rule/${ruleId}/setStatus`;
 const rulesSetProjectRuleStatus = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/setStatus`;
+const rulesGetStatusHistory = (ruleId: string) => `${rules()}/rule/${ruleId}/status-history`;
 const rulesEdit = (ruleId: string) => `${rules()}/rule/${ruleId}/edit`;
 const rulesDelete = (ruleId: string) => `${rules()}/rule/${ruleId}/delete`;
 const rulesAddReferences = (ruleId: string) => `${rules()}/rule/${ruleId}/references/add`;
@@ -909,6 +910,7 @@ export const apiUrls = {
   rulesDeleteProjectRule,
   rulesSetRuleStatus,
   rulesSetProjectRuleStatus,
+  rulesGetStatusHistory,
   rulesEdit,
   rulesDelete,
   rulesAddReferences,

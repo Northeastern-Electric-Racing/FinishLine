@@ -24,6 +24,7 @@ import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
 import RuleContent from '../../../RulesPage/components/RuleContent';
+import RuleStatusHistoryModal from '../../../RulesPage/components/RuleStatusHistoryModal';
 import { useRuleTreeNavigation } from '../../../RulesPage/useRuleTreeNavigation';
 import UpdateStatusPopover from './UpdateStatusPopover';
 import AddRuleModal from './AddProjectRuleModal';
@@ -56,6 +57,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
   const [selectedProjectRule, setSelectedProjectRule] = useState<ProjectRule | null>(null);
+  const [historyModalProjectRule, setHistoryModalProjectRule] = useState<ProjectRule | null>(null);
 
   // Fetch all ruleset types
   const { data: rulesetTypes, isLoading: rulesetTypesLoading, isError: rulesetTypesError } = useAllRulesetTypes();
@@ -93,7 +95,14 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const projectRuleList = useMemo(() => {
     if (!projectRules) return [];
     return projectRules
-      .map((pr) => ({ ...pr.rule, status: pr.status, statusUpdatedBy: pr.statusUpdatedBy, statusUpdatedAt: pr.statusUpdatedAt }))
+      .map((pr) => ({
+        ...pr.rule,
+        status: pr.status,
+        statusUpdatedBy: pr.statusUpdatedBy,
+        statusUpdatedAt: pr.statusUpdatedAt,
+        // history modal for PASS/FAIL only scoped to this project
+        hasStatusHistory: pr.hasStatusHistory
+      }))
       .sort(compareRuleCodes);
   }, [projectRules]);
 
@@ -154,6 +163,14 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     setSelectedProjectRule(null);
   };
 
+  // Handle opening the status history modal, scoped to this project
+  const handleInfoClick = (rule: Rule) => {
+    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
+    if (projectRule) {
+      setHistoryModalProjectRule(projectRule);
+    }
+  };
+
   // Handle tab change
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedRulesetTypeIndex(newValue);
@@ -193,6 +210,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         allRules={projectRuleList}
         popoverOpen={isPopoverOpenForRule}
         onClick={isLeafRule ? (e) => handleStatusClick(e, rule) : undefined}
+        onInfoClick={handleInfoClick}
       />
     );
   };
@@ -376,6 +394,16 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           id={selectedProjectRule.projectRuleId}
           status={selectedProjectRule.status}
           onStatusChange={handleStatusUpdate}
+        />
+      )}
+
+      {/* Status History Modal, scoped to this project */}
+      {historyModalProjectRule && (
+        <RuleStatusHistoryModal
+          open
+          onClose={() => setHistoryModalProjectRule(null)}
+          rule={historyModalProjectRule.rule}
+          projectRuleId={historyModalProjectRule.projectRuleId}
         />
       )}
 

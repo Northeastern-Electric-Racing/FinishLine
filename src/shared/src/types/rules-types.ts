@@ -60,6 +60,7 @@ export interface Rule {
       lastName: string;
     };
     statusUpdatedAt?: Date;
+    hasStatusHistory: boolean;
   }>;
   status: RuleStatus;
   statusUpdatedBy?: {
@@ -67,6 +68,8 @@ export interface Rule {
     lastName: string;
   };
   statusUpdatedAt?: Date;
+  // true if this rule (general-view status, or its status in any project) has ever been marked PASS or FAIL
+  hasStatusHistory: boolean;
 }
 
 export interface ProjectRule {
@@ -79,6 +82,18 @@ export interface ProjectRule {
     lastName: string;
   };
   statusUpdatedAt?: Date;
+  // true if this rule has ever been marked PASS or FAIL within this specific project
+  hasStatusHistory: boolean;
+}
+
+export interface RuleStatusHistoryEntry {
+  status: RuleStatus;
+  updatedBy: {
+    firstName: string;
+    lastName: string;
+  };
+  updatedAt: Date;
+  projectName?: string;
 }
 
 export interface RulesetPreview {

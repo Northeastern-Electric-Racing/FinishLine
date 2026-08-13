@@ -167,3 +167,30 @@ ALTER TABLE "_teamRules" ADD CONSTRAINT "_teamRules_A_fkey" FOREIGN KEY ("A") RE
 
 -- AddForeignKey
 ALTER TABLE "_teamRules" ADD CONSTRAINT "_teamRules_B_fkey" FOREIGN KEY ("B") REFERENCES "Team"("teamId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- CreateTable
+CREATE TABLE "Rule_Status_History" (
+    "ruleStatusHistoryId" TEXT NOT NULL,
+    "ruleId" TEXT NOT NULL,
+    "projectRuleId" TEXT,
+    "status" "Rule_Status" NOT NULL,
+    "updatedByUserId" TEXT NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Rule_Status_History_pkey" PRIMARY KEY ("ruleStatusHistoryId")
+);
+
+-- CreateIndex
+CREATE INDEX "Rule_Status_History_ruleId_idx" ON "Rule_Status_History"("ruleId");
+
+-- CreateIndex
+CREATE INDEX "Rule_Status_History_projectRuleId_idx" ON "Rule_Status_History"("projectRuleId");
+
+-- AddForeignKey
+ALTER TABLE "Rule_Status_History" ADD CONSTRAINT "Rule_Status_History_ruleId_fkey" FOREIGN KEY ("ruleId") REFERENCES "Rule"("ruleId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Rule_Status_History" ADD CONSTRAINT "Rule_Status_History_projectRuleId_fkey" FOREIGN KEY ("projectRuleId") REFERENCES "Project_Rule"("projectRuleId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Rule_Status_History" ADD CONSTRAINT "Rule_Status_History_updatedByUserId_fkey" FOREIGN KEY ("updatedByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;

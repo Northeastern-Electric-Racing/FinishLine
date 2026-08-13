@@ -55,6 +55,11 @@ export const getRulePreviewQueryArgs = () =>
                 }
               }
             }
+          },
+          _count: {
+            select: {
+              statusHistory: true
+            }
           }
         }
       },
@@ -62,6 +67,11 @@ export const getRulePreviewQueryArgs = () =>
         select: {
           firstName: true,
           lastName: true
+        }
+      },
+      _count: {
+        select: {
+          statusHistory: true
         }
       }
     }
@@ -77,6 +87,38 @@ export const getProjectRuleQueryArgs = () =>
         select: {
           firstName: true,
           lastName: true
+        }
+      },
+      _count: {
+        select: {
+          statusHistory: true
+        }
+      }
+    }
+  });
+
+export type RuleStatusHistoryQueryArgs = ReturnType<typeof getRuleStatusHistoryQueryArgs>;
+
+export const getRuleStatusHistoryQueryArgs = () =>
+  Prisma.validator<Prisma.Rule_Status_HistoryDefaultArgs>()({
+    include: {
+      updatedBy: {
+        select: {
+          firstName: true,
+          lastName: true
+        }
+      },
+      projectRule: {
+        select: {
+          project: {
+            select: {
+              wbsElement: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          }
         }
       }
     }

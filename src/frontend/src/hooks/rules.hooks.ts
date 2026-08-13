@@ -5,7 +5,7 @@
 
 import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { ProjectRule, Rule as SharedRule, Ruleset, RulesetType, RuleStatus } from 'shared';
+import { ProjectRule, Rule as SharedRule, Ruleset, RulesetType, RuleStatus, RuleStatusHistoryEntry } from 'shared';
 import {
   createRulesetType,
   getAllRulesetTypes,
@@ -16,6 +16,7 @@ import {
   deleteProjectRule,
   setRuleStatus,
   setProjectRuleStatus,
+  getRuleStatusHistory,
   getChildRules,
   getTopLevelRules,
   getAllRulesForRuleset,
@@ -150,6 +151,23 @@ export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
     },
     {
       enabled // only fetch when true
+    }
+  );
+};
+
+/**
+ * Hook to get a rule's full status history. Only fetched when enabled is true, such as when a modal is open.
+ * @param projectRuleId if provided, scopes the history to just this project rule instead of every context the rule appears in
+ */
+export const useRuleStatusHistory = (ruleId: string, enabled: boolean, projectRuleId?: string) => {
+  return useQuery<RuleStatusHistoryEntry[], Error>(
+    ['rules', 'statusHistory', ruleId, projectRuleId],
+    async () => {
+      const { data } = await getRuleStatusHistory(ruleId, projectRuleId);
+      return data;
+    },
+    {
+      enabled
     }
   );
 };
@@ -307,8 +325,9 @@ export const useSetRuleStatus = (rulesetId: string) => {
       return data;
     },
     {
-      onSuccess: () => {
+      onSuccess: (_data, { ruleId }) => {
         queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
+        queryClient.invalidateQueries(['rules', 'statusHistory', ruleId]);
       }
     }
   );
@@ -326,12 +345,13 @@ export const useSetProjectRuleStatus = (rulesetId: string, projectId: string) =>
       return data;
     },
     {
-      onSuccess: () => {
+      onSuccess: (updatedProjectRule) => {
         queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
         queryClient.invalidateQueries(['rules', 'unassigned']);
         queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
         queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
         queryClient.invalidateQueries(['rules', 'children']);
+        queryClient.invalidateQueries(['rules', 'statusHistory', updatedProjectRule.rule.ruleId]);
       }
     }
   );

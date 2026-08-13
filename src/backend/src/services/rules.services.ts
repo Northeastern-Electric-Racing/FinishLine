@@ -9,7 +9,8 @@ import {
   Rule as SharedRule,
   isHead,
   Ruleset,
-  RuleStatus
+  RuleStatus,
+  RuleStatusHistoryEntry
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -26,13 +27,15 @@ import {
   getProjectRuleQueryArgs,
   getRulesetQueryArgs,
   getRulePreviewQueryArgs,
-  getRulesetTypeQueryArgs
+  getRulesetTypeQueryArgs,
+  getRuleStatusHistoryQueryArgs
 } from '../prisma-query-args/rules.query-args.js';
 import {
   ruleTransformer,
   projectRuleTransformer,
   rulesetTransformer,
-  rulesetTypeTransformer
+  rulesetTypeTransformer,
+  ruleStatusHistoryTransformer
 } from '../transformers/rules.transformer.js';
 import { ParsedRule, parseRulesFromPdf } from '../utils/parse.utils.js';
 import { uploadFile, downloadFile } from '../utils/google-integration.utils.js';
@@ -824,6 +827,13 @@ export default class RulesService {
       throw new InvalidOrganizationException('Rule');
     }
 
+    // only PASS/FAIL are tracked in history; PENDING does not create an entry
+    if (status !== RuleStatus.PENDING) {
+      await prisma.rule_Status_History.create({
+        data: { ruleId, status, updatedByUserId: submitter.userId }
+      });
+    }
+
     const updatedRule = await prisma.rule.update({
       where: { ruleId },
       data:
@@ -878,6 +888,13 @@ export default class RulesService {
       throw new InvalidOrganizationException('Project Rule');
     }
 
+    // only PASS/FAIL are tracked in history; PENDING does not create an entry
+    if (status !== RuleStatus.PENDING) {
+      await prisma.rule_Status_History.create({
+        data: { ruleId: projectRule.ruleId, projectRuleId, status, updatedByUserId: submitter.userId }
+      });
+    }
+
     const updatedProjectRule = await prisma.project_Rule.update({
       where: { projectRuleId },
       data:
@@ -888,6 +905,47 @@ export default class RulesService {
     });
 
     return projectRuleTransformer(updatedProjectRule);
+  }
+
+  /**
+   * Gets the full status history for a rule, every time status was marked PASS or FAIL. 
+   * Reverting to PENDING does not create history.
+   * @param user a user who is requesting the status history
+   * @param organization the organization of the rule
+   * @param ruleId the id of the rule to get history for
+   * @param projectRuleId if provided, scopes the history to just this project rule instead of every context the rule appears in
+   * @returns the rule's status history, most recent first
+   */
+  static async getRuleStatusHistory(
+    user: User,
+    organization: Organization,
+    ruleId: string,
+    projectRuleId?: string
+  ): Promise<RuleStatusHistoryEntry[]> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view rule status history');
+    }
+
+    const rule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: { ruleset: { include: { car: { include: { wbsElement: true } } } } }
+    });
+
+    if (!rule) {
+      throw new NotFoundException('Rule', ruleId);
+    }
+
+    if (rule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Rule');
+    }
+
+    const history = await prisma.rule_Status_History.findMany({
+      where: { ruleId, ...(projectRuleId && { projectRuleId }) },
+      orderBy: { dateCreated: 'desc' },
+      ...getRuleStatusHistoryQueryArgs()
+    });
+
+    return history.map(ruleStatusHistoryTransformer);
   }
 
   /**
