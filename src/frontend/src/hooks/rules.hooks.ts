@@ -327,6 +327,8 @@ export const useSetRuleStatus = (rulesetId: string) => {
     {
       onSuccess: (_data, { ruleId }) => {
         queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
+        queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
+        queryClient.invalidateQueries(['rules', 'children']);
         queryClient.invalidateQueries(['rules', 'statusHistory', ruleId]);
       }
     }
