@@ -35,7 +35,12 @@ const GuestOrganizationInfo = () => {
     isError: usefulLinksIsError,
     error: usefulLinksError
   } = useAllUsefulLinks();
-  const { data: linkTypes, isLoading: linkTypesIsLoading, isError: linkTypesIsError, error: linkTypesError } = useAllLinkTypes();
+  const {
+    data: linkTypes,
+    isLoading: linkTypesIsLoading,
+    isError: linkTypesIsError,
+    error: linkTypesError
+  } = useAllLinkTypes();
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;

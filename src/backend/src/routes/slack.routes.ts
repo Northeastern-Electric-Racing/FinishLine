@@ -159,7 +159,7 @@ if (slackApp) {
           return;
         }
 
-        await SlackController.handleApproveTeamJoinRequestAction(body, respond);
+        await SlackController.handleApproveTeamJoinRequestAction(body as unknown as SlackBlockActionBody, respond);
       } catch (error) {
         logger.error('Error handling approve_team_join_request action:', error);
       }
