@@ -4288,11 +4288,11 @@ const performSeed: () => Promise<void> = async () => {
 
   // create rulesets
   const rulesetFSAE = await prisma.ruleset.create({
-    data: ruleSeedData.rulesetFSAE(fergus.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
+    data: ruleSeedData.rulesetFSAE(car25.carId, batman.userId, fsaeRulesetType.rulesetTypeId)
   });
 
   const rulesetFHE = await prisma.ruleset.create({
-    data: ruleSeedData.rulesetFHE(fergus.carId, batman.userId, fheRulesetType.rulesetTypeId)
+    data: ruleSeedData.rulesetFHE(car25.carId, batman.userId, fheRulesetType.rulesetTypeId)
   });
 
   const rulesetMock = await prisma.ruleset.create({
