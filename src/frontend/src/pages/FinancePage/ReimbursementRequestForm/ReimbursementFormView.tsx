@@ -350,8 +350,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           setValue('vendorId', created.vendorId);
                           onChange(created.vendorId);
                           toast.success(`Vendor '${created.name}' created.`);
-                        } catch (err: any) {
-                          toast.error(err.message || 'Failed to create vendor');
+                          setNewVendorName('');
+                          (document.activeElement as HTMLElement)?.blur();
+                        } catch (err: unknown) {
+                          const message = err instanceof Error ? err.message : 'Failed to create vendor';
+                          toast.error(message);
                         }
                       };
 
