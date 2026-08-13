@@ -315,6 +315,11 @@ export default class TeamsService {
 
     if (!team) throw new NotFoundException('Team', teamId);
 
+    const hasJoinRequests = await prisma.team_Join_Request.findFirst({ where: { teamId } });
+    if (hasJoinRequests) {
+      throw new HttpException(400, 'Cannot delete a team with existing join requests');
+    }
+
     await prisma.team.delete({ where: { teamId } });
   }
 
@@ -443,14 +448,21 @@ export default class TeamsService {
       team.members.some((member) => member.userId === submitter.userId);
     if (isAlreadyOnTeam) throw new HttpException(400, 'You are already part of this team');
 
-    const existingPendingRequest = await prisma.team_Join_Request.findFirst({
-      where: { userId: submitter.userId, teamId, status: 'PENDING' }
-    });
-    if (existingPendingRequest) throw new HttpException(400, 'You already have a pending request to join this team');
+    const created = await prisma.$transaction(async (tx) => {
+      // Serialize concurrent join-request submissions for this exact user+team pair so two
+      // near-simultaneous requests (e.g. a double-click) can't both pass the "no existing
+      // pending request" check before either has committed.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`team-join-request:${submitter.userId}:${teamId}`}))`;
 
-    const created = await prisma.team_Join_Request.create({
-      data: { userId: submitter.userId, teamId },
-      ...getTeamJoinRequestQueryArgs(organization.organizationId)
+      const existingPendingRequest = await tx.team_Join_Request.findFirst({
+        where: { userId: submitter.userId, teamId, status: 'PENDING' }
+      });
+      if (existingPendingRequest) throw new HttpException(400, 'You already have a pending request to join this team');
+
+      return tx.team_Join_Request.create({
+        data: { userId: submitter.userId, teamId },
+        ...getTeamJoinRequestQueryArgs(organization.organizationId)
+      });
     });
 
     const transformed = teamJoinRequestTransformer(created);

@@ -110,6 +110,24 @@ export const linkTypeCreateInputs = (creatorId: string, organizationId: string):
     isOnGuestHomePage: true,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Handbook',
+    iconName: 'menu_book',
+    required: true,
+    isOnGuestHomePage: false,
+    isOnNewMemberDashboard: true,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Team Directory',
+    iconName: 'groups',
+    required: true,
+    isOnGuestHomePage: false,
+    isOnNewMemberDashboard: true,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
   }
 ];
 
@@ -379,6 +397,7 @@ export const calendarCreateInputs = (userCreatedId: string, organizationId: stri
     name: 'New Member Events',
     description: 'Tracks all new member onboarding events.',
     colorHexCode: '#5c6bc0',
+    isNewMemberCalendar: true,
     userCreated: connectUser(userCreatedId),
     organization: connectOrganization(organizationId)
   },

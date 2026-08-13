@@ -205,4 +205,30 @@ describe('Team Join Request Tests', () => {
       expect(updatedTeam?.members.map((member) => member.userId)).not.toContain(requester.userId);
     });
   });
+
+  describe('Delete Team', () => {
+    it('fails if the team has an existing join request', async () => {
+      await TeamsService.createTeamJoinRequest(requester, team.teamId, organization);
+
+      await expect(async () => await TeamsService.deleteTeam(admin, team.teamId, organization)).rejects.toThrow(
+        new HttpException(400, 'Cannot delete a team with existing join requests')
+      );
+    });
+
+    it('fails even if the only join request has already been reviewed', async () => {
+      const created = await TeamsService.createTeamJoinRequest(requester, team.teamId, organization);
+      await TeamsService.reviewTeamJoinRequest(head, created.teamJoinRequestId, true, undefined, organization);
+
+      await expect(async () => await TeamsService.deleteTeam(admin, team.teamId, organization)).rejects.toThrow(
+        new HttpException(400, 'Cannot delete a team with existing join requests')
+      );
+    });
+
+    it('succeeds when the team has no join requests', async () => {
+      await TeamsService.deleteTeam(admin, team.teamId, organization);
+
+      const deletedTeam = await prisma.team.findUnique({ where: { teamId: team.teamId } });
+      expect(deletedTeam).toBeNull();
+    });
+  });
 });

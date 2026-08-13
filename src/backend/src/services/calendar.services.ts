@@ -2180,6 +2180,11 @@ export default class CalendarService {
 
     const newCalendar = await prisma.$transaction(async (tx) => {
       if (isNewMemberCalendar) {
+        // Serialize concurrent new-member-calendar toggles for this org: without this, two
+        // near-simultaneous creates could both find zero existing flagged calendars to clear
+        // and both commit with isNewMemberCalendar: true.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`new-member-calendar:${organization.organizationId}`}))`;
+
         await tx.calendar.updateMany({
           where: { organizationId: organization.organizationId, isNewMemberCalendar: true },
           data: { isNewMemberCalendar: false }
@@ -2256,6 +2261,9 @@ export default class CalendarService {
 
     const newCalendar = await prisma.$transaction(async (tx) => {
       if (isNewMemberCalendar) {
+        // Same advisory lock as createCalendar — see comment there.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`new-member-calendar:${organization.organizationId}`}))`;
+
         await tx.calendar.updateMany({
           where: { organizationId: organization.organizationId, isNewMemberCalendar: true, NOT: { calendarId } },
           data: { isNewMemberCalendar: false }
