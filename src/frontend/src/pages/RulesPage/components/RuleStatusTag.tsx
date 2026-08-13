@@ -30,9 +30,8 @@ const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, allRules, onClick, 
   const status = getRuleStatus(rule, allRules);
   const { label, color } = getRuleStatusConfig(status);
 
-  const isLeaf = !allRules.some((r) => r.parentRule?.ruleId === rule.ruleId);
-  const statusUpdatedByName =
-    rule.statusUpdatedBy && `${rule.statusUpdatedBy.firstName} ${rule.statusUpdatedBy.lastName}`;
+  const isLeaf = allRules ? !allRules.some((r) => r.parentRule?.ruleId === rule.ruleId) : rule.subRuleIds.length === 0;
+  const statusUpdatedByName = rule.statusUpdatedBy && `${rule.statusUpdatedBy.firstName} ${rule.statusUpdatedBy.lastName}`;
   const statusMessage =
     statusUpdatedByName && rule.statusUpdatedAt
       ? `Marked ${label.toUpperCase()} by ${statusUpdatedByName} on ${formatTimestamp(rule.statusUpdatedAt)}`

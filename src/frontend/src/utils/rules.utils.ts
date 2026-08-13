@@ -29,7 +29,7 @@ export const countRulesToDelete = (rule: Rule, allRules: Rule[]): number => {
  * @param allRules - all rules in scope
  * @returns The leaf rules under the given rule, or rule if it is already a leaf
  */
-export const getDescendantLeafRules = (rule: Rule, allRules: Rule[]): Rule[] => {
+export const getDescendantLeafRules = (rule: Rule, allRules: Rule[] = []): Rule[] => {
   const children = allRules.filter((r) => r.parentRule?.ruleId === rule.ruleId);
   if (children.length === 0) {
     return [rule];
@@ -45,7 +45,7 @@ export const getDescendantLeafRules = (rule: Rule, allRules: Rule[]): Rule[] => 
  * @param allRules - All rules in scope
  * @returns The status of the rule (or its status computed by its leaves)
  */
-export const getRuleStatus = (rule: Rule, allRules: Rule[]): RuleStatus => {
+export const getRuleStatus = (rule: Rule, allRules: Rule[] = []): RuleStatus => {
   const leafRules = getDescendantLeafRules(rule, allRules);
   if (leafRules.some((leafRule) => leafRule.status === RuleStatus.FAIL)) return RuleStatus.FAIL;
   if (leafRules.some((leafRule) => leafRule.status === RuleStatus.PENDING)) return RuleStatus.PENDING;
