@@ -137,7 +137,7 @@ export const getOverdueStatus = (faker: Faker, daysOverdue: number): WBS_Element
   if (daysOverdue <= 0) return WBS_Element_Status.INACTIVE;
 
   // inverse exponential: starts at ~80% incomplete chance, drops rapidly toward 0
-  const incompleteChance = 10 * Math.exp(-0.01 * daysOverdue);
+  const incompleteChance = 0.8 * Math.exp(-0.01 * daysOverdue);
 
   return faker.datatype.boolean({ probability: 1 - incompleteChance })
     ? WBS_Element_Status.COMPLETE
