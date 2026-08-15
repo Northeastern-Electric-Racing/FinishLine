@@ -1,24 +1,7 @@
 import { Faker } from '@faker-js/faker';
 import { Account_Code, Index_Code, Material_Status, Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { addDaysToDate } from 'shared';
-
-// fraction of a past-year car's BOM items that get tied to a reimbursement request
-export const PAST_YEAR_BOM_TIE_CHANCE = 0.6;
-// fraction of the current-year car's BOM items that get tied to a reimbursement request
-// (it's only halfway through its year, so fewer of its BOM items have been purchased yet)
-export const CURRENT_YEAR_BOM_TIE_CHANCE = 0.3;
-// of all reimbursement products generated, the fraction that should reference a BOM item
-// vs. a general supply - the remainder (1 - this) are general supplies
-export const BOM_PRODUCT_RATIO = 0.7;
-
-export const ASSIGNEE_CHANCE = 0.75;
-export const EXTRA_COMMENT_CHANCE = 0.15;
-export const DELIVERY_CHANCE = 0.65;
-export const REIMBURSEMENT_CHANCE_PER_RECIPIENT = 0.7;
-
-const DENIED_CHANCE = 0.08;
-const MIN_DAYS_PER_STAGE = 2;
-const MAX_DAYS_PER_STAGE = 14;
+import { seedConfig } from '../seed-config.js';
 
 const STAGE_ORDER: Reimbursement_Status_Type[] = [
   Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL,
@@ -99,7 +82,9 @@ export const generateReimbursementStatusHistory = (
 ): ReimbursementStatusStep[] => {
   const history: ReimbursementStatusStep[] = [{ type: STAGE_ORDER[0], date: dateCreated }];
 
-  const isDenied = faker.datatype.boolean({ probability: DENIED_CHANCE });
+  const isDenied = faker.datatype.boolean({
+    probability: seedConfig.reimbursementRequest.deniedChance
+  });
   const deniedAfterStageIndex = isDenied ? faker.number.int({ min: 0, max: 2 }) : STAGE_ORDER.length;
 
   let currentDate = dateCreated;
@@ -107,7 +92,13 @@ export const generateReimbursementStatusHistory = (
   for (let stageIndex = 1; stageIndex < STAGE_ORDER.length; stageIndex++) {
     if (stageIndex > deniedAfterStageIndex) break;
 
-    const nextDate = addDaysToDate(currentDate, faker.number.int({ min: MIN_DAYS_PER_STAGE, max: MAX_DAYS_PER_STAGE }));
+    const nextDate = addDaysToDate(
+      currentDate,
+      faker.number.int({
+        min: seedConfig.reimbursementRequest.stageDelayDays.min,
+        max: seedConfig.reimbursementRequest.stageDelayDays.max
+      })
+    );
     if (nextDate > now) break;
 
     history.push({ type: STAGE_ORDER[stageIndex], date: nextDate });
@@ -115,7 +106,10 @@ export const generateReimbursementStatusHistory = (
   }
 
   if (isDenied && history[history.length - 1].type !== Reimbursement_Status_Type.REIMBURSED) {
-    const deniedDate = addDaysToDate(currentDate, faker.number.int({ min: 1, max: MAX_DAYS_PER_STAGE }));
+    const deniedDate = addDaysToDate(
+      currentDate,
+      faker.number.int({ min: 1, max: seedConfig.reimbursementRequest.stageDelayDays.max })
+    );
     if (deniedDate <= now) {
       history.push({ type: Reimbursement_Status_Type.DENIED, date: deniedDate });
     }
@@ -141,22 +135,25 @@ export const deriveMaterialStatusAfterTie = (history: ReimbursementStatusStep[])
 };
 
 export const generateProductCount = (faker: Faker): number =>
-  faker.helpers.weightedArrayElement([
-    { weight: 60, value: 1 },
-    { weight: 30, value: 2 },
-    { weight: 10, value: 3 }
-  ]);
+  faker.helpers.weightedArrayElement(seedConfig.reimbursementRequest.productCountWeights);
 
 /** Independently rolls each material against `tieChance` to decide which ones get a reimbursement product. */
 export const selectMaterialsToTie = <T>(faker: Faker, materials: T[], tieChance: number): T[] =>
   materials.filter(() => faker.datatype.boolean({ probability: tieChance }));
 
 /** How many general-supply products to generate so the overall BOM-vs-general-supply split lands on `BOM_PRODUCT_RATIO`. */
-export const generalSupplyCountForTiedMaterials = (tiedMaterialCount: number): number =>
-  Math.round(tiedMaterialCount * ((1 - BOM_PRODUCT_RATIO) / BOM_PRODUCT_RATIO));
+export const generalSupplyCountForTiedMaterials = (tiedMaterialCount: number): number => {
+  const { bomProductRatio } = seedConfig.reimbursementRequest;
+
+  return Math.round(tiedMaterialCount * ((1 - bomProductRatio) / bomProductRatio));
+};
 
 /** Fallback cost (in cents) for a BOM-tied product whose material has no price set. */
-export const generateFallbackMaterialCost = (faker: Faker): number => faker.number.int({ min: 500, max: 20000 });
+export const generateFallbackMaterialCost = (faker: Faker): number =>
+  faker.number.int({
+    min: seedConfig.reimbursementRequest.fallbackMaterialCost.min,
+    max: seedConfig.reimbursementRequest.fallbackMaterialCost.max
+  });
 
 export type ReimbursementProductSpec<T> = { material: T } | { generalSupply: true };
 
@@ -271,7 +268,10 @@ export const generateDateOfExpense = (
   latestPossibleDate: Date
 ): Date | undefined => {
   if (recipientCanSetAtCreation) {
-    return faker.date.recent({ days: faker.number.int({ min: 1, max: 10 }), refDate: dateCreated });
+    return faker.date.recent({
+      days: faker.number.int(seedConfig.reimbursementRequest.dateOfExpenseRecentDays),
+      refDate: dateCreated
+    });
   }
 
   if (!approvalDate) return undefined;

@@ -11,21 +11,23 @@ import {
 } from '../factories/user.factory.js';
 import { SeedProcess } from '../processes/seed-process.js';
 import type { FullUser } from '../context.js';
+import { seedConfig } from '../seed-config.js';
 
-const TOTAL_USERS = 350;
+const { totalUsers, roleDistribution } = seedConfig.user;
+
 const BOOTSTRAP_APP_ADMINS = 1;
 
-const GUEST_COUNT = Math.round(TOTAL_USERS * 0.5);
-const MEMBER_COUNT = Math.round(TOTAL_USERS * 0.35);
-const LEADERSHIP_COUNT = Math.round(TOTAL_USERS * 0.1);
-const HEAD_COUNT = Math.round(TOTAL_USERS * 0.04);
+const GUEST_COUNT = Math.round(totalUsers * roleDistribution.guest);
+const MEMBER_COUNT = Math.round(totalUsers * roleDistribution.member);
+const LEADERSHIP_COUNT = Math.round(totalUsers * roleDistribution.leadership);
+const HEAD_COUNT = Math.round(totalUsers * roleDistribution.head);
 
 const ROLE_COUNTS = {
   [RoleEnum.GUEST]: GUEST_COUNT,
   [RoleEnum.MEMBER]: MEMBER_COUNT,
   [RoleEnum.LEADERSHIP]: LEADERSHIP_COUNT,
   [RoleEnum.HEAD]: HEAD_COUNT,
-  [RoleEnum.ADMIN]: TOTAL_USERS - BOOTSTRAP_APP_ADMINS - GUEST_COUNT - MEMBER_COUNT - LEADERSHIP_COUNT - HEAD_COUNT,
+  [RoleEnum.ADMIN]: totalUsers - BOOTSTRAP_APP_ADMINS - GUEST_COUNT - MEMBER_COUNT - LEADERSHIP_COUNT - HEAD_COUNT,
   [RoleEnum.APP_ADMIN]: 0
 } as const;
 

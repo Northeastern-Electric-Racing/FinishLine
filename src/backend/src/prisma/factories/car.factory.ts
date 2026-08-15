@@ -1,28 +1,28 @@
 import { Prisma } from '@prisma/client';
 import { Faker } from '@faker-js/faker';
 import { DateRange } from '../context.js';
+import { seedConfig } from '../seed-config.js';
 
 const CURRENT_YEAR = new Date().getFullYear();
-const CAR_COUNT = 5;
-
-const FROM_MONTH = 5; // May
-const FROM_DAY = 1;
-const TO_MONTH = 7; // July
-const TO_DAY = 31;
 
 export const getCarConfigs = (faker: Faker) => {
-  return Array.from({ length: CAR_COUNT }, (_, i) => {
-    const carYear = CURRENT_YEAR - (CAR_COUNT - 1) + i + 1;
+  const {
+    carCount,
+    seasonWindow: { fromMonth, fromDay, toMonth, toDay }
+  } = seedConfig.car;
+
+  return Array.from({ length: carCount }, (_, i) => {
+    const carYear = CURRENT_YEAR - (carCount - 1) + i + 1;
     const shortYear = String(carYear).slice(2);
 
     const start = faker.date.between({
-      from: new Date(carYear - 1, FROM_MONTH, FROM_DAY),
-      to: new Date(carYear - 1, TO_MONTH, TO_DAY)
+      from: new Date(carYear - 1, fromMonth, fromDay),
+      to: new Date(carYear - 1, toMonth, toDay)
     });
 
     const end = faker.date.between({
-      from: new Date(carYear, FROM_MONTH, FROM_DAY),
-      to: new Date(carYear, TO_MONTH, TO_DAY)
+      from: new Date(carYear, fromMonth, fromDay),
+      to: new Date(carYear, toMonth, toDay)
     });
 
     return {

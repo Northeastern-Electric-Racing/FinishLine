@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { addDaysToDate } from 'shared';
 import { DateRange } from '../context.js';
 import { clampDate } from '../dates.js';
+import { seedConfig } from '../seed-config.js';
 
 const BULLET_VERBS = [
   'Design',
@@ -38,17 +39,15 @@ const BULLET_SUFFIXES = [
 ];
 
 export const generateDescriptionBulletCount = (faker: Faker): number =>
-  faker.helpers.weightedArrayElement([
-    { weight: 10, value: 1 },
-    { weight: 30, value: 2 },
-    { weight: 30, value: 3 },
-    { weight: 20, value: 4 },
-    { weight: 10, value: 5 }
-  ]);
+  faker.helpers.weightedArrayElement(seedConfig.descriptionBullet.countWeights);
 
 export const generateDescriptionBulletText = (faker: Faker, wbsElementName: string): string => {
   const verb = faker.helpers.arrayElement(BULLET_VERBS);
-  const suffix = faker.helpers.maybe(() => faker.helpers.arrayElement(BULLET_SUFFIXES), { probability: 0.5 });
+
+  const suffix = faker.helpers.maybe(() => faker.helpers.arrayElement(BULLET_SUFFIXES), {
+    probability: seedConfig.descriptionBullet.suffixChance
+  });
+
   return suffix ? `${verb} ${wbsElementName} ${suffix}` : `${verb} ${wbsElementName}`;
 };
 
@@ -58,7 +57,17 @@ export const generateDescriptionBulletText = (faker: Faker, wbsElementName: stri
  * than the WBS element's own timeline end.
  */
 export const generateDescriptionBulletDateAdded = (faker: Faker, timeline: DateRange, now: Date): Date => {
-  const end = clampDate(addDaysToDate(timeline.start, faker.number.int({ min: 0, max: 14 })), timeline);
+  const end = clampDate(
+    addDaysToDate(
+      timeline.start,
+      faker.number.int({
+        min: 0,
+        max: seedConfig.descriptionBullet.maxDateAddedOffsetDays
+      })
+    ),
+    timeline
+  );
+
   return end > now ? now : end;
 };
 
@@ -70,6 +79,10 @@ export const descriptionBulletCreateInput = (
 ): Prisma.Description_BulletCreateInput => ({
   detail,
   dateAdded,
-  descriptionBulletType: { connect: { id: descriptionBulletTypeId } },
-  wbsElement: { connect: { wbsElementId } }
+  descriptionBulletType: {
+    connect: { id: descriptionBulletTypeId }
+  },
+  wbsElement: {
+    connect: { wbsElementId }
+  }
 });

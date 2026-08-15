@@ -1,0 +1,166 @@
+{
+  "car": {
+    "carCount": 5,
+    "seasonWindow": {
+      "fromMonth": 4,
+      "fromDay": 1,
+      "toMonth": 6,
+      "toDay": 31
+    }
+  },
+  "descriptionBullet": {
+    "countWeights": [
+      { "weight": 10, "value": 1 },
+      { "weight": 30, "value": 2 },
+      { "weight": 30, "value": 3 },
+      { "weight": 20, "value": 4 },
+      { "weight": 10, "value": 5 }
+    ],
+    "suffixChance": 0.5,
+    "maxDateAddedOffsetDays": 14
+  },
+  "scheduling": {
+    "hoursPerDay": 12,
+    "availabilityBlocks": {
+      "weekend": { "min": 0, "max": 4 },
+      "weekday": { "min": 4, "max": 10 }
+    }
+  },
+  "reimbursementRequest": {
+    "bomTieChance": {
+      "pastYear": 0.6,
+      "currentYear": 0.3
+    },
+    "bomProductRatio": 0.7,
+
+    "productCountWeights": [
+      { "weight": 60, "value": 1 },
+      { "weight": 30, "value": 2 },
+      { "weight": 10, "value": 3 }
+    ],
+
+    "deniedChance": 0.08,
+    "stageDelayDays": {
+      "min": 2,
+      "max": 14
+    },
+
+    "fallbackMaterialCost": {
+      "min": 500,
+      "max": 20000
+    },
+
+    "dateOfExpenseRecentDays": {
+      "min": 1,
+      "max": 10
+    },
+
+    "deliveryChance": 0.65,
+    "deliveryOffsetDays": {
+      "min": 1,
+      "max": 14
+    },
+
+    "assigneeChance": 0.75,
+    "extraCommentChance": 0.15,
+
+    "reimbursementChancePerRecipient": 0.7,
+    "reimbursementAmountMultiplier": {
+      "min": 0.5,
+      "max": 1
+    },
+
+    "pendingFinanceRecipientActorChance": 0.85
+  },
+  "project": {
+    "projectsPerCar": 5,
+    "teamCountWeights": [
+      { "weight": 85, "value": 1 },
+      { "weight": 12, "value": 2 },
+      { "weight": 3, "value": 3 }
+    ],
+    "linkCountWeights": [
+      { "weight": 45, "value": 0 },
+      { "weight": 35, "value": 1 },
+      { "weight": 15, "value": 2 },
+      { "weight": 5, "value": 3 }
+    ]
+  },
+  "user": {
+    "totalUsers": 350,
+    "roleDistribution": {
+      "guest": 0.5,
+      "member": 0.35,
+      "leadership": 0.1,
+      "head": 0.04
+    }
+  },
+  "team": {
+    "leadsPerTeam": {
+      "min": 1,
+      "max": 3
+    },
+    "membersPerTeam": {
+      "min": 8,
+      "max": 20
+    }
+  },
+  "workPackage": {
+    "countWeights": [
+      { "weight": 3, "value": 0 },
+      { "weight": 5, "value": 1 },
+      { "weight": 8, "value": 2 },
+      { "weight": 14, "value": 3 },
+      { "weight": 18, "value": 4 },
+      { "weight": 22, "value": 5 },
+      { "weight": 16, "value": 6 },
+      { "weight": 9, "value": 7 },
+      { "weight": 5, "value": 8 }
+    ],
+    "nullStageChance": 0.15,
+    "blockedChance": 0.3,
+    "durationWeeks": {
+      "min": 1,
+      "max": 12
+    }
+  },
+  "changeRequest": {
+    "projectCountWeights": [
+      { "weight": 15, "value": 0 },
+      { "weight": 45, "min": 1, "max": 3 },
+      { "weight": 30, "min": 4, "max": 8 },
+      { "weight": 10, "min": 9, "max": 15 }
+    ],
+    "workPackageCountWeights": [
+      { "weight": 20, "value": 0 },
+      { "weight": 55, "value": 1 },
+      { "weight": 20, "value": 2 },
+      { "weight": 5, "value": 3 }
+    ],
+    "accountCodeCountWeights": [
+      { "weight": 40, "value": 0 },
+      { "weight": 40, "min": 1, "max": 3 },
+      { "weight": 20, "min": 4, "max": 6 }
+    ],
+    "typeWeights": {
+      "workPackage": [
+        { "weight": 45, "value": "ACTIVATION" },
+        { "weight": 40, "value": "STAGE_GATE" },
+        { "weight": 15, "value": "STANDARD" }
+      ],
+      "project": [
+        { "weight": 97, "value": "STANDARD" },
+        { "weight": 3, "value": "LEADERSHIP" }
+      ]
+    },
+    "latestOutcomeWeights": [
+      { "weight": 57, "value": "APPROVED" },
+      { "weight": 39, "value": "PENDING" },
+      { "weight": 4, "value": "DENIED" }
+    ],
+    "resolvedOutcomeWeights": [
+      { "weight": 93, "value": "APPROVED" },
+      { "weight": 7, "value": "DENIED" }
+    ]
+  }
+}

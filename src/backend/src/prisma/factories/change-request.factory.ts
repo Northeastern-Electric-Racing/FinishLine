@@ -3,6 +3,7 @@ import { Account_Code, CR_Type, WBS_Element_Status, Work_Package_Stage, Prisma }
 import { DateRange } from '../context.js';
 import { clampDate, daysBetween } from '../dates.js';
 import { addDaysToDate } from 'shared';
+import { seedConfig, ReviewOutcome } from '../seed-config.js';
 
 export type SeedProposalBullet = { detail: string; descriptionBulletTypeId: string };
 export type SeedProposalLink = { url: string; linkTypeId: string };
@@ -25,8 +26,6 @@ export type SeedCrActor = { userId: string };
 export type SeedCrOverrides = Partial<Prisma.Change_RequestCreateInput>;
 export const WORK_PACKAGE_CR_TYPES: CR_Type[] = [CR_Type.ACTIVATION, CR_Type.STAGE_GATE];
 export const PROJECT_CR_TYPES: CR_Type[] = [CR_Type.STANDARD, CR_Type.LEADERSHIP];
-
-type ReviewOutcome = 'APPROVED' | 'DENIED' | 'PENDING';
 
 const STANDARD_WHY = [
   'Initial change request',
@@ -199,33 +198,16 @@ const AUTO_ACCEPTED_TYPES: CR_Type[] = [CR_Type.ACTIVATION, CR_Type.STAGE_GATE, 
 
 const isAutoAccepted = (type: CR_Type): boolean => AUTO_ACCEPTED_TYPES.includes(type);
 
-const crTypeForParent = (faker: Faker, isWorkPackage: boolean): CR_Type => {
-  if (isWorkPackage) {
-    return faker.helpers.weightedArrayElement([
-      { weight: 45, value: CR_Type.ACTIVATION },
-      { weight: 40, value: CR_Type.STAGE_GATE },
-      { weight: 15, value: CR_Type.STANDARD }
-    ]);
-  }
-
-  return faker.helpers.weightedArrayElement([
-    { weight: 97, value: CR_Type.STANDARD },
-    { weight: 3, value: CR_Type.LEADERSHIP }
-  ]);
-};
+const crTypeForParent = (faker: Faker, isWorkPackage: boolean): CR_Type =>
+  faker.helpers.weightedArrayElement(
+    isWorkPackage ? seedConfig.changeRequest.typeWeights.workPackage : seedConfig.changeRequest.typeWeights.project
+  );
 
 const latestOutcome = (faker: Faker): ReviewOutcome =>
-  faker.helpers.weightedArrayElement([
-    { weight: 57, value: 'APPROVED' as const },
-    { weight: 39, value: 'PENDING' as const },
-    { weight: 4, value: 'DENIED' as const }
-  ]);
+  faker.helpers.weightedArrayElement(seedConfig.changeRequest.latestOutcomeWeights);
 
 const resolvedOutcome = (faker: Faker): ReviewOutcome =>
-  faker.helpers.weightedArrayElement([
-    { weight: 93, value: 'APPROVED' as const },
-    { weight: 7, value: 'DENIED' as const }
-  ]);
+  faker.helpers.weightedArrayElement(seedConfig.changeRequest.resolvedOutcomeWeights);
 
 const pickDifferentActor = (faker: Faker, actors: SeedCrActor[], excludedIds: string[]): string => {
   const candidates = actors.filter(({ userId }) => !excludedIds.includes(userId));
@@ -341,28 +323,28 @@ const changesCreateInput = (
   }));
 };
 
+const weightedCount = (faker: Faker, options: typeof seedConfig.changeRequest.projectCountWeights): number =>
+  faker.helpers.weightedArrayElement(
+    options.map((option) => ({
+      weight: option.weight,
+      value:
+        'value' in option
+          ? option.value
+          : faker.number.int({
+              min: option.min,
+              max: option.max
+            })
+    }))
+  );
+
 export const crCountForProject = (faker: Faker): number =>
-  faker.helpers.weightedArrayElement([
-    { weight: 15, value: 0 },
-    { weight: 45, value: faker.number.int({ min: 1, max: 3 }) },
-    { weight: 30, value: faker.number.int({ min: 4, max: 8 }) },
-    { weight: 10, value: faker.number.int({ min: 9, max: 15 }) }
-  ]);
+  weightedCount(faker, seedConfig.changeRequest.projectCountWeights);
 
 export const crCountForWorkPackage = (faker: Faker): number =>
-  faker.helpers.weightedArrayElement([
-    { weight: 20, value: 0 },
-    { weight: 55, value: 1 },
-    { weight: 20, value: 2 },
-    { weight: 5, value: 3 }
-  ]);
+  faker.helpers.weightedArrayElement(seedConfig.changeRequest.workPackageCountWeights);
 
 export const crCountForAccountCode = (faker: Faker): number =>
-  faker.helpers.weightedArrayElement([
-    { weight: 40, value: 0 },
-    { weight: 40, value: faker.number.int({ min: 1, max: 3 }) },
-    { weight: 20, value: faker.number.int({ min: 4, max: 6 }) }
-  ]);
+  weightedCount(faker, seedConfig.changeRequest.accountCodeCountWeights);
 
 type BuildChangeRequestArgs = {
   faker: Faker;
