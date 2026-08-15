@@ -1,3 +1,4 @@
+import { CR_Type } from '@prisma/client';
 import { readFileSync } from 'fs';
 
 export type WeightedValue<T> = { weight: number; value: T };
@@ -74,6 +75,19 @@ export interface SeedConfig {
     nullStageChance: number;
     blockedChance: number;
     durationWeeks: NumberRange;
+  };
+  changeRequest: {
+    projectCountWeights: WeightedCount[];
+    workPackageCountWeights: WeightedValue<number>[];
+    accountCodeCountWeights: WeightedCount[];
+
+    typeWeights: {
+      workPackage: WeightedValue<CR_Type>[];
+      project: WeightedValue<CR_Type>[];
+    };
+
+    latestOutcomeWeights: WeightedValue<ReviewOutcome>[];
+    resolvedOutcomeWeights: WeightedValue<ReviewOutcome>[];
   };
 }
 
