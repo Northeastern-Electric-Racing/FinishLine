@@ -181,14 +181,7 @@ export default class NotificationsService {
         });
       });
 
-      const attendees = Array.from(
-        new Map(
-          event.requiredMembers
-            .concat(event.optionalMembers)
-            .concat(event.userCreated)
-            .map((attendee) => [attendee.userId, attendee])
-        ).values()
-      );
+      const attendees = event.requiredMembers.concat(event.optionalMembers);
 
       teamSlackIds.forEach((teamSlackId) => {
         const currentEvents = eventTeamMap.get(teamSlackId);
