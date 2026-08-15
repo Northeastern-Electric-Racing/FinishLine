@@ -17,6 +17,8 @@ import {
   setRuleStatus,
   setProjectRuleStatus,
   getRuleStatusHistory,
+  resetRulesetStatuses,
+  resetProjectRuleStatuses,
   getChildRules,
   getTopLevelRules,
   getAllRulesForRuleset,
@@ -229,6 +231,56 @@ export const useBulkToggleRuleTeam = () => {
       },
       onError: (error: Error) => {
         toast.error(`Failed to save assignments: ${error.message}`);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to reset every rule's general-view status back to Pending, for a whole ruleset.
+ */
+export const useResetRulesetStatuses = (rulesetId: string) => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<{ count: number }, Error, void>(
+    ['rules', 'resetRulesetStatuses', rulesetId],
+    async () => {
+      const { data } = await resetRulesetStatuses(rulesetId);
+      return data;
+    },
+    {
+      onSuccess: ({ count }) => {
+        queryClient.invalidateQueries(['rules']);
+        toast.success(`Reset ${count} rule status${count === 1 ? '' : 'es'} to Pending`);
+      },
+      onError: (error: Error) => {
+        toast.error(error.message);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to reset every project rule's status back to Pending, for a single project scoped to a single ruleset.
+ */
+export const useResetProjectRuleStatuses = (rulesetId: string, projectId: string) => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<{ count: number }, Error, void>(
+    ['rules', 'resetProjectRuleStatuses', rulesetId, projectId],
+    async () => {
+      const { data } = await resetProjectRuleStatuses(rulesetId, projectId);
+      return data;
+    },
+    {
+      onSuccess: ({ count }) => {
+        queryClient.invalidateQueries(['rules']);
+        toast.success(`Reset ${count} rule status${count === 1 ? '' : 'es'} to Pending`);
+      },
+      onError: (error: Error) => {
+        toast.error(error.message);
       }
     }
   );

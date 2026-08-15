@@ -210,6 +210,30 @@ export default class RulesController {
     }
   }
 
+  static async resetRulesetStatuses(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId } = req.params as Record<string, string>;
+
+      const count = await RulesService.resetRulesetStatuses(req.currentUser, req.organization, rulesetId);
+
+      res.status(200).json({ count });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async resetProjectRuleStatuses(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { rulesetId, projectId } = req.params as Record<string, string>;
+
+      const count = await RulesService.resetProjectRuleStatuses(req.currentUser, req.organization, rulesetId, projectId);
+
+      res.status(200).json({ count });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getRuleStatusHistory(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleId } = req.params as Record<string, string>;

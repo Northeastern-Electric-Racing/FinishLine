@@ -1289,6 +1289,186 @@ describe('Rule Tests', () => {
     });
   });
 
+  describe('Reset ruleset statuses', () => {
+    it('Resets every rule status in the ruleset to Pending and clears who/when', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule, leafRule1 } = await setupRules(car);
+
+      await RulesService.setRuleStatus(admin, organization, topLevelRule.ruleId, RuleStatus.PASS);
+      await RulesService.setRuleStatus(admin, organization, leafRule1.ruleId, RuleStatus.FAIL);
+
+      const count = await RulesService.resetRulesetStatuses(admin, organization, ruleset1.rulesetId);
+
+      expect(count).toBe(2);
+
+      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const updatedTopLevel = rules.find((r) => r.ruleId === topLevelRule.ruleId);
+      const updatedLeaf = rules.find((r) => r.ruleId === leafRule1.ruleId);
+
+      expect(updatedTopLevel?.status).toBe(RuleStatus.PENDING);
+      expect(updatedTopLevel?.statusUpdatedBy).toBeUndefined();
+      expect(updatedTopLevel?.statusUpdatedAt).toBeUndefined();
+      expect(updatedLeaf?.status).toBe(RuleStatus.PENDING);
+    });
+
+    it('Reset does not create Rule_Status_History entries', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule } = await setupRules(car);
+
+      await RulesService.setRuleStatus(admin, organization, topLevelRule.ruleId, RuleStatus.PASS);
+      const countBefore = await prisma.rule_Status_History.count();
+
+      await RulesService.resetRulesetStatuses(admin, organization, ruleset1.rulesetId);
+      const countAfter = await prisma.rule_Status_History.count();
+
+      expect(countAfter).toBe(countBefore);
+    });
+
+    it('Reset status fails if user does not have permission', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      await expect(
+        async () => await RulesService.resetRulesetStatuses(nonLeadership, organization, ruleset1.rulesetId)
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule status'));
+    });
+
+    it('Reset status only affects the given ruleset', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, ruleset2, topLevelRule } = await setupRules(car);
+
+      const otherRule = await prisma.rule.create({
+        data: {
+          ruleCode: 'X',
+          ruleContent: 'Rule in a different ruleset',
+          ruleset: { connect: { rulesetId: ruleset2.rulesetId } },
+          createdBy: { connect: { userId: admin.userId } }
+        }
+      });
+
+      await RulesService.setRuleStatus(admin, organization, topLevelRule.ruleId, RuleStatus.PASS);
+      await RulesService.setRuleStatus(admin, organization, otherRule.ruleId, RuleStatus.PASS);
+
+      await RulesService.resetRulesetStatuses(admin, organization, ruleset1.rulesetId);
+
+      const rules = await RulesService.getAllRulesForRuleset(ruleset2.rulesetId, organization.organizationId);
+      const untouchedRule = rules.find((r) => r.ruleId === otherRule.ruleId);
+
+      expect(untouchedRule?.status).toBe(RuleStatus.PASS);
+    });
+
+    it('Reset status when there is nothing to reset', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      const count = await RulesService.resetRulesetStatuses(admin, organization, ruleset1.rulesetId);
+
+      expect(count).toBe(0);
+    });
+  });
+
+  describe('Reset project rule statuses', () => {
+    it('Resets every project rule status for the project+ruleset', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+
+      await RulesService.setProjectRuleStatus(admin, organization, projectRule.projectRuleId, RuleStatus.PASS);
+
+      const count = await RulesService.resetProjectRuleStatuses(admin, organization, ruleset1.rulesetId, project.projectId);
+
+      expect(count).toBe(1);
+
+      const projectRules = await RulesService.getProjectRules(ruleset1.rulesetId, project.projectId, organization);
+      const updated = projectRules.find((pr) => pr.projectRuleId === projectRule.projectRuleId);
+
+      expect(updated?.status).toBe(RuleStatus.PENDING);
+      expect(updated?.statusUpdatedBy).toBeUndefined();
+      expect(updated?.statusUpdatedAt).toBeUndefined();
+    });
+
+    it('Reset project status does not create Rule_Status_History entries', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+
+      await RulesService.setProjectRuleStatus(admin, organization, projectRule.projectRuleId, RuleStatus.PASS);
+      const countBefore = await prisma.rule_Status_History.count();
+
+      await RulesService.resetProjectRuleStatuses(admin, organization, ruleset1.rulesetId, project.projectId);
+      const countAfter = await prisma.rule_Status_History.count();
+
+      expect(countAfter).toBe(countBefore);
+    });
+
+    it('Reset project status fails if user does not have permission', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+
+      await expect(
+        async () =>
+          await RulesService.resetProjectRuleStatuses(nonLeadership, organization, ruleset1.rulesetId, project.projectId)
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule status'));
+    });
+
+    it('Reset project status only affects the given project', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule } = await setupRules(car);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      const project1 = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber, 1);
+      const project2 = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber, 2);
+      const projectRule1 = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project1.projectId);
+      const projectRule2 = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project2.projectId);
+
+      await RulesService.setProjectRuleStatus(admin, organization, projectRule1.projectRuleId, RuleStatus.PASS);
+      await RulesService.setProjectRuleStatus(admin, organization, projectRule2.projectRuleId, RuleStatus.PASS);
+
+      await RulesService.resetProjectRuleStatuses(admin, organization, ruleset1.rulesetId, project1.projectId);
+
+      const project2Rules = await RulesService.getProjectRules(ruleset1.rulesetId, project2.projectId, organization);
+      const untouched = project2Rules.find((pr) => pr.projectRuleId === projectRule2.projectRuleId);
+
+      expect(untouched?.status).toBe(RuleStatus.PASS);
+    });
+
+    it('Reset project status only affects the given ruleset within that project', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, ruleset2, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+
+      const otherRule = await prisma.rule.create({
+        data: {
+          ruleCode: 'Y',
+          ruleContent: 'Rule in a different ruleset, same project',
+          ruleset: { connect: { rulesetId: ruleset2.rulesetId } },
+          createdBy: { connect: { userId: admin.userId } }
+        }
+      });
+      await RulesService.toggleRuleTeam(otherRule.ruleId, testTeam.teamId, admin, organization);
+
+      const projectRule1 = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+      const projectRule2 = await RulesService.createProjectRule(admin, organization, otherRule.ruleId, project.projectId);
+
+      await RulesService.setProjectRuleStatus(admin, organization, projectRule1.projectRuleId, RuleStatus.PASS);
+      await RulesService.setProjectRuleStatus(admin, organization, projectRule2.projectRuleId, RuleStatus.PASS);
+
+      await RulesService.resetProjectRuleStatuses(admin, organization, ruleset1.rulesetId, project.projectId);
+
+      const projectRules = await RulesService.getProjectRules(ruleset2.rulesetId, project.projectId, organization);
+      const untouched = projectRules.find((pr) => pr.projectRuleId === projectRule2.projectRuleId);
+
+      expect(untouched?.status).toBe(RuleStatus.PASS);
+    });
+  });
+
   describe('Edit Rule', () => {
     it('Fails if user is not an admin', async () => {
       const car = await createUniqueCar(orgId);

@@ -908,7 +908,109 @@ export default class RulesService {
   }
 
   /**
-   * Gets the full status history for a rule, every time status was marked PASS or FAIL. 
+   * Resets every rule's general-view status back to Pending, for a whole ruleset.
+   * Does not affect any rule's status within a project. Never creates history entries,
+   * since reverting to PENDING is not tracked.
+   * @param submitter the user resetting the statuses
+   * @param organization the organization of the ruleset
+   * @param rulesetId the id of the ruleset to reset
+   * @returns the number of rules that were reset
+   */
+  static async resetRulesetStatuses(submitter: User, organization: Organization, rulesetId: string): Promise<number> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('You do not have permissions to update rule status');
+    }
+
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      include: { car: { include: { wbsElement: true } } }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.deletedByUserId) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const result = await prisma.rule.updateMany({
+      where: { rulesetId, dateDeleted: null, status: { not: RuleStatus.PENDING } },
+      data: { status: RuleStatus.PENDING, statusUpdatedByUserId: null, statusUpdatedAt: null }
+    });
+
+    return result.count;
+  }
+
+  /**
+   * Resets every project rule's status back to Pending, for a single project, scoped to a
+   * single ruleset (a project can have rules from multiple ruleset types). Does not affect
+   * any rule's general-view status, or its status in any other project. Never creates history
+   * entries, since reverting to PENDING is not tracked.
+   * @param submitter the user resetting the statuses
+   * @param organization the organization of the project and ruleset
+   * @param rulesetId the ruleset to scope the reset to
+   * @param projectId the project whose rules should be reset
+   * @returns the number of project rules that were reset
+   */
+  static async resetProjectRuleStatuses(
+    submitter: User,
+    organization: Organization,
+    rulesetId: string,
+    projectId: string
+  ): Promise<number> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('You do not have permissions to update rule status');
+    }
+
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      include: { car: { include: { wbsElement: true } } }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.deletedByUserId) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const project = await prisma.project.findUnique({
+      where: { projectId },
+      include: { wbsElement: true }
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project', projectId);
+    }
+
+    if (project.wbsElement.dateDeleted) {
+      throw new DeletedException('Project', projectId);
+    }
+
+    if (project.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Project');
+    }
+
+    const result = await prisma.project_Rule.updateMany({
+      where: { projectId, dateDeleted: null, rule: { rulesetId }, status: { not: RuleStatus.PENDING } },
+      data: { status: RuleStatus.PENDING, statusUpdatedByUserId: null, statusUpdatedAt: null }
+    });
+
+    return result.count;
+  }
+
+  /**
+   * Gets the full status history for a rule, every time status was marked PASS or FAIL.
    * Reverting to PENDING does not create history.
    * @param user a user who is requesting the status history
    * @param organization the organization of the rule

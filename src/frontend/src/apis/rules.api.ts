@@ -132,6 +132,23 @@ export const getRuleStatusHistory = (ruleId: string, projectRuleId?: string) => 
 };
 
 /**
+ * Resets every rule's general-view status back to Pending, for a whole ruleset.
+ * @param rulesetId the ruleset to reset
+ */
+export const resetRulesetStatuses = (rulesetId: string) => {
+  return axios.post<{ count: number }>(apiUrls.rulesResetRulesetStatuses(rulesetId));
+};
+
+/**
+ * Resets every project rule's status back to Pending, for a single project scoped to a single ruleset.
+ * @param rulesetId the ruleset to scope the reset to
+ * @param projectId the project whose rules should be reset
+ */
+export const resetProjectRuleStatuses = (rulesetId: string, projectId: string) => {
+  return axios.post<{ count: number }>(apiUrls.rulesResetProjectRuleStatuses(rulesetId, projectId));
+};
+
+/**
  * Gets child rules
  */
 export const getChildRules = (ruleId: string) => {

@@ -25,6 +25,7 @@ import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
 import RuleContent from '../../../RulesPage/components/RuleContent';
 import RuleStatusHistoryModal from '../../../RulesPage/components/RuleStatusHistoryModal';
+import ResetStatusesModal from '../../../RulesPage/components/ResetStatusesModal';
 import { useRuleTreeNavigation } from '../../../RulesPage/useRuleTreeNavigation';
 import UpdateStatusPopover from './UpdateStatusPopover';
 import AddRuleModal from './AddProjectRuleModal';
@@ -33,7 +34,8 @@ import {
   useActiveRuleset,
   useProjectRules,
   useSetProjectRuleStatus,
-  useCreateProjectRule
+  useCreateProjectRule,
+  useResetProjectRuleStatuses
 } from '../../../../hooks/rules.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { InfoOutlined } from '@mui/icons-material';
@@ -58,6 +60,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
   const [selectedProjectRule, setSelectedProjectRule] = useState<ProjectRule | null>(null);
   const [historyModalProjectRule, setHistoryModalProjectRule] = useState<ProjectRule | null>(null);
+  const [showResetModal, setShowResetModal] = useState(false);
 
   // Fetch all ruleset types
   const { data: rulesetTypes, isLoading: rulesetTypesLoading, isError: rulesetTypesError } = useAllRulesetTypes();
@@ -85,6 +88,11 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   );
 
   const { mutateAsync: createProjectRuleMutation, isLoading: isCreating } = useCreateProjectRule();
+
+  const { mutateAsync: resetProjectRuleStatuses, isLoading: isResetting } = useResetProjectRuleStatuses(
+    activeRuleset?.rulesetId || '',
+    project.id
+  );
 
   // First team's ID, used only to pre-select a team tab on the assign-rules deep link
   const teamId = project.teams[0]?.teamId || '';
@@ -171,6 +179,16 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     }
   };
 
+  // Handle resetting all of this project's statuses (for the active ruleset) back to Pending
+  const handleResetStatuses = async () => {
+    await resetProjectRuleStatuses();
+    setShowResetModal(false);
+    // close any open history modal or status popover since statuses are changing
+    setStatusPopoverAnchor(null);
+    setSelectedProjectRule(null);
+    setHistoryModalProjectRule(null);
+  };
+
   // Handle tab change
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedRulesetTypeIndex(newValue);
@@ -246,9 +264,14 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           ))}
         </MuiTabs>
         {activeRuleset && (
-          <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
-            {areAllExpanded ? 'Collapse All' : 'Expand All'}
-          </NERButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
+              {areAllExpanded ? 'Collapse All' : 'Expand All'}
+            </NERButton>
+            <NERButton variant="outlined" onClick={() => setShowResetModal(true)}>
+              Reset Status
+            </NERButton>
+          </Box>
         )}
       </Box>
 
@@ -407,6 +430,16 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         />
       )}
 
+      {/* Reset Statuses Modal, scoped to this project + active ruleset */}
+      {showResetModal && activeRuleset && (
+        <ResetStatusesModal
+          scopeDescription={`the ${project.name} project's ${activeRuleset.name} rules`}
+          disabled={isResetting}
+          onHide={() => setShowResetModal(false)}
+          onReset={handleResetStatuses}
+        />
+      )}
+
       {/* Add Rule Modal */}
       {activeRuleset && (
         <AddRuleModal
@@ -420,7 +453,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       )}
 
       {/* Loading overlay */}
-      {(isUpdatingStatus || isCreating) && (
+      {(isUpdatingStatus || isCreating || isResetting) && (
         <Box
           sx={{
             position: 'fixed',

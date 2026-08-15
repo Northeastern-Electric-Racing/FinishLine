@@ -84,6 +84,8 @@ rulesRouter.get(
   validateInputs,
   RulesController.getRuleStatusHistory
 );
+rulesRouter.post('/ruleset/:rulesetId/resetStatuses', RulesController.resetRulesetStatuses);
+rulesRouter.post('/ruleset/:rulesetId/project/:projectId/resetStatuses', RulesController.resetProjectRuleStatuses);
 
 rulesRouter.post(
   '/rule/:ruleId/toggle-team',
