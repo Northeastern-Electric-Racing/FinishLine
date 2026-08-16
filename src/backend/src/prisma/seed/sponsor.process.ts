@@ -9,6 +9,7 @@ import {
 import { SeedProcess } from '../processes/seed-process.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
+import { TeamJoinRequestProcess } from './team-join-request.process.js';
 import { FullUser } from '../context.js';
 import { addDaysToDate } from 'shared';
 import {
@@ -97,7 +98,13 @@ type PlannedProspective = {
 
 export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
   dependencies() {
-    return [OrganizationProcess, UsersProcess];
+    return [
+      OrganizationProcess,
+      UsersProcess,
+      // Ensures guest -> member promotions from approved join requests have landed before this
+      // process picks sponsor assignees from the `members` pool.
+      TeamJoinRequestProcess
+    ];
   }
 
   async run({ organization, members, leadership, heads, admins }: SponsorInput): Promise<SponsorOutput> {

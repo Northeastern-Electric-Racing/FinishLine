@@ -7,6 +7,7 @@ import { WorkPackageOutput, WorkPackageProcess } from './work-package.process.js
 import { DescriptionBulletProcess } from './description-bullet.process.js';
 import { ConfigDataOutput, ConfigDataProcess } from './config-data.process.js';
 import { TeamOutput, TeamProcess } from './team.process.js';
+import { TeamJoinRequestProcess } from './team-join-request.process.js';
 import { DateRange } from '../context.js';
 import { WEEK_MS } from '../dates.js';
 import {
@@ -55,6 +56,9 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
       WorkPackageProcess,
       ConfigDataProcess,
       TeamProcess,
+      // Ensures the guest -> member promotions from approved join requests have already landed
+      // in the shared `members` pool before this process picks CR submitters/reviewers from it.
+      TeamJoinRequestProcess,
       DescriptionBulletProcess
     ];
   }

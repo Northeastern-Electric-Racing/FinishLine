@@ -15,10 +15,9 @@ import {
   WBS_Element_Status
 } from '@prisma/client';
 import prisma from '../src/prisma/prisma.js';
-import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed.js';
 import TeamsService from '../src/services/teams.services.js';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services.js';
-import { Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
+import { RoleEnum, TaskPriority, TaskStatus } from 'shared';
 import {
   batmanAppAdmin,
   batmanScheduleSettings,
@@ -199,20 +198,22 @@ export const createFinanceTeamAndLead = async (organization?: Organization) => {
 
   const lead = await createTestUser(
     {
-      ...dbSeedAllUsers.aang,
+      firstName: 'Aang',
+      lastName: 'Airbender',
+      email: 'aang@avatarBenders.com',
       googleAuthId: 'financeLead',
-      role: RoleEnum.LEADERSHIP,
-      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
+      role: RoleEnum.LEADERSHIP
     },
     organization.organizationId
   );
 
   const financeMember = await createTestUser(
     {
-      ...dbSeedAllUsers.johnBoddy,
+      firstName: 'John',
+      lastName: 'Boddy',
+      email: 'johnboddy@clue.com',
       googleAuthId: 'financeMember',
-      role: RoleEnum.MEMBER,
-      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
+      role: RoleEnum.MEMBER
     },
     organization.organizationId
   );
@@ -593,10 +594,11 @@ export const createTestDesignReviewEvent = async () => {
   );
   const lead = await createTestUser(
     {
-      ...dbSeedAllUsers.aang,
+      firstName: 'Aang',
+      lastName: 'Airbender',
+      email: 'aang@avatarBenders.com',
       googleAuthId: 'financeLead',
-      role: RoleEnum.LEADERSHIP,
-      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
+      role: RoleEnum.LEADERSHIP
     },
     organization.organizationId
   );
