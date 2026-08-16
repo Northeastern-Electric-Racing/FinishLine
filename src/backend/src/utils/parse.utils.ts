@@ -77,9 +77,9 @@ export const normalizeContent = (text: string): string => text.replace(/\s+/g, '
  * @returns array of parsed rules including main rule and any subrules
  */
 export const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
-  // "a." and "(a)" styles mark a subrule at a line start or after a colon
-  // "a)" style marks a subrule if following any whitespace
-  const letterPattern = /(?:(?<=^|:\s)([a-z])\.|(?<=^|:\s)\(([a-z])\)|(?<=^|\s)([a-z])\))\s+/gm;
+  // "a." style marks a subrule only at a line start or after a colon
+  // "(a)" and "a)" styles mark a subrule if following any whitespace
+  const letterPattern = /(?:(?<=^|:\s)([a-z])\.|(?<=^|\s)\(([a-z])\)|(?<=^|\s)([a-z])\))\s+/gm;
   const matches = [...content.matchAll(letterPattern)];
 
   if (matches.length === 0) {

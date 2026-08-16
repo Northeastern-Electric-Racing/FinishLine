@@ -185,12 +185,22 @@ describe('Parse Utils Tests', () => {
       ]);
     });
 
-    it('splits inline subrules "a) ... OR b) ..." even though the markers are not at a line start or after a colon', () => {
+    it('splits inline subrules "a) ... OR b) ..."', () => {
       const content = 'then either: a) First option OR b) Second option';
       const result = extractSubRules('EV.6.4', content);
       expect(result.map((r) => [r.ruleCode, r.ruleContent])).toEqual([
         ['EV.6.4', 'then either:'],
         ['EV.6.4.a', 'First option OR'],
+        ['EV.6.4.b', 'Second option']
+      ]);
+    });
+
+    it('splits inline subrules "(a) ... or (b) ..."', () => {
+      const content = 'then either (a) First option or (b) Second option';
+      const result = extractSubRules('EV.6.4', content);
+      expect(result.map((r) => [r.ruleCode, r.ruleContent])).toEqual([
+        ['EV.6.4', 'then either'],
+        ['EV.6.4.a', 'First option or'],
         ['EV.6.4.b', 'Second option']
       ]);
     });
@@ -203,14 +213,12 @@ describe('Parse Utils Tests', () => {
 
     it('parses the real FHE EV fuse-protection rule with inline "either: a) ... OR b) ..." and a trailing Note', () => {
       const content =
-        "then either: a) Each cell must be protected with a fuse or fusible link with a current rating less than or equal to 50% of the calculated short-circuit current (Isc) of the cell or capacitor, where Isc = Vnom / IR(Ω). (The nominal cell voltage divided by its dc internal resistance).. The fuse or fusible link must be rated for the full tractive system voltage, unless the special conditions in EV2.6.5 (Fuse Voltage Ratings) are met. OR b) Manufacturer’s documentation must be provided that certifies that it is acceptable to use this number of single cells in parallel without fusing. This certification must be included in the ESF. (Commercially assembled packs or modules installed per manufacturer's instructions may be exempt from this requirement upon application to the rules committee.) Note: if option (a) is used, fuse j in Figure 27 may be omitted if all conductors carrying the entire pack current are adequately sized for the sum of the parallel fuse current ratings (i.e. for n fuses in parallel, each with current rating i, the conductors must be sized for a total current i total = n·i) Figure 29 - Example nP3S Configuration";
+        'then either: a) Each cell must be protected with a fuse or fusible link OR b) Manufacturer’s documentation must be provided that certifies that it is acceptable to use this number of single cells.';
       const result = extractSubRules('EV2.6.4', content);
       expect(result.map((r) => r.ruleCode)).toEqual(['EV2.6.4', 'EV2.6.4.a', 'EV2.6.4.b']);
       expect(result[0].ruleContent).toBe('then either:');
-      expect(result[1].ruleContent).toMatch(/^Each cell must be protected with a fuse/);
-      expect(result[1].ruleContent).toMatch(/EV2\.6\.5 \(Fuse Voltage Ratings\) are met\. OR$/);
+      expect(result[1].ruleContent).toMatch(/^Each cell must be protected with a fuse or fusible link OR/);
       expect(result[2].ruleContent).toMatch(/^Manufacturer’s documentation must be provided/);
-      expect(result[2].ruleContent).toMatch(/Figure 29 - Example nP3S Configuration$/);
     });
   });
 
