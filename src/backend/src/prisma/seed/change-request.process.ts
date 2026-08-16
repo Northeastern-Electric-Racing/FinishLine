@@ -489,6 +489,83 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
 
     const changeRequests = [...createdWbsChangeRequests, ...createdBudgetChangeRequests];
 
+    // Guarantee the bootstrap app admin (who Cypress always logs in as) has representative CR
+    // activity, regardless of how the random submitter/reviewer assignment landed -- otherwise
+    // their "to review" and "approved" home page sections are always empty.
+    const [bootstrapAdmin] = appAdmins;
+    if (bootstrapAdmin) {
+      const pendingCrs = changeRequests.filter((cr) => cr.dateReviewed === null);
+      const toReview = this.faker.helpers.arrayElements(pendingCrs, Math.min(2, pendingCrs.length));
+      await Promise.all(
+        toReview.map((cr) =>
+          this.prisma.change_Request.update({
+            where: { crId: cr.crId },
+            data: { requestedReviewers: { connect: { userId: bootstrapAdmin.userId } } }
+          })
+        )
+      );
+
+      // Only touch submitterId/dateReviewed on CRs that are already accepted and whose type
+      // doesn't derive downstream state from dateReviewed (STAGE_GATE work package duration is
+      // computed from it during applyAcceptedWbsChanges above, so it's excluded here).
+      // "My Approved Change Requests" is filtered server-side by whichever car is selected in
+      // the UI, so this needs to guarantee 3 per car rather than 3 total -- otherwise it only
+      // shows up when the (arbitrary) car the CRs happened to land on is the one selected.
+      const toReviewIds = new Set(toReview.map((cr) => cr.crId));
+      const approvableByCarId = new Map<string, SeededChangeRequest[]>();
+      for (const cr of changeRequests) {
+        if (cr.accepted !== true || cr.type === CR_Type.STAGE_GATE || toReviewIds.has(cr.crId)) continue;
+        const carId = cr.wbsElement?.project?.carId;
+        if (!carId) continue;
+        const list = approvableByCarId.get(carId) ?? [];
+        list.push(cr);
+        approvableByCarId.set(carId, list);
+      }
+
+      await Promise.all(
+        Array.from(approvableByCarId.values()).flatMap((carCrs) => {
+          const toApprove = this.faker.helpers.arrayElements(carCrs, Math.min(3, carCrs.length));
+          return toApprove.map((cr, index) =>
+            this.prisma.change_Request.update({
+              where: { crId: cr.crId },
+              data: {
+                submitterId: bootstrapAdmin.userId,
+                dateReviewed: new Date(now.getTime() - (index + 1) * 24 * 60 * 60 * 1000)
+              }
+            })
+          );
+        })
+      );
+
+      // Ensure the bootstrap app admin has a non-complete project for each car under both
+      // "Projects I'm Leading" (WBS_Element.leadId specifically -- unrelated to team leadership)
+      // and "My Team's Projects" (via Team.leads). Both views are filtered by selected car and
+      // exclude COMPLETE projects (unless favorited), and CR-driven status changes (just applied
+      // above) are only final at this point, so this can't be guaranteed any earlier.
+      const leadCandidates = await this.prisma.project.findMany({
+        where: { wbsElement: { status: { not: WBS_Element_Status.COMPLETE }, dateDeleted: null } },
+        select: { wbsElementId: true, carId: true, teams: { select: { teamId: true } } },
+        distinct: ['carId']
+      });
+
+      await Promise.all([
+        ...leadCandidates.map((project) =>
+          this.prisma.wBS_Element.update({
+            where: { wbsElementId: project.wbsElementId },
+            data: { leadId: bootstrapAdmin.userId }
+          })
+        ),
+        ...leadCandidates
+          .filter((project) => project.teams.length > 0)
+          .map((project) =>
+            this.prisma.team.update({
+              where: { teamId: project.teams[0].teamId },
+              data: { leads: { connect: { userId: bootstrapAdmin.userId } } }
+            })
+          )
+      ]);
+    }
+
     const changeRequestsByWbsElementId = changeRequests.reduce<Record<string, Change_Request[]>>((acc, cr) => {
       if (cr.wbsElementId) {
         acc[cr.wbsElementId] ??= [];
