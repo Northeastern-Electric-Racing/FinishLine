@@ -135,6 +135,7 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
               control={control}
               render={({ field: { onChange, value: formValue } }) => (
                 <Autocomplete
+                  autoHighlight
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   filterSelectedOptions
                   multiple

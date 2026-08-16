@@ -29,6 +29,7 @@ const LabelDropdown: React.FC<LabelDropdownProps> = ({ value, onChange, sx }) =>
 
   return (
     <Autocomplete
+      autoHighlight
       multiple
       size="small"
       loading={isLoading}

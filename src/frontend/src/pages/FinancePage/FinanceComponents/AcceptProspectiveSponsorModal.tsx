@@ -216,6 +216,7 @@ const AcceptProspectiveSponsorModal = ({
             name="valueTypes"
             render={({ field: { onChange, value } }) => (
               <Autocomplete
+                autoHighlight
                 multiple
                 size="small"
                 options={VALUE_TYPE_OPTIONS}
@@ -319,6 +320,7 @@ const AcceptProspectiveSponsorModal = ({
             control={control}
             render={({ field }) => (
               <Autocomplete
+                autoHighlight
                 {...field}
                 multiple
                 options={yearsOptions}

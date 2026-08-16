@@ -48,6 +48,7 @@ const DropdownSelect: React.FC<DropdownSelectProps> = ({
   if (multiple) {
     return (
       <Autocomplete
+        autoHighlight
         multiple
         size={size}
         loading={loading}

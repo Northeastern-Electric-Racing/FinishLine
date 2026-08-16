@@ -88,6 +88,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   const requestReviewerDropdown = () => (
     <>
       <Autocomplete
+        autoHighlight
         isOptionEqualToValue={(option, value) => option.id === value.id}
         limitTags={1}
         disableCloseOnSelect

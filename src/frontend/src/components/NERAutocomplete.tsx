@@ -86,6 +86,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
         noOptionsText={noOptionsText}
         options={options}
         sx={autocompleteStyle}
+        autoHighlight
         disabled={disabled}
         size={size}
         renderInput={autocompleteRenderInput}
