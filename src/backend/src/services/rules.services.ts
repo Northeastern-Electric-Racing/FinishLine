@@ -1459,6 +1459,7 @@ export default class RulesService {
    * @param fileId google drive file id of the ruleset pdf
    * @param rulesetId id of the ruleset to save the parsed rules into
    * @param parserType type of parser to use (FSAE or FHE)
+   * @param firstRulePage 1-indexed page rules start on; pages before this are skipped instead of parsed
    * @returns array of saved rules with parent relationships established
    * @throws AccessDeniedException if user lacks permissions or ruleset belongs to another organization
    * @throws NotFoundException if ruleset doesn't exist
@@ -1471,7 +1472,8 @@ export default class RulesService {
     organizationId: string,
     fileId: string,
     rulesetId: string,
-    parserType: 'FSAE' | 'FHE'
+    parserType: 'FSAE' | 'FHE',
+    firstRulePage?: number
   ): Promise<SharedRule[]> {
     if (!(await userHasPermission(user.userId, organizationId, isLeadership))) {
       throw new AccessDeniedException('You do not have permissions to upload and parse rulesets');
@@ -1509,7 +1511,7 @@ export default class RulesService {
     }
     let parsedRules: ParsedRule[];
     try {
-      parsedRules = await parseRulesFromPdf(buffer, parserType);
+      parsedRules = await parseRulesFromPdf(buffer, parserType, firstRulePage);
       if (parsedRules.length === 0) {
         throw new HttpException(400, 'No rules found in provided file');
       }

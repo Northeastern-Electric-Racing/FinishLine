@@ -31,7 +31,13 @@ const RulesetPage: React.FC = () => {
   const [AddFileModalShow, setAddFileModalShow] = React.useState(false);
   const { data: rulesetType, isLoading, isError, error } = useRulesetType(rulesetTypeId);
 
-  const handleFileConfirm = async (data: { fileId: string; name: string; carNumber: number; parserType: string }) => {
+  const handleFileConfirm = async (data: {
+    fileId: string;
+    name: string;
+    carNumber: number;
+    parserType: string;
+    firstRulePage?: number;
+  }) => {
     setAddFileModalShow(false);
     toast.info('Creating ruleset and parsing rules...');
 
@@ -56,7 +62,8 @@ const RulesetPage: React.FC = () => {
       const parsedRules = await parseRuleset({
         rulesetId,
         fileId: data.fileId,
-        parserType: data.parserType as 'FSAE' | 'FHE'
+        parserType: data.parserType as 'FSAE' | 'FHE',
+        firstRulePage: data.firstRulePage
       });
       toast.success(`Successfully parsed ${parsedRules.length} rules!`);
     } catch (e) {

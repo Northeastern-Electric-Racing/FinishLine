@@ -6,12 +6,33 @@ export interface ParsedRule {
   parentRuleCode?: string;
 }
 
-export const parseRulesFromPdf = async (buffer: Buffer, parserType: 'FSAE' | 'FHE'): Promise<ParsedRule[]> => {
+const defaultPageRender = pdf.DEFAULT_OPTIONS.pagerender!;
+
+/**
+ * Skip text extraction for pages before firstRulePage.
+ * Useful for skipping TOC and other beginning content.
+ *
+ * @param firstRulePage page number to start parsing rules from (1-indexed)
+ */
+export const makePageRenderer = (firstRulePage?: number) => {
+  if (!firstRulePage || firstRulePage <= 1) return defaultPageRender;
+  return (pageData: { pageNumber: number }) => {
+    if (pageData.pageNumber < firstRulePage) return '';
+    return defaultPageRender(pageData);
+  };
+};
+
+export const parseRulesFromPdf = async (
+  buffer: Buffer,
+  parserType: 'FSAE' | 'FHE',
+  firstRulePage?: number
+): Promise<ParsedRule[]> => {
   const options = {
     // max page number to parse, 0 = all pages
     max: 0,
     // errors: 0, warnings: 1, infos: 5
-    verbosityLevel: 0 as const
+    verbosityLevel: 0 as const,
+    pagerender: makePageRenderer(firstRulePage)
   };
   const pdfData = await pdf(buffer, options);
 
@@ -25,17 +46,40 @@ export const parseRulesFromPdf = async (buffer: Buffer, parserType: 'FSAE' | 'FH
 };
 
 /**
- * Extracts lettered sub-rules from rule content (a, b, c, etc.)
- * "EV.5.2 Main text a. Sub-rule" becomes:
+ * Checks whether a line is only a page number (e.g. "7" or "Page 7 of 143").
+ * Safe to skip without risking dropping rule content.
+ * @param line line to check
+ */
+export const isPageNumberLine = (line: string): boolean => /^\d+$/.test(line);
+
+/**
+ * Removes "Page X of Y" wherever it occurs in a line
+ * @param line line to strip
+ * @returns the line with any "Page X of Y" occurrences removed and whitespace collapsed
+ */
+export const stripPageNumberPhrase = (line: string): string =>
+  line
+    .replace(/Page\s+\d+\s+of\s+\d+/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+// clean up whitespace and newlines in rule content
+export const normalizeContent = (text: string): string => text.replace(/\s+/g, ' ').trim();
+
+/**
+ * Extracts lettered sub-rules from rule content (a, b, c, etc.) when sub-rule starts on its own line.
+ * "EV.5.2 Main text\na. Sub-rule" becomes:
  * - EV.5.2 Main text
  * - EV.5.2.a Sub-rule
- * If no subrules exist, returns the original rule
+ * If no subrules exist, returns the original rule.
  * @param ruleCode parent rule code
  * @param content rule content to extract from
  * @returns array of parsed rules including main rule and any subrules
  */
-const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
-  const letterPattern = /\s+([a-z])\.\s+/g;
+export const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
+  // "a." style marks a subrule only at a line start or after a colon
+  // "(a)" and "a)" styles mark a subrule if following any whitespace
+  const letterPattern = /(?:(?<=^|:\s)([a-z])\.|(?<=^|\s)\(([a-z])\)|(?<=^|\s)([a-z])\))\s+/gm;
   const matches = [...content.matchAll(letterPattern)];
 
   if (matches.length === 0) {
@@ -43,7 +87,7 @@ const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
     return [
       {
         ruleCode,
-        ruleContent: content.trim(),
+        ruleContent: normalizeContent(content),
         parentRuleCode: findParentRuleCode(ruleCode)
       }
     ];
@@ -52,7 +96,7 @@ const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
 
   // Extract the main rule content (everything before the first lettered item)
   const firstMatchIndex = matches[0].index!;
-  const mainContent = content.substring(0, firstMatchIndex).trim();
+  const mainContent = normalizeContent(content.substring(0, firstMatchIndex));
 
   // add main rule
   subRules.push({
@@ -63,12 +107,13 @@ const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
 
   // Extract lettered sub-rules
   for (let i = 0; i < matches.length; i++) {
-    const [, letter] = matches[i];
+    const [, dotLetter, parenLetter, bareLetter] = matches[i];
+    const letter = dotLetter ?? parenLetter ?? bareLetter;
     const startIndex = matches[i].index! + matches[i][0].length;
 
     // Find where this sub-rule ends (either at next letter or end of rule content)
     const endIndex = i < matches.length - 1 ? matches[i + 1].index! : content.length;
-    const subRuleContent = content.substring(startIndex, endIndex).trim();
+    const subRuleContent = normalizeContent(content.substring(startIndex, endIndex));
     const subRuleCode = `${ruleCode}.${letter}`;
 
     subRules.push({
@@ -88,7 +133,7 @@ const extractSubRules = (ruleCode: string, content: string): ParsedRule[] => {
  * @param ruleCode rule code to find a parent for
  * @returns Parent rule code, or undefined if top level
  */
-const findParentRuleCode = (ruleCode: string): string | undefined => {
+export const findParentRuleCode = (ruleCode: string): string | undefined => {
   const parts = ruleCode.split('.');
   if (parts.length <= 1) {
     return undefined;
@@ -102,7 +147,7 @@ const findParentRuleCode = (ruleCode: string): string | undefined => {
  * @param rules array of parsed rules
  * @returns array of rules without duplicate rule codes and updated parent references
  */
-const handleDuplicateCodes = (rules: ParsedRule[]): ParsedRule[] => {
+export const handleDuplicateCodes = (rules: ParsedRule[]): ParsedRule[] => {
   const seenRuleCodes = new Map<string, number>();
   const codeMapping = new Map<string, string>(); // Maps original code to new code for duplicates
 
@@ -141,13 +186,25 @@ const handleDuplicateCodes = (rules: ParsedRule[]): ParsedRule[] => {
   });
 };
 
-/**************** FSAE ****************/
-
-const parseFSAERules = (text: string): ParsedRule[] => {
+/**
+ * Shared line-by-line parsing loop used by FSAE and FHE parsers.
+ * Parsers differ in how rule code is recognized and logic for orphaned parent ref fixes.
+ * @param text full extracted PDF text to parse
+ * @param parseRuleNumber recognizes whether a line starts a new rule (FSAE- or FHE-specific)
+ * @param fixOrphanedRules re-parents rules whose inferred parent code doesn't exist (FSAE- or FHE-specific)
+ * @returns array of parsed rules
+ */
+const parseRules = (
+  text: string,
+  parseRuleNumber: (line: string) => ParsedRule | null,
+  fixOrphanedRules: (rules: ParsedRule[]) => ParsedRule[]
+): ParsedRule[] => {
   const rules: ParsedRule[] = [];
   const lines = text.split('\n');
 
   let currentRule: { code: string; text: string } | null = null;
+  let unparsedText = '';
+  let unparsedCount = 0;
 
   const saveCurrentRule = () => {
     if (!currentRule) return;
@@ -155,37 +212,52 @@ const parseFSAERules = (text: string): ParsedRule[] => {
     rules.push(...parsedRules);
   };
 
+  // Text encountered with no rule open yet would otherwise disappear (e.g. before the first
+  // recognized rule) - keep it as its own top-level rule under an abstract code instead of dropping it.
+  const saveUnparsed = () => {
+    if (!unparsedText.trim()) return;
+    unparsedCount += 1;
+    rules.push({
+      ruleCode: `UNPARSED.${unparsedCount}`,
+      ruleContent: unparsedText.trim(),
+      parentRuleCode: undefined
+    });
+    unparsedText = '';
+  };
+
   for (const line of lines) {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
 
-    // Skip page headers/footers
-    if (isHeaderFooterFSAE(trimmedLine)) {
-      continue;
-    }
-
-    // Skip table of contents
-    if (/\.{4,}\s+\d+\s*$/.test(trimmedLine)) {
-      continue;
-    }
+    // Remove "Page X of Y", then if nothing real remains or just a page number left, skip entire line
+    const cleanedLine = stripPageNumberPhrase(trimmedLine);
+    if (!cleanedLine || isPageNumberLine(cleanedLine)) continue;
 
     // Check if this line starts a new rule
-    const rule = parseRuleNumberFSAE(trimmedLine);
+    const rule = parseRuleNumber(cleanedLine);
     if (rule) {
       saveCurrentRule();
+      saveUnparsed();
       currentRule = {
         code: rule.ruleCode,
         text: rule.ruleContent
       };
     } else if (currentRule) {
-      currentRule.text += ' ' + trimmedLine; // else append to existing rule
+      currentRule.text += '\n' + cleanedLine; // else append to existing rule
+    } else {
+      unparsedText += (unparsedText ? ' ' : '') + cleanedLine;
     }
   }
   saveCurrentRule();
+  saveUnparsed();
 
-  const fixedRules = fixOrphanedRulesFSAE(rules);
+  const fixedRules = fixOrphanedRules(rules);
   return handleDuplicateCodes(fixedRules);
 };
+
+/**************** FSAE ****************/
+
+export const parseFSAERules = (text: string): ParsedRule[] => parseRules(text, parseRuleNumberFSAE, fixOrphanedRulesFSAE);
 
 /**
  * Determines if this line starts a new rule, if so extracts code and content of the rule
@@ -193,11 +265,13 @@ const parseFSAERules = (text: string): ParsedRule[] => {
  * @param line single line in the extracted text from the ruleset pdf
  * @returns rule code and content, or null if this line does not start a new rule
  */
-const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
+export const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
   // Match rule patterns like "GR.1.1" followed by text
   const rulePattern = /^([A-Z]{1,4}(?:\.[\d]+)+)\s+(.+)$/;
   // Match section patterns like "GR - GENERAL REGULATIONS or PS - PRE-COMPETITION SUBMISSIONS"
   const sectionPattern = /^([A-Z]{1,4})\s*-\s*(.+)$/;
+  // Match a rule code alone on its own line, with body text starting on the next line
+  const bareCodePattern = /^([A-Z]{1,4}(?:\.[\d]+)+)$/;
 
   const match = line.match(rulePattern) || line.match(sectionPattern);
   if (match) {
@@ -207,31 +281,16 @@ const parseRuleNumberFSAE = (line: string): ParsedRule | null => {
       ruleContent: cleanContent
     };
   }
+
+  const bareMatch = line.match(bareCodePattern);
+  if (bareMatch) {
+    return {
+      ruleCode: bareMatch[1],
+      ruleContent: ''
+    };
+  }
+
   return null;
-};
-
-/**
- * Checks if a line is a page header/footer that should be skipped
- * @param line line to check
- * @returns true if line should be skipped
- */
-const isHeaderFooterFSAE = (line: string): boolean => {
-  const trimmed = line.trim();
-
-  // Match FSAE headers like "Formula SAE® Rules 2025 © 2024 SAE International Page 7 of 143 Version 1.0 31 Aug 2024"
-  if (/Formula SAE.*Rules.*\d{4}.*SAE International.*Page \d+ of \d+/i.test(trimmed)) {
-    return true;
-  }
-  // Match standalone page numbers
-  if (/^Page \d+ of \d+$/i.test(trimmed)) {
-    return true;
-  }
-  // Match version strings
-  if (/^Version \d+\.\d+.*\d{1,2}\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}$/i.test(trimmed)) {
-    return true;
-  }
-
-  return false;
 };
 
 /**
@@ -240,7 +299,7 @@ const isHeaderFooterFSAE = (line: string): boolean => {
  * @param rules array of parsed rules
  * @returns rules with corrected parent references
  */
-const fixOrphanedRulesFSAE = (rules: ParsedRule[]): ParsedRule[] => {
+export const fixOrphanedRulesFSAE = (rules: ParsedRule[]): ParsedRule[] => {
   const existingCodes = new Set(rules.map((r) => r.ruleCode));
 
   return rules.map((rule) => {
@@ -265,51 +324,7 @@ const fixOrphanedRulesFSAE = (rules: ParsedRule[]): ParsedRule[] => {
 
 /**************** FHE *****************/
 
-const parseFHERules = (text: string): ParsedRule[] => {
-  const rules: ParsedRule[] = [];
-  const lines = text.split('\n');
-  let inRulesSection = false;
-  let currentRule: { code: string; text: string } | null = null;
-
-  const saveCurrentRule = () => {
-    if (!currentRule) return;
-    const parsedRules = extractSubRules(currentRule.code, currentRule.text);
-    rules.push(...parsedRules);
-  };
-
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    if (!trimmedLine) continue;
-    if (/^Index of Tables/i.test(trimmedLine)) {
-      inRulesSection = true;
-    }
-    // Skip table of contents
-    if (inRulesSection) {
-      if (/^2025 Formula Hybrid.*Rules/i.test(trimmedLine)) {
-        saveCurrentRule();
-        currentRule = null;
-        continue;
-      }
-
-      // Check if this line starts a new rule
-      const rule = parseRuleNumberFHE(trimmedLine);
-      if (rule) {
-        saveCurrentRule();
-        currentRule = {
-          code: rule.ruleCode,
-          text: rule.ruleContent
-        };
-      } else if (currentRule) {
-        // Append to existing rule
-        currentRule.text += ' ' + trimmedLine;
-      }
-    }
-  }
-  saveCurrentRule();
-
-  const fixedRules = fixOrphanedRulesFHE(rules);
-  return handleDuplicateCodes(fixedRules);
-};
+export const parseFHERules = (text: string): ParsedRule[] => parseRules(text, parseRuleNumberFHE, fixOrphanedRulesFHE);
 
 /**
  * Determines if this line starts a new rule, if so extracts code and content of the rule
@@ -317,9 +332,13 @@ const parseFHERules = (text: string): ParsedRule[] => {
  * @param line single line in the extracted text from the ruleset pdf
  * @returns rule code and content, or null if this line does not start a new rule
  */
-const parseRuleNumberFHE = (line: string): ParsedRule | null => {
+export const parseRuleNumberFHE = (line: string): ParsedRule | null => {
   // Match FHE rule patterns like "1T3.17.1" followed by text
   const rulePattern = /^(\d+[A-Z]+\d+(?:\.\d+)*)\s+(.+)$/;
+  // Match FHE rule codes with no leading digit, like "EV5.6" (e.g. Electric Vehicle sections)
+  const plainLetterPattern = /^([A-Z]{1,4}\d+(?:\.\d+)*)\s+(.+)$/;
+  // Match a rule code alone on its own line, with body text starting on the next line
+  const bareCodePattern = /^(\d+[A-Z]+\d+(?:\.\d+)*|[A-Z]{1,4}\d+(?:\.\d+)*)$/;
 
   // "PART A1 - ADMINISTRATIVE REGULATIONS" removes "PART" and captures "A1" as rule code, rest as content
   const partMatch = line.match(/^PART\s+([A-Z0-9]+)\s+-\s+(.+)$/);
@@ -340,11 +359,19 @@ const parseRuleNumberFHE = (line: string): ParsedRule | null => {
     };
   }
 
-  const match = line.match(rulePattern);
+  const match = line.match(rulePattern) || line.match(plainLetterPattern);
   if (match) {
     return {
       ruleCode: match[1],
       ruleContent: match[2]
+    };
+  }
+
+  const bareMatch = line.match(bareCodePattern);
+  if (bareMatch) {
+    return {
+      ruleCode: bareMatch[1],
+      ruleContent: ''
     };
   }
 
@@ -358,7 +385,7 @@ const parseRuleNumberFHE = (line: string): ParsedRule | null => {
  * @param rules array of parsed rules
  * @returns rules with corrected parent references
  */
-const fixOrphanedRulesFHE = (rules: ParsedRule[]): ParsedRule[] => {
+export const fixOrphanedRulesFHE = (rules: ParsedRule[]): ParsedRule[] => {
   const existingCodes = new Set(rules.map((r) => r.ruleCode));
 
   return rules.map((rule) => {
