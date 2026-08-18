@@ -135,9 +135,9 @@ export default class RulesService {
     referencedRuleIds: string[] = [],
     imageFileIds: string[] = []
   ) {
-    // Check user has permission (members and above)
-    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest))) {
-      throw new AccessDeniedException('Only members and above can create rules');
+    // Check user has permission (leadership and above)
+    if (!(await userHasPermission(user.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('Only leadership and above can create rules');
     }
 
     // Verify ruleset exists and belongs to organization
@@ -869,9 +869,9 @@ export default class RulesService {
    *
    */
   static async toggleRuleTeam(ruleId: string, teamId: string, user: User, org: Organization) {
-    // Checks that the user is not a guest
-    if (!(await userHasPermission(user.userId, org.organizationId, notGuest))) {
-      throw new AccessDeniedGuestException('Toggle Rule Team');
+    // Checks that the user is leadership and above
+    if (!(await userHasPermission(user.userId, org.organizationId, isLeadership))) {
+      throw new AccessDeniedException('Only leadership and above can assign rules to teams');
     }
 
     // Checks that the rule exists and is not deleted

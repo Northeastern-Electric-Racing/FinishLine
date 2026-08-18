@@ -165,7 +165,14 @@ describe('Create Rules Tests', () => {
 
     it('fails when guest tries to create a rule', async () => {
       await expect(RulesService.createRule(wonderwoman, 'T.1.1', 'Some rule', rulesetId, organization)).rejects.toThrow(
-        new AccessDeniedException('Only members and above can create rules')
+        new AccessDeniedException('Only leadership and above can create rules')
+      );
+    });
+
+    it('fails when a member tries to create a rule', async () => {
+      const member = await createTestUser(financeMember, orgId);
+      await expect(RulesService.createRule(member, 'T.1.1', 'Some rule', rulesetId, organization)).rejects.toThrow(
+        new AccessDeniedException('Only leadership and above can create rules')
       );
     });
 
@@ -266,10 +273,9 @@ describe('Create Rules Tests', () => {
       ).rejects.toThrow(new DeletedException('Referenced Rule', rule1.ruleId));
     });
 
-    it('allows members and above to create rules', async () => {
-      await RulesService.createRule(aquaman, 'T.1.1', 'Member created rule', rulesetId, organization);
-      await RulesService.createRule(aquaman, 'T.1.2', 'Leadership created rule', rulesetId, organization);
-      await RulesService.createRule(superman, 'T.1.3', 'Admin created rule', rulesetId, organization);
+    it('allows leadership and above to create rules', async () => {
+      await RulesService.createRule(aquaman, 'T.1.1', 'Leadership created rule', rulesetId, organization);
+      await RulesService.createRule(superman, 'T.1.2', 'Admin created rule', rulesetId, organization);
     });
 
     describe('Create ruleset', () => {
@@ -1613,7 +1619,14 @@ describe('Rule Tests', () => {
       const { topLevelRule } = await setupRules(car);
       await expect(
         async () => await RulesService.toggleRuleTeam(topLevelRule.ruleId, '', guest, organization)
-      ).rejects.toThrow(new AccessDeniedGuestException('Toggle Rule Team'));
+      ).rejects.toThrow(new AccessDeniedException('Only leadership and above can assign rules to teams'));
+    });
+    it('Fails if user is a member', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      await expect(
+        async () => await RulesService.toggleRuleTeam(topLevelRule.ruleId, '', nonLeadership, organization)
+      ).rejects.toThrow(new AccessDeniedException('Only leadership and above can assign rules to teams'));
     });
     it('Fails if rule does not exist', async () => {
       await expect(async () => await RulesService.toggleRuleTeam('fake-rule-id', '', admin, organization)).rejects.toThrow(

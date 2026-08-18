@@ -19,7 +19,7 @@ import {
   IconButton,
   Tooltip
 } from '@mui/material';
-import { Project, ProjectRule, Rule } from 'shared';
+import { Project, ProjectRule, Rule, isLeadership } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
@@ -34,6 +34,7 @@ import {
   useSetRuleCompletion,
   useCreateProjectRule
 } from '../../../../hooks/rules.hooks';
+import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { InfoOutlined } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
@@ -50,6 +51,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const toast = useToast();
   const theme = useTheme();
   const history = useHistory();
+  const user = useCurrentUser();
 
   // State for modals and popovers
   const [selectedRulesetTypeIndex, setSelectedRulesetTypeIndex] = useState(0);
@@ -312,58 +314,60 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         }}
       >
         <Box sx={{ borderBottom: `2px solid ${theme.palette.divider}`, mb: 2, ml: '30px' }} />
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2, pr: '30px', pb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* Assign Rules Tooltip */}
-            <Tooltip
-              title={
-                teamNames.length > 0
-                  ? `Assign rules to the ${teamNames.join(', ')} team${
-                      teamNames.length === 1 ? '' : 's'
-                    } to add them to this project`
-                  : 'Add a team to this project to assign rules'
-              }
-              arrow
-              slotProps={{ tooltip: { sx: { textAlign: 'center' } } }}
-            >
-              <IconButton
-                size="small"
-                onClick={(e) => e.stopPropagation()}
-                sx={{
-                  padding: '5px',
-                  color: 'text.secondary'
-                }}
+        {isLeadership(user.role) && (
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2, pr: '30px', pb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {/* Assign Rules Tooltip */}
+              <Tooltip
+                title={
+                  teamNames.length > 0
+                    ? `Assign rules to the ${teamNames.join(', ')} team${
+                        teamNames.length === 1 ? '' : 's'
+                      } to add them to this project`
+                    : 'Add a team to this project to assign rules'
+                }
+                arrow
+                slotProps={{ tooltip: { sx: { textAlign: 'center' } } }}
               >
-                <InfoOutlined fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            {/* Assign Rules Button */}
+                <IconButton
+                  size="small"
+                  onClick={(e) => e.stopPropagation()}
+                  sx={{
+                    padding: '5px',
+                    color: 'text.secondary'
+                  }}
+                >
+                  <InfoOutlined fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              {/* Assign Rules Button */}
+              <NERButton
+                variant="outlined"
+                disabled={!activeRuleset || teamNames.length === 0}
+                // Assign rule page only supports highlighting a single team at a time
+                onClick={() =>
+                  activeRuleset &&
+                  history.push(
+                    `${routes.RULESET_EDIT.replace(':rulesetId', activeRuleset.rulesetId)}/assign-rules${
+                      teamId ? `?teamId=${teamId}` : ''
+                    }`
+                  )
+                }
+              >
+                Assign Rules
+              </NERButton>
+            </Box>
+            {/* Add Rule Button */}
             <NERButton
-              variant="outlined"
-              disabled={!activeRuleset || teamNames.length === 0}
-              // Assign rule page only supports highlighting a single team at a time
-              onClick={() =>
-                activeRuleset &&
-                history.push(
-                  `${routes.RULESET_EDIT.replace(':rulesetId', activeRuleset.rulesetId)}/assign-rules${
-                    teamId ? `?teamId=${teamId}` : ''
-                  }`
-                )
-              }
+              variant="contained"
+              sx={{ color: '#ededed' }}
+              onClick={() => setAddRuleModalOpen(true)}
+              disabled={teamNames.length === 0 || hasNoActiveRuleset}
             >
-              Assign Rules
+              Add Rule
             </NERButton>
           </Box>
-          {/* Add Rule Button */}
-          <NERButton
-            variant="contained"
-            sx={{ color: '#ededed' }}
-            onClick={() => setAddRuleModalOpen(true)}
-            disabled={teamNames.length === 0 || hasNoActiveRuleset}
-          >
-            Add Rule
-          </NERButton>
-        </Box>
+        )}
       </Box>
 
       {/* Update Status Popover */}

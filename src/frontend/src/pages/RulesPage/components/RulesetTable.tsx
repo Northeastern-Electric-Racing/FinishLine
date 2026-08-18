@@ -23,7 +23,8 @@ import { useHistory, useParams } from 'react-router-dom';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useDeleteRuleset, useRulesetsByType, useUpdateRuleset } from '../../../hooks/rules.hooks';
-import { Ruleset } from 'shared';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { Ruleset, isLeadership } from 'shared';
 import { routes } from '../../../utils/routes';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Delete } from '@mui/icons-material';
@@ -43,6 +44,7 @@ const RulesetTable: React.FC = () => {
   const { rulesetTypeId } = useParams<RulesetParams>();
   const toast = useToast();
   const history = useHistory();
+  const user = useCurrentUser();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -192,27 +194,29 @@ const RulesetTable: React.FC = () => {
                     />
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                    <NERButton
-                      onClick={() => handleEditRuleset(ruleset.rulesetId)}
-                      disabled={!hasRules(ruleset)}
-                      sx={{
-                        backgroundColor: theme.palette.grey[800],
-                        color: theme.palette.getContrastText(theme.palette.grey[600]),
-                        '&:hover': {
-                          backgroundColor: theme.palette.grey[700]
-                        },
-                        marginRight: '10px',
-                        padding: '4px',
-                        lineHeight: 1,
-                        borderRadius: '6px',
-                        '&.Mui-disabled': {
-                          backgroundColor: theme.palette.grey[900],
-                          color: theme.palette.grey[600]
-                        }
-                      }}
-                    >
-                      Edit/Assign Rules
-                    </NERButton>
+                    {isLeadership(user.role) && (
+                      <NERButton
+                        onClick={() => handleEditRuleset(ruleset.rulesetId)}
+                        disabled={!hasRules(ruleset)}
+                        sx={{
+                          backgroundColor: theme.palette.grey[800],
+                          color: theme.palette.getContrastText(theme.palette.grey[600]),
+                          '&:hover': {
+                            backgroundColor: theme.palette.grey[700]
+                          },
+                          marginRight: '10px',
+                          padding: '4px',
+                          lineHeight: 1,
+                          borderRadius: '6px',
+                          '&.Mui-disabled': {
+                            backgroundColor: theme.palette.grey[900],
+                            color: theme.palette.grey[600]
+                          }
+                        }}
+                      >
+                        Edit/Assign Rules
+                      </NERButton>
+                    )}
                     <NERButton
                       onClick={() => handleViewRuleset(ruleset.rulesetId)}
                       disabled={!hasRules(ruleset)}
@@ -291,27 +295,29 @@ const RulesetTable: React.FC = () => {
                       />
                     </TableCell>
                     <TableCell align="center">
-                      <NERButton
-                        onClick={() => handleEditRuleset(ruleset.rulesetId)}
-                        disabled={!hasRules(ruleset)}
-                        sx={{
-                          backgroundColor: theme.palette.grey[800],
-                          color: theme.palette.getContrastText(theme.palette.grey[600]),
-                          '&:hover': {
-                            backgroundColor: theme.palette.grey[700]
-                          },
-                          marginRight: '10px',
-                          padding: '4px',
-                          lineHeight: 1,
-                          borderRadius: '6px',
-                          '&.Mui-disabled': {
-                            backgroundColor: theme.palette.grey[900],
-                            color: theme.palette.grey[600]
-                          }
-                        }}
-                      >
-                        Edit/Assign Rules
-                      </NERButton>
+                      {isLeadership(user.role) && (
+                        <NERButton
+                          onClick={() => handleEditRuleset(ruleset.rulesetId)}
+                          disabled={!hasRules(ruleset)}
+                          sx={{
+                            backgroundColor: theme.palette.grey[800],
+                            color: theme.palette.getContrastText(theme.palette.grey[600]),
+                            '&:hover': {
+                              backgroundColor: theme.palette.grey[700]
+                            },
+                            marginRight: '10px',
+                            padding: '4px',
+                            lineHeight: 1,
+                            borderRadius: '6px',
+                            '&.Mui-disabled': {
+                              backgroundColor: theme.palette.grey[900],
+                              color: theme.palette.grey[600]
+                            }
+                          }}
+                        >
+                          Edit/Assign Rules
+                        </NERButton>
+                      )}
                       <NERButton
                         onClick={() => handleViewRuleset(ruleset.rulesetId)}
                         disabled={!hasRules(ruleset)}
