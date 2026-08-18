@@ -21,12 +21,14 @@ import {
   NotFoundException
 } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
+import { isUserPartOfTeams } from '../utils/teams.utils.js';
 import {
   getProjectRuleQueryArgs,
   getRulesetQueryArgs,
   getRulePreviewQueryArgs,
   getRulesetTypeQueryArgs
 } from '../prisma-query-args/rules.query-args.js';
+import { getTeamPreviewQueryArgs } from '../prisma-query-args/teams.query-args.js';
 import {
   ruleTransformer,
   projectRuleTransformer,
@@ -818,7 +820,9 @@ export default class RulesService {
 
   /**
    * Sets the completion of a rule. Completion is global to the rule, so marking it complete
-   * (or incomplete) is reflected everywhere the rule appears.
+   * (or incomplete) is reflected everywhere the rule appears. Leadership and above can update
+   * completion anywhere; members can only update it within a project whose team they're on
+   * (general-view updates, i.e. no projectId, always require leadership).
    * @param submitter the user updating the completion
    * @param organization the organization of the rule
    * @param ruleId the id of the rule to update
@@ -833,8 +837,32 @@ export default class RulesService {
     isComplete: boolean,
     projectId?: string
   ): Promise<SharedRule> {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
-      throw new AccessDeniedException('You do not have permissions to update rule completion');
+    const hasOrgWidePermission = await userHasPermission(submitter.userId, organization.organizationId, isLeadership);
+
+    if (!hasOrgWidePermission) {
+      if (!projectId) {
+        throw new AccessDeniedException('You do not have permissions to update rule completion');
+      }
+
+      const project = await prisma.project.findUnique({
+        where: { projectId },
+        include: {
+          wbsElement: true,
+          teams: getTeamPreviewQueryArgs(organization.organizationId)
+        }
+      });
+
+      if (!project) {
+        throw new NotFoundException('Project', projectId);
+      }
+
+      if (project.wbsElement.organizationId !== organization.organizationId) {
+        throw new InvalidOrganizationException('Project');
+      }
+
+      if (!isUserPartOfTeams(project.teams, submitter)) {
+        throw new AccessDeniedException('You do not have permissions to update rule completion for this project');
+      }
     }
 
     const rule = await prisma.rule.findUnique({

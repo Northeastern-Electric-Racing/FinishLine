@@ -1260,14 +1260,45 @@ describe('Rule Tests', () => {
       expect(updatedRule.completedInProject).toBeUndefined();
     });
 
-    it('Set rule completion fails if user does not have permission', async () => {
+    it('Set rule completion fails if a member is not on the project team', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
 
       await expect(
         async () =>
           await RulesService.setRuleCompletion(nonLeadership, organization, topLevelRule.ruleId, true, project.projectId)
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule completion for this project'));
+    });
+
+    it('Set rule completion fails if a member tries to update the general-view status', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+
+      await expect(
+        async () => await RulesService.setRuleCompletion(nonLeadership, organization, topLevelRule.ruleId, true)
       ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule completion'));
+    });
+
+    it('Set rule completion succeeds if a member is on the project team', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const memberProject = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await prisma.team.update({
+        where: { teamId: testTeam.teamId },
+        data: { members: { connect: { userId: nonLeadership.userId } } }
+      });
+
+      const updatedRule = await RulesService.setRuleCompletion(
+        nonLeadership,
+        organization,
+        topLevelRule.ruleId,
+        true,
+        memberProject.projectId
+      );
+
+      expect(updatedRule.isComplete).toBe(true);
+      expect(updatedRule.completedBy?.firstName).toBe(nonLeadership.firstName);
+      expect(updatedRule.completedInProject?.projectId).toBe(memberProject.projectId);
     });
   });
 
@@ -1484,9 +1515,7 @@ describe('Rule Tests', () => {
 
       await expect(
         async () => await RulesService.deleteRuleset(ruleset1.rulesetId, nonLeadership.userId, organization.organizationId)
-      ).rejects.toThrow(
-        new AccessDeniedException('Only admins, or leadership/heads who created this ruleset, can delete a ruleset.')
-      );
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to delete this ruleset.'));
     });
     it('Delete ruleset succeeds if a leadership user created the ruleset', async () => {
       const car = await createUniqueCar(orgId);
@@ -1527,9 +1556,7 @@ describe('Rule Tests', () => {
 
       await expect(
         async () => await RulesService.deleteRuleset(ruleset.rulesetId, leadershipUser.userId, organization.organizationId)
-      ).rejects.toThrow(
-        new AccessDeniedException('Only admins, or leadership/heads who created this ruleset, can delete a ruleset.')
-      );
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to delete this ruleset.'));
     });
     it('Delete ruleset fails if ruleset was already deleted', async () => {
       const car = await createUniqueCar(orgId);

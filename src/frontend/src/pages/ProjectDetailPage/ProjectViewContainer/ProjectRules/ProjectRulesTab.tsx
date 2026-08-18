@@ -42,6 +42,7 @@ import { routes } from '../../../../utils/routes';
 import RuleStatusTag from '../../../RulesPage/components/RuleStatusTag';
 import { NERButton } from '../../../../components/NERButton';
 import { compareRuleCodes } from '../../../../utils/rules.utils';
+import { isUserOnTeam } from '../../../../utils/teams.utils';
 
 interface ProjectRulesTabProps {
   project: Project;
@@ -89,6 +90,9 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   // First team's ID, used only to pre-select a team tab on the assign-rules deep link
   const teamId = project.teams[0]?.teamId || '';
   const teamNames = project.teams.map((team) => team.teamName);
+
+  // leadership can update status anywhere; members can only update it for projects whose team they're on
+  const canUpdateStatus = isLeadership(user.role) || project.teams.some((team) => isUserOnTeam(team, user));
 
   // Convert project rules to rules for display
   // Sorted by rule code so both top-level rows and their children render in stable numeric order
@@ -192,7 +196,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         rule={rule}
         allRules={projectRuleList}
         popoverOpen={isPopoverOpenForRule}
-        onClick={isLeafRule ? (e) => handleStatusClick(e, rule) : undefined}
+        onClick={isLeafRule && canUpdateStatus ? (e) => handleStatusClick(e, rule) : undefined}
       />
     );
   };

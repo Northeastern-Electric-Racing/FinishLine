@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
-import { Rule } from 'shared';
+import { Rule, isLeadership } from 'shared';
 import RuleRow from '../RuleRow';
 import RuleStatusTag from './RuleStatusTag';
 import RuleContent from './RuleContent';
 import UpdateStatusPopover from '../../ProjectDetailPage/ProjectViewContainer/ProjectRules/UpdateStatusPopover';
 import { useSetRuleCompletion } from '../../../hooks/rules.hooks';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
 
@@ -30,6 +31,7 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
 }) => {
   const theme = useTheme();
   const toast = useToast();
+  const user = useCurrentUser();
   const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
   const [selectedRule, setSelectedRule] = useState<Rule | null>(null);
 
@@ -76,10 +78,14 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
                   <RuleStatusTag
                     rule={r}
                     popoverOpen={selectedRule?.ruleId === r.ruleId && Boolean(statusPopoverAnchor)}
-                    onClick={(e) => {
-                      setSelectedRule(r);
-                      setStatusPopoverAnchor(e.currentTarget);
-                    }}
+                    onClick={
+                      isLeadership(user.role)
+                        ? (e) => {
+                            setSelectedRule(r);
+                            setStatusPopoverAnchor(e.currentTarget);
+                          }
+                        : undefined
+                    }
                   />
                 )}
                 backgroundColor={tableBackgroundColor}
