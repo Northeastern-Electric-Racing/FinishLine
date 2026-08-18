@@ -722,7 +722,11 @@ export default class RulesService {
     return rulesetTransformer(deletedRuleset);
   }
 
-  static async getAllRulesetTypes(organization: Organization, carId?: string): Promise<RulesetType[]> {
+  static async getAllRulesetTypes(user: User, organization: Organization, carId?: string): Promise<RulesetType[]> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view ruleset types');
+    }
+
     const rulesets = await prisma.ruleset_Type.findMany({
       where: {
         organizationId: organization.organizationId,
@@ -735,12 +739,17 @@ export default class RulesService {
 
   /**
    * Gets a ruleset type for a given ruleset type ID
+   * @param user the user requesting the ruleset type
    * @param rulesetTypeId id of ruleset type
    * @param organizationId id of organization
    * @param carId optional id of the car to scope revision file counts to
    * @returns ruleset type associated with provided ruleset type ID
    */
-  static async getRulesetType(rulesetTypeId: string, organizationId: string, carId?: string): Promise<RulesetType> {
+  static async getRulesetType(user: User, rulesetTypeId: string, organizationId: string, carId?: string): Promise<RulesetType> {
+    if (!(await userHasPermission(user.userId, organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view ruleset types');
+    }
+
     const rulesetType = await prisma.ruleset_Type.findUnique({
       where: {
         rulesetTypeId,
@@ -763,12 +772,22 @@ export default class RulesService {
 
   /**
    * Gets rulesets for a given ruleset type
+   * @param user the user requesting the rulesets
    * @param rulesetTypeId id of ruleset type
    * @param organizationId id of organization
    * @param carId optional id of the car to filter rulesets by
    * @returns rulesets associated with provided ruleset type
    */
-  static async getRulesetsByRulesetType(rulesetTypeId: string, organizationId: string, carId?: string): Promise<Ruleset[]> {
+  static async getRulesetsByRulesetType(
+    user: User,
+    rulesetTypeId: string,
+    organizationId: string,
+    carId?: string
+  ): Promise<Ruleset[]> {
+    if (!(await userHasPermission(user.userId, organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view rulesets');
+    }
+
     const rulesets = await prisma.ruleset.findMany({
       where: {
         rulesetTypeId,
@@ -1178,11 +1197,16 @@ export default class RulesService {
 
   /**
    * Gets all subrules of a specific rule.
+   * @param user the user requesting the child rules
    * @param ruleId the ID of the parent rule
    * @param organization the organization the rule belongs to
    * @returns an array of all child rules (the Rule object)
    */
-  static async getChildRules(ruleId: string, organization: Organization): Promise<SharedRule[]> {
+  static async getChildRules(user: User, ruleId: string, organization: Organization): Promise<SharedRule[]> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view rules');
+    }
+
     // Verify the parent rule exists and belongs to the organization
     const parentRule = await prisma.rule.findUnique({
       where: { ruleId },
@@ -1226,12 +1250,17 @@ export default class RulesService {
   /**
    * Gets rules assignable to a project that are not already assigned to it.
    * A project can belong to multiple teams, so rules from all of its teams are shown.
+   * @param user the user requesting the unassigned rules
    * @param rulesetId ruleset the rules are in
    * @param projectId the project the rules would be assigned to
    * @param organizationId the organization id
    * @returns the rules on one of the project's teams that are not already actively assigned to this project
    */
-  static async getUnassignedRulesForProjectRuleset(rulesetId: string, projectId: string, organizationId: string) {
+  static async getUnassignedRulesForProjectRuleset(user: User, rulesetId: string, projectId: string, organizationId: string) {
+    if (!(await userHasPermission(user.userId, organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view unassigned rules');
+    }
+
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
@@ -1300,12 +1329,22 @@ export default class RulesService {
 
   /**
    * Gets all rules associated with a specific project and ruleset
+   * @param user the user requesting the project rules
    * @param rulesetId the id of the ruleset
    * @param projectId the id of the project
    * @param organization the organization the project and ruleset belong to
    * @returns Array of ProjectRule objects
    */
-  static async getProjectRules(rulesetId: string, projectId: string, organization: Organization): Promise<ProjectRule[]> {
+  static async getProjectRules(
+    user: User,
+    rulesetId: string,
+    projectId: string,
+    organization: Organization
+  ): Promise<ProjectRule[]> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view project rules');
+    }
+
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       include: {
@@ -1366,10 +1405,15 @@ export default class RulesService {
 
   /**
    * Gets all rules with no parent id
+   * @param user the user requesting the top-level rules
    * @param rulesetId id of ruleset
    * @returns an array of rules with no parent Id
    */
-  static async getTopLevelRules(rulesetId: string, organizationId: string) {
+  static async getTopLevelRules(user: User, rulesetId: string, organizationId: string) {
+    if (!(await userHasPermission(user.userId, organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view rules');
+    }
+
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
@@ -1409,11 +1453,16 @@ export default class RulesService {
 
   /**
    * Gets every rule in a ruleset in a single query instead of walking it level by level.
+   * @param user the user requesting the rules
    * @param rulesetId id of ruleset
    * @param organizationId the organization the ruleset belongs to
    * @returns a flat array of every rule in the ruleset
    */
-  static async getAllRulesForRuleset(rulesetId: string, organizationId: string): Promise<SharedRule[]> {
+  static async getAllRulesForRuleset(user: User, rulesetId: string, organizationId: string): Promise<SharedRule[]> {
+    if (!(await userHasPermission(user.userId, organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view rules');
+    }
+
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {

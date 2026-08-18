@@ -124,7 +124,7 @@ export default class RulesController {
 
   static async getAllRulesetTypes(req: Request, res: Response, next: NextFunction) {
     try {
-      const rulesets = await RulesService.getAllRulesetTypes(req.organization, req.currentCar?.carId);
+      const rulesets = await RulesService.getAllRulesetTypes(req.currentUser, req.organization, req.currentCar?.carId);
       res.status(200).json(rulesets);
     } catch (error: unknown) {
       next(error);
@@ -135,6 +135,7 @@ export default class RulesController {
     try {
       const { rulesetTypeId } = req.params as Record<string, string>;
       const rulesets = await RulesService.getRulesetsByRulesetType(
+        req.currentUser,
         rulesetTypeId,
         req.organization.organizationId,
         req.currentCar?.carId
@@ -149,6 +150,7 @@ export default class RulesController {
     try {
       const { rulesetTypeId } = req.params as Record<string, string>;
       const rulesetType = await RulesService.getRulesetType(
+        req.currentUser,
         rulesetTypeId,
         req.organization.organizationId,
         req.currentCar?.carId
@@ -265,7 +267,7 @@ export default class RulesController {
   static async getChildRules(req: Request, res: Response, next: NextFunction) {
     try {
       const { ruleId: parentRuleId } = req.params as Record<string, string>;
-      const childrenRules: Rule[] = await RulesService.getChildRules(parentRuleId, req.organization);
+      const childrenRules: Rule[] = await RulesService.getChildRules(req.currentUser, parentRuleId, req.organization);
 
       res.status(200).json(childrenRules);
     } catch (error: unknown) {
@@ -278,6 +280,7 @@ export default class RulesController {
       const { rulesetId, projectId } = req.params as Record<string, string>;
 
       const rules = await RulesService.getUnassignedRulesForProjectRuleset(
+        req.currentUser,
         rulesetId,
         projectId,
         req.organization.organizationId
@@ -292,7 +295,7 @@ export default class RulesController {
     try {
       const { rulesetId, projectId } = req.params as Record<string, string>;
 
-      const projectRules = await RulesService.getProjectRules(rulesetId, projectId, req.organization);
+      const projectRules = await RulesService.getProjectRules(req.currentUser, rulesetId, projectId, req.organization);
 
       res.status(200).json(projectRules);
     } catch (error: unknown) {
@@ -303,7 +306,7 @@ export default class RulesController {
   static async getTopLevelRules(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetId } = req.params as Record<string, string>;
-      const rules = await RulesService.getTopLevelRules(rulesetId, req.organization.organizationId);
+      const rules = await RulesService.getTopLevelRules(req.currentUser, rulesetId, req.organization.organizationId);
       res.status(200).json(rules);
     } catch (error: unknown) {
       next(error);
@@ -313,7 +316,7 @@ export default class RulesController {
   static async getAllRulesForRuleset(req: Request, res: Response, next: NextFunction) {
     try {
       const { rulesetId } = req.params as Record<string, string>;
-      const rules = await RulesService.getAllRulesForRuleset(rulesetId, req.organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(req.currentUser, rulesetId, req.organization.organizationId);
       res.status(200).json(rules);
     } catch (error: unknown) {
       next(error);

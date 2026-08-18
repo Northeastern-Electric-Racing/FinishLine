@@ -164,7 +164,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       icon: <VolunteerActivismIcon />,
       route: routes.SPONSORS
     },
-    {
+    !onGuestHomePage && {
       name: 'Rules',
       icon: <WarningAmberRoundedIcon />,
       route: routes.RULES
