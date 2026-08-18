@@ -13,7 +13,6 @@ import {
 } from '../factories/work-package.factory.js';
 import { DAYS_PER_WEEK, daysBetween, WEEK_MS } from '../dates.js';
 import { WBS_Element_Status, Work_Package_Stage } from '@prisma/client';
-import { seedConfig } from '../seed-config.js';
 
 type WorkPackageInput = OrganizationOutput & UsersOutput & ProjectOutput;
 const BLOCKED_PERCENTAGE = 0.3;
