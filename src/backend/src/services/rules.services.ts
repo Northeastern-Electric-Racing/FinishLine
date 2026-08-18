@@ -704,10 +704,15 @@ export default class RulesService {
   static async deleteRuleset(rulesetId: string, deleterId: string, organizationId: string) {
     const ruleset = await RulesService.getRulesetWithQueryArgs(rulesetId);
 
+    // admins can delete any ruleset; leadership and heads can only delete a ruleset they created themselves
+    const isCreator = deleterId === ruleset.createdByUserId;
     const hasPermission =
-      (await userHasPermission(deleterId, organizationId, isAdmin)) || deleterId === ruleset.createdByUserId;
+      (await userHasPermission(deleterId, organizationId, isAdmin)) ||
+      (isCreator && (await userHasPermission(deleterId, organizationId, isLeadership)));
 
-    if (!hasPermission) throw new AccessDeniedException('Only admins can delete a ruleset.');
+    if (!hasPermission) {
+      throw new AccessDeniedException('You do not have permissions to delete this ruleset.');
+    }
 
     if (ruleset.active) {
       throw new HttpException(400, 'Cannot delete an active ruleset. Please deactivate it first.');
@@ -745,7 +750,12 @@ export default class RulesService {
    * @param carId optional id of the car to scope revision file counts to
    * @returns ruleset type associated with provided ruleset type ID
    */
-  static async getRulesetType(user: User, rulesetTypeId: string, organizationId: string, carId?: string): Promise<RulesetType> {
+  static async getRulesetType(
+    user: User,
+    rulesetTypeId: string,
+    organizationId: string,
+    carId?: string
+  ): Promise<RulesetType> {
     if (!(await userHasPermission(user.userId, organizationId, notGuest))) {
       throw new AccessDeniedGuestException('view ruleset types');
     }
@@ -1256,7 +1266,12 @@ export default class RulesService {
    * @param organizationId the organization id
    * @returns the rules on one of the project's teams that are not already actively assigned to this project
    */
-  static async getUnassignedRulesForProjectRuleset(user: User, rulesetId: string, projectId: string, organizationId: string) {
+  static async getUnassignedRulesForProjectRuleset(
+    user: User,
+    rulesetId: string,
+    projectId: string,
+    organizationId: string
+  ) {
     if (!(await userHasPermission(user.userId, organizationId, notGuest))) {
       throw new AccessDeniedGuestException('view unassigned rules');
     }
