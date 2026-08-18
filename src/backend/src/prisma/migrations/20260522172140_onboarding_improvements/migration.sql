@@ -54,6 +54,10 @@ ALTER TABLE "Milestone"
 ADD COLUMN "isOnNewMemberDashboard" BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN "isOnRecruitingDashboard" BOOLEAN NOT NULL DEFAULT false;
 
+-- Backfill isOnRecruitingDashboard: previously all milestones were shown on the recruiting dashboard
+UPDATE "Milestone"
+SET "isOnRecruitingDashboard" = true;
+
 -- CreateTable
 CREATE TABLE "Team_Join_Request" (
     "teamJoinRequestId" TEXT NOT NULL,
@@ -84,4 +88,18 @@ ALTER TABLE "Team_Join_Request" ADD CONSTRAINT "Team_Join_Request_reviewedByUser
 
 -- AlterTable
 ALTER TABLE "Link_Type" ADD COLUMN "isOnOnboardingDashboard" BOOLEAN NOT NULL DEFAULT false;
+
+-- Backfill isOnOnboardingDashboard: previously any org-level useful link (Link.organizationId set, as opposed to a
+-- project link tied to a wbsElement) not flagged isOnGuestHomePage was shown on the onboarding useful links section.
+-- A link type can only belong to one dashboard, so exclude ones already on the guest home page or new member dashboard.
+-- Plain project link types (never used as an org useful link) are left untouched.
+UPDATE "Link_Type"
+SET "isOnOnboardingDashboard" = true
+WHERE "isOnGuestHomePage" = false
+  AND "isOnNewMemberDashboard" = false
+  AND EXISTS (
+    SELECT 1 FROM "Link"
+    WHERE "Link"."linkTypeId" = "Link_Type"."id"
+      AND "Link"."organizationId" IS NOT NULL
+  );
 

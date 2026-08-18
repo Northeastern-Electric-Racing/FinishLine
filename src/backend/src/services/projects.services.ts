@@ -46,6 +46,17 @@ import {
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
 
+const validateSingleLinkTypeDashboard = (
+  isOnGuestHomePage: boolean,
+  isOnNewMemberDashboard: boolean,
+  isOnOnboardingDashboard: boolean
+): void => {
+  const dashboardFlagCount = [isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboardingDashboard].filter(Boolean).length;
+  if (dashboardFlagCount > 1) {
+    throw new HttpException(400, 'A LinkType can only be on one dashboard at a time');
+  }
+};
+
 export default class ProjectsService {
   /**
    * Get all the non deleted projects in the database for the given organization
@@ -621,6 +632,8 @@ export default class ProjectsService {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('Only admins can create link types');
 
+    validateSingleLinkTypeDashboard(isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboardingDashboard);
+
     const existingLinkType = await prisma.link_Type.findUnique({
       where: { uniqueLinkType: { name, organizationId: organization.organizationId } }
     });
@@ -669,6 +682,8 @@ export default class ProjectsService {
   ): Promise<LinkType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('Only an admin can update the linkType');
+
+    validateSingleLinkTypeDashboard(isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboardingDashboard);
 
     // check if the linkType we are trying to update exists
     const linkType = await prisma.link_Type.findUnique({
