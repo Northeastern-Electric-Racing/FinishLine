@@ -77,6 +77,7 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
                 rightContent={(r) => (
                   <RuleStatusTag
                     rule={r}
+                    isLeaf={r.subRuleIds.length === 0}
                     popoverOpen={selectedRule?.ruleId === r.ruleId && Boolean(statusPopoverAnchor)}
                     onClick={(e) => {
                       setSelectedRule(r);

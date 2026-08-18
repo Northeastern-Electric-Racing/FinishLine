@@ -38,21 +38,6 @@ export const getDescendantLeafRules = (rule: Rule, allRules: Rule[] = []): Rule[
 };
 
 /**
- * A rule's status, rolled up from its descendant leaves. A leaf uses its own status; a parent
- * rolls up with priority Fail > Pending > Pass: Fail if any leaf has failed, else Pending if any
- * leaf is still pending, else Pass only once every leaf has passed.
- * @param rule - The rule to check
- * @param allRules - All rules in scope
- * @returns The status of the rule (or its status computed by its leaves)
- */
-export const getRuleStatus = (rule: Rule, allRules: Rule[] = []): RuleStatus => {
-  const leafRules = getDescendantLeafRules(rule, allRules);
-  if (leafRules.some((leafRule) => leafRule.status === RuleStatus.FAIL)) return RuleStatus.FAIL;
-  if (leafRules.some((leafRule) => leafRule.status === RuleStatus.PENDING)) return RuleStatus.PENDING;
-  return RuleStatus.PASS;
-};
-
-/**
  * Status chip label and color for a rule status.
  */
 export const getRuleStatusConfig = (status: RuleStatus): { label: string; color: string } => {

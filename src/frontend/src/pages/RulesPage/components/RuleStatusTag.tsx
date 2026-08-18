@@ -6,11 +6,12 @@
 import { Box, IconButton, Tooltip } from '@mui/material';
 import { InfoOutlined, KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import { Rule, formatTimestamp } from 'shared';
-import { getRuleStatusConfig, getRuleStatus } from '../../../utils/rules.utils';
+import { getRuleStatusConfig } from '../../../utils/rules.utils';
 
 interface RuleStatusTagProps {
   rule: Rule;
-  allRules?: Rule[];
+  // whether this rule is a leaf in the tree being displayed
+  isLeaf: boolean;
   // ability to update completion status
   onClick?: (event: React.MouseEvent<HTMLElement>) => void;
   // controls chevron direction when completion is interactive
@@ -19,18 +20,10 @@ interface RuleStatusTagProps {
   onInfoClick?: (rule: Rule) => void;
 }
 
-/**
- * Status chip for a rule.
- * A leaf shows its own status, while a parent's status rolls up from its descendant leaf
- * rules (Fail > Pending > Pass). Leafs with a Pass/Fail status also show an info icon -
- * a one-line "who marked it and when" tooltip by default, or (if onInfoClick is given) a
- * button that opens the full status-history modal instead.
- */
-const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, allRules, onClick, popoverOpen = false, onInfoClick }) => {
-  const status = getRuleStatus(rule, allRules);
-  const { label, color } = getRuleStatusConfig(status);
+/** Status chip for a rule. Leafs with a Pass/Fail status also show an info icon/tooltip. */
+const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onClick, popoverOpen = false, onInfoClick }) => {
+  const { label, color } = getRuleStatusConfig(rule.status);
 
-  const isLeaf = allRules ? !allRules.some((r) => r.parentRule?.ruleId === rule.ruleId) : rule.subRuleIds.length === 0;
   const statusUpdatedByName = rule.statusUpdatedBy && `${rule.statusUpdatedBy.firstName} ${rule.statusUpdatedBy.lastName}`;
   const statusMessage =
     statusUpdatedByName && rule.statusUpdatedAt

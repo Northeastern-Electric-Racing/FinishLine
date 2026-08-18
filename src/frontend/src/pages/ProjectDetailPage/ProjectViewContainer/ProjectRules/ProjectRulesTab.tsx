@@ -225,7 +225,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     return (
       <RuleStatusTag
         rule={rule}
-        allRules={projectRuleList}
+        isLeaf={isLeafRule}
         popoverOpen={isPopoverOpenForRule}
         onClick={isLeafRule ? (e) => handleStatusClick(e, rule) : undefined}
         onInfoClick={handleInfoClick}
