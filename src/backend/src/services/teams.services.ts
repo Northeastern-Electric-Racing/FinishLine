@@ -315,9 +315,9 @@ export default class TeamsService {
 
     if (!team) throw new NotFoundException('Team', teamId);
 
-    const hasPendingJoinRequests = await prisma.team_Join_Request.findFirst({ where: { teamId, status: 'PENDING' } });
-    if (hasPendingJoinRequests) {
-      throw new HttpException(400, 'Cannot delete a team with pending join requests');
+    const hasJoinRequests = await prisma.team_Join_Request.findFirst({ where: { teamId } });
+    if (hasJoinRequests) {
+      throw new HttpException(400, 'Cannot delete a team with existing join requests');
     }
 
     await prisma.team.delete({ where: { teamId } });
