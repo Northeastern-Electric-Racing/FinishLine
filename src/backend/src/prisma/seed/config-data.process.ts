@@ -4,6 +4,7 @@ import {
   Description_Bullet_Type,
   Event_Type,
   Index_Code,
+  Link,
   Link_Type,
   Manufacturer,
   Material_Type,
@@ -32,6 +33,7 @@ import {
   standaloneWorkPackageTemplateConfigs,
   teamTypeCreateInputs,
   unitCreateInputs,
+  usefulLinkCreateInputsForTypes,
   vendorCreateInputs
 } from '../factories/config-data.factory.js';
 import { connectOrganization, connectUser } from '../utils/common.factory.js';
@@ -41,6 +43,7 @@ type ConfigDataInput = OrganizationOutput & UsersOutput;
 export type ConfigDataOutput = {
   teamTypes: Team_Type[];
   linkTypes: Link_Type[];
+  usefulLinks: Link[];
   descriptionBulletTypes: Description_Bullet_Type[];
   materialTypes: Material_Type[];
   manufacturers: Manufacturer[];
@@ -74,6 +77,15 @@ export class ConfigDataProcess extends SeedProcess<ConfigDataInput, ConfigDataOu
 
     const linkTypes = await Promise.all(
       linkTypeCreateInputs(creator.userId, organizationId).map((data) => this.prisma.link_Type.create({ data }))
+    );
+
+    // Only the link types actually surfaced somewhere (guest home page / new-member dashboard)
+    // get a seeded Link -- the rest are categories only, same as in production until an admin
+    // fills one in.
+    const usefulLinks = await Promise.all(
+      usefulLinkCreateInputsForTypes(creator.userId, organizationId, linkTypes).map((data) =>
+        this.prisma.link.create({ data })
+      )
     );
 
     const descriptionBulletTypes = await Promise.all(
@@ -220,6 +232,7 @@ export class ConfigDataProcess extends SeedProcess<ConfigDataInput, ConfigDataOu
     return {
       teamTypes,
       linkTypes,
+      usefulLinks,
       descriptionBulletTypes,
       materialTypes,
       manufacturers,

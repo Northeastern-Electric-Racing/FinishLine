@@ -25,18 +25,24 @@ const TeamOrDivisionPage: React.FC = () => {
   if (isTeamsError) return <ErrorPage message={teamsError.message} />;
   if (teamsLoading || !teamTypes) return <LoadingIndicator />;
 
-  if (isGuest(user.role)) {
-    if (teamTypes?.some((t) => t.teamTypeId === teamId)) {
-      return <GuestTeamPage teamTypeId={teamId} />;
-    }
-    return <GuestTeamSpecificPage />;
+  // a teamTypeId (division) in the URL always means "show that division's team list", regardless
+  // of the viewer's onboarding status -- this can never be a valid team id
+  if (teamTypes.some((teamType) => teamType.teamTypeId === teamId)) {
+    return <GuestTeamPage teamTypeId={teamId} />;
   }
+
+  // guests who've already finished onboarding are "new members" -- they get the full teams
+  // experience (including the ability to request to join a team), not the limited guest preview
+  const isPreOnboardingGuest = isGuest(user.role) && user.onboardedTeamTypeIds.length === 0;
+
+  if (isPreOnboardingGuest) return <GuestTeamSpecificPage />;
   return <TeamSpecificPage />;
 };
 
 const GuestOrMemberTeamsPage: React.FC = () => {
   const user = useCurrentUser();
-  if (isGuest(user.role)) return <GuestDivisionPage />;
+  const isPreOnboardingGuest = isGuest(user.role) && user.onboardedTeamTypeIds.length === 0;
+  if (isPreOnboardingGuest) return <GuestDivisionPage />;
   return <TeamsPage />;
 };
 

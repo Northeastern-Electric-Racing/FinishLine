@@ -13,6 +13,7 @@ import { CarProcess } from './seed/car.process.js';
 import { ConfigDataProcess } from './seed/config-data.process.js';
 import { ShopProcess } from './seed/shop.process.js';
 import { TeamProcess } from './seed/team.process.js';
+import { TeamJoinRequestProcess } from './seed/team-join-request.process.js';
 import { ProjectProcess } from './seed/project.process.js';
 import { SchedulingProcess } from './seed/scheduling.process.js';
 import { DescriptionBulletProcess } from './seed/description-bullet.process.js';
@@ -38,6 +39,7 @@ await new SeedRunner()
     new ConfigDataProcess(),
     new SchedulingProcess(),
     new TeamProcess(),
+    new TeamJoinRequestProcess(),
     new ShopProcess(),
     new ProjectProcess(),
     new WorkPackageProcess(),

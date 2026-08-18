@@ -19,8 +19,6 @@ import {
   setSlackSponsorshipNotificationSlackChannelId,
   getFinanceDelegates,
   setFinanceDelegates,
-  setOrganizationNewMemberImage,
-  getOrganizationNewMemberImage,
   setOrganizationPlatformLogoImage,
   getNotificationChannels
 } from '../apis/organizations.api';
@@ -214,26 +212,6 @@ export const useOrganizationLogo = () => {
       return;
     }
     return await downloadGoogleImage(fileId);
-  });
-};
-
-export const useOrganizationNewMemberImage = () => {
-  return useQuery<Blob | undefined, Error>(['organizations', 'new-member-image'], async () => {
-    const { data: fileId } = await getOrganizationNewMemberImage();
-    if (!fileId) {
-      return;
-    }
-    return await downloadGoogleImage(fileId);
-  });
-};
-
-export const useSetOrganizationNewMemberImage = () => {
-  const queryClient = useQueryClient();
-  return useMutation<Organization, Error, File>(['organizations', 'new-member-image'], async (file: File) => {
-    const { data } = await setOrganizationNewMemberImage(file);
-    queryClient.invalidateQueries(['organizations']);
-    queryClient.invalidateQueries(['organizations', 'new-member-image']);
-    return data;
   });
 };
 

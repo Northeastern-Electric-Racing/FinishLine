@@ -149,6 +149,55 @@ export default class TeamsController {
     }
   }
 
+  static async createTeamJoinRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params as Record<string, string>;
+
+      const request = await TeamsService.createTeamJoinRequest(req.currentUser, teamId, req.organization);
+      res.status(200).json(request);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getMyTeamJoinRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const requests = await TeamsService.getMyTeamJoinRequests(req.currentUser, req.organization);
+      res.status(200).json(requests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getPendingTeamJoinRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params as Record<string, string>;
+
+      const requests = await TeamsService.getPendingTeamJoinRequests(teamId, req.currentUser, req.organization);
+      res.status(200).json(requests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async reviewTeamJoinRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamJoinRequestId } = req.params as Record<string, string>;
+      const { approved, denialReason } = req.body;
+
+      const request = await TeamsService.reviewTeamJoinRequest(
+        req.currentUser,
+        teamJoinRequestId,
+        approved,
+        denialReason,
+        req.organization
+      );
+      res.status(200).json(request);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteTeam(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamId } = req.params as Record<string, string>;

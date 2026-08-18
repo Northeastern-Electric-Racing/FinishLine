@@ -122,6 +122,7 @@ export const resetUsers = async () => {
   await prisma.material_Type.deleteMany();
   await prisma.assembly.deleteMany();
   await prisma.meeting_Attendance.deleteMany();
+  await prisma.team_Join_Request.deleteMany();
   await prisma.team.deleteMany();
   await prisma.user_Secure_Settings.deleteMany();
   await prisma.receipt.deleteMany();
@@ -244,7 +245,7 @@ export const createTestFAQ = async (orgId: string, faqId: string) => {
           userId: user.userId
         }
       },
-      regularFaqOrg: {
+      organization: {
         connect: {
           organizationId: orgId
         }
@@ -329,7 +330,7 @@ export const createTestFaq = async (user: User, organizationId: string) => {
     data: {
       question: 'Who is Chief Software Engineer of NER?',
       answer: 'Peyton McKee!',
-      regularFaqOrgId: organizationId,
+      organizationId,
       userCreatedId: user.userId
     }
   });

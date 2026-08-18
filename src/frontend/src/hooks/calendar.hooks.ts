@@ -35,6 +35,7 @@ import {
   markUserConfirmed,
   getSingleEvent,
   getAllEvents,
+  getNewMemberEvents,
   deleteEvent,
   setEventStatus,
   getAllEventTypes,
@@ -126,7 +127,11 @@ export const useAllCalendars = () =>
 
 export const useCreateCalendar = () => {
   const qc = useQueryClient();
-  return useMutation<Calendar, Error, { name: string; description: string; colorHexCode: string }>(
+  return useMutation<
+    Calendar,
+    Error,
+    { name: string; description: string; colorHexCode: string; isNewMemberCalendar: boolean }
+  >(
     async (payload) => {
       const { data } = await postCreateCalendar(payload);
       return data;
@@ -141,7 +146,11 @@ export const useCreateCalendar = () => {
 
 export const useEditCalendar = (calendarId: string) => {
   const qc = useQueryClient();
-  return useMutation<Calendar, Error, { name: string; description: string; colorHexCode: string }>(
+  return useMutation<
+    Calendar,
+    Error,
+    { name: string; description: string; colorHexCode: string; isNewMemberCalendar: boolean }
+  >(
     async (payload) => {
       const { data } = await postEditCalendar(calendarId, payload);
       return data;
@@ -390,6 +399,13 @@ export const useConflictingEvents = (ids: string[]) => {
 export const useAllEvents = () => {
   return useQuery<Event[], Error>(EVENT_KEY, async () => {
     const { data } = await getAllEvents();
+    return data;
+  });
+};
+
+export const useNewMemberEvents = () => {
+  return useQuery<Event[], Error>(['events', 'new-member'], async () => {
+    const { data } = await getNewMemberEvents();
     return data;
   });
 };

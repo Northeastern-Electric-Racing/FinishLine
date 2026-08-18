@@ -50,7 +50,6 @@ export type OrganizationPreview = Pick<
   | 'dateDeleted'
   | 'description'
   | 'applicationLink'
-  | 'newMemberImageId'
   | 'platformDescription'
   | 'platformLogoImageId'
 >;
@@ -65,7 +64,6 @@ export interface Organization {
   treasurer?: User;
   advisor?: User;
   description: string;
-  newMemberImageId?: string;
   applicationLink?: string;
   onboardingText?: string;
   contacts: Contact[];

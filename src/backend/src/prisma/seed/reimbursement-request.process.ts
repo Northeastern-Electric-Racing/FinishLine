@@ -4,6 +4,7 @@ import { OrganizationOutput, OrganizationProcess } from './organization.process.
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { ConfigDataOutput, ConfigDataProcess } from './config-data.process.js';
 import { TeamOutput, TeamProcess } from './team.process.js';
+import { TeamJoinRequestProcess } from './team-join-request.process.js';
 import { WorkPackageOutput, WorkPackageProcess } from './work-package.process.js';
 import { BOMOutput, BOMProcess } from './bom.process.js';
 import { CarProcess } from './car.process.js';
@@ -114,7 +115,18 @@ type PlannedRequest = {
 
 export class ReimbursementRequestProcess extends SeedProcess<ReimbursementRequestInput, ReimbursementRequestOutput> {
   dependencies() {
-    return [OrganizationProcess, UsersProcess, ConfigDataProcess, TeamProcess, CarProcess, WorkPackageProcess, BOMProcess];
+    return [
+      OrganizationProcess,
+      UsersProcess,
+      ConfigDataProcess,
+      TeamProcess,
+      // Ensures guest -> member promotions from approved join requests have landed before this
+      // process picks reimbursement request submitters/reviewers from the `members` pool.
+      TeamJoinRequestProcess,
+      CarProcess,
+      WorkPackageProcess,
+      BOMProcess
+    ];
   }
 
   async run({
