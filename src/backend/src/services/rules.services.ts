@@ -40,67 +40,6 @@ import {
 import { ParsedRule, parseRulesFromPdf } from '../utils/parse.utils.js';
 import { uploadFile, downloadFile } from '../utils/google-integration.utils.js';
 
-/** Rolls up children's statuses: Fail > Pending > Pass. */
-const rollUpStatus = (childStatuses: RuleStatus[]): RuleStatus => {
-  // If any children FAIL, the parent fails. 
-  if (childStatuses.includes(RuleStatus.FAIL)) return RuleStatus.FAIL;
-  // If no children FAIL, and any children are PENDING, the parent is PENDING.
-  if (childStatuses.includes(RuleStatus.PENDING)) return RuleStatus.PENDING;
-  // If all children PASS, the parent passes.
-  return RuleStatus.PASS;
-};
-
-/** Recomputes and saves ruleId's status, then repeats up the parent chain. */
-const recalculateRuleStatusChain = async (ruleId: string | null): Promise<void> => {
-  if (!ruleId) return;
-
-  const children = await prisma.rule.findMany({
-    where: { parentRuleId: ruleId, dateDeleted: null },
-    select: { status: true }
-  });
-
-  if (children.length === 0) return;
-
-  const status = rollUpStatus(children.map((child) => child.status as RuleStatus));
-
-  const { parentRuleId } = await prisma.rule.update({
-    where: { ruleId },
-    data: { status },
-    select: { parentRuleId: true }
-  });
-
-  await recalculateRuleStatusChain(parentRuleId);
-};
-
-/** Same as recalculateRuleStatusChain, scoped to one project's assigned rules; stops at an unassigned ancestor. */
-const recalculateProjectRuleStatusChain = async (projectId: string, ruleId: string | null): Promise<void> => {
-  if (!ruleId) return;
-
-  const projectRule = await prisma.project_Rule.findFirst({
-    where: { projectId, ruleId, dateDeleted: null },
-    select: { projectRuleId: true }
-  });
-
-  if (!projectRule) return;
-
-  const children = await prisma.project_Rule.findMany({
-    where: { projectId, dateDeleted: null, rule: { parentRuleId: ruleId } },
-    select: { status: true }
-  });
-
-  if (children.length === 0) return;
-
-  const status = rollUpStatus(children.map((child) => child.status as RuleStatus));
-
-  await prisma.project_Rule.update({
-    where: { projectRuleId: projectRule.projectRuleId },
-    data: { status }
-  });
-
-  const rule = await prisma.rule.findUnique({ where: { ruleId }, select: { parentRuleId: true } });
-  await recalculateProjectRuleStatusChain(projectId, rule?.parentRuleId ?? null);
-};
-
 export default class RulesService {
   /**
    * Gets the active ruleset for the given ruleset type ID and car
@@ -175,6 +114,81 @@ export default class RulesService {
     if (existingRule) {
       throw new HttpException(400, `Rule with code ${ruleCode} already exists in this ruleset`);
     }
+  }
+
+  /**
+   * Compute a rule's status given the statuses of its children.
+   * @param childStatuses the statuses of the child rules
+   * @returns status of the parent rule based on its children's statuses
+   */
+  private static computeRolledUpStatus(childStatuses: RuleStatus[]): RuleStatus {
+    // If any children FAIL, the parent fails.
+    if (childStatuses.includes(RuleStatus.FAIL)) return RuleStatus.FAIL;
+    // If no children FAIL, and any children are PENDING, the parent is PENDING.
+    if (childStatuses.includes(RuleStatus.PENDING)) return RuleStatus.PENDING;
+    // If all children PASS, the parent passes.
+    return RuleStatus.PASS;
+  }
+
+  /**
+   * Recomputes and saves ruleId's status, then repeats up the parent chain.
+   * @param ruleId the rule to recompute the status for
+   * @returns the updated status of the rule
+   */
+  private static async recalculateRuleStatusChain(ruleId: string | null): Promise<void> {
+    if (!ruleId) return;
+
+    const children = await prisma.rule.findMany({
+      where: { parentRuleId: ruleId, dateDeleted: null },
+      select: { status: true }
+    });
+
+    if (children.length === 0) return;
+
+    const status = RulesService.computeRolledUpStatus(children.map((child) => child.status as RuleStatus));
+
+    const { parentRuleId } = await prisma.rule.update({
+      where: { ruleId },
+      data: { status },
+      select: { parentRuleId: true }
+    });
+
+    await RulesService.recalculateRuleStatusChain(parentRuleId);
+  }
+
+  /**
+   * Same as recalculateRuleStatusChain, but scoped to one project's assigned rules.
+   * Recomputes and saves the status of the project rule for the given ruleId, then repeats up the parent chain.
+   * @param projectId the project to scope the status recomputation to
+   * @param ruleId the rule to recompute the status for
+   * @returns the updated status of the project rule
+   */
+  private static async recalculateProjectRuleStatusChain(projectId: string, ruleId: string | null): Promise<void> {
+    if (!ruleId) return;
+
+    const projectRule = await prisma.project_Rule.findFirst({
+      where: { projectId, ruleId, dateDeleted: null },
+      select: { projectRuleId: true }
+    });
+
+    if (!projectRule) return;
+
+    const children = await prisma.project_Rule.findMany({
+      where: { projectId, dateDeleted: null, rule: { parentRuleId: ruleId } },
+      select: { status: true }
+    });
+
+    if (children.length === 0) return;
+
+    const status = RulesService.computeRolledUpStatus(children.map((child) => child.status as RuleStatus));
+
+    await prisma.project_Rule.update({
+      where: { projectRuleId: projectRule.projectRuleId },
+      data: { status }
+    });
+
+    const rule = await prisma.rule.findUnique({ where: { ruleId }, select: { parentRuleId: true } });
+    await RulesService.recalculateProjectRuleStatusChain(projectId, rule?.parentRuleId ?? null);
   }
 
   /**
@@ -290,7 +304,7 @@ export default class RulesService {
     });
 
     // a fresh child defaults to PENDING, which can flip the parent chain's statuses (e.g. PASS -> PENDING)
-    await recalculateRuleStatusChain(parentRuleId ?? null);
+    await RulesService.recalculateRuleStatusChain(parentRuleId ?? null);
 
     return ruleTransformer(rule);
   }
@@ -395,7 +409,7 @@ export default class RulesService {
     });
 
     // this rule (and its descendants) are gone, so its old parent chain may update their statuses
-    await recalculateRuleStatusChain(rule.parentRuleId);
+    await RulesService.recalculateRuleStatusChain(rule.parentRuleId);
 
     const deletedRule = await prisma.rule.findUnique({
       where: { ruleId }
@@ -524,7 +538,7 @@ export default class RulesService {
     await prisma.$transaction([...ancestorsToCreate.map(reviveOrCreate), reviveOrCreate(ruleId)]);
 
     // new (or revived) project rule leaf defaults to PENDING so parent statuses need to be recomputed
-    await recalculateProjectRuleStatusChain(projectId, rule.parentRuleId);
+    await RulesService.recalculateProjectRuleStatusChain(projectId, rule.parentRuleId);
 
     // return only original project rule being assigned (leaf rule)
     const projectRule = await prisma.project_Rule.findUnique({
@@ -635,8 +649,8 @@ export default class RulesService {
 
     // reparenting moves this rule out of the old parent chain and into the new one, so recompute statuses for both parent chains
     if (parentRuleId && parentRuleId !== currentRule.parentRuleId) {
-      await recalculateRuleStatusChain(currentRule.parentRuleId);
-      await recalculateRuleStatusChain(parentRuleId);
+      await RulesService.recalculateRuleStatusChain(currentRule.parentRuleId);
+      await RulesService.recalculateRuleStatusChain(parentRuleId);
     }
 
     return ruleTransformer(updatedRule);
@@ -920,7 +934,7 @@ export default class RulesService {
     });
 
     // updating a rules status may update the status of its parent chain, so recalculate the parent chain's statuses
-    await recalculateRuleStatusChain(rule.parentRuleId);
+    await RulesService.recalculateRuleStatusChain(rule.parentRuleId);
 
     return ruleTransformer(updatedRule);
   }
@@ -984,7 +998,7 @@ export default class RulesService {
     });
 
     // updating a project rule's status may update the status of its parent chain, so recalculate the parent chain's statuses
-    await recalculateProjectRuleStatusChain(projectRule.projectId, projectRule.rule.parentRuleId);
+    await RulesService.recalculateProjectRuleStatusChain(projectRule.projectId, projectRule.rule.parentRuleId);
 
     return projectRuleTransformer(updatedProjectRule);
   }
@@ -1409,7 +1423,7 @@ export default class RulesService {
     });
 
     // this project rule no longer counts towards its parents' status calculations
-    await recalculateProjectRuleStatusChain(projectRule.projectId, projectRule.rule.parentRuleId);
+    await RulesService.recalculateProjectRuleStatusChain(projectRule.projectId, projectRule.rule.parentRuleId);
 
     return projectRuleTransformer(deletedProjectRule);
   }

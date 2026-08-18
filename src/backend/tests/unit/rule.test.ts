@@ -1241,6 +1241,7 @@ describe('Rule Tests', () => {
     it('Marks a rule Pass within a project and records who updated it', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
       await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
 
@@ -1261,6 +1262,7 @@ describe('Rule Tests', () => {
     it('Set project rule status fails if user does not have permission', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
       await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
 
@@ -1274,9 +1276,15 @@ describe('Rule Tests', () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule, ruleset1 } = await setupRules(car);
       await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
-      const project2 = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber, 1);
+      const project2 = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber, 2);
       const projectRule1 = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
-      const projectRule2 = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project2.projectId);
+      const projectRule2 = await RulesService.createProjectRule(
+        admin,
+        organization,
+        topLevelRule.ruleId,
+        project2.projectId
+      );
 
       await RulesService.setProjectRuleStatus(admin, organization, projectRule1.projectRuleId, RuleStatus.PASS);
       await RulesService.setRuleStatus(admin, organization, topLevelRule.ruleId, RuleStatus.FAIL);
@@ -1424,8 +1432,18 @@ describe('Rule Tests', () => {
       await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
       const project1 = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber, 1);
       const project2 = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber, 2);
-      const projectRule1 = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project1.projectId);
-      const projectRule2 = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project2.projectId);
+      const projectRule1 = await RulesService.createProjectRule(
+        admin,
+        organization,
+        topLevelRule.ruleId,
+        project1.projectId
+      );
+      const projectRule2 = await RulesService.createProjectRule(
+        admin,
+        organization,
+        topLevelRule.ruleId,
+        project2.projectId
+      );
 
       await RulesService.setProjectRuleStatus(admin, organization, projectRule1.projectRuleId, RuleStatus.PASS);
       await RulesService.setProjectRuleStatus(admin, organization, projectRule2.projectRuleId, RuleStatus.PASS);

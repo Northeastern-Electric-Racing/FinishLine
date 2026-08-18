@@ -108,9 +108,7 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
         />
       )}
 
-      {historyModalRule && (
-        <RuleStatusHistoryModal open onClose={() => setHistoryModalRule(null)} rule={historyModalRule} />
-      )}
+      {historyModalRule && <RuleStatusHistoryModal open onClose={() => setHistoryModalRule(null)} rule={historyModalRule} />}
     </Box>
   );
 };
