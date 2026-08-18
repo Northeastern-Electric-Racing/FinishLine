@@ -10,18 +10,30 @@ import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import RulesetGeneralView from './components/RulesetGeneralView';
 import RulesetTeamView from './components/RulesetTeamView';
-import { useSingleRuleset, useAllRulesForRuleset, useGetTopLevelRules, useFetchFullRuleTree } from '../../hooks/rules.hooks';
+import ResetStatusesModal from './components/ResetStatusesModal';
+import {
+  useSingleRuleset,
+  useAllRulesForRuleset,
+  useGetTopLevelRules,
+  useFetchFullRuleTree,
+  useResetRulesetStatuses
+} from '../../hooks/rules.hooks';
 import { useRuleTreeNavigation } from './useRuleTreeNavigation';
 import { useTeamRuleOrganization } from './useTeamRuleOrganization';
 
 const RulesetViewPage = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
+  const [showResetModal, setShowResetModal] = useState(false);
+  // bumped after a reset to force RulesetGeneralView to remount, clearing any open popover/history modal
+  const [resetNonce, setResetNonce] = useState(0);
   const tabs = [
     { tabUrlValue: 'generalView', tabName: 'General View' },
     { tabUrlValue: 'teamView', tabName: 'Team View' }
   ];
 
   const { rulesetId } = useParams<{ rulesetId: string }>();
+
+  const { mutateAsync: resetRulesetStatuses, isLoading: isResetting } = useResetRulesetStatuses(rulesetId!);
 
   const {
     data: ruleset,
@@ -114,6 +126,9 @@ const RulesetViewPage = () => {
                 <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
                   {areAllExpanded ? 'Collapse All' : 'Expand All'}
                 </NERButton>
+                <NERButton variant="outlined" onClick={() => setShowResetModal(true)}>
+                  Reset Status
+                </NERButton>
               </Box>
             )}
             {tabIndex === 1 && (
@@ -130,6 +145,7 @@ const RulesetViewPage = () => {
         <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>
           {tabIndex === 0 ? (
             <RulesetGeneralView
+              key={resetNonce}
               topLevelRules={topLevelRules}
               rulesetId={rulesetId!}
               expandedIds={expandedIds}
@@ -149,6 +165,19 @@ const RulesetViewPage = () => {
           )}
         </Box>
       </PageLayout>
+
+      {showResetModal && (
+        <ResetStatusesModal
+          scopeDescription={`the ${ruleset.name} ruleset`}
+          disabled={isResetting}
+          onHide={() => setShowResetModal(false)}
+          onReset={async () => {
+            await resetRulesetStatuses();
+            setShowResetModal(false);
+            setResetNonce((n) => n + 1);
+          }}
+        />
+      )}
     </Box>
   );
 };

@@ -5,44 +5,49 @@
 
 import { Box, IconButton, Tooltip } from '@mui/material';
 import { InfoOutlined, KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
-import { Rule } from 'shared';
-import { getRuleStatusConfig, isRuleComplete } from '../../../utils/rules.utils';
+import { Rule, formatTimestamp } from 'shared';
+import { getRuleStatusConfig } from '../../../utils/rules.utils';
 
 interface RuleStatusTagProps {
   rule: Rule;
-  allRules?: Rule[];
+  // whether this rule is a leaf in the tree being displayed
+  isLeaf: boolean;
   // ability to update completion status
   onClick?: (event: React.MouseEvent<HTMLElement>) => void;
   // controls chevron direction when completion is interactive
   popoverOpen?: boolean;
+  // if provided, the info icon opens a full status-history modal instead of a one-line tooltip
+  onInfoClick?: (rule: Rule) => void;
 }
 
-/**
- * Completion status chip for a rule.
- * A leaf shows its own completion, while a parent is only complete if all
- * of its descendant leaf rules are complete. Completed leafs also show an
- * info tooltip with who completed it and in which project.
- */
-const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, allRules, onClick, popoverOpen = false }) => {
-  // Determine completion status based on whether all rules are provided (general view) or just the rule itself
-  const isComplete = allRules ? isRuleComplete(rule, allRules) : rule.isComplete;
-  const { label, color } = getRuleStatusConfig(isComplete);
+/** Status chip for a rule. Leafs with a Pass/Fail status also show an info icon/tooltip. */
+const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onClick, popoverOpen = false, onInfoClick }) => {
+  const { label, color } = getRuleStatusConfig(rule.status);
 
-  const isLeaf = allRules ? !allRules.some((r) => r.parentRule?.ruleId === rule.ruleId) : rule.subRuleIds.length === 0;
-  // Note: Info tooltip only says "Completed by {User}" if completed in general view
-  const completedByName = rule.completedBy && `${rule.completedBy.firstName} ${rule.completedBy.lastName}`;
-  const completionMessage = completedByName
-    ? `Completed by ${completedByName}${rule.completedInProject ? ` in ${rule.completedInProject.projectName}` : ''}`
-    : '';
+  const statusUpdatedByName = rule.statusUpdatedBy && `${rule.statusUpdatedBy.firstName} ${rule.statusUpdatedBy.lastName}`;
+  const statusMessage =
+    statusUpdatedByName && rule.statusUpdatedAt
+      ? `Marked ${label.toUpperCase()} by ${statusUpdatedByName} on ${formatTimestamp(rule.statusUpdatedAt)}`
+      : '';
+
+  // hasStatusHistory persists even after the current status is reverted to PENDING
+  const showInfo = isLeaf && (onInfoClick ? rule.hasStatusHistory : Boolean(statusMessage));
 
   // only leafs are interactive
   const isInteractive = isLeaf && Boolean(onClick);
 
   return (
     <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-      {isLeaf && isComplete && completionMessage && (
-        <Tooltip title={completionMessage} arrow>
-          <IconButton size="small" onClick={(e) => e.stopPropagation()} sx={{ padding: '2px', color: 'text.secondary' }}>
+      {showInfo && (
+        <Tooltip title={onInfoClick ? 'View Status History' : statusMessage} arrow>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onInfoClick?.(rule);
+            }}
+            sx={{ padding: '2px', color: 'text.secondary' }}
+          >
             <InfoOutlined fontSize="small" />
           </IconButton>
         </Tooltip>

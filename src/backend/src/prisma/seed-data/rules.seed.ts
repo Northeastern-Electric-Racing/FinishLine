@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import { Organization, PrismaClient } from '@prisma/client';
 import RulesService from '../../services/rules.services.js';
-import { User } from 'shared';
+import { User, RuleStatus } from 'shared';
 
 // ruleset types
 const rulesetTypeFSAE = (userCreatedId: string, organizationId: string): Prisma.Ruleset_TypeCreateInput => {
@@ -595,7 +595,7 @@ export const seedFsaeRules = async (
     }
   });
 
-  await prisma.rule.create({
+  const T211Rule = await prisma.rule.create({
     data: {
       ruleCode: 'T2.1.1',
       ruleContent:
@@ -606,7 +606,7 @@ export const seedFsaeRules = async (
     }
   });
 
-  await prisma.rule.create({
+  const T22Rule = await prisma.rule.create({
     data: {
       ruleCode: 'T2.2',
       ruleContent:
@@ -776,9 +776,16 @@ export const seedFsaeRules = async (
   await RulesService.toggleRuleTeam(IC81Rule.ruleId, huskyTeamId, batman, organization);
   await RulesService.createProjectRule(batman, organization, IC81Rule.ruleId, projectId);
 
-  // Add the leaf rule to the bodywork project and mark it complete.
-  await RulesService.createProjectRule(batman, organization, T112ARule.ruleId, projectId);
-  await RulesService.setRuleCompletion(batman, organization, T112ARule.ruleId, true, projectId);
+  // Add the leaf rule to the bodywork project and mark it as passed for that project.
+  const bodyworkT112AProjectRule = await RulesService.createProjectRule(batman, organization, T112ARule.ruleId, projectId);
+  await RulesService.setProjectRuleStatus(batman, organization, bodyworkT112AProjectRule.projectRuleId, RuleStatus.PASS);
+
+  // Assign FHE T2.1.1 and T2.2 to Husky along with their shared ancestors (T -> T2 -> T2.1 -> T2.1.1, T2 -> T2.2)
+  for (const rule of [TRule, T2Rule, T21Rule, T211Rule, T22Rule]) {
+    await RulesService.toggleRuleTeam(rule.ruleId, huskyTeamId, batman, organization);
+  }
+  await RulesService.createProjectRule(batman, organization, T211Rule.ruleId, projectId);
+  await RulesService.createProjectRule(batman, organization, T22Rule.ruleId, projectId);
 };
 
 export const ruleSeedData = {
