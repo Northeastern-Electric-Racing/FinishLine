@@ -59,6 +59,9 @@ export interface SeedConfig {
   part: {
     countForProject: WeightedCount[];
   };
+  task: {
+    countForProject: WeightedCount[];
+  };
 }
 
 export const seedConfig: SeedConfig = JSON.parse(
