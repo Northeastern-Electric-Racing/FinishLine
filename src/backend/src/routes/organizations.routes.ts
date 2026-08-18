@@ -51,12 +51,6 @@ organizationRouter.post(
 );
 
 organizationRouter.post(
-  '/new-member-image/update',
-  upload.single('newMemberImage'),
-  OrganizationsController.setNewMemberImage
-);
-organizationRouter.get('/new-member-image', OrganizationsController.getOrganizationNewMemberImage);
-organizationRouter.post(
   '/description/set',
   body('description').isString(),
   validateInputs,

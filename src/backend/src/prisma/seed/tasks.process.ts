@@ -3,6 +3,7 @@ import { SeedProcess } from '../processes/seed-process.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { WorkPackageOutput, WorkPackageProcess } from './work-package.process.js';
+import { TeamJoinRequestProcess } from './team-join-request.process.js';
 import {
   SeedTaskParent,
   assigneeCountForTask,
@@ -30,7 +31,14 @@ type TaskDraft = {
 
 export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
   dependencies() {
-    return [OrganizationProcess, UsersProcess, WorkPackageProcess];
+    return [
+      OrganizationProcess,
+      UsersProcess,
+      WorkPackageProcess,
+      // Ensures guest -> member promotions from approved join requests have landed before this
+      // process picks task assignees from the `members` pool.
+      TeamJoinRequestProcess
+    ];
   }
 
   async run({

@@ -49,6 +49,56 @@ export const FAQ_POOL: { question: string; answer: string }[] = [
   }
 ];
 
+// Always created (not sampled) — these back the recruiting/new-member/part-review dashboards,
+// so every organization needs the full set rather than a random subset like the generic FAQ_POOL above.
+export const RECRUITING_FAQ_FIXTURES: { question: string; answer: string }[] = [
+  {
+    question: 'Who is the Chief Software Engineer?',
+    answer: 'Check the Contacts widget on the home page for the current officer roster.'
+  },
+  {
+    question: 'When was this platform created?',
+    answer: 'This platform was created in 2019 and has been maintained by the software subteam ever since.'
+  },
+  {
+    question: 'How many developers are working on this platform?',
+    answer: 'The size of the software subteam varies by year — ask in the recruiting Slack channel for the current count.'
+  }
+];
+
+export const NEW_MEMBER_FAQ_FIXTURES: { question: string; answer: string }[] = [
+  {
+    question: 'Where do I go if I have a question during onboarding?',
+    answer: 'Ask in the #new-members Slack channel — no question is too small!'
+  },
+  {
+    question: 'How do I get access to the shop?',
+    answer: 'Complete the safety training checklist item and a lead will grant you access.'
+  },
+  {
+    question: 'How long until I officially join a team?',
+    answer: 'Once your join request is approved by a lead, head, or admin, you become a full member of that team right away.'
+  },
+  {
+    question: 'Can I request to join more than one team?',
+    answer: "Yes! You can submit a request to join any team you're interested in, even after you've already joined one."
+  }
+];
+
+export const PART_REVIEW_FAQ_FIXTURES: { question: string; answer: string }[] = [
+  {
+    question: 'What is a part review?',
+    answer:
+      'A part review allows your team lead to ensure that your part is designed correctly and meets your specified restrictions.'
+  },
+  {
+    question: 'How do I upload for a part review?',
+    answer:
+      'First, click the button to upload your file. After uploading, make sure all fields are filled out in a way that makes sense for your part, then click submit and let your team lead know!'
+  }
+];
+
+// Recruiting-cycle milestones, shown on the recruiting dashboard (pre-join).
 export const MILESTONE_FIXTURES: { name: string; description: string; dayOffset: number }[] = [
   { name: 'Sign Ups Open!', description: 'Sign up using the form linked on the next page.', dayOffset: -2 },
   { name: 'Winter Fest', description: 'See NER in person at our table during Winter Fest.', dayOffset: -1 },
@@ -59,6 +109,24 @@ export const MILESTONE_FIXTURES: { name: string; description: string; dayOffset:
   { name: 'REVD 1', description: 'New mechanical members attend the 1st REVD meeting here.', dayOffset: 10 },
   { name: 'SPARKD 1', description: 'New electrical members attend the 1st SPARKD meeting here.', dayOffset: 11 },
   { name: 'Sign Up Deadline', description: 'Please Sign Up and complete SciShield by this date!', dayOffset: 12 }
+];
+
+// Post-join milestones, shown on the new-member dashboard.
+export const NEW_MEMBER_MILESTONE_FIXTURES: { name: string; description: string; dayOffset: number }[] = [
+  { name: 'First Meeting', description: 'Attend your first general body meeting', dayOffset: -14 },
+  { name: 'First Bay Time', description: 'Get hands-on time in the bay with a team lead', dayOffset: -7 },
+  {
+    name: 'Safety Training Deadline',
+    description: 'Complete required safety training to access the bay unsupervised',
+    dayOffset: 14
+  },
+  { name: 'Subteam Placement', description: 'Officially join a subteam project', dayOffset: 30 },
+  { name: 'Team Kickoff Meeting', description: 'Meet your new subteam and lead', dayOffset: 37 },
+  { name: 'Design Review Shadow', description: 'Sit in on a design review to see how the team works', dayOffset: 45 },
+  { name: 'First Project Assignment', description: 'Get assigned your first project task', dayOffset: 52 },
+  { name: 'Shop Certification', description: 'Complete machine certification for shop tools', dayOffset: 60 },
+  { name: 'Mid-Semester Check-In', description: 'Meet with your lead to discuss progress', dayOffset: 75 },
+  { name: 'End of Semester Showcase', description: 'Present what you worked on this semester', dayOffset: 100 }
 ];
 
 export const CONTACT_TITLE_FIXTURES: string[] = [
@@ -149,18 +217,28 @@ export const generateSubtaskCount = (faker: Faker): number =>
 export const generateRecentDate = (faker: Faker, now: Date): Date =>
   faker.date.between({ from: addDaysToDate(now, -120), to: now });
 
+export type DashboardPlacement = {
+  isOnRecruitingDashboard?: boolean;
+  isOnNewMemberDashboard?: boolean;
+  isOnPartReviewPage?: boolean;
+};
+
 export const faqCreateInput = (
   organizationId: string,
   question: string,
   answer: string,
   userCreatedId: string,
-  dateCreated: Date
+  dateCreated: Date,
+  dashboardPlacement: DashboardPlacement = {}
 ): Prisma.FrequentlyAskedQuestionCreateInput => ({
   question,
   answer,
   dateCreated,
   userCreated: { connect: { userId: userCreatedId } },
-  regularFaqOrg: { connect: { organizationId } }
+  organization: { connect: { organizationId } },
+  isOnRecruitingDashboard: dashboardPlacement.isOnRecruitingDashboard ?? false,
+  isOnNewMemberDashboard: dashboardPlacement.isOnNewMemberDashboard ?? false,
+  isOnPartReviewPage: dashboardPlacement.isOnPartReviewPage ?? false
 });
 
 export const milestoneCreateInput = (
@@ -169,14 +247,17 @@ export const milestoneCreateInput = (
   description: string,
   dateOfEvent: Date,
   userCreatedId: string,
-  dateCreated: Date
+  dateCreated: Date,
+  dashboardPlacement: Pick<DashboardPlacement, 'isOnRecruitingDashboard' | 'isOnNewMemberDashboard'> = {}
 ): Prisma.MilestoneCreateInput => ({
   name,
   description,
   dateOfEvent,
   dateCreated,
   userCreated: { connect: { userId: userCreatedId } },
-  organization: { connect: { organizationId } }
+  organization: { connect: { organizationId } },
+  isOnRecruitingDashboard: dashboardPlacement.isOnRecruitingDashboard ?? false,
+  isOnNewMemberDashboard: dashboardPlacement.isOnNewMemberDashboard ?? false
 });
 
 export const contactCreateInput = (organizationId: string, title: string, userId: string): Prisma.ContactCreateInput => ({

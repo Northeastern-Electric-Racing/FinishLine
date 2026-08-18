@@ -4,10 +4,10 @@
  */
 
 import axios from '../utils/axios';
-import { Team, TeamBase, TeamPreview } from 'shared';
+import { Team, TeamBase, TeamJoinRequest, TeamPreview } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateTeamPayload } from '../hooks/teams.hooks';
-import { teamPreviewTransformer, teamTransformer } from './transformers/teams.transformers';
+import { teamJoinRequestTransformer, teamPreviewTransformer, teamTransformer } from './transformers/teams.transformers';
 
 export const getAllTeamPreviews = () => {
   return axios.get<TeamBase[]>(apiUrls.teamPreviews(), {
@@ -81,4 +81,30 @@ export const setTeamLeads = (id: string, userIds: string[]) => {
 
 export const getMyTeamAsHead = () => {
   return axios.get<string>(apiUrls.myTeamAsHead());
+};
+
+export const getMyTeamJoinRequests = () => {
+  return axios.get<TeamJoinRequest[]>(apiUrls.myTeamJoinRequests(), {
+    transformResponse: (data) => JSON.parse(data).map(teamJoinRequestTransformer)
+  });
+};
+
+export const getPendingTeamJoinRequests = (teamId: string) => {
+  return axios.get<TeamJoinRequest[]>(apiUrls.teamsPendingJoinRequests(teamId), {
+    transformResponse: (data) => JSON.parse(data).map(teamJoinRequestTransformer)
+  });
+};
+
+export const createTeamJoinRequest = (teamId: string) => {
+  return axios.post<TeamJoinRequest>(apiUrls.teamsCreateJoinRequest(teamId), undefined, {
+    transformResponse: (data) => teamJoinRequestTransformer(JSON.parse(data))
+  });
+};
+
+export const reviewTeamJoinRequest = (teamJoinRequestId: string, approved: boolean, denialReason?: string) => {
+  return axios.post<TeamJoinRequest>(
+    apiUrls.teamsReviewJoinRequest(teamJoinRequestId),
+    { approved, denialReason },
+    { transformResponse: (data) => teamJoinRequestTransformer(JSON.parse(data)) }
+  );
 };

@@ -38,9 +38,10 @@ import SidebarLayout from '../layouts/SidebarLayout';
 interface AppAuthenticatedProps {
   userId: string;
   userRole: Role;
+  completedOnboarding: boolean;
 }
 
-const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
+const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, completedOnboarding }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
   const {
@@ -65,7 +66,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
 
   return (
     <GlobalCarFilterProvider>
-      {userSettingsData.slackId || isGuest(userRole) ? (
+      {userSettingsData.slackId || (isGuest(userRole) && !completedOnboarding) ? (
         <AppContextUser>
           <SidebarLayout>
             <Switch>

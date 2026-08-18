@@ -3,7 +3,8 @@ import OrganizationsService from '../services/organizations.services.js';
 import SlackServices, {
   SlackBlockActionBody,
   SaboSubmissionActionValue,
-  CrApprovalActionValue
+  CrApprovalActionValue,
+  TeamJoinRequestApprovalActionValue
 } from '../services/slack.services.js';
 import { tryParseJson } from '../utils/slack.utils.js';
 
@@ -128,5 +129,50 @@ export default class SlackController {
       );
       throw error;
     }
+  }
+
+  /**
+   * Handles the Slack block action for approving a team join request.
+   * Unlike handleApproveCRAction, all error reporting goes through respond() rather than
+   * replyToMessageInThread -- team join request notifications are sent as fresh (non-threaded)
+   * ephemerals, so there's no reliable message thread to reply into.
+   *
+   * @param body The validated Slack block action body (general structure validated in routes)
+   * @param respond Bolt response callback bound to this interaction's response_url
+   */
+  static async handleApproveTeamJoinRequestAction(
+    body: SlackBlockActionBody,
+    respond: (msg: {
+      response_type?: 'ephemeral';
+      text?: string;
+      replace_original?: boolean;
+      delete_original?: boolean;
+    }) => Promise<unknown>
+  ) {
+    const { user, actions } = body;
+    const [firstAction] = actions;
+
+    const parsed = tryParseJson<TeamJoinRequestApprovalActionValue>(firstAction.value);
+    if (!parsed.ok) {
+      await respond({
+        response_type: 'ephemeral',
+        text: `❌ An error occurred: Invalid action data format.\n\n*Error:* ${parsed.error}`
+      });
+      return;
+    }
+    const actionValue = parsed.data;
+
+    if (!actionValue.teamJoinRequestId || typeof actionValue.teamJoinRequestId !== 'string') {
+      await respond({
+        response_type: 'ephemeral',
+        text: `❌ An error occurred: Missing or invalid team join request ID.`
+      });
+      return;
+    }
+
+    const userSlackId = user.id;
+    const { teamJoinRequestId } = actionValue;
+
+    await SlackServices.handleApproveTeamJoinRequestAction(userSlackId, teamJoinRequestId, respond);
   }
 }

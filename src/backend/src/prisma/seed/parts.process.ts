@@ -8,6 +8,7 @@ import { SeedProcess } from '../processes/seed-process.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { WorkPackageOutput, WorkPackageProcess } from './work-package.process.js';
+import { TeamJoinRequestProcess } from './team-join-request.process.js';
 import {
   COMMON_MISTAKES,
   PART_TAGS,
@@ -27,7 +28,14 @@ export type PartOutput = {
 
 export class PartProcess extends SeedProcess<PartInput, PartOutput> {
   dependencies() {
-    return [OrganizationProcess, UsersProcess, WorkPackageProcess];
+    return [
+      OrganizationProcess,
+      UsersProcess,
+      WorkPackageProcess,
+      // Ensures guest -> member promotions from approved join requests have landed before this
+      // process picks part assignees/reviewers from the `members` pool.
+      TeamJoinRequestProcess
+    ];
   }
 
   async run({

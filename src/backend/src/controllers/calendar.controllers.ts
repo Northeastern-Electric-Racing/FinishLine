@@ -139,13 +139,14 @@ export default class CalendarController {
 
   static async createCalendar(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, description, colorHexCode } = req.body;
+      const { name, description, colorHexCode, isNewMemberCalendar } = req.body;
 
       const calendar = await CalendarService.createCalendar(
         req.currentUser,
         name,
         description,
         colorHexCode,
+        isNewMemberCalendar,
         req.organization
       );
 
@@ -158,7 +159,7 @@ export default class CalendarController {
   static async editCalendar(req: Request, res: Response, next: NextFunction) {
     try {
       const { calendarId } = req.params as Record<string, string>;
-      const { name, colorHexCode, description } = req.body;
+      const { name, colorHexCode, description, isNewMemberCalendar } = req.body;
 
       const updatedCalendar = await CalendarService.editCalendar(
         req.currentUser,
@@ -166,10 +167,20 @@ export default class CalendarController {
         name,
         description,
         colorHexCode,
+        isNewMemberCalendar,
         req.organization
       );
 
       res.status(200).json(updatedCalendar);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getNewMemberEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const events = await CalendarService.getNewMemberEvents(req.organization);
+      res.status(200).json(events);
     } catch (error: unknown) {
       next(error);
     }

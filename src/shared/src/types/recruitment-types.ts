@@ -13,6 +13,9 @@ export interface FrequentlyAskedQuestion {
   userDeleted?: User;
   dateCreated: Date;
   dateDeleted?: Date;
+  isOnRecruitingDashboard: boolean;
+  isOnNewMemberDashboard: boolean;
+  isOnPartReviewPage: boolean;
 }
 
 export enum GuestDefinitionType {

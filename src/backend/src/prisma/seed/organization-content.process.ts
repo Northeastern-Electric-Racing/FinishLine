@@ -41,8 +41,12 @@ import {
   guestDefinitionCreateInput,
   MILESTONE_FIXTURES,
   milestoneCreateInput,
+  NEW_MEMBER_FAQ_FIXTURES,
+  NEW_MEMBER_MILESTONE_FIXTURES,
+  PART_REVIEW_FAQ_FIXTURES,
   POPUP_COUNT,
-  popUpCreateInput
+  popUpCreateInput,
+  RECRUITING_FAQ_FIXTURES
 } from '../factories/organization-content.factory.js';
 
 type OrganizationContentInput = OrganizationOutput & UsersOutput & ConfigDataOutput;
@@ -96,7 +100,7 @@ export class OrganizationContentProcess extends SeedProcess<OrganizationContentI
     const [primaryActor] = leadershipPool;
 
     const plannedFaqs = this.faker.helpers.shuffle([...FAQ_POOL]).slice(0, FAQ_COUNT);
-    const faqs = await Promise.all(
+    const genericFaqs = await Promise.all(
       plannedFaqs.map((faq) =>
         this.prisma.frequentlyAskedQuestion.create({
           data: faqCreateInput(organizationId, faq.question, faq.answer, primaryActor.userId, now)
@@ -104,8 +108,42 @@ export class OrganizationContentProcess extends SeedProcess<OrganizationContentI
       )
     );
 
+    // Recruiting/new-member/part-review FAQs back specific dashboards, so every organization
+    // gets the full fixture set rather than a random sample like the generic FAQs above.
+    const recruitingFaqs = await Promise.all(
+      RECRUITING_FAQ_FIXTURES.map((faq) =>
+        this.prisma.frequentlyAskedQuestion.create({
+          data: faqCreateInput(organizationId, faq.question, faq.answer, primaryActor.userId, now, {
+            isOnRecruitingDashboard: true
+          })
+        })
+      )
+    );
+
+    const newMemberFaqs = await Promise.all(
+      NEW_MEMBER_FAQ_FIXTURES.map((faq) =>
+        this.prisma.frequentlyAskedQuestion.create({
+          data: faqCreateInput(organizationId, faq.question, faq.answer, primaryActor.userId, now, {
+            isOnNewMemberDashboard: true
+          })
+        })
+      )
+    );
+
+    const partReviewFaqs = await Promise.all(
+      PART_REVIEW_FAQ_FIXTURES.map((faq) =>
+        this.prisma.frequentlyAskedQuestion.create({
+          data: faqCreateInput(organizationId, faq.question, faq.answer, primaryActor.userId, now, {
+            isOnPartReviewPage: true
+          })
+        })
+      )
+    );
+
+    const faqs = [...genericFaqs, ...recruitingFaqs, ...newMemberFaqs, ...partReviewFaqs];
+
     // Milestone fixtures (dates relative to now)
-    const milestones = await Promise.all(
+    const recruitingMilestones = await Promise.all(
       MILESTONE_FIXTURES.map((m) =>
         this.prisma.milestone.create({
           data: milestoneCreateInput(
@@ -114,11 +152,30 @@ export class OrganizationContentProcess extends SeedProcess<OrganizationContentI
             m.description,
             addDaysToDate(now, m.dayOffset),
             primaryActor.userId,
-            now
+            now,
+            { isOnRecruitingDashboard: true }
           )
         })
       )
     );
+
+    const newMemberMilestones = await Promise.all(
+      NEW_MEMBER_MILESTONE_FIXTURES.map((m) =>
+        this.prisma.milestone.create({
+          data: milestoneCreateInput(
+            organizationId,
+            m.name,
+            m.description,
+            addDaysToDate(now, m.dayOffset),
+            primaryActor.userId,
+            now,
+            { isOnNewMemberDashboard: true }
+          )
+        })
+      )
+    );
+
+    const milestones = [...recruitingMilestones, ...newMemberMilestones];
 
     const contacts = await Promise.all(
       CONTACT_TITLE_FIXTURES.map((title, i) => {

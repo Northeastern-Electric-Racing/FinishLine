@@ -165,6 +165,12 @@ enum Sponsor_Value_Type {
   DISCOUNT
 }
 
+enum Team_Join_Request_Status {
+  PENDING
+  APPROVED
+  DENIED
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -192,6 +198,8 @@ model User {
   teamsAsMember                           Team[]                               @relation(name: "teamsAsMember")
   teamsAsHead                             Team[]                               @relation(name: "teamsAsHead")
   teamsAsLead                             Team[]                               @relation(name: "teamsAsLead")
+  teamJoinRequests                        Team_Join_Request[]                  @relation(name: "teamJoinRequests")
+  reviewedTeamJoinRequests                Team_Join_Request[]                  @relation(name: "teamJoinRequestReviewer")
   deletedWBSElements                      WBS_Element[]                        @relation(name: "deletedWbsElements")
   checkedDescriptionBullets               Description_Bullet[]                 @relation(name: "checkDescriptionBullets")
   createdTasks                            Task[]                               @relation(name: "createdBy")
@@ -330,9 +338,27 @@ model Team {
   checklists             Checklist[]
   projectTemplates       Project_Template[]
   meetingAttendances     Meeting_Attendance[]
+  joinRequests           Team_Join_Request[]        @relation(name: "teamJoinRequests")
 
   @@index([headId])
   @@index([organizationId])
+}
+
+model Team_Join_Request {
+  teamJoinRequestId String                   @id @default(uuid())
+  userId            String
+  user              User                     @relation(fields: [userId], references: [userId], name: "teamJoinRequests")
+  teamId            String
+  team              Team                     @relation(fields: [teamId], references: [teamId], name: "teamJoinRequests")
+  status            Team_Join_Request_Status @default(PENDING)
+  dateRequested     DateTime                 @default(now())
+  denialReason      String?
+  reviewedByUserId  String?
+  reviewedBy        User?                    @relation(fields: [reviewedByUserId], references: [userId], name: "teamJoinRequestReviewer")
+  dateReviewed      DateTime?
+
+  @@index([userId])
+  @@index([teamId])
 }
 
 model Session {
@@ -552,17 +578,19 @@ model Work_Package {
 }
 
 model Link_Type {
-  id                String       @id @default(uuid())
-  name              String
-  dateCreated       DateTime     @default(now())
-  iconName          String
-  required          Boolean
-  creatorId         String
-  creator           User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links             Link[]       @relation(name: "linkTypes")
-  organizationId    String
-  organization      Organization @relation(fields: [organizationId], references: [organizationId])
-  isOnGuestHomePage Boolean      @default(false)
+  id                     String       @id @default(uuid())
+  name                   String
+  dateCreated            DateTime     @default(now())
+  iconName               String
+  required               Boolean
+  creatorId              String
+  creator                User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links                  Link[]       @relation(name: "linkTypes")
+  organizationId         String
+  organization           Organization @relation(fields: [organizationId], references: [organizationId])
+  isOnGuestHomePage       Boolean      @default(false)
+  isOnNewMemberDashboard  Boolean      @default(false)
+  isOnOnboardingDashboard Boolean      @default(false)
 
   @@unique([name, organizationId], name: "uniqueLinkType")
   @@index([organizationId])
@@ -1154,19 +1182,20 @@ model Event {
 }
 
 model Calendar {
-  calendarId     String       @id @default(uuid())
-  name           String
-  dateCreated    DateTime     @default(now())
-  dateDeleted    DateTime?
-  userCreatedId  String
-  userCreated    User         @relation(name: "calendarCreator", fields: [userCreatedId], references: [userId])
-  userDeletedId  String?
-  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "calendarDeleter")
-  description    String
-  colorHexCode   String
-  eventTypes     Event_Type[]
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  calendarId          String       @id @default(uuid())
+  name                String
+  dateCreated         DateTime     @default(now())
+  dateDeleted         DateTime?
+  userCreatedId       String
+  userCreated         User         @relation(name: "calendarCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId       String?
+  userDeleted         User?        @relation(fields: [userDeletedId], references: [userId], name: "calendarDeleter")
+  description         String
+  colorHexCode        String
+  eventTypes          Event_Type[]
+  organizationId      String
+  organization        Organization @relation(fields: [organizationId], references: [organizationId])
+  isNewMemberCalendar Boolean      @default(false)
 }
 
 model Event_Type {
@@ -1362,7 +1391,6 @@ model Organization {
   advisor                                User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
   advisorId                              String?
   description                            String    @default("")
-  newMemberImageId                       String?
   logoImageId                            String?
   slackWorkspaceId                       String?
   applicationLink                        String?
@@ -1390,8 +1418,7 @@ model Organization {
   changeRequests           Change_Request[]
   reimbursementReqeusts    Reimbursement_Request[]
   usefulLinks              Link[]
-  frequentlyAskedQuestions FrequentlyAskedQuestion[]    @relation(name: "organizationFAQ")
-  partReviewFAQ            FrequentlyAskedQuestion[]    @relation(name: "partReviewFAQ")
+  frequentlyAskedQuestions FrequentlyAskedQuestion[]
   milestones               Milestone[]
   graphCollections         Graph_Collection[]
   graphs                   Graph[]
@@ -1434,34 +1461,37 @@ model Dashboard {
 }
 
 model FrequentlyAskedQuestion {
-  faqId              String        @id @default(uuid())
-  question           String
-  answer             String
-  userCreated        User          @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
-  userCreatedId      String
-  userDeleted        User?         @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
-  userDeletedId      String?
-  dateCreated        DateTime      @default(now())
-  dateDeleted        DateTime?
-  regularFaqOrgId    String?
-  regularFaqOrg      Organization? @relation(fields: [regularFaqOrgId], references: [organizationId], name: "organizationFAQ")
-  partReviewFaqOrgId String?
-  partReviewFaqOrg   Organization? @relation(fields: [partReviewFaqOrgId], references: [organizationId], name: "partReviewFAQ")
+  faqId                   String       @id @default(uuid())
+  question                String
+  answer                  String
+  userCreated             User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
+  userCreatedId           String
+  userDeleted             User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
+  userDeletedId           String?
+  dateCreated             DateTime     @default(now())
+  dateDeleted             DateTime?
+  organizationId          String
+  organization            Organization @relation(fields: [organizationId], references: [organizationId])
+  isOnRecruitingDashboard Boolean      @default(false)
+  isOnNewMemberDashboard  Boolean      @default(false)
+  isOnPartReviewPage      Boolean      @default(false)
 }
 
 model Milestone {
-  milestoneId    String       @id @default(uuid())
-  name           String
-  dateOfEvent    DateTime
-  description    String
-  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "milestoneCreator")
-  userCreatedId  String
-  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "milestoneDeleter")
-  userDeletedId  String?
-  dateCreated    DateTime     @default(now())
-  dateDeleted    DateTime?
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  milestoneId             String       @id @default(uuid())
+  name                    String
+  dateOfEvent             DateTime
+  description             String
+  userCreated             User         @relation(fields: [userCreatedId], references: [userId], name: "milestoneCreator")
+  userCreatedId           String
+  userDeleted             User?        @relation(fields: [userDeletedId], references: [userId], name: "milestoneDeleter")
+  userDeletedId           String?
+  dateCreated             DateTime     @default(now())
+  dateDeleted             DateTime?
+  organizationId          String
+  organization            Organization @relation(fields: [organizationId], references: [organizationId])
+  isOnRecruitingDashboard Boolean      @default(false)
+  isOnNewMemberDashboard  Boolean      @default(false)
 
   @@index([organizationId])
 }

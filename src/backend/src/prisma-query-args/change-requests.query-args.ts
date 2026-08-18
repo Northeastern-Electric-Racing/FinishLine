@@ -39,7 +39,16 @@ const getWorkPackageProposedChangesQueryArgs = (organizationId: string) =>
             select: {
               linkId: true,
               url: true,
-              linkType: { select: { name: true, required: true, iconName: true, isOnGuestHomePage: true } }
+              linkType: {
+                select: {
+                  name: true,
+                  required: true,
+                  iconName: true,
+                  isOnGuestHomePage: true,
+                  isOnNewMemberDashboard: true,
+                  isOnOnboardingDashboard: true
+                }
+              }
             }
           },
           proposedDescriptionBulletChanges: {
@@ -75,7 +84,16 @@ const getWbsProposedChangesQueryArgs = (organizationId: string) =>
         select: {
           linkId: true,
           url: true,
-          linkType: { select: { name: true, required: true, iconName: true, isOnGuestHomePage: true } }
+          linkType: {
+            select: {
+              name: true,
+              required: true,
+              iconName: true,
+              isOnGuestHomePage: true,
+              isOnNewMemberDashboard: true,
+              isOnOnboardingDashboard: true
+            }
+          }
         }
       },
       proposedDescriptionBulletChanges: {

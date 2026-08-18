@@ -37,6 +37,8 @@ const PROJECT_TEMPLATES = [
 
 const PROJECT_LINK_TYPE_NAMES = ['Confluence', 'Github', 'Altium', 'Google Drive'];
 
+const FEATURED_PROJECT_COUNT = 4;
+
 export type ProjectOutput = {
   projects: ProjectContext[];
   projectsByCarId: Record<string, ProjectContext[]>;
@@ -159,6 +161,18 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
       acc[projectContext.project.projectId] = projectContext;
       return acc;
     }, {});
+
+    // Feature a handful of projects on the guest-facing pages -- nothing sets this by default,
+    // so without it the FeaturedProjects widget on the guest home pages renders empty.
+    const featuredProjects = this.faker.helpers.arrayElements(projects, Math.min(FEATURED_PROJECT_COUNT, projects.length));
+    await this.prisma.organization.update({
+      where: { organizationId },
+      data: {
+        featuredProjects: {
+          connect: featuredProjects.map(({ project }) => ({ projectId: project.projectId }))
+        }
+      }
+    });
 
     return {
       projects,

@@ -15,7 +15,8 @@ import {
   isAtLeastRank,
   BusySlots,
   IcsBusyInterval,
-  MemberDropdownItem
+  MemberDropdownItem,
+  isValidSlackUserIdFormat
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { getMemberDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
@@ -221,6 +222,9 @@ export default class UsersService {
    * @throws if the user does not exist
    */
   static async updateUserSettings(user: User, defaultTheme: ThemeName, slackId: string): Promise<User_Settings> {
+    if (slackId && !isValidSlackUserIdFormat(slackId)) {
+      throw new HttpException(400, 'Invalid Slack ID');
+    }
     const { userId } = user;
 
     const updatedSettings = await prisma.user_Settings.upsert({

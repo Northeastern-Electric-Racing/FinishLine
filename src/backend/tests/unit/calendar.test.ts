@@ -109,6 +109,7 @@ describe('Calendar Tests', () => {
           'Updated Name',
           'Updated Description',
           '#FF0000',
+          false,
           organization
         )
       ).rejects.toThrow(new AccessDeniedException('Only admins can edit calendars'));
@@ -131,6 +132,7 @@ describe('Calendar Tests', () => {
         'Updated Calendar',
         'Updated Description',
         '#0000FF',
+        false,
         organization
       );
 
@@ -148,6 +150,7 @@ describe('Calendar Tests', () => {
           'Updated Name',
           'Updated Description',
           '#FF0000',
+          false,
           organization
         )
       ).rejects.toThrow(new NotFoundException('Calendar', 'non-existent-id'));
@@ -172,6 +175,7 @@ describe('Calendar Tests', () => {
           'Updated Name',
           'Updated Description',
           '#FF0000',
+          false,
           organization
         )
       ).rejects.toThrow(new DeletedException('Calendar', calendar.calendarId));
@@ -600,6 +604,7 @@ describe('Calendar Tests', () => {
             'Non-Admin Calendar',
             'desc',
             '#3498DB',
+            false,
             organization
           )
         ).rejects.toThrow(new AccessDeniedAdminOnlyException('create calendar'));
@@ -610,6 +615,7 @@ describe('Calendar Tests', () => {
           'Cool Calendar',
           'A very cool calendar',
           '#3498DB',
+          false,
           organization
         );
         expect(result.name).toBe('Cool Calendar');
@@ -618,13 +624,21 @@ describe('Calendar Tests', () => {
         expect(result.userCreated.userId).toBe(adminUser.userId);
       });
       it('fails on duplicate name', async () => {
-        await CalendarService.createCalendar(adminUser, 'Cool Calendar', 'A very cool calendar', '#3498DB', organization);
+        await CalendarService.createCalendar(
+          adminUser,
+          'Cool Calendar',
+          'A very cool calendar',
+          '#3498DB',
+          false,
+          organization
+        );
         await expect(
           CalendarService.createCalendar(
             adminUser,
             'Cool Calendar',
             'A very cool calendar, but not quite as cool',
             '#0062a3ff',
+            false,
             organization
           )
         ).rejects.toBeTruthy();

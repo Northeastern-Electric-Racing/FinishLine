@@ -397,17 +397,36 @@ export const checkBotInChannel = async (channelId: string): Promise<boolean> => 
 };
 
 /**
- * Given a slack user id, prood.uces the name of the channel
+ * Fetches a user's display name from Slack.
+ * @param userId the id of the slack user
+ * @returns the name of the user (real name if no display name), undefined if cannot be found
+ */
+const fetchUserName = async (userId: string): Promise<string | undefined> => {
+  const client = getSlackClient();
+  if (!client) return undefined;
+
+  const userRes = await client.users.info({ user: userId });
+  return userRes.user?.profile?.display_name || userRes.user?.real_name;
+};
+
+/**
+ * Caches user display names, which change very rarely, keyed by slack user id.
+ */
+const userNameCache = new LRUCache<string, string>({
+  max: 1000,
+  ttl: 1000 * 60 * 60 * 24, // 1 day
+  fetchMethod: fetchUserName
+});
+
+/**
+ * Given a slack user id, produces the display name of the user.
+ * Results are cached, and concurrent calls for the same user share a single slack request.
  * @param userId the id of the slack user
  * @returns the name of the user (real name if no display name), undefined if cannot be found
  */
 export const getUserName = async (userId: string) => {
-  const client = getSlackClient();
-  if (!client) return undefined;
-
   try {
-    const userRes = await client.users.info({ user: userId });
-    return userRes.user?.profile?.display_name || userRes.user?.real_name;
+    return await userNameCache.fetch(userId);
   } catch (error) {
     return undefined;
   }
@@ -437,14 +456,14 @@ export const getWorkspaceId = async () => {
 /**
  * Sends a slack ephemeral message to a user
  * @param channelId - the channel id of the channel to send to
- * @param threadTs - the timestamp of the thread to send to
+ * @param threadTs - the timestamp of the thread to send to, if this ephemeral should be a threaded reply
  * @param userId - the id of the user to send to
  * @param text - the text of the message to send (should always be populated in case blocks can't be rendered, but if blocks render text will not)
  * @param blocks - the blocks of the message to send
  */
 export async function sendEphemeralMessage(
   channelId: string,
-  threadTs: string,
+  threadTs: string | undefined,
   userId: string,
   text: string,
   blocks: any[]
@@ -456,7 +475,7 @@ export async function sendEphemeralMessage(
     await client.chat.postEphemeral({
       channel: channelId,
       user: userId,
-      thread_ts: threadTs,
+      ...(threadTs ? { thread_ts: threadTs } : {}),
       text,
       blocks
     });
