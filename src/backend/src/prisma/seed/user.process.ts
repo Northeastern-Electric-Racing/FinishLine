@@ -13,14 +13,14 @@ import { SeedProcess } from '../processes/seed-process.js';
 import type { FullUser } from '../context.js';
 import { seedConfig } from '../seed-config.js';
 
-const { totalUsers, roleDistribution } = seedConfig.user;
+const { totalUsers } = seedConfig.user;
 
 const BOOTSTRAP_APP_ADMINS = 1;
 
-const GUEST_COUNT = Math.round(totalUsers * roleDistribution.guest);
-const MEMBER_COUNT = Math.round(totalUsers * roleDistribution.member);
-const LEADERSHIP_COUNT = Math.round(totalUsers * roleDistribution.leadership);
-const HEAD_COUNT = Math.round(totalUsers * roleDistribution.head);
+const GUEST_COUNT = Math.round(totalUsers * 0.5);
+const MEMBER_COUNT = Math.round(totalUsers * 0.35);
+const LEADERSHIP_COUNT = Math.round(totalUsers * 0.1);
+const HEAD_COUNT = Math.round(totalUsers * 0.04);
 
 const ROLE_COUNTS = {
   [RoleEnum.GUEST]: GUEST_COUNT,

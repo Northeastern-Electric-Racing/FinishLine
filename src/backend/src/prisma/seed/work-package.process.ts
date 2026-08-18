@@ -16,6 +16,7 @@ import { WBS_Element_Status, Work_Package_Stage } from '@prisma/client';
 import { seedConfig } from '../seed-config.js';
 
 type WorkPackageInput = OrganizationOutput & UsersOutput & ProjectOutput;
+const BLOCKED_PERCENTAGE = 0.3;
 
 export type WorkPackageOutput = {
   workPackages: WorkPackageContext[];
@@ -147,7 +148,7 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
       const workPackageNumber = i + 1;
 
       // determine if this wp is blocked by a previous one
-      const shouldBeBlocked = i > 0 && this.faker.datatype.boolean({ probability: seedConfig.workPackage.blockedChance });
+      const shouldBeBlocked = i > 0 && this.faker.datatype.boolean({ probability: BLOCKED_PERCENTAGE });
       const blockerIndex = shouldBeBlocked ? this.faker.number.int({ min: 0, max: planned.length - 1 }) : undefined;
       const blocker = blockerIndex !== undefined ? planned[blockerIndex] : undefined;
 

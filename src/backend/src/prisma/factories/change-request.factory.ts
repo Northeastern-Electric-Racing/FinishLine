@@ -3,7 +3,7 @@ import { Account_Code, CR_Type, WBS_Element_Status, Work_Package_Stage, Prisma }
 import { DateRange } from '../context.js';
 import { clampDate, daysBetween } from '../dates.js';
 import { addDaysToDate } from 'shared';
-import { seedConfig, ReviewOutcome } from '../seed-config.js';
+import { seedConfig } from '../seed-config.js';
 
 export type SeedProposalBullet = { detail: string; descriptionBulletTypeId: string };
 export type SeedProposalLink = { url: string; linkTypeId: string };
@@ -22,6 +22,8 @@ export type SeedCrParent = {
 };
 
 export type SeedCrActor = { userId: string };
+
+type ReviewOutcome = 'APPROVED' | 'DENIED' | 'PENDING';
 
 export type SeedCrOverrides = Partial<Prisma.Change_RequestCreateInput>;
 export const WORK_PACKAGE_CR_TYPES: CR_Type[] = [CR_Type.ACTIVATION, CR_Type.STAGE_GATE];
@@ -198,16 +200,33 @@ const AUTO_ACCEPTED_TYPES: CR_Type[] = [CR_Type.ACTIVATION, CR_Type.STAGE_GATE, 
 
 const isAutoAccepted = (type: CR_Type): boolean => AUTO_ACCEPTED_TYPES.includes(type);
 
-const crTypeForParent = (faker: Faker, isWorkPackage: boolean): CR_Type =>
-  faker.helpers.weightedArrayElement(
-    isWorkPackage ? seedConfig.changeRequest.typeWeights.workPackage : seedConfig.changeRequest.typeWeights.project
-  );
+const crTypeForParent = (faker: Faker, isWorkPackage: boolean): CR_Type => {
+  if (isWorkPackage) {
+    return faker.helpers.weightedArrayElement([
+      { weight: 45, value: CR_Type.ACTIVATION },
+      { weight: 40, value: CR_Type.STAGE_GATE },
+      { weight: 15, value: CR_Type.STANDARD }
+    ]);
+  }
+
+  return faker.helpers.weightedArrayElement([
+    { weight: 97, value: CR_Type.STANDARD },
+    { weight: 3, value: CR_Type.LEADERSHIP }
+  ]);
+};
 
 const latestOutcome = (faker: Faker): ReviewOutcome =>
-  faker.helpers.weightedArrayElement(seedConfig.changeRequest.latestOutcomeWeights);
+  faker.helpers.weightedArrayElement([
+    { weight: 57, value: 'APPROVED' as const },
+    { weight: 39, value: 'PENDING' as const },
+    { weight: 4, value: 'DENIED' as const }
+  ]);
 
 const resolvedOutcome = (faker: Faker): ReviewOutcome =>
-  faker.helpers.weightedArrayElement(seedConfig.changeRequest.resolvedOutcomeWeights);
+  faker.helpers.weightedArrayElement([
+    { weight: 93, value: 'APPROVED' as const },
+    { weight: 7, value: 'DENIED' as const }
+  ]);
 
 const pickDifferentActor = (faker: Faker, actors: SeedCrActor[], excludedIds: string[]): string => {
   const candidates = actors.filter(({ userId }) => !excludedIds.includes(userId));

@@ -1,4 +1,3 @@
-import { CR_Type } from '@prisma/client';
 import { readFileSync } from 'fs';
 
 export type WeightedValue<T> = { weight: number; value: T };
@@ -14,57 +13,21 @@ export type WeightedCount =
       max: number;
     };
 
-export type ReviewOutcome = 'APPROVED' | 'DENIED' | 'PENDING';
-
 export interface SeedConfig {
   car: {
     carCount: number;
-    seasonWindow: { fromMonth: number; fromDay: number; toMonth: number; toDay: number };
   };
   descriptionBullet: {
     countWeights: WeightedValue<number>[];
-    suffixChance: number;
-    maxDateAddedOffsetDays: number;
-  };
-  scheduling: {
-    hoursPerDay: number;
-    availabilityBlocks: {
-      weekend: NumberRange;
-      weekday: NumberRange;
-    };
   };
   reimbursementRequest: {
-    bomTieChance: {
-      pastYear: number;
-      currentYear: number;
-    };
-    bomProductRatio: number;
     productCountWeights: WeightedValue<number>[];
-    deniedChance: number;
-    stageDelayDays: NumberRange;
-    fallbackMaterialCost: NumberRange;
-    dateOfExpenseRecentDays: NumberRange;
-    deliveryChance: number;
-    deliveryOffsetDays: NumberRange;
-    assigneeChance: number;
-    extraCommentChance: number;
-    reimbursementChancePerRecipient: number;
-    reimbursementAmountMultiplier: NumberRange;
-    pendingFinanceRecipientActorChance: number;
   };
   project: {
     projectsPerCar: number;
-    teamCountWeights: WeightedValue<number>[];
-    linkCountWeights: WeightedValue<number>[];
   };
   user: {
     totalUsers: number;
-    roleDistribution: {
-      guest: number;
-      member: number;
-      leadership: number;
-      head: number;
-    };
   };
   team: {
     leadsPerTeam: NumberRange;
@@ -72,22 +35,29 @@ export interface SeedConfig {
   };
   workPackage: {
     countWeights: WeightedValue<number>[];
-    nullStageChance: number;
-    blockedChance: number;
-    durationWeeks: NumberRange;
   };
   changeRequest: {
     projectCountWeights: WeightedCount[];
     workPackageCountWeights: WeightedValue<number>[];
     accountCodeCountWeights: WeightedCount[];
-
-    typeWeights: {
-      workPackage: WeightedValue<CR_Type>[];
-      project: WeightedValue<CR_Type>[];
-    };
-
-    latestOutcomeWeights: WeightedValue<ReviewOutcome>[];
-    resolvedOutcomeWeights: WeightedValue<ReviewOutcome>[];
+  };
+  sponsor: {
+    sponsorCount: number;
+    prospectiveSponsorCount: number;
+  };
+  OrganizationContent: {
+    announcementContent: number;
+    popupContent: number;
+    guestDefinitionCount: number;
+    checklistRootCount: number;
+    faqCount: number;
+  };
+  graph: {
+    graphCollectionsPerOrg: NumberRange;
+    standaloneGraphsPerOrg: NumberRange;
+  };
+  part: {
+    countForProject: WeightedCount[];
   };
 }
 

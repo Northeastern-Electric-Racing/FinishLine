@@ -9,7 +9,6 @@ import { BOMOutput, BOMProcess } from './bom.process.js';
 import { CarProcess } from './car.process.js';
 import { CarOutput, FullUser } from '../context.js';
 import { clampDate } from '../dates.js';
-import { seedConfig } from '../seed-config.js';
 import {
   buildProductSpecs,
   chooseFundingSource,
@@ -32,7 +31,13 @@ import {
   ReimbursementStatusStep,
   selectMaterialsToTie,
   systemCommentText,
-  wbsReimbursementProductReasonCreateInput
+  wbsReimbursementProductReasonCreateInput,
+  ASSIGNEE_CHANCE,
+  CURRENT_YEAR_BOM_TIE_CHANCE,
+  DELIVERY_CHANCE,
+  EXTRA_COMMENT_CHANCE,
+  PAST_YEAR_BOM_TIE_CHANCE,
+  REIMBURSEMENT_CHANCE_PER_RECIPIENT
 } from '../factories/reimbursement-request.factory.js';
 
 type ReimbursementRequestInput = OrganizationOutput &
@@ -190,10 +195,7 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
         end: clampDate(dateRange.end, { start: dateRange.start, end: now })
       };
 
-      const bomTieChance =
-        car.carId === currentYearCar.car.carId
-          ? seedConfig.reimbursementRequest.bomTieChance.currentYear
-          : seedConfig.reimbursementRequest.bomTieChance.pastYear;
+      const bomTieChance = car.carId === currentYearCar.car.carId ? CURRENT_YEAR_BOM_TIE_CHANCE : PAST_YEAR_BOM_TIE_CHANCE;
 
       for (const project of carProjects) {
         const projectMaterials = materialsByProjectId[project.project.projectId] ?? [];
@@ -275,10 +277,10 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
           if (dateOfExpense && !hasReachedStage(statusHistory, Reimbursement_Status_Type.DENIED)) {
             // The DELIVERY_CHANCE boolean must be drawn here (inside the same guard V1 used)
             // so the stream matches even when the guard is false and no delivery happens.
-            if (this.faker.datatype.boolean({ probability: seedConfig.reimbursementRequest.deliveryChance })) {
+            if (this.faker.datatype.boolean({ probability: DELIVERY_CHANCE })) {
               const dateDelivered = clampDate(
                 this.faker.date.soon({
-                  days: this.faker.number.int(seedConfig.reimbursementRequest.deliveryOffsetDays),
+                  days: this.faker.number.int({ min: 1, max: 14 }),
                   refDate: dateOfExpense
                 }),
                 { start: dateOfExpense, end: now }
@@ -289,13 +291,13 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
 
           let assigneeId: string | undefined;
           if (hasReachedStage(statusHistory, Reimbursement_Status_Type.LEADERSHIP_APPROVED)) {
-            if (this.faker.datatype.boolean({ probability: seedConfig.reimbursementRequest.assigneeChance })) {
+            if (this.faker.datatype.boolean({ probability: ASSIGNEE_CHANCE })) {
               assigneeId = this.faker.helpers.arrayElement(financePersonnel).userId;
             }
           }
 
           let extraComment: PlannedExtraComment | undefined;
-          if (this.faker.datatype.boolean({ probability: seedConfig.reimbursementRequest.extraCommentChance })) {
+          if (this.faker.datatype.boolean({ probability: EXTRA_COMMENT_CHANCE })) {
             const commentAuthor = this.faker.helpers.arrayElement([recipient, ...financePersonnel]);
             const text = this.faker.helpers.arrayElement(EXTRA_COMMENT_TEMPLATES);
             extraComment = {
@@ -358,12 +360,9 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
     for (const [recipientId, { total, latestDate }] of reimbursedTotalsByRecipientId) {
       // boolean and float are drawn together per recipient (V1 order), regardless of whether the
       // boolean passes, so a skipped recipient still consumes only the boolean.
-      if (!this.faker.datatype.boolean({ probability: seedConfig.reimbursementRequest.reimbursementChancePerRecipient }))
-        continue;
+      if (!this.faker.datatype.boolean({ probability: REIMBURSEMENT_CHANCE_PER_RECIPIENT })) continue;
 
-      const amount =
-        Math.round((total * this.faker.number.float(seedConfig.reimbursementRequest.reimbursementAmountMultiplier)) / 100) *
-        100;
+      const amount = Math.round((total * this.faker.number.float({ min: 0.5, max: 1 })) / 100) * 100;
       reimbursementCreates.push(
         this.prisma.reimbursement.create({ data: reimbursementCreateInput(organizationId, recipientId, amount, latestDate) })
       );

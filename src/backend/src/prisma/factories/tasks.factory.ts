@@ -3,6 +3,7 @@ import { Prisma, Task_Priority, Task_Status } from '@prisma/client';
 import { addDaysToDate } from 'shared';
 import { DateRange } from '../context.js';
 import { clampDate, daysBetween, DAY_MS } from '../dates.js';
+import { seedConfig } from '../seed-config.js';
 
 export type SeedTaskParent = {
   wbsElementId: string;
@@ -176,14 +177,19 @@ const randomPriority = (faker: Faker): Task_Priority =>
     { weight: 20, value: Task_Priority.HIGH }
   ]);
 
-export const taskCountForProject = (faker: Faker): number => {
-  const bucket = faker.number.int({ min: 1, max: 100 });
-
-  if (bucket <= 8) return 0;
-  if (bucket <= 75) return faker.number.int({ min: 6, max: 24 });
-  if (bucket <= 94) return faker.number.int({ min: 25, max: 50 });
-  return faker.number.int({ min: 51, max: 80 });
-};
+export const taskCountForProject = (faker: Faker): number =>
+  faker.helpers.weightedArrayElement(
+    seedConfig.task.countForProject.map((option) => ({
+      weight: option.weight,
+      value:
+        'value' in option
+          ? option.value
+          : faker.number.int({
+              min: option.min,
+              max: option.max
+            })
+    }))
+  );
 
 export const assigneeCountForTask = (faker: Faker): number =>
   faker.helpers.weightedArrayElement([

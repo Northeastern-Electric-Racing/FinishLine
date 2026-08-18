@@ -17,7 +17,7 @@ import {
 import { seedConfig } from '../seed-config.js';
 
 import type { ProjectContext } from '../context.js';
-const { projectsPerCar } = seedConfig.project;
+
 type ProjectInput = OrganizationOutput & CarOutput & UsersOutput & TeamOutput & ConfigDataOutput;
 
 const PROJECT_TEMPLATES = [
@@ -36,6 +36,8 @@ const PROJECT_TEMPLATES = [
 ];
 
 const PROJECT_LINK_TYPE_NAMES = ['Confluence', 'Github', 'Altium', 'Google Drive'];
+
+const FEATURED_PROJECT_COUNT = 4;
 
 export type ProjectOutput = {
   projects: ProjectContext[];
@@ -74,7 +76,7 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
       throw new Error('ProjectProcess requires users who can be project leads and managers.');
     }
 
-    const projectCount = cars.length * projectsPerCar;
+    const projectCount = cars.length * seedConfig.project.projectsPerCar;
     const projectLeadPool = this.faker.helpers.shuffle(
       Array.from({ length: Math.ceil(projectCount / projectOwners.length) }, () => projectOwners)
         .flat()
@@ -85,10 +87,10 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
       cars.map(async ({ car, dateRange }, carIndex) => {
         const { carNumber } = car.wbsElement;
         const usedProjectNames = new Set<string>();
-        const projectBudgets = generateProjectBudgets(this.faker, projectsPerCar);
+        const projectBudgets = generateProjectBudgets(this.faker, seedConfig.project.projectsPerCar);
 
         return Promise.all(
-          Array.from({ length: projectsPerCar }, async (_, index) => {
+          Array.from({ length: seedConfig.project.projectsPerCar }, async (_, index) => {
             const timeline = generateProjectTimeline(this.faker, dateRange);
 
             if (!shouldExist(this.faker, timeline)) {
@@ -108,7 +110,7 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
             const assignedTeams = this.projectTeams(teams);
             const assignedTeamIds = assignedTeams.map((team) => team.teamId);
 
-            const lead = projectLeadPool[carIndex * projectsPerCar + index];
+            const lead = projectLeadPool[carIndex * seedConfig.project.projectsPerCar + index];
             const managerPool = projectOwners.filter((user) => user.userId !== lead.userId);
             const manager = this.faker.helpers.arrayElement(managerPool.length > 0 ? managerPool : projectOwners);
 
@@ -160,6 +162,18 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
       return acc;
     }, {});
 
+    // Feature a handful of projects on the guest-facing pages -- nothing sets this by default,
+    // so without it the FeaturedProjects widget on the guest home pages renders empty.
+    const featuredProjects = this.faker.helpers.arrayElements(projects, Math.min(FEATURED_PROJECT_COUNT, projects.length));
+    await this.prisma.organization.update({
+      where: { organizationId },
+      data: {
+        featuredProjects: {
+          connect: featuredProjects.map(({ project }) => ({ projectId: project.projectId }))
+        }
+      }
+    });
+
     return {
       projects,
       projectsByCarId,
@@ -168,7 +182,11 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
   }
 
   private projectTeams(teams: Team[]) {
-    const teamCount = this.faker.helpers.weightedArrayElement(seedConfig.project.teamCountWeights);
+    const teamCount = this.faker.helpers.weightedArrayElement([
+      { weight: 85, value: 1 },
+      { weight: 12, value: 2 },
+      { weight: 3, value: 3 }
+    ]);
 
     return this.faker.helpers.arrayElements(teams, Math.min(teamCount, teams.length));
   }
@@ -176,7 +194,12 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
   private projectLinkTypes(linkTypes: ProjectInput['linkTypes']) {
     const projectLinkTypes = linkTypes.filter((linkType) => PROJECT_LINK_TYPE_NAMES.includes(linkType.name));
 
-    const linkCount = this.faker.helpers.weightedArrayElement(seedConfig.project.linkCountWeights);
+    const linkCount = this.faker.helpers.weightedArrayElement([
+      { weight: 45, value: 0 },
+      { weight: 35, value: 1 },
+      { weight: 15, value: 2 },
+      { weight: 5, value: 3 }
+    ]);
 
     return this.faker.helpers.arrayElements(projectLinkTypes, Math.min(linkCount, projectLinkTypes.length));
   }

@@ -5,6 +5,9 @@ import { DateRange } from '../context.js';
 import { clampDate } from '../dates.js';
 import { seedConfig } from '../seed-config.js';
 
+const SUFFIX_CHANCE = 0.5;
+const MAX_DATE_ADDED_OFFSET_DAYS = 14;
+
 const BULLET_VERBS = [
   'Design',
   'Research',
@@ -45,7 +48,7 @@ export const generateDescriptionBulletText = (faker: Faker, wbsElementName: stri
   const verb = faker.helpers.arrayElement(BULLET_VERBS);
 
   const suffix = faker.helpers.maybe(() => faker.helpers.arrayElement(BULLET_SUFFIXES), {
-    probability: seedConfig.descriptionBullet.suffixChance
+    probability: SUFFIX_CHANCE
   });
 
   return suffix ? `${verb} ${wbsElementName} ${suffix}` : `${verb} ${wbsElementName}`;
@@ -62,7 +65,7 @@ export const generateDescriptionBulletDateAdded = (faker: Faker, timeline: DateR
       timeline.start,
       faker.number.int({
         min: 0,
-        max: seedConfig.descriptionBullet.maxDateAddedOffsetDays
+        max: MAX_DATE_ADDED_OFFSET_DAYS
       })
     ),
     timeline

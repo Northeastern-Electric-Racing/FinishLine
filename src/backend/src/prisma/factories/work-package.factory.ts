@@ -5,6 +5,8 @@ import { clampDate, DAYS_PER_WEEK, daysBetween } from '../dates.js';
 import { addDaysToDate } from 'shared';
 import { seedConfig } from '../seed-config.js';
 
+const WORK_PACKAGE_NULL_STAGE_CHANCE = 0.15;
+
 const WP_NAMES_BY_STAGE: Record<Work_Package_Stage, string[]> = {
   [Work_Package_Stage.RESEARCH]: [
     'Research',
@@ -93,7 +95,7 @@ export const generateWorkPackageCount = (faker: Faker): number =>
 export const generateWorkPackageStage = (faker: Faker): Work_Package_Stage | null => {
   if (
     faker.datatype.boolean({
-      probability: seedConfig.workPackage.nullStageChance
+      probability: WORK_PACKAGE_NULL_STAGE_CHANCE
     })
   ) {
     return null;
@@ -124,8 +126,8 @@ export const generateWorkPackageTimeline = (
   // duration saved in WEEKS instead of days
   const maxDuration = Math.floor(Math.max(1, daysBetween({ start, end: projectTimeline.end }) / DAYS_PER_WEEK));
   const duration = faker.number.int({
-    min: seedConfig.workPackage.durationWeeks.min,
-    max: Math.min(seedConfig.workPackage.durationWeeks.max, maxDuration)
+    min: 1,
+    max: Math.min(12, maxDuration)
   });
 
   return { start, end: clampDate(addDaysToDate(start, duration * DAYS_PER_WEEK), { start, end: projectTimeline.end }) };

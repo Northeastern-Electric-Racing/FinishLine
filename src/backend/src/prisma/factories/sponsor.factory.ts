@@ -1,9 +1,10 @@
 import { Faker } from '@faker-js/faker';
 import { First_Contact_Method, Prisma, Prospective_Sponsor_Status, Sponsor_Value_Type } from '@prisma/client';
 import { addDaysToDate } from 'shared';
+import { seedConfig } from '../seed-config.js';
 
-export const SPONSOR_COUNT = 25;
-export const PROSPECTIVE_SPONSOR_COUNT = 25;
+export const SPONSOR_COUNT = seedConfig.sponsor.sponsorCount;
+export const PROSPECTIVE_SPONSOR_COUNT = seedConfig.sponsor.prospectiveSponsorCount;
 
 export const ACTIVE_SPONSOR_CHANCE = 0.85;
 export const TAX_EXEMPT_CHANCE = 0.4;
