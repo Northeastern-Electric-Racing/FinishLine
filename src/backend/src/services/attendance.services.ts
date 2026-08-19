@@ -18,6 +18,7 @@ import {
   sendMessage
 } from '../integrations/slack.js';
 import { userHasPermission } from '../utils/users.utils.js';
+import { calculateTeamMemberAttendancePercent } from '../utils/attendance.utils.js';
 
 export default class AttendanceService {
   static async takeAttendance(
@@ -149,15 +150,8 @@ export default class AttendanceService {
 
     if (!attendance || attendance.closedAt) return;
 
-    const teamMemberIds = new Set([
-      ...attendance.team.members.map((m) => m.userId),
-      ...attendance.team.leads.map((l) => l.userId),
-      attendance.team.headId
-    ]);
-    const attendeeIds = new Set(attendance.attendees.map((a) => a.userId));
     const attendeesCount = attendance.attendees.length;
-    const teamMemberAttendees = [...teamMemberIds].filter((id) => attendeeIds.has(id)).length;
-    const teamMemberPercent = teamMemberIds.size > 0 ? (teamMemberAttendees / teamMemberIds.size) * 100 : 0;
+    const teamMemberPercent = calculateTeamMemberAttendancePercent(attendance.team, attendance.attendees);
 
     const closedMessage = `Attendance is now closed. ${attendeesCount} attended (${teamMemberPercent.toFixed(1)}% of team).`;
     await editMessage(attendance.slackChannelId, attendance.slackMessageTimestamp, closedMessage);

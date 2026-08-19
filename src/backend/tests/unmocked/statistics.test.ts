@@ -1,5 +1,16 @@
 import { Graph_Type, Organization, User, Graph_Display_Type, Special_Permission } from '@prisma/client';
-import { batmanAppAdmin, supermanAdmin, theVisitorGuest, wonderwomanGuest } from '../test-data/users.test-data.js';
+import {
+  batmanAppAdmin,
+  supermanAdmin,
+  theVisitorGuest,
+  wonderwomanGuest,
+  member,
+  robinMember,
+  cyborgMember,
+  greenlanternHead,
+  aquamanLeadership,
+  flashAdmin
+} from '../test-data/users.test-data.js';
 import {
   createTestCar,
   createTestOrganization,
@@ -548,6 +559,207 @@ describe('Statistics Tests', () => {
             new Date(new Date().getTime() - 10000)
           )
       ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
+    });
+  });
+
+  describe('Attendance Graphs', () => {
+    it('Create graph works for getting sum and average attendance percent by team, excluding open sessions', async () => {
+      const division = await createTestTeamType('aDivision', orgId);
+      const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
+      const m1 = await createTestUser(member, orgId);
+      const m2 = await createTestUser(robinMember, orgId);
+      const m3 = await createTestUser(cyborgMember, orgId);
+      await prisma.team.update({
+        where: { teamId: team.teamId },
+        data: { members: { connect: [m1, m2, m3].map((m) => ({ userId: m.userId })) } }
+      });
+
+      // 50% attendance: head + m1 out of head + m1 + m2 + m3
+      await prisma.meeting_Attendance.create({
+        data: {
+          organizationId: orgId,
+          teamId: team.teamId,
+          userCreatedId: user.userId,
+          openedAt: new Date('2024-01-01'),
+          closedAt: new Date('2024-01-01T01:00:00'),
+          slackChannelId: 'aChannel',
+          slackMessageTimestamp: '1',
+          attendees: { connect: [user, m1].map((u) => ({ userId: u.userId })) }
+        }
+      });
+
+      // 100% attendance
+      await prisma.meeting_Attendance.create({
+        data: {
+          organizationId: orgId,
+          teamId: team.teamId,
+          userCreatedId: user.userId,
+          openedAt: new Date('2024-01-08'),
+          closedAt: new Date('2024-01-08T01:00:00'),
+          slackChannelId: 'aChannel',
+          slackMessageTimestamp: '2',
+          attendees: { connect: [user, m1, m2, m3].map((u) => ({ userId: u.userId })) }
+        }
+      });
+
+      // still open (no closedAt) - must be excluded regardless of attendees
+      await prisma.meeting_Attendance.create({
+        data: {
+          organizationId: orgId,
+          teamId: team.teamId,
+          userCreatedId: user.userId,
+          openedAt: new Date('2024-01-15'),
+          closedAt: null,
+          slackChannelId: 'aChannel',
+          slackMessageTimestamp: '3',
+          attendees: { connect: [{ userId: user.userId }] }
+        }
+      });
+
+      // closed, but outside the queried date range - must be excluded
+      await prisma.meeting_Attendance.create({
+        data: {
+          organizationId: orgId,
+          teamId: team.teamId,
+          userCreatedId: user.userId,
+          openedAt: new Date('2020-01-01'),
+          closedAt: new Date('2020-01-01T01:00:00'),
+          slackChannelId: 'aChannel',
+          slackMessageTimestamp: '4',
+          attendees: { connect: [user, m1, m2, m3].map((u) => ({ userId: u.userId })) }
+        }
+      });
+
+      const sumResult = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.ATTENDANCE_BY_TEAM,
+        Measure.SUM,
+        Graph_Display_Type.BAR,
+        organization,
+        [],
+        [],
+        new Date('2023-12-01'),
+        new Date('2024-02-01')
+      );
+
+      expect(sumResult.graphData).toStrictEqual([
+        {
+          tipLabel: '% Attendance',
+          values: [
+            {
+              label: team.teamName,
+              value: 150
+            }
+          ]
+        }
+      ]);
+
+      const avgResult = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.ATTENDANCE_BY_TEAM,
+        Measure.AVG,
+        Graph_Display_Type.BAR,
+        organization,
+        [],
+        [],
+        new Date('2023-12-01'),
+        new Date('2024-02-01')
+      );
+
+      expect(avgResult.graphData).toStrictEqual([
+        {
+          tipLabel: '% Attendance',
+          values: [
+            {
+              label: team.teamName,
+              value: 75
+            }
+          ]
+        }
+      ]);
+    });
+
+    it('Create graph works for getting average attendance percent by division, aggregating across teams', async () => {
+      const division = await createTestTeamType('aDivision', orgId);
+      const teamA = await createTestTeam(user.userId, division.teamTypeId, orgId);
+      const teamAMember1 = await createTestUser(member, orgId);
+      const teamAMember2 = await createTestUser(robinMember, orgId);
+      const teamAMember3 = await createTestUser(cyborgMember, orgId);
+      await prisma.team.update({
+        where: { teamId: teamA.teamId },
+        data: {
+          members: { connect: [teamAMember1, teamAMember2, teamAMember3].map((m) => ({ userId: m.userId })) }
+        }
+      });
+
+      const teamBHead = await createTestUser(greenlanternHead, orgId);
+      const teamB = await createTestTeam(teamBHead.userId, division.teamTypeId, orgId);
+      const teamBMember1 = await createTestUser(aquamanLeadership, orgId);
+      const teamBMember2 = await createTestUser(wonderwomanGuest, orgId);
+      const teamBMember3 = await createTestUser(flashAdmin, orgId);
+      await prisma.team.update({
+        where: { teamId: teamB.teamId },
+        data: {
+          members: { connect: [teamBMember1, teamBMember2, teamBMember3].map((m) => ({ userId: m.userId })) }
+        }
+      });
+
+      // team A: 50% attendance
+      await prisma.meeting_Attendance.create({
+        data: {
+          organizationId: orgId,
+          teamId: teamA.teamId,
+          userCreatedId: user.userId,
+          openedAt: new Date('2024-01-01'),
+          closedAt: new Date('2024-01-01T01:00:00'),
+          slackChannelId: 'aChannel',
+          slackMessageTimestamp: '1',
+          attendees: { connect: [user, teamAMember1].map((u) => ({ userId: u.userId })) }
+        }
+      });
+
+      // team B: 100% attendance
+      await prisma.meeting_Attendance.create({
+        data: {
+          organizationId: orgId,
+          teamId: teamB.teamId,
+          userCreatedId: teamBHead.userId,
+          openedAt: new Date('2024-01-08'),
+          closedAt: new Date('2024-01-08T01:00:00'),
+          slackChannelId: 'aChannel',
+          slackMessageTimestamp: '2',
+          attendees: {
+            connect: [teamBHead, teamBMember1, teamBMember2, teamBMember3].map((u) => ({ userId: u.userId }))
+          }
+        }
+      });
+
+      const result = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.ATTENDANCE_BY_DIVISION,
+        Measure.AVG,
+        Graph_Display_Type.BAR,
+        organization,
+        [],
+        [],
+        new Date('2023-12-01'),
+        new Date('2024-02-01')
+      );
+
+      expect(result.graphData).toStrictEqual([
+        {
+          tipLabel: '% Attendance',
+          values: [
+            {
+              label: division.name,
+              value: 75
+            }
+          ]
+        }
+      ]);
     });
   });
 });

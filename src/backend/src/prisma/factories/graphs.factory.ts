@@ -47,7 +47,9 @@ const GRAPH_TITLE_BY_TYPE: Record<Graph_Type, string> = {
   [Graph_Type.REIMBURSEMENT_TOTAL_BY_TEAM]: 'Reimbursement Total by Team',
   [Graph_Type.REIMBURSEMENT_TOTAL_BY_DIVISION]: 'Reimbursement Total by Division',
   [Graph_Type.CHANGE_REQUESTS_BY_STATUS]: 'Change Requests by Status',
-  [Graph_Type.PROJECT_BUDGET_VS_REIMBURSED_AMOUNT]: 'Project Budget vs Reimbursed Amount'
+  [Graph_Type.PROJECT_BUDGET_VS_REIMBURSED_AMOUNT]: 'Project Budget vs Reimbursed Amount',
+  [Graph_Type.ATTENDANCE_BY_TEAM]: 'Attendance by Team',
+  [Graph_Type.ATTENDANCE_BY_DIVISION]: 'Attendance by Division'
 };
 
 export type GraphCollectionPlan = {
@@ -110,7 +112,9 @@ const pickGraphType = (faker: Faker): Graph_Type =>
     { weight: 8, value: Graph_Type.CHANGE_REQUESTS_BY_TEAM },
     { weight: 8, value: Graph_Type.CHANGE_REQUESTS_BY_DIVISION },
     { weight: 8, value: Graph_Type.CHANGE_REQUESTS_BY_STATUS },
-    { weight: 6, value: Graph_Type.PROJECT_BUDGET_VS_REIMBURSED_AMOUNT }
+    { weight: 6, value: Graph_Type.PROJECT_BUDGET_VS_REIMBURSED_AMOUNT },
+    { weight: 8, value: Graph_Type.ATTENDANCE_BY_TEAM },
+    { weight: 6, value: Graph_Type.ATTENDANCE_BY_DIVISION }
   ]);
 
 const pickDisplayType = (faker: Faker, graphType: Graph_Type): Graph_Display_Type =>
@@ -203,6 +207,26 @@ const planGraph = (
   };
 };
 
+// Builds an all-time attendance graph (no date-range filter) so it always renders seeded
+// Meeting_Attendance data. Attendance graphs have no car relation, so carIds is left empty.
+const planAttendanceGraph = (
+  faker: Faker,
+  creators: GraphActor[],
+  creationWindow: DateRange,
+  graphType: Graph_Type,
+  collectionIndex: number
+): GraphPlan => ({
+  title: GRAPH_TITLE_BY_TYPE[graphType],
+  graphType,
+  displayGraphType: Graph_Display_Type.BAR,
+  measure: faker.helpers.arrayElement([Measure.SUM, Measure.AVG]),
+  specialPermissions: [],
+  creatorId: faker.helpers.arrayElement(creators).userId,
+  dateCreated: generateRandomDate(faker, creationWindow.start, creationWindow.end),
+  carIds: [],
+  collectionIndex
+});
+
 export const planGraphs = (
   faker: Faker,
   collectionPlans: GraphCollectionPlan[],
@@ -218,6 +242,12 @@ export const planGraphs = (
   // just anywhere in the overall car span.
   const standaloneWindow: DateRange = { start: span.start, end: new Date(Math.min(span.end.getTime(), now.getTime())) };
 
+  // Pick a visible (non-deleted) collection to showcase BOTH attendance graph types together.
+  const showcaseIndex = Math.max(
+    0,
+    collectionPlans.findIndex((collectionPlan) => !collectionPlan.dateDeleted)
+  );
+
   collectionPlans.forEach((collectionPlan, collectionIndex) => {
     const count = graphsPerCollection(faker);
     const creationWindow: DateRange = {
@@ -227,6 +257,17 @@ export const planGraphs = (
 
     for (let i = 0; i < count; i++) {
       graphs.push(planGraph(faker, creators, cars, creationWindow, collectionIndex));
+    }
+
+    // Guarantee every collection surfaces an attendance graph so the new attendance statistics are
+    // visible when browsing collections, not just as standalone graphs. One showcase collection gets
+    // both Team and Division; the rest alternate to keep a single attendance graph each.
+    if (collectionIndex === showcaseIndex) {
+      graphs.push(planAttendanceGraph(faker, creators, creationWindow, Graph_Type.ATTENDANCE_BY_TEAM, collectionIndex));
+      graphs.push(planAttendanceGraph(faker, creators, creationWindow, Graph_Type.ATTENDANCE_BY_DIVISION, collectionIndex));
+    } else {
+      const attendanceType = collectionIndex % 2 === 0 ? Graph_Type.ATTENDANCE_BY_TEAM : Graph_Type.ATTENDANCE_BY_DIVISION;
+      graphs.push(planAttendanceGraph(faker, creators, creationWindow, attendanceType, collectionIndex));
     }
   });
 

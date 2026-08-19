@@ -4,6 +4,7 @@ import prisma from '../prisma/prisma.js';
 import { getGraphCollectionQueryArgs } from '../prisma-query-args/statistics.query-args.js';
 import { AccessDeniedException, DeletedException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
 import { userHasPermissionNew } from './users.utils.js';
+import { calculateTeamMemberAttendancePercent } from './attendance.utils.js';
 
 interface CarSegmentedData {
   carIds: string[];
@@ -698,6 +699,118 @@ const getGraphDataForChangeRequestByStatus = async (
   return data;
 };
 
+const getMeetingAttendanceDateWhereInput = (
+  startDate: Date | null,
+  endDate: Date | null
+): { closedAt: { not: null }; openedAt?: { gte?: Date; lte?: Date } } => {
+  const where: { closedAt: { not: null }; openedAt?: { gte?: Date; lte?: Date } } = {
+    closedAt: { not: null }
+  };
+
+  if (startDate) {
+    where.openedAt = { gte: startDate };
+  }
+
+  if (endDate) {
+    where.openedAt = { ...where.openedAt, lte: endDate };
+  }
+
+  return where;
+};
+
+const getGraphDataForAttendanceByTeam = async (
+  measure: Measure,
+  organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
+  _params: { carIds: string[] }
+): Promise<GraphData> => {
+  const teams = await prisma.team.findMany({
+    where: { organizationId, dateArchived: null },
+    include: {
+      members: true,
+      leads: true,
+      meetingAttendances: {
+        where: getMeetingAttendanceDateWhereInput(startDate, endDate),
+        include: { attendees: true }
+      }
+    }
+  });
+
+  const data: GraphData = {
+    tipLabel: '% Attendance',
+    values: teams.map((team) => {
+      let value = team.meetingAttendances.reduce((prev, session) => {
+        return prev + calculateTeamMemberAttendancePercent(team, session.attendees);
+      }, 0);
+
+      if (measure === Measure.AVG && team.meetingAttendances.length > 0) {
+        value = value / team.meetingAttendances.length;
+      }
+
+      return {
+        value,
+        label: team.teamName
+      };
+    })
+  };
+
+  return data;
+};
+
+const getGraphDataForAttendanceByDivision = async (
+  measure: Measure,
+  organizationId: string,
+  startDate: Date | null,
+  endDate: Date | null,
+  _params: { carIds: string[] }
+): Promise<GraphData> => {
+  const divisions = await prisma.team_Type.findMany({
+    where: { organizationId },
+    include: {
+      teams: {
+        where: { dateArchived: null },
+        include: {
+          members: true,
+          leads: true,
+          meetingAttendances: {
+            where: getMeetingAttendanceDateWhereInput(startDate, endDate),
+            include: { attendees: true }
+          }
+        }
+      }
+    }
+  });
+
+  const data: GraphData = {
+    tipLabel: '% Attendance',
+    values: divisions.map((division) => {
+      let numSessions = 0;
+
+      let value = division.teams.reduce((prev, team) => {
+        return (
+          prev +
+          team.meetingAttendances.reduce((prev, session) => {
+            numSessions++;
+            return prev + calculateTeamMemberAttendancePercent(team, session.attendees);
+          }, 0)
+        );
+      }, 0);
+
+      if (measure === Measure.AVG && numSessions > 0) {
+        value = value / numSessions;
+      }
+
+      return {
+        value,
+        label: division.name
+      };
+    })
+  };
+
+  return data;
+};
+
 export const getGraphData = (
   graphType: Graph_Type,
   measure: Measure,
@@ -741,6 +854,10 @@ export const getGraphData = (
       return getGraphDataForProjectBudgetVsReimbursedAmount(organizationId, startDate, endDate, params);
     case Graph_Type.CHANGE_REQUESTS_BY_STATUS:
       return getGraphDataForChangeRequestByStatus(organizationId, startDate, endDate, params).then((val) => [val]);
+    case Graph_Type.ATTENDANCE_BY_TEAM:
+      return getGraphDataForAttendanceByTeam(measure, organizationId, startDate, endDate, params).then((val) => [val]);
+    case Graph_Type.ATTENDANCE_BY_DIVISION:
+      return getGraphDataForAttendanceByDivision(measure, organizationId, startDate, endDate, params).then((val) => [val]);
   }
 };
 
@@ -790,5 +907,9 @@ export const getAxisLabels = (graphType: Graph_Type): { x: string; y: string } =
       return { x: 'Project', y: 'Dollars' };
     case Graph_Type.CHANGE_REQUESTS_BY_STATUS:
       return { x: 'Status', y: '# Change Requests' };
+    case Graph_Type.ATTENDANCE_BY_TEAM:
+      return { x: 'Team', y: '% Attendance' };
+    case Graph_Type.ATTENDANCE_BY_DIVISION:
+      return { x: 'Division', y: '% Attendance' };
   }
 };
