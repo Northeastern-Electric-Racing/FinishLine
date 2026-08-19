@@ -4,24 +4,23 @@ import GanttChartSection from './GanttChartSection';
 import { GanttCollection } from '../../../utils/gantt.utils';
 import { useState } from 'react';
 import { GanttEditability } from './GanttChart';
-import { ArcherContainerRef } from 'react-archer/lib/ArcherContainer/ArcherContainer.types';
+
+const ignore = () => {};
+
+const ignoreBool = () => false;
 
 interface GanttChartCollectionSectionProps<E, T> {
   startDate: Date;
   endDate: Date;
   collection: GanttCollection<E, T>;
   editability?: GanttEditability<E, T>;
-  onToggle: () => void;
-  registerArcherRef: (taskId: string) => (el: ArcherContainerRef | null) => void;
 }
 
 const GanttChartCollectionSection = <E, T>({
   startDate,
   endDate,
   collection,
-  editability,
-  onToggle,
-  registerArcherRef
+  editability
 }: GanttChartCollectionSectionProps<E, T>) => {
   const theme = useTheme();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -62,10 +61,6 @@ const GanttChartCollectionSection = <E, T>({
     setIsEditMode(true);
   };
 
-  const ignore = () => {};
-
-  const ignoreBool = () => false;
-
   return collection.tasks.length > 0 ? (
     <Box sx={collectionSectionBackgroundStyle}>
       <Box sx={collectionDescriptionContainerStyle}>
@@ -99,8 +94,6 @@ const GanttChartCollectionSection = <E, T>({
           onAddTaskPressed={editability?.onNewSubTaskPressed ?? ignore}
           highlightSubtaskComparator={editability?.highlightSubtaskComparator ?? ignoreBool}
           highlightTaskComparator={editability?.highlightTaskComparator ?? ignoreBool}
-          onToggle={onToggle}
-          registerArcherRef={registerArcherRef}
         />
       </Box>
     </Box>

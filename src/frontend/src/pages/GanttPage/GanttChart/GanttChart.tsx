@@ -12,7 +12,6 @@ import { eachDayOfInterval, isMonday, differenceInDays } from 'date-fns';
 import { getMonday } from '../../../utils/datetime.utils';
 import { toDateString } from 'shared';
 import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../utils/gantt.utils';
-import { ArcherContainerRef } from 'react-archer/lib/ArcherContainer/ArcherContainer.types';
 export interface GanttEditability<E, T> {
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
@@ -24,8 +23,6 @@ export interface GanttEditability<E, T> {
   onCancelChanges: (collection: GanttCollection<E, T>) => void;
   onCreateChange: (change: GanttChange<T>) => void;
   highlightedChange: RequestEventChange<T>;
-  onToggle: () => void;
-  registerArcherRef: (taskId: string) => (el: ArcherContainerRef | null) => void;
 }
 
 interface GanttChartProps<E, T> {
@@ -41,10 +38,6 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
 
   const today = new Date(new Date().setHours(0, 0, 0, 0));
   const currentWeekCol = days.findIndex((day) => toDateString(day) === toDateString(getMonday(today))) + 1;
-  const onToggle = editability?.onToggle ? editability?.onToggle : () => {};
-  const registerArcherRef = editability?.registerArcherRef
-    ? editability?.registerArcherRef
-    : (_collectionId: string) => (_el: ArcherContainerRef | null) => {};
   const daysIntoWeek = differenceInDays(today, getMonday(today));
   const dailyOffset = daysIntoWeek * (parseFloat(GANTT_CHART_CELL_SIZE) / 7);
 
@@ -71,8 +64,6 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
               endDate={endDate}
               collection={collection}
               editability={editability}
-              onToggle={onToggle}
-              registerArcherRef={registerArcherRef}
             />
           ) : (
             <></>

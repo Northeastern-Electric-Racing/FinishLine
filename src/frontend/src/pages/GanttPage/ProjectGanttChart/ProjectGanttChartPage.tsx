@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import React, { ChangeEvent, FC, useCallback, useEffect, useRef, useState } from 'react';
+import React, { ChangeEvent, FC, useEffect, useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAllProjectsGantt } from '../../../hooks/projects.hooks';
 import ErrorPage from '../../ErrorPage';
@@ -57,7 +57,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { projectWbsPipe } from '../../../utils/pipes';
 import { projectGanttTransformer } from '../../../apis/transformers/projects.transformers';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { ArcherContainerRef } from 'react-archer/lib/ArcherContainer/ArcherContainer.types';
 
 const getElementId = (element: WbsElementPreview | Task) => {
   return (element as WbsElementPreview).id ?? (element as Task).taskId;
@@ -97,24 +96,8 @@ const ProjectGanttChartPage: FC = () => {
   const [allProjects, setAllProjects] = useState<ProjectGantt[]>([]);
   const [editedProjects, setEditedProjects] = useState<ProjectGantt[]>([]);
   const user = useCurrentUser();
-  const archerRefs = useRef<Map<string, ArcherContainerRef>>(new Map());
   /******************** Filters ***************************/
   const { filters, setFilters } = useGanttFilters('project-gantt');
-
-  const registerArcherRef = useCallback(
-    (taskId: string) => (el: ArcherContainerRef | null) => {
-      if (el) {
-        archerRefs.current.set(taskId, el);
-      } else {
-        archerRefs.current.delete(taskId);
-      }
-    },
-    []
-  );
-
-  const handleToggle = useCallback(() => {
-    archerRefs.current.forEach((ref) => ref.refreshScreen());
-  }, []);
 
   // Local car filter state — resets to global selection whenever global car filter changes
   const [showCars, setShowCars] = useState<number[]>([]);
@@ -166,8 +149,7 @@ const ProjectGanttChartPage: FC = () => {
     filters,
     showCars,
     searchText,
-    history,
-    handleToggle
+    history
   ]);
 
   const handleSetGanttFilters = (newFilters: GanttFilters) => {
@@ -688,9 +670,7 @@ const ProjectGanttChartPage: FC = () => {
             createTaskTitle: 'Create New Project',
             onSavePressed: saveChanges,
             highlightSubtaskComparator: highlightWorkPackageComparator,
-            highlightTaskComparator: highlightProjectComparator,
-            onToggle: handleToggle,
-            registerArcherRef
+            highlightTaskComparator: highlightProjectComparator
           }}
         />
       </PageLayout>

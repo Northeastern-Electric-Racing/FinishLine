@@ -27,8 +27,6 @@ interface GanttChartSectionProps<T> {
   onAddTaskPressed: (parentTask: GanttTask<T>) => void;
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
-  onToggle: () => void;
-  registerArcherRef: (collectionId: string) => (el: ArcherContainerRef | null) => void;
 }
 
 interface GanttTooltipLayerProps {
@@ -68,12 +66,15 @@ const GanttChartSection = <T,>({
   highlightedChange,
   onAddTaskPressed,
   highlightSubtaskComparator,
-  highlightTaskComparator,
-  onToggle,
-  registerArcherRef
+  highlightTaskComparator
 }: GanttChartSectionProps<T>) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const treeContainerRef = useRef<HTMLDivElement>(null);
+  const archerContainerRef = useRef<ArcherContainerRef>(null);
+
+  const onToggle = useCallback(() => {
+    archerContainerRef.current?.refreshScreen();
+  }, []);
 
   useEffect(() => {
     const node = treeContainerRef.current;
@@ -115,7 +116,7 @@ const GanttChartSection = <T,>({
   );
 
   return (
-    <ArcherContainer strokeColor="#ef4545" ref={registerArcherRef(tasks[0].id)}>
+    <ArcherContainer strokeColor="#ef4545" ref={archerContainerRef}>
       <Box sx={{ width: 'fit-content' }}>
         <Box ref={treeContainerRef} sx={{ mt: '1rem', width: 'fit-content' }}>
           {tasks.map((task) => {
