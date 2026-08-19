@@ -56,6 +56,8 @@ const RulesetTable: React.FC = () => {
     return ruleset.ruleAmount > 0;
   };
 
+  const canDelete = isLeadership(user.role);
+
   // Table header configuration
   const headCells = [
     { id: 'fileName', label: 'File Name' },
@@ -64,7 +66,7 @@ const RulesetTable: React.FC = () => {
     { id: 'car', label: 'Car' },
     { id: 'isActive', label: 'Active?' },
     { id: 'actions', label: 'Actions' },
-    { id: 'delete', label: '' }
+    ...(canDelete ? [{ id: 'delete', label: '' }] : [])
   ];
 
   const handleToggleActive = (ruleset: Ruleset) => {
@@ -237,7 +239,13 @@ const RulesetTable: React.FC = () => {
                     >
                       View Rules
                     </NERButton>
-                    <RulesetDeleteButton rulesetId={ruleset.rulesetId} name={ruleset.name} onDelete={handleDeleteRuleset} />
+                    {canDelete && (
+                      <RulesetDeleteButton
+                        rulesetId={ruleset.rulesetId}
+                        name={ruleset.name}
+                        onDelete={handleDeleteRuleset}
+                      />
+                    )}
                   </Box>
                 </Box>
               </CardContent>
@@ -265,7 +273,7 @@ const RulesetTable: React.FC = () => {
               {/* Table rows with ruleset data */}
               {rulesets.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ color: '#999', padding: '15px' }}>
+                  <TableCell colSpan={headCells.length} align="center" sx={{ color: '#999', padding: '15px' }}>
                     No Rulesets Found
                   </TableCell>
                 </TableRow>
@@ -339,13 +347,15 @@ const RulesetTable: React.FC = () => {
                         View Rules
                       </NERButton>
                     </TableCell>
-                    <TableCell align="center" sx={{ width: '60px', paddingLeft: '0px' }}>
-                      <RulesetDeleteButton
-                        rulesetId={ruleset.rulesetId}
-                        name={ruleset.name}
-                        onDelete={handleDeleteRuleset}
-                      />
-                    </TableCell>
+                    {canDelete && (
+                      <TableCell align="center" sx={{ width: '60px', paddingLeft: '0px' }}>
+                        <RulesetDeleteButton
+                          rulesetId={ruleset.rulesetId}
+                          name={ruleset.name}
+                          onDelete={handleDeleteRuleset}
+                        />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}

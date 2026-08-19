@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { isLeadership } from 'shared';
+import { isAdmin } from 'shared';
 import FullPageTabs from '../../components/FullPageTabs';
 import PageLayout from '../../components/PageLayout';
 import { NERButton } from '../../components/NERButton';
@@ -129,7 +129,7 @@ const RulesetViewPage = () => {
                 <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
                   {areAllExpanded ? 'Collapse All' : 'Expand All'}
                 </NERButton>
-                {isLeadership(user.role) && (
+                {isAdmin(user.role) && (
                   <NERButton variant="outlined" onClick={() => setShowResetModal(true)}>
                     Reset Status
                   </NERButton>
