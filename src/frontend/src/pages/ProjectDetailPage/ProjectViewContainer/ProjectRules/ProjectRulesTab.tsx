@@ -104,9 +104,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   // leadership can update status anywhere; members can only update it for projects whose team they're on
   const canUpdateStatus = isLeadership(user.role) || project.teams.some((team) => isUserOnTeam(team, user));
 
-  // leadership can update status anywhere; members can only update it for projects whose team they're on
-  const canUpdateStatus = isLeadership(user.role) || project.teams.some((team) => isUserOnTeam(team, user));
-
   // Convert project rules to rules for display, merging in each rule's local status for this project
   // Sorted by rule code so both top-level rows and their children render in stable numeric order
   const projectRuleList = useMemo(() => {
@@ -277,9 +274,11 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
             <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
               {areAllExpanded ? 'Collapse All' : 'Expand All'}
             </NERButton>
-            <NERButton variant="outlined" onClick={() => setShowResetModal(true)}>
-              Reset Status
-            </NERButton>
+            {isLeadership(user.role) && (
+              <NERButton variant="outlined" onClick={() => setShowResetModal(true)}>
+                Reset Status
+              </NERButton>
+            )}
           </Box>
         )}
       </Box>

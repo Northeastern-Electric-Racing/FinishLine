@@ -1305,7 +1305,7 @@ describe('Rule Tests', () => {
       await RulesService.setProjectRuleStatus(admin, organization, projectRule1.projectRuleId, RuleStatus.PASS);
       await RulesService.setRuleStatus(admin, organization, topLevelRule.ruleId, RuleStatus.FAIL);
 
-      const projectRules2 = await RulesService.getProjectRules(ruleset1.rulesetId, project2.projectId, organization);
+      const projectRules2 = await RulesService.getProjectRules(admin, ruleset1.rulesetId, project2.projectId, organization);
       const rule2Entry = projectRules2.find((pr) => pr.projectRuleId === projectRule2.projectRuleId);
 
       expect(rule2Entry?.status).toBe(RuleStatus.PENDING);
@@ -1325,7 +1325,7 @@ describe('Rule Tests', () => {
 
       expect(count).toBe(2);
 
-      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(admin, ruleset1.rulesetId, organization.organizationId);
       const updatedTopLevel = rules.find((r) => r.ruleId === topLevelRule.ruleId);
       const updatedLeaf = rules.find((r) => r.ruleId === leafRule1.ruleId);
 
@@ -1375,7 +1375,7 @@ describe('Rule Tests', () => {
 
       await RulesService.resetRulesetStatuses(admin, organization, ruleset1.rulesetId);
 
-      const rules = await RulesService.getAllRulesForRuleset(ruleset2.rulesetId, organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(admin, ruleset2.rulesetId, organization.organizationId);
       const untouchedRule = rules.find((r) => r.ruleId === otherRule.ruleId);
 
       expect(untouchedRule?.status).toBe(RuleStatus.PASS);
@@ -1405,7 +1405,7 @@ describe('Rule Tests', () => {
 
       expect(count).toBe(1);
 
-      const projectRules = await RulesService.getProjectRules(ruleset1.rulesetId, project.projectId, organization);
+      const projectRules = await RulesService.getProjectRules(admin, ruleset1.rulesetId, project.projectId, organization);
       const updated = projectRules.find((pr) => pr.projectRuleId === projectRule.projectRuleId);
 
       expect(updated?.status).toBe(RuleStatus.PENDING);
@@ -1466,7 +1466,7 @@ describe('Rule Tests', () => {
 
       await RulesService.resetProjectRuleStatuses(admin, organization, ruleset1.rulesetId, project1.projectId);
 
-      const project2Rules = await RulesService.getProjectRules(ruleset1.rulesetId, project2.projectId, organization);
+      const project2Rules = await RulesService.getProjectRules(admin, ruleset1.rulesetId, project2.projectId, organization);
       const untouched = project2Rules.find((pr) => pr.projectRuleId === projectRule2.projectRuleId);
 
       expect(untouched?.status).toBe(RuleStatus.PASS);
@@ -1496,32 +1496,38 @@ describe('Rule Tests', () => {
 
       await RulesService.resetProjectRuleStatuses(admin, organization, ruleset1.rulesetId, project.projectId);
 
-      const projectRules = await RulesService.getProjectRules(ruleset2.rulesetId, project.projectId, organization);
+      const projectRules = await RulesService.getProjectRules(admin, ruleset2.rulesetId, project.projectId, organization);
       const untouched = projectRules.find((pr) => pr.projectRuleId === projectRule2.projectRuleId);
 
       expect(untouched?.status).toBe(RuleStatus.PASS);
     });
 
-    it('Set rule completion succeeds if a member is on the project team', async () => {
+    it('Set project rule status succeeds if a member is on the project team', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
       const memberProject = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      const projectRule = await RulesService.createProjectRule(
+        admin,
+        organization,
+        topLevelRule.ruleId,
+        memberProject.projectId
+      );
       await prisma.team.update({
         where: { teamId: testTeam.teamId },
         data: { members: { connect: { userId: nonLeadership.userId } } }
       });
 
-      const updatedRule = await RulesService.setRuleCompletion(
+      const updatedProjectRule = await RulesService.setProjectRuleStatus(
         nonLeadership,
         organization,
-        topLevelRule.ruleId,
-        true,
-        memberProject.projectId
+        projectRule.projectRuleId,
+        RuleStatus.PASS
       );
 
-      expect(updatedRule.isComplete).toBe(true);
-      expect(updatedRule.completedBy?.firstName).toBe(nonLeadership.firstName);
-      expect(updatedRule.completedInProject?.projectId).toBe(memberProject.projectId);
+      expect(updatedProjectRule.status).toBe(RuleStatus.PASS);
+      expect(updatedProjectRule.statusUpdatedBy?.firstName).toBe(nonLeadership.firstName);
+      expect(updatedProjectRule.statusUpdatedBy?.lastName).toBe(nonLeadership.lastName);
     });
   });
 

@@ -1040,15 +1040,15 @@ export default class RulesService {
   /**
    * Resets every rule's general-view status back to Pending, for a whole ruleset.
    * Does not affect any rule's status within a project. Never creates history entries,
-   * since reverting to PENDING is not tracked.
+   * since reverting to PENDING is not tracked. Only admins and above can do this.
    * @param submitter the user resetting the statuses
    * @param organization the organization of the ruleset
    * @param rulesetId the id of the ruleset to reset
    * @returns the number of rules that were reset
    */
   static async resetRulesetStatuses(submitter: User, organization: Organization, rulesetId: string): Promise<number> {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
-      throw new AccessDeniedException('You do not have permissions to update rule status');
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedException('You do not have permissions to reset rule status');
     }
 
     const ruleset = await prisma.ruleset.findUnique({
@@ -1080,7 +1080,7 @@ export default class RulesService {
    * Resets every project rule's status back to Pending, for a single project, scoped to a
    * single ruleset (a project can have rules from multiple ruleset types). Does not affect
    * any rule's general-view status, or its status in any other project. Never creates history
-   * entries, since reverting to PENDING is not tracked.
+   * entries, since reverting to PENDING is not tracked. Allowed for leadership and up.
    * @param submitter the user resetting the statuses
    * @param organization the organization of the project and ruleset
    * @param rulesetId the ruleset to scope the reset to
@@ -1094,7 +1094,7 @@ export default class RulesService {
     projectId: string
   ): Promise<number> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
-      throw new AccessDeniedException('You do not have permissions to update rule status');
+      throw new AccessDeniedException('You do not have permissions to reset project rule status');
     }
 
     const ruleset = await prisma.ruleset.findUnique({
