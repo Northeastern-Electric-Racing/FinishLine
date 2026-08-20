@@ -12,7 +12,7 @@ interface UsefulLinkFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaulValues?: Link;
-  onSubmit: (data: LinkCreateArgs[]) => void;
+  onSubmit: (data: LinkCreateArgs[]) => Promise<unknown>;
   linkTypes: LinkType[];
   currentLinks: Link[];
   isOnGuestHomePage?: boolean;
@@ -63,13 +63,13 @@ const UsefulLinkFormModal = ({
       const newLinks = defaulValues
         ? [...previousLinks.filter((link) => link.linkId !== defaulValues.linkId), dataWithPlacement]
         : [...previousLinks, dataWithPlacement];
-      onSubmit(newLinks);
+      await onSubmit(newLinks);
+      handleClose();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    handleClose();
   };
   return (
     <NERFormModal

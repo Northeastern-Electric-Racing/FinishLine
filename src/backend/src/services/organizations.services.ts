@@ -87,32 +87,34 @@ export default class OrganizationsService {
 
     const currentLinkIds = organization.usefulLinks.map((link) => link.linkId);
 
-    // deleting all current useful links so they are empty before repopulating
-    await prisma.link.deleteMany({
-      where: {
-        linkId: { in: currentLinkIds }
-      }
-    });
-
-    const newLinks = await createUsefulLinks(links, organization.organizationId, submitter);
-
-    const newLinkIds = newLinks.map((link) => {
-      return { linkId: link.linkId };
-    });
-
-    // setting the useful links to the newly created ones
-    await prisma.organization.update({
-      where: {
-        organizationId: organization.organizationId
-      },
-      data: {
-        usefulLinks: {
-          connect: newLinkIds
+    return prisma.$transaction(async (tx) => {
+      // deleting all current useful links so they are empty before repopulating
+      await tx.link.deleteMany({
+        where: {
+          linkId: { in: currentLinkIds }
         }
-      }
-    });
+      });
 
-    return newLinks;
+      const newLinks = await createUsefulLinks(tx, links, organization.organizationId, submitter);
+
+      const newLinkIds = newLinks.map((link) => {
+        return { linkId: link.linkId };
+      });
+
+      // setting the useful links to the newly created ones
+      await tx.organization.update({
+        where: {
+          organizationId: organization.organizationId
+        },
+        data: {
+          usefulLinks: {
+            connect: newLinkIds
+          }
+        }
+      });
+
+      return newLinks;
+    });
   }
 
   /**
