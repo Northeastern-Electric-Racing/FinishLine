@@ -7,6 +7,7 @@ import { Faker } from '@faker-js/faker';
 import { Graph_Display_Type, Graph_Type, Measure, Prisma, Special_Permission } from '@prisma/client';
 import { DateRange } from '../context.js';
 import { generateRandomDate } from '../dates.js';
+import { seedConfig } from '../seed-config.js';
 
 export type GraphActor = { userId: string };
 export type GraphCarRef = { carId: string; dateRange: DateRange };
@@ -73,9 +74,11 @@ export type GraphPlan = {
   collectionIndex?: number;
 };
 
-export const graphCollectionCountForOrg = (faker: Faker): number => faker.number.int({ min: 8, max: 16 });
+export const graphCollectionCountForOrg = (faker: Faker): number =>
+  faker.number.int(seedConfig.graph.graphCollectionsPerOrg);
 
-export const standaloneGraphCountForOrg = (faker: Faker): number => faker.number.int({ min: 6, max: 15 });
+export const standaloneGraphCountForOrg = (faker: Faker): number =>
+  faker.number.int(seedConfig.graph.standaloneGraphsPerOrg);
 
 const graphsPerCollection = (faker: Faker): number =>
   faker.helpers.weightedArrayElement([

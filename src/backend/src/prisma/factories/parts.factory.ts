@@ -7,6 +7,7 @@ import { Faker } from '@faker-js/faker';
 import { Prisma, Review_Status } from '@prisma/client';
 import { DateRange } from '../context.js';
 import { generateRandomDate } from '../dates.js';
+import { seedConfig } from '../seed-config.js';
 
 export type PartActor = { userId: string };
 export const PART_TAGS: { name: string; colorHexCode: string }[] = [
@@ -180,12 +181,18 @@ const POPUP_DESCRIPTIONS = [
 ];
 
 export const partCountForProject = (faker: Faker): number =>
-  faker.helpers.weightedArrayElement([
-    { weight: 30, value: 0 },
-    { weight: 45, value: faker.number.int({ min: 1, max: 8 }) },
-    { weight: 20, value: faker.number.int({ min: 9, max: 20 }) },
-    { weight: 5, value: faker.number.int({ min: 21, max: 40 }) }
-  ]);
+  faker.helpers.weightedArrayElement(
+    seedConfig.part.countForProject.map((option) => ({
+      weight: option.weight,
+      value:
+        'value' in option
+          ? option.value
+          : faker.number.int({
+              min: option.min,
+              max: option.max
+            })
+    }))
+  );
 
 const partStatus = (faker: Faker): Review_Status =>
   faker.helpers.weightedArrayElement([
