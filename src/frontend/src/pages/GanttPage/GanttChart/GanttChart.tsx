@@ -38,7 +38,6 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
 
   const today = new Date(new Date().setHours(0, 0, 0, 0));
   const currentWeekCol = days.findIndex((day) => toDateString(day) === toDateString(getMonday(today))) + 1;
-
   const daysIntoWeek = differenceInDays(today, getMonday(today));
   const dailyOffset = daysIntoWeek * (parseFloat(GANTT_CHART_CELL_SIZE) / 7);
 
