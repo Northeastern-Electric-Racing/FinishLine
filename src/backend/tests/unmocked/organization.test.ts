@@ -59,12 +59,18 @@ describe('Organization Tests', () => {
         {
           linkId: '-1',
           linkTypeName: 'Link type 1',
-          url: 'link 1'
+          url: 'link 1',
+          isOnGuestHomePage: false,
+          isOnNewMemberDashboard: false,
+          isOnOnboardingDashboard: false
         },
         {
           linkId: '-1',
           linkTypeName: 'Link type 1',
-          url: 'link 2'
+          url: 'link 2',
+          isOnGuestHomePage: false,
+          isOnNewMemberDashboard: false,
+          isOnOnboardingDashboard: false
         }
       ];
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
@@ -90,12 +96,18 @@ describe('Organization Tests', () => {
         {
           linkId: '-1',
           linkTypeName: 'Link type 1',
-          url: 'link 3'
+          url: 'link 3',
+          isOnGuestHomePage: false,
+          isOnNewMemberDashboard: false,
+          isOnOnboardingDashboard: false
         },
         {
           linkId: '-1',
           linkTypeName: 'Link type 1',
-          url: 'link 4'
+          url: 'link 4',
+          isOnGuestHomePage: false,
+          isOnNewMemberDashboard: false,
+          isOnOnboardingDashboard: false
         }
       ];
       await OrganizationsService.setUsefulLinks(testBatman, orgId, testLinks2);
@@ -122,12 +134,18 @@ describe('Organization Tests', () => {
         {
           linkId: '1',
           linkTypeName: 'Link type 1',
-          url: 'link 1'
+          url: 'link 1',
+          isOnGuestHomePage: false,
+          isOnNewMemberDashboard: false,
+          isOnOnboardingDashboard: false
         },
         {
           linkId: '2',
           linkTypeName: 'Link type 1',
-          url: 'link 2'
+          url: 'link 2',
+          isOnGuestHomePage: false,
+          isOnNewMemberDashboard: false,
+          isOnOnboardingDashboard: false
         }
       ];
       const testBatman = await createTestUser(batmanAppAdmin, orgId);

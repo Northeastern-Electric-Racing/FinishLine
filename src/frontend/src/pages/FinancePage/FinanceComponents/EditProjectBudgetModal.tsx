@@ -108,7 +108,10 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
         links: currentProject.links.map((link) => ({
           linkTypeName: link.linkType.name,
           url: link.url,
-          linkId: link.linkId
+          linkId: link.linkId,
+          isOnGuestHomePage: link.isOnGuestHomePage,
+          isOnNewMemberDashboard: link.isOnNewMemberDashboard,
+          isOnOnboardingDashboard: link.isOnOnboardingDashboard
         })),
         budget: data.budget,
         summary: currentProject.summary,

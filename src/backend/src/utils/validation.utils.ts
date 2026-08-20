@@ -186,6 +186,9 @@ export const projectProposedChangesValidators = [
   projectProposedChangesExists(body('projectProposedChanges.links')).isArray(),
   nonEmptyString(body('projectProposedChanges.links.*.url')),
   nonEmptyString(body('projectProposedChanges.links.*.linkTypeName')),
+  body('projectProposedChanges.links.*.isOnGuestHomePage').isBoolean(),
+  body('projectProposedChanges.links.*.isOnNewMemberDashboard').isBoolean(),
+  body('projectProposedChanges.links.*.isOnOnboardingDashboard').isBoolean(),
   nonEmptyString(body('projectProposedChanges.leadId').optional()),
   nonEmptyString(body('projectProposedChanges.managerId').optional()),
   nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.summary'))),
@@ -260,7 +263,10 @@ export const blockedByValidators = [
 export const linkValidators = [
   body('links').isArray(),
   nonEmptyString(body('links.*.url')),
-  nonEmptyString(body('links.*.linkTypeName'))
+  nonEmptyString(body('links.*.linkTypeName')),
+  body('links.*.isOnGuestHomePage').isBoolean(),
+  body('links.*.isOnNewMemberDashboard').isBoolean(),
+  body('links.*.isOnOnboardingDashboard').isBoolean()
 ];
 
 export const projectValidators = [

@@ -13,45 +13,45 @@ import { exampleResearchWorkPackage, exampleDesignWorkPackage, exampleManufactur
 const exampleConfluenceLinkType: LinkType = {
   name: 'Confluence',
   iconName: 'confluence',
-  required: true,
-  isOnGuestHomePage: false,
-  isOnNewMemberDashboard: false,
-  isOnOnboardingDashboard: false
+  required: true
 };
 
 const exampleBomLinkType: LinkType = {
   name: 'BOM',
   iconName: 'bom',
-  required: true,
-  isOnGuestHomePage: false,
-  isOnNewMemberDashboard: false,
-  isOnOnboardingDashboard: false
+  required: true
 };
 
 const exampleGDriveLinkType: LinkType = {
   name: 'Google Drive',
   iconName: 'google-drive',
-  required: true,
-  isOnGuestHomePage: false,
-  isOnNewMemberDashboard: false,
-  isOnOnboardingDashboard: false
+  required: true
 };
 
 const exampleLinks: Link[] = [
   {
     linkId: '1',
     linkType: exampleConfluenceLinkType,
-    url: 'https://www.google.com'
+    url: 'https://www.google.com',
+    isOnGuestHomePage: false,
+    isOnNewMemberDashboard: false,
+    isOnOnboardingDashboard: false
   },
   {
     linkId: '2',
     linkType: exampleBomLinkType,
-    url: 'https://www.google.com'
+    url: 'https://www.google.com',
+    isOnGuestHomePage: false,
+    isOnNewMemberDashboard: false,
+    isOnOnboardingDashboard: false
   },
   {
     linkId: '3',
     linkType: exampleGDriveLinkType,
-    url: 'https://www.google.com'
+    url: 'https://www.google.com',
+    isOnGuestHomePage: false,
+    isOnNewMemberDashboard: false,
+    isOnOnboardingDashboard: false
   }
 ];
 export const exampleProject1: Project = {

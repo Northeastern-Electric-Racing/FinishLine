@@ -1,7 +1,6 @@
 import { Grid, Typography, List, ListItem, Link, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import UsefulLinksTable from './UsefulLinks/UsefulLinksTable';
-import LinkTypeTable from '../ProjectsConfig/LinkTypes/LinkTypeTable';
 import NewMemberMilestoneTable from '../RecruitmentConfig/NewMemberMilestoneTable';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
@@ -61,7 +60,6 @@ const OnboardingConfigSection: React.FC = () => {
           >
             Onboarding Page Useful Links
           </Typography>
-          <LinkTypeTable isOnOnboardingDashboard />
           <UsefulLinksTable isOnOnboardingDashboard />
         </Box>
       </Grid>

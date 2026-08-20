@@ -183,18 +183,9 @@ export default class ProjectsController {
 
   static async createLinkType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, iconName, required, isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboardingDashboard } = req.body;
+      const { name, iconName, required } = req.body;
 
-      const newLinkType = await ProjectsService.createLinkType(
-        req.currentUser,
-        name,
-        iconName,
-        required,
-        req.organization,
-        isOnGuestHomePage,
-        isOnNewMemberDashboard,
-        isOnOnboardingDashboard
-      );
+      const newLinkType = await ProjectsService.createLinkType(req.currentUser, name, iconName, required, req.organization);
       res.status(200).json(newLinkType);
     } catch (error: unknown) {
       next(error);
@@ -471,23 +462,13 @@ export default class ProjectsController {
   static async editLinkType(req: Request, res: Response, next: NextFunction) {
     try {
       const { linkTypeName } = req.params as Record<string, string>;
-      const {
-        name: newName,
-        iconName,
-        required,
-        isOnGuestHomePage,
-        isOnNewMemberDashboard,
-        isOnOnboardingDashboard
-      } = req.body;
+      const { name: newName, iconName, required } = req.body;
       const linkTypeUpdated = await ProjectsService.editLinkType(
         linkTypeName,
         iconName,
         required,
         req.currentUser,
         req.organization,
-        isOnGuestHomePage,
-        isOnNewMemberDashboard,
-        isOnOnboardingDashboard,
         newName
       );
       res.status(200).json(linkTypeUpdated);

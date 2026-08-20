@@ -51,7 +51,10 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const links = project.links.map((link) => ({
     linkId: link.linkId,
     url: link.url,
-    linkTypeName: link.linkType.name
+    linkTypeName: link.linkType.name,
+    isOnGuestHomePage: link.isOnGuestHomePage,
+    isOnNewMemberDashboard: link.isOnNewMemberDashboard,
+    isOnOnboardingDashboard: link.isOnOnboardingDashboard
   }));
 
   if (isCRHookLoading || isLeadershipCRLoading) return <LoadingIndicator />;
@@ -62,7 +65,16 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const projectLinkTypeNames = links.map((link) => link.linkTypeName);
   requiredLinkTypeNames
     .filter((name) => !projectLinkTypeNames.includes(name))
-    .forEach((name) => links.push({ linkId: '-1', url: '', linkTypeName: name }));
+    .forEach((name) =>
+      links.push({
+        linkId: '-1',
+        url: '',
+        linkTypeName: name,
+        isOnGuestHomePage: false,
+        isOnNewMemberDashboard: false,
+        isOnOnboardingDashboard: false
+      })
+    );
 
   const defaultValues: ProjectFormInput = {
     name,

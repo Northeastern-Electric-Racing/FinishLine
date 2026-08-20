@@ -49,7 +49,7 @@ const GuestOrganizationInfo = () => {
   if (isLoading || !organization) return <LoadingIndicator />;
   if (!links || usefulLinksIsLoading || !linkTypes || linkTypesIsLoading) return <LoadingIndicator />;
 
-  const usefulLinks = links?.filter((link) => link.linkType.isOnGuestHomePage);
+  const usefulLinks = links?.filter((link) => link.isOnGuestHomePage);
 
   return (
     <Card

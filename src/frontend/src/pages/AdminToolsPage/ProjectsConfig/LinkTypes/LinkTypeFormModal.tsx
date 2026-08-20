@@ -16,21 +16,9 @@ interface LinkTypeFormModalProps {
   defaultValues?: LinkType;
   onSubmit: (data: LinkTypeCreatePayload) => void;
   linkTypes: LinkType[];
-  isOnGuestHomePage?: boolean;
-  isOnNewMemberDashboard?: boolean;
-  isOnOnboardingDashboard?: boolean;
 }
 
-const LinkTypeFormModal = ({
-  open,
-  handleClose,
-  defaultValues,
-  onSubmit,
-  linkTypes,
-  isOnGuestHomePage,
-  isOnNewMemberDashboard,
-  isOnOnboardingDashboard
-}: LinkTypeFormModalProps) => {
+const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTypes }: LinkTypeFormModalProps) => {
   const toast = useToast();
   const creatingNew = defaultValues === undefined;
 
@@ -43,10 +31,7 @@ const LinkTypeFormModal = ({
       .required('LinkType Name is Required')
       .test('unique-LinkType-test', 'LinkType name must be unique', uniqueLinkTypeTest),
     iconName: yup.string().required('Icon name is required'),
-    required: yup.boolean().required('Required field must be specified'),
-    isOnGuestHomePage: yup.boolean().required('Guest page field must be specified'),
-    isOnNewMemberDashboard: yup.boolean().required('New member dashboard field must be specified'),
-    isOnOnboardingDashboard: yup.boolean().required('Onboarding dashboard field must be specified')
+    required: yup.boolean().required('Required field must be specified')
   });
 
   const theme = useTheme();
@@ -62,10 +47,7 @@ const LinkTypeFormModal = ({
     defaultValues: {
       name: defaultValues?.name ?? '',
       iconName: defaultValues?.iconName ?? '',
-      required: defaultValues?.required ?? false,
-      isOnGuestHomePage: isOnGuestHomePage ?? false,
-      isOnNewMemberDashboard: isOnNewMemberDashboard ?? false,
-      isOnOnboardingDashboard: isOnOnboardingDashboard ?? false
+      required: defaultValues?.required ?? false
     }
   });
 
@@ -106,19 +88,13 @@ const LinkTypeFormModal = ({
             <FormHelperText error>{errors.name?.message}</FormHelperText>
           </FormControl>
         </Grid>
-        {!isOnGuestHomePage && !isOnNewMemberDashboard && !isOnOnboardingDashboard && (
-          <Grid item xs={6}>
-            <FormControl fullWidth>
-              <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>Required</FormLabel>
-              <Controller
-                name="required"
-                control={control}
-                render={({ field }) => <Switch {...field} checked={field.value} />}
-              />
-              <FormHelperText error>{errors.required?.message}</FormHelperText>
-            </FormControl>
-          </Grid>
-        )}
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>Required</FormLabel>
+            <Controller name="required" control={control} render={({ field }) => <Switch {...field} checked={field.value} />} />
+            <FormHelperText error>{errors.required?.message}</FormHelperText>
+          </FormControl>
+        </Grid>
         <Grid item xs={6}>
           <FormControl fullWidth>
             <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>

@@ -17,7 +17,7 @@ const NewMemberUsefulLinksWidget: React.FC<NewMemberUsefulLinksWidgetProps> = ({
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading || !usefulLinks) return <LoadingIndicator />;
 
-  const links = usefulLinks.filter((link) => link.linkType[dashboardFlag]);
+  const links = usefulLinks.filter((link) => link[dashboardFlag]);
 
   return (
     <Box

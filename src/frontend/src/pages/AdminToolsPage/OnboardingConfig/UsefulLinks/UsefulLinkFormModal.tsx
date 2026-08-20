@@ -15,6 +15,9 @@ interface UsefulLinkFormModalProps {
   onSubmit: (data: LinkCreateArgs[]) => void;
   linkTypes: LinkType[];
   currentLinks: Link[];
+  isOnGuestHomePage?: boolean;
+  isOnNewMemberDashboard?: boolean;
+  isOnOnboardingDashboard?: boolean;
 }
 
 const UsefulLinkFormModal = ({
@@ -23,7 +26,10 @@ const UsefulLinkFormModal = ({
   defaulValues,
   onSubmit,
   linkTypes,
-  currentLinks
+  currentLinks,
+  isOnGuestHomePage,
+  isOnNewMemberDashboard,
+  isOnOnboardingDashboard
 }: UsefulLinkFormModalProps) => {
   const toast = useToast();
 
@@ -47,10 +53,16 @@ const UsefulLinkFormModal = ({
 
   const onFormSubmit = async (data: LinkCreateArgs) => {
     try {
+      const dataWithPlacement: LinkCreateArgs = {
+        ...data,
+        isOnGuestHomePage: isOnGuestHomePage ?? false,
+        isOnNewMemberDashboard: isOnNewMemberDashboard ?? false,
+        isOnOnboardingDashboard: isOnOnboardingDashboard ?? false
+      };
       const previousLinks = linkToLinkCreateArgs(currentLinks);
       const newLinks = defaulValues
-        ? [...previousLinks.filter((link) => link.linkId !== defaulValues.linkId), data]
-        : [...previousLinks, data];
+        ? [...previousLinks.filter((link) => link.linkId !== defaulValues.linkId), dataWithPlacement]
+        : [...previousLinks, dataWithPlacement];
       onSubmit(newLinks);
     } catch (error: unknown) {
       if (error instanceof Error) {

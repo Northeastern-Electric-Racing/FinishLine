@@ -588,9 +588,6 @@ model Link_Type {
   links                  Link[]       @relation(name: "linkTypes")
   organizationId         String
   organization           Organization @relation(fields: [organizationId], references: [organizationId])
-  isOnGuestHomePage       Boolean      @default(false)
-  isOnNewMemberDashboard  Boolean      @default(false)
-  isOnOnboardingDashboard Boolean      @default(false)
 
   @@unique([name, organizationId], name: "uniqueLinkType")
   @@index([organizationId])
@@ -605,6 +602,9 @@ model Link {
   dateDeleted DateTime?
   linkTypeId  String
   linkType    Link_Type @relation(name: "linkTypes", fields: [linkTypeId], references: [id])
+  isOnGuestHomePage       Boolean   @default(false)
+  isOnNewMemberDashboard  Boolean   @default(false)
+  isOnOnboardingDashboard Boolean   @default(false)
 
   // Either its on a wbsElement, a wbsProposedChanges, or an organization
   wbsElementId         String?

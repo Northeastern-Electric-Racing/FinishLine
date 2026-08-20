@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import UsefulLinksTable from './UsefulLinks/UsefulLinksTable';
-import LinkTypeTable from '../ProjectsConfig/LinkTypes/LinkTypeTable';
 
 const NewMemberDashboardUsefulLinksSection: React.FC = () => {
   const theme = useTheme();
@@ -26,7 +25,6 @@ const NewMemberDashboardUsefulLinksSection: React.FC = () => {
       >
         New Member Dashboard Useful Links
       </Typography>
-      <LinkTypeTable isOnNewMemberDashboard />
       <UsefulLinksTable isOnNewMemberDashboard />
     </Box>
   );

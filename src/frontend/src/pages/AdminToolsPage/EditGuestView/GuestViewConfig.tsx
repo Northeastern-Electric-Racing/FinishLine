@@ -19,7 +19,6 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { MAX_FILE_SIZE } from 'shared';
 import UsefulLinksTable from '../OnboardingConfig/UsefulLinks/UsefulLinksTable';
-import LinkTypeTable from '../ProjectsConfig/LinkTypes/LinkTypeTable';
 import GuestDefinitionsTable from './GuestDefinitionsTable';
 import { GuestDefinitionType } from 'shared';
 
@@ -173,12 +172,6 @@ const GuestViewConfig: React.FC = () => {
             <UsefulLinksTable isOnGuestHomePage={true} />
           </Box>
         </Stack>
-      </Grid>
-      <Grid item xs={12}>
-        <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
-          Links Config
-        </Typography>
-        <LinkTypeTable isOnGuestHomePage={true} />
       </Grid>
       <Grid item xs={6}>
         <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
