@@ -7,20 +7,20 @@ skill_name: seed-process
 
 # Seeding
 
-> **Summary:** The seed is a set of independent **processes** (one per domain slice) wired together by declared dependencies and executed by a **runner** that resolves the graph. Row *shapes* come from pure **factories**; row *counts* come from **`seed-config.json`**. To add seed data for a new entity you write one factory, one process, one config slice, and register the process.
+> **Summary:** The seed is a set of independent **processes** (one per domain slice) wired together by declared dependencies and executed by a **runner** that resolves the graph. Row _shapes_ come from pure **factories**; row _counts_ come from **`seed-config.json`**. To add seed data for a new entity you write one factory, one process, one config slice, and register the process.
 
 **Code location:** `src/backend/src/prisma/`
 
 ## 1. TL;DR
 
-| I want to... | Command |
-| --- | --- |
+| I want to...                            | Command                                                       |
+| --------------------------------------- | ------------------------------------------------------------- |
 | Wipe the DB, re-run migrations, re-seed | `yarn prisma:reset` (add `:force` to skip the confirm prompt) |
-| Re-run migrations without seeding | `yarn prisma:reset:no-seed` |
-| Seed an already-migrated DB | `yarn prisma:seed` |
-| Browse the seeded data | `yarn prisma:studio` |
-| Same, inside Docker | `yarn docker:prisma:reset` |
-| Change how much data gets seeded | edit `src/backend/src/prisma/seed-config.json`, then re-seed |
+| Re-run migrations without seeding       | `yarn prisma:reset:no-seed`                                   |
+| Seed an already-migrated DB             | `yarn prisma:seed`                                            |
+| Browse the seeded data                  | `yarn prisma:studio`                                          |
+| Same, inside Docker                     | `yarn docker:prisma:reset`                                    |
+| Change how much data gets seeded        | edit `src/backend/src/prisma/seed-config.json`, then re-seed  |
 
 After seeding you can log in as the bootstrap App Admin: Google auth id `thomas-emrax`, email `admin@bootstrap.com`.
 
@@ -73,10 +73,7 @@ utils/                       arrays.ts, strings.ts, common.factory.ts (connectUs
 `SeedRunner` (`processes/seed-runner.ts`) is a small builder:
 
 ```ts
-await new SeedRunner()
-  .withPrisma(prisma)
-  .register(new OrganizationProcess(), new CarProcess() /* ... */)
-  .run();
+await new SeedRunner().withPrisma(prisma).register(new OrganizationProcess(), new CarProcess() /* ... */).run();
 ```
 
 Options: `.withSeed(n)` overrides the base seed (defaults to `GLOBAL_SEED = 1`), `.withMaxConcurrency(n)` overrides the default of **4** concurrent processes.
@@ -126,12 +123,12 @@ export const seedConfig: SeedConfig = JSON.parse(
 
 `seed-config.ts` declares the `SeedConfig` interface, one slice per domain area (`car`, `user`, `team`, `project`, `workPackage`, `changeRequest`, `sponsor`, `organizationContent`, `graph`, `part`, `task`, `descriptionBullet`, `reimbursementRequest`), plus three helper types. Every knob is one of four shapes:
 
-| Type | Shape | Use |
-| --- | --- | --- |
-| `number` | `5` | a fixed count (`car.carCount`, `user.totalUsers`) |
-| `NumberRange` | `{ min, max }` | a random count in a range (`team.membersPerTeam`) |
-| `WeightedValue<T>[]` | `[{ weight, value }, …]` | a weighted pick among fixed values (`workPackage.countWeights`) |
-| `WeightedCount[]` | `[{ weight, value } \| { weight, min, max }, …]` | weighted buckets where a bucket may itself be a range (`task.countForProject`) |
+| Type                 | Shape                                            | Use                                                                            |
+| -------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `number`             | `5`                                              | a fixed count (`car.carCount`, `user.totalUsers`)                              |
+| `NumberRange`        | `{ min, max }`                                   | a random count in a range (`team.membersPerTeam`)                              |
+| `WeightedValue<T>[]` | `[{ weight, value }, …]`                         | a weighted pick among fixed values (`workPackage.countWeights`)                |
+| `WeightedCount[]`    | `[{ weight, value } \| { weight, min, max }, …]` | weighted buckets where a bucket may itself be a range (`task.countForProject`) |
 
 ```json
 {
@@ -197,12 +194,12 @@ That last map appears in `change-request.factory.ts` (extracted as a local `weig
 
 ### What belongs in the config, and what does not
 
-| In `seed-config.json` | Stays in the factory |
-| --- | --- |
-| Counts (`sponsorCount`, `totalUsers`, `faqCount`) | Probabilities (`ACTIVE_SPONSOR_CHANCE`, `DELETED_CONTENT_CHANCE`) |
-| Per-parent counts (`projectsPerCar`, `membersPerTeam`) | Fixture tables (`SPONSOR_TIER_FIXTURES`, comment pools) |
-| Count distributions (`countWeights`, `countForProject`) | Value-distribution weights (priority, status, role mixes) |
-|  | Write-concurrency constants (`SPONSOR_CONCURRENCY`) |
+| In `seed-config.json`                                   | Stays in the factory                                              |
+| ------------------------------------------------------- | ----------------------------------------------------------------- |
+| Counts (`sponsorCount`, `totalUsers`, `faqCount`)       | Probabilities (`ACTIVE_SPONSOR_CHANCE`, `DELETED_CONTENT_CHANCE`) |
+| Per-parent counts (`projectsPerCar`, `membersPerTeam`)  | Fixture tables (`SPONSOR_TIER_FIXTURES`, comment pools)           |
+| Count distributions (`countWeights`, `countForProject`) | Value-distribution weights (priority, status, role mixes)         |
+|                                                         | Write-concurrency constants (`SPONSOR_CONCURRENCY`)               |
 
 The dividing line: the config answers "how many rows," the factory answers "what does a row look like."
 
@@ -367,28 +364,28 @@ Registration order does not control execution order — the runner topologically
 
 ## 8. Current process graph
 
-| Process | Depends on | Config slice |
-| --- | --- | --- |
-| `OrganizationProcess` | — (root: bootstrap user + organization) | — |
-| `CarProcess` | Organization | `car` |
-| `UsersProcess` | Organization | `user` |
-| `ConfigDataProcess` | Organization, Users | — |
-| `TeamProcess` | Organization, Users, ConfigData | `team` |
-| `TeamJoinRequestProcess` | Organization, Users, Team | — |
-| `SchedulingProcess` | Organization, Users, TeamJoinRequest | — |
-| `ShopProcess` | Organization, Users | — |
-| `SponsorProcess` | Organization, Users, TeamJoinRequest | `sponsor` |
-| `OrganizationContentProcess` | Organization, Users, ConfigData | `organizationContent` |
-| `GraphProcess` | Organization, Users, Car | `graph` |
-| `ProjectProcess` | Organization, Car, Users, Team, ConfigData | `project` |
-| `WorkPackageProcess` | Organization, Users, Project | `workPackage` |
-| `DescriptionBulletProcess` | Organization, ConfigData, WorkPackage | `descriptionBullet` |
-| `TaskProcess` | Organization, Users, WorkPackage, TeamJoinRequest | `task` |
-| `PartProcess` | Organization, Users, WorkPackage, TeamJoinRequest | `part` |
-| `BOMProcess` | Organization, Users, ConfigData, WorkPackage, Car | — |
-| `EventProcess` | Organization, Users, ConfigData, Team, TeamJoinRequest, Car, Project | — |
-| `ChangeRequestProcess` | Organization, Project, Users, WorkPackage, ConfigData, Team, TeamJoinRequest, DescriptionBullet | `changeRequest` |
-| `ReimbursementRequestProcess` | Organization, Users, ConfigData, Team, TeamJoinRequest, Car, WorkPackage, BOM | `reimbursementRequest` |
+| Process                       | Depends on                                                                                      | Config slice           |
+| ----------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------- |
+| `OrganizationProcess`         | — (root: bootstrap user + organization)                                                         | —                      |
+| `CarProcess`                  | Organization                                                                                    | `car`                  |
+| `UsersProcess`                | Organization                                                                                    | `user`                 |
+| `ConfigDataProcess`           | Organization, Users                                                                             | —                      |
+| `TeamProcess`                 | Organization, Users, ConfigData                                                                 | `team`                 |
+| `TeamJoinRequestProcess`      | Organization, Users, Team                                                                       | —                      |
+| `SchedulingProcess`           | Organization, Users, TeamJoinRequest                                                            | —                      |
+| `ShopProcess`                 | Organization, Users                                                                             | —                      |
+| `SponsorProcess`              | Organization, Users, TeamJoinRequest                                                            | `sponsor`              |
+| `OrganizationContentProcess`  | Organization, Users, ConfigData                                                                 | `organizationContent`  |
+| `GraphProcess`                | Organization, Users, Car                                                                        | `graph`                |
+| `ProjectProcess`              | Organization, Car, Users, Team, ConfigData                                                      | `project`              |
+| `WorkPackageProcess`          | Organization, Users, Project                                                                    | `workPackage`          |
+| `DescriptionBulletProcess`    | Organization, ConfigData, WorkPackage                                                           | `descriptionBullet`    |
+| `TaskProcess`                 | Organization, Users, WorkPackage, TeamJoinRequest                                               | `task`                 |
+| `PartProcess`                 | Organization, Users, WorkPackage, TeamJoinRequest                                               | `part`                 |
+| `BOMProcess`                  | Organization, Users, ConfigData, WorkPackage, Car                                               | —                      |
+| `EventProcess`                | Organization, Users, ConfigData, Team, TeamJoinRequest, Car, Project                            | —                      |
+| `ChangeRequestProcess`        | Organization, Project, Users, WorkPackage, ConfigData, Team, TeamJoinRequest, DescriptionBullet | `changeRequest`        |
+| `ReimbursementRequestProcess` | Organization, Users, ConfigData, Team, TeamJoinRequest, Car, WorkPackage, BOM                   | `reimbursementRequest` |
 
 Roughly: `Organization` → (`Users`, `Car`) → `ConfigData` → `Team` → `TeamJoinRequest` → `Project` → `WorkPackage` → everything else.
 
@@ -402,15 +399,15 @@ Volumes are all in `seed-config.json`. At the committed defaults: **350** users 
 
 The procedure below is what the `seed-process` skill follows. For an entity named `foo-bar`:
 
-| Thing | Name |
-| --- | --- |
-| Factory file | `factories/foo-bar.factory.ts` |
-| Process file | `seed/foo-bar.process.ts` |
-| Config key | `fooBar` (in `SeedConfig` and `seed-config.json`) |
-| Create-input builder | `fooBarCreateInput` |
-| Process class | `FooBarProcess` |
-| Input type | `FooBarInput` (not exported) |
-| Output type | `FooBarOutput` (exported) |
+| Thing                | Name                                              |
+| -------------------- | ------------------------------------------------- |
+| Factory file         | `factories/foo-bar.factory.ts`                    |
+| Process file         | `seed/foo-bar.process.ts`                         |
+| Config key           | `fooBar` (in `SeedConfig` and `seed-config.json`) |
+| Create-input builder | `fooBarCreateInput`                               |
+| Process class        | `FooBarProcess`                                   |
+| Input type           | `FooBarInput` (not exported)                      |
+| Output type          | `FooBarOutput` (exported)                         |
 
 ### Step 0 — Migrate first
 
@@ -564,23 +561,23 @@ Then summarize: files created or modified (including both `seed-config` files), 
 
 ## 10. Troubleshooting
 
-| Error / symptom | Cause and fix |
-| --- | --- |
-| `Duplicate process registered: X` | Same class registered twice in `seed.ts`. |
-| `Process X depends on Y, which was not registered.` | Add `new Y()` to `.register(...)`. |
-| `Dependency cycle detected: A → B → A` | Two processes depend on each other. Split the shared piece into a third process, or fold one into the other. |
-| `Duplicate seed output keys from X: tasks` | Two processes export the same output key. Rename yours to something entity-specific. |
-| `Missing output for dependency: Y` | `dependencies()` and the `TInput` type disagree — usually a dependency added to the type but not the array. |
-| `Seed could not complete. Unreachable processes: …` | A process's dependencies never completed, typically after another failure. Read the first error in the log. |
-| `Cannot find module '../factories/foo.factory'` | Missing `.js` extension on a local import (ESM). |
-| Connection pool timeouts / very slow process | Too many concurrent writes. Chunk your `Promise.all` (see `SPONSOR_CONCURRENCY`), or lower `.withMaxConcurrency(...)`. |
-| Data changed without a code change to the entity | You renamed a process class (changes its derived seed), edited `seed-config.json`, or the process uses `new Date()` for relative dates. |
-| Foreign-key violation on a connect | You're connecting to a record owned by a process you didn't declare as a dependency, so it may not exist yet. |
-| `Cannot read properties of undefined (reading 'min' / 'weight' / 'length')` in a factory | A `SeedConfig` key has no matching entry in `seed-config.json`. The JSON is cast, not validated, so the type-checker won't catch it. |
-| `weightedArrayElement` throws, or always returns the same value | An empty or malformed weights array in the JSON — check for a missing `weight`, or `min`/`max` misspelled on a `WeightedCount` bucket. |
-| `TeamProcess requires at least N member candidates, but only found M` | `user.totalUsers` is too low to fill one team. Raise `totalUsers` or lower `team.membersPerTeam.min`. |
-| `Not enough unique lead candidates (N) for M teams` | `teams × team.leadsPerTeam.min` exceeds the heads + admins + leadership pool. Raise `totalUsers` or lower `leadsPerTeam.min`. |
-| Seed suddenly takes minutes | Someone committed a bumped config value. Check `git diff` on `seed-config.json`. |
+| Error / symptom                                                                          | Cause and fix                                                                                                                           |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `Duplicate process registered: X`                                                        | Same class registered twice in `seed.ts`.                                                                                               |
+| `Process X depends on Y, which was not registered.`                                      | Add `new Y()` to `.register(...)`.                                                                                                      |
+| `Dependency cycle detected: A → B → A`                                                   | Two processes depend on each other. Split the shared piece into a third process, or fold one into the other.                            |
+| `Duplicate seed output keys from X: tasks`                                               | Two processes export the same output key. Rename yours to something entity-specific.                                                    |
+| `Missing output for dependency: Y`                                                       | `dependencies()` and the `TInput` type disagree — usually a dependency added to the type but not the array.                             |
+| `Seed could not complete. Unreachable processes: …`                                      | A process's dependencies never completed, typically after another failure. Read the first error in the log.                             |
+| `Cannot find module '../factories/foo.factory'`                                          | Missing `.js` extension on a local import (ESM).                                                                                        |
+| Connection pool timeouts / very slow process                                             | Too many concurrent writes. Chunk your `Promise.all` (see `SPONSOR_CONCURRENCY`), or lower `.withMaxConcurrency(...)`.                  |
+| Data changed without a code change to the entity                                         | You renamed a process class (changes its derived seed), edited `seed-config.json`, or the process uses `new Date()` for relative dates. |
+| Foreign-key violation on a connect                                                       | You're connecting to a record owned by a process you didn't declare as a dependency, so it may not exist yet.                           |
+| `Cannot read properties of undefined (reading 'min' / 'weight' / 'length')` in a factory | A `SeedConfig` key has no matching entry in `seed-config.json`. The JSON is cast, not validated, so the type-checker won't catch it.    |
+| `weightedArrayElement` throws, or always returns the same value                          | An empty or malformed weights array in the JSON — check for a missing `weight`, or `min`/`max` misspelled on a `WeightedCount` bucket.  |
+| `TeamProcess requires at least N member candidates, but only found M`                    | `user.totalUsers` is too low to fill one team. Raise `totalUsers` or lower `team.membersPerTeam.min`.                                   |
+| `Not enough unique lead candidates (N) for M teams`                                      | `teams × team.leadsPerTeam.min` exceeds the heads + admins + leadership pool. Raise `totalUsers` or lower `leadsPerTeam.min`.           |
+| Seed suddenly takes minutes                                                              | Someone committed a bumped config value. Check `git diff` on `seed-config.json`.                                                        |
 
 ---
 
