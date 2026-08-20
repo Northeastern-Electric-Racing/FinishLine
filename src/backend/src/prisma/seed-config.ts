@@ -24,6 +24,8 @@ export interface SeedConfig {
     productCountWeights: WeightedValue<number>[];
   };
   project: {
+    // Intentionally 5, not the pre-config default of 30 - kept low so the default
+    // `prisma migrate reset` seed stays fast; bump this to generate more volume.
     projectsPerCar: number;
   };
   user: {
@@ -45,7 +47,7 @@ export interface SeedConfig {
     sponsorCount: number;
     prospectiveSponsorCount: number;
   };
-  OrganizationContent: {
+  organizationContent: {
     announcementContent: number;
     popupContent: number;
     guestDefinitionCount: number;

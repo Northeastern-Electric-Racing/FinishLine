@@ -3,11 +3,11 @@ import { Checklist_Item_Type, Guest_Definition_Type, Prisma } from '@prisma/clie
 import { addDaysToDate } from 'shared';
 import { seedConfig } from '../seed-config.js';
 
-export const ANNOUNCEMENT_COUNT = seedConfig.OrganizationContent.announcementContent;
-export const POPUP_COUNT = seedConfig.OrganizationContent.popupContent;
-export const GUEST_DEFINITION_COUNT = seedConfig.OrganizationContent.guestDefinitionCount;
-export const CHECKLIST_ROOT_COUNT = seedConfig.OrganizationContent.checklistRootCount;
-export const FAQ_COUNT = seedConfig.OrganizationContent.faqCount;
+export const ANNOUNCEMENT_COUNT = seedConfig.organizationContent.announcementContent;
+export const POPUP_COUNT = seedConfig.organizationContent.popupContent;
+export const GUEST_DEFINITION_COUNT = seedConfig.organizationContent.guestDefinitionCount;
+export const CHECKLIST_ROOT_COUNT = seedConfig.organizationContent.checklistRootCount;
+export const FAQ_COUNT = seedConfig.organizationContent.faqCount;
 
 export const DELETED_CONTENT_CHANCE = 0.1;
 
