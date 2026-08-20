@@ -71,4 +71,6 @@ eb-deploy/
 # Claude Code Files
 CLAUDE.md
 .playwright-mcp/
-docs/
+# Root-level scratch docs only — must stay anchored so it does not swallow
+# src/docs-site/docs/, which is the tracked source of truth for the docs site.
+/docs/
