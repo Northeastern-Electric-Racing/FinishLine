@@ -728,11 +728,11 @@ const getGraphDataForAttendanceByTeam = async (
   const teams = await prisma.team.findMany({
     where: { organizationId, dateArchived: null },
     include: {
-      members: true,
-      leads: true,
+      members: { select: { userId: true } },
+      leads: { select: { userId: true } },
       meetingAttendances: {
         where: getMeetingAttendanceDateWhereInput(startDate, endDate),
-        include: { attendees: true }
+        include: { attendees: { select: { userId: true } } }
       }
     }
   });
@@ -766,16 +766,16 @@ const getGraphDataForAttendanceByDivision = async (
   _params: { carIds: string[] }
 ): Promise<GraphData> => {
   const divisions = await prisma.team_Type.findMany({
-    where: { organizationId },
+    where: { organizationId, dateDeleted: null },
     include: {
       teams: {
         where: { dateArchived: null },
         include: {
-          members: true,
-          leads: true,
+          members: { select: { userId: true } },
+          leads: { select: { userId: true } },
           meetingAttendances: {
             where: getMeetingAttendanceDateWhereInput(startDate, endDate),
-            include: { attendees: true }
+            include: { attendees: { select: { userId: true } } }
           }
         }
       }
