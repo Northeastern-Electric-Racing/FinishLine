@@ -10,20 +10,27 @@ import NERTable from '../../../../components/NERTable';
 import { isAdmin, LinkType } from 'shared';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 
-const LinkTypeTable = () => {
+interface LinkTypeTableProps {
+  isOnGuestHomePage?: boolean;
+  isOnNewMemberDashboard?: boolean;
+  isOnOnboardingDashboard?: boolean;
+}
+
+const LinkTypeTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboardingDashboard }: LinkTypeTableProps) => {
   const currentUser = useCurrentUser();
-  const {
-    data: linkTypes,
-    isLoading: linkTypeIsLoading,
-    isError: linkTypeIsError,
-    error: linkTypeError
-  } = useAllLinkTypes();
+  const { data: links, isLoading: linkTypeIsLoading, isError: linkTypeIsError, error: linkTypeError } = useAllLinkTypes();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [clickedLinkType, setClickedLinkType] = useState<LinkType>();
 
-  if (!linkTypes || linkTypeIsLoading) return <LoadingIndicator />;
+  if (!links || linkTypeIsLoading) return <LoadingIndicator />;
   if (linkTypeIsError) return <ErrorPage message={linkTypeError.message} />;
+  const linkTypes = links.filter((linkType) => {
+    if (isOnNewMemberDashboard) return linkType.isOnNewMemberDashboard;
+    if (isOnOnboardingDashboard) return linkType.isOnOnboardingDashboard;
+    if (isOnGuestHomePage) return linkType.isOnGuestHomePage;
+    return !linkType.isOnGuestHomePage && !linkType.isOnNewMemberDashboard && !linkType.isOnOnboardingDashboard;
+  });
 
   const linkTypeTableRows = linkTypes.map((linkType, index) => (
     <TableRow
@@ -52,7 +59,14 @@ const LinkTypeTable = () => {
 
   return (
     <Box>
-      <CreateLinkTypeModal open={createModalShow} handleClose={() => setCreateModalShow(false)} linkTypes={linkTypes} />
+      <CreateLinkTypeModal
+        open={createModalShow}
+        handleClose={() => setCreateModalShow(false)}
+        linkTypes={linkTypes}
+        isOnGuestHomePage={isOnGuestHomePage}
+        isOnNewMemberDashboard={isOnNewMemberDashboard}
+        isOnOnboardingDashboard={isOnOnboardingDashboard}
+      />
       {clickedLinkType && (
         <EditLinkTypeModal
           open={showEditModal}

@@ -133,24 +133,21 @@ export interface LinkType {
   name: string;
   required: boolean;
   iconName: string;
+  isOnGuestHomePage: boolean;
+  isOnNewMemberDashboard: boolean;
+  isOnOnboardingDashboard: boolean;
 }
 
 export interface Link {
   linkId: string;
   linkType: LinkType;
   url: string;
-  isOnGuestHomePage: boolean;
-  isOnNewMemberDashboard: boolean;
-  isOnOnboardingDashboard: boolean;
 }
 
 export interface LinkCreateArgs {
   linkId: string;
   linkTypeName: string;
   url: string;
-  isOnGuestHomePage: boolean;
-  isOnNewMemberDashboard: boolean;
-  isOnOnboardingDashboard: boolean;
 }
 
 export interface WbsProposedChanges {
@@ -193,6 +190,9 @@ export interface LinkTypeCreatePayload {
   name: string;
   iconName: string;
   required: boolean;
+  isOnGuestHomePage: boolean;
+  isOnNewMemberDashboard: boolean;
+  isOnOnboardingDashboard: boolean;
 }
 
 export interface DescriptionBulletTypeCreatePayload {

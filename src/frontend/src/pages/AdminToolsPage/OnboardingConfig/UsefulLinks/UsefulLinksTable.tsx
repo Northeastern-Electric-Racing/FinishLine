@@ -42,7 +42,12 @@ const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboa
     error: usefulLinksError
   } = useAllUsefulLinks();
   const { mutateAsync } = useSetUsefulLinks();
-  const { data: linkTypes, isLoading: linkTypesIsLoading, isError: linkTypesIsError, error: linkTypesError } = useAllLinkTypes();
+  const {
+    data: linkTypesBeforeFilter,
+    isLoading: linkTypesIsLoading,
+    isError: linkTypesIsError,
+    error: linkTypesError
+  } = useAllLinkTypes();
   const toast = useToast();
 
   const [linkToDelete, setLinkToDelete] = useState<Link>();
@@ -51,7 +56,7 @@ const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboa
 
   if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
   if (linkTypesIsError) return <ErrorPage message={linkTypesError?.message} />;
-  if (!links || usefulLinksIsLoading || !linkTypes || linkTypesIsLoading) return <LoadingIndicator />;
+  if (!links || usefulLinksIsLoading || !linkTypesBeforeFilter || linkTypesIsLoading) return <LoadingIndicator />;
 
   const handleDelete = async (allLinks: Link[], linkToDelete: Link) => {
     const updatedLinks = allLinks.filter((link) => link.linkId !== linkToDelete.linkId);
@@ -66,14 +71,21 @@ const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboa
     }
   };
 
-  const matchesDashboard = (link: { isOnGuestHomePage: boolean; isOnNewMemberDashboard: boolean; isOnOnboardingDashboard: boolean }) => {
-    if (isOnNewMemberDashboard) return link.isOnNewMemberDashboard;
-    if (isOnOnboardingDashboard) return link.isOnOnboardingDashboard;
-    if (isOnGuestHomePage) return link.isOnGuestHomePage;
-    return !link.isOnGuestHomePage && !link.isOnNewMemberDashboard && !link.isOnOnboardingDashboard;
+  const matchesDashboard = (linkType?: {
+    isOnGuestHomePage: boolean;
+    isOnNewMemberDashboard: boolean;
+    isOnOnboardingDashboard: boolean;
+  }) => {
+    if (!linkType) return false;
+    if (isOnNewMemberDashboard) return linkType.isOnNewMemberDashboard;
+    if (isOnOnboardingDashboard) return linkType.isOnOnboardingDashboard;
+    if (isOnGuestHomePage) return linkType.isOnGuestHomePage;
+    return !linkType.isOnGuestHomePage && !linkType.isOnNewMemberDashboard && !linkType.isOnOnboardingDashboard;
   };
 
-  const usefulLinks = links.filter(matchesDashboard);
+  const linkTypes = linkTypesBeforeFilter.filter(matchesDashboard);
+
+  const usefulLinks = links.filter((link) => matchesDashboard(link.linkType));
 
   return (
     <Box>
@@ -82,9 +94,6 @@ const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboa
         handleClose={() => setShowCreateModel(false)}
         linkTypes={linkTypes}
         currentLinks={links}
-        isOnGuestHomePage={isOnGuestHomePage}
-        isOnNewMemberDashboard={isOnNewMemberDashboard}
-        isOnOnboardingDashboard={isOnOnboardingDashboard}
       />
       {editingLink && (
         <EditUsefulLinkModal
@@ -95,9 +104,6 @@ const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboa
           linkType={editingLink}
           linkTypes={linkTypes}
           currentLinks={links}
-          isOnGuestHomePage={isOnGuestHomePage}
-          isOnNewMemberDashboard={isOnNewMemberDashboard}
-          isOnOnboardingDashboard={isOnOnboardingDashboard}
         />
       )}
 
@@ -174,7 +180,7 @@ const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboa
         onHide={() => setLinkToDelete(undefined)}
         submitText="Delete"
         onSubmit={() => {
-          handleDelete(links, linkToDelete!);
+          handleDelete(usefulLinks, linkToDelete!);
         }}
       >
         <Typography gutterBottom>

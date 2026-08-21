@@ -10,21 +10,9 @@ interface EditUsefulLinkModalProps {
   linkType: Link;
   linkTypes: LinkType[];
   currentLinks: Link[];
-  isOnGuestHomePage?: boolean;
-  isOnNewMemberDashboard?: boolean;
-  isOnOnboardingDashboard?: boolean;
 }
 
-const EditUsefulLinkModal = ({
-  open,
-  handleClose,
-  linkType,
-  linkTypes,
-  currentLinks,
-  isOnGuestHomePage,
-  isOnNewMemberDashboard,
-  isOnOnboardingDashboard
-}: EditUsefulLinkModalProps) => {
+const EditUsefulLinkModal = ({ open, handleClose, linkType, linkTypes, currentLinks }: EditUsefulLinkModalProps) => {
   const { isLoading, isError, error, mutateAsync } = useSetUsefulLinks();
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -38,9 +26,6 @@ const EditUsefulLinkModal = ({
       defaulValues={linkType}
       linkTypes={linkTypes}
       currentLinks={currentLinks}
-      isOnGuestHomePage={isOnGuestHomePage}
-      isOnNewMemberDashboard={isOnNewMemberDashboard}
-      isOnOnboardingDashboard={isOnOnboardingDashboard}
     />
   );
 };

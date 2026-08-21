@@ -39,14 +39,14 @@ const getWorkPackageProposedChangesQueryArgs = (organizationId: string) =>
             select: {
               linkId: true,
               url: true,
-              isOnGuestHomePage: true,
-              isOnNewMemberDashboard: true,
-              isOnOnboardingDashboard: true,
               linkType: {
                 select: {
                   name: true,
                   required: true,
-                  iconName: true
+                  iconName: true,
+                  isOnGuestHomePage: true,
+                  isOnNewMemberDashboard: true,
+                  isOnOnboardingDashboard: true
                 }
               }
             }
@@ -84,14 +84,14 @@ const getWbsProposedChangesQueryArgs = (organizationId: string) =>
         select: {
           linkId: true,
           url: true,
-          isOnGuestHomePage: true,
-          isOnNewMemberDashboard: true,
-          isOnOnboardingDashboard: true,
           linkType: {
             select: {
               name: true,
               required: true,
-              iconName: true
+              iconName: true,
+              isOnGuestHomePage: true,
+              isOnNewMemberDashboard: true,
+              isOnOnboardingDashboard: true
             }
           }
         }

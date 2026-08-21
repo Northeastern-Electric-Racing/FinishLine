@@ -53,7 +53,7 @@ const IntroGuestHomePage = () => {
 
   if (!organization || organizationIsLoading || !usefulLinks || usefulLinksIsLoading) return <LoadingIndicator />;
 
-  const guestPageLinks = usefulLinks?.filter((link) => link.isOnGuestHomePage);
+  const guestPageLinks = usefulLinks?.filter((link) => link.linkType.isOnGuestHomePage);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', px: 2 }}>

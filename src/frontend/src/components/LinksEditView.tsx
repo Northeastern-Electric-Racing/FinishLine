@@ -42,14 +42,7 @@ const LinksEditView: React.FC<{
     if (enforceRequired) {
       requiredLinkTypeNames.forEach((linkTypeName) => {
         if (links.some((link) => link.linkTypeName === linkTypeName)) return;
-        append({
-          linkId: '-1',
-          url: '',
-          linkTypeName,
-          isOnGuestHomePage: false,
-          isOnNewMemberDashboard: false,
-          isOnOnboardingDashboard: false
-        });
+        append({ linkId: '-1', url: '', linkTypeName });
       });
     }
   }, [append, enforceRequired, linkTypes, links, requiredLinkTypeNames]);
@@ -110,16 +103,7 @@ const LinksEditView: React.FC<{
       <NERButton
         variant="contained"
         color="primary"
-        onClick={() =>
-          append({
-            linkId: '-1',
-            url: '',
-            linkTypeName: '-1',
-            isOnGuestHomePage: false,
-            isOnNewMemberDashboard: false,
-            isOnOnboardingDashboard: false
-          })
-        }
+        onClick={() => append({ linkId: '-1', url: '', linkTypeName: '-1' })}
         sx={{ mt: 2, width: 'max-content' }}
       >
         + Add Link

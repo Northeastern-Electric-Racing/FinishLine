@@ -51,10 +51,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     return {
       linkId: link.linkId,
       linkTypeName: link.linkType.name,
-      url: link.url,
-      isOnGuestHomePage: link.isOnGuestHomePage,
-      isOnNewMemberDashboard: link.isOnNewMemberDashboard,
-      isOnOnboardingDashboard: link.isOnOnboardingDashboard
+      url: link.url
     };
   };
 

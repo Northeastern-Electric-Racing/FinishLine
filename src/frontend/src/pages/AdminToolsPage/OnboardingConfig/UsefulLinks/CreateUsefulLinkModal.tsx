@@ -9,20 +9,9 @@ interface CreateUsefulLinkModalProps {
   handleClose: () => void;
   linkTypes: LinkType[];
   currentLinks: Link[];
-  isOnGuestHomePage?: boolean;
-  isOnNewMemberDashboard?: boolean;
-  isOnOnboardingDashboard?: boolean;
 }
 
-const CreateUsefulLinkModal = ({
-  open,
-  handleClose,
-  linkTypes,
-  currentLinks,
-  isOnGuestHomePage,
-  isOnNewMemberDashboard,
-  isOnOnboardingDashboard
-}: CreateUsefulLinkModalProps) => {
+const CreateUsefulLinkModal = ({ open, handleClose, linkTypes, currentLinks }: CreateUsefulLinkModalProps) => {
   const { isLoading, isError, error, mutateAsync } = useSetUsefulLinks();
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -35,9 +24,6 @@ const CreateUsefulLinkModal = ({
       onSubmit={mutateAsync}
       linkTypes={linkTypes}
       currentLinks={currentLinks}
-      isOnGuestHomePage={isOnGuestHomePage}
-      isOnNewMemberDashboard={isOnNewMemberDashboard}
-      isOnOnboardingDashboard={isOnOnboardingDashboard}
     />
   );
 };

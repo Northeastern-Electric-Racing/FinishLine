@@ -55,6 +55,7 @@ export const linkTypeCreateInputs = (creatorId: string, organizationId: string):
     name: 'Google Drive',
     iconName: 'add_to_drive',
     required: false,
+    isOnGuestHomePage: false,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
   },
@@ -62,6 +63,7 @@ export const linkTypeCreateInputs = (creatorId: string, organizationId: string):
     name: 'Confluence',
     iconName: 'article',
     required: false,
+    isOnGuestHomePage: false,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
   },
@@ -69,6 +71,7 @@ export const linkTypeCreateInputs = (creatorId: string, organizationId: string):
     name: 'Github',
     iconName: 'code',
     required: false,
+    isOnGuestHomePage: false,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
   },
@@ -76,6 +79,7 @@ export const linkTypeCreateInputs = (creatorId: string, organizationId: string):
     name: 'Altium',
     iconName: 'electric_bolt',
     required: false,
+    isOnGuestHomePage: false,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
   },
@@ -83,6 +87,7 @@ export const linkTypeCreateInputs = (creatorId: string, organizationId: string):
     name: 'Application',
     iconName: 'ballot',
     required: false,
+    isOnGuestHomePage: false,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
   },
@@ -90,6 +95,7 @@ export const linkTypeCreateInputs = (creatorId: string, organizationId: string):
     name: 'Sign Ups',
     iconName: 'ballot',
     required: false,
+    isOnGuestHomePage: false,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
   },
@@ -97,6 +103,7 @@ export const linkTypeCreateInputs = (creatorId: string, organizationId: string):
     name: 'facebook',
     iconName: 'facebook',
     required: false,
+    isOnGuestHomePage: true,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
   },
@@ -104,6 +111,7 @@ export const linkTypeCreateInputs = (creatorId: string, organizationId: string):
     name: 'Instagram',
     iconName: 'Instagram',
     required: false,
+    isOnGuestHomePage: true,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
   },
@@ -111,6 +119,9 @@ export const linkTypeCreateInputs = (creatorId: string, organizationId: string):
     name: 'Handbook',
     iconName: 'menu_book',
     required: true,
+    isOnGuestHomePage: false,
+    isOnNewMemberDashboard: true,
+    isOnOnboardingDashboard: true,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
   },
@@ -118,42 +129,29 @@ export const linkTypeCreateInputs = (creatorId: string, organizationId: string):
     name: 'Team Directory',
     iconName: 'groups',
     required: true,
+    isOnGuestHomePage: false,
+    isOnNewMemberDashboard: true,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
   }
 ];
 
-type UsefulLinkPlacement = {
-  url: string;
-  isOnGuestHomePage?: boolean;
-  isOnNewMemberDashboard?: boolean;
-  isOnOnboardingDashboard?: boolean;
-};
-
-// Placements for the link types that are actually surfaced somewhere (guest home page / new-member
-// dashboard / onboarding dashboard) -- the rest of linkTypeCreateInputs are categories only, with no
-// seeded Link yet. A type can have more than one placement (e.g. Handbook shows on both the
-// new-member and onboarding dashboards), which now means one seeded Link per placement.
-const USEFUL_LINK_PLACEMENTS_BY_TYPE_NAME: Record<string, UsefulLinkPlacement[]> = {
-  facebook: [{ url: 'https://facebook.com/example-org', isOnGuestHomePage: true }],
-  Instagram: [{ url: 'https://instagram.com/example-org', isOnGuestHomePage: true }],
-  Handbook: [
-    { url: 'https://example.com/handbook', isOnNewMemberDashboard: true },
-    { url: 'https://example.com/handbook', isOnOnboardingDashboard: true }
-  ],
-  'Team Directory': [{ url: 'https://example.com/team-directory', isOnNewMemberDashboard: true }]
+// URLs for the link types that are actually surfaced somewhere (guest home page / new-member
+// dashboard) -- the rest of linkTypeCreateInputs are categories only, with no seeded Link yet.
+const USEFUL_LINK_URL_BY_TYPE_NAME: Record<string, string> = {
+  facebook: 'https://facebook.com/example-org',
+  Instagram: 'https://instagram.com/example-org',
+  Handbook: 'https://example.com/handbook',
+  'Team Directory': 'https://example.com/team-directory'
 };
 
 export const usefulLinkCreateInput = (
   creatorId: string,
   organizationId: string,
   linkTypeId: string,
-  placement: UsefulLinkPlacement
+  url: string
 ): Prisma.LinkCreateInput => ({
-  url: placement.url,
-  isOnGuestHomePage: placement.isOnGuestHomePage ?? false,
-  isOnNewMemberDashboard: placement.isOnNewMemberDashboard ?? false,
-  isOnOnboardingDashboard: placement.isOnOnboardingDashboard ?? false,
+  url,
   creator: connectUser(creatorId),
   organization: connectOrganization(organizationId),
   linkType: { connect: { id: linkTypeId } }
@@ -165,11 +163,9 @@ export const usefulLinkCreateInputsForTypes = (
   linkTypes: { id: string; name: string }[]
 ): Prisma.LinkCreateInput[] =>
   linkTypes
-    .filter((linkType) => linkType.name in USEFUL_LINK_PLACEMENTS_BY_TYPE_NAME)
-    .flatMap((linkType) =>
-      USEFUL_LINK_PLACEMENTS_BY_TYPE_NAME[linkType.name].map((placement) =>
-        usefulLinkCreateInput(creatorId, organizationId, linkType.id, placement)
-      )
+    .filter((linkType) => linkType.name in USEFUL_LINK_URL_BY_TYPE_NAME)
+    .map((linkType) =>
+      usefulLinkCreateInput(creatorId, organizationId, linkType.id, USEFUL_LINK_URL_BY_TYPE_NAME[linkType.name])
     );
 
 export const descriptionBulletTypeCreateInputs = (
