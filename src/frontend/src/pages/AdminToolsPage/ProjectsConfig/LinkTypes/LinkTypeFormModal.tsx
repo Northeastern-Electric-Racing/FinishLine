@@ -91,11 +91,7 @@ const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTyp
         <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>Required</FormLabel>
-            <Controller
-              name="required"
-              control={control}
-              render={({ field }) => <Switch {...field} checked={field.value} />}
-            />
+            <Controller name="required" control={control} render={({ field }) => <Switch {...field} checked={field.value} />} />
             <FormHelperText error>{errors.required?.message}</FormHelperText>
           </FormControl>
         </Grid>

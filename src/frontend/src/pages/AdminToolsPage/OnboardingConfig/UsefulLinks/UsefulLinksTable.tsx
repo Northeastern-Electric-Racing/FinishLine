@@ -42,12 +42,7 @@ const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboa
     error: usefulLinksError
   } = useAllUsefulLinks();
   const { mutateAsync } = useSetUsefulLinks();
-  const {
-    data: linkTypes,
-    isLoading: linkTypesIsLoading,
-    isError: linkTypesIsError,
-    error: linkTypesError
-  } = useAllLinkTypes();
+  const { data: linkTypes, isLoading: linkTypesIsLoading, isError: linkTypesIsError, error: linkTypesError } = useAllLinkTypes();
   const toast = useToast();
 
   const [linkToDelete, setLinkToDelete] = useState<Link>();
@@ -71,11 +66,7 @@ const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboa
     }
   };
 
-  const matchesDashboard = (link: {
-    isOnGuestHomePage: boolean;
-    isOnNewMemberDashboard: boolean;
-    isOnOnboardingDashboard: boolean;
-  }) => {
+  const matchesDashboard = (link: { isOnGuestHomePage: boolean; isOnNewMemberDashboard: boolean; isOnOnboardingDashboard: boolean }) => {
     if (isOnNewMemberDashboard) return link.isOnNewMemberDashboard;
     if (isOnOnboardingDashboard) return link.isOnOnboardingDashboard;
     if (isOnGuestHomePage) return link.isOnGuestHomePage;
