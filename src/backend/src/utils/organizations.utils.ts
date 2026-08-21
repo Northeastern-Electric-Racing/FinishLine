@@ -2,14 +2,7 @@ import { LinkCreateArgs, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { HttpException } from './errors.utils.js';
 
-export type PrismaTransactionClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
-
-export const createUsefulLinks = async (
-  tx: PrismaTransactionClient,
-  links: LinkCreateArgs[],
-  organizationId: string,
-  submitter: User
-) => {
+export const createUsefulLinks = async (links: LinkCreateArgs[], organizationId: string, submitter: User) => {
   const newLinks = [];
   for (const link of links) {
     const dashboardFlagCount = [link.isOnGuestHomePage, link.isOnNewMemberDashboard, link.isOnOnboardingDashboard].filter(
@@ -19,7 +12,7 @@ export const createUsefulLinks = async (
       throw new HttpException(400, 'A useful link can only be on one dashboard at a time');
     }
 
-    const linkType = await tx.link_Type.findUnique({
+    const linkType = await prisma.link_Type.findUnique({
       where: {
         uniqueLinkType: {
           name: link.linkTypeName,
@@ -32,7 +25,7 @@ export const createUsefulLinks = async (
       throw new HttpException(400, `Link type with name '${link.linkTypeName}' not found`);
     }
 
-    const newLink = await tx.link.create({
+    const newLink = await prisma.link.create({
       data: {
         linkType: {
           connect: {
@@ -50,7 +43,6 @@ export const createUsefulLinks = async (
         }
       }
     });
-
     newLinks.push(newLink);
   }
   return newLinks;

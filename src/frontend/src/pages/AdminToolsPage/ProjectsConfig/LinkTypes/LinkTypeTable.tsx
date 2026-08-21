@@ -22,8 +22,8 @@ const LinkTypeTable = () => {
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [clickedLinkType, setClickedLinkType] = useState<LinkType>();
 
-  if (linkTypeIsError) return <ErrorPage message={linkTypeError.message} />;
   if (!linkTypes || linkTypeIsLoading) return <LoadingIndicator />;
+  if (linkTypeIsError) return <ErrorPage message={linkTypeError.message} />;
 
   const linkTypeTableRows = linkTypes.map((linkType, index) => (
     <TableRow

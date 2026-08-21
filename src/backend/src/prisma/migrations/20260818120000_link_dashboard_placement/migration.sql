@@ -20,19 +20,6 @@ FROM "Link_Type" lt
 WHERE l."linkTypeId" = lt."id"
   AND l."organizationId" IS NOT NULL;
 
--- Enforce the "one dashboard per link" invariant: some legacy Link_Type rows (e.g. the old
--- seeded "Handbook" type) had more than one placement flag set, which the backfill above would
--- otherwise carry over verbatim. Keep only the highest-priority flag per link, prioritizing
--- onboarding dashboard, then new member dashboard, then guest home page.
-UPDATE "Link"
-SET "isOnNewMemberDashboard" = false
-WHERE "isOnNewMemberDashboard" = true AND "isOnOnboardingDashboard" = true;
-
-UPDATE "Link"
-SET "isOnGuestHomePage" = false
-WHERE "isOnGuestHomePage" = true
-  AND ("isOnNewMemberDashboard" = true OR "isOnOnboardingDashboard" = true);
-
 -- AlterTable: Link_Type - drop the now-relocated placement columns
 ALTER TABLE "Link_Type"
 DROP COLUMN "isOnGuestHomePage",
