@@ -143,9 +143,12 @@ export default class RulesService {
       select: { status: true }
     });
 
-    if (children.length === 0) return;
-
-    const status = RulesService.computeRolledUpStatus(children.map((child) => child.status as RuleStatus));
+    // a rule with no remaining children has no rolled-up status to derive; reset it to Pending
+    // and keep walking up so its own parent's rollup reflects the change
+    const status =
+      children.length === 0
+        ? RuleStatus.PENDING
+        : RulesService.computeRolledUpStatus(children.map((child) => child.status as RuleStatus));
 
     const { parentRuleId } = await prisma.rule.update({
       where: { ruleId },
@@ -915,6 +918,14 @@ export default class RulesService {
 
     if (rule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
       throw new InvalidOrganizationException('Rule');
+    }
+
+    const childRuleCount = await prisma.rule.count({
+      where: { parentRuleId: ruleId, dateDeleted: null }
+    });
+
+    if (childRuleCount > 0) {
+      throw new HttpException(400, 'Only child rule statuses can be updated directly.');
     }
 
     // only PASS/FAIL are tracked in history; PENDING does not create an entry
