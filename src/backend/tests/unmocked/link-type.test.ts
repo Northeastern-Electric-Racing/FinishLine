@@ -44,7 +44,16 @@ describe('LinkType Tests', () => {
     });
 
     it('Succeeds and creates a LinkType flagged for multiple dashboards at once', async () => {
-      const linkType = await ProjectsService.createLinkType(testBatman, 'GitHub', 'code', false, organization, false, true, true);
+      const linkType = await ProjectsService.createLinkType(
+        testBatman,
+        'GitHub',
+        'code',
+        false,
+        organization,
+        false,
+        true,
+        true
+      );
 
       expect(linkType.isOnNewMemberDashboard).toBe(true);
       expect(linkType.isOnOnboardingDashboard).toBe(true);
