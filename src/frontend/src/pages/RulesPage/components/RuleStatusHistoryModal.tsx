@@ -3,9 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { Rule, formatTimestamp } from 'shared';
 import NERModal from '../../../components/NERModal';
+import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import { getRuleStatusConfig } from '../../../utils/rules.utils';
 import { useRuleStatusHistory } from '../../../hooks/rules.hooks';
 
@@ -22,15 +24,14 @@ interface RuleStatusHistoryModalProps {
  * Reverting to PENDING doesn't add an entry.
  */
 const RuleStatusHistoryModal: React.FC<RuleStatusHistoryModalProps> = ({ open, onClose, rule, projectRuleId }) => {
-  const { data: entries, isLoading } = useRuleStatusHistory(rule.ruleId, open, projectRuleId);
+  const { data: entries, isLoading, isError, error } = useRuleStatusHistory(rule.ruleId, open, projectRuleId);
+
+  if (isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
 
   return (
     <NERModal open={open} onHide={onClose} title={`Status History ${rule.ruleCode}`} showCloseButton hideFormButtons>
-      {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-          <CircularProgress size={24} />
-        </Box>
-      ) : !entries || entries.length === 0 ? (
+      {!entries || entries.length === 0 ? (
         <Typography color="text.secondary">No status history yet.</Typography>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
