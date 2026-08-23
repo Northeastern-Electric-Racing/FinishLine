@@ -183,9 +183,12 @@ export default class RulesService {
       select: { status: true }
     });
 
-    if (children.length === 0) return;
-
-    const status = RulesService.computeRolledUpStatus(children.map((child) => child.status as RuleStatus));
+    // a project rule with no remaining children has no rolled-up status to derive; reset it to Pending
+    // and keep walking up so its own parent's rollup reflects the change
+    const status =
+      children.length === 0
+        ? RuleStatus.PENDING
+        : RulesService.computeRolledUpStatus(children.map((child) => child.status as RuleStatus));
 
     await prisma.project_Rule.update({
       where: { projectRuleId: projectRule.projectRuleId },
@@ -1024,6 +1027,14 @@ export default class RulesService {
     const hasOrgWidePermission = await userHasPermission(submitter.userId, organization.organizationId, isLeadership);
     if (!hasOrgWidePermission && !isUserPartOfTeams(projectRule.project.teams, submitter)) {
       throw new AccessDeniedException('You do not have permissions to update rule status for this project');
+    }
+
+    const childProjectRuleCount = await prisma.project_Rule.count({
+      where: { projectId: projectRule.projectId, dateDeleted: null, rule: { parentRuleId: projectRule.ruleId } }
+    });
+
+    if (childProjectRuleCount > 0) {
+      throw new HttpException(400, 'Only child rule statuses can be updated directly.');
     }
 
     // only PASS/FAIL are tracked in history; PENDING does not create an entry
