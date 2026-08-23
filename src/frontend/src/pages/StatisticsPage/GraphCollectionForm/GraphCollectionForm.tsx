@@ -81,7 +81,6 @@ const GraphCollectionForm = ({ open, onHide, defaultValues, onSubmit, successTex
               render={({ field: { onChange, value } }) => {
                 return (
                   <Autocomplete
-                    autoHighlight
                     isOptionEqualToValue={(option, value) => option.id === value.id}
                     filterSelectedOptions
                     multiple

@@ -19,7 +19,6 @@ const EditFeaturedProjectsDropdown: React.FC<EditFeatureProjectsDropdownProps> =
 
   return (
     <Autocomplete
-      autoHighlight
       multiple
       options={allProjects}
       getOptionLabel={(option) => `${projectWbsNamePipe(option)}`}

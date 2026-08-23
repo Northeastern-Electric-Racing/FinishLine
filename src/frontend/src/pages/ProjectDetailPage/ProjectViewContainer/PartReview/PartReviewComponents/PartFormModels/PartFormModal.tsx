@@ -158,7 +158,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
           <FormControl fullWidth>
             <FormLabel>Tags (Optional)</FormLabel>
             <Autocomplete
-              autoHighlight
+              autoHighlight={false}
               multiple
               options={[{ partTagId: 'add-new', name: 'Add New' }, ...tags]}
               getOptionLabel={(option) => option.name}
@@ -193,7 +193,6 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
           <FormControl fullWidth>
             <FormLabel>Assignees</FormLabel>
             <Autocomplete
-              autoHighlight
               multiple
               options={users.filter((user) => !reviewerIds.some((reviewerId) => reviewerId === user.userId))}
               getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
@@ -212,7 +211,6 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
           <FormControl fullWidth>
             <FormLabel>Reviewers</FormLabel>
             <Autocomplete
-              autoHighlight
               multiple
               options={users.filter((user) => !assigneeIds.some((assigneeId) => assigneeId === user.userId))}
               getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}

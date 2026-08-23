@@ -1337,7 +1337,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       />
                     ))}
                     <Autocomplete
-                      autoHighlight
                       options={memberOptions.filter((m) => !requiredMembers.find((rm) => rm.id === m.id))}
                       value={null}
                       inputValue={requiredMemberInput}
@@ -1377,7 +1376,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       />
                     ))}
                     <Autocomplete
-                      autoHighlight
                       options={memberOptions.filter((m) => !optionalMembers.find((om) => om.id === m.id))}
                       value={null}
                       inputValue={optionalMemberInput}
@@ -1417,7 +1415,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       />
                     ))}
                     <Autocomplete
-                      autoHighlight
                       options={teamOptions.filter((t) => !selectedTeams.find((st) => st.id === t.id))}
                       value={null}
                       inputValue={teamInput}
@@ -1465,7 +1462,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       </Tooltip>
                     ))}
                     <Autocomplete
-                      autoHighlight
                       options={notificationChannelOptions.filter(
                         (c) => !selectedNotificationChannels.find((sc) => sc.id === c.id)
                       )}

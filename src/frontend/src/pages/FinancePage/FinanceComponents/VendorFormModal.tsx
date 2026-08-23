@@ -181,7 +181,6 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
             name="twoFactorContacts"
             render={({ field: { onChange, value } }) => (
               <Autocomplete
-                autoHighlight
                 multiple
                 options={users}
                 disableCloseOnSelect

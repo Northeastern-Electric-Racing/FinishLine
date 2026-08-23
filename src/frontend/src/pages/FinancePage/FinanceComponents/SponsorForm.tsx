@@ -218,7 +218,6 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({
             name="valueTypes"
             render={({ field: { onChange, value } }) => (
               <Autocomplete
-                autoHighlight
                 multiple
                 options={VALUE_TYPE_OPTIONS}
                 getOptionLabel={(option) => option.label}
@@ -326,7 +325,6 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({
             defaultValue={[]}
             render={({ field }) => (
               <Autocomplete
-                autoHighlight
                 {...field}
                 multiple
                 options={yearsOptions}

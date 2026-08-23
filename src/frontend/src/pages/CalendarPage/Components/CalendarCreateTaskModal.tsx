@@ -232,7 +232,6 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
               control={control}
               render={({ field: { onChange, value } }) => (
                 <Autocomplete
-                  autoHighlight
                   isOptionEqualToValue={(option, val) => option.id === val.id}
                   filterSelectedOptions
                   multiple
@@ -256,7 +255,6 @@ const CalendarCreateTaskModal: React.FC<CalendarCreateTaskModalProps> = ({ open,
               control={control}
               render={({ field: { onChange, value } }) => (
                 <Autocomplete
-                  autoHighlight
                   multiple
                   filterSelectedOptions
                   options={taskLabels ?? []}

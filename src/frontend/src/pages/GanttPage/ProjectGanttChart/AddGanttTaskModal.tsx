@@ -179,7 +179,6 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
               control={control}
               render={({ field: { onChange, value } }) => (
                 <Autocomplete
-                  autoHighlight
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   filterSelectedOptions
                   multiple
@@ -204,7 +203,6 @@ const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handle
               control={control}
               render={({ field: { onChange, value } }) => (
                 <Autocomplete
-                  autoHighlight
                   multiple
                   filterSelectedOptions
                   options={taskLabels ?? []}

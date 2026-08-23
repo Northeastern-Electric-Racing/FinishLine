@@ -148,7 +148,6 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
       {showFilters && (
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <Autocomplete
-            autoHighlight
             multiple
             size="small"
             options={Object.values(Review_Status)}
@@ -185,7 +184,6 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             sx={{ width: '20%' }}
           />
           <Autocomplete
-            autoHighlight
             multiple
             size="small"
             options={users}
@@ -225,7 +223,6 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             sx={{ width: '20%' }}
           />
           <Autocomplete
-            autoHighlight
             multiple
             size="small"
             options={users}
@@ -265,7 +262,6 @@ const PartsReviewPage = ({ project }: { project: Project }) => {
             sx={{ width: '20%' }}
           />
           <Autocomplete
-            autoHighlight
             multiple
             size="small"
             options={tags}

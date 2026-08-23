@@ -98,7 +98,6 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
 
         {dropDownMembersOpen && (
           <Autocomplete
-            autoHighlight
             multiple
             open={dropDownMembersOpen}
             disableCloseOnSelect
@@ -217,7 +216,6 @@ const FilterModal: React.FC<BaseFilterModalProps> = ({
 
         {dropDownTeamOpen && (
           <Autocomplete
-            autoHighlight
             multiple
             open={dropDownTeamOpen}
             disableCloseOnSelect

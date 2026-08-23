@@ -130,7 +130,6 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
       <Grid container direction={'row'}>
         <Grid item xs={9} md={10} lg={11}>
           <Autocomplete
-            autoHighlight
             isOptionEqualToValue={(option, value) => option.id === value.id}
             filterSelectedOptions
             multiple
@@ -162,7 +161,6 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
       <Grid container direction={'row'}>
         <Grid item xs={9} md={10} lg={11}>
           <Autocomplete
-            autoHighlight
             isOptionEqualToValue={(option, value) => option.id === value.id}
             filterSelectedOptions
             multiple

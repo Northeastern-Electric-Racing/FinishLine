@@ -201,7 +201,6 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, c
             render={({ field: { onChange, value } }) => {
               return (
                 <Autocomplete
-                  autoHighlight
                   isOptionEqualToValue={(option, value) => option?.id === value?.id}
                   filterSelectedOptions
                   multiple
@@ -229,7 +228,6 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, c
             render={({ field: { onChange, value } }) => {
               return (
                 <Autocomplete
-                  autoHighlight
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   filterSelectedOptions
                   multiple

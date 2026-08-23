@@ -321,7 +321,6 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Autocomplete
-                    autoHighlight
                     isOptionEqualToValue={(option, value) => option.id === value.id}
                     filterSelectedOptions
                     multiple
@@ -347,7 +346,6 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Autocomplete
-                    autoHighlight
                     multiple
                     filterSelectedOptions
                     options={taskLabels ?? []}
@@ -402,7 +400,6 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Autocomplete
-                    autoHighlight
                     multiple
                     filterSelectedOptions
                     options={blockedByOptions}
