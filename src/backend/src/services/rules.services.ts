@@ -8,7 +8,9 @@ import {
   User,
   Rule as SharedRule,
   isHead,
-  Ruleset
+  Ruleset,
+  RuleStatus,
+  RuleStatusHistoryEntry
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -25,13 +27,15 @@ import {
   getProjectRuleQueryArgs,
   getRulesetQueryArgs,
   getRulePreviewQueryArgs,
-  getRulesetTypeQueryArgs
+  getRulesetTypeQueryArgs,
+  getRuleStatusHistoryQueryArgs
 } from '../prisma-query-args/rules.query-args.js';
 import {
   ruleTransformer,
   projectRuleTransformer,
   rulesetTransformer,
-  rulesetTypeTransformer
+  rulesetTypeTransformer,
+  ruleStatusHistoryTransformer
 } from '../transformers/rules.transformer.js';
 import { ParsedRule, parseRulesFromPdf } from '../utils/parse.utils.js';
 import { uploadFile, downloadFile } from '../utils/google-integration.utils.js';
@@ -110,6 +114,87 @@ export default class RulesService {
     if (existingRule) {
       throw new HttpException(400, `Rule with code ${ruleCode} already exists in this ruleset`);
     }
+  }
+
+  /**
+   * Compute a rule's status given the statuses of its children.
+   * @param childStatuses the statuses of the child rules
+   * @returns status of the parent rule based on its children's statuses
+   */
+  private static computeRolledUpStatus(childStatuses: RuleStatus[]): RuleStatus {
+    // If any children FAIL, the parent fails.
+    if (childStatuses.includes(RuleStatus.FAIL)) return RuleStatus.FAIL;
+    // If no children FAIL, and any children are PENDING, the parent is PENDING.
+    if (childStatuses.includes(RuleStatus.PENDING)) return RuleStatus.PENDING;
+    // If all children PASS, the parent passes.
+    return RuleStatus.PASS;
+  }
+
+  /**
+   * Recomputes and saves ruleId's status, then repeats up the parent chain.
+   * @param ruleId the rule to recompute the status for
+   * @returns the updated status of the rule
+   */
+  private static async recalculateRuleStatusChain(ruleId: string | null): Promise<void> {
+    if (!ruleId) return;
+
+    const children = await prisma.rule.findMany({
+      where: { parentRuleId: ruleId, dateDeleted: null },
+      select: { status: true }
+    });
+
+    // a rule with no remaining children has no rolled-up status to derive; reset it to Pending
+    // and keep walking up so its own parent's rollup reflects the change
+    const status =
+      children.length === 0
+        ? RuleStatus.PENDING
+        : RulesService.computeRolledUpStatus(children.map((child) => child.status as RuleStatus));
+
+    const { parentRuleId } = await prisma.rule.update({
+      where: { ruleId },
+      data: { status },
+      select: { parentRuleId: true }
+    });
+
+    await RulesService.recalculateRuleStatusChain(parentRuleId);
+  }
+
+  /**
+   * Same as recalculateRuleStatusChain, but scoped to one project's assigned rules.
+   * Recomputes and saves the status of the project rule for the given ruleId, then repeats up the parent chain.
+   * @param projectId the project to scope the status recomputation to
+   * @param ruleId the rule to recompute the status for
+   * @returns the updated status of the project rule
+   */
+  private static async recalculateProjectRuleStatusChain(projectId: string, ruleId: string | null): Promise<void> {
+    if (!ruleId) return;
+
+    const projectRule = await prisma.project_Rule.findFirst({
+      where: { projectId, ruleId, dateDeleted: null },
+      select: { projectRuleId: true }
+    });
+
+    if (!projectRule) return;
+
+    const children = await prisma.project_Rule.findMany({
+      where: { projectId, dateDeleted: null, rule: { parentRuleId: ruleId } },
+      select: { status: true }
+    });
+
+    // a project rule with no remaining children has no rolled-up status to derive; reset it to Pending
+    // and keep walking up so its own parent's rollup reflects the change
+    const status =
+      children.length === 0
+        ? RuleStatus.PENDING
+        : RulesService.computeRolledUpStatus(children.map((child) => child.status as RuleStatus));
+
+    await prisma.project_Rule.update({
+      where: { projectRuleId: projectRule.projectRuleId },
+      data: { status }
+    });
+
+    const rule = await prisma.rule.findUnique({ where: { ruleId }, select: { parentRuleId: true } });
+    await RulesService.recalculateProjectRuleStatusChain(projectId, rule?.parentRuleId ?? null);
   }
 
   /**
@@ -224,6 +309,9 @@ export default class RulesService {
       ...getRulePreviewQueryArgs()
     });
 
+    // a fresh child defaults to PENDING, which can flip the parent chain's statuses (e.g. PASS -> PENDING)
+    await RulesService.recalculateRuleStatusChain(parentRuleId ?? null);
+
     return ruleTransformer(rule);
   }
 
@@ -325,6 +413,9 @@ export default class RulesService {
 
       await deleteParentChildReferencing(ruleId);
     });
+
+    // this rule (and its descendants) are gone, so its old parent chain may update their statuses
+    await RulesService.recalculateRuleStatusChain(rule.parentRuleId);
 
     const deletedRule = await prisma.rule.findUnique({
       where: { ruleId }
@@ -452,6 +543,9 @@ export default class RulesService {
 
     await prisma.$transaction([...ancestorsToCreate.map(reviveOrCreate), reviveOrCreate(ruleId)]);
 
+    // new (or revived) project rule leaf defaults to PENDING so parent statuses need to be recomputed
+    await RulesService.recalculateProjectRuleStatusChain(projectId, rule.parentRuleId);
+
     // return only original project rule being assigned (leaf rule)
     const projectRule = await prisma.project_Rule.findUnique({
       where: { ruleId_projectId: { ruleId, projectId } },
@@ -558,6 +652,12 @@ export default class RulesService {
       },
       ...getRulePreviewQueryArgs()
     });
+
+    // reparenting moves this rule out of the old parent chain and into the new one, so recompute statuses for both parent chains
+    if (parentRuleId && parentRuleId !== currentRule.parentRuleId) {
+      await RulesService.recalculateRuleStatusChain(currentRule.parentRuleId);
+      await RulesService.recalculateRuleStatusChain(parentRuleId);
+    }
 
     return ruleTransformer(updatedRule);
   }
@@ -788,24 +888,22 @@ export default class RulesService {
   }
 
   /**
-   * Sets the completion of a rule. Completion is global to the rule, so marking it complete
-   * (or incomplete) is reflected everywhere the rule appears.
-   * @param submitter the user updating the completion
+   * Sets a rule's general-view status. This status is independent of any project.
+   * It is unaffected by the status of the rule in any project it's assigned to.
+   * @param submitter the user updating the status
    * @param organization the organization of the rule
    * @param ruleId the id of the rule to update
-   * @param isComplete whether the rule is complete or incomplete
-   * @param projectId the project the rule was completed from (optional - omitted if updated in general view)
-   * @returns the rule with updated completion
+   * @param status the new status of the rule
+   * @returns the rule with updated status
    */
-  static async setRuleCompletion(
+  static async setRuleStatus(
     submitter: User,
     organization: Organization,
     ruleId: string,
-    isComplete: boolean,
-    projectId?: string
+    status: RuleStatus
   ): Promise<SharedRule> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
-      throw new AccessDeniedException('You do not have permissions to update rule completion');
+      throw new AccessDeniedException('You do not have permissions to update rule status');
     }
 
     const rule = await prisma.rule.findUnique({
@@ -825,15 +923,249 @@ export default class RulesService {
       throw new InvalidOrganizationException('Rule');
     }
 
+    const childRuleCount = await prisma.rule.count({
+      where: { parentRuleId: ruleId, dateDeleted: null }
+    });
+
+    if (childRuleCount > 0) {
+      throw new HttpException(400, 'Only child rule statuses can be updated directly.');
+    }
+
+    // only PASS/FAIL are tracked in history; PENDING does not create an entry
+    if (status !== RuleStatus.PENDING) {
+      await prisma.rule_Status_History.create({
+        data: { ruleId, status, updatedByUserId: submitter.userId }
+      });
+    }
+
     const updatedRule = await prisma.rule.update({
       where: { ruleId },
-      data: isComplete
-        ? { isComplete: true, completedByUserId: submitter.userId, completedInProjectId: projectId ?? null }
-        : { isComplete: false, completedByUserId: null, completedInProjectId: null },
+      data:
+        status === RuleStatus.PENDING
+          ? { status, statusUpdatedByUserId: null, statusUpdatedAt: null }
+          : { status, statusUpdatedByUserId: submitter.userId, statusUpdatedAt: new Date() },
       ...getRulePreviewQueryArgs()
     });
 
+    // updating a rules status may update the status of its parent chain, so recalculate the parent chain's statuses
+    await RulesService.recalculateRuleStatusChain(rule.parentRuleId);
+
     return ruleTransformer(updatedRule);
+  }
+
+  /**
+   * Sets a rule's status within a single project. This status is local to that project.
+   * It does not affect the rule's general-view status, or its status in any other project.
+   * @param submitter the user updating the status
+   * @param organization the organization of the project rule
+   * @param projectRuleId the id of the project rule to update
+   * @param status the new status of the rule in this project
+   * @returns the project rule with updated status
+   */
+  static async setProjectRuleStatus(
+    submitter: User,
+    organization: Organization,
+    projectRuleId: string,
+    status: RuleStatus
+  ): Promise<ProjectRule> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('You do not have permissions to update rule status');
+    }
+
+    const projectRule = await prisma.project_Rule.findUnique({
+      where: { projectRuleId },
+      include: {
+        project: { include: { wbsElement: true } },
+        rule: { include: { ruleset: { include: { car: { include: { wbsElement: true } } } } } }
+      }
+    });
+
+    if (!projectRule) {
+      throw new NotFoundException('Project Rule', projectRuleId);
+    }
+
+    if (projectRule.dateDeleted) {
+      throw new DeletedException('Project Rule', projectRuleId);
+    }
+
+    if (
+      projectRule.project.wbsElement.organizationId !== organization.organizationId ||
+      projectRule.rule.ruleset.car.wbsElement.organizationId !== organization.organizationId
+    ) {
+      throw new InvalidOrganizationException('Project Rule');
+    }
+
+    const childProjectRuleCount = await prisma.project_Rule.count({
+      where: { projectId: projectRule.projectId, dateDeleted: null, rule: { parentRuleId: projectRule.ruleId } }
+    });
+
+    if (childProjectRuleCount > 0) {
+      throw new HttpException(400, 'Only child rule statuses can be updated directly.');
+    }
+
+    // only PASS/FAIL are tracked in history; PENDING does not create an entry
+    if (status !== RuleStatus.PENDING) {
+      await prisma.rule_Status_History.create({
+        data: { ruleId: projectRule.ruleId, projectRuleId, status, updatedByUserId: submitter.userId }
+      });
+    }
+
+    const updatedProjectRule = await prisma.project_Rule.update({
+      where: { projectRuleId },
+      data:
+        status === RuleStatus.PENDING
+          ? { status, statusUpdatedByUserId: null, statusUpdatedAt: null }
+          : { status, statusUpdatedByUserId: submitter.userId, statusUpdatedAt: new Date() },
+      ...getProjectRuleQueryArgs()
+    });
+
+    // updating a project rule's status may update the status of its parent chain, so recalculate the parent chain's statuses
+    await RulesService.recalculateProjectRuleStatusChain(projectRule.projectId, projectRule.rule.parentRuleId);
+
+    return projectRuleTransformer(updatedProjectRule);
+  }
+
+  /**
+   * Resets every rule's general-view status back to Pending, for a whole ruleset.
+   * Does not affect any rule's status within a project. Never creates history entries,
+   * since reverting to PENDING is not tracked.
+   * @param submitter the user resetting the statuses
+   * @param organization the organization of the ruleset
+   * @param rulesetId the id of the ruleset to reset
+   * @returns the number of rules that were reset
+   */
+  static async resetRulesetStatuses(submitter: User, organization: Organization, rulesetId: string): Promise<number> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('You do not have permissions to update rule status');
+    }
+
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      include: { car: { include: { wbsElement: true } } }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.deletedByUserId) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const result = await prisma.rule.updateMany({
+      where: { rulesetId, dateDeleted: null, status: { not: RuleStatus.PENDING } },
+      data: { status: RuleStatus.PENDING, statusUpdatedByUserId: null, statusUpdatedAt: null }
+    });
+
+    return result.count;
+  }
+
+  /**
+   * Resets every project rule's status back to Pending, for a single project, scoped to a
+   * single ruleset (a project can have rules from multiple ruleset types). Does not affect
+   * any rule's general-view status, or its status in any other project. Never creates history
+   * entries, since reverting to PENDING is not tracked.
+   * @param submitter the user resetting the statuses
+   * @param organization the organization of the project and ruleset
+   * @param rulesetId the ruleset to scope the reset to
+   * @param projectId the project whose rules should be reset
+   * @returns the number of project rules that were reset
+   */
+  static async resetProjectRuleStatuses(
+    submitter: User,
+    organization: Organization,
+    rulesetId: string,
+    projectId: string
+  ): Promise<number> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('You do not have permissions to update rule status');
+    }
+
+    const ruleset = await prisma.ruleset.findUnique({
+      where: { rulesetId },
+      include: { car: { include: { wbsElement: true } } }
+    });
+
+    if (!ruleset) {
+      throw new NotFoundException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.deletedByUserId) {
+      throw new DeletedException('Ruleset', rulesetId);
+    }
+
+    if (ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Ruleset');
+    }
+
+    const project = await prisma.project.findUnique({
+      where: { projectId },
+      include: { wbsElement: true }
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project', projectId);
+    }
+
+    if (project.wbsElement.dateDeleted) {
+      throw new DeletedException('Project', projectId);
+    }
+
+    if (project.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Project');
+    }
+
+    const result = await prisma.project_Rule.updateMany({
+      where: { projectId, dateDeleted: null, rule: { rulesetId }, status: { not: RuleStatus.PENDING } },
+      data: { status: RuleStatus.PENDING, statusUpdatedByUserId: null, statusUpdatedAt: null }
+    });
+
+    return result.count;
+  }
+
+  /**
+   * Gets the full status history for a rule, every time status was marked PASS or FAIL.
+   * Reverting to PENDING does not create history.
+   * @param user a user who is requesting the status history
+   * @param organization the organization of the rule
+   * @param ruleId the id of the rule to get history for
+   * @param projectRuleId if provided, scopes the history to just this project rule instead of every context the rule appears in
+   * @returns the rule's status history, most recent first
+   */
+  static async getRuleStatusHistory(
+    user: User,
+    organization: Organization,
+    ruleId: string,
+    projectRuleId?: string
+  ): Promise<RuleStatusHistoryEntry[]> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view rule status history');
+    }
+
+    const rule = await prisma.rule.findUnique({
+      where: { ruleId },
+      include: { ruleset: { include: { car: { include: { wbsElement: true } } } } }
+    });
+
+    if (!rule) {
+      throw new NotFoundException('Rule', ruleId);
+    }
+
+    if (rule.ruleset.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Rule');
+    }
+
+    const history = await prisma.rule_Status_History.findMany({
+      where: { ruleId, ...(projectRuleId && { projectRuleId }) },
+      orderBy: { dateCreated: 'desc' },
+      ...getRuleStatusHistoryQueryArgs()
+    });
+
+    return history.map(ruleStatusHistoryTransformer);
   }
 
   /**
@@ -1111,6 +1443,9 @@ export default class RulesService {
       },
       ...getProjectRuleQueryArgs()
     });
+
+    // this project rule no longer counts towards its parents' status calculations
+    await RulesService.recalculateProjectRuleStatusChain(projectRule.projectId, projectRule.rule.parentRuleId);
 
     return projectRuleTransformer(deletedProjectRule);
   }
@@ -1404,7 +1739,7 @@ export default class RulesService {
       ...getRulePreviewQueryArgs()
     });
 
-    return rules.map(ruleTransformer);
+    return rules.map((rule) => ruleTransformer(rule));
   }
 
   /**
@@ -1447,7 +1782,7 @@ export default class RulesService {
       ...getRulePreviewQueryArgs()
     });
 
-    return rules.map(ruleTransformer);
+    return rules.map((rule) => ruleTransformer(rule));
   }
 
   /**

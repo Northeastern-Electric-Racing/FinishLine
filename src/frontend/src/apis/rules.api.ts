@@ -4,14 +4,15 @@
  */
 
 import axios from '../utils/axios';
-import { ProjectRule, Rule as SharedRule, RulesetType, Ruleset } from 'shared';
+import { ProjectRule, Rule as SharedRule, RulesetType, Ruleset, RuleStatus, RuleStatusHistoryEntry } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateRulesetPayload, ParseRulesetPayload, CreateRulePayload } from '../hooks/rules.hooks';
 import {
   projectRuleTransformer,
   rulesetTransformer,
   rulesetTypeTransformer,
-  ruleTransformer
+  ruleTransformer,
+  ruleStatusHistoryTransformer
 } from './transformers/rules.transformers';
 
 /**
@@ -101,13 +102,50 @@ export const deleteProjectRule = (projectRuleId: string) => {
 };
 
 /**
- * Sets a rule's completion. Completion is global to the rule.
+ * Sets a rule's general-view status. This status is independent of any project.
  * @param ruleId the rule to update
- * @param isComplete whether the rule is complete
- * @param projectId the project the rule was completed from (optional)
+ * @param status the new status of the rule
  */
-export const setRuleCompletion = (ruleId: string, isComplete: boolean, projectId?: string) => {
-  return axios.post<SharedRule>(apiUrls.rulesSetRuleCompletion(ruleId), { isComplete, projectId });
+export const setRuleStatus = (ruleId: string, status: RuleStatus) => {
+  return axios.post<SharedRule>(apiUrls.rulesSetRuleStatus(ruleId), { status });
+};
+
+/**
+ * Sets a rule's status within a single project. This status is local to that project.
+ * @param projectRuleId the project rule to update
+ * @param status the new status of the rule in this project
+ */
+export const setProjectRuleStatus = (projectRuleId: string, status: RuleStatus) => {
+  return axios.post<ProjectRule>(apiUrls.rulesSetProjectRuleStatus(projectRuleId), { status });
+};
+
+/**
+ * Gets a rule's full status history - every time it was marked PASS or FAIL.
+ * @param ruleId the rule to get history for
+ * @param projectRuleId if provided, scopes the history to just this project rule instead of every context the rule appears in
+ */
+export const getRuleStatusHistory = (ruleId: string, projectRuleId?: string) => {
+  return axios.get<RuleStatusHistoryEntry[]>(apiUrls.rulesGetStatusHistory(ruleId), {
+    params: { projectRuleId },
+    transformResponse: (data) => JSON.parse(data).map(ruleStatusHistoryTransformer)
+  });
+};
+
+/**
+ * Resets every rule's general-view status back to Pending, for a whole ruleset.
+ * @param rulesetId the ruleset to reset
+ */
+export const resetRulesetStatuses = (rulesetId: string) => {
+  return axios.post<{ count: number }>(apiUrls.rulesResetRulesetStatuses(rulesetId));
+};
+
+/**
+ * Resets every project rule's status back to Pending, for a single project scoped to a single ruleset.
+ * @param rulesetId the ruleset to scope the reset to
+ * @param projectId the project whose rules should be reset
+ */
+export const resetProjectRuleStatuses = (rulesetId: string, projectId: string) => {
+  return axios.post<{ count: number }>(apiUrls.rulesResetProjectRuleStatuses(rulesetId, projectId));
 };
 
 /**
