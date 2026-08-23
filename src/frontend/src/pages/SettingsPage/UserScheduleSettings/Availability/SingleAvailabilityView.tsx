@@ -1,4 +1,14 @@
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  useMediaQuery
+} from '@mui/material';
 import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
 import { useState, useEffect } from 'react';
@@ -14,6 +24,9 @@ import EventTimeSlot from '../../../CalendarPage/Components/EventTimeSlot';
 import { useCurrentUser, useUserBusyTimes } from '../../../../hooks/users.hooks';
 import { busySlotsByDay, isSlotBusy } from '../../../../utils/ics.utils';
 
+// The day and time labels give up as much width as they can spare so the week fits a phone screen
+const narrowLabelColumn = { width: 46, px: 0.25 };
+
 interface SingleAvailabilityViewProps {
   totalAvailability: Availability[];
   initialDate?: Date;
@@ -21,6 +34,7 @@ interface SingleAvailabilityViewProps {
 
 const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAvailability, initialDate }) => {
   const currentUser = useCurrentUser();
+  const isMobile = useMediaQuery('(max-width:480px)');
   const [startDate, setStartDate] = useState<Date>(initialDate || new Date());
 
   useEffect(() => {
@@ -56,8 +70,10 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Typography variant="subtitle1">All times are in local time, {yourTimeZoneInitials()}.</Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: isMobile ? 'auto' : '100%' }}>
+      <Typography variant="subtitle1" sx={isMobile ? { fontSize: 14 } : undefined}>
+        All times are in local time, {yourTimeZoneInitials()}.
+      </Typography>
       <Typography variant="caption" color="text.secondary" mb={1}>
         Hatched slots are busy on your imported calendar or Finishline events. Edit your availability and use "Fill from busy
         times" to pull in any changes.
@@ -65,9 +81,9 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
       <TableContainer
         sx={{
           overflowX: 'auto',
-          overflowY: 'hidden',
+          overflowY: isMobile ? 'auto' : 'hidden',
           maxWidth: '100%',
-          height: '100%',
+          height: isMobile ? 'auto' : '100%',
           flex: 1
         }}
       >
@@ -75,32 +91,41 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
           stickyHeader
           size="small"
           sx={{
-            height: '100%',
+            height: isMobile ? 'auto' : '100%',
             tableLayout: 'fixed',
             '& .MuiTableCell-head': {
               bgcolor: 'background.paper',
-              px: 0.5,
+              px: isMobile ? 0.25 : 0.5,
               py: 0.5
             },
             '& .MuiTableCell-body': {
               px: 0,
               py: 0,
-              height: `calc((100% - 50px) / 12)`
+              height: isMobile ? 30 : `calc((100% - 50px) / 12)`
             },
             '& .MuiTableCell-root': {
               borderRight: '1px solid',
               borderColor: 'divider'
             },
-            minWidth: 700
+            minWidth: isMobile ? 0 : 700
           }}
         >
           <TableHead>
             <TableRow>
-              <TableCell sx={stickyLeft}></TableCell>
+              <TableCell sx={{ ...stickyLeft, ...(isMobile && narrowLabelColumn) }}></TableCell>
               {selectedTimes.map((availability, idx) => (
                 <TableCell key={idx}>
-                  <Typography variant="body1" align="center" fontWeight="bold" sx={{ fontSize: 15 }}>
-                    {getDayOfWeek(availability.dateSet) + ' ' + datePipe(availability.dateSet)}
+                  <Typography
+                    variant="body1"
+                    align="center"
+                    fontWeight="bold"
+                    sx={{ fontSize: isMobile ? 11 : 15, lineHeight: isMobile ? 1.2 : 1.5 }}
+                  >
+                    {isMobile
+                      ? getDayOfWeek(availability.dateSet).slice(0, 3)
+                      : getDayOfWeek(availability.dateSet) + ' ' + datePipe(availability.dateSet)}
+                    {isMobile && <br />}
+                    {isMobile && datePipe(availability.dateSet, false)}
                   </Typography>
                 </TableCell>
               ))}
@@ -109,8 +134,12 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
           <TableBody>
             {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
               <TableRow key={time}>
-                <TableCell sx={{ ...stickyLeft, zIndex: 1 }}>
-                  <Typography variant="body1" align="center" sx={{ fontSize: 15 }}>
+                <TableCell sx={{ ...stickyLeft, ...(isMobile && narrowLabelColumn), zIndex: 1 }}>
+                  <Typography
+                    variant="body1"
+                    align="center"
+                    sx={{ fontSize: isMobile ? 10 : 15, lineHeight: isMobile ? 1.2 : 1.5 }}
+                  >
                     {reviewTimesInCurrentTimeZone(time)}
                   </Typography>
                 </TableCell>

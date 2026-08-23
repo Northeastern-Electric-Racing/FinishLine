@@ -6,9 +6,9 @@ interface EventTimeSlotProps {
   selected?: boolean;
   allRequiredAvailable?: boolean;
   busy?: boolean;
-  onMouseDown?: (e: React.MouseEvent) => void;
+  onPointerDown?: (e: React.PointerEvent) => void;
   onMouseEnter?: (e: React.MouseEvent) => void;
-  onMouseUp?: () => void;
+  onPointerUp?: () => void;
 }
 
 const EventTimeSlot: React.FC<EventTimeSlotProps> = ({
@@ -17,9 +17,9 @@ const EventTimeSlot: React.FC<EventTimeSlotProps> = ({
   selected = false,
   allRequiredAvailable = false,
   busy = false,
-  onMouseDown,
+  onPointerDown,
   onMouseEnter,
-  onMouseUp
+  onPointerUp
 }) => {
   const getBorderColor = () => {
     if (selected) return '#ffff8c';
@@ -35,13 +35,17 @@ const EventTimeSlot: React.FC<EventTimeSlotProps> = ({
   return (
     <Box
       onClick={onClick}
-      onMouseDown={onMouseDown}
+      onPointerDown={onPointerDown}
       onMouseEnter={onMouseEnter}
-      onMouseUp={onMouseUp}
+      onPointerUp={onPointerUp}
       sx={{
         p: '1px',
         width: '100%',
-        height: '100%'
+        height: '100%',
+        cursor: 'pointer',
+        // kills the tap delay and the grey flash iOS paints over a tapped slot
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent'
       }}
     >
       <Box
