@@ -1281,6 +1281,24 @@ describe('Rule Tests', () => {
       ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule status'));
     });
 
+    it('Set project rule status fails if the rule has sub-rules assigned to the project', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule, leafRule1 } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
+      // creating leafRule1's project rule also assigns topLevelRule as its ancestor
+      await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
+      const topLevelProjectRule = await prisma.project_Rule.findUniqueOrThrow({
+        where: { ruleId_projectId: { ruleId: topLevelRule.ruleId, projectId: project.projectId } }
+      });
+
+      await expect(
+        async () =>
+          await RulesService.setProjectRuleStatus(admin, organization, topLevelProjectRule.projectRuleId, RuleStatus.PASS)
+      ).rejects.toThrow(new HttpException(400, 'Only child rule statuses can be updated directly.'));
+    });
+
     it('A rule status in one project is independent of its general-view status and its status in other projects', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule, leafRule1, ruleset1 } = await setupRules(car);
@@ -1398,6 +1416,74 @@ describe('Rule Tests', () => {
       // rollups, not direct writes, so only the original direct FAIL write is recorded
       const historyCount = await prisma.rule_Status_History.count({ where: { ruleId: rule.ruleId } });
       expect(historyCount).toBe(1);
+    });
+
+    it('Deleting a project rule resets its parent chain to Pending once the parent becomes childless in the project', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      const grandparentRule = await RulesService.createRule(
+        admin,
+        'G',
+        'Grandparent Rule',
+        ruleset1.rulesetId,
+        organization
+      );
+      const parentRule = await RulesService.createRule(
+        admin,
+        'G.1',
+        'Parent Rule',
+        ruleset1.rulesetId,
+        organization,
+        grandparentRule.ruleId
+      );
+      const childRule = await RulesService.createRule(
+        admin,
+        'G.1.1',
+        'Child Rule',
+        ruleset1.rulesetId,
+        organization,
+        parentRule.ruleId
+      );
+      await RulesService.toggleRuleTeam(grandparentRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(parentRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(childRule.ruleId, testTeam.teamId, admin, organization);
+
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      // creating childRule's project rule also assigns parentRule and grandparentRule as ancestors
+      const childProjectRule = await RulesService.createProjectRule(
+        admin,
+        organization,
+        childRule.ruleId,
+        project.projectId
+      );
+
+      // childRule is parentRule's only child assigned to the project, and parentRule is grandparentRule's
+      // only child assigned to the project, so FAIL rolls all the way up the chain
+      await RulesService.setProjectRuleStatus(admin, organization, childProjectRule.projectRuleId, RuleStatus.FAIL);
+
+      const projectRulesBeforeDelete = await RulesService.getProjectRules(
+        ruleset1.rulesetId,
+        project.projectId,
+        organization
+      );
+      expect(projectRulesBeforeDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
+      expect(projectRulesBeforeDelete.find((pr) => pr.rule.ruleId === grandparentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
+
+      // deleting childRule's project rule leaves parentRule's project rule childless (in this project); its
+      // rolled-up status should reset to Pending, and that change should keep propagating up to grandparentRule
+      await RulesService.deleteProjectRule(childProjectRule.projectRuleId, admin, organization);
+
+      const projectRulesAfterDelete = await RulesService.getProjectRules(
+        ruleset1.rulesetId,
+        project.projectId,
+        organization
+      );
+      const updatedParent = projectRulesAfterDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId);
+      const updatedGrandparent = projectRulesAfterDelete.find((pr) => pr.rule.ruleId === grandparentRule.ruleId);
+
+      expect(updatedParent?.status).toBe(RuleStatus.PENDING);
+      expect(updatedGrandparent?.status).toBe(RuleStatus.PENDING);
     });
   });
 
