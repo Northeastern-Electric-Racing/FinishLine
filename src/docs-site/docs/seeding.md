@@ -66,6 +66,34 @@ utils/                       arrays.ts, strings.ts, common.factory.ts (connectUs
 - **Testability / reuse.** Factories are pure, so they can be reused and reasoned about without a DB.
 - **Tunability.** Getting a big database for perf work, or a small one for a fast reset, is a JSON edit — not a hunt through twenty factories for the constant that controls it.
 
+### The correctness bar
+
+Factories write to Prisma directly. They **bypass `*.services.ts` entirely** — no permission checks, no validation, no service-side field derivation. So the compiler and the database will happily accept rows the application itself would have rejected: **schema-legal is not the same as reachable.**
+
+A row that the service layer could never have produced is a bug even when the seed succeeds, because every reader of that row — endpoints, filters, the UI — was written assuming the service's guarantees hold.
+
+**So: before writing a factory, read the entity's service functions and treat every `throw`, equality check, and ordering rule as a hard constraint on your generated data.** Three real examples from this codebase:
+
+| Service                                               | Constraint                                                                                                                                                                                                                                      | What the seed must therefore do                                                                                                |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `createGraph` (`statistics.services.ts:84`)           | Throws `DeletedException` if the target graph collection has a `dateDeleted`; same for any referenced car (`:73`)                                                                                                                               | Never attach a graph to a soft-deleted collection or car                                                                       |
+| `createChecklist` (`onboarding.services.ts:193`)      | A child's `teamId` **and** `teamTypeId` must both exactly equal the parent's (`?? null` on each side); `teamId` and `teamTypeId` are mutually exclusive; `displayIndex` is **1-indexed**, "because 0 can be easily confused with null" (`:215`) | Propagate the parent's team fields verbatim down the subtree, never set both, and start `displayIndex` at 1 — not 0            |
+| `deleteAnnouncement` (`announcement.services.ts:110`) | Sets `dateDeleted: new Date()` — always _now_, never a historical value — and clears `usersReceived`                                                                                                                                            | A seeded soft-deleted announcement with a backdated `dateDeleted`, or one that still has `usersReceived`, is unreachable state |
+
+The pattern generalizes: the service is the spec. If you can't find a code path that produces the row you're about to write, don't write it.
+
+### Impossible-state patterns
+
+The recurring ways seeded data drifts into states the app can't produce. Walk this list for every new factory.
+
+- **Real timestamps vs. business dates.** Distinguish "when the row was touched" (`dateCreated`, `dateDeleted`) from "what the row is about" (`startDate`, `dueDate`) and from dates a query filters on. An audit timestamp in the future is incoherent; a business date in the future is often correct. Don't cap them with the same rule.
+- **Car spans reach into the future — cap explicitly.** `car.factory.ts` derives `carYear` as `CURRENT_YEAR - (carCount - 1) + i + 1`, so with the default `carCount: 5` the cars span roughly _last year minus three_ through **next year**, and the newest car's `dateRange.end` is a future date. Anything hung off a car span (timelines, reimbursements, events) must clamp against "now" itself if it needs a past date. Nothing upstream does it for you.
+- **The date helpers don't auto-cap.** `generateRandomDate` defaults its `to` to `Date.now()`, but `generateRandomDateAround` is relative to whatever `refDate` you hand it and will happily return future dates from a future ref. `clampDate` caps only against the `DateRange` you pass in. Capping is always an explicit act.
+- **Parent-liveness windows.** A child must not exist outside its parent's live window: created before the parent's `dateCreated`, or attached to a parent with a `dateDeleted`. See the `createGraph` collection check above.
+- **Exact-match parent/child fields.** Where a service enforces field equality between parent and child (`createChecklist`'s `teamId`/`teamTypeId`), "both plausible" is not enough — they must be _identical_, including the `null` case.
+- **Service-defined indexing.** Ordering fields are the service's invention, not the schema's. `displayIndex` is 1-indexed and computed per `(organizationId, parentChecklistId, dateDeleted: null)` group. A 0, a gap, or a duplicate within a group is unreachable.
+- **Eligibility pools are narrower than "any user."** Assignees, reviewers, and leads are usually drawn from a specific role or membership set, not from all 350 users. Picking from the wrong pool produces rows the permission layer would have refused — and note that guest→member promotions only exist after `TeamJoinRequestProcess` runs (see §8).
+
 ---
 
 ## 3. The runner
@@ -336,6 +364,7 @@ export abstract class SeedProcess<TInput, TOutput> {
 - **Counts come from `seedConfig`**, either directly (`seedConfig.project.projectsPerCar`) or through a factory constant that reads it (`SPONSOR_COUNT`). Never a literal in the process.
 - **Validate config minimums that are invariants.** `TeamProcess` checks its member pool against `seedConfig.team.membersPerTeam.min` and throws quoting both the configured minimum and what it actually found — so a bad config edit produces a readable error instead of a foreign-key failure twelve processes later.
 - **Plan, then write.** The larger processes (sponsors, change requests) build plain "planned" objects first, then write them in batches. This keeps random-value generation in one deterministic pass and the DB writes in another — easier to read and to batch.
+- **The write phase must make zero faker calls.** This is what makes "plan, then write" a correctness rule and not just a style preference. Phase 2 writes run concurrently (`Promise.all` over a batch), so if any of them draws from `this.faker`, the draw order is decided by DB response timing rather than by the code — and `GLOBAL_SEED` stops reproducing the same database from run to run. Generate every random value in phase 1, into the planned object; phase 2 only reads it. `SponsorProcess.writeSponsor` and `writeProspective` both hold to this — neither touches `this.faker`.
 - **Batch large parallel writes.** `Promise.all` over 25 records is fine; over thousands it will exhaust the connection pool. `SponsorProcess` chunks writes at 8 at a time (`SPONSOR_CONCURRENCY`) — copy that pattern for anything large.
 - **Fail loudly.** Throw a descriptive error when an invariant is violated (`throw new Error('SponsorProcess requires at least one user for task assignment.')`). The runner surfaces the first failure and aborts.
 
@@ -431,6 +460,15 @@ Determine, from the schema and surrounding code where possible, and ask otherwis
 - What fields does the entity have that need to be faked? (ids, names, dates, enums)
 - How many records should be seeded, and is the count fixed, a range, or a weighted distribution? This becomes the config slice.
 - If the process picks assignees from the `members` pool, it also needs `TeamJoinRequestProcess` as a dependency (see §8).
+
+**Then read the entity's service functions and write down every validation condition before you touch the factory.** Open `services/<entity>.services.ts` and enumerate:
+
+- every `throw` — what condition triggers it, and what field combination avoids it
+- every equality check between related records (parent/child field matching)
+- every field the service _derives_ rather than accepts (ordering indices, timestamps, defaults)
+- the eligibility rule for each user/role reference — which pool is actually allowed
+
+That list is the factory's specification. Writing the factory first and reverse-engineering the constraints afterwards is how unreachable rows get in (see §2, The correctness bar).
 
 ### Step 3 — Add the config slice
 
@@ -551,9 +589,35 @@ Add the import and `new FooBarProcess()` inside `.register(...)`, after its depe
 
 ### Step 7 — Verify
 
-1. `yarn prisma:reset:force`, then eyeball the data in `yarn prisma:studio` or the running app.
-2. **Sanity-check the knob.** Bump your config value, re-seed, confirm the row count moves with it — then revert to the committed default.
-3. `yarn lint && yarn prettier-check && yarn tsc-check`.
+1. `yarn prisma:reset:force`, then eyeball the data in `yarn prisma:studio` or the running app. Eyeballing catches gross breakage but **not sparse violations** — if 3 rows out of 4,000 are in an impossible state, no amount of scrolling will find them, and they will surface later as a confusing bug in an unrelated feature.
+2. **Write one SQL check per invariant**, each phrased so that a correct database returns **zero rows**, and run them after every seed. Turn each constraint you listed in Step 2 into a query:
+
+   ```sql
+   -- Every invariant becomes a "this must be empty" query.
+
+   -- Child checklist whose team fields don't exactly match its parent's
+   SELECT count(*) FROM "Checklist" c
+     JOIN "Checklist" p ON c."parentChecklistId" = p."checklistId"
+    WHERE c."teamId" IS DISTINCT FROM p."teamId"
+       OR c."teamTypeId" IS DISTINCT FROM p."teamTypeId";
+
+   -- displayIndex must be 1-indexed, never 0
+   SELECT count(*) FROM "Checklist" WHERE "displayIndex" = 0;
+
+   -- Graph attached to a soft-deleted collection
+   SELECT count(*) FROM "Graph" g
+     JOIN "Graph_Collection" gc ON g."graphCollectionId" = gc."id"
+    WHERE gc."dateDeleted" IS NOT NULL;
+
+   -- Audit timestamp in the future
+   SELECT count(*) FROM "Announcement" WHERE "dateDeleted" > now();
+   ```
+
+   Any non-zero count is a bug in the factory, not in the query. `yarn prisma:studio` has a SQL tab, or connect with `psql` directly.
+
+3. **Sanity-check the knob.** Bump your config value, re-seed, confirm the row count moves with it — then revert to the committed default.
+4. **Check determinism.** Seed twice and confirm you get the same database both times. A diff between runs means something in the write phase is drawing from `this.faker` (see §6) or a `new Date()` slipped into a value that should have been derived from faker.
+5. `yarn lint && yarn prettier-check && yarn tsc-check`.
 
 Then summarize: files created or modified (including both `seed-config` files), the process class and its dependencies, the config keys added, and anything left for the reader to customize.
 
@@ -561,23 +625,25 @@ Then summarize: files created or modified (including both `seed-config` files), 
 
 ## 10. Troubleshooting
 
-| Error / symptom                                                                          | Cause and fix                                                                                                                           |
-| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `Duplicate process registered: X`                                                        | Same class registered twice in `seed.ts`.                                                                                               |
-| `Process X depends on Y, which was not registered.`                                      | Add `new Y()` to `.register(...)`.                                                                                                      |
-| `Dependency cycle detected: A → B → A`                                                   | Two processes depend on each other. Split the shared piece into a third process, or fold one into the other.                            |
-| `Duplicate seed output keys from X: tasks`                                               | Two processes export the same output key. Rename yours to something entity-specific.                                                    |
-| `Missing output for dependency: Y`                                                       | `dependencies()` and the `TInput` type disagree — usually a dependency added to the type but not the array.                             |
-| `Seed could not complete. Unreachable processes: …`                                      | A process's dependencies never completed, typically after another failure. Read the first error in the log.                             |
-| `Cannot find module '../factories/foo.factory'`                                          | Missing `.js` extension on a local import (ESM).                                                                                        |
-| Connection pool timeouts / very slow process                                             | Too many concurrent writes. Chunk your `Promise.all` (see `SPONSOR_CONCURRENCY`), or lower `.withMaxConcurrency(...)`.                  |
-| Data changed without a code change to the entity                                         | You renamed a process class (changes its derived seed), edited `seed-config.json`, or the process uses `new Date()` for relative dates. |
-| Foreign-key violation on a connect                                                       | You're connecting to a record owned by a process you didn't declare as a dependency, so it may not exist yet.                           |
-| `Cannot read properties of undefined (reading 'min' / 'weight' / 'length')` in a factory | A `SeedConfig` key has no matching entry in `seed-config.json`. The JSON is cast, not validated, so the type-checker won't catch it.    |
-| `weightedArrayElement` throws, or always returns the same value                          | An empty or malformed weights array in the JSON — check for a missing `weight`, or `min`/`max` misspelled on a `WeightedCount` bucket.  |
-| `TeamProcess requires at least N member candidates, but only found M`                    | `user.totalUsers` is too low to fill one team. Raise `totalUsers` or lower `team.membersPerTeam.min`.                                   |
-| `Not enough unique lead candidates (N) for M teams`                                      | `teams × team.leadsPerTeam.min` exceeds the heads + admins + leadership pool. Raise `totalUsers` or lower `leadsPerTeam.min`.           |
-| Seed suddenly takes minutes                                                              | Someone committed a bumped config value. Check `git diff` on `seed-config.json`.                                                        |
+| Error / symptom                                                                                                            | Cause and fix                                                                                                                                                                                                                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Duplicate process registered: X`                                                                                          | Same class registered twice in `seed.ts`.                                                                                                                                                                                                                                                      |
+| `Process X depends on Y, which was not registered.`                                                                        | Add `new Y()` to `.register(...)`.                                                                                                                                                                                                                                                             |
+| `Dependency cycle detected: A → B → A`                                                                                     | Two processes depend on each other. Split the shared piece into a third process, or fold one into the other.                                                                                                                                                                                   |
+| `Duplicate seed output keys from X: tasks`                                                                                 | Two processes export the same output key. Rename yours to something entity-specific.                                                                                                                                                                                                           |
+| `Missing output for dependency: Y`                                                                                         | `dependencies()` and the `TInput` type disagree — usually a dependency added to the type but not the array.                                                                                                                                                                                    |
+| `Seed could not complete. Unreachable processes: …`                                                                        | A process's dependencies never completed, typically after another failure. Read the first error in the log.                                                                                                                                                                                    |
+| `Cannot find module '../factories/foo.factory'`                                                                            | Missing `.js` extension on a local import (ESM).                                                                                                                                                                                                                                               |
+| Connection pool timeouts / very slow process                                                                               | Too many concurrent writes. Chunk your `Promise.all` (see `SPONSOR_CONCURRENCY`), or lower `.withMaxConcurrency(...)`.                                                                                                                                                                         |
+| Data changed without a code change to the entity                                                                           | You renamed a process class (changes its derived seed), edited `seed-config.json`, or the process uses `new Date()` for relative dates.                                                                                                                                                        |
+| Foreign-key violation on a connect                                                                                         | You're connecting to a record owned by a process you didn't declare as a dependency, so it may not exist yet.                                                                                                                                                                                  |
+| `Cannot read properties of undefined (reading 'min' / 'weight' / 'length')` in a factory                                   | A `SeedConfig` key has no matching entry in `seed-config.json`. The JSON is cast, not validated, so the type-checker won't catch it.                                                                                                                                                           |
+| `weightedArrayElement` throws, or always returns the same value                                                            | An empty or malformed weights array in the JSON — check for a missing `weight`, or `min`/`max` misspelled on a `WeightedCount` bucket.                                                                                                                                                         |
+| `TeamProcess requires at least N member candidates, but only found M`                                                      | `user.totalUsers` is too low to fill one team. Raise `totalUsers` or lower `team.membersPerTeam.min`.                                                                                                                                                                                          |
+| `Not enough unique lead candidates (N) for M teams`                                                                        | `teams × team.leadsPerTeam.min` exceeds the heads + admins + leadership pool. Raise `totalUsers` or lower `leadsPerTeam.min`.                                                                                                                                                                  |
+| Seed suddenly takes minutes                                                                                                | Someone committed a bumped config value. Check `git diff` on `seed-config.json`.                                                                                                                                                                                                               |
+| `tsc-check` errors in files you never touched — missing exports from `shared`, or Prisma types that don't match the schema | A stale build, not a real type error. `shared` is consumed as built output and the Prisma client is generated code, so either can lag behind the source. Run `yarn build:shared && yarn prisma:generate`, then re-check. Suspect this first whenever the errors look unrelated to your change. |
+| `migrate reset` refuses to run, citing a dangerous action requiring consent                                                | Prisma's AI-safety gate: it blocks destructive commands when it thinks a non-human is driving. Set `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=1` in the environment for that command. Only do this on a local/dev database — the gate exists precisely because the command is irreversible.  |
 
 ---
 
