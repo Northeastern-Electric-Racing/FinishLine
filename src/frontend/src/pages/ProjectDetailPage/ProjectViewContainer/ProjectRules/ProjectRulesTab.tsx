@@ -424,6 +424,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           open={removeRuleModalOpen}
           onHide={() => setRemoveRuleModalOpen(false)}
           projectRules={projectRules}
+          projectName={project.name}
           onSubmit={handleRemoveRules}
         />
       )}

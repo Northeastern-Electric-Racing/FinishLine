@@ -1103,13 +1103,46 @@ export default class RulesService {
       throw new DeletedException('Project Rule', projectRuleId);
     }
 
-    const deletedProjectRule = await prisma.project_Rule.update({
-      where: { projectRuleId },
-      data: {
-        dateDeleted: new Date(),
-        deletedByUserId: deleter.userId
-      },
-      ...getProjectRuleQueryArgs()
+    const { projectId } = projectRule;
+
+    const deletedProjectRule = await prisma.$transaction(async (tx) => {
+      const deleted = await tx.project_Rule.update({
+        where: { projectRuleId },
+        data: {
+          dateDeleted: new Date(),
+          deletedByUserId: deleter.userId
+        },
+        ...getProjectRuleQueryArgs()
+      });
+
+      // Walk up the rule tree, removing ancestor project rules that no longer have
+      // any remaining children assigned to this project
+      let currentParentRuleId = projectRule.rule.parentRuleId;
+      while (currentParentRuleId) {
+        // If parent rule still has remaining children in this project, do not soft delete
+        const remainingChild = await tx.project_Rule.findFirst({
+          where: { projectId, dateDeleted: null, rule: { parentRuleId: currentParentRuleId } }
+        });
+        if (remainingChild) break;
+
+        // If parent project rule doesn't exist or was already deleted, do not soft delete
+        const parentProjectRule = await tx.project_Rule.findUnique({
+          where: { ruleId_projectId: { ruleId: currentParentRuleId, projectId } },
+          include: { rule: true }
+        });
+        if (!parentProjectRule || parentProjectRule.dateDeleted) break;
+
+        // soft delete the project rule
+        await tx.project_Rule.update({
+          where: { projectRuleId: parentProjectRule.projectRuleId },
+          data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
+        });
+
+        // continue up the rule tree
+        currentParentRuleId = parentProjectRule.rule.parentRuleId;
+      }
+
+      return deleted;
     });
 
     return projectRuleTransformer(deletedProjectRule);

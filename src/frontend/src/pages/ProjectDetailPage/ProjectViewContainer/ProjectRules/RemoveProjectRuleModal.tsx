@@ -4,16 +4,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import {
-  Box,
-  Typography,
-  FormControl,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
-  IconButton,
-  useTheme
-} from '@mui/material';
+import { Box, Typography, FormControl, Select, MenuItem, SelectChangeEvent, IconButton, useTheme } from '@mui/material';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { ProjectRule } from 'shared';
 import NERModal from '../../../../components/NERModal';
@@ -22,10 +13,11 @@ interface RemoveRuleModalProps {
   open: boolean;
   onHide: () => void;
   projectRules: ProjectRule[];
+  projectName: string;
   onSubmit: (projectRuleIds: string[]) => void;
 }
 
-const RemoveRuleModal = ({ open, onHide, projectRules, onSubmit }: RemoveRuleModalProps) => {
+const RemoveRuleModal = ({ open, onHide, projectRules, projectName, onSubmit }: RemoveRuleModalProps) => {
   const theme = useTheme();
 
   const [selectedProjectRuleIds, setSelectedProjectRuleIds] = useState<string[]>([]);
@@ -33,9 +25,7 @@ const RemoveRuleModal = ({ open, onHide, projectRules, onSubmit }: RemoveRuleMod
   // Only leaf rules (rules with no children currently assigned to this project) can be removed directly.
   // Ancestor rules are auto-managed by the backend when their leaf descendants are added/removed.
   const removableProjectRules = useMemo(() => {
-    const parentRuleIds = new Set(
-      projectRules.map((pr) => pr.rule.parentRule?.ruleId).filter((id): id is string => !!id)
-    );
+    const parentRuleIds = new Set(projectRules.map((pr) => pr.rule.parentRule?.ruleId).filter((id): id is string => !!id));
     return projectRules.filter((pr) => !parentRuleIds.has(pr.rule.ruleId));
   }, [projectRules]);
 
@@ -119,7 +109,7 @@ const RemoveRuleModal = ({ open, onHide, projectRules, onSubmit }: RemoveRuleMod
       <Box sx={{ minWidth: 400 }}>
         {removableProjectRules.length === 0 ? (
           <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-            No rules available to remove from this project.
+            No project rules available to remove for the {projectName} project.
           </Typography>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -172,11 +162,7 @@ const RemoveRuleModal = ({ open, onHide, projectRules, onSubmit }: RemoveRuleMod
                         <Box>
                           <Typography fontWeight="bold">{projectRule.rule.ruleCode}</Typography>
                           {projectRule.rule.ruleContent && (
-                            <Typography
-                              variant="body2"
-                              sx={{ color: theme.palette.text.secondary, maxWidth: 350 }}
-                              noWrap
-                            >
+                            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, maxWidth: 350 }} noWrap>
                               {projectRule.rule.ruleContent}
                             </Typography>
                           )}
@@ -189,7 +175,7 @@ const RemoveRuleModal = ({ open, onHide, projectRules, onSubmit }: RemoveRuleMod
             ) : (
               selectedProjectRuleIds.length > 0 && (
                 <Typography variant="body2" color="text.secondary">
-                  All removable rules for this project have been selected.
+                  No more project rules available to remove for the {projectName} project.
                 </Typography>
               )
             )}

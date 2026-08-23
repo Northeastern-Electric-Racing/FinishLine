@@ -1755,6 +1755,78 @@ describe('Rule Tests', () => {
         async () => await RulesService.deleteProjectRule('fake-project-rule-id', admin, organization)
       ).rejects.toThrow(new NotFoundException('Project Rule', 'fake-project-rule-id'));
     });
+    it('Deletes an ancestor project rule when it has no remaining children in the project', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
+      // creating the leaf's project rule also creates the top-level rule's project rule as an ancestor
+      const leafProjectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
+      const topLevelProjectRule = await prisma.project_Rule.findUniqueOrThrow({
+        where: { ruleId_projectId: { ruleId: topLevelRule.ruleId, projectId: project.projectId } }
+      });
+      expect(topLevelProjectRule.dateDeleted).toBeNull();
+
+      await RulesService.deleteProjectRule(leafProjectRule.projectRuleId, admin, organization);
+
+      const foundLeaf = await prisma.project_Rule.findUniqueOrThrow({
+        where: { projectRuleId: leafProjectRule.projectRuleId }
+      });
+      expect(foundLeaf.dateDeleted).toBeDefined();
+      const foundTopLevel = await prisma.project_Rule.findUniqueOrThrow({
+        where: { projectRuleId: topLevelProjectRule.projectRuleId }
+      });
+      expect(foundTopLevel.dateDeleted).toBeDefined();
+    });
+    it('Keeps an ancestor project rule when it still has other children in the project', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1, leafRule2, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule2.ruleId, testTeam.teamId, admin, organization);
+      const leafProjectRule1 = await RulesService.createProjectRule(
+        admin,
+        organization,
+        leafRule1.ruleId,
+        project.projectId
+      );
+      const leafProjectRule2 = await RulesService.createProjectRule(
+        admin,
+        organization,
+        leafRule2.ruleId,
+        project.projectId
+      );
+
+      await RulesService.deleteProjectRule(leafProjectRule1.projectRuleId, admin, organization);
+
+      const foundTopLevel = await prisma.project_Rule.findUniqueOrThrow({
+        where: { ruleId_projectId: { ruleId: topLevelRule.ruleId, projectId: project.projectId } }
+      });
+      expect(foundTopLevel.dateDeleted).toBeNull();
+      const foundLeaf2 = await prisma.project_Rule.findUniqueOrThrow({
+        where: { projectRuleId: leafProjectRule2.projectRuleId }
+      });
+      expect(foundLeaf2.dateDeleted).toBeNull();
+    });
+    it('Allows a rule to be added, deleted, re-added, and deleted again without error', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
+
+      const firstAdd = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
+      await RulesService.deleteProjectRule(firstAdd.projectRuleId, admin, organization);
+
+      const secondAdd = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
+      const secondDelete = await RulesService.deleteProjectRule(secondAdd.projectRuleId, admin, organization);
+
+      expect(secondDelete.projectRuleId).toBe(secondAdd.projectRuleId);
+      const found = await prisma.project_Rule.findUniqueOrThrow({ where: { projectRuleId: secondAdd.projectRuleId } });
+      expect(found.dateDeleted).toBeDefined();
+    });
   });
 
   describe('Delete Ruleset Type', () => {
