@@ -1105,6 +1105,13 @@ export default class RulesService {
 
     const { projectId } = projectRule;
 
+    const childProjectRule = await prisma.project_Rule.findFirst({
+      where: { projectId, dateDeleted: null, rule: { parentRuleId: projectRule.rule.ruleId } }
+    });
+    if (childProjectRule) {
+      throw new HttpException(400, 'Cannot delete a project rule that has children assigned to this project');
+    }
+
     const deletedProjectRule = await prisma.$transaction(async (tx) => {
       const deleted = await tx.project_Rule.update({
         where: { projectRuleId },
