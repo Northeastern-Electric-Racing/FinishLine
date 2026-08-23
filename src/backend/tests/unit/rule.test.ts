@@ -1555,7 +1555,7 @@ describe('Rule Tests', () => {
 
       await expect(
         async () => await RulesService.resetRulesetStatuses(nonLeadership, organization, ruleset1.rulesetId)
-      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule status'));
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to reset rule status'));
     });
 
     it('Reset status only affects the given ruleset', async () => {
@@ -1640,7 +1640,7 @@ describe('Rule Tests', () => {
       await expect(
         async () =>
           await RulesService.resetProjectRuleStatuses(nonLeadership, organization, ruleset1.rulesetId, project.projectId)
-      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule status'));
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to reset project rule status'));
     });
 
     it('Reset project status only affects the given project', async () => {
