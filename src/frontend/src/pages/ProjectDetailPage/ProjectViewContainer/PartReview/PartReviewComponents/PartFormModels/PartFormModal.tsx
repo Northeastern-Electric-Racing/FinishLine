@@ -158,6 +158,7 @@ const PartFormModal = ({ open, handleClose, defaultValues, onSubmit, partsInProj
           <FormControl fullWidth>
             <FormLabel>Tags (Optional)</FormLabel>
             <Autocomplete
+              autoHighlight={false}
               multiple
               options={[{ partTagId: 'add-new', name: 'Add New' }, ...tags]}
               getOptionLabel={(option) => option.name}
