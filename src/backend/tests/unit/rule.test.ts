@@ -1367,7 +1367,11 @@ describe('Rule Tests', () => {
       // so FAIL rolls all the way up the chain
       await RulesService.setRuleStatus(admin, organization, childRule.ruleId, RuleStatus.FAIL);
 
-      const rulesBeforeDelete = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rulesBeforeDelete = await RulesService.getAllRulesForRuleset(
+        admin,
+        ruleset1.rulesetId,
+        organization.organizationId
+      );
       expect(rulesBeforeDelete.find((r) => r.ruleId === parentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
       expect(rulesBeforeDelete.find((r) => r.ruleId === grandparentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
 
@@ -1375,7 +1379,11 @@ describe('Rule Tests', () => {
       // status should reset to Pending, and that change should keep propagating up to grandparentRule
       await RulesService.deleteRule(childRule.ruleId, admin, organization);
 
-      const rulesAfterDelete = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rulesAfterDelete = await RulesService.getAllRulesForRuleset(
+        admin,
+        ruleset1.rulesetId,
+        organization.organizationId
+      );
       const updatedParent = rulesAfterDelete.find((r) => r.ruleId === parentRule.ruleId);
       const updatedGrandparent = rulesAfterDelete.find((r) => r.ruleId === grandparentRule.ruleId);
 
@@ -1410,7 +1418,7 @@ describe('Rule Tests', () => {
 
       // marking the child Pass rolls parent rule up to Pass too
       await RulesService.setRuleStatus(admin, organization, childRule.ruleId, RuleStatus.PASS);
-      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(admin, ruleset1.rulesetId, organization.organizationId);
       const parentRule = rules.find((r) => r.ruleId === rule.ruleId);
       expect(parentRule!.status).toBe(RuleStatus.PASS);
 
@@ -1423,7 +1431,7 @@ describe('Rule Tests', () => {
       // deleting the only child makes rule a leaf again, so it should reset to Pending
       await RulesService.deleteRule(childRule.ruleId, admin, organization);
 
-      const allRules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const allRules = await RulesService.getAllRulesForRuleset(admin, ruleset1.rulesetId, organization.organizationId);
       const updatedRule = allRules.find((r) => r.ruleId === rule.ruleId);
 
       expect(updatedRule?.status).toBe(RuleStatus.PENDING);
@@ -1479,6 +1487,7 @@ describe('Rule Tests', () => {
       await RulesService.setProjectRuleStatus(admin, organization, childProjectRule.projectRuleId, RuleStatus.FAIL);
 
       const projectRulesBeforeDelete = await RulesService.getProjectRules(
+        admin,
         ruleset1.rulesetId,
         project.projectId,
         organization
@@ -1491,6 +1500,7 @@ describe('Rule Tests', () => {
       await RulesService.deleteProjectRule(childProjectRule.projectRuleId, admin, organization);
 
       const projectRulesAfterDelete = await RulesService.getProjectRules(
+        admin,
         ruleset1.rulesetId,
         project.projectId,
         organization
