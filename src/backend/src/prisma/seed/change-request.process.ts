@@ -573,6 +573,24 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
         distinct: ['carId']
       });
 
+      // If every project on LOGIN_CAR_NAME ended up COMPLETE via the CR processing above, the
+      // query above has no entry for it at all and this guarantee silently no-ops for the one car
+      // system tests actually log in against -- force one of its projects back to ACTIVE instead.
+      if (loginCarId && !leadCandidates.some((project) => project.carId === loginCarId)) {
+        const fallbackProject = await this.prisma.project.findFirst({
+          where: { carId: loginCarId, wbsElement: { dateDeleted: null } },
+          select: { wbsElementId: true, carId: true, teams: { select: { teamId: true } } }
+        });
+
+        if (fallbackProject) {
+          await this.prisma.wBS_Element.update({
+            where: { wbsElementId: fallbackProject.wbsElementId },
+            data: { status: WBS_Element_Status.ACTIVE }
+          });
+          leadCandidates.push(fallbackProject);
+        }
+      }
+
       await Promise.all([
         ...leadCandidates.map((project) =>
           this.prisma.wBS_Element.update({
