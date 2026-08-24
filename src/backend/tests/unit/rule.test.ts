@@ -1733,7 +1733,7 @@ describe('Rule Tests', () => {
   });
 
   describe('Edit Rule', () => {
-    it('Fails if user is not an admin', async () => {
+    it('Fails if user is not leadership or above', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
       await expect(
@@ -1746,7 +1746,7 @@ describe('Rule Tests', () => {
             ['newfile'],
             organization
           )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a rule'));
+      ).rejects.toThrow(new AccessDeniedException('Only leadership and above can edit a rule'));
     });
 
     it('Fails if rule doesn`t exist', async () => {
@@ -2852,13 +2852,13 @@ describe('Rule Tests', () => {
       );
     });
 
-    it('Fails adding referenced rule if user is not admin', async () => {
+    it('Fails adding referenced rule if user is not leadership or above', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule, referencedRule } = await setupRules(car);
       await expect(
         async () =>
           await RulesService.addRuleReferences(nonLeadership, topLevelRule.ruleId, referencedRule.ruleId, organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a rule'));
+      ).rejects.toThrow(new AccessDeniedException('Only leadership and above can edit a rule'));
     });
 
     it('Fails adding referenced rule if rule does not exist', async () => {
@@ -2937,13 +2937,13 @@ describe('Rule Tests', () => {
       ).rejects.toThrow(new HttpException(400, 'A rule cannot reference itself'));
     });
 
-    it('Fails removing referenced rule if user is not admin', async () => {
+    it('Fails removing referenced rule if user is not leadership or above', async () => {
       const car = await createUniqueCar(orgId);
       const { referencedRule, referencingRule } = await setupRules(car);
       await expect(
         async () =>
           await RulesService.removeRuleReferences(nonLeadership, referencingRule.ruleId, referencedRule.ruleId, organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a rule'));
+      ).rejects.toThrow(new AccessDeniedException('Only leadership and above can edit a rule'));
     });
 
     it('Fails removing referenced rule if rule does not exist', async () => {

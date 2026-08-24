@@ -362,8 +362,8 @@ export default class RulesService {
       }
     });
 
-    if (!(await userHasPermission(deleter.userId, org.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('delete rules');
+    if (!(await userHasPermission(deleter.userId, org.organizationId, isLeadership))) {
+      throw new AccessDeniedException('Only leadership and above can delete rules');
     }
 
     if (!rule) throw new NotFoundException('Rule', ruleId);
@@ -581,8 +581,8 @@ export default class RulesService {
     organization: Organization,
     parentRuleId?: string
   ) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('edit a rule');
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
+      throw new AccessDeniedException('Only leadership and above can edit a rule');
 
     const currentRule = await prisma.rule.findUnique({
       where: { ruleId },
@@ -673,8 +673,8 @@ export default class RulesService {
    * @returns the updated rule
    */
   static async addRuleReferences(submitter: User, ruleId: string, referencedRuleId: string, organization: Organization) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('edit a rule');
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
+      throw new AccessDeniedException('Only leadership and above can edit a rule');
 
     const rule = await prisma.rule.findUnique({
       where: { ruleId },
@@ -732,8 +732,8 @@ export default class RulesService {
    * @returns the updated rule
    */
   static async removeRuleReferences(submitter: User, ruleId: string, referencedRuleId: string, organization: Organization) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('edit a rule');
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
+      throw new AccessDeniedException('Only leadership and above can edit a rule');
 
     const rule = await prisma.rule.findUnique({
       where: { ruleId },
