@@ -2988,16 +2988,16 @@ export default class CalendarService {
       ...getEventWithMembersQueryArgs(organization.organizationId)
     });
 
-    if (!event) throw new NotFoundException('Event', eventId);
-    if (event.dateDeleted) throw new DeletedException('Event', eventId);
-
     const hasPermission =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
-      submitter.userId === event.userCreatedId;
+      (!!event && submitter.userId === event.userCreatedId);
 
     if (!hasPermission) {
       throw new AccessDeniedException('Only the creator or an admin can send reminders for unconfirmed events');
     }
+
+    if (!event) throw new NotFoundException('Event', eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
 
     const confirmedMemberIds = new Set(event.confirmedMembers.map((u: { userId: string }) => u.userId));
 
