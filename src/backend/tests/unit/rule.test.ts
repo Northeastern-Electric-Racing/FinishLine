@@ -6,6 +6,7 @@ import {
   wonderwomanGuest,
   batmanAppAdmin,
   aquamanLeadership,
+  greenlanternHead,
   alfred,
   flashAdmin
 } from '../test-data/users.test-data';
@@ -941,6 +942,7 @@ describe('Rule Tests', () => {
   let orgId: string;
   let otherOrg: Organization;
   let admin: User;
+  let head: User;
   let nonLeadership: User;
   let guest: User;
   let project: Project;
@@ -952,6 +954,7 @@ describe('Rule Tests', () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     admin = await createTestUser(supermanAdmin, organization.organizationId);
+    head = await createTestUser(greenlanternHead, organization.organizationId);
     nonLeadership = await createTestUser(financeMember, organization.organizationId);
     guest = await createTestUser(wonderwomanGuest, organization.organizationId);
     project = await createTestProject(admin, organization.organizationId);
@@ -1556,6 +1559,17 @@ describe('Rule Tests', () => {
       await expect(
         async () => await RulesService.resetRulesetStatuses(nonLeadership, organization, ruleset1.rulesetId)
       ).rejects.toThrow(new AccessDeniedException('You do not have permissions to reset rule status'));
+    });
+
+    it('Reset status succeeds for a head (non-admin) user', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, leafRule1 } = await setupRules(car);
+
+      await RulesService.setRuleStatus(admin, organization, leafRule1.ruleId, RuleStatus.PASS);
+
+      const count = await RulesService.resetRulesetStatuses(head, organization, ruleset1.rulesetId);
+
+      expect(count).toBe(1);
     });
 
     it('Reset status only affects the given ruleset', async () => {

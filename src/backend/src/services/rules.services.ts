@@ -1062,14 +1062,14 @@ export default class RulesService {
   /**
    * Resets every rule's general-view status back to Pending, for a whole ruleset.
    * Does not affect any rule's status within a project. Never creates history entries,
-   * since reverting to PENDING is not tracked. Only admins and above can do this.
+   * since reverting to PENDING is not tracked. Only heads and above can do this.
    * @param submitter the user resetting the statuses
    * @param organization the organization of the ruleset
    * @param rulesetId the id of the ruleset to reset
    * @returns the number of rules that were reset
    */
   static async resetRulesetStatuses(submitter: User, organization: Organization, rulesetId: string): Promise<number> {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedException('You do not have permissions to reset rule status');
     }
 
