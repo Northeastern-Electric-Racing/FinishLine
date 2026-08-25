@@ -5,7 +5,6 @@ import RuleRow from '../RuleRow';
 import RuleStatusTag from './RuleStatusTag';
 import RuleContent from './RuleContent';
 import RuleStatusHistoryModal from './RuleStatusHistoryModal';
-import UpdateStatusPopover from '../../ProjectDetailPage/ProjectViewContainer/ProjectRules/UpdateStatusPopover';
 import { useSetRuleStatus } from '../../../hooks/rules.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
@@ -31,8 +30,6 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
 }) => {
   const theme = useTheme();
   const toast = useToast();
-  const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
-  const [selectedRule, setSelectedRule] = useState<Rule | null>(null);
   const [historyModalRule, setHistoryModalRule] = useState<Rule | null>(null);
 
   const backgroundColor = theme.palette.background.default;
@@ -45,11 +42,6 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
 
   // Sort once by rule code so top-level rows render in a stable numeric order.
   const sortedTopLevelRules = useMemo(() => [...topLevelRules].sort(compareRuleCodes), [topLevelRules]);
-
-  const handleStatusClose = () => {
-    setStatusPopoverAnchor(null);
-    setSelectedRule(null);
-  };
 
   const handleStatusChange = async (ruleId: string, status: RuleStatus) => {
     try {
@@ -78,11 +70,7 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
                   <RuleStatusTag
                     rule={r}
                     isLeaf={r.subRuleIds.length === 0}
-                    popoverOpen={selectedRule?.ruleId === r.ruleId && Boolean(statusPopoverAnchor)}
-                    onClick={(e) => {
-                      setSelectedRule(r);
-                      setStatusPopoverAnchor(e.currentTarget);
-                    }}
+                    onStatusChange={(status) => handleStatusChange(r.ruleId, status)}
                     onInfoClick={setHistoryModalRule}
                   />
                 )}
@@ -97,16 +85,6 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
           </TableBody>
         </Table>
       </TableContainer>
-
-      {selectedRule && (
-        <UpdateStatusPopover
-          anchorEl={statusPopoverAnchor}
-          onClose={handleStatusClose}
-          id={selectedRule.ruleId}
-          status={selectedRule.status}
-          onStatusChange={handleStatusChange}
-        />
-      )}
 
       {historyModalRule && <RuleStatusHistoryModal open onClose={() => setHistoryModalRule(null)} rule={historyModalRule} />}
     </Box>
