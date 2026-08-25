@@ -41,28 +41,30 @@ const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onStatusCha
     p: 0.1
   });
 
+  // status tag lands in the same horizontal position on every row,
+  // regardless of leaf/parent, history, or nesting depth
   return (
-    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-      {showCheckboxes && (
-        <Box sx={{ display: 'inline-flex', alignItems: 'center', mr: 0.75 }}>
-          <Tooltip title="Pass" arrow>
-            <Checkbox
-              checked={rule.status === RuleStatus.PASS}
-              onClick={(e) => e.stopPropagation()}
-              onChange={() => onStatusChange!(rule.status === RuleStatus.PASS ? RuleStatus.PENDING : RuleStatus.PASS)}
-              sx={checkboxSx(passColor)}
-            />
-          </Tooltip>
-          <Tooltip title="Fail" arrow>
-            <Checkbox
-              checked={rule.status === RuleStatus.FAIL}
-              onClick={(e) => e.stopPropagation()}
-              onChange={() => onStatusChange!(rule.status === RuleStatus.FAIL ? RuleStatus.PENDING : RuleStatus.FAIL)}
-              sx={checkboxSx(failColor)}
-            />
-          </Tooltip>
-        </Box>
-      )}
+    <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+      <Box
+        sx={{ display: 'inline-flex', alignItems: 'center', mr: 0.75, visibility: showCheckboxes ? 'visible' : 'hidden' }}
+      >
+        <Tooltip title="Pass" arrow>
+          <Checkbox
+            checked={rule.status === RuleStatus.PASS}
+            onClick={(e) => e.stopPropagation()}
+            onChange={() => onStatusChange?.(rule.status === RuleStatus.PASS ? RuleStatus.PENDING : RuleStatus.PASS)}
+            sx={checkboxSx(passColor)}
+          />
+        </Tooltip>
+        <Tooltip title="Fail" arrow>
+          <Checkbox
+            checked={rule.status === RuleStatus.FAIL}
+            onClick={(e) => e.stopPropagation()}
+            onChange={() => onStatusChange?.(rule.status === RuleStatus.FAIL ? RuleStatus.PENDING : RuleStatus.FAIL)}
+            sx={checkboxSx(failColor)}
+          />
+        </Tooltip>
+      </Box>
       <Box
         sx={{
           backgroundColor: color,
@@ -80,7 +82,7 @@ const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onStatusCha
       >
         {label}
       </Box>
-      {showInfo && (
+      <Box sx={{ display: 'inline-flex', alignItems: 'center', ml: 0.75, visibility: showInfo ? 'visible' : 'hidden' }}>
         <Tooltip title={onInfoClick ? 'View Status History' : statusMessage} arrow>
           <IconButton
             size="small"
@@ -88,12 +90,12 @@ const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onStatusCha
               e.stopPropagation();
               onInfoClick?.(rule);
             }}
-            sx={{ padding: '2px', ml: 0.75, color: 'text.secondary' }}
+            sx={{ padding: '2px', color: 'text.secondary' }}
           >
             <InfoOutlined fontSize="small" />
           </IconButton>
         </Tooltip>
-      )}
+      </Box>
     </Box>
   );
 };
