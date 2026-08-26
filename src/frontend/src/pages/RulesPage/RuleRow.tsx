@@ -4,7 +4,7 @@
  */
 
 import { TableCell, TableRow, Box } from '@mui/material';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Rule } from 'shared';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useGetChildRules } from '../../hooks/rules.hooks';
@@ -297,4 +297,6 @@ const RuleRow: React.FC<RuleRowProps> = ({
   );
 };
 
-export default RuleRow;
+// memo so rule row will not rerender when its parent component rerenders unless its props change.
+// prevents unnecessary rerenders for small updates (e.g. a single rule's status changing)
+export default memo(RuleRow);

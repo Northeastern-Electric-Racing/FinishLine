@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
 import { Rule, RuleStatus } from 'shared';
 import RuleRow from '../RuleRow';
@@ -43,16 +43,37 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   // Sort once by rule code so top-level rows render in a stable numeric order.
   const sortedTopLevelRules = useMemo(() => [...topLevelRules].sort(compareRuleCodes), [topLevelRules]);
 
-  const handleStatusChange = async (ruleId: string, status: RuleStatus) => {
-    try {
-      await setStatus({ ruleId, status });
-      toast.success('Rule status updated successfully');
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
+  // useCallback so only affected rows re-render when a status update refetches the rule list
+  const handleStatusChange = useCallback(
+    async (ruleId: string, status: RuleStatus) => {
+      try {
+        await setStatus({ ruleId, status });
+        toast.success('Rule status updated successfully');
+      } catch (error) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        }
       }
-    }
-  };
+    },
+    [setStatus, toast]
+  );
+
+  const renderMiddleContent = useCallback(
+    (r: Rule) => <RuleContent rule={r} onReferenceClick={navigateToRule} color={tableTextColor} />,
+    [navigateToRule, tableTextColor]
+  );
+
+  const renderRightContent = useCallback(
+    (r: Rule) => (
+      <RuleStatusTag
+        rule={r}
+        isLeaf={r.subRuleIds.length === 0}
+        onStatusChange={(status) => handleStatusChange(r.ruleId, status)}
+        onInfoClick={setHistoryModalRule}
+      />
+    ),
+    [handleStatusChange]
+  );
 
   return (
     <Box>
@@ -65,15 +86,8 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
                 rule={rule}
                 expandedIds={expandedIds}
                 onToggleExpand={toggleExpand}
-                middleContent={(r) => <RuleContent rule={r} onReferenceClick={navigateToRule} color={tableTextColor} />}
-                rightContent={(r) => (
-                  <RuleStatusTag
-                    rule={r}
-                    isLeaf={r.subRuleIds.length === 0}
-                    onStatusChange={(status) => handleStatusChange(r.ruleId, status)}
-                    onInfoClick={setHistoryModalRule}
-                  />
-                )}
+                middleContent={renderMiddleContent}
+                rightContent={renderRightContent}
                 backgroundColor={tableBackgroundColor}
                 textColor={tableTextColor}
                 hoverColor={tableHoverColor}

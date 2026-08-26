@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Rule } from 'shared';
 import { getAncestorIds } from '../../utils/rules.utils';
 
@@ -23,6 +23,12 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
   const ruleIds = useMemo(() => new Set(rules.map((r) => r.ruleId)), [rules]);
   // ids of rules that are expandable (have sub-rules)
   const expandableIds = useMemo(() => new Set(rules.filter((r) => r.subRuleIds.length > 0).map((r) => r.ruleId)), [rules]);
+
+  // holds latest value of rules/ruleIds so reading/writing doesn't trigger a full rerender
+  const rulesRef = useRef(rules);
+  rulesRef.current = rules;
+  const ruleIdsRef = useRef(ruleIds);
+  ruleIdsRef.current = ruleIds;
 
   const areAllExpanded = expandableIds.size > 0 && [...expandableIds].every((id) => expandedIds.has(id));
 
@@ -77,12 +83,12 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
         }
         return;
       }
-      if (!ruleIds.has(targetId)) return; // ensure target rule exists in this view
-      const ancestors = getAncestorIds(targetId, rules);
+      if (!ruleIdsRef.current.has(targetId)) return; // ensure target rule exists in this view
+      const ancestors = getAncestorIds(targetId, rulesRef.current);
       setExpandedIds((prev) => new Set([...prev, ...ancestors, targetId]));
       setPendingScrollId(targetId); // queue the scroll
     },
-    [rules, ruleIds, loadFullTree]
+    [loadFullTree]
   );
 
   // Scrolls to target rule after ancestors expand
