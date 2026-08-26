@@ -170,7 +170,7 @@ const GuestViewConfig: React.FC = () => {
             >
               Guest Page Links
             </Typography>
-            <UsefulLinksTable isOnGuestHomePage={true} />
+            <UsefulLinksTable isOnGuestHomePage={true} isOnNewMemberDashboard={false} isOnOnboardingDashboard={false} />
           </Box>
         </Stack>
       </Grid>

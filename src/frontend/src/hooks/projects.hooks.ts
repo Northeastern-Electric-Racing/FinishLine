@@ -298,6 +298,27 @@ export const useEditLinkType = (linkTypeName: string) => {
 };
 
 /**
+ * Custom React Hook to edit a LinkType, given the name of the LinkType at call time rather than
+ * hook-mount time. Used when the LinkType being edited isn't known until a form is submitted,
+ * e.g. flipping a dashboard placement flag on whichever LinkType was picked from a dropdown.
+ */
+export const useEditLinkTypeByName = () => {
+  const queryClient = useQueryClient();
+  return useMutation<LinkType, Error, { name: string; data: LinkTypeCreatePayload }>(
+    ['linkTypes', 'edit'],
+    async ({ name, data }) => {
+      const { data: updatedLinkType } = await editLinkType(name, data);
+      return updatedLinkType;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['linkTypes']);
+      }
+    }
+  );
+};
+
+/**
  * Custom React Hook to get all useful links
  */
 export const useAllUsefulLinks = () => {
