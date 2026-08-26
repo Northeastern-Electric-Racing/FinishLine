@@ -466,6 +466,43 @@ const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
   (endDate ? `end=${encodeURIComponent(new Date(endDate).toISOString())}` : '');
 const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 
+/**************** Rules Endpoints ****************/
+const rules = () => `${API_URL}/rules`;
+const rulesTopLevel = (rulesetId: string) => `${rules()}/${rulesetId}/parentRules`;
+const rulesAllRules = (rulesetId: string) => `${rules()}/${rulesetId}/allRules`;
+const rulesToggleTeam = (ruleId: string) => `${rules()}/rule/${ruleId}/toggle-team`;
+const rulesChildRules = (ruleId: string) => `${rules()}/${ruleId}/subrules`;
+const rulesetTypes = () => `${rules()}/rulesetTypes`;
+const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
+const ruleset = () => `${rules()}/ruleset`;
+const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
+const rulesetsCreate = () => `${ruleset()}/create`;
+const rulesetById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
+const ruleCreate = () => `${rules()}/rule/create`;
+const parseRuleset = (rulesetId: string) => `${rulesetById(rulesetId)}/parse`;
+const uploadRulesetFile = () => `${rules()}/upload/file`;
+const rulesGetActiveRuleset = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/active`;
+const rulesGetProjectRules = (rulesetId: string, projectId: string) =>
+  `${rules()}/ruleset/${rulesetId}/project/${projectId}/rules`;
+const rulesGetUnassignedRulesForRuleset = (rulesetId: string, projectId: string) =>
+  `${rules()}/ruleset/${rulesetId}/project/${projectId}/rules/unassigned`;
+const rulesCreateProjectRule = () => `${rules()}/projectRule/create`;
+const rulesDeleteProjectRule = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/delete`;
+const rulesSetRuleStatus = (ruleId: string) => `${rules()}/rule/${ruleId}/setStatus`;
+const rulesSetProjectRuleStatus = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/setStatus`;
+const rulesGetStatusHistory = (ruleId: string) => `${rules()}/rule/${ruleId}/status-history`;
+const rulesResetRulesetStatuses = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}/resetStatuses`;
+const rulesResetProjectRuleStatuses = (rulesetId: string, projectId: string) =>
+  `${rules()}/ruleset/${rulesetId}/project/${projectId}/resetStatuses`;
+const rulesEdit = (ruleId: string) => `${rules()}/rule/${ruleId}/edit`;
+const rulesDelete = (ruleId: string) => `${rules()}/rule/${ruleId}/delete`;
+const rulesAddReferences = (ruleId: string) => `${rules()}/rule/${ruleId}/references/add`;
+const rulesRemoveReferences = (ruleId: string) => `${rules()}/rule/${ruleId}/references/delete`;
+const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
+const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
+const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
+const rulesetType = (rulesetTypeId: string) => `${rules()}/${rulesetTypeId}`;
+const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
 /**************** Calendar Endpoints ****************/
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
@@ -885,6 +922,38 @@ export const apiUrls = {
   retrospectiveTimelines,
   retrospectiveBudgets,
 
+  rules,
+  rulesTopLevel,
+  rulesAllRules,
+  rulesToggleTeam,
+  rulesChildRules,
+  ruleset,
+  rulesetTypes,
+  rulesetsByType,
+  rulesetTypeCreate,
+  rulesetsCreate,
+  ruleCreate,
+  rulesGetActiveRuleset,
+  rulesGetProjectRules,
+  rulesGetUnassignedRulesForRuleset,
+  rulesCreateProjectRule,
+  rulesDeleteProjectRule,
+  rulesSetRuleStatus,
+  rulesSetProjectRuleStatus,
+  rulesGetStatusHistory,
+  rulesResetRulesetStatuses,
+  rulesResetProjectRuleStatuses,
+  rulesEdit,
+  rulesDelete,
+  rulesAddReferences,
+  rulesRemoveReferences,
+  rulesetUpdate,
+  rulesetDelete,
+  rulesetTypeDelete,
+  rulesetType,
+  parseRuleset,
+  uploadRulesetFile,
+  singleRuleset,
   calendarShops,
   calendarCreateShop,
   calendarFilterEvents,

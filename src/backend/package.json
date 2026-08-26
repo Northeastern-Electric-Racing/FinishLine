@@ -37,6 +37,7 @@
     "multer": "^1.4.5-lts.1",
     "node-ical": "^0.26.1",
     "nodemailer": "^6.9.1",
+    "pdf-parse-new": "^1.4.1",
     "prisma": "^6.2.1",
     "shared": "1.0.0",
     "twisters": "^1.1.0"
