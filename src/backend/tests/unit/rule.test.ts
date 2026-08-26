@@ -1117,9 +1117,15 @@ describe('Rule Tests', () => {
   };
 
   describe('Create Ruleset Type', () => {
-    it('Fails if user is not leadership or above', async () => {
+    it('Fails if user is not an admin', async () => {
       await expect(async () => await RulesService.createRulesetType(guest, 'FSAE', organization)).rejects.toThrow(
-        new AccessDeniedException('only leadership and above can create ruleset types!')
+        new AccessDeniedAdminOnlyException('create ruleset types')
+      );
+    });
+
+    it('Fails if user is leadership but not an admin', async () => {
+      await expect(async () => await RulesService.createRulesetType(head, 'FSAE', organization)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('create ruleset types')
       );
     });
 
