@@ -35,10 +35,9 @@ import {
   useActiveRuleset,
   useProjectRules,
   useSetProjectRuleStatus,
-  useSetRuleCompletion,
-  useCreateProjectRule,
+  useBulkCreateProjectRules,
   useResetProjectRuleStatuses,
-  useDeleteProjectRule
+  useBulkDeleteProjectRules
 } from '../../../../hooks/rules.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
@@ -93,9 +92,12 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     project.id
   );
 
-  const { mutateAsync: createProjectRuleMutation, isLoading: isCreating } = useCreateProjectRule();
+  const { mutate: addProjectRules, isLoading: isCreating } = useBulkCreateProjectRules(
+    activeRuleset?.rulesetId || '',
+    project.id
+  );
 
-  const { mutateAsync: deleteProjectRuleMutation, isLoading: isDeleting } = useDeleteProjectRule(
+  const { mutate: removeProjectRules, isLoading: isDeleting } = useBulkDeleteProjectRules(
     activeRuleset?.rulesetId || '',
     project.id
   );
@@ -142,34 +144,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     try {
       await setStatusMutation({ projectRuleId, status });
       toast.success('Rule status updated successfully');
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
-  };
-
-  // Handle add rules
-  const handleAddRules = async (ruleIds: string[]) => {
-    try {
-      for (const ruleId of ruleIds) {
-        await createProjectRuleMutation({ ruleId, projectId: project.id });
-      }
-      toast.success(`${ruleIds.length} rule${ruleIds.length !== 1 ? 's' : ''} added successfully`);
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
-  };
-
-  // Handle remove rules
-  const handleRemoveRules = async (projectRuleIds: string[]) => {
-    try {
-      for (const projectRuleId of projectRuleIds) {
-        await deleteProjectRuleMutation(projectRuleId);
-      }
-      toast.success(`${projectRuleIds.length} rule${projectRuleIds.length !== 1 ? 's' : ''} removed successfully`);
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -479,7 +453,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           rulesetId={activeRuleset.rulesetId}
           projectId={project.id}
           teamNames={project.teams.map((team) => team.teamName)}
-          onSubmit={handleAddRules}
+          onSubmit={addProjectRules}
         />
       )}
 
@@ -490,7 +464,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           onHide={() => setRemoveRuleModalOpen(false)}
           projectRules={projectRules}
           projectName={project.name}
-          onSubmit={handleRemoveRules}
+          onSubmit={removeProjectRules}
         />
       )}
 
