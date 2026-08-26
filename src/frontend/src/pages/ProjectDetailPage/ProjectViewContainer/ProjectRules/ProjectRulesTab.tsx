@@ -19,11 +19,13 @@ import {
   IconButton,
   Tooltip
 } from '@mui/material';
-import { isHead, Project, ProjectRule, Rule } from 'shared';
+import { isHead, Project, ProjectRule, Rule, RuleStatus } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
 import RuleContent from '../../../RulesPage/components/RuleContent';
+import RuleStatusHistoryModal from '../../../RulesPage/components/RuleStatusHistoryModal';
+import ResetStatusesModal from '../../../RulesPage/components/ResetStatusesModal';
 import { useRuleTreeNavigation } from '../../../RulesPage/useRuleTreeNavigation';
 import UpdateStatusPopover from './UpdateStatusPopover';
 import AddRuleModal from './AddProjectRuleModal';
@@ -32,8 +34,10 @@ import {
   useAllRulesetTypes,
   useActiveRuleset,
   useProjectRules,
+  useSetProjectRuleStatus,
   useSetRuleCompletion,
   useCreateProjectRule,
+  useResetProjectRuleStatuses,
   useDeleteProjectRule
 } from '../../../../hooks/rules.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
@@ -61,6 +65,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
   const [removeRuleModalOpen, setRemoveRuleModalOpen] = useState(false);
   const [selectedProjectRule, setSelectedProjectRule] = useState<ProjectRule | null>(null);
+  const [historyModalProjectRule, setHistoryModalProjectRule] = useState<ProjectRule | null>(null);
+  const [showResetModal, setShowResetModal] = useState(false);
 
   // Fetch all ruleset types
   const { data: rulesetTypes, isLoading: rulesetTypesLoading, isError: rulesetTypesError } = useAllRulesetTypes();
@@ -82,7 +88,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   } = useProjectRules(activeRuleset?.rulesetId || '', project.id);
 
   // Mutations
-  const { mutateAsync: setCompletionMutation, isLoading: isUpdatingStatus } = useSetRuleCompletion(
+  const { mutateAsync: setStatusMutation, isLoading: isUpdatingStatus } = useSetProjectRuleStatus(
     activeRuleset?.rulesetId || '',
     project.id
   );
@@ -94,15 +100,29 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     project.id
   );
 
+  const { mutateAsync: resetProjectRuleStatuses, isLoading: isResetting } = useResetProjectRuleStatuses(
+    activeRuleset?.rulesetId || '',
+    project.id
+  );
+
   // First team's ID, used only to pre-select a team tab on the assign-rules deep link
   const teamId = project.teams[0]?.teamId || '';
   const teamNames = project.teams.map((team) => team.teamName);
 
-  // Convert project rules to rules for display
+  // Convert project rules to rules for display, merging in each rule's local status for this project
   // Sorted by rule code so both top-level rows and their children render in stable numeric order
   const projectRuleList = useMemo(() => {
     if (!projectRules) return [];
-    return projectRules.map((pr) => pr.rule).sort(compareRuleCodes);
+    return projectRules
+      .map((pr) => ({
+        ...pr.rule,
+        status: pr.status,
+        statusUpdatedBy: pr.statusUpdatedBy,
+        statusUpdatedAt: pr.statusUpdatedAt,
+        // history modal for PASS/FAIL only scoped to this project
+        hasStatusHistory: pr.hasStatusHistory
+      }))
+      .sort(compareRuleCodes);
   }, [projectRules]);
 
   // Get top-level rules (rules without a parent)
@@ -117,11 +137,11 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded } =
     useRuleTreeNavigation(projectRuleList);
 
-  // Handle completion update
-  const handleStatusUpdate = async (ruleId: string, isComplete: boolean) => {
+  // Handle status update, local to this project
+  const handleStatusUpdate = async (projectRuleId: string, status: RuleStatus) => {
     try {
-      await setCompletionMutation({ ruleId, isComplete, projectId: project.id });
-      toast.success('Rule completion updated successfully');
+      await setStatusMutation({ projectRuleId, status });
+      toast.success('Rule status updated successfully');
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -176,6 +196,24 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     setSelectedProjectRule(null);
   };
 
+  // Handle opening the status history modal, scoped to this project
+  const handleInfoClick = (rule: Rule) => {
+    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
+    if (projectRule) {
+      setHistoryModalProjectRule(projectRule);
+    }
+  };
+
+  // Handle resetting all of this project's statuses (for the active ruleset) back to Pending
+  const handleResetStatuses = async () => {
+    await resetProjectRuleStatuses();
+    setShowResetModal(false);
+    // close any open history modal or status popover since statuses are changing
+    setStatusPopoverAnchor(null);
+    setSelectedProjectRule(null);
+    setHistoryModalProjectRule(null);
+  };
+
   // Handle tab change
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedRulesetTypeIndex(newValue);
@@ -212,9 +250,10 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     return (
       <RuleStatusTag
         rule={rule}
-        allRules={projectRuleList}
+        isLeaf={isLeafRule}
         popoverOpen={isPopoverOpenForRule}
         onClick={isLeafRule ? (e) => handleStatusClick(e, rule) : undefined}
+        onInfoClick={handleInfoClick}
       />
     );
   };
@@ -250,9 +289,14 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           ))}
         </MuiTabs>
         {activeRuleset && (
-          <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
-            {areAllExpanded ? 'Collapse All' : 'Expand All'}
-          </NERButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
+              {areAllExpanded ? 'Collapse All' : 'Expand All'}
+            </NERButton>
+            <NERButton variant="outlined" onClick={() => setShowResetModal(true)}>
+              Reset Status
+            </NERButton>
+          </Box>
         )}
       </Box>
 
@@ -401,8 +445,29 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         <UpdateStatusPopover
           anchorEl={statusPopoverAnchor}
           onClose={handleStatusPopoverClose}
-          rule={selectedProjectRule.rule}
+          id={selectedProjectRule.projectRuleId}
+          status={selectedProjectRule.status}
           onStatusChange={handleStatusUpdate}
+        />
+      )}
+
+      {/* Status History Modal, scoped to this project */}
+      {historyModalProjectRule && (
+        <RuleStatusHistoryModal
+          open
+          onClose={() => setHistoryModalProjectRule(null)}
+          rule={historyModalProjectRule.rule}
+          projectRuleId={historyModalProjectRule.projectRuleId}
+        />
+      )}
+
+      {/* Reset Statuses Modal, scoped to this project + active ruleset */}
+      {showResetModal && activeRuleset && (
+        <ResetStatusesModal
+          scopeDescription={`the ${project.name} project's ${activeRuleset.name} rules`}
+          disabled={isResetting}
+          onHide={() => setShowResetModal(false)}
+          onReset={handleResetStatuses}
         />
       )}
 
@@ -430,7 +495,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       )}
 
       {/* Loading overlay */}
-      {(isUpdatingStatus || isCreating || isDeleting) && (
+      {(isUpdatingStatus || isCreating || isResetting || isDeleting) && (
         <Box
           sx={{
             position: 'fixed',

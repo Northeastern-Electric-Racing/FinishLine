@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Rule } from 'shared';
+import { Rule, RuleStatus } from 'shared';
 
 /**
  * Counts the total number of rules that will be deleted when deleting a rule, including
@@ -29,7 +29,7 @@ export const countRulesToDelete = (rule: Rule, allRules: Rule[]): number => {
  * @param allRules - all rules in scope
  * @returns The leaf rules under the given rule, or rule if it is already a leaf
  */
-export const getDescendantLeafRules = (rule: Rule, allRules: Rule[]): Rule[] => {
+export const getDescendantLeafRules = (rule: Rule, allRules: Rule[] = []): Rule[] => {
   const children = allRules.filter((r) => r.parentRule?.ruleId === rule.ruleId);
   if (children.length === 0) {
     return [rule];
@@ -38,22 +38,18 @@ export const getDescendantLeafRules = (rule: Rule, allRules: Rule[]): Rule[] => 
 };
 
 /**
- * Whether a rule is complete. A leaf uses its own completion; a parent is
- * complete only if all of its descendant leaf rules are complete.
- * @param rule - The rule to check
- * @param allRules - All rules in scope
- * @returns True if the rule (or all its leaves) are complete
+ * Status chip label and color for a rule status.
  */
-export const isRuleComplete = (rule: Rule, allRules: Rule[]): boolean => {
-  const leafRules = getDescendantLeafRules(rule, allRules);
-  return leafRules.every((leafRule) => leafRule.isComplete);
-};
-
-/**
- * Status chip label and color for a completion state.
- */
-export const getRuleStatusConfig = (isComplete: boolean): { label: string; color: string } => {
-  return isComplete ? { label: 'Complete', color: '#4caf50' } : { label: 'Incomplete', color: '#f44336' };
+export const getRuleStatusConfig = (status: RuleStatus): { label: string; color: string } => {
+  switch (status) {
+    case RuleStatus.PASS:
+      return { label: 'Pass', color: '#4caf50' };
+    case RuleStatus.FAIL:
+      return { label: 'Fail', color: '#f44336' };
+    case RuleStatus.PENDING:
+    default:
+      return { label: 'Pending', color: '#9e9e9e' };
+  }
 };
 
 /**
@@ -202,5 +198,6 @@ export const makeSectionRow = (ruleId: string, ruleCode: string, subRuleIds: str
   parentRule: undefined,
   subRuleIds,
   referencedRules: [],
-  isComplete: false
+  status: RuleStatus.PENDING,
+  hasStatusHistory: false
 });

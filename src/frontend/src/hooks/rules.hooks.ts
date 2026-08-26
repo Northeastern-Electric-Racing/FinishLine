@@ -5,7 +5,7 @@
 
 import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { ProjectRule, Rule as SharedRule, Ruleset, RulesetType } from 'shared';
+import { ProjectRule, Rule as SharedRule, Ruleset, RulesetType, RuleStatus, RuleStatusHistoryEntry } from 'shared';
 import {
   createRulesetType,
   getAllRulesetTypes,
@@ -14,7 +14,11 @@ import {
   getUnassignedRulesForRuleset,
   createProjectRule,
   deleteProjectRule,
-  setRuleCompletion,
+  setRuleStatus,
+  setProjectRuleStatus,
+  getRuleStatusHistory,
+  resetRulesetStatuses,
+  resetProjectRuleStatuses,
   getChildRules,
   getTopLevelRules,
   getAllRulesForRuleset,
@@ -155,6 +159,23 @@ export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
 };
 
 /**
+ * Hook to get a rule's full status history. Only fetched when enabled is true, such as when a modal is open.
+ * @param projectRuleId if provided, scopes the history to just this project rule instead of every context the rule appears in
+ */
+export const useRuleStatusHistory = (ruleId: string, enabled: boolean, projectRuleId?: string) => {
+  return useQuery<RuleStatusHistoryEntry[], Error>(
+    ['rules', 'statusHistory', ruleId, projectRuleId],
+    async () => {
+      const { data } = await getRuleStatusHistory(ruleId, projectRuleId);
+      return data;
+    },
+    {
+      enabled
+    }
+  );
+};
+
+/**
  * Hook to get a single ruleset by ID.
  */
 export const useSingleRuleset = (rulesetId: string) => {
@@ -211,6 +232,56 @@ export const useBulkToggleRuleTeam = () => {
       },
       onError: (error: Error) => {
         toast.error(`Failed to save assignments: ${error.message}`);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to reset every rule's general-view status back to Pending, for a whole ruleset.
+ */
+export const useResetRulesetStatuses = (rulesetId: string) => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<{ count: number }, Error, void>(
+    ['rules', 'resetRulesetStatuses', rulesetId],
+    async () => {
+      const { data } = await resetRulesetStatuses(rulesetId);
+      return data;
+    },
+    {
+      onSuccess: ({ count }) => {
+        queryClient.invalidateQueries(['rules']);
+        toast.success(`Reset ${count} rule status${count === 1 ? '' : 'es'} to Pending`);
+      },
+      onError: (error: Error) => {
+        toast.error(error.message);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to reset every project rule's status back to Pending, for a single project scoped to a single ruleset.
+ */
+export const useResetProjectRuleStatuses = (rulesetId: string, projectId: string) => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation<{ count: number }, Error, void>(
+    ['rules', 'resetProjectRuleStatuses', rulesetId, projectId],
+    async () => {
+      const { data } = await resetProjectRuleStatuses(rulesetId, projectId);
+      return data;
+    },
+    {
+      onSuccess: ({ count }) => {
+        queryClient.invalidateQueries(['rules']);
+        toast.success(`Reset ${count} rule status${count === 1 ? '' : 'es'} to Pending`);
+      },
+      onError: (error: Error) => {
+        toast.error(error.message);
       }
     }
   );
@@ -296,23 +367,46 @@ export const useDeleteProjectRule = (rulesetId: string, projectId: string) => {
 };
 
 /**
- * Hook to set a rule's completion. Completion is global to the rule.
+ * Hook to set a rule's general-view status. This status is independent of any project.
  */
-export const useSetRuleCompletion = (rulesetId: string, projectId: string) => {
+export const useSetRuleStatus = (rulesetId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<SharedRule, Error, { ruleId: string; isComplete: boolean; projectId?: string }>(
-    ['rules', 'setCompletion'],
-    async ({ ruleId, isComplete, projectId: pId }) => {
-      const { data } = await setRuleCompletion(ruleId, isComplete, pId);
+  return useMutation<SharedRule, Error, { ruleId: string; status: RuleStatus }>(
+    ['rules', 'setStatus'],
+    async ({ ruleId, status }) => {
+      const { data } = await setRuleStatus(ruleId, status);
       return data;
     },
     {
-      onSuccess: () => {
+      onSuccess: (_data, { ruleId }) => {
+        queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
+        queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
+        queryClient.invalidateQueries(['rules', 'children']);
+        queryClient.invalidateQueries(['rules', 'statusHistory', ruleId]);
+      }
+    }
+  );
+};
+
+/**
+ * Hook to set a rule's status within a single project. This status is local to that project.
+ */
+export const useSetProjectRuleStatus = (rulesetId: string, projectId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ProjectRule, Error, { projectRuleId: string; status: RuleStatus }>(
+    ['rules', 'setProjectRuleStatus'],
+    async ({ projectRuleId, status }) => {
+      const { data } = await setProjectRuleStatus(projectRuleId, status);
+      return data;
+    },
+    {
+      onSuccess: (updatedProjectRule) => {
         queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
         queryClient.invalidateQueries(['rules', 'unassigned']);
         queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
         queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
         queryClient.invalidateQueries(['rules', 'children']);
+        queryClient.invalidateQueries(['rules', 'statusHistory', updatedProjectRule.rule.ruleId]);
       }
     }
   );

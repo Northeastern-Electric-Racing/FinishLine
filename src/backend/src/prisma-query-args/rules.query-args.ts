@@ -32,6 +32,15 @@ export const getRulePreviewQueryArgs = () =>
       projects: {
         where: { dateDeleted: null },
         select: {
+          projectRuleId: true,
+          status: true,
+          statusUpdatedAt: true,
+          statusUpdatedBy: {
+            select: {
+              firstName: true,
+              lastName: true
+            }
+          },
           project: {
             select: {
               projectId: true,
@@ -46,23 +55,23 @@ export const getRulePreviewQueryArgs = () =>
                 }
               }
             }
+          },
+          _count: {
+            select: {
+              statusHistory: true
+            }
           }
         }
       },
-      completedBy: {
+      statusUpdatedBy: {
         select: {
           firstName: true,
           lastName: true
         }
       },
-      completedInProject: {
+      _count: {
         select: {
-          projectId: true,
-          wbsElement: {
-            select: {
-              name: true
-            }
-          }
+          statusHistory: true
         }
       }
     }
@@ -73,7 +82,45 @@ export type ProjectRuleQueryArgs = ReturnType<typeof getProjectRuleQueryArgs>;
 export const getProjectRuleQueryArgs = () =>
   Prisma.validator<Prisma.Project_RuleDefaultArgs>()({
     include: {
-      rule: getRulePreviewQueryArgs()
+      rule: getRulePreviewQueryArgs(),
+      statusUpdatedBy: {
+        select: {
+          firstName: true,
+          lastName: true
+        }
+      },
+      _count: {
+        select: {
+          statusHistory: true
+        }
+      }
+    }
+  });
+
+export type RuleStatusHistoryQueryArgs = ReturnType<typeof getRuleStatusHistoryQueryArgs>;
+
+export const getRuleStatusHistoryQueryArgs = () =>
+  Prisma.validator<Prisma.Rule_Status_HistoryDefaultArgs>()({
+    include: {
+      updatedBy: {
+        select: {
+          firstName: true,
+          lastName: true
+        }
+      },
+      projectRule: {
+        select: {
+          project: {
+            select: {
+              wbsElement: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          }
+        }
+      }
     }
   });
 
