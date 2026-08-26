@@ -32,7 +32,6 @@ export class RulesProcess extends SeedProcess<RulesInput, RulesOutput> {
     heads,
     leadership,
     members,
-    cars,
     currentYearCar,
     projects
   }: RulesInput): Promise<RulesOutput> {
@@ -46,32 +45,27 @@ export class RulesProcess extends SeedProcess<RulesInput, RulesOutput> {
 
     const creatorAt = (index: number): User => creatorPool[index % creatorPool.length];
 
-    // The rule chain is assigned to a team and then to a project, so take the team from the project itself
-    const target = projects.find(({ project }) => project.teams.some((team) => !team.dateArchived));
-    if (!target) throw new Error('RulesProcess requires a project with at least one non-archived team.');
+    const primaryCarId = currentYearCar.car.carId;
+
+    const target = projects.find(
+      ({ project }) => project.carId === primaryCarId && project.teams.some((team) => !team.dateArchived)
+    );
+    if (!target) throw new Error('RulesProcess requires a current year car project with at least one non-archived team.');
 
     const targetProjectId = target.project.projectId;
     const targetTeamId = target.project.teams.find((team) => !team.dateArchived)!.teamId;
 
-    // Both real rulebooks are scoped to the current car
-    const primaryCarId = currentYearCar.car.carId;
-    const mockCarId = (cars.find(({ car }) => car.carId !== primaryCarId) ?? currentYearCar).car.carId;
-
-    const [fsaeRulesetType, fheRulesetType, mockRulesetTypeRecord] = await Promise.all([
+    const [fsaeRulesetType, fheRulesetType] = await Promise.all([
       this.prisma.ruleset_Type.create({ data: ruleSeedData.rulesetTypeFSAE(author.userId, organizationId) }),
-      this.prisma.ruleset_Type.create({ data: ruleSeedData.rulesetTypeFHE(author.userId, organizationId) }),
-      this.prisma.ruleset_Type.create({ data: ruleSeedData.mockRulesetType(author.userId, organizationId) })
+      this.prisma.ruleset_Type.create({ data: ruleSeedData.rulesetTypeFHE(author.userId, organizationId) })
     ]);
 
-    const [rulesetFSAE, rulesetFHE, rulesetMock] = await Promise.all([
+    const [rulesetFSAE, rulesetFHE] = await Promise.all([
       this.prisma.ruleset.create({
         data: ruleSeedData.rulesetFSAE(primaryCarId, author.userId, fsaeRulesetType.rulesetTypeId)
       }),
       this.prisma.ruleset.create({
         data: ruleSeedData.rulesetFHE(primaryCarId, author.userId, fheRulesetType.rulesetTypeId)
-      }),
-      this.prisma.ruleset.create({
-        data: ruleSeedData.rulesetMock(mockCarId, author.userId, mockRulesetTypeRecord.rulesetTypeId)
       })
     ]);
 
@@ -79,7 +73,6 @@ export class RulesProcess extends SeedProcess<RulesInput, RulesOutput> {
       this.prisma,
       rulesetFSAE.rulesetId,
       rulesetFHE.rulesetId,
-      rulesetMock.rulesetId,
       {
         batman: author,
         thomasEmrax: creatorAt(0),
@@ -93,8 +86,8 @@ export class RulesProcess extends SeedProcess<RulesInput, RulesOutput> {
     );
 
     return {
-      rulesetTypes: [fsaeRulesetType, fheRulesetType, mockRulesetTypeRecord],
-      rulesets: [rulesetFSAE, rulesetFHE, rulesetMock]
+      rulesetTypes: [fsaeRulesetType, fheRulesetType],
+      rulesets: [rulesetFSAE, rulesetFHE]
     };
   }
 }
