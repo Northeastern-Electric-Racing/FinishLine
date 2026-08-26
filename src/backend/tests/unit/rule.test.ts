@@ -589,6 +589,7 @@ describe('Create Rules Tests', () => {
       expect(rulesets[0].name).toBe('2025 FSAE Rules');
       expect(rulesets[0].active).toBeTruthy();
       expect(rulesets[0].assignedPercentage).toBe(0);
+      expect(rulesets[0].createdByUserId).toBe(batman.userId);
     });
 
     it('Successful get rulesets by ruleset types after deleting ruleset', async () => {

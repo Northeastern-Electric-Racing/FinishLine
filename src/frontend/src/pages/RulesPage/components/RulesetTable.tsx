@@ -15,7 +15,8 @@ import {
   Typography,
   Stack,
   Checkbox,
-  IconButton
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import { datePipe } from '../../../utils/pipes';
 import { NERButton } from '../../../components/NERButton';
@@ -24,7 +25,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useDeleteRuleset, useRulesetsByType, useUpdateRuleset } from '../../../hooks/rules.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { Ruleset, isLeadership } from 'shared';
+import { Ruleset, isAdmin, isLeadership } from 'shared';
 import { routes } from '../../../utils/routes';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Delete } from '@mui/icons-material';
@@ -37,6 +38,7 @@ interface RulesetParams {
 interface RulesetDeleteButtonProps {
   rulesetId: string;
   name: string;
+  disabledReason?: string;
   onDelete: (rulesetId: string, name: string) => void;
 }
 
@@ -57,6 +59,13 @@ const RulesetTable: React.FC = () => {
   };
 
   const canDelete = isLeadership(user.role);
+
+  // admins can delete any inactive ruleset, leadership and heads only their own
+  const deleteDisabledReason = (ruleset: Ruleset): string | undefined => {
+    if (ruleset.active) return 'Cannot delete an active ruleset.';
+    if (!isAdmin(user.role) && ruleset.createdByUserId !== user.userId) return 'This ruleset was uploaded by another user.';
+    return undefined;
+  };
 
   // Table header configuration
   const headCells = [
@@ -114,7 +123,7 @@ const RulesetTable: React.FC = () => {
     }
   };
 
-  const RulesetDeleteButton: React.FC<RulesetDeleteButtonProps> = ({ rulesetId, name, onDelete }) => {
+  const RulesetDeleteButton: React.FC<RulesetDeleteButtonProps> = ({ rulesetId, name, disabledReason, onDelete }) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const handleDeleteSubmit = () => {
@@ -123,9 +132,13 @@ const RulesetTable: React.FC = () => {
     };
     return (
       <>
-        <IconButton type="button" sx={{ mx: 1 }} onClick={() => setShowDeleteModal(true)}>
-          <Delete />
-        </IconButton>
+        <Tooltip title={disabledReason ?? ''}>
+          <span>
+            <IconButton type="button" sx={{ mx: 1 }} disabled={!!disabledReason} onClick={() => setShowDeleteModal(true)}>
+              <Delete />
+            </IconButton>
+          </span>
+        </Tooltip>
         {showDeleteModal && (
           <RulesetDeleteModal rulesetName={name} onDelete={handleDeleteSubmit} onHide={() => setShowDeleteModal(false)} />
         )}
@@ -243,6 +256,7 @@ const RulesetTable: React.FC = () => {
                       <RulesetDeleteButton
                         rulesetId={ruleset.rulesetId}
                         name={ruleset.name}
+                        disabledReason={deleteDisabledReason(ruleset)}
                         onDelete={handleDeleteRuleset}
                       />
                     )}
@@ -352,6 +366,7 @@ const RulesetTable: React.FC = () => {
                         <RulesetDeleteButton
                           rulesetId={ruleset.rulesetId}
                           name={ruleset.name}
+                          disabledReason={deleteDisabledReason(ruleset)}
                           onDelete={handleDeleteRuleset}
                         />
                       </TableCell>
