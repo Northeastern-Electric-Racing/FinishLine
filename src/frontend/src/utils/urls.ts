@@ -490,6 +490,7 @@ const calendarCreateEventType = () => `${calendar()}/event-type/create`;
 const calendarEditEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/edit`;
 const calendarDeleteEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/delete`;
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
+const calendarEventRemindUnconfirmed = (id: string) => `${calendar()}/event/${id}/remind-unconfirmed`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
 const calendarGetSingleEventWithMembers = (id: string) => `${calendar()}/event-members/${id}`;
 const calendarGetConflictingEvent = (id: string) => `${calendar()}/event/${id}/conflict`;
@@ -894,6 +895,7 @@ export const apiUrls = {
   calendarAddMachineryToShop,
   calendarEditShop,
   calendarEventMarkUserConfirmed,
+  calendarEventRemindUnconfirmed,
   calendarGetSingleEvent,
   calendarGetSingleEventWithMembers,
   calendarGetConflictingEvent,

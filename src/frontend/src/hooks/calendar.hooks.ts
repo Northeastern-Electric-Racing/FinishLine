@@ -53,7 +53,8 @@ import {
   postDeleteScheduleSlot,
   scheduleEvent,
   getAllEventsPaginated,
-  getIcsToken
+  getIcsToken,
+  remindUnconfirmed
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 import { PDFDocument } from 'pdf-lib';
@@ -342,6 +343,21 @@ export const useMarkUserConfirmed = (id: string) => {
         queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
         queryClient.invalidateQueries(['users', 'many-with-schedule-settings']);
         queryClient.invalidateQueries(['users']);
+      }
+    }
+  );
+};
+
+export const useRemindUnconfirmed = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error>(
+    ['events', 'remind-unconfirmed'],
+    async () => {
+      await remindUnconfirmed(id);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(EVENT_KEY);
       }
     }
   );
