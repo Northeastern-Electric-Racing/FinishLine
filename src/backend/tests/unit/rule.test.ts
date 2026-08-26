@@ -1418,7 +1418,7 @@ describe('Rule Tests', () => {
       expect(historyCount).toBe(1);
     });
 
-    it('Deleting a project rule resets its parent chain to Pending once the parent becomes childless in the project', async () => {
+    it('Deleting a project rule removes the ancestors it leaves childless in the project', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
 
@@ -1470,8 +1470,8 @@ describe('Rule Tests', () => {
       expect(projectRulesBeforeDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
       expect(projectRulesBeforeDelete.find((pr) => pr.rule.ruleId === grandparentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
 
-      // deleting childRule's project rule leaves parentRule's project rule childless (in this project); its
-      // rolled-up status should reset to Pending, and that change should keep propagating up to grandparentRule
+      // deleting childRule's project rule leaves parentRule childless in this project, and removing
+      // parentRule in turn leaves grandparentRule childless, so the whole chain is unassigned
       await RulesService.deleteProjectRule(childProjectRule.projectRuleId, admin, organization);
 
       const projectRulesAfterDelete = await RulesService.getProjectRules(
@@ -1479,11 +1479,90 @@ describe('Rule Tests', () => {
         project.projectId,
         organization
       );
-      const updatedParent = projectRulesAfterDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId);
-      const updatedGrandparent = projectRulesAfterDelete.find((pr) => pr.rule.ruleId === grandparentRule.ruleId);
 
-      expect(updatedParent?.status).toBe(RuleStatus.PENDING);
-      expect(updatedGrandparent?.status).toBe(RuleStatus.PENDING);
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === childRule.ruleId)).toBeUndefined();
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)).toBeUndefined();
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === grandparentRule.ruleId)).toBeUndefined();
+    });
+
+    it('Deleting a project rule recalculates the status of an ancestor that keeps other children', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      // G keeps two branches: G.1 -> G.1.1, and the leaf G.2. Deleting G.1.1 removes the G.1 branch
+      // but leaves G assigned, so G's status has to be rolled up again from G.2 alone
+      const grandparentRule = await RulesService.createRule(
+        admin,
+        'G',
+        'Grandparent Rule',
+        ruleset1.rulesetId,
+        organization
+      );
+      const parentRule = await RulesService.createRule(
+        admin,
+        'G.1',
+        'Parent Rule',
+        ruleset1.rulesetId,
+        organization,
+        grandparentRule.ruleId
+      );
+      const childRule = await RulesService.createRule(
+        admin,
+        'G.1.1',
+        'Child Rule',
+        ruleset1.rulesetId,
+        organization,
+        parentRule.ruleId
+      );
+      const siblingRule = await RulesService.createRule(
+        admin,
+        'G.2',
+        'Sibling Rule',
+        ruleset1.rulesetId,
+        organization,
+        grandparentRule.ruleId
+      );
+      await RulesService.toggleRuleTeam(grandparentRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(parentRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(childRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(siblingRule.ruleId, testTeam.teamId, admin, organization);
+
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      const childProjectRule = await RulesService.createProjectRule(
+        admin,
+        organization,
+        childRule.ruleId,
+        project.projectId
+      );
+      // grandparentRule is already assigned as childRule's ancestor, so this only adds the sibling
+      await RulesService.createProjectRule(admin, organization, siblingRule.ruleId, project.projectId);
+
+      // failing G.1.1 fails G.1, and a failing child makes G fail too even though G.2 is still Pending
+      await RulesService.setProjectRuleStatus(admin, organization, childProjectRule.projectRuleId, RuleStatus.FAIL);
+
+      const projectRulesBeforeDelete = await RulesService.getProjectRules(
+        ruleset1.rulesetId,
+        project.projectId,
+        organization
+      );
+      expect(projectRulesBeforeDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
+      expect(projectRulesBeforeDelete.find((pr) => pr.rule.ruleId === grandparentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
+
+      await RulesService.deleteProjectRule(childProjectRule.projectRuleId, admin, organization);
+
+      const projectRulesAfterDelete = await RulesService.getProjectRules(
+        ruleset1.rulesetId,
+        project.projectId,
+        organization
+      );
+
+      // the G.1 branch is gone, but G survives on G.2 and now rolls up that lone Pending child
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === childRule.ruleId)).toBeUndefined();
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)).toBeUndefined();
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === siblingRule.ruleId)?.status).toBe(RuleStatus.PENDING);
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === grandparentRule.ruleId)?.status).toBe(
+        RuleStatus.PENDING
+      );
     });
   });
 
