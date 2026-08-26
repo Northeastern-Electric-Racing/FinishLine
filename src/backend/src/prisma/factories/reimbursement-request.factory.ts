@@ -1,6 +1,7 @@
 import { Faker } from '@faker-js/faker';
 import { Account_Code, Index_Code, Material_Status, Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { addDaysToDate } from 'shared';
+import { seedConfig } from '../seed-config.js';
 
 // fraction of a past-year car's BOM items that get tied to a reimbursement request
 export const PAST_YEAR_BOM_TIE_CHANCE = 0.6;
@@ -141,11 +142,7 @@ export const deriveMaterialStatusAfterTie = (history: ReimbursementStatusStep[])
 };
 
 export const generateProductCount = (faker: Faker): number =>
-  faker.helpers.weightedArrayElement([
-    { weight: 60, value: 1 },
-    { weight: 30, value: 2 },
-    { weight: 10, value: 3 }
-  ]);
+  faker.helpers.weightedArrayElement(seedConfig.reimbursementRequest.productCountWeights);
 
 /** Independently rolls each material against `tieChance` to decide which ones get a reimbursement product. */
 export const selectMaterialsToTie = <T>(faker: Faker, materials: T[], tieChance: number): T[] =>

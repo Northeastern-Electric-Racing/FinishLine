@@ -3041,4 +3041,43 @@ export default class CalendarService {
 
     return events.map(eventTransformer);
   }
+
+  static async remindUnconfirmed(eventId: string, submitter: User, organization: Organization): Promise<void> {
+    const event = await prisma.event.findUnique({
+      where: { eventId },
+      ...getEventWithMembersQueryArgs(organization.organizationId)
+    });
+
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
+      (!!event && submitter.userId === event.userCreatedId);
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only the creator or an admin can send reminders for unconfirmed events');
+    }
+
+    if (!event) throw new NotFoundException('Event', eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    const confirmedMemberIds = new Set(event.confirmedMembers.map((u: { userId: string }) => u.userId));
+
+    const allMembers = [...event.requiredMembers, ...event.optionalMembers];
+    const unconfirmedMembers = allMembers.filter((u: { userId: string }) => !confirmedMemberIds.has(u.userId));
+    const uniqueUnconfirmedIds = [...new Set(unconfirmedMembers.map((u: { userId: string }) => u.userId))];
+
+    if (uniqueUnconfirmedIds.length === 0) return;
+
+    const memberUserSettings = await prisma.user_Settings.findMany({
+      where: { userId: { in: uniqueUnconfirmedIds } }
+    });
+
+    const projects = event.workPackages.map((wp: { project: { wbsElement: { name: string } } }) => wp.project);
+    const projectName = projects.map((p: { wbsElement: { name: string } }) => p.wbsElement.name).join(', ');
+
+    for (const userSetting of memberUserSettings) {
+      if (userSetting.slackId) {
+        await sendSlackEventConfirmNotification(userSetting.slackId, eventId, event.title, projectName, true);
+      }
+    }
+  }
 }

@@ -15,6 +15,7 @@ import { DAYS_PER_WEEK, daysBetween, WEEK_MS } from '../dates.js';
 import { WBS_Element_Status, Work_Package_Stage } from '@prisma/client';
 
 type WorkPackageInput = OrganizationOutput & UsersOutput & ProjectOutput;
+const BLOCKED_PERCENTAGE = 0.3;
 
 export type WorkPackageOutput = {
   workPackages: WorkPackageContext[];
@@ -28,8 +29,6 @@ export type WorkPackageOutput = {
   projectsByCarIdWithTimeline: Record<string, ProjectContext[]>;
   projectsByIdWithTimeline: Record<string, ProjectContext>;
 };
-
-const BLOCKED_PERCENTAGE = 0.3;
 
 type PlannedWorkPackage = {
   orderInProject: number;

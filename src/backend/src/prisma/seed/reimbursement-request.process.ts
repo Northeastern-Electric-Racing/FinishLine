@@ -11,14 +11,10 @@ import { CarProcess } from './car.process.js';
 import { CarOutput, FullUser } from '../context.js';
 import { clampDate } from '../dates.js';
 import {
-  ASSIGNEE_CHANCE,
   buildProductSpecs,
   chooseFundingSource,
   chunkIntoGroups,
-  CURRENT_YEAR_BOM_TIE_CHANCE,
-  DELIVERY_CHANCE,
   deriveMaterialStatusAfterTie,
-  EXTRA_COMMENT_CHANCE,
   generalSupplyCountForTiedMaterials,
   generateDateOfExpense,
   generateFallbackMaterialCost,
@@ -27,18 +23,22 @@ import {
   GENERAL_SUPPLY_PRODUCT_NAMES,
   hasReachedStage,
   otherReimbursementProductReasonCreateInput,
-  PAST_YEAR_BOM_TIE_CHANCE,
   receiptCreateInput,
   ReimbursementProductSpec,
   reimbursementCreateInput,
   reimbursementProductCreateInput,
   reimbursementRequestCommentCreateInput,
   reimbursementRequestCreateInput,
-  REIMBURSEMENT_CHANCE_PER_RECIPIENT,
   ReimbursementStatusStep,
   selectMaterialsToTie,
   systemCommentText,
-  wbsReimbursementProductReasonCreateInput
+  wbsReimbursementProductReasonCreateInput,
+  ASSIGNEE_CHANCE,
+  CURRENT_YEAR_BOM_TIE_CHANCE,
+  DELIVERY_CHANCE,
+  EXTRA_COMMENT_CHANCE,
+  PAST_YEAR_BOM_TIE_CHANCE,
+  REIMBURSEMENT_CHANCE_PER_RECIPIENT
 } from '../factories/reimbursement-request.factory.js';
 
 type ReimbursementRequestInput = OrganizationOutput &
@@ -291,7 +291,10 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
             // so the stream matches even when the guard is false and no delivery happens.
             if (this.faker.datatype.boolean({ probability: DELIVERY_CHANCE })) {
               const dateDelivered = clampDate(
-                this.faker.date.soon({ days: this.faker.number.int({ min: 1, max: 14 }), refDate: dateOfExpense }),
+                this.faker.date.soon({
+                  days: this.faker.number.int({ min: 1, max: 14 }),
+                  refDate: dateOfExpense
+                }),
                 { start: dateOfExpense, end: now }
               );
               delivery = { dateDelivered };

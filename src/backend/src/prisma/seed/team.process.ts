@@ -5,11 +5,7 @@ import { UsersOutput, UsersProcess } from './user.process.js';
 import { seedTeamConfigs, teamCreateInput } from '../factories/teams.factory.js';
 import { SeedProcess } from '../processes/seed-process.js';
 import type { FullUser } from '../context.js';
-
-const MIN_LEADS_PER_TEAM = 1;
-const MAX_LEADS_PER_TEAM = 3;
-const MIN_MEMBERS_PER_TEAM = 8;
-const MAX_MEMBERS_PER_TEAM = 20;
+import { seedConfig } from '../seed-config.js';
 
 type TeamInput = OrganizationOutput & UsersOutput & ConfigDataOutput;
 
@@ -33,9 +29,9 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
       throw new Error('TeamProcess requires admins, heads, leadership, and members to create teams.');
     }
 
-    if (members.length < MIN_MEMBERS_PER_TEAM) {
+    if (members.length < seedConfig.team.membersPerTeam.min) {
       throw new Error(
-        `TeamProcess requires at least ${MIN_MEMBERS_PER_TEAM} member candidates, but only found ${members.length}.`
+        `TeamProcess requires at least ${seedConfig.team.membersPerTeam.min} member candidates, but only found ${members.length}.`
       );
     }
 
@@ -63,7 +59,7 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
 
     const leadCandidates = teamLeadershipCandidates.filter((candidate) => !headIds.has(candidate.userId));
 
-    if (leadCandidates.length < seedTeamConfigs.length * MIN_LEADS_PER_TEAM) {
+    if (leadCandidates.length < seedTeamConfigs.length * seedConfig.team.leadsPerTeam.min) {
       throw new Error(`Not enough unique lead candidates (${leadCandidates.length}) for ${seedTeamConfigs.length} teams.`);
     }
 
@@ -74,18 +70,18 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
       const availableLeads = leadCandidates.filter((candidate) => !usedLeadIds.has(candidate.userId));
 
       const maxLeadsForThisTeam = Math.min(
-        MAX_LEADS_PER_TEAM,
-        availableLeads.length - (remainingTeams - 1) * MIN_LEADS_PER_TEAM
+        seedConfig.team.leadsPerTeam.max,
+        availableLeads.length - (remainingTeams - 1) * seedConfig.team.leadsPerTeam.min
       );
 
-      if (maxLeadsForThisTeam < MIN_LEADS_PER_TEAM) {
+      if (maxLeadsForThisTeam < seedConfig.team.leadsPerTeam.min) {
         throw new Error('TeamProcess could not assign unique leads to every team.');
       }
 
       const leads = this.faker.helpers.arrayElements(
         availableLeads,
         this.faker.number.int({
-          min: MIN_LEADS_PER_TEAM,
+          min: seedConfig.team.leadsPerTeam.min,
           max: maxLeadsForThisTeam
         })
       );
@@ -102,8 +98,8 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
       const teamMembers = this.faker.helpers.arrayElements(
         members,
         this.faker.number.int({
-          min: MIN_MEMBERS_PER_TEAM,
-          max: Math.min(MAX_MEMBERS_PER_TEAM, members.length)
+          min: seedConfig.team.membersPerTeam.min,
+          max: Math.min(seedConfig.team.membersPerTeam.max, members.length)
         })
       );
 
