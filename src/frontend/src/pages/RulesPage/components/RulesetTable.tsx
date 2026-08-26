@@ -25,7 +25,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useDeleteRuleset, useRulesetsByType, useUpdateRuleset } from '../../../hooks/rules.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { Ruleset, isAdmin, isLeadership } from 'shared';
+import { Ruleset, isAdmin, isHead, isLeadership } from 'shared';
 import { routes } from '../../../utils/routes';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Delete } from '@mui/icons-material';
@@ -59,6 +59,7 @@ const RulesetTable: React.FC = () => {
   };
 
   const canDelete = isLeadership(user.role);
+  const canSetActive = isHead(user.role);
 
   // admins can delete any inactive ruleset, leadership and heads only their own
   const deleteDisabledReason = (ruleset: Ruleset): string | undefined => {
@@ -201,7 +202,7 @@ const RulesetTable: React.FC = () => {
                     <Checkbox
                       checked={ruleset.active}
                       onChange={() => handleToggleActive(ruleset)}
-                      disabled={updateRuleset.isLoading}
+                      disabled={!canSetActive || updateRuleset.isLoading}
                       sx={{
                         color: '#fff',
                         '&.Mui-checked': { color: '#dd514c' }
@@ -309,7 +310,7 @@ const RulesetTable: React.FC = () => {
                       <Checkbox
                         checked={ruleset.active}
                         onChange={() => handleToggleActive(ruleset)}
-                        disabled={updateRuleset.isLoading}
+                        disabled={!canSetActive || updateRuleset.isLoading}
                         sx={{
                           color: '#fff',
                           '&.Mui-checked': { color: '#dd514c' }
