@@ -1444,6 +1444,9 @@ export default class RulesService {
       throw new HttpException(400, 'Cannot delete a project rule that has children assigned to this project');
     }
 
+    // first surviving ancestor who still has children assigned to this project, or null if the walk reached the root of the tree
+    let currentParentRuleId = projectRule.rule.parentRuleId;
+
     const deletedProjectRule = await prisma.$transaction(async (tx) => {
       const deleted = await tx.project_Rule.update({
         where: { projectRuleId },
@@ -1456,7 +1459,6 @@ export default class RulesService {
 
       // Walk up the rule tree, removing ancestor project rules that no longer have
       // any remaining children assigned to this project
-      let currentParentRuleId = projectRule.rule.parentRuleId;
       while (currentParentRuleId) {
         // If parent rule still has remaining children in this project, do not soft delete
         const remainingChild = await tx.project_Rule.findFirst({
@@ -1484,8 +1486,9 @@ export default class RulesService {
       return deleted;
     });
 
-    // this project rule no longer counts towards its parents' status calculations
-    await RulesService.recalculateProjectRuleStatusChain(projectRule.projectId, projectRule.rule.parentRuleId);
+    // the deleted project rule, and any ancestors removed along with it, no longer count towards
+    // the surviving ancestors' status calculations
+    await RulesService.recalculateProjectRuleStatusChain(projectId, currentParentRuleId);
 
     return projectRuleTransformer(deletedProjectRule);
   }
