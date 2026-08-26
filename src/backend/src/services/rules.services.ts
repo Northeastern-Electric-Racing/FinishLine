@@ -177,7 +177,7 @@ export default class RulesService {
     if (!projectRule) return;
 
     const children = await prisma.project_Rule.findMany({
-      where: { projectId, dateDeleted: null, rule: { parentRuleId: ruleId } },
+      where: { projectId, dateDeleted: null, rule: { parentRuleId: ruleId, dateDeleted: null } },
       select: { status: true }
     });
 
@@ -369,7 +369,9 @@ export default class RulesService {
 
     if (rule.ruleset?.car?.wbsElement?.organizationId !== org.organizationId) throw new InvalidOrganizationException('Rule');
 
-    await prisma.$transaction(async (tx) => {
+    const deletedRuleIds: string[] = [];
+
+    const affectedProjectIds = await prisma.$transaction(async (tx) => {
       const deleteParentChildReferencing = async (currRuleId: string): Promise<void> => {
         const referencingRules = await tx.rule.findMany({
           where: {
@@ -409,13 +411,35 @@ export default class RulesService {
             deletedByUserId: deleter.userId
           }
         });
+
+        deletedRuleIds.push(currRuleId);
       };
 
       await deleteParentChildReferencing(ruleId);
+
+      // A deleted rule must not stay assigned to any project. Left behind it is invisible in the
+      // project's rules (those are filtered to undeleted rules) while still counting as a child,
+      // which blocks its parent from being removed or having its status set.
+      const assignedProjectRules = await tx.project_Rule.findMany({
+        where: { ruleId: { in: deletedRuleIds }, dateDeleted: null },
+        select: { projectId: true }
+      });
+
+      await tx.project_Rule.updateMany({
+        where: { ruleId: { in: deletedRuleIds }, dateDeleted: null },
+        data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
+      });
+
+      return [...new Set(assignedProjectRules.map((projectRule) => projectRule.projectId))];
     });
 
     // this rule (and its descendants) are gone, so its old parent chain may update their statuses
     await RulesService.recalculateRuleStatusChain(rule.parentRuleId);
+
+    // the same goes for the parent chain within every project the deleted rules were assigned to
+    for (const projectId of affectedProjectIds) {
+      await RulesService.recalculateProjectRuleStatusChain(projectId, rule.parentRuleId);
+    }
 
     const deletedRule = await prisma.rule.findUnique({
       where: { ruleId }
@@ -996,7 +1020,11 @@ export default class RulesService {
     }
 
     const childProjectRuleCount = await prisma.project_Rule.count({
-      where: { projectId: projectRule.projectId, dateDeleted: null, rule: { parentRuleId: projectRule.ruleId } }
+      where: {
+        projectId: projectRule.projectId,
+        dateDeleted: null,
+        rule: { parentRuleId: projectRule.ruleId, dateDeleted: null }
+      }
     });
 
     if (childProjectRuleCount > 0) {
@@ -1120,7 +1148,12 @@ export default class RulesService {
     }
 
     const result = await prisma.project_Rule.updateMany({
-      where: { projectId, dateDeleted: null, rule: { rulesetId }, status: { not: RuleStatus.PENDING } },
+      where: {
+        projectId,
+        dateDeleted: null,
+        rule: { rulesetId, dateDeleted: null },
+        status: { not: RuleStatus.PENDING }
+      },
       data: { status: RuleStatus.PENDING, statusUpdatedByUserId: null, statusUpdatedAt: null }
     });
 
@@ -1438,7 +1471,7 @@ export default class RulesService {
     const { projectId } = projectRule;
 
     const childProjectRule = await prisma.project_Rule.findFirst({
-      where: { projectId, dateDeleted: null, rule: { parentRuleId: projectRule.rule.ruleId } }
+      where: { projectId, dateDeleted: null, rule: { parentRuleId: projectRule.rule.ruleId, dateDeleted: null } }
     });
     if (childProjectRule) {
       throw new HttpException(400, 'Cannot delete a project rule that has children assigned to this project');
@@ -1462,7 +1495,7 @@ export default class RulesService {
       while (currentParentRuleId) {
         // If parent rule still has remaining children in this project, do not soft delete
         const remainingChild = await tx.project_Rule.findFirst({
-          where: { projectId, dateDeleted: null, rule: { parentRuleId: currentParentRuleId } }
+          where: { projectId, dateDeleted: null, rule: { parentRuleId: currentParentRuleId, dateDeleted: null } }
         });
         if (remainingChild) break;
 

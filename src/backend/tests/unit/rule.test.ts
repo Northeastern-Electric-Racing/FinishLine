@@ -1667,6 +1667,40 @@ describe('Rule Tests', () => {
       expect(updated?.statusUpdatedAt).toBeUndefined();
     });
 
+    it('Reset project status count leaves out project rules whose rule was deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+
+      const otherTopLevelRule = await RulesService.createRule(admin, 'Z', 'Other Rule', ruleset1.rulesetId, organization);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(otherTopLevelRule.ruleId, testTeam.teamId, admin, organization);
+
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+      const otherProjectRule = await RulesService.createProjectRule(
+        admin,
+        organization,
+        otherTopLevelRule.ruleId,
+        project.projectId
+      );
+
+      await RulesService.setProjectRuleStatus(admin, organization, projectRule.projectRuleId, RuleStatus.PASS);
+      await RulesService.setProjectRuleStatus(admin, organization, otherProjectRule.projectRuleId, RuleStatus.PASS);
+
+      await prisma.rule.update({
+        where: { ruleId: otherTopLevelRule.ruleId },
+        data: { dateDeleted: new Date(), deletedByUserId: admin.userId }
+      });
+
+      const count = await RulesService.resetProjectRuleStatuses(admin, organization, ruleset1.rulesetId, project.projectId);
+
+      // only the rule the project actually displays is counted
+      expect(count).toBe(1);
+
+      const projectRules = await RulesService.getProjectRules(ruleset1.rulesetId, project.projectId, organization);
+      expect(projectRules.find((pr) => pr.projectRuleId === projectRule.projectRuleId)?.status).toBe(RuleStatus.PENDING);
+    });
+
     it('Reset project status does not create Rule_Status_History entries', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1, topLevelRule } = await setupRules(car);
