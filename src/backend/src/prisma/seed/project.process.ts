@@ -9,12 +9,12 @@ import { CarOutput } from '../context.js';
 import {
   generateProjectBudgets,
   generateProjectTimeline,
-  PROJECTS_PER_CAR,
   projectCreateInput,
   projectNameForIndex,
   projectTemplateCreateInput,
   shouldExist
 } from '../factories/project.factory.js';
+import { seedConfig } from '../seed-config.js';
 
 import type { ProjectContext } from '../context.js';
 
@@ -36,6 +36,8 @@ const PROJECT_TEMPLATES = [
 ];
 
 const PROJECT_LINK_TYPE_NAMES = ['Confluence', 'Github', 'Altium', 'Google Drive'];
+
+const FEATURED_PROJECT_COUNT = 4;
 
 export type ProjectOutput = {
   projects: ProjectContext[];
@@ -74,7 +76,7 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
       throw new Error('ProjectProcess requires users who can be project leads and managers.');
     }
 
-    const projectCount = cars.length * PROJECTS_PER_CAR;
+    const projectCount = cars.length * seedConfig.project.projectsPerCar;
     const projectLeadPool = this.faker.helpers.shuffle(
       Array.from({ length: Math.ceil(projectCount / projectOwners.length) }, () => projectOwners)
         .flat()
@@ -85,10 +87,10 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
       cars.map(async ({ car, dateRange }, carIndex) => {
         const { carNumber } = car.wbsElement;
         const usedProjectNames = new Set<string>();
-        const projectBudgets = generateProjectBudgets(this.faker, PROJECTS_PER_CAR);
+        const projectBudgets = generateProjectBudgets(this.faker, seedConfig.project.projectsPerCar);
 
         return Promise.all(
-          Array.from({ length: PROJECTS_PER_CAR }, async (_, index) => {
+          Array.from({ length: seedConfig.project.projectsPerCar }, async (_, index) => {
             const timeline = generateProjectTimeline(this.faker, dateRange);
 
             if (!shouldExist(this.faker, timeline)) {
@@ -108,7 +110,7 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
             const assignedTeams = this.projectTeams(teams);
             const assignedTeamIds = assignedTeams.map((team) => team.teamId);
 
-            const lead = projectLeadPool[carIndex * PROJECTS_PER_CAR + index];
+            const lead = projectLeadPool[carIndex * seedConfig.project.projectsPerCar + index];
             const managerPool = projectOwners.filter((user) => user.userId !== lead.userId);
             const manager = this.faker.helpers.arrayElement(managerPool.length > 0 ? managerPool : projectOwners);
 
@@ -159,6 +161,18 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
       acc[projectContext.project.projectId] = projectContext;
       return acc;
     }, {});
+
+    // Feature a handful of projects on the guest-facing pages -- nothing sets this by default,
+    // so without it the FeaturedProjects widget on the guest home pages renders empty.
+    const featuredProjects = this.faker.helpers.arrayElements(projects, Math.min(FEATURED_PROJECT_COUNT, projects.length));
+    await this.prisma.organization.update({
+      where: { organizationId },
+      data: {
+        featuredProjects: {
+          connect: featuredProjects.map(({ project }) => ({ projectId: project.projectId }))
+        }
+      }
+    });
 
     return {
       projects,

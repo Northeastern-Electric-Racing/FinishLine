@@ -60,18 +60,6 @@ export const setOrganizationLogo = async (file: File) => {
   return axios.post(apiUrls.organizationsSetLogoImage(), formData);
 };
 
-export const setOrganizationNewMemberImage = async (file: File) => {
-  const formData = new FormData();
-  formData.append('newMemberImage', file);
-  return axios.post(apiUrls.organizationsSetNewMemberImage(), formData);
-};
-
-export const getOrganizationNewMemberImage = async () => {
-  return axios.get<string>(apiUrls.organizationsNewMemberImage(), {
-    transformResponse: (data) => JSON.parse(data)
-  });
-};
-
 export const setOrganizationPlatformLogoImage = async (file: File) => {
   const formData = new FormData();
   formData.append('platformLogo', file);
@@ -165,40 +153,11 @@ export const setFinanceDelegates = async (userIds: string[]) => {
 };
 
 /**
- * Gets the organization's list of Slack channels events can notify, with their cached names
+ * Gets the Slack channels events can notify that the current user can see: every channel the
+ * Slack bot is in, each annotated with whether the current user is also a member of it
  */
 export const getNotificationChannels = async () => {
   return axios.get<NotificationChannelPreview[]>(apiUrls.organizationsNotificationChannels(), {
     transformResponse: (data) => JSON.parse(data)
-  });
-};
-
-/**
- * Gets the Slack channels events can notify that are available to the current user: all public
- * channels, plus private channels the user's Slack id is a member of
- */
-export const getAvailableNotificationChannels = async () => {
-  return axios.get<NotificationChannelPreview[]>(apiUrls.organizationsAvailableNotificationChannels(), {
-    transformResponse: (data) => JSON.parse(data)
-  });
-};
-
-/**
- * Adds a Slack channel that events can notify
- * @param slackChannelId the Slack channel id to add
- */
-export const createNotificationChannel = async (slackChannelId: string) => {
-  return axios.post<NotificationChannelPreview>(apiUrls.organizationsCreateNotificationChannel(), {
-    slackChannelId
-  });
-};
-
-/**
- * Removes a Slack channel from the organization's notification channel list
- * @param slackChannelId the Slack channel id to remove
- */
-export const deleteNotificationChannel = async (slackChannelId: string) => {
-  return axios.post<{ slackChannelId: string }>(apiUrls.organizationsDeleteNotificationChannel(), {
-    slackChannelId
   });
 };

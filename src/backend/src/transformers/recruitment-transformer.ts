@@ -9,7 +9,10 @@ export const faqTransformer = (faq: Prisma.FrequentlyAskedQuestionGetPayload<Faq
   answer: faq.answer,
   userCreated: userTransformer(faq.userCreated),
   dateCreated: faq.dateCreated,
-  dateDeleted: faq.dateDeleted ?? undefined
+  dateDeleted: faq.dateDeleted ?? undefined,
+  isOnRecruitingDashboard: faq.isOnRecruitingDashboard,
+  isOnNewMemberDashboard: faq.isOnNewMemberDashboard,
+  isOnPartReviewPage: faq.isOnPartReviewPage
 });
 
 export const definitionTypeTransformer = (type: PrismaGuestDefinitionType): GuestDefinitionType => {

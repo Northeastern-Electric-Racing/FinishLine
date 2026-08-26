@@ -7,7 +7,8 @@ import {
   enumToArray,
   REVIEW_TIMES,
   getBackgroundColor,
-  reviewTimesInCurrentTimeZone
+  reviewTimesInCurrentTimeZone,
+  yourTimeZoneInitials
 } from '../../../../utils/design-review.utils';
 import EventTimeSlot from '../../../CalendarPage/Components/EventTimeSlot';
 import { useCurrentUser, useUserBusyTimes } from '../../../../hooks/users.hooks';
@@ -56,6 +57,7 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Typography variant="subtitle1">All times are in local time, {yourTimeZoneInitials()}.</Typography>
       <Typography variant="caption" color="text.secondary" mb={1}>
         Hatched slots are busy on your imported calendar or Finishline events. Edit your availability and use "Fill from busy
         times" to pull in any changes.

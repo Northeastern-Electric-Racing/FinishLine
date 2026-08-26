@@ -3,6 +3,7 @@ import { OrganizationOutput, OrganizationProcess } from './organization.process.
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { ConfigDataOutput, ConfigDataProcess } from './config-data.process.js';
 import { TeamOutput, TeamProcess } from './team.process.js';
+import { TeamJoinRequestProcess } from './team-join-request.process.js';
 import { ProjectOutput, ProjectProcess } from './project.process.js';
 import { CarOutput } from '../context.js';
 import { CarProcess } from './car.process.js';
@@ -36,7 +37,17 @@ type EventInput = OrganizationOutput & UsersOutput & ConfigDataOutput & TeamOutp
 
 export class EventProcess extends SeedProcess<EventInput, Record<string, never>> {
   dependencies() {
-    return [OrganizationProcess, UsersProcess, ConfigDataProcess, TeamProcess, CarProcess, ProjectProcess];
+    return [
+      OrganizationProcess,
+      UsersProcess,
+      ConfigDataProcess,
+      TeamProcess,
+      // Ensures guest -> member promotions from approved join requests have landed before this
+      // process picks event attendees from the `members` pool.
+      TeamJoinRequestProcess,
+      CarProcess,
+      ProjectProcess
+    ];
   }
 
   async run({

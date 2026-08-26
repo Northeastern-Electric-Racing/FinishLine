@@ -1,0 +1,106 @@
+{
+  "car": {
+    "carCount": 5
+  },
+  "descriptionBullet": {
+    "countWeights": [
+      { "weight": 10, "value": 1 },
+      { "weight": 30, "value": 2 },
+      { "weight": 30, "value": 3 },
+      { "weight": 20, "value": 4 },
+      { "weight": 10, "value": 5 }
+    ]
+  },
+  "reimbursementRequest": {
+    "productCountWeights": [
+      { "weight": 60, "value": 1 },
+      { "weight": 30, "value": 2 },
+      { "weight": 10, "value": 3 }
+    ]
+  },
+  "project": {
+    "projectsPerCar": 5
+  },
+  "user": {
+    "totalUsers": 350
+  },
+  "team": {
+    "leadsPerTeam": {
+      "min": 1,
+      "max": 3
+    },
+    "membersPerTeam": {
+      "min": 8,
+      "max": 20
+    }
+  },
+  "workPackage": {
+    "countWeights": [
+      { "weight": 3, "value": 0 },
+      { "weight": 5, "value": 1 },
+      { "weight": 8, "value": 2 },
+      { "weight": 14, "value": 3 },
+      { "weight": 18, "value": 4 },
+      { "weight": 22, "value": 5 },
+      { "weight": 16, "value": 6 },
+      { "weight": 9, "value": 7 },
+      { "weight": 5, "value": 8 }
+    ]
+  },
+  "changeRequest": {
+    "projectCountWeights": [
+      { "weight": 15, "value": 0 },
+      { "weight": 45, "min": 1, "max": 3 },
+      { "weight": 30, "min": 4, "max": 8 },
+      { "weight": 10, "min": 9, "max": 15 }
+    ],
+    "workPackageCountWeights": [
+      { "weight": 20, "value": 0 },
+      { "weight": 55, "value": 1 },
+      { "weight": 20, "value": 2 },
+      { "weight": 5, "value": 3 }
+    ],
+    "accountCodeCountWeights": [
+      { "weight": 40, "value": 0 },
+      { "weight": 40, "min": 1, "max": 3 },
+      { "weight": 20, "min": 4, "max": 6 }
+    ]
+  },
+  "sponsor": {
+    "sponsorCount": 25,
+    "prospectiveSponsorCount": 25
+  },
+  "organizationContent": {
+    "announcementContent": 6,
+    "popupContent": 3,
+    "guestDefinitionCount": 6,
+    "checklistRootCount": 5,
+    "faqCount": 4
+  },
+  "graph": {
+    "graphCollectionsPerOrg": {
+      "min": 8,
+      "max": 16
+    },
+    "standaloneGraphsPerOrg": {
+      "min": 6,
+      "max": 15
+    }
+  },
+  "part": {
+    "countForProject": [
+      { "weight": 30, "value": 0 },
+      { "weight": 45, "min": 1, "max": 8 },
+      { "weight": 20, "min": 9, "max": 20 },
+      { "weight": 5, "min": 21, "max": 40 }
+    ]
+  },
+  "task": {
+    "countForProject": [
+      { "weight": 8, "value": 0 },
+      { "weight": 67, "min": 6, "max": 24 },
+      { "weight": 19, "min": 25, "max": 50 },
+      { "weight": 6, "min": 51, "max": 80 }
+    ]
+  }
+}

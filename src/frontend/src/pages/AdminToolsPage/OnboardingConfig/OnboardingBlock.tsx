@@ -22,7 +22,7 @@ const OnboardingBlock: React.FC<OnboardingBlockProps> = ({ organization, isAdmin
   };
 
   return (
-    <Grid>
+    <Grid sx={{ width: '100%' }}>
       <Box
         sx={{
           height: '25vh',

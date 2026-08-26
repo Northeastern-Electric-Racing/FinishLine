@@ -14,6 +14,7 @@ const projectRouter = express.Router();
 
 projectRouter.get('/all-gantt', ProjectsController.getAllProjectsGantt);
 projectRouter.get('/all-previews', ProjectsController.getAllProjects);
+projectRouter.get('/dropdown', ProjectsController.getAllProjectsDropdown);
 projectRouter.get('/users-teams', ProjectsController.getUsersTeamsProjects);
 projectRouter.get('/leading', ProjectsController.getUsersLeadingProjects);
 projectRouter.get('/teams-projects/:teamId', ProjectsController.getTeamsProjects);
@@ -25,6 +26,9 @@ projectRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('iconName')),
   body('required').isBoolean(),
+  body('isOnGuestHomePage').isBoolean(),
+  body('isOnNewMemberDashboard').isBoolean(),
+  body('isOnOnboardingDashboard').isBoolean(),
   validateInputs,
   ProjectsController.createLinkType
 );
@@ -33,6 +37,9 @@ projectRouter.post(
   nonEmptyString(body('name').optional()),
   nonEmptyString(body('iconName')),
   body('required').isBoolean(),
+  body('isOnGuestHomePage').isBoolean(),
+  body('isOnNewMemberDashboard').isBoolean(),
+  body('isOnOnboardingDashboard').isBoolean(),
   validateInputs,
   ProjectsController.editLinkType
 );

@@ -34,7 +34,12 @@ const AppPublic: React.FC = () => {
         return <LoadingIndicator />;
       }
 
-      return <AppAuthenticated userId={auth.user.userId} userRole={auth.user.role} />;
+      //get onboarding completion to pass to authenticated app for routing
+      const completedOnboarding = auth.user.onboardedTeamTypeIds.length > 0;
+
+      return (
+        <AppAuthenticated userId={auth.user.userId} userRole={auth.user.role} completedOnboarding={completedOnboarding} />
+      );
     }
 
     if (!auth.user && !auth.triedCurrent) {

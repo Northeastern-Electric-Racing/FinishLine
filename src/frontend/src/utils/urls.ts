@@ -166,6 +166,10 @@ const teamTypesCreate = () => `${teamTypes()}/create`;
 const teamTypeEdit = (id: string) => `${teamTypes()}/${id}/edit`;
 const teamTypeSetImage = (id: string) => `${teamTypes()}/${id}/set-image`;
 const myTeamAsHead = () => `${teams()}/my-team-as-head`;
+const myTeamJoinRequests = () => `${teams()}/join-requests/mine`;
+const teamsPendingJoinRequests = (id: string) => `${teamsById(id)}/join-requests`;
+const teamsCreateJoinRequest = (id: string) => `${teamsById(id)}/join-request`;
+const teamsReviewJoinRequest = (teamJoinRequestId: string) => `${teams()}/join-request/${teamJoinRequestId}/review`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -376,8 +380,6 @@ const organizationsSetPlatformDescription = () => `${organizations()}/platform-d
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
-const organizationsNewMemberImage = () => `${organizations()}/new-member-image`;
-const organizationsSetNewMemberImage = () => `${organizations()}/new-member-image/update`;
 const organizationsPlatformLogoImage = () => `${organizations()}/platform-logo`;
 const organizationsSetPlatformLogoImage = () => `${organizationsPlatformLogoImage()}/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
@@ -388,23 +390,31 @@ const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizat
 const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
 const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
 const organizationsNotificationChannels = () => `${organizations()}/notification-channels`;
-const organizationsAvailableNotificationChannels = () => `${organizationsNotificationChannels()}/available`;
-const organizationsCreateNotificationChannel = () => `${organizationsNotificationChannels()}/create`;
-const organizationsDeleteNotificationChannel = () => `${organizationsNotificationChannels()}/delete`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
 const carEdit = (id: string) => `${cars()}/${id}/edit`;
 
+// dropdown endpoints — minimal payloads for populating select menus
+const projectsDropdown = () => `${projects()}/dropdown`;
+const workPackagesDropdown = () => `${workPackages()}/dropdown`;
+const membersDropdown = () => `${users()}/members/dropdown`;
+const teamsDropdown = () => `${teams()}/dropdown`;
+
 /************** Recruitment Endpoints ***************/
 const recruitment = () => `${API_URL}/recruitment`;
 const allMilestones = () => `${recruitment()}/milestones`;
+const newMemberMilestones = () => `${recruitment()}/milestones/new-member`;
+const recruitingMilestones = () => `${recruitment()}/milestones/recruiting`;
 const milestoneCreate = () => `${recruitment()}/milestone/create`;
 const milestoneEdit = (id: string) => `${recruitment()}/milestone/${id}/edit`;
 const milestoneDelete = (id: string) => `${recruitment()}/milestone/${id}/delete`;
 const allFaqs = () => `${recruitment()}/faqs`;
-const faqCreate = () => `${recruitment()}/faq/create`;
+const recruitingFaqs = () => `${recruitment()}/faqs/recruiting`;
+const newMemberFaqs = () => `${recruitment()}/faqs/new-member`;
+const recruitingFaqCreate = () => `${recruitment()}/faq/recruiting/create`;
+const newMemberFaqCreate = () => `${recruitment()}/faq/new-member/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 const allGuestDefinitions = () => `${recruitment()}/guestdefinitions`;
@@ -497,6 +507,7 @@ const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
 const calendarEvents = () => `${calendar()}/events`;
+const calendarNewMemberEvents = () => `${calendar()}/events/new-member`;
 const calendarEventsPaginated = () => `${calendar()}/events-paginated`;
 const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
@@ -555,6 +566,13 @@ const attendanceGetOngoing = (teamId: string) => `${attendance()}/ongoing/${team
 const attendanceCloseOngoing = (teamId: string) => `${attendance()}/close/${teamId}`;
 const attendanceGetById = (meetingAttendanceId: string) => `${attendance()}/${meetingAttendanceId}`;
 
+/**************** Dashboard Endpoints ****************/
+const dashboards = () => `${API_URL}/dashboards`;
+const dashboardsGet = () => `${dashboards()}/`;
+const dashboardsCreate = () => `${dashboards()}/create`;
+const dashboardEdit = (dashboardId: string) => `${dashboards()}/${dashboardId}/edit`;
+const dashboardDelete = (dashboardId: string) => `${dashboards()}/${dashboardId}/delete`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -562,6 +580,10 @@ export const apiUrls = {
   users,
   orgUsers,
   orgMembers,
+  projectsDropdown,
+  workPackagesDropdown,
+  membersDropdown,
+  teamsDropdown,
   usersById,
   usersLogin,
   usersLoginDev,
@@ -695,6 +717,10 @@ export const apiUrls = {
   teamTypeEdit,
   teamTypeSetImage,
   myTeamAsHead,
+  myTeamJoinRequests,
+  teamsPendingJoinRequests,
+  teamsCreateJoinRequest,
+  teamsReviewJoinRequest,
 
   descriptionBulletsCheck,
   descriptionBulletTypes,
@@ -826,8 +852,6 @@ export const apiUrls = {
   organizationsSetPlatformDescription,
   organizationsLogoImage,
   organizationsSetLogoImage,
-  organizationsNewMemberImage,
-  organizationsSetNewMemberImage,
   organizationsPlatformLogoImage,
   organizationsSetPlatformLogoImage,
   organizationsSetFeaturedProjects,
@@ -838,9 +862,6 @@ export const apiUrls = {
   organizationsFinanceDelegates,
   organizationsSetFinanceDelegates,
   organizationsNotificationChannels,
-  organizationsAvailableNotificationChannels,
-  organizationsCreateNotificationChannel,
-  organizationsDeleteNotificationChannel,
 
   cars,
   carsCreate,
@@ -848,11 +869,16 @@ export const apiUrls = {
 
   recruitment,
   allMilestones,
+  newMemberMilestones,
+  recruitingMilestones,
   milestoneCreate,
   milestoneEdit,
   milestoneDelete,
   allFaqs,
-  faqCreate,
+  recruitingFaqs,
+  newMemberFaqs,
+  recruitingFaqCreate,
+  newMemberFaqCreate,
   faqEdit,
   faqDelete,
   imageById,
@@ -941,6 +967,7 @@ export const apiUrls = {
   calendarGetSingleEventWithMembers,
   calendarGetConflictingEvent,
   calendarEvents,
+  calendarNewMemberEvents,
   calendarEventsPaginated,
   calendarEventTypes,
   calendarDeleteEvent,
@@ -972,6 +999,11 @@ export const apiUrls = {
   attendanceGetOngoing,
   attendanceCloseOngoing,
   attendanceGetById,
+
+  dashboardsGet,
+  dashboardsCreate,
+  dashboardEdit,
+  dashboardDelete,
 
   version
 };

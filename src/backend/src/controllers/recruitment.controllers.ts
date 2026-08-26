@@ -11,15 +11,34 @@ export default class RecruitmentController {
     }
   }
 
+  static async getNewMemberMilestones(req: Request, res: Response, next: NextFunction) {
+    try {
+      const newMemberMilestones = await RecruitmentServices.getNewMemberMilestones(req.organization);
+      res.status(200).json(newMemberMilestones);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getRecruitingMilestones(req: Request, res: Response, next: NextFunction) {
+    try {
+      const recruitingMilestones = await RecruitmentServices.getRecruitingMilestones(req.organization);
+      res.status(200).json(recruitingMilestones);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createMilestone(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, description, dateOfEvent } = req.body;
+      const { name, description, dateOfEvent, isOnNewMemberDashboard, isOnRecruitingDashboard } = req.body;
 
       const milestone = await RecruitmentServices.createMilestone(
         req.currentUser,
         name,
         description,
         dateOfEvent,
+        { isOnNewMemberDashboard, isOnRecruitingDashboard },
         req.organization
       );
       res.status(200).json(milestone);
@@ -57,19 +76,66 @@ export default class RecruitmentController {
     }
   }
 
+  // TODO rename this method throughout stack
+  // Changed scope of getAllOrganizationFaqs to include part review, so what this call really wants is
+  // recruiting FAQs, but I'll change this as part of actual work not schema changes
   static async getAllOrganizationFaqs(req: Request, res: Response, next: NextFunction) {
     try {
-      const allFaqs = await RecruitmentServices.getAllOrganizationFaqs(req.organization);
+      const allFaqs = await RecruitmentServices.getRecruitingFaqs(req.organization);
       res.status(200).json(allFaqs);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async createOrganizationFaq(req: Request, res: Response, next: NextFunction) {
+  static async getRecruitingFaqs(req: Request, res: Response, next: NextFunction) {
+    try {
+      const faqs = await RecruitmentServices.getRecruitingFaqs(req.organization);
+      res.status(200).json(faqs);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getNewMemberFaqs(req: Request, res: Response, next: NextFunction) {
+    try {
+      const faqs = await RecruitmentServices.getNewMemberFaqs(req.organization);
+      res.status(200).json(faqs);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createRecruitingFaq(req: Request, res: Response, next: NextFunction) {
     try {
       const { question, answer } = req.body;
-      const faq = await RecruitmentServices.createOrganizationFaq(req.currentUser, question, answer, req.organization);
+      const faq = await RecruitmentServices.createOrganizationFaq(
+        req.currentUser,
+        question,
+        answer,
+        req.organization,
+        true,
+        false,
+        false
+      );
+      res.status(200).json(faq);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createNewMemberFaq(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { question, answer } = req.body;
+      const faq = await RecruitmentServices.createOrganizationFaq(
+        req.currentUser,
+        question,
+        answer,
+        req.organization,
+        false,
+        true,
+        false
+      );
       res.status(200).json(faq);
     } catch (error: unknown) {
       next(error);

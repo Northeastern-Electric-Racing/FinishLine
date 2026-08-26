@@ -8,10 +8,15 @@ import { routes } from '../../../utils/routes';
 import Home from '../../../pages/HomePage/Home';
 import * as authHooks from '../../../hooks/auth.hooks';
 import * as userHooks from '../../../hooks/users.hooks';
+import * as teamsHooks from '../../../hooks/teams.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
-import { mockUseSingleUserSettings } from '../../test-support/mock-hooks';
-import { exampleAuthenticatedAdminUser } from '../../test-support/test-data/authenticated-user.stub';
+import { mockUseSingleUserSettings, mockUseGetUsersTeams } from '../../test-support/mock-hooks';
+import {
+  exampleAuthenticatedAdminUser,
+  exampleAuthenticatedNewMemberUser
+} from '../../test-support/test-data/authenticated-user.stub';
+import { exampleTeam } from '../../test-support/test-data/teams.stub';
 
 vi.mock('../../../app/AppGlobalCarFilterContext', () => ({
   useGlobalCarFilter: () => ({
@@ -50,6 +55,15 @@ vi.mock('../../../pages/HomePage/components/WorkPackagesByTimelineStatus', () =>
   };
 });
 
+vi.mock('../../../pages/HomePage/NewMemberHomePage', () => {
+  return {
+    __esModule: true,
+    default: () => {
+      return <div>new-member-home</div>;
+    }
+  };
+});
+
 /**
  * Sets up the component under test with the desired values and renders it.
  */
@@ -67,6 +81,7 @@ describe('home component', () => {
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
     vi.spyOn(userHooks, 'useSingleUserSettings').mockReturnValue(mockUseSingleUserSettings());
+    vi.spyOn(teamsHooks, 'useGetUsersTeams').mockReturnValue(mockUseGetUsersTeams());
   });
 
   afterAll(() => vi.clearAllMocks());
@@ -74,5 +89,23 @@ describe('home component', () => {
   it('renders welcome', () => {
     renderComponent();
     expect(screen.getByText(`Welcome, ${exampleAdminUser.firstName}!`)).toBeInTheDocument();
+  });
+
+  it('renders the new member dashboard for a completed-onboarding guest who has not joined a team', () => {
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedNewMemberUser);
+    vi.spyOn(teamsHooks, 'useGetUsersTeams').mockReturnValue(mockUseGetUsersTeams([]));
+
+    renderComponent();
+
+    expect(screen.getByText('new-member-home')).toBeInTheDocument();
+  });
+
+  it('renders the standard dashboard once a completed-onboarding guest has joined a team', () => {
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedNewMemberUser);
+    vi.spyOn(teamsHooks, 'useGetUsersTeams').mockReturnValue(mockUseGetUsersTeams([exampleTeam]));
+
+    renderComponent();
+
+    expect(screen.queryByText('new-member-home')).not.toBeInTheDocument();
   });
 });

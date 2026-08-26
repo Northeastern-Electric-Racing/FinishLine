@@ -103,9 +103,12 @@ description: >-
 }
 
 /**
- * Transform Docusaurus links to SKILL.md links
- * Handles: ./doc or ../category/doc → proper SKILL.md paths
- * Avoids double-adding /SKILL.md if it's already there
+ * Transform Docusaurus links to SKILL.md links.
+ *
+ * Skills are written flat (see processDocFile), so every skill is a sibling of
+ * every other one. Any relative doc link therefore collapses to
+ * ../<doc-basename>/SKILL.md, whatever folder the source doc linked through.
+ * Avoids double-adding /SKILL.md if it's already there.
  */
 function transformLinksForSkills(content) {
   // Match markdown links and transform them
@@ -125,15 +128,15 @@ function transformLinksForSkills(content) {
       return fullMatch;
     }
 
-    // Transform ./doc → ../doc/SKILL.md
-    if (linkPath.startsWith('./')) {
-      const cleanPath = linkPath.substring(2); // Remove ./
-      return `[${linkText}](../${cleanPath}/SKILL.md)`;
-    }
-
-    // Transform ../doc → ../../doc/SKILL.md
-    if (linkPath.startsWith('../')) {
-      return `[${linkText}](../${linkPath}/SKILL.md)`;
+    // Transform ./doc and ../category/doc → ../doc/SKILL.md (flat sibling layout),
+    // preserving any trailing #anchor.
+    if (linkPath.startsWith('./') || linkPath.startsWith('../')) {
+      const [docPath, anchor] = linkPath.split('#');
+      const docName = path.basename(docPath.replace(/\/$/, ''));
+      if (!docName || docName === '.' || docName === '..') {
+        return fullMatch;
+      }
+      return `[${linkText}](../${docName}/SKILL.md${anchor ? `#${anchor}` : ''})`;
     }
 
     // Leave other links unchanged
@@ -165,10 +168,18 @@ function processDocFile(docPath) {
   const transformedContent = transformToSkillFormat(metadata, bodyContent);
   const linkedContent = transformLinksForSkills(transformedContent);
 
-  // Determine skill path (recreate folder/file/SKILL.md structure)
-  const relativePath = path.relative(DOCS_DIR, path.dirname(docPath));
-  const skillDir = path.join(SKILLS_DIR, relativePath, metadata.skill_name);
+  // Determine skill path. Claude Code only discovers skills exactly one level
+  // deep — .claude/skills/<skill_name>/SKILL.md — so the output is always flat,
+  // regardless of how the source docs are foldered. Nesting a skill any deeper
+  // (e.g. skills/general-practices/backend-endpoints/) makes it invisible.
+  const skillDir = path.join(SKILLS_DIR, metadata.skill_name);
   const skillPath = path.join(skillDir, 'SKILL.md');
+
+  // Flat output means skill_name must be unique across the whole docs tree.
+  if (fs.existsSync(skillPath)) {
+    console.warn(`⚠️  Duplicate skill_name "${metadata.skill_name}" (${path.basename(docPath)}), skipping`);
+    return null;
+  }
 
   // Create directory and write
   fs.mkdirSync(skillDir, { recursive: true });

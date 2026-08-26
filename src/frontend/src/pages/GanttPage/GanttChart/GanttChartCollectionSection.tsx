@@ -5,6 +5,10 @@ import { GanttCollection } from '../../../utils/gantt.utils';
 import { useState } from 'react';
 import { GanttEditability } from './GanttChart';
 
+const ignore = () => {};
+
+const ignoreBool = () => false;
+
 interface GanttChartCollectionSectionProps<E, T> {
   startDate: Date;
   endDate: Date;
@@ -56,10 +60,6 @@ const GanttChartCollectionSection = <E, T>({
 
     setIsEditMode(true);
   };
-
-  const ignore = () => {};
-
-  const ignoreBool = () => false;
 
   return collection.tasks.length > 0 ? (
     <Box sx={collectionSectionBackgroundStyle}>

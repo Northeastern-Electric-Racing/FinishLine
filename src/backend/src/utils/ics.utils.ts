@@ -2,8 +2,15 @@ import ical, { ICalEventStatus } from 'ical-generator';
 import nodeIcal, { CalendarComponent, RRule, VEvent } from 'node-ical';
 import dns from 'node:dns/promises';
 import ipaddr from 'ipaddr.js';
-import { IcsBusyInterval, Event, wbsPipe } from 'shared';
+import dayjs from 'dayjs';
+import 'dayjs/plugin/utc.js';
+import 'dayjs/plugin/timezone.js';
+import { IcsBusyInterval, Event, wbsPipe, EASTERN_TIMEZONE } from 'shared';
 import { HttpException } from './errors.utils.js';
+
+// availability slots are defined relative to Eastern time (see frontend design-review.utils.ts ESTOffset),
+// regardless of what timezone the server process happens to run in
+const BUSINESS_TIMEZONE = EASTERN_TIMEZONE;
 
 export const generateIcsFeed = (events: Event[]): string => {
   const cal = ical({ name: 'Northeastern Electric Racing' });
@@ -195,13 +202,13 @@ export const fetchIcsBusyTimes = async (url: string, rangeStart: Date, rangeEnd:
   return busy;
 };
 
-// converts ics date to utc midnight for that day
-export const localDayStartForDateSet = (dateSet: Date | string): Date => {
-  const date = new Date(dateSet);
-  return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+export const localDayStartForDateSet = (dateSet: Date | string): dayjs.Dayjs => {
+  const dayString = dayjs.utc(dateSet).format('YYYY-MM-DD');
+  return dayjs.tz(dayString, BUSINESS_TIMEZONE);
 };
 
-// converts the ics busy intervals into availability slots (0-11)
+// converts the ics busy intervals (real UTC instants) into availability slots (0-11), where slot N
+// covers the hour (10 + N) in BUSINESS_TIMEZONE - not the server process's local timezone
 export const busyIntervalsToSlots = (busy: IcsBusyInterval[], dateSet: Date | string): Set<number> => {
   const dayStart = localDayStartForDateSet(dateSet);
   const busySlots = new Set<number>();
@@ -210,10 +217,8 @@ export const busyIntervalsToSlots = (busy: IcsBusyInterval[], dateSet: Date | st
   const numAvailabilitySlots = 12;
 
   for (let slot = 0; slot < numAvailabilitySlots; slot++) {
-    const slotStart = new Date(dayStart);
-    slotStart.setHours(availabilityStart + slot, 0, 0, 0);
-    const slotEnd = new Date(slotStart);
-    slotEnd.setHours(slotEnd.getHours() + 1);
+    const slotStart = dayStart.add(availabilityStart + slot, 'hour').toDate();
+    const slotEnd = dayStart.add(availabilityStart + slot + 1, 'hour').toDate();
 
     if (busy.some((interval) => interval.start < slotEnd && interval.end > slotStart)) {
       busySlots.add(slot);

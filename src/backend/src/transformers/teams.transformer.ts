@@ -1,6 +1,11 @@
 import { Prisma } from '@prisma/client';
-import { Team, TeamPreview, TeamBase } from 'shared';
-import { getTeamBaseQueryArgs, TeamPreviewQueryArgs, TeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
+import { Team, TeamPreview, TeamBase, TeamJoinRequest } from 'shared';
+import {
+  getTeamBaseQueryArgs,
+  TeamJoinRequestQueryArgs,
+  TeamPreviewQueryArgs,
+  TeamQueryArgs
+} from '../prisma-query-args/teams.query-args.js';
 import { userTransformer } from './user.transformer.js';
 import { projectGanttTransformer } from './projects.transformer.js';
 import { teamTypeTransformer } from './team-types.transformer.js';
@@ -40,6 +45,21 @@ export const teamPreviewTransformer = (team: Prisma.TeamGetPayload<TeamPreviewQu
     head: userTransformer(team.head),
     dateArchived: team.dateArchived ?? undefined,
     teamType: team.teamType ? teamTypeTransformer(team.teamType) : undefined
+  };
+};
+
+export const teamJoinRequestTransformer = (
+  teamJoinRequest: Prisma.Team_Join_RequestGetPayload<TeamJoinRequestQueryArgs>
+): TeamJoinRequest => {
+  return {
+    teamJoinRequestId: teamJoinRequest.teamJoinRequestId,
+    user: userTransformer(teamJoinRequest.user),
+    team: teamPreviewTransformer(teamJoinRequest.team),
+    status: teamJoinRequest.status,
+    dateRequested: teamJoinRequest.dateRequested,
+    denialReason: teamJoinRequest.denialReason ?? undefined,
+    reviewedBy: teamJoinRequest.reviewedBy ? userTransformer(teamJoinRequest.reviewedBy) : undefined,
+    dateReviewed: teamJoinRequest.dateReviewed ?? undefined
   };
 };
 

@@ -14,9 +14,13 @@ import {
   ProjectOverview,
   isAtLeastRank,
   BusySlots,
-  IcsBusyInterval
+  IcsBusyInterval,
+  MemberDropdownItem,
+  isValidSlackUserIdFormat
 } from 'shared';
 import prisma from '../prisma/prisma.js';
+import { getMemberDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
+import { memberDropdownTransformer } from '../transformers/dropdown.transformer.js';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
 import { busyIntervalsToSlots, fetchIcsBusyTimes, validateIcsUrl } from '../utils/ics.utils.js';
 import CalendarService from './calendar.services.js';
@@ -47,6 +51,22 @@ export default class UsersService {
     });
 
     return users.map(userTransformer);
+  }
+
+  /**
+   * Gets a minimal list of the current organization's members for use in dropdowns (id + name + email).
+   * Only users with a non-guest role in the organization are returned, so guests are excluded.
+   * @param organizationId the organization to get the members from
+   * @returns the members for a dropdown
+   */
+  static async getAllMembersDropdown(organizationId: string): Promise<MemberDropdownItem[]> {
+    const users = await prisma.user.findMany({
+      where: { roles: { some: { organizationId, roleType: { not: Role_Type.GUEST } } } },
+      orderBy: { firstName: 'asc' },
+      ...getMemberDropdownQueryArgs()
+    });
+
+    return users.map(memberDropdownTransformer);
   }
 
   /**
@@ -202,6 +222,9 @@ export default class UsersService {
    * @throws if the user does not exist
    */
   static async updateUserSettings(user: User, defaultTheme: ThemeName, slackId: string): Promise<User_Settings> {
+    if (slackId && !isValidSlackUserIdFormat(slackId)) {
+      throw new HttpException(400, 'Invalid Slack ID');
+    }
     const { userId } = user;
 
     const updatedSettings = await prisma.user_Settings.upsert({
@@ -580,7 +603,7 @@ export default class UsersService {
     const requestedUser = await prisma.user.findUnique({
       where: { userId },
       include: {
-        assignedTasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organization.organizationId) },
+        assignedTasks: { where: { dateDeleted: null }, ...getTaskQueryArgs() },
         organizations: true
       }
     });

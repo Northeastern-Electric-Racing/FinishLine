@@ -23,8 +23,11 @@ describe('Home Page', () => {
   });
 
   it('Overdue Work Packages Contains At Least One Entry', () => {
-    cy.contains('Impact Attenuator').scrollIntoView();
-    cy.contains('Impact Attenuator').should(VISIBLE);
+    // The empty-state message only renders when there are zero overdue work packages, so its
+    // absence means at least one entry is showing -- checking this way doesn't depend on any
+    // specific work package existing by name.
+    cy.contains(OVERDUE).should(VISIBLE);
+    cy.contains('Great Job Team!').should('not.exist');
   });
 
   it('Can Navigate to Change Requests Page via Sidebar', () => {
@@ -33,14 +36,14 @@ describe('Home Page', () => {
   });
 
   it('Creating a CR Shows Up on Home Page', () => {
-    const whatText = 'home page e2e test cr';
+    const whyText = 'home page e2e test cr';
 
     // Navigate to new CR form
     cy.visit(Cypress.env('base_url') + '/change-requests/new');
     cy.waitForLoading();
 
     // Create the CR
-    createChangeRequest({ what: whatText });
+    createChangeRequest({ why: whyText });
 
     // Navigate back to home
     cy.visit(Cypress.env('base_url') + '/home');
