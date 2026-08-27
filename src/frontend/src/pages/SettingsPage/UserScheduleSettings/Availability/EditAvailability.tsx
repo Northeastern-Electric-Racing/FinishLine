@@ -21,7 +21,7 @@ import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities 
 import { datePipe } from '../../../../utils/pipes';
 import NERArrows from '../../../../components/NERArrows';
 import { NERButton } from '../../../../components/NERButton';
-import EventTimeSlot from '../../../CalendarPage/Components/EventTimeSlot';
+import EventTimeSlot, { timeSlotCellSx } from '../../../CalendarPage/Components/EventTimeSlot';
 import { useCurrentUser, useUserBusyTimes } from '../../../../hooks/users.hooks';
 import { busySlotsByDay, isSlotBusy } from '../../../../utils/ics.utils';
 import { useToast } from '../../../../hooks/toasts.hooks';
@@ -350,7 +350,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
                 {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
                   const isAvailable = availability.availability.includes(timeIndex);
                   return (
-                    <TableCell key={dayIndex} sx={{ p: 0, scrollSnapAlign: 'start' }}>
+                    <TableCell key={dayIndex} sx={{ ...timeSlotCellSx, scrollSnapAlign: 'start' }}>
                       <EventTimeSlot
                         backgroundColor={isAvailable ? HeatmapColors[3] : HeatmapColors[0]}
                         selected={false}

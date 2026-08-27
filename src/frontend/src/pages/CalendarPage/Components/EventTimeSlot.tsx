@@ -1,4 +1,6 @@
-import { Box } from '@mui/material';
+import { Box, SxProps, Theme } from '@mui/material';
+
+export const timeSlotCellSx: SxProps<Theme> = { p: 0, position: 'relative' };
 
 interface EventTimeSlotProps {
   backgroundColor?: string;
@@ -39,9 +41,9 @@ const EventTimeSlot: React.FC<EventTimeSlotProps> = ({
       onMouseEnter={onMouseEnter}
       onPointerUp={onPointerUp}
       sx={{
+        position: 'absolute',
+        inset: 0,
         p: '1px',
-        width: '100%',
-        height: '100%',
         cursor: 'pointer',
         // kills the tap delay and the grey flash iOS paints over a tapped slot
         touchAction: 'manipulation',
@@ -57,8 +59,6 @@ const EventTimeSlot: React.FC<EventTimeSlotProps> = ({
             : 'none',
           width: '100%',
           height: '100%',
-          minWidth: 24,
-          minHeight: 16,
           display: 'flex',
           borderStyle: 'solid',
           borderColor: getBorderColor(),

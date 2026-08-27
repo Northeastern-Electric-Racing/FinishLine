@@ -20,7 +20,7 @@ import {
   reviewTimesInCurrentTimeZone,
   yourTimeZoneInitials
 } from '../../../../utils/design-review.utils';
-import EventTimeSlot from '../../../CalendarPage/Components/EventTimeSlot';
+import EventTimeSlot, { timeSlotCellSx } from '../../../CalendarPage/Components/EventTimeSlot';
 import { useCurrentUser, useUserBusyTimes } from '../../../../hooks/users.hooks';
 import { busySlotsByDay, isSlotBusy } from '../../../../utils/ics.utils';
 
@@ -146,7 +146,7 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAv
                 {selectedTimes.map((availability, dayIndex) => {
                   const isAvailable = availability.availability.includes(timeIndex);
                   return (
-                    <TableCell key={dayIndex} sx={{ p: 0 }}>
+                    <TableCell key={dayIndex} sx={timeSlotCellSx}>
                       <EventTimeSlot
                         backgroundColor={isAvailable ? getBackgroundColor(1, 1) : getBackgroundColor(0, 1)}
                         selected={false}
