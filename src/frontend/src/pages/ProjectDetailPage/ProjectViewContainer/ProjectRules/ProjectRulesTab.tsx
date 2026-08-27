@@ -41,7 +41,6 @@ import {
 } from '../../../../hooks/rules.hooks';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { InfoOutlined } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../../utils/routes';

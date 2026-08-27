@@ -1577,6 +1577,7 @@ describe('Rule Tests', () => {
       await RulesService.setProjectRuleStatus(admin, organization, childProjectRule.projectRuleId, RuleStatus.FAIL);
 
       const projectRulesBeforeDelete = await RulesService.getProjectRules(
+        admin,
         ruleset1.rulesetId,
         project.projectId,
         organization
@@ -1744,7 +1745,7 @@ describe('Rule Tests', () => {
       // only the rule the project actually displays is counted
       expect(count).toBe(1);
 
-      const projectRules = await RulesService.getProjectRules(ruleset1.rulesetId, project.projectId, organization);
+      const projectRules = await RulesService.getProjectRules(admin, ruleset1.rulesetId, project.projectId, organization);
       expect(projectRules.find((pr) => pr.projectRuleId === projectRule.projectRuleId)?.status).toBe(RuleStatus.PENDING);
     });
 
