@@ -37,3 +37,14 @@ export const exampleAuthenticatedMemberUser: AuthenticatedUser = {
   onboardingTeamTypeIds: [],
   onboardedTeamTypeIds: []
 };
+
+export const exampleAuthenticatedNewMemberUser: AuthenticatedUser = {
+  userId: '7',
+  firstName: 'New',
+  lastName: 'Member',
+  email: 'newmember@ner.edu',
+  role: RoleEnum.GUEST,
+  organizations: ['baz'],
+  onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: ['team-type-1']
+};

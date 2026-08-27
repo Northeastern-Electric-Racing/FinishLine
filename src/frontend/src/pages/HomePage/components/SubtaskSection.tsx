@@ -1,4 +1,4 @@
-import { Typography, useTheme, IconButton } from '@mui/material';
+import { useTheme, IconButton } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/system';
 import React from 'react';
@@ -25,7 +25,7 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
     toggleChecklist(
       { checklistId: subtaskId },
       {
-        onError: (error: any) => {
+        onError: (error: Error) => {
           toast.error(error.message);
         }
       }
@@ -84,9 +84,9 @@ const SubtaskSection: React.FC<SubtaskSectionProps> = ({ parentTask, checkedChec
                     />
                   </IconButton>
                 )}
-                <Typography color="black" fontWeight="bold">
-                  {item.content} {item.isOptional && '(Optional)'}
-                </Typography>
+                <Box sx={{ color: 'black', fontWeight: 'bold' }}>
+                  <NERMarkdown markdown={`${item.content}${item.isOptional ? ' (Optional)' : ''}`} />
+                </Box>
               </Box>
             );
           }

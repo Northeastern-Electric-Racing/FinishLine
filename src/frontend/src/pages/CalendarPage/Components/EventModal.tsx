@@ -51,7 +51,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
 import { ClearIcon } from '@mui/x-date-pickers';
 import { useAllMachines, useAllShops, usePreviewScheduleSlotRecurringEdits } from '../../../hooks/calendar.hooks';
-import { useAvailableNotificationChannels } from '../../../hooks/organizations.hooks';
+import { useNotificationChannels } from '../../../hooks/organizations.hooks';
 import StoreIcon from '@mui/icons-material/Store';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -291,7 +291,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     isError: notifChannelIsError,
     isLoading: notifChannelsIsLoading,
     error: notifChannelError
-  } = useAvailableNotificationChannels();
+  } = useNotificationChannels();
 
   // Compute default form values - memo ensures stable reference
   const defaultFormData = useMemo(() => {

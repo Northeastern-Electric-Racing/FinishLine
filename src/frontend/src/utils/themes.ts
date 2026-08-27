@@ -77,6 +77,11 @@ export const nerThemeOptions: ThemeOptions = {
         color: 'primary'
       }
     },
+    MuiAutocomplete: {
+      defaultProps: {
+        autoHighlight: true
+      }
+    },
     MuiChip: {
       styleOverrides: {
         filledSecondary: {

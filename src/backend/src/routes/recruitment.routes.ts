@@ -6,6 +6,11 @@ import RecruitmentController from '../controllers/recruitment.controllers.js';
 const recruitmentRouter = express.Router();
 
 /* Milestone Section */
+
+recruitmentRouter.get('/milestones/new-member', RecruitmentController.getNewMemberMilestones);
+
+recruitmentRouter.get('/milestones/recruiting', RecruitmentController.getRecruitingMilestones);
+
 recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
 
 recruitmentRouter.post(
@@ -13,6 +18,8 @@ recruitmentRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('description')),
   isDateOnly(body('dateOfEvent')),
+  body('isOnNewMemberDashboard').isBoolean(),
+  body('isOnRecruitingDashboard').isBoolean(),
   validateInputs,
   RecruitmentController.createMilestone
 );
@@ -32,12 +39,24 @@ recruitmentRouter.delete('/milestone/:milestoneId/delete', RecruitmentController
 
 recruitmentRouter.get('/faqs', RecruitmentController.getAllOrganizationFaqs);
 
+recruitmentRouter.get('/faqs/recruiting', RecruitmentController.getRecruitingFaqs);
+
+recruitmentRouter.get('/faqs/new-member', RecruitmentController.getNewMemberFaqs);
+
 recruitmentRouter.post(
-  '/faq/create',
+  '/faq/recruiting/create',
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
   validateInputs,
-  RecruitmentController.createOrganizationFaq
+  RecruitmentController.createRecruitingFaq
+);
+
+recruitmentRouter.post(
+  '/faq/new-member/create',
+  nonEmptyString(body('question')),
+  nonEmptyString(body('answer')),
+  validateInputs,
+  RecruitmentController.createNewMemberFaq
 );
 
 recruitmentRouter.post(

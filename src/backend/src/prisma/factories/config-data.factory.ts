@@ -1,5 +1,6 @@
 import { Prisma, Work_Package_Stage } from '@prisma/client';
 import { connectOrganization, connectUser } from '../utils/common.factory.js';
+import { encrypt } from '../../utils/encryption.utils.js';
 
 type WorkPackageTemplateConfig = {
   templateName: string;
@@ -22,25 +23,29 @@ export const teamTypeCreateInputs = (organizationId: string): Prisma.Team_TypeCr
   {
     name: 'Mechanical',
     iconName: 'Construction',
-    description: 'This is the mechanical team',
+    description:
+      'Designs, manufactures, and tests the chassis, suspension, aerodynamics, and other structural systems that make up the physical car. Mechanical subteams work hands-on in the shop with CAD, machining, and composites.',
     organization: connectOrganization(organizationId)
   },
   {
     name: 'Software',
     iconName: 'Code',
-    description: 'This is the software team',
+    description:
+      'Builds the tools that keep the team running, from FinishLine itself to telemetry dashboards and vehicle control software. Software members work across the full stack, from embedded firmware to web applications.',
     organization: connectOrganization(organizationId)
   },
   {
     name: 'Electrical',
     iconName: 'ElectricBolt',
-    description: 'This is the electrical team',
+    description:
+      'Designs and builds the high- and low-voltage systems that power the car, including the battery pack, motor controllers, and onboard electronics. Electrical members work with circuit design, PCB layout, and hardware testing.',
     organization: connectOrganization(organizationId)
   },
   {
     name: 'Business',
     iconName: 'AttachMoney',
-    description: 'This is the business team',
+    description:
+      'Keeps the team funded and organized by managing sponsorships, budgets, recruiting, and outreach. Business members work directly with sponsors and coordinate logistics that let every other subteam do their work.',
     organization: connectOrganization(organizationId)
   }
 ];
@@ -109,8 +114,59 @@ export const linkTypeCreateInputs = (creatorId: string, organizationId: string):
     isOnGuestHomePage: true,
     creator: connectUser(creatorId),
     organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Handbook',
+    iconName: 'menu_book',
+    required: true,
+    isOnGuestHomePage: false,
+    isOnNewMemberDashboard: true,
+    isOnOnboardingDashboard: true,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
+  },
+  {
+    name: 'Team Directory',
+    iconName: 'groups',
+    required: true,
+    isOnGuestHomePage: false,
+    isOnNewMemberDashboard: true,
+    creator: connectUser(creatorId),
+    organization: connectOrganization(organizationId)
   }
 ];
+
+// URLs for the link types that are actually surfaced somewhere (guest home page / new-member
+// dashboard) -- the rest of linkTypeCreateInputs are categories only, with no seeded Link yet.
+const USEFUL_LINK_URL_BY_TYPE_NAME: Record<string, string> = {
+  facebook: 'https://facebook.com/example-org',
+  Instagram: 'https://instagram.com/example-org',
+  Handbook: 'https://example.com/handbook',
+  'Team Directory': 'https://example.com/team-directory'
+};
+
+export const usefulLinkCreateInput = (
+  creatorId: string,
+  organizationId: string,
+  linkTypeId: string,
+  url: string
+): Prisma.LinkCreateInput => ({
+  url,
+  creator: connectUser(creatorId),
+  organization: connectOrganization(organizationId),
+  linkType: { connect: { id: linkTypeId } }
+});
+
+export const usefulLinkCreateInputsForTypes = (
+  creatorId: string,
+  organizationId: string,
+  linkTypes: { id: string; name: string }[]
+): Prisma.LinkCreateInput[] =>
+  linkTypes
+    .filter((linkType) => linkType.name in USEFUL_LINK_URL_BY_TYPE_NAME)
+    .map((linkType) =>
+      usefulLinkCreateInput(creatorId, organizationId, linkType.id, USEFUL_LINK_URL_BY_TYPE_NAME[linkType.name])
+    );
 
 export const descriptionBulletTypeCreateInputs = (
   userCreatedId: string,
@@ -278,7 +334,7 @@ export const vendorCreateInputs = (addedByUserId: string, organizationId: string
     taxExempt,
     notes,
     username,
-    password,
+    password: password ? encrypt(password) : undefined,
     discountCode,
     addedBy: connectUser(addedByUserId),
     organization: connectOrganization(organizationId),
@@ -378,6 +434,7 @@ export const calendarCreateInputs = (userCreatedId: string, organizationId: stri
     name: 'New Member Events',
     description: 'Tracks all new member onboarding events.',
     colorHexCode: '#5c6bc0',
+    isNewMemberCalendar: true,
     userCreated: connectUser(userCreatedId),
     organization: connectOrganization(organizationId)
   },

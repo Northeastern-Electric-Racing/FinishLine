@@ -3,6 +3,7 @@ import { Prisma, WBS_Element_Status, Work_Package_Stage } from '@prisma/client';
 import { DateRange } from '../context.js';
 import { clampDate, DAYS_PER_WEEK, daysBetween } from '../dates.js';
 import { addDaysToDate } from 'shared';
+import { seedConfig } from '../seed-config.js';
 
 const WORK_PACKAGE_NULL_STAGE_CHANCE = 0.15;
 
@@ -89,21 +90,17 @@ export const generateWorkPackageName = (faker: Faker, projectName: string, stage
 };
 
 export const generateWorkPackageCount = (faker: Faker): number =>
-  // Each project gets 0–8 work packages. Average work package count is around 5.
-  faker.helpers.weightedArrayElement([
-    { weight: 3, value: 0 },
-    { weight: 5, value: 1 },
-    { weight: 8, value: 2 },
-    { weight: 14, value: 3 },
-    { weight: 18, value: 4 },
-    { weight: 22, value: 5 },
-    { weight: 16, value: 6 },
-    { weight: 9, value: 7 },
-    { weight: 5, value: 8 }
-  ]);
+  faker.helpers.weightedArrayElement(seedConfig.workPackage.countWeights);
 
 export const generateWorkPackageStage = (faker: Faker): Work_Package_Stage | null => {
-  if (faker.datatype.boolean({ probability: WORK_PACKAGE_NULL_STAGE_CHANCE })) return null;
+  if (
+    faker.datatype.boolean({
+      probability: WORK_PACKAGE_NULL_STAGE_CHANCE
+    })
+  ) {
+    return null;
+  }
+
   return faker.helpers.arrayElement(Object.values(Work_Package_Stage).sort());
 };
 
@@ -128,7 +125,10 @@ export const generateWorkPackageTimeline = (
 
   // duration saved in WEEKS instead of days
   const maxDuration = Math.floor(Math.max(1, daysBetween({ start, end: projectTimeline.end }) / DAYS_PER_WEEK));
-  const duration = faker.number.int({ min: 1, max: Math.min(12, maxDuration) });
+  const duration = faker.number.int({
+    min: 1,
+    max: Math.min(12, maxDuration)
+  });
 
   return { start, end: clampDate(addDaysToDate(start, duration * DAYS_PER_WEEK), { start, end: projectTimeline.end }) };
 };
@@ -137,7 +137,7 @@ export const getOverdueStatus = (faker: Faker, daysOverdue: number): WBS_Element
   if (daysOverdue <= 0) return WBS_Element_Status.INACTIVE;
 
   // inverse exponential: starts at ~80% incomplete chance, drops rapidly toward 0
-  const incompleteChance = 10 * Math.exp(-0.01 * daysOverdue);
+  const incompleteChance = 0.8 * Math.exp(-0.01 * daysOverdue);
 
   return faker.datatype.boolean({ probability: 1 - incompleteChance })
     ? WBS_Element_Status.COMPLETE

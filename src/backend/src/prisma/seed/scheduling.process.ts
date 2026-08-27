@@ -3,6 +3,7 @@ import { SeedProcess } from '../processes/seed-process.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { ConfigDataOutput } from './config-data.process.js';
+import { TeamJoinRequestProcess } from './team-join-request.process.js';
 import { availabilityCreateInput, scheduleSettingsCreateInput } from '../factories/scheduling.factory.js';
 
 type SchedulingInput = OrganizationOutput & UsersOutput & ConfigDataOutput;
@@ -23,7 +24,13 @@ export type SchedulingOutput = {
 
 export class SchedulingProcess extends SeedProcess<SchedulingInput, SchedulingOutput> {
   dependencies() {
-    return [OrganizationProcess, UsersProcess];
+    return [
+      OrganizationProcess,
+      UsersProcess,
+      // Ensures guest -> member promotions from approved join requests have landed before this
+      // process builds its eligible-user pool from `members`.
+      TeamJoinRequestProcess
+    ];
   }
 
   async run({ members, appAdmins, admins, heads, leadership }: SchedulingInput): Promise<SchedulingOutput> {

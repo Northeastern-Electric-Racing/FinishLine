@@ -4,8 +4,6 @@ import { addDaysToDate } from 'shared';
 import { DateRange } from '../context.js';
 import { clampDate, daysBetween } from '../dates.js';
 
-export const PROJECTS_PER_CAR = 30;
-
 const MIN_PROJECT_MONTHS = 3;
 const MAX_PROJECT_MONTHS = 12;
 

@@ -3,6 +3,7 @@ import { Prisma, Task_Priority, Task_Status } from '@prisma/client';
 import { addDaysToDate } from 'shared';
 import { DateRange } from '../context.js';
 import { clampDate, daysBetween, DAY_MS } from '../dates.js';
+import { seedConfig } from '../seed-config.js';
 
 export type SeedTaskParent = {
   wbsElementId: string;
@@ -85,6 +86,17 @@ const TASK_TITLE_OBJECTS = [
   'recruitment UI'
 ];
 
+const TASK_LABELS = [
+  { name: 'Documentation', colorHexCode: '#EC4899' },
+  { name: 'New-Member Task', colorHexCode: '#283593' },
+  { name: 'Own', colorHexCode: '#283593' },
+  { name: 'Assist', colorHexCode: '#283593' },
+  { name: 'Observe', colorHexCode: '#283593' },
+  { name: 'Quick & Easy', colorHexCode: '#66BB6A' },
+  { name: 'Collaborative', colorHexCode: '#F0B429' },
+  { name: 'Intense', colorHexCode: '#E5534B' }
+];
+
 const taskTitle = (faker: Faker): string => {
   if (faker.datatype.boolean({ probability: 0.7 })) {
     return faker.helpers.arrayElement(TASK_TITLE_OBJECTS);
@@ -124,30 +136,38 @@ const randomDateInRange = (faker: Faker, range: DateRange): Date => {
 
 const DUE_BUFFER_DAYS = 7;
 
-const taskStatusForDueDate = (faker: Faker, dueDate: Date, now: Date = new Date()): Task_Status => {
+/**
+ * A task can only be created/marked DONE if none of its task-level blockers and none of its work
+ * package's blocking work packages still have active (non-done) work - see getActiveTaskBlockerNames.
+ * When `canBeDone` is false, DONE is redistributed to IN_PROGRESS so the seed never persists a task
+ * that createTask/editTask would have rejected.
+ */
+const taskStatusForDueDate = (faker: Faker, dueDate: Date, now: Date = new Date(), canBeDone = true): Task_Status => {
   const daysUntilDue = Math.floor((dueDate.getTime() - now.getTime()) / DAY_MS);
 
+  let status: Task_Status;
+
   if (daysUntilDue < -DUE_BUFFER_DAYS) {
-    return faker.helpers.weightedArrayElement([
+    status = faker.helpers.weightedArrayElement([
       { weight: 80, value: Task_Status.DONE },
       { weight: 15, value: Task_Status.IN_PROGRESS },
       { weight: 5, value: Task_Status.IN_BACKLOG }
     ]);
-  }
-
-  if (daysUntilDue > DUE_BUFFER_DAYS) {
-    return faker.helpers.weightedArrayElement([
+  } else if (daysUntilDue > DUE_BUFFER_DAYS) {
+    status = faker.helpers.weightedArrayElement([
       { weight: 75, value: Task_Status.IN_BACKLOG },
       { weight: 20, value: Task_Status.IN_PROGRESS },
       { weight: 5, value: Task_Status.DONE }
     ]);
+  } else {
+    status = faker.helpers.weightedArrayElement([
+      { weight: 65, value: Task_Status.IN_PROGRESS },
+      { weight: 20, value: Task_Status.DONE },
+      { weight: 15, value: Task_Status.IN_BACKLOG }
+    ]);
   }
 
-  return faker.helpers.weightedArrayElement([
-    { weight: 65, value: Task_Status.IN_PROGRESS },
-    { weight: 20, value: Task_Status.DONE },
-    { weight: 15, value: Task_Status.IN_BACKLOG }
-  ]);
+  return !canBeDone && status === Task_Status.DONE ? Task_Status.IN_PROGRESS : status;
 };
 
 const randomPriority = (faker: Faker): Task_Priority =>
@@ -157,14 +177,19 @@ const randomPriority = (faker: Faker): Task_Priority =>
     { weight: 20, value: Task_Priority.HIGH }
   ]);
 
-export const taskCountForProject = (faker: Faker): number => {
-  const bucket = faker.number.int({ min: 1, max: 100 });
-
-  if (bucket <= 8) return 0;
-  if (bucket <= 75) return faker.number.int({ min: 6, max: 24 });
-  if (bucket <= 94) return faker.number.int({ min: 25, max: 50 });
-  return faker.number.int({ min: 51, max: 80 });
-};
+export const taskCountForProject = (faker: Faker): number =>
+  faker.helpers.weightedArrayElement(
+    seedConfig.task.countForProject.map((option) => ({
+      weight: option.weight,
+      value:
+        'value' in option
+          ? option.value
+          : faker.number.int({
+              min: option.min,
+              max: option.max
+            })
+    }))
+  );
 
 export const assigneeCountForTask = (faker: Faker): number =>
   faker.helpers.weightedArrayElement([
@@ -173,11 +198,29 @@ export const assigneeCountForTask = (faker: Faker): number =>
     { weight: 5, value: 3 }
   ]);
 
+export const taskLabelCreateInputs = (organizationId: string, userCreatedId: string): Prisma.Task_LabelCreateInput[] =>
+  TASK_LABELS.map(({ name, colorHexCode }) => ({
+    name,
+    colorHexCode,
+    organization: { connect: { organizationId } },
+    userCreated: { connect: { userId: userCreatedId } }
+  }));
+
+export const labelCountForTask = (faker: Faker): number =>
+  faker.helpers.weightedArrayElement([
+    { weight: 55, value: 0 },
+    { weight: 30, value: 1 },
+    { weight: 12, value: 2 },
+    { weight: 3, value: 3 }
+  ]);
+
 export const createSeedTask = (
   faker: Faker,
   parent: SeedTaskParent,
   creatorId: string,
   assigneeIds: string[],
+  labelIds: string[] = [],
+  canBeDone = true,
   overrides: SeedTaskOverrides = {}
 ): Prisma.TaskCreateInput => {
   const deadline = randomDateInRange(faker, parent.timeline);
@@ -199,7 +242,7 @@ export const createSeedTask = (
     title: taskTitle(faker),
     notes: faker.helpers.arrayElement(TASK_NOTES),
     priority: randomPriority(faker),
-    status: taskStatusForDueDate(faker, deadline),
+    status: taskStatusForDueDate(faker, deadline, new Date(), canBeDone),
     startDate,
     deadline,
     dateCreated,
@@ -208,6 +251,9 @@ export const createSeedTask = (
     },
     assignees: {
       connect: assigneeIds.map((userId) => ({ userId }))
+    },
+    labels: {
+      connect: labelIds.map((taskLabelId) => ({ taskLabelId }))
     },
     wbsElement: {
       connect: { wbsElementId: parent.wbsElementId }

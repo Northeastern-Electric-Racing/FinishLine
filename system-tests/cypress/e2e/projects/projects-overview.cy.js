@@ -21,8 +21,8 @@ describe('Projects Overview', () => {
     cy.contains(ALL_PROJECTS_TAB).click();
     cy.url().should(INCLUDE, '/projects/all');
     cy.get('[role="grid"]').should(VISIBLE);
-    cy.contains('Impact Attenuator').should(VISIBLE);
-    cy.contains('Bodywork').should(VISIBLE);
+    // Header row plus at least one data row -- doesn't depend on any specific project existing.
+    cy.get('[role="grid"] [role="row"]').should(LENGTH_GREATER_THAN, 1);
   });
 
   it('Creating a Project Writes to DB and Appears in All Projects', () => {
@@ -34,7 +34,7 @@ describe('Projects Overview', () => {
     cy.get('[placeholder="Enter project name..."]').type(projectName);
 
     cy.get('label').contains('Teams').parent().find('[role="combobox"]').click({ force: true });
-    cy.get('[role="listbox"]').contains('Huskies').click();
+    cy.get('[role="listbox"]').find('li').first().click();
 
     cy.get('body').click(0, 0);
 
@@ -44,6 +44,10 @@ describe('Projects Overview', () => {
 
     cy.url().should(INCLUDE, '/projects/all');
 
+    // The grid virtualizes rows, so a newly-created project can exist without being rendered in
+    // the DOM if it sorts outside the currently-visible window -- filter down to it first via
+    // the grid's built-in quick filter instead of scanning the whole (unfiltered) grid.
+    cy.get('input[placeholder^="Search"]').type(projectName);
     cy.contains(projectName, { timeout: 10000 }).should(VISIBLE);
   });
 });

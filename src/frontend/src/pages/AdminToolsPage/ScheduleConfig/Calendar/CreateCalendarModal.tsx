@@ -17,7 +17,8 @@ const CreateCalendarModal: React.FC<CreateCalendarModalProps> = ({ open, onClose
       const result = await createCalendar({
         name: data.name,
         description: data.description,
-        colorHexCode: data.colorHexCode
+        colorHexCode: data.colorHexCode,
+        isNewMemberCalendar: data.isNewMemberCalendar
       });
       toast.success('Calendar created successfully');
       return result;

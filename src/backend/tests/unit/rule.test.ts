@@ -6,6 +6,7 @@ import {
   wonderwomanGuest,
   batmanAppAdmin,
   aquamanLeadership,
+  greenlanternHead,
   alfred,
   flashAdmin
 } from '../test-data/users.test-data';
@@ -166,7 +167,14 @@ describe('Create Rules Tests', () => {
 
     it('fails when guest tries to create a rule', async () => {
       await expect(RulesService.createRule(wonderwoman, 'T.1.1', 'Some rule', rulesetId, organization)).rejects.toThrow(
-        new AccessDeniedException('Only members and above can create rules')
+        new AccessDeniedException('Only leadership and above can create rules')
+      );
+    });
+
+    it('fails when a member tries to create a rule', async () => {
+      const member = await createTestUser(financeMember, orgId);
+      await expect(RulesService.createRule(member, 'T.1.1', 'Some rule', rulesetId, organization)).rejects.toThrow(
+        new AccessDeniedException('Only leadership and above can create rules')
       );
     });
 
@@ -267,10 +275,9 @@ describe('Create Rules Tests', () => {
       ).rejects.toThrow(new DeletedException('Referenced Rule', rule1.ruleId));
     });
 
-    it('allows members and above to create rules', async () => {
-      await RulesService.createRule(aquaman, 'T.1.1', 'Member created rule', rulesetId, organization);
-      await RulesService.createRule(aquaman, 'T.1.2', 'Leadership created rule', rulesetId, organization);
-      await RulesService.createRule(superman, 'T.1.3', 'Admin created rule', rulesetId, organization);
+    it('allows leadership and above to create rules', async () => {
+      await RulesService.createRule(aquaman, 'T.1.1', 'Leadership created rule', rulesetId, organization);
+      await RulesService.createRule(superman, 'T.1.2', 'Admin created rule', rulesetId, organization);
     });
 
     describe('Create ruleset', () => {
@@ -410,7 +417,7 @@ describe('Create Rules Tests', () => {
 
       await RulesService.createProjectRule(aquaman, organization, grandchild.ruleId, project.projectId);
 
-      const projectRules = await RulesService.getProjectRules(rulesetId, project.projectId, organization);
+      const projectRules = await RulesService.getProjectRules(aquaman, rulesetId, project.projectId, organization);
       const assignedRuleIds = projectRules.map((pr) => pr.rule.ruleId);
       expect(assignedRuleIds).toHaveLength(3); // grandchild, child, topLevelRule
       expect(assignedRuleIds).toEqual(expect.arrayContaining([topLevelRule.ruleId, child.ruleId, grandchild.ruleId]));
@@ -445,7 +452,7 @@ describe('Create Rules Tests', () => {
       // adding sibling must not error or duplicate the already-present parent/root rules
       await RulesService.createProjectRule(aquaman, organization, grandchild2.ruleId, project.projectId);
 
-      const projectRules = await RulesService.getProjectRules(rulesetId, project.projectId, organization);
+      const projectRules = await RulesService.getProjectRules(aquaman, rulesetId, project.projectId, organization);
       const assignedRuleIds = projectRules.map((pr) => pr.rule.ruleId);
       expect(assignedRuleIds).toHaveLength(4); // grandchild1, grandchild2, child, topLevelRule
       expect(assignedRuleIds).toEqual(
@@ -475,7 +482,7 @@ describe('Create Rules Tests', () => {
 
       await RulesService.createProjectRule(aquaman, organization, child.ruleId, project.projectId);
 
-      const projectRules = await RulesService.getProjectRules(rulesetId, project.projectId, organization);
+      const projectRules = await RulesService.getProjectRules(aquaman, rulesetId, project.projectId, organization);
       const assignedRuleIds = projectRules.map((pr) => pr.rule.ruleId);
       expect(assignedRuleIds).toHaveLength(2); // child and topLevelRule, not grandchild
       expect(assignedRuleIds).toEqual(expect.arrayContaining([topLevelRule.ruleId, child.ruleId]));
@@ -511,7 +518,7 @@ describe('Create Rules Tests', () => {
       ).rejects.toThrow(new DeletedException('Rule', child.ruleId));
 
       // nothing should have been assigned (not the grandchild, the deleted parent, or the root)
-      const projectRules = await RulesService.getProjectRules(rulesetId, project.projectId, organization);
+      const projectRules = await RulesService.getProjectRules(aquaman, rulesetId, project.projectId, organization);
       expect(projectRules).toHaveLength(0);
 
       const grandchildProjectRule = await prisma.project_Rule.findUnique({
@@ -577,11 +584,12 @@ describe('Create Rules Tests', () => {
 
   describe('Get rulesets by ruleset type', () => {
     it('Successful get rulesets by ruleset types', async () => {
-      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
+      const rulesets = await RulesService.getRulesetsByRulesetType(aquaman, rulesetType.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(1);
       expect(rulesets[0].name).toBe('2025 FSAE Rules');
       expect(rulesets[0].active).toBeTruthy();
       expect(rulesets[0].assignedPercentage).toBe(0);
+      expect(rulesets[0].createdByUserId).toBe(batman.userId);
     });
 
     it('Successful get rulesets by ruleset types after deleting ruleset', async () => {
@@ -592,7 +600,7 @@ describe('Create Rules Tests', () => {
       });
 
       await RulesService.deleteRuleset(rulesetId, batman.userId, orgId);
-      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
+      const rulesets = await RulesService.getRulesetsByRulesetType(aquaman, rulesetType.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(0);
     });
 
@@ -607,7 +615,7 @@ describe('Create Rules Tests', () => {
           createdBy: { connect: { userId: batman.userId } }
         }
       });
-      const rulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
+      const rulesets = await RulesService.getRulesetsByRulesetType(aquaman, rulesetType.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(2);
       expect(rulesets[0].name).toBe('2025 FSAE Rules2');
       expect(rulesets[1].name).toBe('2025 FSAE Rules');
@@ -640,15 +648,25 @@ describe('Create Rules Tests', () => {
       });
 
       // 2 total rulesets for this type
-      const allRulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId);
+      const allRulesets = await RulesService.getRulesetsByRulesetType(aquaman, rulesetType.rulesetTypeId, orgId);
       expect(allRulesets.length).toBe(2);
 
       // 1 ruleset when filtered to the original car
-      const originalCarRulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId, carId);
+      const originalCarRulesets = await RulesService.getRulesetsByRulesetType(
+        aquaman,
+        rulesetType.rulesetTypeId,
+        orgId,
+        carId
+      );
       expect(originalCarRulesets.length).toBe(1);
       expect(originalCarRulesets[0].rulesetId).toBe(rulesetId);
 
-      const otherCarRulesets = await RulesService.getRulesetsByRulesetType(rulesetType.rulesetTypeId, orgId, otherCar.carId);
+      const otherCarRulesets = await RulesService.getRulesetsByRulesetType(
+        aquaman,
+        rulesetType.rulesetTypeId,
+        orgId,
+        otherCar.carId
+      );
 
       // 1 ruleset when filtered to the other car
       expect(otherCarRulesets.length).toBe(1);
@@ -661,7 +679,7 @@ describe('Create Rules Tests', () => {
       const parentRule = await RulesService.createRule(batman, 'T.1', 'Parent Rule', rulesetId, organization);
       await RulesService.createRule(batman, 'T.1.1', 'Child Rule 1', rulesetId, organization, parentRule.ruleId);
       await RulesService.createRule(batman, 'T.1.2', 'Child Rule 2', rulesetId, organization, parentRule.ruleId);
-      const childRules = await RulesService.getChildRules(parentRule.ruleId, organization);
+      const childRules = await RulesService.getChildRules(aquaman, parentRule.ruleId, organization);
       expect(childRules.length).toBe(2);
       expect(childRules[0].ruleCode).toBe('T.1.1');
       expect(childRules[1].ruleCode).toBe('T.1.2');
@@ -678,24 +696,24 @@ describe('Create Rules Tests', () => {
         parentRule.ruleId
       );
       await RulesService.deleteRule(childRule.ruleId, batman, organization);
-      const childRules = await RulesService.getChildRules(parentRule.ruleId, organization);
+      const childRules = await RulesService.getChildRules(aquaman, parentRule.ruleId, organization);
       expect(childRules.length).toBe(0);
     });
 
     it('Successfully gets child rules after adding child rule', async () => {
       const parentRule = await RulesService.createRule(batman, 'T.3', 'Parent Rule', rulesetId, organization);
       await RulesService.createRule(batman, 'T.3.1', 'Child Rule 1', rulesetId, organization, parentRule.ruleId);
-      const childRulesAfterOne = await RulesService.getChildRules(parentRule.ruleId, organization);
+      const childRulesAfterOne = await RulesService.getChildRules(aquaman, parentRule.ruleId, organization);
       expect(childRulesAfterOne.length).toBe(1);
       await RulesService.createRule(batman, 'T.3.2', 'Child Rule 2', rulesetId, organization, parentRule.ruleId);
-      const childRulesAfterTwo = await RulesService.getChildRules(parentRule.ruleId, organization);
+      const childRulesAfterTwo = await RulesService.getChildRules(aquaman, parentRule.ruleId, organization);
       expect(childRulesAfterTwo.length).toBe(2);
       expect(childRulesAfterTwo[0].ruleCode).toBe('T.3.1');
       expect(childRulesAfterTwo[1].ruleCode).toBe('T.3.2');
     });
 
     it('Fails if parent rule does not exist', async () => {
-      await expect(async () => await RulesService.getChildRules('fake-rule-id', organization)).rejects.toThrow(
+      await expect(async () => await RulesService.getChildRules(aquaman, 'fake-rule-id', organization)).rejects.toThrow(
         new NotFoundException('Rule', 'fake-rule-id')
       );
     });
@@ -703,7 +721,7 @@ describe('Create Rules Tests', () => {
     it('Fails if parent rule is deleted', async () => {
       const parentRule = await RulesService.createRule(batman, 'T.4', 'Parent Rule', rulesetId, organization);
       await RulesService.deleteRule(parentRule.ruleId, batman, organization);
-      await expect(async () => await RulesService.getChildRules(parentRule.ruleId, organization)).rejects.toThrow(
+      await expect(async () => await RulesService.getChildRules(aquaman, parentRule.ruleId, organization)).rejects.toThrow(
         new DeletedException('Rule', parentRule.ruleId)
       );
     });
@@ -765,9 +783,9 @@ describe('Create Rules Tests', () => {
           createdByUserId: otherBatman.userId
         }
       });
-      await expect(async () => await RulesService.getChildRules(otherParentRule.ruleId, organization)).rejects.toThrow(
-        new InvalidOrganizationException('Rule')
-      );
+      await expect(
+        async () => await RulesService.getChildRules(aquaman, otherParentRule.ruleId, organization)
+      ).rejects.toThrow(new InvalidOrganizationException('Rule'));
     });
   });
   describe('Update ruleset status', () => {
@@ -925,6 +943,7 @@ describe('Rule Tests', () => {
   let orgId: string;
   let otherOrg: Organization;
   let admin: User;
+  let head: User;
   let nonLeadership: User;
   let guest: User;
   let project: Project;
@@ -936,6 +955,7 @@ describe('Rule Tests', () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     admin = await createTestUser(supermanAdmin, organization.organizationId);
+    head = await createTestUser(greenlanternHead, organization.organizationId);
     nonLeadership = await createTestUser(financeMember, organization.organizationId);
     guest = await createTestUser(wonderwomanGuest, organization.organizationId);
     project = await createTestProject(admin, organization.organizationId);
@@ -1098,9 +1118,15 @@ describe('Rule Tests', () => {
   };
 
   describe('Create Ruleset Type', () => {
-    it('Fails if user is not leadership or above', async () => {
+    it('Fails if user is not an admin', async () => {
       await expect(async () => await RulesService.createRulesetType(guest, 'FSAE', organization)).rejects.toThrow(
-        new AccessDeniedException('only leadership and above can create ruleset types!')
+        new AccessDeniedAdminOnlyException('create ruleset types')
+      );
+    });
+
+    it('Fails if user is leadership but not an admin', async () => {
+      await expect(async () => await RulesService.createRulesetType(head, 'FSAE', organization)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('create ruleset types')
       );
     });
 
@@ -1268,7 +1294,7 @@ describe('Rule Tests', () => {
       expect(updatedProjectRule.statusUpdatedAt).toBeInstanceOf(Date);
     });
 
-    it('Set project rule status fails if user does not have permission', async () => {
+    it('Set project rule status fails if a member is not on the project team', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
       const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
@@ -1278,7 +1304,7 @@ describe('Rule Tests', () => {
       await expect(
         async () =>
           await RulesService.setProjectRuleStatus(nonLeadership, organization, projectRule.projectRuleId, RuleStatus.PASS)
-      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule status'));
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule status for this project'));
     });
 
     it('Set project rule status fails if the rule has sub-rules assigned to the project', async () => {
@@ -1312,7 +1338,7 @@ describe('Rule Tests', () => {
       await RulesService.setProjectRuleStatus(admin, organization, projectRule1.projectRuleId, RuleStatus.PASS);
       await RulesService.setRuleStatus(admin, organization, leafRule1.ruleId, RuleStatus.FAIL);
 
-      const projectRules2 = await RulesService.getProjectRules(ruleset1.rulesetId, project2.projectId, organization);
+      const projectRules2 = await RulesService.getProjectRules(admin, ruleset1.rulesetId, project2.projectId, organization);
       const rule2Entry = projectRules2.find((pr) => pr.projectRuleId === projectRule2.projectRuleId);
 
       expect(rule2Entry?.status).toBe(RuleStatus.PENDING);
@@ -1351,7 +1377,11 @@ describe('Rule Tests', () => {
       // so FAIL rolls all the way up the chain
       await RulesService.setRuleStatus(admin, organization, childRule.ruleId, RuleStatus.FAIL);
 
-      const rulesBeforeDelete = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rulesBeforeDelete = await RulesService.getAllRulesForRuleset(
+        admin,
+        ruleset1.rulesetId,
+        organization.organizationId
+      );
       expect(rulesBeforeDelete.find((r) => r.ruleId === parentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
       expect(rulesBeforeDelete.find((r) => r.ruleId === grandparentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
 
@@ -1359,7 +1389,11 @@ describe('Rule Tests', () => {
       // status should reset to Pending, and that change should keep propagating up to grandparentRule
       await RulesService.deleteRule(childRule.ruleId, admin, organization);
 
-      const rulesAfterDelete = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rulesAfterDelete = await RulesService.getAllRulesForRuleset(
+        admin,
+        ruleset1.rulesetId,
+        organization.organizationId
+      );
       const updatedParent = rulesAfterDelete.find((r) => r.ruleId === parentRule.ruleId);
       const updatedGrandparent = rulesAfterDelete.find((r) => r.ruleId === grandparentRule.ruleId);
 
@@ -1394,7 +1428,7 @@ describe('Rule Tests', () => {
 
       // marking the child Pass rolls parent rule up to Pass too
       await RulesService.setRuleStatus(admin, organization, childRule.ruleId, RuleStatus.PASS);
-      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(admin, ruleset1.rulesetId, organization.organizationId);
       const parentRule = rules.find((r) => r.ruleId === rule.ruleId);
       expect(parentRule!.status).toBe(RuleStatus.PASS);
 
@@ -1407,7 +1441,7 @@ describe('Rule Tests', () => {
       // deleting the only child makes rule a leaf again, so it should reset to Pending
       await RulesService.deleteRule(childRule.ruleId, admin, organization);
 
-      const allRules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const allRules = await RulesService.getAllRulesForRuleset(admin, ruleset1.rulesetId, organization.organizationId);
       const updatedRule = allRules.find((r) => r.ruleId === rule.ruleId);
 
       expect(updatedRule?.status).toBe(RuleStatus.PENDING);
@@ -1463,6 +1497,7 @@ describe('Rule Tests', () => {
       await RulesService.setProjectRuleStatus(admin, organization, childProjectRule.projectRuleId, RuleStatus.FAIL);
 
       const projectRulesBeforeDelete = await RulesService.getProjectRules(
+        admin,
         ruleset1.rulesetId,
         project.projectId,
         organization
@@ -1475,6 +1510,7 @@ describe('Rule Tests', () => {
       await RulesService.deleteProjectRule(childProjectRule.projectRuleId, admin, organization);
 
       const projectRulesAfterDelete = await RulesService.getProjectRules(
+        admin,
         ruleset1.rulesetId,
         project.projectId,
         organization
@@ -1579,7 +1615,7 @@ describe('Rule Tests', () => {
 
       expect(count).toBe(2);
 
-      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(admin, ruleset1.rulesetId, organization.organizationId);
       const updatedTopLevel = rules.find((r) => r.ruleId === topLevelRule.ruleId);
       const updatedLeaf = rules.find((r) => r.ruleId === leafRule1.ruleId);
 
@@ -1608,7 +1644,18 @@ describe('Rule Tests', () => {
 
       await expect(
         async () => await RulesService.resetRulesetStatuses(nonLeadership, organization, ruleset1.rulesetId)
-      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule status'));
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to reset rule status'));
+    });
+
+    it('Reset status succeeds for a head (non-admin) user', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, leafRule1 } = await setupRules(car);
+
+      await RulesService.setRuleStatus(admin, organization, leafRule1.ruleId, RuleStatus.PASS);
+
+      const count = await RulesService.resetRulesetStatuses(head, organization, ruleset1.rulesetId);
+
+      expect(count).toBe(1);
     });
 
     it('Reset status only affects the given ruleset', async () => {
@@ -1629,7 +1676,7 @@ describe('Rule Tests', () => {
 
       await RulesService.resetRulesetStatuses(admin, organization, ruleset1.rulesetId);
 
-      const rules = await RulesService.getAllRulesForRuleset(ruleset2.rulesetId, organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(admin, ruleset2.rulesetId, organization.organizationId);
       const untouchedRule = rules.find((r) => r.ruleId === otherRule.ruleId);
 
       expect(untouchedRule?.status).toBe(RuleStatus.PASS);
@@ -1659,7 +1706,7 @@ describe('Rule Tests', () => {
 
       expect(count).toBe(1);
 
-      const projectRules = await RulesService.getProjectRules(ruleset1.rulesetId, project.projectId, organization);
+      const projectRules = await RulesService.getProjectRules(admin, ruleset1.rulesetId, project.projectId, organization);
       const updated = projectRules.find((pr) => pr.projectRuleId === projectRule.projectRuleId);
 
       expect(updated?.status).toBe(RuleStatus.PENDING);
@@ -1727,7 +1774,7 @@ describe('Rule Tests', () => {
       await expect(
         async () =>
           await RulesService.resetProjectRuleStatuses(nonLeadership, organization, ruleset1.rulesetId, project.projectId)
-      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to update rule status'));
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to reset project rule status'));
     });
 
     it('Reset project status only affects the given project', async () => {
@@ -1754,7 +1801,7 @@ describe('Rule Tests', () => {
 
       await RulesService.resetProjectRuleStatuses(admin, organization, ruleset1.rulesetId, project1.projectId);
 
-      const project2Rules = await RulesService.getProjectRules(ruleset1.rulesetId, project2.projectId, organization);
+      const project2Rules = await RulesService.getProjectRules(admin, ruleset1.rulesetId, project2.projectId, organization);
       const untouched = project2Rules.find((pr) => pr.projectRuleId === projectRule2.projectRuleId);
 
       expect(untouched?.status).toBe(RuleStatus.PASS);
@@ -1784,15 +1831,43 @@ describe('Rule Tests', () => {
 
       await RulesService.resetProjectRuleStatuses(admin, organization, ruleset1.rulesetId, project.projectId);
 
-      const projectRules = await RulesService.getProjectRules(ruleset2.rulesetId, project.projectId, organization);
+      const projectRules = await RulesService.getProjectRules(admin, ruleset2.rulesetId, project.projectId, organization);
       const untouched = projectRules.find((pr) => pr.projectRuleId === projectRule2.projectRuleId);
 
       expect(untouched?.status).toBe(RuleStatus.PASS);
     });
+
+    it('Set project rule status succeeds if a member is on the project team', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      const memberProject = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      const projectRule = await RulesService.createProjectRule(
+        admin,
+        organization,
+        topLevelRule.ruleId,
+        memberProject.projectId
+      );
+      await prisma.team.update({
+        where: { teamId: testTeam.teamId },
+        data: { members: { connect: { userId: nonLeadership.userId } } }
+      });
+
+      const updatedProjectRule = await RulesService.setProjectRuleStatus(
+        nonLeadership,
+        organization,
+        projectRule.projectRuleId,
+        RuleStatus.PASS
+      );
+
+      expect(updatedProjectRule.status).toBe(RuleStatus.PASS);
+      expect(updatedProjectRule.statusUpdatedBy?.firstName).toBe(nonLeadership.firstName);
+      expect(updatedProjectRule.statusUpdatedBy?.lastName).toBe(nonLeadership.lastName);
+    });
   });
 
   describe('Edit Rule', () => {
-    it('Fails if user is not an admin', async () => {
+    it('Fails if user is not leadership or above', async () => {
       const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
       await expect(
@@ -1805,7 +1880,7 @@ describe('Rule Tests', () => {
             ['newfile'],
             organization
           )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a rule'));
+      ).rejects.toThrow(new AccessDeniedException('Only leadership and above can edit a rule'));
     });
 
     it('Fails if rule doesn`t exist', async () => {
@@ -2004,7 +2079,48 @@ describe('Rule Tests', () => {
 
       await expect(
         async () => await RulesService.deleteRuleset(ruleset1.rulesetId, nonLeadership.userId, organization.organizationId)
-      ).rejects.toThrow(new AccessDeniedException('Only admins can delete a ruleset.'));
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to delete this ruleset.'));
+    });
+    it('Delete ruleset succeeds if a leadership user created the ruleset', async () => {
+      const car = await createUniqueCar(orgId);
+      const leadershipUser = await createTestUser(aquamanLeadership, orgId);
+      const ruleset = await prisma.ruleset.create({
+        data: {
+          name: 'Leadership Ruleset',
+          fileId: 'leadership-created-ruleset-file',
+          active: false,
+          car: { connect: { carId: car.carId } },
+          createdBy: { connect: { userId: leadershipUser.userId } },
+          rulesetType: { connect: { rulesetTypeId: fsaeRulesetType.rulesetTypeId } }
+        }
+      });
+
+      const deleted = await RulesService.deleteRuleset(
+        ruleset.rulesetId,
+        leadershipUser.userId,
+        organization.organizationId
+      );
+
+      expect(deleted).toBeDefined();
+      expect(deleted.rulesetId).toBe(ruleset.rulesetId);
+    });
+    it('Delete ruleset fails if a leadership user did not create the ruleset', async () => {
+      const car = await createUniqueCar(orgId);
+      const leadershipUser = await createTestUser(aquamanLeadership, orgId);
+      const ruleset = await prisma.ruleset.create({
+        data: {
+          name: 'Admin Created Ruleset',
+          fileId: 'admin-created-ruleset-file',
+          active: false,
+          car: { connect: { carId: car.carId } },
+          createdBy: { connect: { userId: admin.userId } },
+          rulesetType: { connect: { rulesetTypeId: fsaeRulesetType.rulesetTypeId } }
+        }
+      });
+
+      await expect(
+        async () => await RulesService.deleteRuleset(ruleset.rulesetId, leadershipUser.userId, organization.organizationId)
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to delete this ruleset.'));
     });
     it('Delete ruleset fails if ruleset was already deleted', async () => {
       const car = await createUniqueCar(orgId);
@@ -2030,7 +2146,7 @@ describe('Rule Tests', () => {
 
   describe('Get all ruleset types', () => {
     it('Successful get all ruleset types', async () => {
-      const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      const rulesetTypes = await RulesService.getAllRulesetTypes(admin, organization);
       expect(rulesetTypes.length).toEqual(2);
       expect(rulesetTypes[0].name).toEqual('FSAE');
       expect(rulesetTypes[1].name).toEqual('Ruleset Type with no Active Rulesets or Anything');
@@ -2043,7 +2159,7 @@ describe('Rule Tests', () => {
           organizationId: orgId
         }
       });
-      const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      const rulesetTypes = await RulesService.getAllRulesetTypes(admin, organization);
       expect(rulesetTypes.length).toEqual(3);
       expect(rulesetTypes[2].name).toEqual('FSAE2');
     });
@@ -2056,7 +2172,7 @@ describe('Rule Tests', () => {
           deletedByUserId: admin.userId
         }
       });
-      const rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      const rulesetTypes = await RulesService.getAllRulesetTypes(admin, organization);
       expect(rulesetTypes.length).toEqual(1);
     });
   });
@@ -2149,7 +2265,14 @@ describe('Rule Tests', () => {
       const { topLevelRule } = await setupRules(car);
       await expect(
         async () => await RulesService.toggleRuleTeam(topLevelRule.ruleId, '', guest, organization)
-      ).rejects.toThrow(new AccessDeniedGuestException('Toggle Rule Team'));
+      ).rejects.toThrow(new AccessDeniedException('Only leadership and above can assign rules to teams'));
+    });
+    it('Fails if user is a member', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule } = await setupRules(car);
+      await expect(
+        async () => await RulesService.toggleRuleTeam(topLevelRule.ruleId, '', nonLeadership, organization)
+      ).rejects.toThrow(new AccessDeniedException('Only leadership and above can assign rules to teams'));
     });
     it('Fails if rule does not exist', async () => {
       await expect(async () => await RulesService.toggleRuleTeam('fake-rule-id', '', admin, organization)).rejects.toThrow(
@@ -2403,13 +2526,13 @@ describe('Rule Tests', () => {
     });
 
     it('Successfully deletes the ruleset type', async () => {
-      let rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      let rulesetTypes = await RulesService.getAllRulesetTypes(admin, organization);
       expect(rulesetTypes.length).toEqual(2);
 
       const appAdmin = await createTestUser(batmanAppAdmin, orgId);
       const result = await RulesService.deleteRulesetType(appAdmin, fsaeRulesetType.rulesetTypeId, organization);
 
-      rulesetTypes = await RulesService.getAllRulesetTypes(organization);
+      rulesetTypes = await RulesService.getAllRulesetTypes(admin, organization);
 
       expect(rulesetTypes.length).toEqual(1);
 
@@ -2430,10 +2553,14 @@ describe('Rule Tests', () => {
         }
       });
 
-      let rulesets = await RulesService.getRulesetsByRulesetType(fsaeRulesetType2WithRevisionFiles.rulesetTypeId, orgId);
+      let rulesets = await RulesService.getRulesetsByRulesetType(
+        admin,
+        fsaeRulesetType2WithRevisionFiles.rulesetTypeId,
+        orgId
+      );
       expect(rulesets.length).toBe(1);
       await RulesService.deleteRulesetType(admin, fsaeRulesetType2WithRevisionFiles.rulesetTypeId, organization);
-      rulesets = await RulesService.getRulesetsByRulesetType(fsaeRulesetType2WithRevisionFiles.rulesetTypeId, orgId);
+      rulesets = await RulesService.getRulesetsByRulesetType(admin, fsaeRulesetType2WithRevisionFiles.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(0);
     });
   });
@@ -2460,6 +2587,7 @@ describe('Rule Tests', () => {
       });
       await expect(
         RulesService.getUnassignedRulesForProjectRuleset(
+          admin,
           otherRuleset.rulesetId,
           project.projectId,
           organization.organizationId
@@ -2472,6 +2600,7 @@ describe('Rule Tests', () => {
       const otherOrgProject = await createTestProject(admin, otherOrg.organizationId);
       await expect(
         RulesService.getUnassignedRulesForProjectRuleset(
+          admin,
           ruleset1.rulesetId,
           otherOrgProject.projectId,
           organization.organizationId
@@ -2481,6 +2610,7 @@ describe('Rule Tests', () => {
     it('fails if ruleset does not exist', async () => {
       await expect(
         RulesService.getUnassignedRulesForProjectRuleset(
+          admin,
           'nonexistent-ruleset-id',
           project.projectId,
           organization.organizationId
@@ -2491,7 +2621,12 @@ describe('Rule Tests', () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
       await expect(
-        RulesService.getUnassignedRulesForProjectRuleset(ruleset1.rulesetId, 'fake-project-id', organization.organizationId)
+        RulesService.getUnassignedRulesForProjectRuleset(
+          admin,
+          ruleset1.rulesetId,
+          'fake-project-id',
+          organization.organizationId
+        )
       ).rejects.toThrow(new NotFoundException('Project', 'fake-project-id'));
     });
     it("successfully returns rules on the project's teams that are not already assigned to the project", async () => {
@@ -2521,6 +2656,7 @@ describe('Rule Tests', () => {
         }
       });
       const rules = await RulesService.getUnassignedRulesForProjectRuleset(
+        admin,
         ruleset1.rulesetId,
         project.projectId,
         organization.organizationId
@@ -2555,6 +2691,7 @@ describe('Rule Tests', () => {
       await RulesService.toggleRuleTeam(leafRule1.ruleId, secondTeam.teamId, admin, organization);
 
       const rules = await RulesService.getUnassignedRulesForProjectRuleset(
+        admin,
         ruleset1.rulesetId,
         project.projectId,
         organization.organizationId
@@ -2569,6 +2706,7 @@ describe('Rule Tests', () => {
       const { ruleset1 } = await setupRules(car);
       const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
       const rules = await RulesService.getUnassignedRulesForProjectRuleset(
+        admin,
         ruleset1.rulesetId,
         project.projectId,
         organization.organizationId
@@ -2585,7 +2723,12 @@ describe('Rule Tests', () => {
       await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
       const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
 
-      const projectRules = await RulesService.getProjectRules(topLevelRule.rulesetId, projectRule.projectId, organization);
+      const projectRules = await RulesService.getProjectRules(
+        admin,
+        topLevelRule.rulesetId,
+        projectRule.projectId,
+        organization
+      );
 
       expect(projectRules.length).toBe(1);
       expect(projectRules[0].projectRuleId).toBe(projectRule.projectRuleId);
@@ -2596,7 +2739,12 @@ describe('Rule Tests', () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule } = await setupRules(car);
 
-      const projectRules = await RulesService.getProjectRules(topLevelRule.rulesetId, project.projectId, organization);
+      const projectRules = await RulesService.getProjectRules(
+        admin,
+        topLevelRule.rulesetId,
+        project.projectId,
+        organization
+      );
       expect(projectRules.length).toBe(0);
     });
 
@@ -2613,13 +2761,13 @@ describe('Rule Tests', () => {
       });
 
       await expect(
-        async () => await RulesService.getProjectRules(topLevelRule.rulesetId, project.projectId, organization)
+        async () => await RulesService.getProjectRules(admin, topLevelRule.rulesetId, project.projectId, organization)
       ).rejects.toThrow(new DeletedException('Project', project.projectId));
     });
 
     it('Get project rules fails if ruleset does not exist', async () => {
       await expect(
-        async () => await RulesService.getProjectRules('fake-ruleset-id', project.projectId, organization)
+        async () => await RulesService.getProjectRules(admin, 'fake-ruleset-id', project.projectId, organization)
       ).rejects.toThrow(new NotFoundException('Ruleset', 'fake-ruleset-id'));
     });
 
@@ -2628,7 +2776,7 @@ describe('Rule Tests', () => {
       const { topLevelRule } = await setupRules(car);
 
       await expect(
-        async () => await RulesService.getProjectRules(topLevelRule.rulesetId, 'fake-project-id', organization)
+        async () => await RulesService.getProjectRules(admin, topLevelRule.rulesetId, 'fake-project-id', organization)
       ).rejects.toThrow(new NotFoundException('Project', 'fake-project-id'));
     });
 
@@ -2641,17 +2789,26 @@ describe('Rule Tests', () => {
       });
 
       await expect(
-        async () => await RulesService.getProjectRules(topLevelRule.rulesetId, project.projectId, organization)
+        async () => await RulesService.getProjectRules(admin, topLevelRule.rulesetId, project.projectId, organization)
       ).rejects.toThrow(new DeletedException('Ruleset', topLevelRule.rulesetId));
     });
   });
 
   describe('Get Top Level Rules', () => {
+    it('Fails if user is a guest', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      await expect(RulesService.getTopLevelRules(guest, ruleset1.rulesetId, organization.organizationId)).rejects.toThrow(
+        new AccessDeniedGuestException('view rules')
+      );
+    });
+
     it('Successful get all rules with no parent id', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1, topLevelRule } = await setupRules(car);
 
-      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getTopLevelRules(admin, ruleset1.rulesetId, organization.organizationId);
 
       expect(rules.length).toEqual(3);
       expect(rules.map((r) => r.ruleCode).sort()).toEqual(['A2', 'B2', 'T']);
@@ -2672,7 +2829,7 @@ describe('Rule Tests', () => {
         }
       });
 
-      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getTopLevelRules(admin, ruleset1.rulesetId, organization.organizationId);
 
       expect(rules.length).toEqual(4);
       expect(rules.map((r) => r.ruleCode).sort()).toEqual(['A', 'A2', 'B2', 'T']);
@@ -2692,14 +2849,14 @@ describe('Rule Tests', () => {
         }
       });
 
-      const rules = await RulesService.getTopLevelRules(ruleset.rulesetId, organization.organizationId);
+      const rules = await RulesService.getTopLevelRules(admin, ruleset.rulesetId, organization.organizationId);
       expect(rules.length).toEqual(0);
     });
 
     it('Does not return child rules', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
-      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getTopLevelRules(admin, ruleset1.rulesetId, organization.organizationId);
 
       expect(rules.length).toEqual(3);
       expect(rules.find((r) => r.ruleId === topLevelRule.ruleId)).toBeDefined();
@@ -2719,17 +2876,26 @@ describe('Rule Tests', () => {
         }
       });
 
-      const rules = await RulesService.getTopLevelRules(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getTopLevelRules(admin, ruleset1.rulesetId, organization.organizationId);
       expect(rules.find((r) => r.ruleId === topLevelRule.ruleId)).toBeUndefined();
     });
   });
 
   describe('Get All Rules For Ruleset', () => {
+    it('Fails if user is a guest', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      await expect(
+        RulesService.getAllRulesForRuleset(guest, ruleset1.rulesetId, organization.organizationId)
+      ).rejects.toThrow(new AccessDeniedGuestException('view rules'));
+    });
+
     it('Successfully gets every rule in a ruleset, including children', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1, topLevelRule, leafRule1, leafRule2, referencedRule, referencingRule } = await setupRules(car);
 
-      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(admin, ruleset1.rulesetId, organization.organizationId);
 
       expect(rules.length).toEqual(5);
       const ruleIds = rules.map((r) => r.ruleId);
@@ -2744,7 +2910,7 @@ describe('Rule Tests', () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
 
-      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(admin, ruleset1.rulesetId, organization.organizationId);
 
       const topRule = rules.find((r) => r.ruleId === topLevelRule.ruleId);
       const leaf1 = rules.find((r) => r.ruleId === leafRule1.ruleId);
@@ -2772,7 +2938,7 @@ describe('Rule Tests', () => {
         }
       });
 
-      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(admin, ruleset1.rulesetId, organization.organizationId);
 
       expect(rules.find((r) => r.ruleId === topLevelRule.ruleId)).toBeDefined();
       expect(rules.find((r) => r.ruleId === otherRule.ruleId)).toBeUndefined();
@@ -2787,7 +2953,7 @@ describe('Rule Tests', () => {
         data: { dateDeleted: new Date(), deletedByUserId: admin.userId }
       });
 
-      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(admin, ruleset1.rulesetId, organization.organizationId);
       expect(rules.find((r) => r.ruleId === leafRule1.ruleId)).toBeUndefined();
     });
 
@@ -2795,7 +2961,7 @@ describe('Rule Tests', () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
 
-      const rules = await RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(admin, ruleset1.rulesetId, organization.organizationId);
 
       for (let i = 0; i < rules.length - 1; i++) {
         expect(rules[i].ruleCode <= rules[i + 1].ruleCode).toBe(true);
@@ -2815,14 +2981,14 @@ describe('Rule Tests', () => {
         }
       });
 
-      const rules = await RulesService.getAllRulesForRuleset(ruleset.rulesetId, organization.organizationId);
+      const rules = await RulesService.getAllRulesForRuleset(admin, ruleset.rulesetId, organization.organizationId);
       expect(rules.length).toEqual(0);
     });
 
     it('Fails when ruleset does not exist', async () => {
-      await expect(RulesService.getAllRulesForRuleset('fake-ruleset-id', organization.organizationId)).rejects.toThrow(
-        new NotFoundException('Ruleset', 'fake-ruleset-id')
-      );
+      await expect(
+        RulesService.getAllRulesForRuleset(admin, 'fake-ruleset-id', organization.organizationId)
+      ).rejects.toThrow(new NotFoundException('Ruleset', 'fake-ruleset-id'));
     });
 
     it('Fails when ruleset is deleted', async () => {
@@ -2835,24 +3001,44 @@ describe('Rule Tests', () => {
       });
       await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId);
 
-      await expect(RulesService.getAllRulesForRuleset(ruleset1.rulesetId, organization.organizationId)).rejects.toThrow(
-        new DeletedException('Ruleset', ruleset1.rulesetId)
-      );
+      await expect(
+        RulesService.getAllRulesForRuleset(admin, ruleset1.rulesetId, organization.organizationId)
+      ).rejects.toThrow(new DeletedException('Ruleset', ruleset1.rulesetId));
     });
 
     it('Fails if ruleset is in the wrong org', async () => {
       const car = await createUniqueCar(orgId);
-      const { ruleset1 } = await setupRules(car);
+      const otherOrgRulesetType = await prisma.ruleset_Type.create({
+        data: {
+          name: 'Other Org FHE',
+          createdByUserId: admin.userId,
+          organizationId: otherOrg.organizationId
+        }
+      });
+      const otherRuleset = await prisma.ruleset.create({
+        data: {
+          name: '2024',
+          fileId: 'other-fhe-2024-all-rules',
+          active: true,
+          rulesetTypeId: otherOrgRulesetType.rulesetTypeId,
+          carId: car.carId,
+          createdByUserId: admin.userId
+        }
+      });
 
-      await expect(RulesService.getAllRulesForRuleset(ruleset1.rulesetId, otherOrg.organizationId)).rejects.toThrow(
-        InvalidOrganizationException
-      );
+      await expect(
+        RulesService.getAllRulesForRuleset(admin, otherRuleset.rulesetId, organization.organizationId)
+      ).rejects.toThrow(InvalidOrganizationException);
     });
   });
 
   describe('Get Ruleset Type', () => {
     it('Successfully gets a ruleset type by ID', async () => {
-      const rulesetType = await RulesService.getRulesetType(fsaeRulesetType.rulesetTypeId, organization.organizationId);
+      const rulesetType = await RulesService.getRulesetType(
+        admin,
+        fsaeRulesetType.rulesetTypeId,
+        organization.organizationId
+      );
       expect(rulesetType).toBeDefined();
       expect(rulesetType.rulesetTypeId).toBe(fsaeRulesetType.rulesetTypeId);
       expect(rulesetType.name).toBe(fsaeRulesetType.name);
@@ -2893,13 +3079,13 @@ describe('Rule Tests', () => {
       );
     });
 
-    it('Fails adding referenced rule if user is not admin', async () => {
+    it('Fails adding referenced rule if user is not leadership or above', async () => {
       const car = await createUniqueCar(orgId);
       const { topLevelRule, referencedRule } = await setupRules(car);
       await expect(
         async () =>
           await RulesService.addRuleReferences(nonLeadership, topLevelRule.ruleId, referencedRule.ruleId, organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a rule'));
+      ).rejects.toThrow(new AccessDeniedException('Only leadership and above can edit a rule'));
     });
 
     it('Fails adding referenced rule if rule does not exist', async () => {
@@ -2978,13 +3164,13 @@ describe('Rule Tests', () => {
       ).rejects.toThrow(new HttpException(400, 'A rule cannot reference itself'));
     });
 
-    it('Fails removing referenced rule if user is not admin', async () => {
+    it('Fails removing referenced rule if user is not leadership or above', async () => {
       const car = await createUniqueCar(orgId);
       const { referencedRule, referencingRule } = await setupRules(car);
       await expect(
         async () =>
           await RulesService.removeRuleReferences(nonLeadership, referencingRule.ruleId, referencedRule.ruleId, organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a rule'));
+      ).rejects.toThrow(new AccessDeniedException('Only leadership and above can edit a rule'));
     });
 
     it('Fails removing referenced rule if rule does not exist', async () => {

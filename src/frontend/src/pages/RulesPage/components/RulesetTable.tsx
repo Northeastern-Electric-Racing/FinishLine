@@ -15,7 +15,8 @@ import {
   Typography,
   Stack,
   Checkbox,
-  IconButton
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import { datePipe } from '../../../utils/pipes';
 import { NERButton } from '../../../components/NERButton';
@@ -23,7 +24,8 @@ import { useHistory, useParams } from 'react-router-dom';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useDeleteRuleset, useRulesetsByType, useUpdateRuleset } from '../../../hooks/rules.hooks';
-import { Ruleset } from 'shared';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { Ruleset, isAdmin, isHead, isLeadership } from 'shared';
 import { routes } from '../../../utils/routes';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Delete } from '@mui/icons-material';
@@ -36,6 +38,7 @@ interface RulesetParams {
 interface RulesetDeleteButtonProps {
   rulesetId: string;
   name: string;
+  disabledReason?: string;
   onDelete: (rulesetId: string, name: string) => void;
 }
 
@@ -43,6 +46,7 @@ const RulesetTable: React.FC = () => {
   const { rulesetTypeId } = useParams<RulesetParams>();
   const toast = useToast();
   const history = useHistory();
+  const user = useCurrentUser();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -54,6 +58,16 @@ const RulesetTable: React.FC = () => {
     return ruleset.ruleAmount > 0;
   };
 
+  const canDelete = isLeadership(user.role);
+  const canSetActive = isHead(user.role);
+
+  // admins can delete any inactive ruleset, leadership and heads only their own
+  const deleteDisabledReason = (ruleset: Ruleset): string | undefined => {
+    if (ruleset.active) return 'Cannot delete an active ruleset.';
+    if (!isAdmin(user.role) && ruleset.createdByUserId !== user.userId) return 'This ruleset was uploaded by another user.';
+    return undefined;
+  };
+
   // Table header configuration
   const headCells = [
     { id: 'fileName', label: 'File Name' },
@@ -62,7 +76,7 @@ const RulesetTable: React.FC = () => {
     { id: 'car', label: 'Car' },
     { id: 'isActive', label: 'Active?' },
     { id: 'actions', label: 'Actions' },
-    { id: 'delete', label: '' }
+    ...(canDelete ? [{ id: 'delete', label: '' }] : [])
   ];
 
   const handleToggleActive = (ruleset: Ruleset) => {
@@ -110,7 +124,7 @@ const RulesetTable: React.FC = () => {
     }
   };
 
-  const RulesetDeleteButton: React.FC<RulesetDeleteButtonProps> = ({ rulesetId, name, onDelete }) => {
+  const RulesetDeleteButton: React.FC<RulesetDeleteButtonProps> = ({ rulesetId, name, disabledReason, onDelete }) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const handleDeleteSubmit = () => {
@@ -119,9 +133,13 @@ const RulesetTable: React.FC = () => {
     };
     return (
       <>
-        <IconButton type="button" sx={{ mx: 1 }} onClick={() => setShowDeleteModal(true)}>
-          <Delete />
-        </IconButton>
+        <Tooltip title={disabledReason ?? ''}>
+          <span>
+            <IconButton type="button" sx={{ mx: 1 }} disabled={!!disabledReason} onClick={() => setShowDeleteModal(true)}>
+              <Delete />
+            </IconButton>
+          </span>
+        </Tooltip>
         {showDeleteModal && (
           <RulesetDeleteModal rulesetName={name} onDelete={handleDeleteSubmit} onHide={() => setShowDeleteModal(false)} />
         )}
@@ -184,7 +202,7 @@ const RulesetTable: React.FC = () => {
                     <Checkbox
                       checked={ruleset.active}
                       onChange={() => handleToggleActive(ruleset)}
-                      disabled={updateRuleset.isLoading}
+                      disabled={!canSetActive || updateRuleset.isLoading}
                       sx={{
                         color: '#fff',
                         '&.Mui-checked': { color: '#dd514c' }
@@ -192,27 +210,29 @@ const RulesetTable: React.FC = () => {
                     />
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                    <NERButton
-                      onClick={() => handleEditRuleset(ruleset.rulesetId)}
-                      disabled={!hasRules(ruleset)}
-                      sx={{
-                        backgroundColor: theme.palette.grey[800],
-                        color: theme.palette.getContrastText(theme.palette.grey[600]),
-                        '&:hover': {
-                          backgroundColor: theme.palette.grey[700]
-                        },
-                        marginRight: '10px',
-                        padding: '4px',
-                        lineHeight: 1,
-                        borderRadius: '6px',
-                        '&.Mui-disabled': {
-                          backgroundColor: theme.palette.grey[900],
-                          color: theme.palette.grey[600]
-                        }
-                      }}
-                    >
-                      Edit/Assign Rules
-                    </NERButton>
+                    {isLeadership(user.role) && (
+                      <NERButton
+                        onClick={() => handleEditRuleset(ruleset.rulesetId)}
+                        disabled={!hasRules(ruleset)}
+                        sx={{
+                          backgroundColor: theme.palette.grey[800],
+                          color: theme.palette.getContrastText(theme.palette.grey[600]),
+                          '&:hover': {
+                            backgroundColor: theme.palette.grey[700]
+                          },
+                          marginRight: '10px',
+                          padding: '4px',
+                          lineHeight: 1,
+                          borderRadius: '6px',
+                          '&.Mui-disabled': {
+                            backgroundColor: theme.palette.grey[900],
+                            color: theme.palette.grey[600]
+                          }
+                        }}
+                      >
+                        Edit/Assign Rules
+                      </NERButton>
+                    )}
                     <NERButton
                       onClick={() => handleViewRuleset(ruleset.rulesetId)}
                       disabled={!hasRules(ruleset)}
@@ -233,7 +253,14 @@ const RulesetTable: React.FC = () => {
                     >
                       View Rules
                     </NERButton>
-                    <RulesetDeleteButton rulesetId={ruleset.rulesetId} name={ruleset.name} onDelete={handleDeleteRuleset} />
+                    {canDelete && (
+                      <RulesetDeleteButton
+                        rulesetId={ruleset.rulesetId}
+                        name={ruleset.name}
+                        disabledReason={deleteDisabledReason(ruleset)}
+                        onDelete={handleDeleteRuleset}
+                      />
+                    )}
                   </Box>
                 </Box>
               </CardContent>
@@ -261,7 +288,7 @@ const RulesetTable: React.FC = () => {
               {/* Table rows with ruleset data */}
               {rulesets.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ color: '#999', padding: '15px' }}>
+                  <TableCell colSpan={headCells.length} align="center" sx={{ color: '#999', padding: '15px' }}>
                     No Rulesets Found
                   </TableCell>
                 </TableRow>
@@ -283,7 +310,7 @@ const RulesetTable: React.FC = () => {
                       <Checkbox
                         checked={ruleset.active}
                         onChange={() => handleToggleActive(ruleset)}
-                        disabled={updateRuleset.isLoading}
+                        disabled={!canSetActive || updateRuleset.isLoading}
                         sx={{
                           color: '#fff',
                           '&.Mui-checked': { color: '#dd514c' }
@@ -291,27 +318,29 @@ const RulesetTable: React.FC = () => {
                       />
                     </TableCell>
                     <TableCell align="center">
-                      <NERButton
-                        onClick={() => handleEditRuleset(ruleset.rulesetId)}
-                        disabled={!hasRules(ruleset)}
-                        sx={{
-                          backgroundColor: theme.palette.grey[800],
-                          color: theme.palette.getContrastText(theme.palette.grey[600]),
-                          '&:hover': {
-                            backgroundColor: theme.palette.grey[700]
-                          },
-                          marginRight: '10px',
-                          padding: '4px',
-                          lineHeight: 1,
-                          borderRadius: '6px',
-                          '&.Mui-disabled': {
-                            backgroundColor: theme.palette.grey[900],
-                            color: theme.palette.grey[600]
-                          }
-                        }}
-                      >
-                        Edit/Assign Rules
-                      </NERButton>
+                      {isLeadership(user.role) && (
+                        <NERButton
+                          onClick={() => handleEditRuleset(ruleset.rulesetId)}
+                          disabled={!hasRules(ruleset)}
+                          sx={{
+                            backgroundColor: theme.palette.grey[800],
+                            color: theme.palette.getContrastText(theme.palette.grey[600]),
+                            '&:hover': {
+                              backgroundColor: theme.palette.grey[700]
+                            },
+                            marginRight: '10px',
+                            padding: '4px',
+                            lineHeight: 1,
+                            borderRadius: '6px',
+                            '&.Mui-disabled': {
+                              backgroundColor: theme.palette.grey[900],
+                              color: theme.palette.grey[600]
+                            }
+                          }}
+                        >
+                          Edit/Assign Rules
+                        </NERButton>
+                      )}
                       <NERButton
                         onClick={() => handleViewRuleset(ruleset.rulesetId)}
                         disabled={!hasRules(ruleset)}
@@ -333,13 +362,16 @@ const RulesetTable: React.FC = () => {
                         View Rules
                       </NERButton>
                     </TableCell>
-                    <TableCell align="center" sx={{ width: '60px', paddingLeft: '0px' }}>
-                      <RulesetDeleteButton
-                        rulesetId={ruleset.rulesetId}
-                        name={ruleset.name}
-                        onDelete={handleDeleteRuleset}
-                      />
-                    </TableCell>
+                    {canDelete && (
+                      <TableCell align="center" sx={{ width: '60px', paddingLeft: '0px' }}>
+                        <RulesetDeleteButton
+                          rulesetId={ruleset.rulesetId}
+                          name={ruleset.name}
+                          disabledReason={deleteDisabledReason(ruleset)}
+                          onDelete={handleDeleteRuleset}
+                        />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}

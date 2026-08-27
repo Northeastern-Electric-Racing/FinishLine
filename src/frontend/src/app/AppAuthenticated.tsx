@@ -13,6 +13,7 @@ import Settings from '../pages/SettingsPage/SettingsPage';
 import InfoPage from '../pages/InfoPage';
 import Rules from '../pages/RulesPage/Rules';
 import GanttChartPage from '../pages/GanttPage/ProjectGanttChart/ProjectGanttChartPage';
+import GlobalTasksPage from '../pages/GlobalTasksPage/GlobalTasksPage';
 import Teams from '../pages/TeamsPage/Teams';
 import AdminTools from '../pages/AdminToolsPage/AdminTools';
 import Credits from '../pages/CreditsPage/Credits';
@@ -38,9 +39,10 @@ import SidebarLayout from '../layouts/SidebarLayout';
 interface AppAuthenticatedProps {
   userId: string;
   userRole: Role;
+  completedOnboarding: boolean;
 }
 
-const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
+const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, completedOnboarding }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
   const {
@@ -65,7 +67,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
 
   return (
     <GlobalCarFilterProvider>
-      {userSettingsData.slackId || isGuest(userRole) ? (
+      {userSettingsData.slackId || (isGuest(userRole) && !completedOnboarding) ? (
         <AppContextUser>
           <SidebarLayout>
             <Switch>
@@ -73,6 +75,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
               <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
               <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
               <Route path={routes.GANTT} component={GanttChartPage} />
+              <Route path={routes.TASKS} component={GlobalTasksPage} />
               <Route path={routes.TEAMS} component={Teams} />
               <Route path={routes.SETTINGS} component={Settings} />
               <Route path={routes.ADMIN_TOOLS} component={AdminTools} />

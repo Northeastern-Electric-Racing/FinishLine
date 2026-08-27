@@ -23,6 +23,7 @@ import {
   NotFoundException
 } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
+import { isUserPartOfTeams } from '../utils/teams.utils.js';
 import {
   getProjectRuleQueryArgs,
   getRulesetQueryArgs,
@@ -30,6 +31,7 @@ import {
   getRulesetTypeQueryArgs,
   getRuleStatusHistoryQueryArgs
 } from '../prisma-query-args/rules.query-args.js';
+import { getTeamPreviewQueryArgs } from '../prisma-query-args/teams.query-args.js';
 import {
   ruleTransformer,
   projectRuleTransformer,
@@ -220,9 +222,9 @@ export default class RulesService {
     referencedRuleIds: string[] = [],
     imageFileIds: string[] = []
   ) {
-    // Check user has permission (members and above)
-    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest))) {
-      throw new AccessDeniedException('Only members and above can create rules');
+    // Check user has permission (leadership and above)
+    if (!(await userHasPermission(user.userId, organization.organizationId, isLeadership))) {
+      throw new AccessDeniedException('Only leadership and above can create rules');
     }
 
     // Verify ruleset exists and belongs to organization
@@ -316,15 +318,16 @@ export default class RulesService {
   }
 
   /**
-   * Creates new ruleset type with the given information
+   * Creates new ruleset type with the given information.
+   * Only admin/app admins can create ruleset types through admin tools
    * @param submitter a user who is making this request
    * @param name the name of the ruleset type
    * @param organizationId the organization ID for permission check
    * @returns A newly created ruleset type
    */
   static async createRulesetType(submitter: User, name: string, organization: Organization) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
-      throw new AccessDeniedException('only leadership and above can create ruleset types!');
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('create ruleset types');
 
     const rulesetType = await prisma.ruleset_Type.create({
       data: {
@@ -360,8 +363,8 @@ export default class RulesService {
       }
     });
 
-    if (!(await userHasPermission(deleter.userId, org.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('delete rules');
+    if (!(await userHasPermission(deleter.userId, org.organizationId, isLeadership))) {
+      throw new AccessDeniedException('Only leadership and above can delete rules');
     }
 
     if (!rule) throw new NotFoundException('Rule', ruleId);
@@ -603,8 +606,8 @@ export default class RulesService {
     organization: Organization,
     parentRuleId?: string
   ) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('edit a rule');
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
+      throw new AccessDeniedException('Only leadership and above can edit a rule');
 
     const currentRule = await prisma.rule.findUnique({
       where: { ruleId },
@@ -695,8 +698,8 @@ export default class RulesService {
    * @returns the updated rule
    */
   static async addRuleReferences(submitter: User, ruleId: string, referencedRuleId: string, organization: Organization) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('edit a rule');
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
+      throw new AccessDeniedException('Only leadership and above can edit a rule');
 
     const rule = await prisma.rule.findUnique({
       where: { ruleId },
@@ -754,8 +757,8 @@ export default class RulesService {
    * @returns the updated rule
    */
   static async removeRuleReferences(submitter: User, ruleId: string, referencedRuleId: string, organization: Organization) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('edit a rule');
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
+      throw new AccessDeniedException('Only leadership and above can edit a rule');
 
     const rule = await prisma.rule.findUnique({
       where: { ruleId },
@@ -828,10 +831,15 @@ export default class RulesService {
   static async deleteRuleset(rulesetId: string, deleterId: string, organizationId: string) {
     const ruleset = await RulesService.getRulesetWithQueryArgs(rulesetId);
 
+    // admins can delete any ruleset; leadership and heads can only delete a ruleset they created themselves
+    const isCreator = deleterId === ruleset.createdByUserId;
     const hasPermission =
-      (await userHasPermission(deleterId, organizationId, isAdmin)) || deleterId === ruleset.createdByUserId;
+      (await userHasPermission(deleterId, organizationId, isAdmin)) ||
+      (isCreator && (await userHasPermission(deleterId, organizationId, isLeadership)));
 
-    if (!hasPermission) throw new AccessDeniedException('Only admins can delete a ruleset.');
+    if (!hasPermission) {
+      throw new AccessDeniedException('You do not have permissions to delete this ruleset.');
+    }
 
     if (ruleset.active) {
       throw new HttpException(400, 'Cannot delete an active ruleset. Please deactivate it first.');
@@ -846,7 +854,11 @@ export default class RulesService {
     return rulesetTransformer(deletedRuleset);
   }
 
-  static async getAllRulesetTypes(organization: Organization, carId?: string): Promise<RulesetType[]> {
+  static async getAllRulesetTypes(user: User, organization: Organization, carId?: string): Promise<RulesetType[]> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view ruleset types');
+    }
+
     const rulesets = await prisma.ruleset_Type.findMany({
       where: {
         organizationId: organization.organizationId,
@@ -859,12 +871,22 @@ export default class RulesService {
 
   /**
    * Gets a ruleset type for a given ruleset type ID
+   * @param user the user requesting the ruleset type
    * @param rulesetTypeId id of ruleset type
    * @param organizationId id of organization
    * @param carId optional id of the car to scope revision file counts to
    * @returns ruleset type associated with provided ruleset type ID
    */
-  static async getRulesetType(rulesetTypeId: string, organizationId: string, carId?: string): Promise<RulesetType> {
+  static async getRulesetType(
+    user: User,
+    rulesetTypeId: string,
+    organizationId: string,
+    carId?: string
+  ): Promise<RulesetType> {
+    if (!(await userHasPermission(user.userId, organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view ruleset types');
+    }
+
     const rulesetType = await prisma.ruleset_Type.findUnique({
       where: {
         rulesetTypeId,
@@ -887,12 +909,22 @@ export default class RulesService {
 
   /**
    * Gets rulesets for a given ruleset type
+   * @param user the user requesting the rulesets
    * @param rulesetTypeId id of ruleset type
    * @param organizationId id of organization
    * @param carId optional id of the car to filter rulesets by
    * @returns rulesets associated with provided ruleset type
    */
-  static async getRulesetsByRulesetType(rulesetTypeId: string, organizationId: string, carId?: string): Promise<Ruleset[]> {
+  static async getRulesetsByRulesetType(
+    user: User,
+    rulesetTypeId: string,
+    organizationId: string,
+    carId?: string
+  ): Promise<Ruleset[]> {
+    if (!(await userHasPermission(user.userId, organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view rulesets');
+    }
+
     const rulesets = await prisma.ruleset.findMany({
       where: {
         rulesetTypeId,
@@ -914,6 +946,7 @@ export default class RulesService {
   /**
    * Sets a rule's general-view status. This status is independent of any project.
    * It is unaffected by the status of the rule in any project it's assigned to.
+   * Only leadership and above can update the general-view status.
    * @param submitter the user updating the status
    * @param organization the organization of the rule
    * @param ruleId the id of the rule to update
@@ -980,6 +1013,7 @@ export default class RulesService {
   /**
    * Sets a rule's status within a single project. This status is local to that project.
    * It does not affect the rule's general-view status, or its status in any other project.
+   * Leadership and above can update it anywhere; members can only update it for a project whose team they're on.
    * @param submitter the user updating the status
    * @param organization the organization of the project rule
    * @param projectRuleId the id of the project rule to update
@@ -992,14 +1026,10 @@ export default class RulesService {
     projectRuleId: string,
     status: RuleStatus
   ): Promise<ProjectRule> {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
-      throw new AccessDeniedException('You do not have permissions to update rule status');
-    }
-
     const projectRule = await prisma.project_Rule.findUnique({
       where: { projectRuleId },
       include: {
-        project: { include: { wbsElement: true } },
+        project: { include: { wbsElement: true, teams: getTeamPreviewQueryArgs(organization.organizationId) } },
         rule: { include: { ruleset: { include: { car: { include: { wbsElement: true } } } } } }
       }
     });
@@ -1017,6 +1047,11 @@ export default class RulesService {
       projectRule.rule.ruleset.car.wbsElement.organizationId !== organization.organizationId
     ) {
       throw new InvalidOrganizationException('Project Rule');
+    }
+
+    const hasOrgWidePermission = await userHasPermission(submitter.userId, organization.organizationId, isLeadership);
+    if (!hasOrgWidePermission && !isUserPartOfTeams(projectRule.project.teams, submitter)) {
+      throw new AccessDeniedException('You do not have permissions to update rule status for this project');
     }
 
     const childProjectRuleCount = await prisma.project_Rule.count({
@@ -1056,15 +1091,15 @@ export default class RulesService {
   /**
    * Resets every rule's general-view status back to Pending, for a whole ruleset.
    * Does not affect any rule's status within a project. Never creates history entries,
-   * since reverting to PENDING is not tracked.
+   * since reverting to PENDING is not tracked. Only heads and above can do this.
    * @param submitter the user resetting the statuses
    * @param organization the organization of the ruleset
    * @param rulesetId the id of the ruleset to reset
    * @returns the number of rules that were reset
    */
   static async resetRulesetStatuses(submitter: User, organization: Organization, rulesetId: string): Promise<number> {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
-      throw new AccessDeniedException('You do not have permissions to update rule status');
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('You do not have permissions to reset rule status');
     }
 
     const ruleset = await prisma.ruleset.findUnique({
@@ -1096,7 +1131,7 @@ export default class RulesService {
    * Resets every project rule's status back to Pending, for a single project, scoped to a
    * single ruleset (a project can have rules from multiple ruleset types). Does not affect
    * any rule's general-view status, or its status in any other project. Never creates history
-   * entries, since reverting to PENDING is not tracked.
+   * entries, since reverting to PENDING is not tracked. Allowed for leadership and up.
    * @param submitter the user resetting the statuses
    * @param organization the organization of the project and ruleset
    * @param rulesetId the ruleset to scope the reset to
@@ -1110,7 +1145,7 @@ export default class RulesService {
     projectId: string
   ): Promise<number> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
-      throw new AccessDeniedException('You do not have permissions to update rule status');
+      throw new AccessDeniedException('You do not have permissions to reset project rule status');
     }
 
     const ruleset = await prisma.ruleset.findUnique({
@@ -1215,9 +1250,9 @@ export default class RulesService {
    *
    */
   static async toggleRuleTeam(ruleId: string, teamId: string, user: User, org: Organization) {
-    // Checks that the user is not a guest
-    if (!(await userHasPermission(user.userId, org.organizationId, notGuest))) {
-      throw new AccessDeniedGuestException('Toggle Rule Team');
+    // Checks that the user is leadership and above
+    if (!(await userHasPermission(user.userId, org.organizationId, isLeadership))) {
+      throw new AccessDeniedException('Only leadership and above can assign rules to teams');
     }
 
     // Checks that the rule exists and is not deleted
@@ -1589,11 +1624,16 @@ export default class RulesService {
 
   /**
    * Gets all subrules of a specific rule.
+   * @param user the user requesting the child rules
    * @param ruleId the ID of the parent rule
    * @param organization the organization the rule belongs to
    * @returns an array of all child rules (the Rule object)
    */
-  static async getChildRules(ruleId: string, organization: Organization): Promise<SharedRule[]> {
+  static async getChildRules(user: User, ruleId: string, organization: Organization): Promise<SharedRule[]> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view rules');
+    }
+
     // Verify the parent rule exists and belongs to the organization
     const parentRule = await prisma.rule.findUnique({
       where: { ruleId },
@@ -1637,12 +1677,22 @@ export default class RulesService {
   /**
    * Gets rules assignable to a project that are not already assigned to it.
    * A project can belong to multiple teams, so rules from all of its teams are shown.
+   * @param user the user requesting the unassigned rules
    * @param rulesetId ruleset the rules are in
    * @param projectId the project the rules would be assigned to
    * @param organizationId the organization id
    * @returns the rules on one of the project's teams that are not already actively assigned to this project
    */
-  static async getUnassignedRulesForProjectRuleset(rulesetId: string, projectId: string, organizationId: string) {
+  static async getUnassignedRulesForProjectRuleset(
+    user: User,
+    rulesetId: string,
+    projectId: string,
+    organizationId: string
+  ) {
+    if (!(await userHasPermission(user.userId, organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view unassigned rules');
+    }
+
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
@@ -1711,12 +1761,22 @@ export default class RulesService {
 
   /**
    * Gets all rules associated with a specific project and ruleset
+   * @param user the user requesting the project rules
    * @param rulesetId the id of the ruleset
    * @param projectId the id of the project
    * @param organization the organization the project and ruleset belong to
    * @returns Array of ProjectRule objects
    */
-  static async getProjectRules(rulesetId: string, projectId: string, organization: Organization): Promise<ProjectRule[]> {
+  static async getProjectRules(
+    user: User,
+    rulesetId: string,
+    projectId: string,
+    organization: Organization
+  ): Promise<ProjectRule[]> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view project rules');
+    }
+
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       include: {
@@ -1777,10 +1837,15 @@ export default class RulesService {
 
   /**
    * Gets all rules with no parent id
+   * @param user the user requesting the top-level rules
    * @param rulesetId id of ruleset
    * @returns an array of rules with no parent Id
    */
-  static async getTopLevelRules(rulesetId: string, organizationId: string) {
+  static async getTopLevelRules(user: User, rulesetId: string, organizationId: string) {
+    if (!(await userHasPermission(user.userId, organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view rules');
+    }
+
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {
@@ -1820,11 +1885,16 @@ export default class RulesService {
 
   /**
    * Gets every rule in a ruleset in a single query instead of walking it level by level.
+   * @param user the user requesting the rules
    * @param rulesetId id of ruleset
    * @param organizationId the organization the ruleset belongs to
    * @returns a flat array of every rule in the ruleset
    */
-  static async getAllRulesForRuleset(rulesetId: string, organizationId: string): Promise<SharedRule[]> {
+  static async getAllRulesForRuleset(user: User, rulesetId: string, organizationId: string): Promise<SharedRule[]> {
+    if (!(await userHasPermission(user.userId, organizationId, notGuest))) {
+      throw new AccessDeniedGuestException('view rules');
+    }
+
     const ruleset = await prisma.ruleset.findUnique({
       where: { rulesetId },
       select: {

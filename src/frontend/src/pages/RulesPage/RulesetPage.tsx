@@ -4,8 +4,10 @@
  */
 import { useParams } from 'react-router-dom';
 import React from 'react';
+import { isLeadership } from 'shared';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCreateRuleset, useDeleteRuleset, useParseRuleset } from '../../hooks/rules.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
 import { NERButton } from '../../components/NERButton';
 import AddNewFileModal from './components/AddNewFileModal';
 import PageLayout from '../../components/PageLayout';
@@ -22,6 +24,7 @@ import ErrorPage from '../ErrorPage';
  */
 const RulesetPage: React.FC = () => {
   const { rulesetTypeId } = useParams<{ rulesetTypeId: string }>();
+  const user = useCurrentUser();
 
   const { mutateAsync: createRuleset } = useCreateRuleset();
   const { mutateAsync: parseRuleset } = useParseRuleset();
@@ -121,13 +124,15 @@ const RulesetPage: React.FC = () => {
               }}
             >
               {/* Add New File Button */}
-              <NERButton
-                variant="contained"
-                sx={{ color: '#ededed' }}
-                onClick={() => setAddFileModalShow(!AddFileModalShow)}
-              >
-                Add New File
-              </NERButton>
+              {isLeadership(user.role) && (
+                <NERButton
+                  variant="contained"
+                  sx={{ color: '#ededed' }}
+                  onClick={() => setAddFileModalShow(!AddFileModalShow)}
+                >
+                  Add New File
+                </NERButton>
+              )}
               <AddNewFileModal
                 open={AddFileModalShow}
                 onHide={() => setAddFileModalShow(false)}

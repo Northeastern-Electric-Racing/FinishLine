@@ -224,4 +224,6 @@ export type ExceptionObjectNames =
   | 'Guest Definition'
   | 'Meeting Attendance'
   | 'Task Label'
-  | 'Notification Channel';
+  | 'Notification Channel'
+  | 'Dashboard'
+  | 'Team Join Request';

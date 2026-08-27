@@ -23,7 +23,12 @@ export const getAllCalendars = () => {
   });
 };
 
-export const postCreateCalendar = (payload: { name: string; description: string; colorHexCode: string }) => {
+export const postCreateCalendar = (payload: {
+  name: string;
+  description: string;
+  colorHexCode: string;
+  isNewMemberCalendar: boolean;
+}) => {
   return axios.post<Calendar>(apiUrls.calendarCreateCalendar(), payload, {
     transformResponse: (data) => JSON.parse(data) as Calendar
   });
@@ -31,7 +36,7 @@ export const postCreateCalendar = (payload: { name: string; description: string;
 
 export const postEditCalendar = (
   calendarId: string,
-  payload: { name: string; description: string; colorHexCode: string }
+  payload: { name: string; description: string; colorHexCode: string; isNewMemberCalendar: boolean }
 ) => {
   return axios.post<Calendar>(apiUrls.calendarEditCalendar(calendarId), payload, {
     transformResponse: (data) => JSON.parse(data) as Calendar
@@ -161,6 +166,12 @@ export const postDeleteEventType = async (eventTypeId: string) => {
 
 export const getAllEvents = () => {
   return axios.get(apiUrls.calendarEvents(), {
+    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
+  });
+};
+
+export const getNewMemberEvents = () => {
+  return axios.get(apiUrls.calendarNewMemberEvents(), {
     transformResponse: (data) => JSON.parse(data).map(eventTransformer)
   });
 };

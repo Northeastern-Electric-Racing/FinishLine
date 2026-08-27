@@ -8,9 +8,11 @@ import {
   User,
   Event,
   formatForSlack,
-  SlackMentionType
+  SlackMentionType,
+  Team as SharedTeam,
+  TeamJoinRequest
 } from 'shared';
-import { Account_Code, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
+import { Account_Code, Organization, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
 import {
   editMessage,
   getChannelName,
@@ -393,24 +395,18 @@ export const sendAndGetSlackCRNotifications = async (
 };
 
 /**
- * Resolves whether a user can use the given Slack channel as a notification channel: only
+ * Checks whether a user can use the given Slack channel as a notification channel: only
  * allowed if the user's Slack id is a member of the channel, regardless of whether it's
- * public or private. Fails closed (denies access) if the channel can't be resolved from Slack.
+ * public or private.
  * @param slackId the requesting user's Slack id, or undefined if they have none linked
  * @param channelId the Slack channel id to check
- * @returns the channel's name (if it could be resolved) and whether the user has access to it
+ * @returns whether the user is a member of the channel
  */
-export const getNotificationChannelAccessForUser = async (
-  slackId: string | undefined,
-  channelId: string
-): Promise<{ channelName?: string; hasAccess: boolean }> => {
-  const channelName = await getChannelName(channelId);
-  if (!channelName) return { channelName: undefined, hasAccess: false };
-
-  if (!slackId) return { channelName, hasAccess: false };
+export const isSlackChannelMember = async (slackId: string | undefined, channelId: string): Promise<boolean> => {
+  if (!slackId) return false;
 
   const members = await getUsersInChannel(channelId);
-  return { channelName, hasAccess: members.includes(slackId) };
+  return members.includes(slackId);
 };
 
 export const buildSlackMentionPrefix = (mention: SlackMentionType, memberSlackIds: string[]): string => {
@@ -469,13 +465,18 @@ export const sendSlackEventNotifications = async (
     if (sentNotifications) notifications.push(...sentNotifications);
   });
 
-  const channelCompletion: Promise<void>[] = notificationChannelIds.map(async (channelId) => {
-    const sentNotifications: { channelId: string; ts: string }[] = await sendSlackEventNotificationToChannel(
-      channelId,
-      message
-    );
-    if (sentNotifications) notifications.push(...sentNotifications);
-  });
+  // Skip any notification channel that's the same Slack channel as one of the teams above, so a
+  // channel that's both a team's channel and a selected notification channel is only pinged once
+  const teamChannelIds = new Set(teams.map((team) => team.slackId));
+  const channelCompletion: Promise<void>[] = notificationChannelIds
+    .filter((channelId) => !teamChannelIds.has(channelId))
+    .map(async (channelId) => {
+      const sentNotifications: { channelId: string; ts: string }[] = await sendSlackEventNotificationToChannel(
+        channelId,
+        message
+      );
+      if (sentNotifications) notifications.push(...sentNotifications);
+    });
 
   await Promise.all([...completion, ...channelCompletion]);
 
@@ -723,6 +724,81 @@ export const sendStandardCRCreatedNotification = async (
         .map((slackId) => sendEphemeralMessage(n.channelId, n.ts, slackId, `Approve CR #${cr.identifier}?`, approveBlocks));
     })
   );
+};
+
+/**
+ * Sends an ephemeral "Approve this join request?" Slack message with an approve button to the
+ * team head, if they're a member of the team's Slack channel. Leads and admins can still
+ * approve/deny from the app, but don't get pinged in Slack. Unlike CRs, there's no prior message
+ * to thread this off of, so it's sent as a fresh (non-threaded) ephemeral. Denying (or approving
+ * without Slack) still happens in the app -- reviewTeamJoinRequest still enforces real auth on click.
+ */
+export const sendTeamJoinRequestNotification = async (
+  teamJoinRequest: TeamJoinRequest,
+  team: SharedTeam,
+  organization: Organization
+): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return;
+  if (!team.slackId) return;
+
+  // only the team head gets the ephemeral DM -- leads and admins can still approve/deny from the app,
+  // but don't get pinged in Slack
+  const headSlackId = await getUserSlackId(team.head.userId);
+  if (!headSlackId) return;
+
+  const allSlackIds = new Set([headSlackId]);
+
+  const membersInChannel = new Set(await getUsersInChannel(team.slackId));
+
+  const messageText = `${teamJoinRequest.user.firstName} ${teamJoinRequest.user.lastName} has requested to join ${team.teamName}. Approve?`;
+  const approveBlocks = [
+    {
+      type: 'section',
+      text: { type: 'mrkdwn', text: messageText }
+    },
+    {
+      type: 'actions',
+      elements: [
+        {
+          type: 'button',
+          text: { type: 'plain_text', text: 'Approve Join Request' },
+          style: 'primary',
+          action_id: 'approve_team_join_request',
+          value: JSON.stringify({
+            teamJoinRequestId: teamJoinRequest.teamJoinRequestId,
+            organizationId: organization.organizationId
+          })
+        }
+      ]
+    }
+  ];
+
+  await Promise.all(
+    [...allSlackIds]
+      .filter((slackId) => membersInChannel.has(slackId))
+      .map((slackId) => sendEphemeralMessage(team.slackId, undefined, slackId, messageText, approveBlocks))
+  );
+};
+
+/**
+ * DMs the requester once their team join request has been reviewed, letting them know whether
+ * they were approved or denied.
+ */
+export const sendTeamJoinRequestReviewedNotification = async (
+  teamJoinRequest: TeamJoinRequest,
+  team: SharedTeam,
+  approved: boolean
+): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return;
+
+  const requesterSlackId = await getUserSlackId(teamJoinRequest.user.userId);
+  if (!requesterSlackId) return;
+
+  const messageText = approved
+    ? `Your request to join ${team.teamName} has been approved! Welcome to the team.`
+    : `Your request to join ${team.teamName} has been denied.`;
+
+  await sendMessage(requesterSlackId, messageText);
 };
 
 /**
