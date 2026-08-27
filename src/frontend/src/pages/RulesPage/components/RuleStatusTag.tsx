@@ -18,7 +18,10 @@ interface RuleStatusTagProps {
   onInfoClick?: (rule: Rule) => void;
 }
 
-/** Status chip for a rule. Leaf rules also show Pass/Fail checkboxes and an info icon/tooltip. */
+/**
+ * Status chip for a rule. Leaf rules show Pass/Fail checkboxes instead of the chip, plus an info icon/tooltip.
+ * Parent rules show their aggregated status as a read-only chip.
+ */
 const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onStatusChange, onInfoClick }) => {
   const { label, color } = getRuleStatusConfig(rule.status);
   const passColor = getRuleStatusConfig(RuleStatus.PASS).color;
@@ -41,60 +44,59 @@ const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onStatusCha
     p: 0.1
   });
 
-  // status tag lands in the same horizontal position on every row,
-  // regardless of leaf/parent, history, or nesting depth
   return (
     <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
-      <Box
-        sx={{ display: 'inline-flex', alignItems: 'center', mr: 0.75, visibility: showCheckboxes ? 'visible' : 'hidden' }}
-      >
-        <Tooltip title="Pass" arrow>
-          <Checkbox
-            checked={rule.status === RuleStatus.PASS}
-            onClick={(e) => e.stopPropagation()}
-            onChange={() => onStatusChange?.(rule.status === RuleStatus.PASS ? RuleStatus.PENDING : RuleStatus.PASS)}
-            sx={checkboxSx(passColor)}
-          />
-        </Tooltip>
-        <Tooltip title="Fail" arrow>
-          <Checkbox
-            checked={rule.status === RuleStatus.FAIL}
-            onClick={(e) => e.stopPropagation()}
-            onChange={() => onStatusChange?.(rule.status === RuleStatus.FAIL ? RuleStatus.PENDING : RuleStatus.FAIL)}
-            sx={checkboxSx(failColor)}
-          />
-        </Tooltip>
-      </Box>
-      <Box
-        sx={{
-          backgroundColor: color,
-          color: 'white',
-          fontSize: '11px',
-          fontWeight: 600,
-          width: '50px',
-          py: 0.25,
-          borderRadius: '3px',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          whiteSpace: 'nowrap'
-        }}
-      >
-        {label}
-      </Box>
-      <Box sx={{ display: 'inline-flex', alignItems: 'center', ml: 0.75, visibility: showInfo ? 'visible' : 'hidden' }}>
-        <Tooltip title={onInfoClick ? 'View Status History' : statusMessage} arrow>
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              onInfoClick?.(rule);
+      <Box sx={{ width: '52px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+        {showCheckboxes ? (
+          <>
+            <Checkbox
+              checked={rule.status === RuleStatus.PASS}
+              onClick={(e) => e.stopPropagation()}
+              onChange={() => onStatusChange?.(rule.status === RuleStatus.PASS ? RuleStatus.PENDING : RuleStatus.PASS)}
+              sx={checkboxSx(passColor)}
+            />
+            <Checkbox
+              checked={rule.status === RuleStatus.FAIL}
+              onClick={(e) => e.stopPropagation()}
+              onChange={() => onStatusChange?.(rule.status === RuleStatus.FAIL ? RuleStatus.PENDING : RuleStatus.FAIL)}
+              sx={checkboxSx(failColor)}
+            />
+          </>
+        ) : (
+          <Box
+            sx={{
+              backgroundColor: color,
+              color: 'white',
+              fontSize: '11px',
+              fontWeight: 600,
+              width: '50px',
+              py: 0.25,
+              borderRadius: '3px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              whiteSpace: 'nowrap'
             }}
-            sx={{ padding: '2px', color: 'text.secondary' }}
           >
-            <InfoOutlined fontSize="small" />
-          </IconButton>
-        </Tooltip>
+            {label}
+          </Box>
+        )}
+      </Box>
+      <Box sx={{ width: '24px', ml: 0.75, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+        {showInfo && (
+          <Tooltip title={onInfoClick ? 'View Status History' : statusMessage} arrow>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onInfoClick?.(rule);
+              }}
+              sx={{ padding: '2px', color: 'text.secondary' }}
+            >
+              <InfoOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
     </Box>
   );

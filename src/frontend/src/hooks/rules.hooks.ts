@@ -154,7 +154,7 @@ export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
     },
     {
       enabled, // only fetch when true
-      refetchOnMount: false // if data is already cached, don't refetch when the component mounts
+      refetchOnMount: false
     }
   );
 };
