@@ -6,12 +6,16 @@ export type SeedProcessConstructor<TInput, TOutput> = new (...args: any[]) => Se
 export const GLOBAL_SEED = 1;
 
 export abstract class SeedProcess<TInput, TOutput> {
-  protected faker: Faker;
+  public faker: Faker;
   public prisma!: PrismaClient;
 
   constructor() {
     this.faker = new Faker({ locale: [en, base] });
     this.faker.seed(GLOBAL_SEED);
+  }
+
+  reseed(seed: number) {
+    this.faker.seed(seed);
   }
 
   abstract dependencies(): SeedProcessConstructor<any, any>[];

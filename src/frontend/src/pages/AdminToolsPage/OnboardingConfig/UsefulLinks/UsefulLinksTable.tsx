@@ -25,12 +25,15 @@ import CreateUsefulLinkModal from './CreateUsefulLinkModal';
 import EditUsefulLinkModal from './EditUsefulLinkModal';
 import { linkToLinkCreateArgs } from '../../../../utils/link.utils';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { useToast } from '../../../../hooks/toasts.hooks';
 
 interface UsefulLinksTableProps {
   isOnGuestHomePage?: boolean;
+  isOnNewMemberDashboard?: boolean;
+  isOnOnboardingDashboard?: boolean;
 }
 
-const UsefulLinksTable = ({ isOnGuestHomePage }: UsefulLinksTableProps) => {
+const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboardingDashboard }: UsefulLinksTableProps) => {
   const currentUser = useCurrentUser();
   const {
     data: links,
@@ -39,32 +42,51 @@ const UsefulLinksTable = ({ isOnGuestHomePage }: UsefulLinksTableProps) => {
     error: usefulLinksError
   } = useAllUsefulLinks();
   const { mutateAsync } = useSetUsefulLinks();
-  const { data: linkTypesBeforeFilter, isLoading: linkTypesIsLoading } = useAllLinkTypes();
+  const {
+    data: linkTypesBeforeFilter,
+    isLoading: linkTypesIsLoading,
+    isError: linkTypesIsError,
+    error: linkTypesError
+  } = useAllLinkTypes();
+  const toast = useToast();
 
   const [linkToDelete, setLinkToDelete] = useState<Link>();
   const [editingLink, setEditingLink] = useState<Link>();
   const [showCreateModel, setShowCreateModel] = useState<boolean>(false);
 
-  if (!links || usefulLinksIsLoading || !linkTypesBeforeFilter || linkTypesIsLoading) return <LoadingIndicator />;
   if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
+  if (linkTypesIsError) return <ErrorPage message={linkTypesError?.message} />;
+  if (!links || usefulLinksIsLoading || !linkTypesBeforeFilter || linkTypesIsLoading) return <LoadingIndicator />;
 
-  const handleDelete = (allLinks: Link[], linkToDelete: Link) => {
+  const handleDelete = async (allLinks: Link[], linkToDelete: Link) => {
     const updatedLinks = allLinks.filter((link) => link.linkId !== linkToDelete.linkId);
-    mutateAsync(linkToLinkCreateArgs(updatedLinks));
     setLinkToDelete(undefined);
+    try {
+      await mutateAsync(linkToLinkCreateArgs(updatedLinks));
+      toast.success('Link deleted successfully');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
   };
 
-  const linkTypes = linkTypesBeforeFilter.filter((linkType) =>
-    isOnGuestHomePage ? linkType.isOnGuestHomePage : !linkType.isOnGuestHomePage
-  );
+  const matchesDashboard = (linkType?: {
+    isOnGuestHomePage: boolean;
+    isOnNewMemberDashboard: boolean;
+    isOnOnboardingDashboard: boolean;
+  }) => {
+    if (!linkType) return false;
+    if (isOnNewMemberDashboard) return linkType.isOnNewMemberDashboard;
+    if (isOnOnboardingDashboard) return linkType.isOnOnboardingDashboard;
+    if (isOnGuestHomePage) return linkType.isOnGuestHomePage;
+    return !linkType.isOnGuestHomePage && !linkType.isOnNewMemberDashboard && !linkType.isOnOnboardingDashboard;
+  };
 
-  const usefulLinks = links.filter((link) =>
-    isOnGuestHomePage ? link.linkType?.isOnGuestHomePage : !link.linkType?.isOnGuestHomePage
-  );
+  const linkTypes = linkTypesBeforeFilter.filter(matchesDashboard);
 
-  console.log('Links: ', links);
-  console.log('Links after filter: ', usefulLinks);
-  console.log('isOnGuestHomePage:', isOnGuestHomePage);
+  const usefulLinks = links.filter((link) => matchesDashboard(link.linkType));
+
   return (
     <Box>
       <CreateUsefulLinkModal

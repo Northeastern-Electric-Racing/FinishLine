@@ -537,7 +537,7 @@ export default class PartReviewService {
    */
   static async getAllPartReviewFAQs(organizationId: string) {
     const partReviewFAQs = await prisma.frequentlyAskedQuestion.findMany({
-      where: { dateDeleted: null, partReviewFaqOrgId: organizationId },
+      where: { dateDeleted: null, organizationId, isOnPartReviewPage: true },
       ...getFaqQueryArgs(organizationId)
     });
 
@@ -630,37 +630,6 @@ export default class PartReviewService {
   }
 
   /**
-   * Creates an faq
-   * @param question the question
-   * @param answer the answer
-   * @param creator user creating -- must be admin
-   * @param organizationId the organization
-   * @returns the faq
-   */
-  static async createFaq(
-    question: string,
-    answer: string,
-    creator: User,
-    organizationId: string
-  ): Promise<FrequentlyAskedQuestion> {
-    if (!(await userHasPermission(creator.userId, organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('create part review faq');
-    }
-
-    const faq = await prisma.frequentlyAskedQuestion.create({
-      data: {
-        question,
-        answer,
-        userCreated: { connect: { userId: creator.userId } },
-        partReviewFaqOrg: { connect: { organizationId } }
-      },
-      ...getFaqQueryArgs(organizationId)
-    });
-
-    return faqTransformer(faq);
-  }
-
-  /**
    * updates an faq
    * @param faqId the faq to update
    * @param question the question
@@ -682,7 +651,7 @@ export default class PartReviewService {
 
     const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId } });
 
-    if (!faq || faq.partReviewFaqOrgId !== organizationId) {
+    if (!faq || faq.organizationId !== organizationId || !faq.isOnPartReviewPage) {
       throw new NotFoundException('Faq', faqId);
     }
 
@@ -711,9 +680,9 @@ export default class PartReviewService {
       throw new AccessDeniedAdminOnlyException('delete faq');
     }
 
-    const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId }, ...getFaqQueryArgs });
+    const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId }, ...getFaqQueryArgs(organizationId) });
 
-    if (!faq || faq.partReviewFaqOrgId !== organizationId) {
+    if (!faq || faq.organizationId !== organizationId || !faq.isOnPartReviewPage) {
       throw new NotFoundException('Faq', faqId);
     }
 

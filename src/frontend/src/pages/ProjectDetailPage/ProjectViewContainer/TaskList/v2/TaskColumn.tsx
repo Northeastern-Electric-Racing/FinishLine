@@ -13,6 +13,8 @@ export const TaskColumn = ({
   status,
   tasks,
   wbsNum,
+  context,
+  projectCarNumbers,
   equalizedHeight,
   isDragging,
   onEditTask,
@@ -22,7 +24,9 @@ export const TaskColumn = ({
 }: {
   status: TaskStatus;
   tasks: TaskWithIndex[];
-  wbsNum: WbsNumber;
+  wbsNum?: WbsNumber;
+  context?: 'global' | 'project' | 'workPackage';
+  projectCarNumbers?: number[];
   equalizedHeight: number;
   isDragging: boolean;
   onEditTask: (task: Task) => void;
@@ -55,11 +59,18 @@ export const TaskColumn = ({
     blockedBy,
     priority,
     startDate,
-    wpWbsNum
+    wpWbsNum,
+    projectWbsNum
   }: EditTaskFormInput) => {
+    // work package wins, then the chosen project (global create), then the board's own scope
+    const createWbsNum = wpWbsNum ?? projectWbsNum ?? wbsNum;
+    if (!createWbsNum) {
+      toast.error('Please select a project for this task.');
+      return;
+    }
     try {
       const task = await createTask({
-        wbsNum: wpWbsNum ?? wbsNum,
+        wbsNum: createWbsNum,
         title,
         deadline: deadline ? toDateString(deadline) : undefined,
         startDate: startDate ? toDateString(startDate) : undefined,
@@ -88,11 +99,17 @@ export const TaskColumn = ({
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
         wbsNum={wbsNum}
+        context={context}
+        projectCarNumbers={projectCarNumbers}
         isLoading={isLoading}
       />
       <Box
         sx={{
           flex: 1,
+          // without an explicit basis + min-width:0, a column whose cards have wider content (common on
+          // the global board, which spans many projects) won't shrink and ends up wider than the others
+          flexBasis: 0,
+          minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
           paddingTop: '8px',
@@ -145,6 +162,8 @@ export const TaskColumn = ({
                   task={task}
                   index={index}
                   wbsNum={wbsNum}
+                  context={context}
+                  showProjectName={context === 'global'}
                 />
               ))}
               {droppableProvided.placeholder}

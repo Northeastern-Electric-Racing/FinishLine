@@ -19,8 +19,11 @@ export * from './src/types/announcements.types.js';
 export * from './src/types/part-review.types.js';
 export * from './src/types/calendar-types.js';
 export * from './src/types/attendance-types.js';
+export * from './src/types/dropdown-types.js';
+export * from './src/types/dashboard-types.js';
 
 export * from './src/validate-wbs.js';
+export * from './src/validate-slack-id.js';
 export * from './src/date-utils.js';
 export * from './src/date-format.js';
 

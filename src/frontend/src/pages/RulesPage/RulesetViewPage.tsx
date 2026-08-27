@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { isHead } from 'shared';
 import FullPageTabs from '../../components/FullPageTabs';
 import PageLayout from '../../components/PageLayout';
 import { NERButton } from '../../components/NERButton';
@@ -18,10 +19,12 @@ import {
   useFetchFullRuleTree,
   useResetRulesetStatuses
 } from '../../hooks/rules.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
 import { useRuleTreeNavigation } from './useRuleTreeNavigation';
 import { useTeamRuleOrganization } from './useTeamRuleOrganization';
 
 const RulesetViewPage = () => {
+  const user = useCurrentUser();
   const [tabIndex, setTabIndex] = useState<number>(0);
   const [showResetModal, setShowResetModal] = useState(false);
   // bumped after a reset to force RulesetGeneralView to remount, clearing any open popover/history modal
@@ -126,9 +129,11 @@ const RulesetViewPage = () => {
                 <NERButton variant="outlined" onClick={areAllExpanded ? collapseAll : expandAll}>
                   {areAllExpanded ? 'Collapse All' : 'Expand All'}
                 </NERButton>
-                <NERButton variant="outlined" onClick={() => setShowResetModal(true)}>
-                  Reset Status
-                </NERButton>
+                {isHead(user.role) && (
+                  <NERButton variant="outlined" onClick={() => setShowResetModal(true)}>
+                    Reset Status
+                  </NERButton>
+                )}
               </Box>
             )}
             {tabIndex === 1 && (

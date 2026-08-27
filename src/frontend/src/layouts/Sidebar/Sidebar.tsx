@@ -17,6 +17,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import ChecklistIcon from '@mui/icons-material/Checklist';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import NavPageLink from './NavPageLink';
 import NERDrawer from '../../components/NERDrawer';
@@ -109,6 +110,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           ]
         },
     !onGuestHomePage && {
+      name: 'Tasks',
+      icon: <ChecklistIcon />,
+      route: routes.TASKS
+    },
+    !onGuestHomePage && {
       name: 'Change Requests',
       icon: <SyncAltIcon />,
       route: routes.CHANGE_REQUESTS
@@ -164,7 +170,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       icon: <VolunteerActivismIcon />,
       route: routes.SPONSORS
     },
-    {
+    !onGuestHomePage && {
       name: 'Rules',
       icon: <WarningAmberRoundedIcon />,
       route: routes.RULES

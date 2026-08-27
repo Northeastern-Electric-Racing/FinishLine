@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client';
 import { BlockingWorkPackagePreview, CalendarTask, Task, TaskBlockerPreview, TaskCardPreview, TaskLabel } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
 import { convertTaskPriority, convertTaskStatus } from '../utils/tasks.utils.js';
-import { userTransformer } from './user.transformer.js';
+import { userPreviewWithEmailTransformer } from './user.transformer.js';
 import {
   CalendarTaskQueryArgs,
   TaskLabelQueryArgs,
@@ -54,14 +54,14 @@ export const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Tas
     startDate: task.startDate ?? undefined,
     priority: convertTaskPriority(task.priority),
     status: convertTaskStatus(task.status),
-    createdBy: userTransformer(task.createdBy),
-    assignees: task.assignees.map(userTransformer),
+    createdBy: userPreviewWithEmailTransformer(task.createdBy),
+    assignees: task.assignees.map(userPreviewWithEmailTransformer),
     labels: task.labels.map(taskLabelTransformer),
     blockedBy: task.blockedBy.map(taskBlockedByTransformer),
     blockedByWorkPackages: getBlockingWorkPackagePreviews(task.wbsElement),
     dateDeleted: task.dateDeleted ?? undefined,
     dateCreated: task.dateCreated,
-    deletedBy: task.deletedBy ? userTransformer(task.deletedBy) : undefined
+    deletedBy: task.deletedBy ? userPreviewWithEmailTransformer(task.deletedBy) : undefined
   };
 };
 
@@ -93,14 +93,13 @@ export const calendarTaskTransformer = (task: Prisma.TaskGetPayload<CalendarTask
     startDate: task.startDate ?? undefined,
     priority: convertTaskPriority(task.priority),
     status: convertTaskStatus(task.status),
-    createdBy: userTransformer(task.createdBy),
-    assignees: task.assignees.map(userTransformer),
+    createdBy: userPreviewWithEmailTransformer(task.createdBy),
+    assignees: task.assignees.map(userPreviewWithEmailTransformer),
     labels: task.labels.map(taskLabelTransformer),
     blockedBy: task.blockedBy.map(taskBlockedByTransformer),
     blockedByWorkPackages: getBlockingWorkPackagePreviews(task.wbsElement),
     dateDeleted: task.dateDeleted ?? undefined,
     dateCreated: task.dateCreated,
-    deletedBy: task.deletedBy ? userTransformer(task.deletedBy) : undefined,
     projectLeadId: task.wbsElement.leadId ?? undefined,
     projectManagerId: task.wbsElement.managerId ?? undefined
   };

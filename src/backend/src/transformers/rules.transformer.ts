@@ -104,6 +104,7 @@ export const rulesetTransformer = (ruleset: Prisma.RulesetGetPayload<RulesetQuer
     rulesetId: ruleset.rulesetId,
     name: ruleset.name,
     dateCreated: ruleset.dateCreated,
+    createdByUserId: ruleset.createdByUserId,
     active: ruleset.active,
     assignedPercentage: teamsPercentage,
     rulesetType: rulesetTypeTransformer(ruleset.rulesetType),

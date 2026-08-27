@@ -9,15 +9,16 @@ const LOGIN = `/login`;
 const INFO = `/info`;
 const GUEST_INFO = `/guestinfo`;
 const GANTT = `/gantt`;
+const TASKS = `/tasks`;
 const CREDITS = `/credits`;
 
 /**************** Home Section ****************/
 const HOME = `/home`;
 const HOME_PNM = HOME + `/pnm`;
 const HOME_SELECT_SUBTEAM = HOME + `/select-subteam`;
-const HOME_ACCEPT = HOME + `/accept`;
 const HOME_MEMBER = HOME + `/member`;
 const HOME_ONBOARDING = HOME + `/onboarding`;
+const HOME_NEW_MEMBER = HOME + `/new-member`;
 
 /**************** Finance Section ****************/
 const FINANCE = `/finance`;
@@ -99,13 +100,14 @@ export const routes = {
   HOME_PNM,
   HOME_SELECT_SUBTEAM,
   HOME_ONBOARDING,
-  HOME_ACCEPT,
+  HOME_NEW_MEMBER,
   HOME_MEMBER,
 
   TEAMS,
   TEAMS_BY_ID,
 
   GANTT,
+  TASKS,
 
   PROJECTS,
   PROJECT_MANAGEMENT,

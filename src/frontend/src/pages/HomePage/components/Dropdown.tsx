@@ -1,7 +1,8 @@
-import { Box, Accordion, AccordionSummary, Typography, AccordionDetails } from '@mui/material';
+import { Box, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 
 import { ChevronRight } from '@mui/icons-material';
 import React, { useState } from 'react';
+import NERMarkdown from '../../../components/NERMarkdown';
 
 interface DropdownProps {
   title: string;
@@ -38,7 +39,9 @@ const Dropdown = ({ title, description }: DropdownProps) => {
               fontSize: 30
             }}
           />
-          <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: 20 }}>{title}</Typography>
+          <Box sx={{ color: 'white', fontWeight: 'bold', fontSize: 18 }}>
+            <NERMarkdown markdown={title} />
+          </Box>
         </AccordionSummary>
         <AccordionDetails
           sx={{
@@ -47,7 +50,9 @@ const Dropdown = ({ title, description }: DropdownProps) => {
             minHeight: '60px'
           }}
         >
-          <Typography sx={{ color: 'black' }}>{description}</Typography>
+          <Box sx={{ color: 'black', fontSize: 16 }}>
+            <NERMarkdown markdown={description} />
+          </Box>
         </AccordionDetails>
       </Accordion>
     </Box>

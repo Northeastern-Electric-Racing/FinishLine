@@ -6,7 +6,7 @@
 import { Box, Button, CircularProgress, Paper, Table, TableBody, TableContainer, TextField, useTheme } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Redirect, useParams } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
 import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
@@ -37,8 +37,9 @@ import {
   useFetchFullRuleTree
 } from '../../hooks/rules.hooks';
 import { countRulesToDelete, compareRuleCodes } from '../../utils/rules.utils';
-import { Rule } from 'shared';
+import { Rule, isLeadership } from 'shared';
 import { useToast } from '../../hooks/toasts.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
 import { useRuleTreeNavigation } from './useRuleTreeNavigation';
 
 /**
@@ -47,6 +48,7 @@ import { useRuleTreeNavigation } from './useRuleTreeNavigation';
  */
 const RulesetEditPage: React.FC = () => {
   const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>(); //why tab value??
+  const user = useCurrentUser();
   const [tabValue, setTabValue] = useState(0);
   const defaultTab = 'edit-rules';
 
@@ -135,6 +137,12 @@ const RulesetEditPage: React.FC = () => {
 
   if (isRulesetLoading || isTopLevelRulesLoading || !ruleset || !topLevelRules) {
     return <LoadingIndicator />;
+  }
+
+  // creating, editing, deleting, and assigning rules all require leadership and above
+  // if the user is not leadership, redirect them to the view page for this ruleset
+  if (!isLeadership(user.role)) {
+    return <Redirect to={routes.RULESET_VIEW.replace(':rulesetId', rulesetId!)} />;
   }
 
   const handleAddRuleSection = () => {

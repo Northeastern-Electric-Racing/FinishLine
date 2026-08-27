@@ -32,6 +32,15 @@ export default class ProjectsController {
     }
   }
 
+  static async getAllProjectsDropdown(req: Request, res: Response, next: NextFunction) {
+    try {
+      const projects = await ProjectsService.getAllProjectsDropdown(req.organization);
+      res.status(200).json(projects);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getUsersTeamsProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const projects: ProjectOverview[] = await ProjectsService.getUsersTeamsProjects(
@@ -174,7 +183,7 @@ export default class ProjectsController {
 
   static async createLinkType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, iconName, required, isOnGuestHomePage } = req.body;
+      const { name, iconName, required, isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboardingDashboard } = req.body;
 
       const newLinkType = await ProjectsService.createLinkType(
         req.currentUser,
@@ -182,7 +191,9 @@ export default class ProjectsController {
         iconName,
         required,
         req.organization,
-        isOnGuestHomePage
+        isOnGuestHomePage,
+        isOnNewMemberDashboard,
+        isOnOnboardingDashboard
       );
       res.status(200).json(newLinkType);
     } catch (error: unknown) {
@@ -460,7 +471,14 @@ export default class ProjectsController {
   static async editLinkType(req: Request, res: Response, next: NextFunction) {
     try {
       const { linkTypeName } = req.params as Record<string, string>;
-      const { name: newName, iconName, required, isOnGuestHomePage } = req.body;
+      const {
+        name: newName,
+        iconName,
+        required,
+        isOnGuestHomePage,
+        isOnNewMemberDashboard,
+        isOnOnboardingDashboard
+      } = req.body;
       const linkTypeUpdated = await ProjectsService.editLinkType(
         linkTypeName,
         iconName,
@@ -468,6 +486,8 @@ export default class ProjectsController {
         req.currentUser,
         req.organization,
         isOnGuestHomePage,
+        isOnNewMemberDashboard,
+        isOnOnboardingDashboard,
         newName
       );
       res.status(200).json(linkTypeUpdated);

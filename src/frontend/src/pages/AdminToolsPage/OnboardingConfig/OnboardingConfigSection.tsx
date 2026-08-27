@@ -1,26 +1,19 @@
-import { Grid, Typography, List, ListItem, useTheme } from '@mui/material';
+import { Grid, Typography, List, ListItem, Link, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import UsefulLinksTable from './UsefulLinks/UsefulLinksTable';
-import {
-  useCurrentOrganization,
-  useOrganizationNewMemberImage,
-  useSetOrganizationNewMemberImage
-} from '../../../hooks/organizations.hooks';
+import LinkTypeTable from '../ProjectsConfig/LinkTypes/LinkTypeTable';
+import NewMemberMilestoneTable from '../RecruitmentConfig/NewMemberMilestoneTable';
+import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 import UpdateOnboardingContactsModal from './UpdateContactsModal';
 import OnboardingBlock from './OnboardingBlock';
-import NERUploadButton from '../../../components/NERUploadButton';
-import { useToast } from '../../../hooks/toasts.hooks';
-import { MAX_FILE_SIZE } from 'shared';
 
-const OnboardingInfoSection: React.FC = () => {
+const OnboardingConfigSection: React.FC = () => {
   const theme = useTheme();
   const [showModal, setShowModal] = useState(false);
-  const [addedImage, setAddedImage] = useState<File | undefined>(undefined);
-  const toast = useToast();
 
   const {
     data: organization,
@@ -29,37 +22,8 @@ const OnboardingInfoSection: React.FC = () => {
     error: organizationError
   } = useCurrentOrganization();
 
-  const {
-    data: newMemberImageBlob,
-    isLoading: imageIsLoading,
-    error: imageError,
-    isError: imageIsError
-  } = useOrganizationNewMemberImage();
-  const { mutateAsync: uploadNewMemberImage, isLoading: isUploading } = useSetOrganizationNewMemberImage();
-
-  const handleImageUpload = async () => {
-    if (!addedImage) return;
-
-    if (addedImage.size >= MAX_FILE_SIZE) {
-      toast.error(`File must be less than ${MAX_FILE_SIZE / 1024 / 1024} MB`, 5000);
-      return;
-    }
-
-    try {
-      await uploadNewMemberImage(addedImage);
-      setAddedImage(undefined);
-      toast.success('Image uploaded successfully!');
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to upload image');
-    }
-  };
-
   if (organizationIsError) {
     return <ErrorPage message={organizationError.message} />;
-  }
-
-  if (imageIsError) {
-    return <ErrorPage message={imageError.message} />;
   }
 
   if (!organization || organizationIsLoading) return <LoadingIndicator />;
@@ -80,7 +44,8 @@ const OnboardingInfoSection: React.FC = () => {
       <Grid item>
         <Box
           sx={{
-            backgroundColor: theme.palette.background.paper,
+            backgroundColor: (theme) => theme.palette.background.paper,
+            height: '100%',
             borderRadius: '10px',
             padding: '16px',
             width: '100%'
@@ -94,35 +59,10 @@ const OnboardingInfoSection: React.FC = () => {
               marginBottom: '12px'
             }}
           >
-            New Member Events Image
+            Onboarding Page Useful Links
           </Typography>
-          {isUploading || imageIsLoading ? (
-            <Box sx={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <LoadingIndicator />
-            </Box>
-          ) : (
-            <>
-              {!addedImage && newMemberImageBlob && (
-                <Box
-                  component="img"
-                  sx={{ display: 'block', maxWidth: '100%', maxHeight: '200px', mb: 1, objectFit: 'contain' }}
-                  alt="New Member Event"
-                  src={URL.createObjectURL(newMemberImageBlob)}
-                />
-              )}
-              <NERUploadButton
-                dataTypeId="newMemberImage"
-                handleFileChange={(e) => {
-                  if (e.target.files) {
-                    setAddedImage(e.target.files[0]);
-                  }
-                }}
-                onSubmit={handleImageUpload}
-                addedImage={addedImage}
-                setAddedImage={setAddedImage}
-              />
-            </>
-          )}
+          <LinkTypeTable isOnOnboardingDashboard />
+          <UsefulLinksTable isOnOnboardingDashboard />
         </Box>
       </Grid>
       <Grid item>
@@ -143,9 +83,9 @@ const OnboardingInfoSection: React.FC = () => {
               marginBottom: '12px'
             }}
           >
-            Useful Links
+            Onboarding Milestones
           </Typography>
-          <UsefulLinksTable />
+          <NewMemberMilestoneTable />
         </Box>
       </Grid>
       <Grid item>
@@ -168,12 +108,24 @@ const OnboardingInfoSection: React.FC = () => {
           <List sx={{ listStyleType: 'disc', pl: 4 }}>
             {organization.contacts.map((contact) => {
               return (
-                <ListItem sx={{ display: 'list-item', padding: 0.5 }}>
-                  {contact.user.firstName} {contact.user.lastName}: {contact.user.email} - {contact.title}
+                <ListItem key={`${contact.user.userId}-${contact.title}`} sx={{ display: 'list-item', padding: 0.5 }}>
+                  {contact.user.firstName} {contact.user.lastName} - {contact.title}
                 </ListItem>
               );
             })}
           </List>
+          {organization.slackWorkspaceId && (
+            <Typography sx={{ ml: 2, pb: 2 }}>
+              You can find them on{' '}
+              <Link
+                href={`https://app.slack.com/client/${organization.slackWorkspaceId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Slack
+              </Link>
+            </Typography>
+          )}
         </Box>
       </Grid>
       <UpdateOnboardingContactsModal
@@ -185,4 +137,4 @@ const OnboardingInfoSection: React.FC = () => {
   );
 };
 
-export default OnboardingInfoSection;
+export default OnboardingConfigSection;

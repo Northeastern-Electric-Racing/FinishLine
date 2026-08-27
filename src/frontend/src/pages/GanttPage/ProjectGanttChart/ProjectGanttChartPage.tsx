@@ -96,7 +96,6 @@ const ProjectGanttChartPage: FC = () => {
   const [allProjects, setAllProjects] = useState<ProjectGantt[]>([]);
   const [editedProjects, setEditedProjects] = useState<ProjectGantt[]>([]);
   const user = useCurrentUser();
-
   /******************** Filters ***************************/
   const { filters, setFilters } = useGanttFilters('project-gantt');
 
@@ -357,8 +356,7 @@ const ProjectGanttChartPage: FC = () => {
         userId: user.userId,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email,
-        role: user.role
+        email: user.email
       },
       assignees: [],
       labels: taskInfo.labels,

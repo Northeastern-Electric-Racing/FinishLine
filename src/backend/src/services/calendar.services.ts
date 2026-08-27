@@ -357,7 +357,7 @@ export default class CalendarService {
     }
 
     // Validate notificationChannelIds
-    await validateNotificationChannelIds(organization, submitter, notificationChannelIds);
+    await validateNotificationChannelIds(submitter, notificationChannelIds);
 
     // Validate shopIds
     if (shopIds.length > 0) {
@@ -695,7 +695,7 @@ export default class CalendarService {
     const addedNotificationChannelIds = notificationChannelIds.filter(
       (id) => !foundEvent.notificationChannelIds.includes(id)
     );
-    await validateNotificationChannelIds(organization, submitter, addedNotificationChannelIds);
+    await validateNotificationChannelIds(submitter, addedNotificationChannelIds);
 
     // Validate shopIds
     if (shopIds.length > 0) {
@@ -2148,6 +2148,7 @@ export default class CalendarService {
    * @param name The name of the calendar
    * @param description A summary of what the calendar is used for
    * @param colorHexCode The color of the calendar
+   * @param isNewMemberCalendar Whether this calendar is the org's designated new member calendar
    * @param organization The organization for which the calendar is being created
    *
    * @returns The created calendar
@@ -2159,6 +2160,7 @@ export default class CalendarService {
     name: string,
     description: string,
     colorHexCode: string,
+    isNewMemberCalendar: boolean,
     organization: Organization
   ): Promise<Calendar> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
@@ -2176,15 +2178,30 @@ export default class CalendarService {
       throw new HttpException(409, "Can't have two calendars with the same name");
     }
 
-    const newCalendar = await prisma.calendar.create({
-      data: {
-        name,
-        description,
-        colorHexCode,
-        userCreatedId: submitter.userId,
-        organizationId: organization.organizationId
-      },
-      ...getCalendarQueryArgs(organization.organizationId)
+    const newCalendar = await prisma.$transaction(async (tx) => {
+      if (isNewMemberCalendar) {
+        // Serialize concurrent new-member-calendar toggles for this org: without this, two
+        // near-simultaneous creates could both find zero existing flagged calendars to clear
+        // and both commit with isNewMemberCalendar: true.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`new-member-calendar:${organization.organizationId}`}))`;
+
+        await tx.calendar.updateMany({
+          where: { organizationId: organization.organizationId, isNewMemberCalendar: true },
+          data: { isNewMemberCalendar: false }
+        });
+      }
+
+      return tx.calendar.create({
+        data: {
+          name,
+          description,
+          colorHexCode,
+          isNewMemberCalendar,
+          userCreatedId: submitter.userId,
+          organizationId: organization.organizationId
+        },
+        ...getCalendarQueryArgs(organization.organizationId)
+      });
     });
 
     return calendarTransformer(newCalendar);
@@ -2196,6 +2213,7 @@ export default class CalendarService {
    * @param name The name of the calendar.
    * @param description The summary of what the calendar is used for.
    * @param colorHexCode The color of the calendar.
+   * @param isNewMemberCalendar Whether this calendar is the org's designated new member calendar
    * @param organization The organization for which the calendar is being edited.
    *
    * @returns The edited calendar.
@@ -2211,6 +2229,7 @@ export default class CalendarService {
     name: string,
     description: string,
     colorHexCode: string,
+    isNewMemberCalendar: boolean,
     organization: Organization
   ): Promise<Calendar> {
     const calendar = await prisma.calendar.findUnique({
@@ -2240,14 +2259,27 @@ export default class CalendarService {
       throw new HttpException(409, "Can't have two calendars with the same name");
     }
 
-    const newCalendar = await prisma.calendar.update({
-      where: { calendarId },
-      data: {
-        name,
-        description,
-        colorHexCode
-      },
-      ...getCalendarQueryArgs(organization.organizationId)
+    const newCalendar = await prisma.$transaction(async (tx) => {
+      if (isNewMemberCalendar) {
+        // Same advisory lock as createCalendar — see comment there.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`new-member-calendar:${organization.organizationId}`}))`;
+
+        await tx.calendar.updateMany({
+          where: { organizationId: organization.organizationId, isNewMemberCalendar: true, NOT: { calendarId } },
+          data: { isNewMemberCalendar: false }
+        });
+      }
+
+      return tx.calendar.update({
+        where: { calendarId },
+        data: {
+          name,
+          description,
+          colorHexCode,
+          isNewMemberCalendar
+        },
+        ...getCalendarQueryArgs(organization.organizationId)
+      });
     });
 
     return calendarTransformer(newCalendar);
@@ -2649,6 +2681,34 @@ export default class CalendarService {
     });
 
     return events.map(eventTransformer);
+  }
+
+  /**
+   * Gets all upcoming events on the organization's designated new member calendar.
+   *
+   * @param organization The organization to get new member events for.
+   *
+   * @returns The upcoming events on the org's new member calendar, or an empty array if no calendar is designated.
+   */
+  static async getNewMemberEvents(organization: Organization): Promise<Event[]> {
+    const newMemberCalendar = await prisma.calendar.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        isNewMemberCalendar: true,
+        dateDeleted: null
+      }
+    });
+
+    if (!newMemberCalendar) return [];
+
+    return CalendarService.getFilteredEvents(
+      {
+        calendarIds: [newMemberCalendar.calendarId],
+        startPeriod: new Date(),
+        endPeriod: new Date(2099, 11, 31)
+      },
+      organization
+    );
   }
 
   static async getAllShops(organization: Organization): Promise<Shop[]> {

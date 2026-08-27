@@ -21,6 +21,7 @@ export interface Ruleset {
   fileId: string;
   name: string;
   dateCreated: Date;
+  createdByUserId: string;
   active: boolean;
   rulesetType: RulesetType;
   assignedPercentage: number;

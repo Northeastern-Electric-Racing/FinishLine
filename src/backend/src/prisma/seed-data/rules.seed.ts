@@ -20,14 +20,6 @@ const rulesetTypeFHE = (userCreatedId: string, organizationId: string): Prisma.R
   };
 };
 
-const mockRulesetType = (userCreatedId: string, organizationId: string): Prisma.Ruleset_TypeCreateInput => {
-  return {
-    name: 'Mock Ruleset Type',
-    createdBy: { connect: { userId: userCreatedId } },
-    organization: { connect: { organizationId } }
-  };
-};
-
 // rulesets
 const rulesetFSAE = (carId: string, userCreatedId: string, rulesetTypeId: string): Prisma.RulesetCreateInput => {
   return {
@@ -45,18 +37,6 @@ const rulesetFHE = (carId: string, userCreatedId: string, rulesetTypeId: string)
   return {
     name: 'Mock FHE',
     fileId: 'mock-fhe-rules',
-    active: true,
-    dateCreated: new Date('2024-12-31T10:00:00Z'),
-    car: { connect: { carId } },
-    createdBy: { connect: { userId: userCreatedId } },
-    rulesetType: { connect: { rulesetTypeId } }
-  };
-};
-
-const rulesetMock = (carId: string, userCreatedId: string, rulesetTypeId: string): Prisma.RulesetCreateInput => {
-  return {
-    name: 'Mock Ruleset',
-    fileId: 'mock-rules',
     active: true,
     dateCreated: new Date('2024-12-31T10:00:00Z'),
     car: { connect: { carId } },
@@ -95,7 +75,6 @@ export const seedRulesetType = async (submitter: User, name: string, organizatio
  * @param prisma the prisma client used by the seed script
  * @param fsaeRulesetId fsae mock ruleset the bulk of the rules belong to
  * @param fheRulesetId fhe mock ruleset
- * @param mockRulesetId a mock ruleset used for testing
  * @param users the users credited as rule creators
  * @param organization the organization the rules/project belong to
  * @param projectId the project a leaf rule is assigned to and completed in
@@ -105,7 +84,6 @@ export const seedFsaeRules = async (
   prisma: PrismaClient,
   fsaeRulesetId: string,
   fheRulesetId: string,
-  mockRulesetId: string,
   users: { batman: User; thomasEmrax: User; joeShmoe: User; joeBlow: User; superman: User },
   organization: Organization,
   projectId: string,
@@ -697,67 +675,6 @@ export const seedFsaeRules = async (
     }
   });
 
-  // Add mock rules to mock ruleset for depth testing
-
-  const rule1 = await prisma.rule.create({
-    data: {
-      ruleCode: '1',
-      ruleContent: '',
-      rulesetId: mockRulesetId,
-      createdByUserId: superman.userId
-    }
-  });
-
-  const rule2 = await prisma.rule.create({
-    data: {
-      ruleCode: '1.1',
-      ruleContent: '',
-      rulesetId: mockRulesetId,
-      parentRuleId: rule1.ruleId,
-      createdByUserId: superman.userId
-    }
-  });
-
-  const rule3 = await prisma.rule.create({
-    data: {
-      ruleCode: '1.1.1',
-      ruleContent: '',
-      rulesetId: mockRulesetId,
-      parentRuleId: rule2.ruleId,
-      createdByUserId: superman.userId
-    }
-  });
-
-  const rule4 = await prisma.rule.create({
-    data: {
-      ruleCode: '1.1.1.1',
-      ruleContent: '',
-      rulesetId: mockRulesetId,
-      parentRuleId: rule3.ruleId,
-      createdByUserId: superman.userId
-    }
-  });
-
-  const rule5 = await prisma.rule.create({
-    data: {
-      ruleCode: '1.1.1.1.1',
-      ruleContent: '',
-      rulesetId: mockRulesetId,
-      parentRuleId: rule4.ruleId,
-      createdByUserId: superman.userId
-    }
-  });
-
-  await prisma.rule.create({
-    data: {
-      ruleCode: '1.1.1.1.1.1',
-      ruleContent: '',
-      rulesetId: mockRulesetId,
-      parentRuleId: rule5.ruleId,
-      createdByUserId: superman.userId
-    }
-  });
-
   // Assign the leaf rule T.1.1.2.a to the husky team along with its full chain of
   // ancestors (T -> T.1 -> T.1.1 -> T.1.1.2). Simulates how the assign-rules page automatically completes this full chain.
   for (const rule of [topLevelTechnical, T1Rule, T11Rule, T112Rule, T112ARule]) {
@@ -791,10 +708,8 @@ export const seedFsaeRules = async (
 export const ruleSeedData = {
   rulesetTypeFHE,
   rulesetTypeFSAE,
-  mockRulesetType,
   rulesetFSAE,
   rulesetFHE,
-  rulesetMock,
   projectRule1,
   projectRule2
 };

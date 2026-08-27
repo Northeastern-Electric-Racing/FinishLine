@@ -30,7 +30,7 @@ const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, tit
         }}
       >
         {title && (
-          <Typography ml={2} mt={2} variant="h5">
+          <Typography variant="h5" mt={2}>
             {title}
           </Typography>
         )}

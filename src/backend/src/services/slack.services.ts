@@ -11,6 +11,7 @@ import {
 } from '../utils/errors.utils.js';
 import ReimbursementRequestService from './reimbursement-requests.services.js';
 import ChangeRequestsService from './change-requests.services.js';
+import TeamsService from './teams.services.js';
 import { userTransformer } from '../transformers/user.transformer.js';
 import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { User } from 'shared';
@@ -139,6 +140,13 @@ export interface SaboSubmissionActionValue {
  */
 export interface CrApprovalActionValue {
   crId: string;
+}
+
+/**
+ * Represents the parsed value from a team join request approval action
+ */
+export interface TeamJoinRequestApprovalActionValue {
+  teamJoinRequestId: string;
 }
 
 export default class SlackServices {
@@ -297,6 +305,87 @@ export default class SlackServices {
         await respond({
           response_type: 'ephemeral',
           text: `❌ An unexpected error occurred while approving this CR.\n\n*Error:* ${msg}`
+        });
+      }
+    }
+  }
+
+  /**
+   * Approves a team join request from a Slack interactive button click.
+   * Auth (admin/head/lead) is enforced inside reviewTeamJoinRequest. Unlike handleApproveCRAction,
+   * this catches lookup failures too (not just the review call itself) since there's no message
+   * thread to fall back on for error reporting -- respond() is the only channel available.
+   *
+   * @param userSlackId Slack id of the user who clicked the button
+   * @param teamJoinRequestId the team join request to approve
+   * @param respond Bolt response callback bound to this interaction's response_url
+   */
+  static async handleApproveTeamJoinRequestAction(
+    userSlackId: string,
+    teamJoinRequestId: string,
+    respond: (msg: {
+      response_type?: 'ephemeral';
+      text?: string;
+      replace_original?: boolean;
+      delete_original?: boolean;
+    }) => Promise<unknown>
+  ): Promise<void> {
+    try {
+      const teamJoinRequest = await prisma.team_Join_Request.findUnique({
+        where: { teamJoinRequestId },
+        include: { team: true }
+      });
+      if (!teamJoinRequest) {
+        throw new NotFoundException('Team Join Request', teamJoinRequestId);
+      }
+
+      const reviewer = await prisma.user.findFirst({
+        where: {
+          userSettings: {
+            slackId: userSlackId
+          },
+          roles: { some: { organizationId: teamJoinRequest.team.organizationId } }
+        },
+        ...getUserQueryArgs(teamJoinRequest.team.organizationId)
+      });
+
+      if (!reviewer) {
+        console.error('User not found for slack ID:', userSlackId);
+        throw new NotFoundException('User', userSlackId);
+      }
+
+      const org = await prisma.organization.findUnique({
+        where: { organizationId: teamJoinRequest.team.organizationId }
+      });
+
+      if (!org) {
+        throw new NotFoundException('Organization', teamJoinRequest.team.organizationId);
+      }
+
+      const reviewerShared: User = userTransformer(reviewer);
+      const approved = await TeamsService.reviewTeamJoinRequest(reviewerShared, teamJoinRequestId, true, undefined, org);
+
+      await respond({
+        replace_original: true,
+        text: `✅ ${approved.user.firstName} ${approved.user.lastName}'s request to join ${teamJoinRequest.team.teamName} was approved by ${reviewer.firstName} ${reviewer.lastName}.`
+      });
+    } catch (error) {
+      if (error instanceof AccessDeniedException) {
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ You're not authorized to approve this request. Only admins or the team head can approve.`
+        });
+      } else if (error instanceof NotFoundException || error instanceof HttpException) {
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ ${error.message}`
+        });
+      } else {
+        const msg = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error approving team join request via Slack:', error);
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ An unexpected error occurred while approving this request.\n\n*Error:* ${msg}`
         });
       }
     }

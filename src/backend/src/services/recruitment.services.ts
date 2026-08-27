@@ -21,11 +21,45 @@ export default class RecruitmentServices {
   }
 
   /**
+   * Gets all milestones flagged for the given dashboard, for the given organization
+   * @param organization the organization to get milestones for
+   * @param dashboardFlag which dashboard flag to filter milestones by
+   * @returns all milestones from the given organization flagged for the given dashboard
+   */
+  private static async getMilestonesByDashboardFlag(
+    organization: Organization,
+    dashboardFlag: 'isOnNewMemberDashboard' | 'isOnRecruitingDashboard'
+  ) {
+    return prisma.milestone.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null, [dashboardFlag]: true }
+    });
+  }
+
+  /**
+   * Gets all milestones flagged for the new member dashboard, for the given organization
+   * @param organization the organization to get new member milestones for
+   * @returns all new-member-dashboard milestones from the given organization
+   */
+  static async getNewMemberMilestones(organization: Organization) {
+    return this.getMilestonesByDashboardFlag(organization, 'isOnNewMemberDashboard');
+  }
+
+  /**
+   * Gets all milestones flagged for the recruiting dashboard, for the given organization
+   * @param organization the organization to get recruiting milestones for
+   * @returns all recruiting-dashboard milestones from the given organization
+   */
+  static async getRecruitingMilestones(organization: Organization) {
+    return this.getMilestonesByDashboardFlag(organization, 'isOnRecruitingDashboard');
+  }
+
+  /**
    * Creates a new milestone in the given organization
    * @param submitter a user who is making this request
    * @param name the name of the user
    * @param description description of the milestone
    * @param dateOfEvent date of the event of the milestone
+   * @param dashboards which dashboards the milestone should show on
    * @param organizationId the organization Id of the milestone
    * @returns A newly created milestone
    */
@@ -34,6 +68,7 @@ export default class RecruitmentServices {
     name: string,
     description: string,
     dateOfEvent: Date,
+    dashboards: { isOnNewMemberDashboard: boolean; isOnRecruitingDashboard: boolean },
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
@@ -44,6 +79,8 @@ export default class RecruitmentServices {
         name,
         description,
         dateOfEvent,
+        isOnNewMemberDashboard: dashboards.isOnNewMemberDashboard,
+        isOnRecruitingDashboard: dashboards.isOnRecruitingDashboard,
         organizationId: organization.organizationId,
         userCreatedId: submitter.userId
       }
@@ -108,11 +145,37 @@ export default class RecruitmentServices {
    */
   static async getAllOrganizationFaqs(organization: Organization) {
     const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
-      where: { dateDeleted: null, regularFaqOrgId: organization.organizationId },
+      where: { dateDeleted: null, organizationId: organization.organizationId },
       ...getFaqQueryArgs(organization.organizationId)
     });
 
     return allFaqs.map(faqTransformer);
+  }
+
+  /**
+   * Gets all recruiting FAQs for the given organization Id
+   * @param organizationId organization Id of the faq
+   * @returns all the faqs from the given organization
+   */
+  static async getRecruitingFaqs(organization: Organization) {
+    const faqs = await prisma.frequentlyAskedQuestion.findMany({
+      where: { dateDeleted: null, organizationId: organization.organizationId, isOnRecruitingDashboard: true },
+      ...getFaqQueryArgs(organization.organizationId)
+    });
+    return faqs.map(faqTransformer);
+  }
+
+  /**
+   * Gets all new member FAQs for the given organization Id
+   * @param organizationId organization Id of the faq
+   * @returns all the faqs from the given organization
+   */
+  static async getNewMemberFaqs(organization: Organization) {
+    const faqs = await prisma.frequentlyAskedQuestion.findMany({
+      where: { dateDeleted: null, organizationId: organization.organizationId, isOnNewMemberDashboard: true },
+      ...getFaqQueryArgs(organization.organizationId)
+    });
+    return faqs.map(faqTransformer);
   }
 
   /*
@@ -143,9 +206,20 @@ export default class RecruitmentServices {
    * @param question question to be displayed by the FAQ
    * @param answer answer to the question of the FAQ
    * @param organizationId the organization Id of the FAQ
+   * @param isOnRecruitingDashboard whether the FAQ shows on the recruiting dashboard
+   * @param isOnNewMemberDashboard whether the FAQ shows on the new member dashboard
+   * @param isOnPartReviewPage whether the FAQ shows on the part review page
    * @returns A newly created FAQ
    */
-  static async createOrganizationFaq(submitter: User, question: string, answer: string, organization: Organization) {
+  static async createOrganizationFaq(
+    submitter: User,
+    question: string,
+    answer: string,
+    organization: Organization,
+    isOnRecruitingDashboard: boolean,
+    isOnNewMemberDashboard: boolean,
+    isOnPartReviewPage: boolean
+  ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create an faq');
 
@@ -153,8 +227,11 @@ export default class RecruitmentServices {
       data: {
         question,
         answer,
-        regularFaqOrgId: organization.organizationId,
-        userCreatedId: submitter.userId
+        organizationId: organization.organizationId,
+        userCreatedId: submitter.userId,
+        isOnRecruitingDashboard,
+        isOnNewMemberDashboard,
+        isOnPartReviewPage
       }
     });
 

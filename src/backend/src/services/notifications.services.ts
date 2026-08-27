@@ -185,11 +185,16 @@ export default class NotificationsService {
         });
       });
 
+      const attendees = event.requiredMembers
+        .concat(event.optionalMembers)
+        .concat(event.userCreated)
+        .filter((user, index, arr) => arr.findIndex((other) => other.userId === user.userId) === index);
+
       teamSlackIds.forEach((teamSlackId) => {
         const currentEvents = eventTeamMap.get(teamSlackId);
         const eventWithAttendees = {
           ...event,
-          attendees: event.requiredMembers.concat(event.optionalMembers).concat(event.userCreated),
+          attendees,
           scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer)
         };
 
