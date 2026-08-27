@@ -8,7 +8,8 @@ import { DescriptionBulletProcess } from './description-bullet.process.js';
 import { ConfigDataOutput, ConfigDataProcess } from './config-data.process.js';
 import { TeamOutput, TeamProcess } from './team.process.js';
 import { TeamJoinRequestProcess } from './team-join-request.process.js';
-import { DateRange } from '../context.js';
+import { CarProcess } from './car.process.js';
+import { CarOutput, DateRange } from '../context.js';
 import { WEEK_MS } from '../dates.js';
 import {
   buildAccountCodeChangeRequests,
@@ -20,12 +21,19 @@ import {
   SeedCrParent
 } from '../factories/change-request.factory.js';
 
+// Matches the car name the system-tests dev login (system-tests/cypress/support/commands.js)
+// selects after logging in -- the "Change Requests To Review" home page section is filtered
+// server-side to whichever car is selected, so the bootstrap admin's guaranteed reviews need to
+// land on this car specifically, not just any car.
+const LOGIN_CAR_NAME = 'NER-25';
+
 type ChangeRequestInput = OrganizationOutput &
   ProjectOutput &
   UsersOutput &
   WorkPackageOutput &
   ConfigDataOutput &
-  TeamOutput;
+  TeamOutput &
+  CarOutput;
 
 export type ChangeRequestOutput = {
   changeRequests: Change_Request[];
@@ -56,6 +64,7 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
       WorkPackageProcess,
       ConfigDataProcess,
       TeamProcess,
+      CarProcess,
       // Ensures the guest -> member promotions from approved join requests have already landed
       // in the shared `members` pool before this process picks CR submitters/reviewers from it.
       TeamJoinRequestProcess,
@@ -319,7 +328,8 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     admins,
     appAdmins,
     accountCodes,
-    financeTeam
+    financeTeam,
+    cars
   }: ChangeRequestInput): Promise<ChangeRequestOutput> {
     const { organizationId } = organization;
 
@@ -495,7 +505,22 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     const [bootstrapAdmin] = appAdmins;
     if (bootstrapAdmin) {
       const pendingCrs = changeRequests.filter((cr) => cr.dateReviewed === null);
-      const toReview = this.faker.helpers.arrayElements(pendingCrs, Math.min(2, pendingCrs.length));
+
+      // The dev login always selects LOGIN_CAR_NAME after signing in, and the home page's
+      // "to review" list is filtered server-side by whichever car is selected -- so at least
+      // one guaranteed CR needs to land on that specific car, not just any car, or the section
+      // renders empty whenever the random picks below happen to miss it.
+      const loginCarId = cars.find(({ car }) => car.wbsElement.name === LOGIN_CAR_NAME)?.car.carId;
+      const loginCarPendingCrs = loginCarId ? pendingCrs.filter((cr) => cr.wbsElement?.project?.carId === loginCarId) : [];
+      const guaranteedLoginCarCr =
+        loginCarPendingCrs.length > 0 ? this.faker.helpers.arrayElement(loginCarPendingCrs) : undefined;
+
+      const remainingPendingCrs = pendingCrs.filter((cr) => cr.crId !== guaranteedLoginCarCr?.crId);
+      const remainingCount = Math.min(2, pendingCrs.length) - (guaranteedLoginCarCr ? 1 : 0);
+      const toReview = [
+        ...(guaranteedLoginCarCr ? [guaranteedLoginCarCr] : []),
+        ...this.faker.helpers.arrayElements(remainingPendingCrs, Math.max(0, remainingCount))
+      ];
       await Promise.all(
         toReview.map((cr) =>
           this.prisma.change_Request.update({
@@ -547,6 +572,24 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
         select: { wbsElementId: true, carId: true, teams: { select: { teamId: true } } },
         distinct: ['carId']
       });
+
+      // If every project on LOGIN_CAR_NAME ended up COMPLETE via the CR processing above, the
+      // query above has no entry for it at all and this guarantee silently no-ops for the one car
+      // system tests actually log in against -- force one of its projects back to ACTIVE instead.
+      if (loginCarId && !leadCandidates.some((project) => project.carId === loginCarId)) {
+        const fallbackProject = await this.prisma.project.findFirst({
+          where: { carId: loginCarId, wbsElement: { dateDeleted: null } },
+          select: { wbsElementId: true, carId: true, teams: { select: { teamId: true } } }
+        });
+
+        if (fallbackProject) {
+          await this.prisma.wBS_Element.update({
+            where: { wbsElementId: fallbackProject.wbsElementId },
+            data: { status: WBS_Element_Status.ACTIVE }
+          });
+          leadCandidates.push(fallbackProject);
+        }
+      }
 
       await Promise.all([
         ...leadCandidates.map((project) =>

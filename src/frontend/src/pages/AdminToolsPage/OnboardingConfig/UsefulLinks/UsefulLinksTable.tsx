@@ -28,9 +28,9 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useToast } from '../../../../hooks/toasts.hooks';
 
 interface UsefulLinksTableProps {
-  isOnGuestHomePage?: boolean;
-  isOnNewMemberDashboard?: boolean;
-  isOnOnboardingDashboard?: boolean;
+  isOnGuestHomePage: boolean;
+  isOnNewMemberDashboard: boolean;
+  isOnOnboardingDashboard: boolean;
 }
 
 const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboardingDashboard }: UsefulLinksTableProps) => {
@@ -83,8 +83,6 @@ const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboa
     return !linkType.isOnGuestHomePage && !linkType.isOnNewMemberDashboard && !linkType.isOnOnboardingDashboard;
   };
 
-  const linkTypes = linkTypesBeforeFilter.filter(matchesDashboard);
-
   const usefulLinks = links.filter((link) => matchesDashboard(link.linkType));
 
   return (
@@ -92,8 +90,11 @@ const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboa
       <CreateUsefulLinkModal
         open={showCreateModel}
         handleClose={() => setShowCreateModel(false)}
-        linkTypes={linkTypes}
+        linkTypes={linkTypesBeforeFilter}
         currentLinks={links}
+        isOnGuestHomePage={isOnGuestHomePage}
+        isOnNewMemberDashboard={isOnNewMemberDashboard}
+        isOnOnboardingDashboard={isOnOnboardingDashboard}
       />
       {editingLink && (
         <EditUsefulLinkModal
@@ -102,8 +103,11 @@ const UsefulLinksTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboa
             setEditingLink(undefined);
           }}
           linkType={editingLink}
-          linkTypes={linkTypes}
+          linkTypes={linkTypesBeforeFilter}
           currentLinks={links}
+          isOnGuestHomePage={isOnGuestHomePage}
+          isOnNewMemberDashboard={isOnNewMemberDashboard}
+          isOnOnboardingDashboard={isOnOnboardingDashboard}
         />
       )}
 
