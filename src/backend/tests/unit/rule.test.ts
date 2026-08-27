@@ -1588,6 +1588,7 @@ describe('Rule Tests', () => {
       await RulesService.deleteProjectRule(childProjectRule.projectRuleId, admin, organization);
 
       const projectRulesAfterDelete = await RulesService.getProjectRules(
+        admin,
         ruleset1.rulesetId,
         project.projectId,
         organization
