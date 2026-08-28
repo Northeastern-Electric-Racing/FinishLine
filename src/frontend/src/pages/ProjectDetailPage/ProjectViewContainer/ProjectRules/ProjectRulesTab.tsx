@@ -215,6 +215,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         rule={rule}
         isLeaf={isLeafRule}
         onStatusChange={canUpdateStatus ? (status) => handleStatusClick(rule, status) : undefined}
+        disabled={isUpdatingStatus}
         onInfoClick={handleInfoClick}
       />
     );
@@ -432,8 +433,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         />
       )}
 
-      {/* Loading overlay */}
-      {(isUpdatingStatus || isCreating || isResetting) && (
+      {(isCreating || isResetting) && (
         <Box
           sx={{
             position: 'fixed',

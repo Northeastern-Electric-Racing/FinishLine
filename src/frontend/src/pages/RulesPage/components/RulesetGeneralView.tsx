@@ -1,11 +1,12 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
-import { Rule, RuleStatus } from 'shared';
+import { Rule, RuleStatus, isLeadership } from 'shared';
 import RuleRow from '../RuleRow';
 import RuleStatusTag from './RuleStatusTag';
 import RuleContent from './RuleContent';
 import RuleStatusHistoryModal from './RuleStatusHistoryModal';
 import { useSetRuleStatus } from '../../../hooks/rules.hooks';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
 
@@ -30,7 +31,10 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
 }) => {
   const theme = useTheme();
   const toast = useToast();
+  const user = useCurrentUser();
   const [historyModalRule, setHistoryModalRule] = useState<Rule | null>(null);
+
+  const canUpdateStatus = isLeadership(user.role);
 
   const backgroundColor = theme.palette.background.default;
   const tableBackgroundColor = theme.palette.background.paper;
@@ -38,42 +42,21 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   const tableHoverColor = theme.palette.action.hover;
 
   // Status in general view is independent of any project
-  const { mutateAsync: setStatus } = useSetRuleStatus(rulesetId);
+  const { mutateAsync: setStatus, isLoading: isUpdatingStatus } = useSetRuleStatus(rulesetId);
 
   // Sort once by rule code so top-level rows render in a stable numeric order.
   const sortedTopLevelRules = useMemo(() => [...topLevelRules].sort(compareRuleCodes), [topLevelRules]);
 
-  // useCallback so only affected rows re-render when a status update refetches the rule list
-  const handleStatusChange = useCallback(
-    async (ruleId: string, status: RuleStatus) => {
-      try {
-        await setStatus({ ruleId, status });
-        toast.success('Rule status updated successfully');
-      } catch (error) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        }
+  const handleStatusChange = async (ruleId: string, status: RuleStatus) => {
+    try {
+      await setStatus({ ruleId, status });
+      toast.success('Rule status updated successfully');
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
       }
-    },
-    [setStatus, toast]
-  );
-
-  const renderMiddleContent = useCallback(
-    (r: Rule) => <RuleContent rule={r} onReferenceClick={navigateToRule} color={tableTextColor} />,
-    [navigateToRule, tableTextColor]
-  );
-
-  const renderRightContent = useCallback(
-    (r: Rule) => (
-      <RuleStatusTag
-        rule={r}
-        isLeaf={r.subRuleIds.length === 0}
-        onStatusChange={(status) => handleStatusChange(r.ruleId, status)}
-        onInfoClick={setHistoryModalRule}
-      />
-    ),
-    [handleStatusChange]
-  );
+    }
+  };
 
   return (
     <Box>
@@ -86,8 +69,16 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
                 rule={rule}
                 expandedIds={expandedIds}
                 onToggleExpand={toggleExpand}
-                middleContent={renderMiddleContent}
-                rightContent={renderRightContent}
+                middleContent={(r) => <RuleContent rule={r} onReferenceClick={navigateToRule} color={tableTextColor} />}
+                rightContent={(r) => (
+                  <RuleStatusTag
+                    rule={r}
+                    isLeaf={r.subRuleIds.length === 0}
+                    onStatusChange={canUpdateStatus ? (status) => handleStatusChange(r.ruleId, status) : undefined}
+                    disabled={isUpdatingStatus}
+                    onInfoClick={setHistoryModalRule}
+                  />
+                )}
                 backgroundColor={tableBackgroundColor}
                 textColor={tableTextColor}
                 hoverColor={tableHoverColor}

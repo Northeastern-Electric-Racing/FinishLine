@@ -14,6 +14,8 @@ interface RuleStatusTagProps {
   isLeaf: boolean;
   // called with the new status when a Pass/Fail checkbox is toggled
   onStatusChange?: (status: RuleStatus) => void;
+  // blocks the checkboxes while a status update is loading
+  disabled?: boolean;
   // if provided, the info icon opens a full status-history modal instead of a one-line tooltip
   onInfoClick?: (rule: Rule) => void;
 }
@@ -22,7 +24,7 @@ interface RuleStatusTagProps {
  * Status chip for a rule. Leaf rules show Pass/Fail checkboxes instead of the chip, plus an info icon/tooltip.
  * Parent rules show their aggregated status as a read-only chip.
  */
-const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onStatusChange, onInfoClick }) => {
+const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onStatusChange, disabled = false, onInfoClick }) => {
   const { label, color } = getRuleStatusConfig(rule.status);
   const passColor = getRuleStatusConfig(RuleStatus.PASS).color;
   const failColor = getRuleStatusConfig(RuleStatus.FAIL).color;
@@ -53,13 +55,17 @@ const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onStatusCha
               checked={rule.status === RuleStatus.PASS}
               onClick={(e) => e.stopPropagation()}
               onChange={() => onStatusChange?.(rule.status === RuleStatus.PASS ? RuleStatus.PENDING : RuleStatus.PASS)}
+              disabled={disabled}
               sx={checkboxSx(passColor)}
+              slotProps={{ input: { 'aria-label': 'Pass' } }}
             />
             <Checkbox
               checked={rule.status === RuleStatus.FAIL}
               onClick={(e) => e.stopPropagation()}
               onChange={() => onStatusChange?.(rule.status === RuleStatus.FAIL ? RuleStatus.PENDING : RuleStatus.FAIL)}
+              disabled={disabled}
               sx={checkboxSx(failColor)}
+              slotProps={{ input: { 'aria-label': 'Fail' } }}
             />
           </>
         ) : (

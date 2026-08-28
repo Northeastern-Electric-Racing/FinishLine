@@ -153,8 +153,7 @@ export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
       return data;
     },
     {
-      enabled, // only fetch when true
-      refetchOnMount: false
+      enabled // only fetch when true
     }
   );
 };
