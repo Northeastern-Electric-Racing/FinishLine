@@ -1602,6 +1602,64 @@ describe('Rule Tests', () => {
         RuleStatus.PENDING
       );
     });
+
+    it('Deleting a rule that is assigned to a project unassigns it and recalculates the project chain', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      const parentRule = await RulesService.createRule(admin, 'G', 'Parent Rule', ruleset1.rulesetId, organization);
+      const childRule = await RulesService.createRule(
+        admin,
+        'G.1',
+        'Child Rule',
+        ruleset1.rulesetId,
+        organization,
+        parentRule.ruleId
+      );
+      await RulesService.toggleRuleTeam(parentRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(childRule.ruleId, testTeam.teamId, admin, organization);
+
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      // creating childRule's project rule also assigns parentRule as its ancestor
+      const childProjectRule = await RulesService.createProjectRule(
+        admin,
+        organization,
+        childRule.ruleId,
+        project.projectId
+      );
+
+      // childRule is parentRule's only child in the project, so FAIL rolls up to parentRule
+      await RulesService.setProjectRuleStatus(admin, organization, childProjectRule.projectRuleId, RuleStatus.FAIL);
+
+      const projectRulesBeforeDelete = await RulesService.getProjectRules(
+        admin,
+        ruleset1.rulesetId,
+        project.projectId,
+        organization
+      );
+      expect(projectRulesBeforeDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
+
+      // deleting the rule itself, not just its project assignment
+      await RulesService.deleteRule(childRule.ruleId, admin, organization);
+
+      const projectRulesAfterDelete = await RulesService.getProjectRules(
+        admin,
+        ruleset1.rulesetId,
+        project.projectId,
+        organization
+      );
+
+      // a deleted rule must not stay assigned to the project, this would incorrectly pin the parentRule at FAIL
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === childRule.ruleId)).toBeUndefined();
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)?.status).toBe(RuleStatus.PENDING);
+
+      // ensure project rule is soft-deleted rather than left dangling
+      const deletedProjectRule = await prisma.project_Rule.findUnique({
+        where: { projectRuleId: childProjectRule.projectRuleId }
+      });
+      expect(deletedProjectRule?.dateDeleted).not.toBeNull();
+      expect(deletedProjectRule?.deletedByUserId).toBe(admin.userId);
+    });
   });
 
   describe('Reset ruleset statuses', () => {
