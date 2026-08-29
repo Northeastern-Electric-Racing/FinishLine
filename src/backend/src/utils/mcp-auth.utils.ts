@@ -31,14 +31,15 @@ const getSoleOrganization = async (userId: string): Promise<Organization> => {
 
   const organization = await prisma.organization.findUnique({
     where: { organizationId: roles[0].organizationId },
-    include: { users: true }
+    // only this user's membership row is needed, so don't hydrate every member of the organization
+    include: { users: { where: { userId }, select: { userId: true } } }
   });
 
   if (!organization) throw new NotFoundException('Organization', roles[0].organizationId);
   if (organization.dateDeleted) throw new DeletedException('Organization', organization.organizationId);
 
   // mirrors the membership check getOrganization does, so both paths are equally strict
-  if (!organization.users.some((member) => member.userId === userId)) {
+  if (organization.users.length === 0) {
     throw new AccessDeniedException('Cannot access this organization');
   }
 
