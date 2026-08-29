@@ -60,6 +60,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
   const [historyModalProjectRule, setHistoryModalProjectRule] = useState<ProjectRule | null>(null);
   const [showResetModal, setShowResetModal] = useState(false);
+  // the rule currently being written, so only its checkboxes disable
+  const [pendingRuleId, setPendingRuleId] = useState<string | null>(null);
 
   // Fetch all ruleset types
   const { data: rulesetTypes, isLoading: rulesetTypesLoading, isError: rulesetTypesError } = useAllRulesetTypes();
@@ -81,10 +83,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   } = useProjectRules(activeRuleset?.rulesetId || '', project.id);
 
   // Mutations
-  const { mutateAsync: setStatusMutation, isLoading: isUpdatingStatus } = useSetProjectRuleStatus(
-    activeRuleset?.rulesetId || '',
-    project.id
-  );
+  const { mutateAsync: setStatusMutation } = useSetProjectRuleStatus(activeRuleset?.rulesetId || '', project.id);
 
   const { mutateAsync: createProjectRuleMutation, isLoading: isCreating } = useCreateProjectRule();
 
@@ -129,7 +128,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     useRuleTreeNavigation(projectRuleList);
 
   // Handle status update, local to this project
-  const handleStatusUpdate = async (projectRuleId: string, status: RuleStatus) => {
+  const handleStatusUpdate = async (projectRuleId: string, status: RuleStatus, ruleId: string) => {
+    setPendingRuleId(ruleId);
     try {
       await setStatusMutation({ projectRuleId, status });
       toast.success('Rule status updated successfully');
@@ -137,6 +137,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       if (error instanceof Error) {
         toast.error(error.message);
       }
+    } finally {
+      setPendingRuleId(null);
     }
   };
 
@@ -158,7 +160,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const handleStatusClick = (rule: Rule, status: RuleStatus) => {
     const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
     if (projectRule) {
-      handleStatusUpdate(projectRule.projectRuleId, status);
+      handleStatusUpdate(projectRule.projectRuleId, status, rule.ruleId);
     }
   };
 
@@ -215,7 +217,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         rule={rule}
         isLeaf={isLeafRule}
         onStatusChange={canUpdateStatus ? (status) => handleStatusClick(rule, status) : undefined}
-        disabled={isUpdatingStatus}
+        disabled={pendingRuleId === rule.ruleId}
         onInfoClick={handleInfoClick}
       />
     );

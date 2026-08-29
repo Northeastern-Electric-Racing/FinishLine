@@ -33,6 +33,8 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   const toast = useToast();
   const user = useCurrentUser();
   const [historyModalRule, setHistoryModalRule] = useState<Rule | null>(null);
+  // the rule currently being written, so only its checkboxes disable
+  const [pendingRuleId, setPendingRuleId] = useState<string | null>(null);
 
   const canUpdateStatus = isLeadership(user.role);
 
@@ -41,22 +43,15 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   const tableTextColor = theme.palette.text.primary;
   const tableHoverColor = theme.palette.action.hover;
 
-  // Status in general view is independent of any project.
-  // `variables` holds the in-flight mutation's arguments, which is what scopes the disabled state to
-  // the rule actually being updated rather than every checkbox on the page.
-  const {
-    mutateAsync: setStatus,
-    isLoading: isUpdatingStatus,
-    variables: pendingStatusUpdate
-  } = useSetRuleStatus(rulesetId);
-
-  const pendingRuleId = isUpdatingStatus ? pendingStatusUpdate?.ruleId : undefined;
+  // Status in general view is independent of any project
+  const { mutateAsync: setStatus } = useSetRuleStatus(rulesetId);
 
   // Sort once by rule code so top-level rows render in a stable numeric order.
   const sortedTopLevelRules = useMemo(() => [...topLevelRules].sort(compareRuleCodes), [topLevelRules]);
 
   const handleStatusChange = useCallback(
     async (ruleId: string, status: RuleStatus) => {
+      setPendingRuleId(ruleId);
       try {
         await setStatus({ ruleId, status });
         toast.success('Rule status updated successfully');
@@ -64,6 +59,8 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
         if (error instanceof Error) {
           toast.error(error.message);
         }
+      } finally {
+        setPendingRuleId(null);
       }
     },
     [setStatus, toast]
