@@ -33,6 +33,8 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   const toast = useToast();
   const user = useCurrentUser();
   const [historyModalRule, setHistoryModalRule] = useState<Rule | null>(null);
+  // the rule currently being written, so only its checkboxes disable
+  const [pendingRuleId, setPendingRuleId] = useState<string | null>(null);
 
   const canUpdateStatus = isLeadership(user.role);
 
@@ -42,12 +44,13 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   const tableHoverColor = theme.palette.action.hover;
 
   // Status in general view is independent of any project
-  const { mutateAsync: setStatus, isLoading: isUpdatingStatus } = useSetRuleStatus(rulesetId);
+  const { mutateAsync: setStatus } = useSetRuleStatus(rulesetId);
 
   // Sort once by rule code so top-level rows render in a stable numeric order.
   const sortedTopLevelRules = useMemo(() => [...topLevelRules].sort(compareRuleCodes), [topLevelRules]);
 
   const handleStatusChange = async (ruleId: string, status: RuleStatus) => {
+    setPendingRuleId(ruleId);
     try {
       await setStatus({ ruleId, status });
       toast.success('Rule status updated successfully');
@@ -55,6 +58,8 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
       if (error instanceof Error) {
         toast.error(error.message);
       }
+    } finally {
+      setPendingRuleId(null);
     }
   };
 
@@ -75,7 +80,7 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
                     rule={r}
                     isLeaf={r.subRuleIds.length === 0}
                     onStatusChange={canUpdateStatus ? (status) => handleStatusChange(r.ruleId, status) : undefined}
-                    disabled={isUpdatingStatus}
+                    disabled={pendingRuleId === r.ruleId}
                     onInfoClick={setHistoryModalRule}
                   />
                 )}
