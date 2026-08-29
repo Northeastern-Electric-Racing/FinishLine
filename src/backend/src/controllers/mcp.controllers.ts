@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { getRoleInOrganization } from '../utils/mcp-auth.utils.js';
+import { HttpException } from '../utils/errors.utils.js';
+import McpService from '../services/mcp.services.js';
 
 export default class McpController {
   /**
@@ -25,6 +27,67 @@ export default class McpController {
         },
         role
       });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getProjectsByCarNumber(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { carNumber } = req.params as Record<string, string>;
+      const parsedCarNumber = Number(carNumber);
+
+      if (!Number.isInteger(parsedCarNumber) || parsedCarNumber < 0) {
+        throw new HttpException(400, `"${carNumber}" is not a valid car number`);
+      }
+
+      const projects = await McpService.getProjectsByCarNumber(parsedCarNumber, req.organization);
+
+      res.status(200).json(projects);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsNum } = req.params as Record<string, string>;
+      const project = await McpService.getProject(wbsNum, req.organization);
+
+      res.status(200).json(project);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getWorkPackages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsNum } = req.params as Record<string, string>;
+      const workPackages = await McpService.getWorkPackages(wbsNum, req.organization);
+
+      res.status(200).json(workPackages);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getTasks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsNum } = req.params as Record<string, string>;
+      const tasks = await McpService.getTasks(wbsNum, req.organization);
+
+      res.status(200).json(tasks);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { startDate, endDate } = req.query as Record<string, string>;
+      const events = await McpService.getEvents(new Date(startDate), new Date(endDate), req.organization);
+
+      res.status(200).json(events);
     } catch (error: unknown) {
       next(error);
     }
