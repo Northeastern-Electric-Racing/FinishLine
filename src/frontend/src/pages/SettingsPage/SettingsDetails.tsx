@@ -7,6 +7,8 @@ import ErrorPage from '../ErrorPage';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { displayEnum } from '../../utils/pipes';
 import { isUserOnTeam } from '../../utils/teams.utils';
+import { notGuest } from 'shared';
+import ApiKeySection from './ApiKey/ApiKeySection';
 
 const SettingsDetails: React.FC = () => {
   const auth = useAuth();
@@ -43,6 +45,8 @@ const SettingsDetails: React.FC = () => {
           />
         </Grid>
       </Grid>
+
+      {notGuest(user.role) && <ApiKeySection />}
     </Box>
   );
 };

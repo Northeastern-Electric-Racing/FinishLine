@@ -22,6 +22,8 @@ const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
 const currentUserSecureSettings = () => `${users()}/secure-settings/current-user`;
 const userSecureSettingsSet = () => `${users()}/secure-settings/set`;
+const currentUserApiToken = () => `${users()}/api-token/current-user`;
+const generateApiToken = () => `${users()}/api-token/generate`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
@@ -554,6 +556,8 @@ export const apiUrls = {
   userSettingsByUserId,
   userSecureSettingsSet,
   currentUserSecureSettings,
+  currentUserApiToken,
+  generateApiToken,
   userRoleByUserId,
   userFavoriteProjects,
   userSecureSettings,

@@ -6,7 +6,9 @@
 import axios from '../utils/axios';
 import {
   dateToMidnightUTC,
+  ApiTokenMetadata,
   BusySlots,
+  GeneratedApiToken,
   ProjectOverview,
   SetUserScheduleSettingsPayload,
   Task,
@@ -18,6 +20,7 @@ import {
 } from 'shared';
 import { apiUrls } from '../utils/urls';
 import {
+  apiTokenTransformer,
   authUserTransformer,
   userScheduleSettingsTransformer,
   userTransformer,
@@ -226,5 +229,30 @@ export const getUserBusyTimes = (userId: string, startDate: Date, endDate: Date)
       endDate: dateToMidnightUTC(endDate).toISOString()
     },
     transformResponse: (data) => (JSON.parse(data) as BusySlots[]).map((day) => ({ ...day, dateSet: new Date(day.dateSet) }))
+  });
+};
+
+/**
+ * Gets the current user's active API token metadata. Never includes the token itself.
+ *
+ * @returns the token metadata, or null if the user has not generated one.
+ */
+export const getCurrentUserApiToken = () => {
+  return axios.get<ApiTokenMetadata | null>(apiUrls.currentUserApiToken(), {
+    transformResponse: (data) => {
+      const apiToken = JSON.parse(data) as ApiTokenMetadata | null;
+      return apiToken ? apiTokenTransformer(apiToken) : null;
+    }
+  });
+};
+
+/**
+ * Generates a new API token for the current user, revoking any existing one.
+ *
+ * @returns the new token metadata along with the raw token, which is only returned here.
+ */
+export const generateApiToken = () => {
+  return axios.post<GeneratedApiToken>(apiUrls.generateApiToken(), undefined, {
+    transformResponse: (data) => apiTokenTransformer(JSON.parse(data) as GeneratedApiToken)
   });
 };
