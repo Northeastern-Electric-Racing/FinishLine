@@ -1,9 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { getRoleInOrganization } from '../utils/mcp-auth.utils.js';
-import { HttpException } from '../utils/errors.utils.js';
 import McpService from '../services/mcp.services.js';
 
-export default class McpController {
+export default class AgentController {
   /**
    * Confirms an API token is valid and reports who it resolved to. This is deliberately verbose
    * about identity so a client can verify the whole token -> user -> organization -> role chain.
@@ -32,16 +31,10 @@ export default class McpController {
     }
   }
 
-  static async getProjectsByCarNumber(req: Request, res: Response, next: NextFunction) {
+  static async getProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const { carNumber } = req.params as Record<string, string>;
-      const parsedCarNumber = Number(carNumber);
-
-      if (!Number.isInteger(parsedCarNumber) || parsedCarNumber < 0) {
-        throw new HttpException(400, `"${carNumber}" is not a valid car number`);
-      }
-
-      const projects = await McpService.getProjectsByCarNumber(parsedCarNumber, req.organization);
+      const { carNumber } = req.query as Record<string, string | undefined>;
+      const projects = await McpService.getProjects(req.organization, carNumber);
 
       res.status(200).json(projects);
     } catch (error: unknown) {

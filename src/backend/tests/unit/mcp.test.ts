@@ -37,8 +37,9 @@ describe('MCP Endpoint Tests', () => {
       await makeProject(1);
       await createTestProject(user, orgId, undefined, otherCarId, 2, 1);
 
-      const projects = await McpService.getProjectsByCarNumber(1, organization);
+      const { carNumber, projects } = await McpService.getProjects(organization, 1);
 
+      expect(carNumber).toBe(1);
       expect(projects).toHaveLength(1);
       expect(projects[0].wbsNum).toBe('1.1.0');
       expect(projects[0].viewOnFinishline).toContain('/projects/1.1.0');
@@ -48,14 +49,33 @@ describe('MCP Endpoint Tests', () => {
       await makeProject(1);
       await createTestProject(user, orgId, undefined, carId, 1, 2, new Date());
 
-      const projects = await McpService.getProjectsByCarNumber(1, organization);
+      const { projects } = await McpService.getProjects(organization, 1);
 
       expect(projects).toHaveLength(1);
       expect(projects[0].wbsNum).toBe('1.1.0');
     });
 
     it('returns an empty list for a car with no projects', async () => {
-      expect(await McpService.getProjectsByCarNumber(9, organization)).toEqual([]);
+      expect((await McpService.getProjects(organization, 9)).projects).toEqual([]);
+    });
+
+    it('defaults to the newest car when no car number is given', async () => {
+      // car 1 already exists from the setup; car 2 is newer
+      const newerCarId = (await createTestCar(orgId, user.userId, 2)).carId;
+      await makeProject(1);
+      await createTestProject(user, orgId, undefined, newerCarId, 2, 1);
+
+      const { carNumber, projects } = await McpService.getProjects(organization);
+
+      expect(carNumber).toBe(2);
+      expect(projects).toHaveLength(1);
+      expect(projects[0].wbsNum).toBe('2.1.0');
+    });
+
+    it('rejects a non numeric car number', async () => {
+      await expect(async () => await McpService.getProjects(organization, 'abc')).rejects.toThrow(
+        new HttpException(400, '"abc" is not a valid car number')
+      );
     });
   });
 

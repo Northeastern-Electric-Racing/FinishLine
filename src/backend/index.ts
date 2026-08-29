@@ -30,7 +30,9 @@ import calendarRouter from './src/routes/calendar.routes.js';
 import prospectiveSponsorRouter from './src/routes/prospective-sponsor.routes.js';
 import attendanceRouter from './src/routes/attendance.routes.js';
 import icsRouter from './src/routes/ics.routes.js';
-import mcpRouter from './src/routes/mcp.routes.js';
+import agentRouter from './src/routes/agent.routes.js';
+import { mcpNodeHandler } from './src/mcp/handler.js';
+import { attachAuthInfo, requireApiToken } from './src/utils/mcp-auth.utils.js';
 import dashboardsRouter from './src/routes/dashboards.routes.js';
 
 const app = express();
@@ -94,7 +96,11 @@ app.use('/ics', icsRouter);
 // API token routes — mounted before the JWT middleware so that per-user API tokens authenticate here
 // and ONLY here. Keeping this above the cookie middleware is what stops a token from reaching the
 // rest of the API.
-app.use('/mcp', mcpRouter);
+app.use('/agent', agentRouter);
+
+// The MCP endpoint, authenticated with the same per-user API tokens. It must accept POST (JSON-RPC),
+// so it is mounted separately from the read only /agent router; every tool it exposes is a read.
+app.all('/mcp', requireApiToken, attachAuthInfo, (req, res) => void mcpNodeHandler(req, res, req.body));
 
 // ensure each request is authorized using JWT
 app.use(isProd ? requireJwtProd : requireJwtDev);

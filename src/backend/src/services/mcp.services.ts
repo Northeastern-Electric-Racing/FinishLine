@@ -1,5 +1,5 @@
 import { Organization } from '@prisma/client';
-import { McpEvent, McpProjectDetail, McpProjectSummary, McpTask, McpWorkPackage, validateWBS } from 'shared';
+import { McpEvent, McpProjectDetail, McpProjectList, McpTask, McpWorkPackage, validateWBS } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { HttpException, NotFoundException } from '../utils/errors.utils.js';
 import { buildScheduledTimesOverlap } from '../utils/calendar.utils.js';
@@ -69,20 +69,56 @@ const findProject = async (wbsNum: string, organization: Organization) => {
 
 export default class McpService {
   /**
-   * Gets every project on a car, with just enough to identify and describe it.
-   * @param carNumber the car number, e.g. 3
+   * Gets the number of the newest car in an organization. There is no "current car" flag in the
+   * data; the convention across the app is that the highest car number is the newest.
    * @param organization the organization the request is scoped to
+   * @returns the newest car's number
+   * @throws if the organization has no cars
    */
-  static async getProjectsByCarNumber(carNumber: number, organization: Organization): Promise<McpProjectSummary[]> {
+  static async getCurrentCarNumber(organization: Organization): Promise<number> {
+    const car = await prisma.car.findFirst({
+      where: { wbsElement: { organizationId: organization.organizationId, dateDeleted: null } },
+      orderBy: { wbsElement: { carNumber: 'desc' } },
+      select: { wbsElement: { select: { carNumber: true } } }
+    });
+
+    if (!car) throw new HttpException(404, 'This organization has no cars');
+
+    return car.wbsElement.carNumber;
+  }
+
+  /**
+   * Gets every project on a car, with just enough to identify and describe it. Defaults to the
+   * newest car so that a caller does not need to know which car is current.
+   * @param organization the organization the request is scoped to
+   * @param carNumber the car number to look at, defaulting to the newest car
+   * @returns the resolved car number alongside its projects
+   */
+  static async getProjects(organization: Organization, carNumber?: string | number): Promise<McpProjectList> {
+    let resolvedCarNumber: number;
+
+    if (carNumber === undefined || carNumber === '') {
+      resolvedCarNumber = await McpService.getCurrentCarNumber(organization);
+    } else {
+      resolvedCarNumber = Number(carNumber);
+      if (!Number.isInteger(resolvedCarNumber) || resolvedCarNumber < 0) {
+        throw new HttpException(400, `"${carNumber}" is not a valid car number`);
+      }
+    }
+
     const projects = await prisma.project.findMany({
       where: {
-        wbsElement: { carNumber, dateDeleted: null, organizationId: organization.organizationId }
+        wbsElement: {
+          carNumber: resolvedCarNumber,
+          dateDeleted: null,
+          organizationId: organization.organizationId
+        }
       },
       orderBy: { wbsElement: { projectNumber: 'asc' } },
       ...getMcpProjectSummaryQueryArgs()
     });
 
-    return projects.map(mcpProjectSummaryTransformer);
+    return { carNumber: resolvedCarNumber, projects: projects.map(mcpProjectSummaryTransformer) };
   }
 
   /**

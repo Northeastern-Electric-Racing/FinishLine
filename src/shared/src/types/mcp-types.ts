@@ -18,6 +18,12 @@ export interface McpProjectSummary {
   viewOnFinishline: string;
 }
 
+export interface McpProjectList {
+  /** the car these projects belong to, resolved to the newest car when the caller did not specify */
+  carNumber: number;
+  projects: McpProjectSummary[];
+}
+
 export interface McpLink {
   type: string;
   url: string;
