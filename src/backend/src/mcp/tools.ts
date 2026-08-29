@@ -16,7 +16,7 @@ export interface AgentContext {
  * tool description is the only place it can learn it.
  */
 const WBS_NUM_DESCRIPTION =
-  'A project WBS number, formatted "car.project.0" — for example "1.2.0". The third component is ' +
+  'A project WBS number, formatted "car.project.work_package" — for example "1.2.0". The third component is ' +
   'always 0 for a project; something like "1.2.3" is a work package inside that project, not a ' +
   'project, and will be rejected. Get valid numbers from finishline_list_projects.';
 
@@ -38,9 +38,8 @@ export const buildMcpServer = (context: AgentContext): McpServer => {
       description:
         'List the projects on a car, with their names, WBS numbers, and one-line summaries. Start ' +
         'here when the user names a project in words rather than by number, then match the name to ' +
-        'a WBS number and use the other tools. Cars are identified by a number and are named for ' +
-        'the year the car was conceived, so the numbers have gaps and are not consecutive. Omit ' +
-        'carNumber to use the newest car, which is almost always what the user means; the response ' +
+        'a WBS number and use the other tools. Cars are identified by a number and are consecutive. ' +
+        'Omit carNumber to use the newest car, which is almost always what the user means; the response ' +
         'reports which car number was actually used.',
       inputSchema: z.object({
         carNumber: z
