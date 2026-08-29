@@ -27,7 +27,6 @@ import RuleContent from '../../../RulesPage/components/RuleContent';
 import RuleStatusHistoryModal from '../../../RulesPage/components/RuleStatusHistoryModal';
 import ResetStatusesModal from '../../../RulesPage/components/ResetStatusesModal';
 import { useRuleTreeNavigation } from '../../../RulesPage/useRuleTreeNavigation';
-import UpdateStatusPopover from './UpdateStatusPopover';
 import AddRuleModal from './AddProjectRuleModal';
 import {
   useAllRulesetTypes,
@@ -57,13 +56,12 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const history = useHistory();
   const user = useCurrentUser();
 
-  // State for modals and popovers
   const [selectedRulesetTypeIndex, setSelectedRulesetTypeIndex] = useState(0);
-  const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
-  const [selectedProjectRule, setSelectedProjectRule] = useState<ProjectRule | null>(null);
   const [historyModalProjectRule, setHistoryModalProjectRule] = useState<ProjectRule | null>(null);
   const [showResetModal, setShowResetModal] = useState(false);
+  // the rule currently being written, so only its checkboxes disable
+  const [pendingRuleId, setPendingRuleId] = useState<string | null>(null);
 
   // Fetch all ruleset types
   const { data: rulesetTypes, isLoading: rulesetTypesLoading, isError: rulesetTypesError } = useAllRulesetTypes();
@@ -85,10 +83,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   } = useProjectRules(activeRuleset?.rulesetId || '', project.id);
 
   // Mutations
-  const { mutateAsync: setStatusMutation, isLoading: isUpdatingStatus } = useSetProjectRuleStatus(
-    activeRuleset?.rulesetId || '',
-    project.id
-  );
+  const { mutateAsync: setStatusMutation } = useSetProjectRuleStatus(activeRuleset?.rulesetId || '', project.id);
 
   const { mutateAsync: createProjectRuleMutation, isLoading: isCreating } = useCreateProjectRule();
 
@@ -133,7 +128,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     useRuleTreeNavigation(projectRuleList);
 
   // Handle status update, local to this project
-  const handleStatusUpdate = async (projectRuleId: string, status: RuleStatus) => {
+  const handleStatusUpdate = async (projectRuleId: string, status: RuleStatus, ruleId: string) => {
+    setPendingRuleId(ruleId);
     try {
       await setStatusMutation({ projectRuleId, status });
       toast.success('Rule status updated successfully');
@@ -141,6 +137,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       if (error instanceof Error) {
         toast.error(error.message);
       }
+    } finally {
+      setPendingRuleId(null);
     }
   };
 
@@ -158,23 +156,12 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     }
   };
 
-  // Handle opening status popover
-  const handleStatusClick = (event: React.MouseEvent<HTMLElement>, rule: Rule) => {
+  // Handle a Pass/Fail checkbox click for a leaf rule, local to this project
+  const handleStatusClick = (rule: Rule, status: RuleStatus) => {
     const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
     if (projectRule) {
-      // Only allow status updates for leaf rules
-      const hasChildren = projectRuleList.some((r) => r.parentRule?.ruleId === rule.ruleId);
-      if (!hasChildren) {
-        setSelectedProjectRule(projectRule);
-        setStatusPopoverAnchor(event.currentTarget);
-      }
+      handleStatusUpdate(projectRule.projectRuleId, status, rule.ruleId);
     }
-  };
-
-  // Handle closing status popover
-  const handleStatusPopoverClose = () => {
-    setStatusPopoverAnchor(null);
-    setSelectedProjectRule(null);
   };
 
   // Handle opening the status history modal, scoped to this project
@@ -189,9 +176,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const handleResetStatuses = async () => {
     await resetProjectRuleStatuses();
     setShowResetModal(false);
-    // close any open history modal or status popover since statuses are changing
-    setStatusPopoverAnchor(null);
-    setSelectedProjectRule(null);
+    // close any open history modal since statuses are changing
     setHistoryModalProjectRule(null);
   };
 
@@ -222,18 +207,17 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   // Check if we have no active ruleset
   const hasNoActiveRuleset = !activeRulesetLoading && !activeRuleset;
 
-  // Right content for rule rows - status badge. Leaf rules are clickable to open
-  // the completion popover; parents show an aggregated, read-only status.
+  // Right content for rule rows - status badge. Leaf rules show Pass/Fail checkboxes;
+  // parents show an aggregated, read-only status.
   const renderRightContent = (rule: Rule) => {
     const isLeafRule = !projectRuleList.some((r) => r.parentRule?.ruleId === rule.ruleId);
-    const isPopoverOpenForRule = Boolean(statusPopoverAnchor) && selectedProjectRule?.rule.ruleId === rule.ruleId;
 
     return (
       <RuleStatusTag
         rule={rule}
         isLeaf={isLeafRule}
-        popoverOpen={isPopoverOpenForRule}
-        onClick={isLeafRule && canUpdateStatus ? (e) => handleStatusClick(e, rule) : undefined}
+        onStatusChange={canUpdateStatus ? (status) => handleStatusClick(rule, status) : undefined}
+        disabled={pendingRuleId === rule.ruleId}
         onInfoClick={handleInfoClick}
       />
     );
@@ -419,17 +403,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         )}
       </Box>
 
-      {/* Update Status Popover */}
-      {selectedProjectRule && (
-        <UpdateStatusPopover
-          anchorEl={statusPopoverAnchor}
-          onClose={handleStatusPopoverClose}
-          id={selectedProjectRule.projectRuleId}
-          status={selectedProjectRule.status}
-          onStatusChange={handleStatusUpdate}
-        />
-      )}
-
       {/* Status History Modal, scoped to this project */}
       {historyModalProjectRule && (
         <RuleStatusHistoryModal
@@ -462,8 +435,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         />
       )}
 
-      {/* Loading overlay */}
-      {(isUpdatingStatus || isCreating || isResetting) && (
+      {(isCreating || isResetting) && (
         <Box
           sx={{
             position: 'fixed',

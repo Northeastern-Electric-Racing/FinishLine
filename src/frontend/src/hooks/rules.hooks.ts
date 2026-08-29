@@ -403,9 +403,6 @@ export const useSetProjectRuleStatus = (rulesetId: string, projectId: string) =>
       onSuccess: (updatedProjectRule) => {
         queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
         queryClient.invalidateQueries(['rules', 'unassigned']);
-        queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
-        queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
-        queryClient.invalidateQueries(['rules', 'children']);
         queryClient.invalidateQueries(['rules', 'statusHistory', updatedProjectRule.rule.ruleId]);
       }
     }

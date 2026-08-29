@@ -5,7 +5,6 @@ import RuleRow from '../RuleRow';
 import RuleStatusTag from './RuleStatusTag';
 import RuleContent from './RuleContent';
 import RuleStatusHistoryModal from './RuleStatusHistoryModal';
-import UpdateStatusPopover from '../../ProjectDetailPage/ProjectViewContainer/ProjectRules/UpdateStatusPopover';
 import { useSetRuleStatus } from '../../../hooks/rules.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -33,9 +32,11 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   const theme = useTheme();
   const toast = useToast();
   const user = useCurrentUser();
-  const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
-  const [selectedRule, setSelectedRule] = useState<Rule | null>(null);
   const [historyModalRule, setHistoryModalRule] = useState<Rule | null>(null);
+  // the rule currently being written, so only its checkboxes disable
+  const [pendingRuleId, setPendingRuleId] = useState<string | null>(null);
+
+  const canUpdateStatus = isLeadership(user.role);
 
   const backgroundColor = theme.palette.background.default;
   const tableBackgroundColor = theme.palette.background.paper;
@@ -48,12 +49,8 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   // Sort once by rule code so top-level rows render in a stable numeric order.
   const sortedTopLevelRules = useMemo(() => [...topLevelRules].sort(compareRuleCodes), [topLevelRules]);
 
-  const handleStatusClose = () => {
-    setStatusPopoverAnchor(null);
-    setSelectedRule(null);
-  };
-
   const handleStatusChange = async (ruleId: string, status: RuleStatus) => {
+    setPendingRuleId(ruleId);
     try {
       await setStatus({ ruleId, status });
       toast.success('Rule status updated successfully');
@@ -61,6 +58,8 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
       if (error instanceof Error) {
         toast.error(error.message);
       }
+    } finally {
+      setPendingRuleId(null);
     }
   };
 
@@ -80,15 +79,8 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
                   <RuleStatusTag
                     rule={r}
                     isLeaf={r.subRuleIds.length === 0}
-                    popoverOpen={selectedRule?.ruleId === r.ruleId && Boolean(statusPopoverAnchor)}
-                    onClick={
-                      isLeadership(user.role)
-                        ? (e) => {
-                            setSelectedRule(r);
-                            setStatusPopoverAnchor(e.currentTarget);
-                          }
-                        : undefined
-                    }
+                    onStatusChange={canUpdateStatus ? (status) => handleStatusChange(r.ruleId, status) : undefined}
+                    disabled={pendingRuleId === r.ruleId}
                     onInfoClick={setHistoryModalRule}
                   />
                 )}
@@ -103,16 +95,6 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
           </TableBody>
         </Table>
       </TableContainer>
-
-      {selectedRule && (
-        <UpdateStatusPopover
-          anchorEl={statusPopoverAnchor}
-          onClose={handleStatusClose}
-          id={selectedRule.ruleId}
-          status={selectedRule.status}
-          onStatusChange={handleStatusChange}
-        />
-      )}
 
       {historyModalRule && <RuleStatusHistoryModal open onClose={() => setHistoryModalRule(null)} rule={historyModalRule} />}
     </Box>
