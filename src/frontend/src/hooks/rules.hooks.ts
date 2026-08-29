@@ -4,7 +4,7 @@
  */
 
 import { useCallback } from 'react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { QueryClient, useMutation, useQuery, useQueryClient } from 'react-query';
 import { ProjectRule, Rule as SharedRule, Ruleset, RulesetType, RuleStatus, RuleStatusHistoryEntry } from 'shared';
 import {
   createRulesetType,
@@ -131,6 +131,40 @@ export interface CreateRulePayload {
   referencedRules?: string[];
   imageFileIds?: string[];
 }
+
+/**
+ * Finds a rule anywhere in the cached top-level / child-rule lists.
+ * Used to walk a rule's ancestor chain without another round trip.
+ */
+const findCachedRule = (queryClient: QueryClient, ruleId: string): SharedRule | undefined => {
+  const lists = queryClient.getQueryCache().findAll(['rules']);
+  for (const query of lists) {
+    const { data } = query.state;
+    if (!Array.isArray(data)) continue;
+    const match = (data as SharedRule[]).find((rule) => rule?.ruleId === ruleId);
+    if (match) return match;
+  }
+  return undefined;
+};
+
+/**
+ * Invalidates only the child-rule lists that can actually have changed after a status write.
+ *
+ * Setting a status rolls the new value up the ancestor chain server-side, so every ancestor's row is
+ * stale too - and a rule's row lives in its parent's child list. Invalidating the bare
+ * ['rules', 'children'] prefix instead refetches every expanded node in the tree, which is hundreds
+ * of requests on a large ruleset. This walks up from the changed rule and touches one list per level.
+ */
+const invalidateAncestorChildLists = (queryClient: QueryClient, changedRule: SharedRule | undefined) => {
+  const seen = new Set<string>();
+  let parentId = changedRule?.parentRule?.ruleId;
+
+  while (parentId && !seen.has(parentId)) {
+    seen.add(parentId);
+    queryClient.invalidateQueries(['rules', 'children', parentId]);
+    parentId = findCachedRule(queryClient, parentId)?.parentRule?.ruleId;
+  }
+};
 
 /**
  * Hook to get all top level rules for a given ruleset.
@@ -378,10 +412,10 @@ export const useSetRuleStatus = (rulesetId: string) => {
       return data;
     },
     {
-      onSuccess: (_data, { ruleId }) => {
+      onSuccess: (updatedRule, { ruleId }) => {
         queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
         queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
-        queryClient.invalidateQueries(['rules', 'children']);
+        invalidateAncestorChildLists(queryClient, updatedRule);
         queryClient.invalidateQueries(['rules', 'statusHistory', ruleId]);
       }
     }
@@ -405,7 +439,7 @@ export const useSetProjectRuleStatus = (rulesetId: string, projectId: string) =>
         queryClient.invalidateQueries(['rules', 'unassigned']);
         queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
         queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
-        queryClient.invalidateQueries(['rules', 'children']);
+        invalidateAncestorChildLists(queryClient, updatedProjectRule.rule);
         queryClient.invalidateQueries(['rules', 'statusHistory', updatedProjectRule.rule.ruleId]);
       }
     }

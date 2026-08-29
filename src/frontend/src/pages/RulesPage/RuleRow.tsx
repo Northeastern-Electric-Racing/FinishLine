@@ -4,11 +4,15 @@
  */
 
 import { TableCell, TableRow, Box } from '@mui/material';
-import { useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Rule } from 'shared';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useGetChildRules } from '../../hooks/rules.hooks';
 import { compareRuleCodes } from '../../utils/rules.utils';
+
+// how many children of an expanded rule are mounted at a time
+const RULE_PAGE_SIZE = 20;
+const EMPTY_SUB_RULES: Rule[] = [];
 
 interface RuleRowProps {
   rule: Rule;
@@ -43,6 +47,8 @@ interface RuleRowProps {
   // Optional controlled expansion, otherwise each row manages its own open/closed state
   expandedIds?: Set<string>;
   onToggleExpand?: (ruleId: string) => void;
+  // Mounts children incrementally instead of all at once. Opt-in so other views keep rendering every row.
+  windowChildren?: boolean;
 }
 
 /**
@@ -71,7 +77,8 @@ const RuleRow: React.FC<RuleRowProps> = ({
   indentWidth = 10,
   fullWidthCode,
   expandedIds,
-  onToggleExpand
+  onToggleExpand,
+  windowChildren = false
 }) => {
   const [localExpanded, setLocalExpanded] = useState(initiallyExpanded);
   // Controlled by the parent when `expandedIds` is provided, otherwise from this row's own state
@@ -79,15 +86,51 @@ const RuleRow: React.FC<RuleRowProps> = ({
 
   // a parent rule whose sub rules aren't in the set (e.g. rule T.1 was assigned to a project but T.1.1 wasn't)
   // will render as a leaf rule but with no expand dropdown
-  const presentSubRules = allRules ? allRules.filter((r) => rule.subRuleIds.includes(r.ruleId)) : null;
+  const presentSubRules = useMemo(
+    () => (allRules ? allRules.filter((r) => rule.subRuleIds.includes(r.ruleId)) : null),
+    [allRules, rule.subRuleIds]
+  );
   const hasSubRules = presentSubRules ? presentSubRules.length > 0 : rule.subRuleIds.length > 0;
 
   // Lazy load if allRules not provided
-  const { data: fetchedSubRules = [] } = useGetChildRules(rule.ruleId, !allRules && isExpanded && hasSubRules);
+  const { data: fetchedSubRules = EMPTY_SUB_RULES } = useGetChildRules(rule.ruleId, !allRules && isExpanded && hasSubRules);
 
   // Use allRules if provided, otherwise use fetched.
-  // Sorted by rule code so children render in a stable numeric order (e.g. F.2 before F.10)
-  const subRules = [...(presentSubRules ?? fetchedSubRules)].sort(compareRuleCodes);
+  // Sorted by rule code so children render in a stable numeric order (e.g. F.2 before F.10).
+  // Skipped entirely while collapsed - a collapsed row renders none of its children.
+  const subRules = useMemo(() => {
+    if (!isExpanded || !hasSubRules) return EMPTY_SUB_RULES;
+    return [...(presentSubRules ?? fetchedSubRules)].sort(compareRuleCodes);
+  }, [isExpanded, hasSubRules, presentSubRules, fetchedSubRules]);
+
+  // Incremental rendering: only the first `visibleCount` children are mounted. The sentinel rendered
+  // after the last child grows this as it scrolls into view.
+  const [visibleCount, setVisibleCount] = useState(RULE_PAGE_SIZE);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  const setSentinel = useCallback((node: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    if (!node) return;
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) setVisibleCount((count) => count + RULE_PAGE_SIZE);
+      },
+      { rootMargin: '400px' }
+    );
+    observerRef.current.observe(node);
+  }, []);
+
+  useEffect(() => () => observerRef.current?.disconnect(), []);
+
+  // Start fresh when this row collapses or its child count changes, so reopening a huge branch
+  // doesn't mount everything that was revealed last time. Keyed on length rather than identity so a
+  // status refetch (same children, new array) doesn't yank the window back.
+  useEffect(() => {
+    setVisibleCount(RULE_PAGE_SIZE);
+  }, [isExpanded, subRules.length]);
+
+  const visibleSubRules = windowChildren ? subRules.slice(0, visibleCount) : subRules;
+  const hasHiddenSubRules = windowChildren && visibleCount < subRules.length;
 
   const bgColor = typeof backgroundColor === 'function' ? backgroundColor(rule) : backgroundColor;
   const color = typeof textColor === 'function' ? textColor(rule) : textColor;
@@ -267,7 +310,7 @@ const RuleRow: React.FC<RuleRowProps> = ({
       </TableRow>
       {isExpanded &&
         hasSubRules &&
-        subRules.map((subRule) => (
+        visibleSubRules.map((subRule) => (
           <RuleRow
             key={subRule.ruleId}
             rule={subRule}
@@ -291,10 +334,18 @@ const RuleRow: React.FC<RuleRowProps> = ({
             fullWidthCode={fullWidthCode}
             expandedIds={expandedIds}
             onToggleExpand={onToggleExpand}
+            windowChildren={windowChildren}
           />
         ))}
+      {hasHiddenSubRules && (
+        <TableRow>
+          <TableCell colSpan={3} sx={{ p: 0, border: 'none', height: 0 }}>
+            <div ref={setSentinel} style={{ height: 1 }} />
+          </TableCell>
+        </TableRow>
+      )}
     </>
   );
 };
 
-export default RuleRow;
+export default memo(RuleRow);

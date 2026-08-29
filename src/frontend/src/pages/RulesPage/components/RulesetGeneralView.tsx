@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
 import { Rule, RuleStatus, isLeadership } from 'shared';
 import RuleRow from '../RuleRow';
@@ -64,6 +64,31 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
     }
   };
 
+  const renderMiddleContent = useCallback(
+    (r: Rule) => <RuleContent rule={r} onReferenceClick={navigateToRule} color={tableTextColor} />,
+    [navigateToRule, tableTextColor]
+  );
+
+  const renderRightContent = useCallback(
+    (r: Rule) => (
+      <RuleStatusTag
+        rule={r}
+        isLeaf={r.subRuleIds.length === 0}
+        popoverOpen={selectedRule?.ruleId === r.ruleId && Boolean(statusPopoverAnchor)}
+        onClick={
+          isLeadership(user.role)
+            ? (e) => {
+                setSelectedRule(r);
+                setStatusPopoverAnchor(e.currentTarget);
+              }
+            : undefined
+        }
+        onInfoClick={setHistoryModalRule}
+      />
+    ),
+    [selectedRule, statusPopoverAnchor, user.role]
+  );
+
   return (
     <Box>
       <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor }}>
@@ -75,29 +100,15 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
                 rule={rule}
                 expandedIds={expandedIds}
                 onToggleExpand={toggleExpand}
-                middleContent={(r) => <RuleContent rule={r} onReferenceClick={navigateToRule} color={tableTextColor} />}
-                rightContent={(r) => (
-                  <RuleStatusTag
-                    rule={r}
-                    isLeaf={r.subRuleIds.length === 0}
-                    popoverOpen={selectedRule?.ruleId === r.ruleId && Boolean(statusPopoverAnchor)}
-                    onClick={
-                      isLeadership(user.role)
-                        ? (e) => {
-                            setSelectedRule(r);
-                            setStatusPopoverAnchor(e.currentTarget);
-                          }
-                        : undefined
-                    }
-                    onInfoClick={setHistoryModalRule}
-                  />
-                )}
+                middleContent={renderMiddleContent}
+                rightContent={renderRightContent}
                 backgroundColor={tableBackgroundColor}
                 textColor={tableTextColor}
                 hoverColor={tableHoverColor}
                 rowHeight="40px"
                 verticalPadding="8px"
                 indentRow
+                windowChildren
               />
             ))}
           </TableBody>

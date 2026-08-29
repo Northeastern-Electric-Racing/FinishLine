@@ -4,6 +4,7 @@
  */
 
 import { Box, IconButton, Tooltip } from '@mui/material';
+import { memo } from 'react';
 import { InfoOutlined, KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import { Rule, formatTimestamp } from 'shared';
 import { getRuleStatusConfig } from '../../../utils/rules.utils';
@@ -89,4 +90,5 @@ const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onClick, po
   );
 };
 
-export default RuleStatusTag;
+// memo so a re-render of the rules tree doesn't re-render every status chip
+export default memo(RuleStatusTag);
