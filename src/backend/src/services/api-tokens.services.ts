@@ -1,23 +1,10 @@
-import { Organization, User_API_Token } from '@prisma/client';
+import { Organization } from '@prisma/client';
 import { ApiTokenMetadata, GeneratedApiToken, notGuest, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { AccessDeniedGuestException } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
 import { generateApiToken } from '../utils/api-tokens.utils.js';
-
-/**
- * Strips an API token row down to the metadata that is safe to send to the client. The raw token is
- * never stored, so it can never be included here.
- * @param apiToken the token row
- * @returns the displayable metadata for the token
- */
-const apiTokenMetadata = (apiToken: User_API_Token): ApiTokenMetadata => ({
-  apiTokenId: apiToken.apiTokenId,
-  name: apiToken.name,
-  preview: apiToken.preview,
-  dateCreated: apiToken.dateCreated,
-  lastUsedAt: apiToken.lastUsedAt ?? undefined
-});
+import { apiTokenTransformer } from '../transformers/api-token.transformer.js';
 
 export default class ApiTokenService {
   /**
@@ -30,7 +17,7 @@ export default class ApiTokenService {
       where: { userId: user.userId, dateRevoked: null }
     });
 
-    return apiToken ? apiTokenMetadata(apiToken) : null;
+    return apiToken ? apiTokenTransformer(apiToken) : null;
   }
 
   /**
@@ -57,6 +44,6 @@ export default class ApiTokenService {
       })
     ]);
 
-    return { ...apiTokenMetadata(createdToken), token };
+    return { ...apiTokenTransformer(createdToken), token };
   }
 }
