@@ -19,7 +19,7 @@ import {
   IconButton,
   Tooltip
 } from '@mui/material';
-import { Project, ProjectRule, Rule, RuleStatus, isLeadership } from 'shared';
+import { isHead, Project, ProjectRule, Rule, RuleStatus, isLeadership } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
@@ -29,13 +29,15 @@ import ResetStatusesModal from '../../../RulesPage/components/ResetStatusesModal
 import { useRuleTreeNavigation } from '../../../RulesPage/useRuleTreeNavigation';
 import UpdateStatusPopover from './UpdateStatusPopover';
 import AddRuleModal from './AddProjectRuleModal';
+import RemoveRuleModal from './RemoveProjectRuleModal';
 import {
   useAllRulesetTypes,
   useActiveRuleset,
   useProjectRules,
   useSetProjectRuleStatus,
-  useCreateProjectRule,
-  useResetProjectRuleStatuses
+  useBulkCreateProjectRules,
+  useResetProjectRuleStatuses,
+  useBulkDeleteProjectRules
 } from '../../../../hooks/rules.hooks';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
@@ -61,6 +63,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const [selectedRulesetTypeIndex, setSelectedRulesetTypeIndex] = useState(0);
   const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
+  const [removeRuleModalOpen, setRemoveRuleModalOpen] = useState(false);
   const [selectedProjectRule, setSelectedProjectRule] = useState<ProjectRule | null>(null);
   const [historyModalProjectRule, setHistoryModalProjectRule] = useState<ProjectRule | null>(null);
   const [showResetModal, setShowResetModal] = useState(false);
@@ -90,7 +93,15 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     project.id
   );
 
-  const { mutateAsync: createProjectRuleMutation, isLoading: isCreating } = useCreateProjectRule();
+  const { mutate: addProjectRules, isLoading: isCreating } = useBulkCreateProjectRules(
+    activeRuleset?.rulesetId || '',
+    project.id
+  );
+
+  const { mutate: removeProjectRules, isLoading: isDeleting } = useBulkDeleteProjectRules(
+    activeRuleset?.rulesetId || '',
+    project.id
+  );
 
   const { mutateAsync: resetProjectRuleStatuses, isLoading: isResetting } = useResetProjectRuleStatuses(
     activeRuleset?.rulesetId || '',
@@ -137,20 +148,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     try {
       await setStatusMutation({ projectRuleId, status });
       toast.success('Rule status updated successfully');
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
-  };
-
-  // Handle add rules
-  const handleAddRules = async (ruleIds: string[]) => {
-    try {
-      for (const ruleId of ruleIds) {
-        await createProjectRuleMutation({ ruleId, projectId: project.id });
-      }
-      toast.success(`${ruleIds.length} rule${ruleIds.length !== 1 ? 's' : ''} added successfully`);
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -415,6 +412,12 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
             >
               Add Rule
             </NERButton>
+            {/* Remove Rule Button */}
+            {isHead(user.role) && projectRuleList.length > 0 && (
+              <NERButton variant="contained" sx={{ color: '#ededed' }} onClick={() => setRemoveRuleModalOpen(true)}>
+                Remove Rule
+              </NERButton>
+            )}
           </Box>
         )}
       </Box>
@@ -458,12 +461,23 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
           rulesetId={activeRuleset.rulesetId}
           projectId={project.id}
           teamNames={project.teams.map((team) => team.teamName)}
-          onSubmit={handleAddRules}
+          onSubmit={addProjectRules}
+        />
+      )}
+
+      {/* Remove Rule Modal */}
+      {activeRuleset && projectRules && (
+        <RemoveRuleModal
+          open={removeRuleModalOpen}
+          onHide={() => setRemoveRuleModalOpen(false)}
+          projectRules={projectRules}
+          projectName={project.name}
+          onSubmit={removeProjectRules}
         />
       )}
 
       {/* Loading overlay */}
-      {(isUpdatingStatus || isCreating || isResetting) && (
+      {(isUpdatingStatus || isCreating || isResetting || isDeleting) && (
         <Box
           sx={{
             position: 'fixed',

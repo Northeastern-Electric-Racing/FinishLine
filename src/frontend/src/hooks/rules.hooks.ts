@@ -327,40 +327,114 @@ export const useCreateRule = () => {
 };
 
 /**
- * Hook to create a project rule (assign a rule to a project).
+ * Hook to create multiple project rules (assign rules to a project) in bulk.
+ * Failures and successes are counted and reported via toast.
+ *
+ * "1 rule failed to add. 3 succeeded. T.4: This rule is already associated with the project"
+ * "Successfully added 5 rules"
  */
-export const useCreateProjectRule = () => {
+export const useBulkCreateProjectRules = (rulesetId: string, projectId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ProjectRule, Error, { ruleId: string; projectId: string }>(
-    ['rules', 'projectRules', 'create'],
-    async ({ ruleId, projectId: pId }) => {
-      const { data } = await createProjectRule(ruleId, pId);
-      return data;
+  const toast = useToast();
+
+  return useMutation<{ successful: number; failed: number; errors: string[] }, Error, string[]>(
+    ['rules', 'projectRules', 'bulk-create'],
+    async (ruleIds) => {
+      const unassignedRules = queryClient.getQueryData<SharedRule[]>(['rules', 'unassigned', rulesetId, projectId]);
+      const ruleCodesById = new Map(unassignedRules?.map((rule) => [rule.ruleId, rule.ruleCode]));
+
+      let successful = 0;
+      let failed = 0;
+      const errors: string[] = [];
+
+      for (const ruleId of ruleIds) {
+        try {
+          await createProjectRule(ruleId, projectId);
+          successful++;
+        } catch (error) {
+          failed++;
+          errors.push(`${ruleCodesById.get(ruleId) ?? ruleId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+
+      return { successful, failed, errors };
     },
     {
-      onSuccess: () => {
+      onSuccess: (result) => {
         queryClient.invalidateQueries(['rules', 'projectRules']);
         queryClient.invalidateQueries(['rules', 'unassigned']);
+
+        if (result.failed > 0) {
+          toast.error(
+            `${result.failed} rule${result.failed !== 1 ? 's' : ''} failed to add. ${
+              result.successful
+            } succeeded. ${result.errors.join('; ')}`
+          );
+        } else if (result.successful > 0) {
+          toast.success(`Successfully added ${result.successful} rule${result.successful !== 1 ? 's' : ''}`);
+        }
+      },
+      onError: (error: Error) => {
+        toast.error(`Failed to add rules: ${error.message}`);
       }
     }
   );
 };
 
 /**
- * Hook to delete a project rule.
+ * Hook to delete multiple project rules in bulk.
+ * Failures and successes are counted and reported via toast.
+ *
+ * "1 rule failed to remove. 2 succeeded. T.3.4: Cannot delete a project rule that has children assigned to this project"
+ * "Successfully removed 3 rules"
  */
-export const useDeleteProjectRule = (rulesetId: string, projectId: string) => {
+export const useBulkDeleteProjectRules = (rulesetId: string, projectId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ProjectRule, Error, string>(
-    ['rules', 'projectRules', 'delete'],
-    async (projectRuleId: string) => {
-      const { data } = await deleteProjectRule(projectRuleId);
-      return data;
+  const toast = useToast();
+
+  return useMutation<{ successful: number; failed: number; errors: string[] }, Error, string[]>(
+    ['rules', 'projectRules', 'bulk-delete'],
+    async (projectRuleIds) => {
+      const cachedProjectRules = queryClient.getQueryData<ProjectRule[]>(['rules', 'projectRules', rulesetId, projectId]);
+      const ruleCodesById = new Map(cachedProjectRules?.map((pr) => [pr.projectRuleId, pr.rule.ruleCode]));
+
+      let successful = 0;
+      let failed = 0;
+      const errors: string[] = [];
+
+      for (const projectRuleId of projectRuleIds) {
+        try {
+          await deleteProjectRule(projectRuleId);
+          successful++;
+        } catch (error) {
+          failed++;
+          errors.push(
+            `${ruleCodesById.get(projectRuleId) ?? projectRuleId}: ${
+              error instanceof Error ? error.message : 'Unknown error'
+            }`
+          );
+        }
+      }
+
+      return { successful, failed, errors };
     },
     {
-      onSuccess: () => {
+      onSuccess: (result) => {
         queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
         queryClient.invalidateQueries(['rules', 'unassigned']);
+
+        if (result.failed > 0) {
+          toast.error(
+            `${result.failed} rule${result.failed !== 1 ? 's' : ''} failed to remove. ${
+              result.successful
+            } succeeded. ${result.errors.join('; ')}`
+          );
+        } else if (result.successful > 0) {
+          toast.success(`Successfully removed ${result.successful} rule${result.successful !== 1 ? 's' : ''}`);
+        }
+      },
+      onError: (error: Error) => {
+        toast.error(`Failed to remove rules: ${error.message}`);
       }
     }
   );
