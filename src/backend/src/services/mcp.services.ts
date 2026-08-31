@@ -150,7 +150,8 @@ export default class McpService {
   }
 
   /**
-   * Gets the events scheduled within a date range.
+   * Gets the events scheduled within a date range. The range is inclusive of the whole final day, so
+   * a request for 2026-09-01 to 2026-09-07 returns everything that happens on the 7th.
    * @param startDate the start of the range
    * @param endDate the end of the range
    * @param organization the organization the request is scoped to
@@ -159,7 +160,12 @@ export default class McpService {
   static async getEvents(startDate: Date, endDate: Date, organization: Organization): Promise<McpEvent[]> {
     if (endDate < startDate) throw new HttpException(400, 'endDate must be on or after startDate');
 
-    const rangeDays = (endDate.getTime() - startDate.getTime()) / MS_PER_DAY;
+    // the overlap filter matches slots that start at or before the end of the range, so an endDate of
+    // "2026-09-07" would otherwise drop every event starting after midnight on the 7th
+    const rangeEnd = new Date(endDate);
+    rangeEnd.setUTCHours(23, 59, 59, 999);
+
+    const rangeDays = (rangeEnd.getTime() - startDate.getTime()) / MS_PER_DAY;
     if (rangeDays > MAX_EVENT_RANGE_DAYS) {
       throw new HttpException(400, `Date range must be ${MAX_EVENT_RANGE_DAYS} days or fewer`);
     }
@@ -168,9 +174,9 @@ export default class McpService {
       where: {
         dateDeleted: null,
         eventType: { organizationId: organization.organizationId, dateDeleted: null },
-        scheduledTimes: buildScheduledTimesOverlap(startDate, endDate)
+        scheduledTimes: buildScheduledTimesOverlap(startDate, rangeEnd)
       },
-      ...getMcpEventQueryArgs(startDate, endDate)
+      ...getMcpEventQueryArgs(startDate, rangeEnd)
     });
 
     return events.map(mcpEventTransformer);
