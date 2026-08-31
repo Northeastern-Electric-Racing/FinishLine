@@ -22,9 +22,9 @@ const ApiKeySection: React.FC = () => {
   if (isLoading) return <LoadingIndicator />;
 
   const onGenerate = async () => {
-    setShowRegenerateConfirm(false);
     try {
       const newToken = await generateApiToken();
+      setShowRegenerateConfirm(false);
       setGeneratedToken(newToken.token);
     } catch (e) {
       if (e instanceof Error) toast.error(e.message);
@@ -70,6 +70,7 @@ const ApiKeySection: React.FC = () => {
           onHide={() => setShowRegenerateConfirm(false)}
           onConfirm={onGenerate}
           preview={apiToken.preview}
+          disabled={isGenerating}
         />
       )}
 

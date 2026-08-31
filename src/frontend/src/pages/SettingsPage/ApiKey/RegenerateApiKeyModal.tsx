@@ -6,11 +6,19 @@ interface RegenerateApiKeyModalProps {
   onHide: () => void;
   onConfirm: () => void;
   preview: string;
+  disabled?: boolean;
 }
 
-const RegenerateApiKeyModal: React.FC<RegenerateApiKeyModalProps> = ({ open, onHide, onConfirm, preview }) => {
+const RegenerateApiKeyModal: React.FC<RegenerateApiKeyModalProps> = ({ open, onHide, onConfirm, preview, disabled }) => {
   return (
-    <NERModal open={open} onHide={onHide} onSubmit={onConfirm} title="Regenerate API Key" submitText="Regenerate">
+    <NERModal
+      open={open}
+      onHide={onHide}
+      onSubmit={onConfirm}
+      title="Regenerate API Key"
+      submitText="Regenerate"
+      disabled={disabled}
+    >
       <Stack spacing={2}>
         <Alert severity="warning">This cannot be undone.</Alert>
         <Typography>
