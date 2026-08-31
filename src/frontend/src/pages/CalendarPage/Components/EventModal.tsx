@@ -827,7 +827,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
           {/* Date and Time Section - Only show when event type is selected */}
           {selectedEventType && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {selectedEventType.requiresConfirmation ? (
+              {selectedEventType.requiresConfirmation && (
                 <Box>
                   {/* Header with info tooltip */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -889,7 +889,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                         return (
                           <DatePicker
                             value={endDate}
-                            disabled
+                            disabled={eventStatus !== EventStatus.SCHEDULED}
                             slotProps={{
                               textField: {
                                 variant: 'standard',
@@ -909,7 +909,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     />
                   </Box>
                 </Box>
-              ) : (
+              )}
+              {(!selectedEventType.requiresConfirmation || eventStatus === EventStatus.SCHEDULED) && (
                 /* Normal Event Type - Full date/time selection */
                 <>
                   {/* Date and Time Row */}
