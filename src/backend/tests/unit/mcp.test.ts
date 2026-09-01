@@ -22,7 +22,7 @@ describe('MCP Endpoint Tests', () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     user = await createTestUser(batmanAppAdmin, orgId);
-    carId = (await createTestCar(orgId, user.userId, 1)).carId;
+    ({ carId } = await createTestCar(orgId, user.userId, 1));
   });
 
   afterEach(async () => {
