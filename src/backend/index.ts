@@ -98,9 +98,13 @@ app.use('/ics', icsRouter);
 // rest of the API.
 app.use('/agent', agentRouter);
 
-// The MCP endpoint, authenticated with the same per-user API tokens. It must accept POST (JSON-RPC),
-// so it is mounted separately from the read only /agent router; every tool it exposes is a read.
-app.all('/mcp', requireApiToken, attachAuthInfo, (req, res) => void mcpNodeHandler(req, res, req.body));
+// The MCP endpoint, authenticated with the same per-user API tokens. JSON-RPC requires POST, so it
+// cannot sit behind the readOnlyGuard the /agent router uses and is mounted separately; registering
+// every tool through registerReadOnlyTool in src/mcp/tools.ts is what keeps it read only instead.
+// The handler is async, so its rejections are forwarded to the error handler rather than dropped.
+app.all('/mcp', requireApiToken, attachAuthInfo, (req, res, next) => {
+  mcpNodeHandler(req, res, req.body).catch(next);
+});
 
 // ensure each request is authorized using JWT
 app.use(isProd ? requireJwtProd : requireJwtDev);

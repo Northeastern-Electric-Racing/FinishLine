@@ -33,8 +33,8 @@ export default class AgentController {
 
   static async getProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const { carNumber } = req.query as Record<string, string | undefined>;
-      const projects = await McpService.getProjects(req.organization, carNumber);
+      const { carNumber, offset } = req.query as Record<string, string | undefined>;
+      const projects = await McpService.getProjects(req.organization, carNumber, offset ? Number(offset) : undefined);
 
       res.status(200).json(projects);
     } catch (error: unknown) {
@@ -67,7 +67,8 @@ export default class AgentController {
   static async getTasks(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum } = req.params as Record<string, string>;
-      const tasks = await McpService.getTasks(wbsNum, req.organization);
+      const { offset } = req.query as Record<string, string | undefined>;
+      const tasks = await McpService.getTasks(wbsNum, req.organization, offset ? Number(offset) : undefined);
 
       res.status(200).json(tasks);
     } catch (error: unknown) {

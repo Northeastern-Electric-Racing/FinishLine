@@ -11,10 +11,15 @@ agentRouter.use(requireApiToken);
 agentRouter.use(readOnlyGuard);
 
 agentRouter.get('/health', AgentController.healthCheck);
-agentRouter.get('/projects', AgentController.getProjects);
+agentRouter.get('/projects', query('offset').optional().isInt({ min: 0 }), validateInputs, AgentController.getProjects);
 agentRouter.get('/projects/:wbsNum', AgentController.getProject);
 agentRouter.get('/projects/:wbsNum/work-packages', AgentController.getWorkPackages);
-agentRouter.get('/projects/:wbsNum/tasks', AgentController.getTasks);
+agentRouter.get(
+  '/projects/:wbsNum/tasks',
+  query('offset').optional().isInt({ min: 0 }),
+  validateInputs,
+  AgentController.getTasks
+);
 agentRouter.get('/events', isDate(query('startDate')), isDate(query('endDate')), validateInputs, AgentController.getEvents);
 
 export default agentRouter;

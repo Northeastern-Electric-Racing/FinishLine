@@ -1,21 +1,13 @@
 import { CallToolResult } from '@modelcontextprotocol/server';
 import { HttpException } from '../utils/errors.utils.js';
 
-/** Cap on array results, so one oversized project cannot flood the model's context window. */
-const MAX_ITEMS = 100;
-
 /**
- * Serializes a tool result, truncating long lists.
+ * Serializes a tool result.
  * @param value the value to return to the model
  */
-export const toolJson = (value: unknown): CallToolResult => {
-  if (Array.isArray(value) && value.length > MAX_ITEMS) {
-    const text = `${JSON.stringify(value.slice(0, MAX_ITEMS))}\n\n(showing the first ${MAX_ITEMS} of ${value.length} results)`;
-    return { content: [{ type: 'text', text }] };
-  }
-
-  return { content: [{ type: 'text', text: JSON.stringify(value) }] };
-};
+export const toolJson = (value: unknown): CallToolResult => ({
+  content: [{ type: 'text', text: JSON.stringify(value) }]
+});
 
 /**
  * Runs a tool handler, turning failures into tool errors the model can read and recover from

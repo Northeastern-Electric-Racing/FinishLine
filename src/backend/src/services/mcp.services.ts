@@ -1,5 +1,5 @@
 import { Organization } from '@prisma/client';
-import { McpEvent, McpProjectDetail, McpProjectList, McpTask, McpWorkPackage, validateWBS } from 'shared';
+import { McpEvent, McpProjectDetail, McpProjectList, McpTaskList, McpWorkPackage, validateWBS } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { HttpException, NotFoundException } from '../utils/errors.utils.js';
 import { buildScheduledTimesOverlap } from '../utils/calendar.utils.js';
@@ -18,6 +18,25 @@ import { mcpEventTransformer } from '../transformers/mcp/events.transformer.js';
 /** The widest event range the MCP API will serve, to keep responses small enough for an LLM. */
 const MAX_EVENT_RANGE_DAYS = 7;
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+/**
+ * How many items a page of a list endpoint holds. Only the lists that can realistically run past
+ * this are paged: a car's projects and a project's tasks. A project's work packages are its handful
+ * of phases, and events are already bounded by the one week range, so both return whole.
+ */
+const PAGE_SIZE = 100;
+
+/**
+ * Works out the offset the caller should ask for next, which is absent once the page just returned
+ * reaches the end of the list. Returning it saves the model from doing the arithmetic itself.
+ *
+ * @param offset the offset this page started at
+ * @param pageLength how many items this page holds
+ * @param total how many items exist in total
+ * @returns the next offset, or undefined when there is nothing left
+ */
+const nextOffsetOf = (offset: number, pageLength: number, total: number): number | undefined =>
+  offset + pageLength < total ? offset + pageLength : undefined;
 
 /**
  * Parses a wbs number from a route param and asserts that it identifies a project rather than a
@@ -88,13 +107,18 @@ export default class McpService {
   }
 
   /**
-   * Gets every project on a car, with just enough to identify and describe it. Defaults to the
-   * newest car so that a caller does not need to know which car is current.
+   * Gets a page of the projects on a car, with just enough to identify and describe it. Defaults to
+   * the newest car so that a caller does not need to know which car is current.
    * @param organization the organization the request is scoped to
    * @param carNumber the car number to look at, defaulting to the newest car
-   * @returns the resolved car number alongside its projects
+   * @param offset how many projects to skip, for paging through a car with more than a page of them
+   * @returns the resolved car number alongside a page of its projects
    */
-  static async getProjects(organization: Organization, carNumber?: string | number): Promise<McpProjectList> {
+  static async getProjects(
+    organization: Organization,
+    carNumber?: string | number,
+    offset: number = 0
+  ): Promise<McpProjectList> {
     let resolvedCarNumber: number;
 
     if (carNumber === undefined || carNumber === '') {
@@ -106,19 +130,31 @@ export default class McpService {
       }
     }
 
-    const projects = await prisma.project.findMany({
-      where: {
-        wbsElement: {
-          carNumber: resolvedCarNumber,
-          dateDeleted: null,
-          organizationId: organization.organizationId
-        }
-      },
-      orderBy: { wbsElement: { projectNumber: 'asc' } },
-      ...getMcpProjectSummaryQueryArgs()
-    });
+    const where = {
+      wbsElement: {
+        carNumber: resolvedCarNumber,
+        dateDeleted: null,
+        organizationId: organization.organizationId
+      }
+    };
 
-    return { carNumber: resolvedCarNumber, projects: projects.map(mcpProjectSummaryTransformer) };
+    const [total, projects] = await prisma.$transaction([
+      prisma.project.count({ where }),
+      prisma.project.findMany({
+        where,
+        orderBy: { wbsElement: { projectNumber: 'asc' } },
+        skip: offset,
+        take: PAGE_SIZE,
+        ...getMcpProjectSummaryQueryArgs()
+      })
+    ]);
+
+    return {
+      carNumber: resolvedCarNumber,
+      projects: projects.map(mcpProjectSummaryTransformer),
+      total,
+      nextOffset: nextOffsetOf(offset, projects.length, total)
+    };
   }
 
   /**
@@ -157,12 +193,17 @@ export default class McpService {
   }
 
   /**
-   * Gets the tasks for a project, including tasks on the project's work packages. This matches how
-   * the rest of the app scopes a project's tasks.
+   * Gets a page of the tasks for a project, including tasks on the project's work packages. This
+   * matches how the rest of the app scopes a project's tasks.
+   *
+   * This is the list most likely to be long: an active project accumulates tasks across every one
+   * of its work packages, so it is paged rather than returned whole.
+   *
    * @param wbsNum the project's wbs number
    * @param organization the organization the request is scoped to
+   * @param offset how many tasks to skip, for paging through a project with more than a page of them
    */
-  static async getTasks(wbsNum: string, organization: Organization): Promise<McpTask[]> {
+  static async getTasks(wbsNum: string, organization: Organization, offset: number = 0): Promise<McpTaskList> {
     const { projectId, wbsElementId } = await findProject(wbsNum, organization);
 
     const workPackages = await prisma.work_Package.findMany({
@@ -172,17 +213,28 @@ export default class McpService {
 
     const wbsElementIds = [wbsElementId, ...workPackages.map((workPackage) => workPackage.wbsElementId)];
 
-    const tasks = await prisma.task.findMany({
-      where: {
-        dateDeleted: null,
-        wbsElementId: { in: wbsElementIds },
-        wbsElement: { dateDeleted: null, organizationId: organization.organizationId }
-      },
-      orderBy: { dateCreated: 'asc' },
-      ...getMcpTaskQueryArgs()
-    });
+    const where = {
+      dateDeleted: null,
+      wbsElementId: { in: wbsElementIds },
+      wbsElement: { dateDeleted: null, organizationId: organization.organizationId }
+    };
 
-    return tasks.map((task) => mcpTaskTransformer(task, wbsNum));
+    const [total, tasks] = await prisma.$transaction([
+      prisma.task.count({ where }),
+      prisma.task.findMany({
+        where,
+        orderBy: { dateCreated: 'asc' },
+        skip: offset,
+        take: PAGE_SIZE,
+        ...getMcpTaskQueryArgs()
+      })
+    ]);
+
+    return {
+      tasks: tasks.map((task) => mcpTaskTransformer(task, wbsNum)),
+      total,
+      nextOffset: nextOffsetOf(offset, tasks.length, total)
+    };
   }
 
   /**
@@ -191,9 +243,15 @@ export default class McpService {
    * @param startDate the start of the range
    * @param endDate the end of the range
    * @param organization the organization the request is scoped to
-   * @throws if the range is inverted or wider than a week
+   * @throws if either date is unparseable, or the range is inverted or wider than a week
    */
   static async getEvents(startDate: Date, endDate: Date, organization: Organization): Promise<McpEvent[]> {
+    // an unparseable date is NaN, and every comparison against NaN is false, so this has to come
+    // first or a bad date slips past both range checks and fails inside the query instead
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      throw new HttpException(400, 'startDate and endDate must be valid ISO dates, such as "2026-09-01"');
+    }
+
     if (endDate < startDate) throw new HttpException(400, 'endDate must be on or after startDate');
 
     // the overlap filter matches slots that start at or before the end of the range, so an endDate of
