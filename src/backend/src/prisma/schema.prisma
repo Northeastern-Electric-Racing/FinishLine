@@ -183,6 +183,7 @@ model User {
   userSettings          User_Settings?
   userSecureSettings    User_Secure_Settings?
   icsToken              String?               @unique
+  apiTokens             User_API_Token[]
 
   // Relation references
   submittedChangeRequests                 Change_Request[]                     @relation(name: "submittedChangeRequests")
@@ -957,6 +958,20 @@ model User_Secure_Settings {
   state                String
   zipcode              String
   phoneNumber          String @unique
+}
+
+model User_API_Token {
+  apiTokenId  String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [userId])
+  name        String    @default("Default")
+  tokenHash   String    @unique
+  preview     String
+  dateCreated DateTime  @default(now())
+  lastUsedAt  DateTime?
+  dateRevoked DateTime?
+
+  @@index([userId])
 }
 
 model Unit {

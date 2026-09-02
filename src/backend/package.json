@@ -10,6 +10,8 @@
     "prisma:manual": "tsx --import dotenv/config ./src/prisma/manual.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
     "@prisma/client": "^6.2.1",
     "@slack/bolt": "^3.22.0",
     "@types/concat-stream": "^2.0.0",
@@ -39,7 +41,8 @@
     "nodemailer": "^6.9.1",
     "prisma": "^6.2.1",
     "shared": "1.0.0",
-    "twisters": "^1.1.0"
+    "twisters": "^1.1.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/express-jwt": "^6.0.4",
