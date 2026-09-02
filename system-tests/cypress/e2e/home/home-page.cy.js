@@ -39,14 +39,14 @@ describe('Home Page', () => {
     const whyText = 'home page e2e test cr';
 
     // Navigate to new CR form
-    cy.visit(Cypress.env('base_url') + '/change-requests/new');
+    cy.visit(Cypress.expose('base_url') + '/change-requests/new');
     cy.waitForLoading();
 
     // Create the CR
     createChangeRequest({ why: whyText });
 
     // Navigate back to home
-    cy.visit(Cypress.env('base_url') + '/home');
+    cy.visit(Cypress.expose('base_url') + '/home');
     cy.waitForLoading();
 
     // Verify the new CR appears somewhere on the home page (in My Un-reviewed section on CR overview,
