@@ -32,7 +32,8 @@ import {
   MAX_FILE_SIZE,
   getNextSevenDays,
   getDay,
-  SlackMentionType
+  SlackMentionType,
+  EventStatus
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllMembers, useCurrentUser, useUserScheduleSettings } from '../../../hooks/users.hooks';
@@ -124,6 +125,11 @@ export interface EventPayload {
     newAllDay: boolean;
     editAllInSeries: boolean;
   };
+  // When an event is already scheduled, these are the new start and end times it can be rescheduled to
+  rescheduleArgs?: {
+    startTime: Date;
+    endTime: Date;
+  };
 }
 
 const schema = yup.object().shape({
@@ -169,6 +175,7 @@ export interface BaseEventModalProps {
   defaultStartTime?: Date; // Pre-fill start time without triggering edit mode (e.g. drag-to-create)
   defaultEndTime?: Date; // Pre-fill end time without triggering edit mode
   eventId?: string; // Required for edit mode to fetch preview of affected schedule slots
+  eventStatus?: EventStatus;
   actionsLeftChildren?: React.ReactNode;
 }
 
@@ -231,6 +238,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   defaultStartTime,
   defaultEndTime,
   eventId,
+  eventStatus,
   actionsLeftChildren
 }) => {
   const theme = useTheme();
@@ -419,10 +427,10 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   // made it so it only fills when the field is empty, that way doesn't overwrite a link or anythingi me
   useEffect(() => {
     if (!open || isEditMode) return;
-    if (scheduleSettings?.personalZoomLink && !getValues('zoomLink')) {
+    if (scheduleSettings?.personalZoomLink && selectedEventType?.zoomLink && !getValues('zoomLink')) {
       setValue('zoomLink', scheduleSettings.personalZoomLink);
     }
-  }, [open, isEditMode, scheduleSettings, getValues, setValue]);
+  }, [open, isEditMode, scheduleSettings, selectedEventType, getValues, setValue]);
 
   const computedTitle = isEditMode ? 'Edit Event' : 'Add Event';
 
@@ -790,7 +798,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   <Button
                     key={et.eventTypeId}
                     onClick={() => handleEventTypeChange(et.eventTypeId)}
-                    disabled={isDisabled}
+                    disabled={isDisabled && eventStatus !== EventStatus.SCHEDULED}
                     variant={isSelected ? 'contained' : 'outlined'}
                     sx={{
                       borderRadius: 2,
@@ -819,7 +827,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
           {/* Date and Time Section - Only show when event type is selected */}
           {selectedEventType && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {selectedEventType.requiresConfirmation ? (
+              {selectedEventType.requiresConfirmation && (
                 <Box>
                   {/* Header with info tooltip */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -842,7 +850,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       render={({ field: { onChange, value } }) => (
                         <DatePicker
                           value={value}
-                          disabled={!!initialValues?.selectedScheduleSlotId}
+                          disabled={!!initialValues?.selectedScheduleSlotId && eventStatus !== EventStatus.SCHEDULED}
                           open={datePickerOpen}
                           onClose={() => setDatePickerOpen(false)}
                           onOpen={() => setDatePickerOpen(true)}
@@ -881,7 +889,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                         return (
                           <DatePicker
                             value={endDate}
-                            disabled
+                            disabled={eventStatus !== EventStatus.SCHEDULED}
                             slotProps={{
                               textField: {
                                 variant: 'standard',
@@ -901,7 +909,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     />
                   </Box>
                 </Box>
-              ) : (
+              )}
+              {(!selectedEventType.requiresConfirmation || eventStatus === EventStatus.SCHEDULED) && (
                 /* Normal Event Type - Full date/time selection */
                 <>
                   {/* Date and Time Row */}
@@ -1049,7 +1058,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       </>
                     )}
                   </Box>
-
                   {/* All Day and Recurring Row */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 5 }}>
                     <Controller
