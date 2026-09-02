@@ -18,6 +18,16 @@ export interface McpProjectSummary {
   viewOnFinishline: string;
 }
 
+export interface McpProjectList {
+  /** the car these projects belong to, resolved to the newest car when the caller did not specify */
+  carNumber: number;
+  projects: McpProjectSummary[];
+  /** how many projects the car has in total, so the caller knows whether it has them all */
+  total: number;
+  /** the offset to request for the next page, absent when this page is the last one */
+  nextOffset?: number;
+}
+
 export interface McpLink {
   type: string;
   url: string;
@@ -73,6 +83,14 @@ export interface McpTask {
   parentWbsNum: string;
   parentName: string;
   viewOnFinishline: string;
+}
+
+export interface McpTaskList {
+  tasks: McpTask[];
+  /** how many tasks the project has in total, so the caller knows whether it has them all */
+  total: number;
+  /** the offset to request for the next page, absent when this page is the last one */
+  nextOffset?: number;
 }
 
 export interface McpEventTime {

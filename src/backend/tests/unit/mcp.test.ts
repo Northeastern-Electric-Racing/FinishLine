@@ -37,8 +37,9 @@ describe('MCP Endpoint Tests', () => {
       await makeProject(1);
       await createTestProject(user, orgId, undefined, otherCarId, 2, 1);
 
-      const projects = await McpService.getProjectsByCarNumber(1, organization);
+      const { carNumber, projects } = await McpService.getProjects(organization, 1);
 
+      expect(carNumber).toBe(1);
       expect(projects).toHaveLength(1);
       expect(projects[0].wbsNum).toBe('1.1.0');
       expect(projects[0].viewOnFinishline).toContain('/projects/1.1.0');
@@ -48,14 +49,62 @@ describe('MCP Endpoint Tests', () => {
       await makeProject(1);
       await createTestProject(user, orgId, undefined, carId, 1, 2, new Date());
 
-      const projects = await McpService.getProjectsByCarNumber(1, organization);
+      const { projects } = await McpService.getProjects(organization, 1);
 
       expect(projects).toHaveLength(1);
       expect(projects[0].wbsNum).toBe('1.1.0');
     });
 
     it('returns an empty list for a car with no projects', async () => {
-      expect(await McpService.getProjectsByCarNumber(9, organization)).toEqual([]);
+      expect((await McpService.getProjects(organization, 9)).projects).toEqual([]);
+    });
+
+    it('defaults to the newest car when no car number is given', async () => {
+      // car 1 already exists from the setup; car 2 is newer
+      const newerCarId = (await createTestCar(orgId, user.userId, 2)).carId;
+      await makeProject(1);
+      await createTestProject(user, orgId, undefined, newerCarId, 2, 1);
+
+      const { carNumber, projects } = await McpService.getProjects(organization);
+
+      expect(carNumber).toBe(2);
+      expect(projects).toHaveLength(1);
+      expect(projects[0].wbsNum).toBe('2.1.0');
+    });
+
+    it('pages through a car with more projects than fit in one page', async () => {
+      // one more than the page size, so the first page is full and a second page holds the remainder
+      for (let projectNumber = 1; projectNumber <= 101; projectNumber++) {
+        await makeProject(projectNumber);
+      }
+
+      const firstPage = await McpService.getProjects(organization, 1);
+
+      expect(firstPage.projects).toHaveLength(100);
+      expect(firstPage.total).toBe(101);
+      expect(firstPage.nextOffset).toBe(100);
+
+      const secondPage = await McpService.getProjects(organization, 1, firstPage.nextOffset);
+
+      expect(secondPage.projects).toHaveLength(1);
+      expect(secondPage.total).toBe(101);
+      expect(secondPage.nextOffset).toBeUndefined();
+      expect(secondPage.projects[0].wbsNum).toBe('1.101.0');
+    });
+
+    it('reports no next page when the projects fit in one', async () => {
+      await makeProject(1);
+
+      const { total, nextOffset } = await McpService.getProjects(organization, 1);
+
+      expect(total).toBe(1);
+      expect(nextOffset).toBeUndefined();
+    });
+
+    it('rejects a non numeric car number', async () => {
+      await expect(async () => await McpService.getProjects(organization, 'abc')).rejects.toThrow(
+        new HttpException(400, '"abc" is not a valid car number')
+      );
     });
   });
 
@@ -186,8 +235,10 @@ describe('MCP Endpoint Tests', () => {
       await makeTask(projectWbsElement.wbsElementId, 'Project task');
       await makeTask(workPackage.wbsElementId, 'Work package task');
 
-      const tasks = await McpService.getTasks('1.1.0', organization);
+      const { tasks, total, nextOffset } = await McpService.getTasks('1.1.0', organization);
 
+      expect(total).toBe(2);
+      expect(nextOffset).toBeUndefined();
       expect(tasks.map((task) => task.title).sort()).toEqual(['Project task', 'Work package task']);
       expect(tasks.find((task) => task.title === 'Work package task')?.parentWbsNum).toBe('1.1.1');
       expect(tasks.find((task) => task.title === 'Project task')?.parentWbsNum).toBe('1.1.0');
@@ -201,12 +252,55 @@ describe('MCP Endpoint Tests', () => {
       });
       await makeTask(projectWbsElement.wbsElementId, 'Project task');
 
-      const [task] = await McpService.getTasks('1.1.0', organization);
+      const {
+        tasks: [task]
+      } = await McpService.getTasks('1.1.0', organization);
 
       expect(task.assignees).toEqual([`${user.firstName} ${user.lastName}`]);
       expect(task.createdBy).toBe(`${user.firstName} ${user.lastName}`);
       expect(task.viewOnFinishline).toContain('/projects/1.1.0/tasks');
       expect(JSON.stringify(task)).not.toContain('googleAuthId');
+    });
+
+    it('pages through a project with more tasks than fit in one page', async () => {
+      const project = await makeProject(1);
+      const projectWbsElement = await prisma.project.findUniqueOrThrow({
+        where: { projectId: project.projectId },
+        select: { wbsElementId: true }
+      });
+
+      // one more than the page size, so the first page is full and a second page holds the remainder
+      for (let taskNumber = 1; taskNumber <= 101; taskNumber++) {
+        await makeTask(projectWbsElement.wbsElementId, `Task ${taskNumber}`);
+      }
+
+      const firstPage = await McpService.getTasks('1.1.0', organization);
+
+      expect(firstPage.tasks).toHaveLength(100);
+      expect(firstPage.total).toBe(101);
+      expect(firstPage.nextOffset).toBe(100);
+
+      const secondPage = await McpService.getTasks('1.1.0', organization, firstPage.nextOffset);
+
+      expect(secondPage.tasks).toHaveLength(1);
+      expect(secondPage.total).toBe(101);
+      expect(secondPage.nextOffset).toBeUndefined();
+    });
+
+    it('counts only the tasks that survive the soft delete filter when paging', async () => {
+      const project = await makeProject(1);
+      const projectWbsElement = await prisma.project.findUniqueOrThrow({
+        where: { projectId: project.projectId },
+        select: { wbsElementId: true }
+      });
+      await makeTask(projectWbsElement.wbsElementId, 'Live task');
+      const deleted = await makeTask(projectWbsElement.wbsElementId, 'Deleted task');
+      await prisma.task.update({ where: { taskId: deleted.taskId }, data: { dateDeleted: new Date() } });
+
+      const { tasks, total } = await McpService.getTasks('1.1.0', organization);
+
+      expect(total).toBe(1);
+      expect(tasks.map((task) => task.title)).toEqual(['Live task']);
     });
 
     it('excludes soft deleted tasks', async () => {
@@ -218,7 +312,7 @@ describe('MCP Endpoint Tests', () => {
       const task = await makeTask(projectWbsElement.wbsElementId, 'Deleted task');
       await prisma.task.update({ where: { taskId: task.taskId }, data: { dateDeleted: new Date() } });
 
-      expect(await McpService.getTasks('1.1.0', organization)).toEqual([]);
+      expect((await McpService.getTasks('1.1.0', organization)).tasks).toEqual([]);
     });
   });
 
@@ -321,6 +415,12 @@ describe('MCP Endpoint Tests', () => {
       await expect(
         async () => await McpService.getEvents(new Date('2026-09-07'), new Date('2026-09-01'), organization)
       ).rejects.toThrow(new HttpException(400, 'endDate must be on or after startDate'));
+    });
+
+    it('rejects an unparseable date rather than letting NaN slip past the range checks', async () => {
+      await expect(
+        async () => await McpService.getEvents(new Date('next Monday'), new Date('2026-09-07'), organization)
+      ).rejects.toThrow(new HttpException(400, 'startDate and endDate must be valid ISO dates, such as "2026-09-01"'));
     });
   });
 });

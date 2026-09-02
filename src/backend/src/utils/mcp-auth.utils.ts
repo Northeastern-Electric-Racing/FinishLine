@@ -114,3 +114,21 @@ export const getRoleInOrganization = async (userId: string, organizationId: stri
 
   return role?.roleType as Role | undefined;
 };
+
+/**
+ * Hands the authenticated caller to the MCP handler.
+ *
+ * toNodeHandler forwards req.auth to the handler as its pass-through authInfo, and AuthInfo.extra
+ * is the documented place for data of our own, so the MCP server factory reads the user and
+ * organization back out of it. Must run after requireApiToken.
+ */
+export const attachAuthInfo = (req: Request, _res: Response, next: NextFunction) => {
+  req.auth = {
+    token: '',
+    clientId: req.currentUser.userId,
+    scopes: [],
+    extra: { user: req.currentUser, organization: req.organization }
+  };
+
+  return next();
+};
