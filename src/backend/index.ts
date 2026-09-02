@@ -30,6 +30,7 @@ import calendarRouter from './src/routes/calendar.routes.js';
 import prospectiveSponsorRouter from './src/routes/prospective-sponsor.routes.js';
 import attendanceRouter from './src/routes/attendance.routes.js';
 import icsRouter from './src/routes/ics.routes.js';
+import mcpRouter from './src/routes/mcp.routes.js';
 import dashboardsRouter from './src/routes/dashboards.routes.js';
 
 const app = express();
@@ -90,6 +91,11 @@ app.use(cors(options));
 // Public ICS feed routes — mounted before JWT middleware so calendar apps can subscribe without auth
 app.use('/ics', icsRouter);
 
+// API token routes — mounted before the JWT middleware so that per-user API tokens authenticate here
+// and ONLY here. Keeping this above the cookie middleware is what stops a token from reaching the
+// rest of the API.
+app.use('/mcp', mcpRouter);
+
 // ensure each request is authorized using JWT
 app.use(isProd ? requireJwtProd : requireJwtDev);
 
@@ -139,8 +145,8 @@ app.listen(port, () => {
   console.log(`\n
   ███████╗██╗███╗   ██╗██╗███████╗██╗  ██╗██╗     ██╗███╗   ██╗███████╗
   ██╔════╝██║████╗  ██║██║██╔════╝██║  ██║██║     ██║████╗  ██║██╔════╝
-  █████╗  ██║██╔██╗ ██║██║███████╗███████║██║     ██║██╔██╗ ██║█████╗  
-  ██╔══╝  ██║██║╚██╗██║██║╚════██║██╔══██║██║     ██║██║╚██╗██║██╔══╝  
+  █████╗  ██║██╔██╗ ██║██║███████╗███████║██║     ██║██╔██╗ ██║█████╗
+  ██╔══╝  ██║██║╚██╗██║██║╚════██║██╔══██║██║     ██║██║╚██╗██║██╔══╝
   ██║     ██║██║ ╚████║██║███████║██║  ██║███████╗██║██║ ╚████║███████╗
   ╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝`);
 });
