@@ -19,7 +19,7 @@ import {
   IconButton,
   Tooltip
 } from '@mui/material';
-import { Project, ProjectRule, Rule, RuleStatus, isLeadership } from 'shared';
+import { Project, ProjectRule, Rule, isLeadership } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
@@ -32,6 +32,7 @@ import {
   useAllRulesetTypes,
   useActiveRuleset,
   useProjectRules,
+  useRuleStatusUpdate,
   useSetProjectRuleStatus,
   useCreateProjectRule,
   useResetProjectRuleStatuses
@@ -60,8 +61,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
   const [historyModalProjectRule, setHistoryModalProjectRule] = useState<ProjectRule | null>(null);
   const [showResetModal, setShowResetModal] = useState(false);
-  // the rule currently being written, so only its checkboxes disable
-  const [pendingRuleId, setPendingRuleId] = useState<string | null>(null);
 
   // Fetch all ruleset types
   const { data: rulesetTypes, isLoading: rulesetTypesLoading, isError: rulesetTypesError } = useAllRulesetTypes();
@@ -128,19 +127,11 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     useRuleTreeNavigation(projectRuleList);
 
   // Handle status update, local to this project
-  const handleStatusUpdate = async (projectRuleId: string, status: RuleStatus, ruleId: string) => {
-    setPendingRuleId(ruleId);
-    try {
-      await setStatusMutation({ projectRuleId, status });
-      toast.success('Rule status updated successfully');
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    } finally {
-      setPendingRuleId(null);
-    }
-  };
+  const { pendingRuleId, updateStatus } = useRuleStatusUpdate(async (ruleId, status) => {
+    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === ruleId);
+    if (!projectRule) throw new Error('That rule is no longer assigned to this project');
+    await setStatusMutation({ projectRuleId: projectRule.projectRuleId, status });
+  });
 
   // Handle add rules
   const handleAddRules = async (ruleIds: string[]) => {
@@ -153,14 +144,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       if (error instanceof Error) {
         toast.error(error.message);
       }
-    }
-  };
-
-  // Handle a Pass/Fail checkbox click for a leaf rule, local to this project
-  const handleStatusClick = (rule: Rule, status: RuleStatus) => {
-    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
-    if (projectRule) {
-      handleStatusUpdate(projectRule.projectRuleId, status, rule.ruleId);
     }
   };
 
@@ -216,7 +199,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       <RuleStatusTag
         rule={rule}
         isLeaf={isLeafRule}
-        onStatusChange={canUpdateStatus ? (status) => handleStatusClick(rule, status) : undefined}
+        onStatusChange={canUpdateStatus ? (status) => updateStatus(rule.ruleId, status) : undefined}
         disabled={pendingRuleId === rule.ruleId}
         onInfoClick={handleInfoClick}
       />
