@@ -1,14 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
-import { Rule, RuleStatus, isLeadership } from 'shared';
+import { Rule, isLeadership } from 'shared';
 import RuleRow from '../RuleRow';
 import RuleStatusTag from './RuleStatusTag';
 import RuleContent from './RuleContent';
 import RuleStatusHistoryModal from './RuleStatusHistoryModal';
-import UpdateStatusPopover from '../../ProjectDetailPage/ProjectViewContainer/ProjectRules/UpdateStatusPopover';
-import { useSetRuleStatus } from '../../../hooks/rules.hooks';
+import { useRuleStatusUpdate, useSetRuleStatus } from '../../../hooks/rules.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { useToast } from '../../../hooks/toasts.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
 
 interface RulesetGeneralViewProps {
@@ -31,11 +29,10 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   navigateToRule
 }) => {
   const theme = useTheme();
-  const toast = useToast();
   const user = useCurrentUser();
-  const [statusPopoverAnchor, setStatusPopoverAnchor] = useState<HTMLElement | null>(null);
-  const [selectedRule, setSelectedRule] = useState<Rule | null>(null);
   const [historyModalRule, setHistoryModalRule] = useState<Rule | null>(null);
+
+  const canUpdateStatus = isLeadership(user.role);
 
   const backgroundColor = theme.palette.background.default;
   const tableBackgroundColor = theme.palette.background.paper;
@@ -44,25 +41,10 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
 
   // Status in general view is independent of any project
   const { mutateAsync: setStatus } = useSetRuleStatus(rulesetId);
+  const { pendingRuleId, updateStatus } = useRuleStatusUpdate((ruleId, status) => setStatus({ ruleId, status }));
 
   // Sort once by rule code so top-level rows render in a stable numeric order.
   const sortedTopLevelRules = useMemo(() => [...topLevelRules].sort(compareRuleCodes), [topLevelRules]);
-
-  const handleStatusClose = () => {
-    setStatusPopoverAnchor(null);
-    setSelectedRule(null);
-  };
-
-  const handleStatusChange = async (ruleId: string, status: RuleStatus) => {
-    try {
-      await setStatus({ ruleId, status });
-      toast.success('Rule status updated successfully');
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
-  };
 
   return (
     <Box>
@@ -80,15 +62,8 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
                   <RuleStatusTag
                     rule={r}
                     isLeaf={r.subRuleIds.length === 0}
-                    popoverOpen={selectedRule?.ruleId === r.ruleId && Boolean(statusPopoverAnchor)}
-                    onClick={
-                      isLeadership(user.role)
-                        ? (e) => {
-                            setSelectedRule(r);
-                            setStatusPopoverAnchor(e.currentTarget);
-                          }
-                        : undefined
-                    }
+                    onStatusChange={canUpdateStatus ? (status) => updateStatus(r.ruleId, status) : undefined}
+                    disabled={pendingRuleId === r.ruleId}
                     onInfoClick={setHistoryModalRule}
                   />
                 )}
@@ -103,16 +78,6 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
           </TableBody>
         </Table>
       </TableContainer>
-
-      {selectedRule && (
-        <UpdateStatusPopover
-          anchorEl={statusPopoverAnchor}
-          onClose={handleStatusClose}
-          id={selectedRule.ruleId}
-          status={selectedRule.status}
-          onStatusChange={handleStatusChange}
-        />
-      )}
 
       {historyModalRule && <RuleStatusHistoryModal open onClose={() => setHistoryModalRule(null)} rule={historyModalRule} />}
     </Box>
