@@ -838,9 +838,15 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     >
                       <HelpOutlineIcon sx={{ fontSize: 18, color: 'grey.400', cursor: 'help' }} />
                     </Tooltip>
-                    <Typography variant="body2" color="white" fontWeight={500}>
-                      To be scheduled within:
-                    </Typography>
+                    {!(!!initialValues?.selectedScheduleSlotId && !selectedEventType.requiresConfirmation) ? (
+                      <Typography variant="body2" color="white" fontWeight={500}>
+                        To be scheduled within (multiple days):
+                      </Typography>
+                    ) : (
+                      <Typography variant="body2" color="white" fontWeight={500}>
+                        To be scheduled within:
+                      </Typography>
+                    )}
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                     <CalendarTodayIcon sx={{ color: 'text.secondary' }} />
@@ -914,6 +920,24 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 /* Normal Event Type - Full date/time selection */
                 <>
                   {/* Date and Time Row */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Tooltip
+                      title="This event type requires confirmation, so users will provide their availability for the following week. Once confirmed, the event will be scheduled for a specific hourly time for a single day."
+                      arrow
+                      placement="top"
+                    >
+                      <HelpOutlineIcon sx={{ fontSize: 18, color: 'grey.400', cursor: 'help' }} />
+                    </Tooltip>
+                    {!(!!initialValues?.selectedScheduleSlotId && !selectedEventType.requiresConfirmation) ? (
+                      <Typography variant="body2" color="white" fontWeight={500}>
+                        To be scheduled within (same day):
+                      </Typography>
+                    ) : (
+                      <Typography variant="body2" color="white" fontWeight={500}>
+                        To be scheduled within:
+                      </Typography>
+                    )}
+                  </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                     <CalendarTodayIcon sx={{ color: 'text.secondary' }} />
                     <Controller
