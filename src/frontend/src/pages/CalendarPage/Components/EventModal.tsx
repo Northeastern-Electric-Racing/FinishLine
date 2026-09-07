@@ -798,7 +798,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   <Button
                     key={et.eventTypeId}
                     onClick={() => handleEventTypeChange(et.eventTypeId)}
-                    disabled={isDisabled && eventStatus !== EventStatus.SCHEDULED}
+                    disabled={isDisabled}
                     variant={isSelected ? 'contained' : 'outlined'}
                     sx={{
                       borderRadius: 2,
