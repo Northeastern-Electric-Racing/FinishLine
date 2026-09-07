@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { QueryClient, useMutation, useQuery, useQueryClient } from 'react-query';
 import { ProjectRule, Rule as SharedRule, Ruleset, RulesetType, RuleStatus, RuleStatusHistoryEntry } from 'shared';
 import {
@@ -398,6 +398,34 @@ export const useDeleteProjectRule = (rulesetId: string, projectId: string) => {
       }
     }
   );
+};
+
+/**
+ * Hook to update a rule's status.
+ *
+ * @param writeStatus writes the new status for a rule
+ * status can be ruleset wide or scoped to a single project
+ * @returns the rule currently being updated
+ */
+export const useRuleStatusUpdate = (writeStatus: (ruleId: string, status: RuleStatus) => Promise<unknown>) => {
+  const toast = useToast();
+  const [pendingRuleId, setPendingRuleId] = useState<string | null>(null);
+
+  const updateStatus = async (ruleId: string, status: RuleStatus) => {
+    setPendingRuleId(ruleId);
+    try {
+      await writeStatus(ruleId, status);
+      toast.success('Rule status updated successfully');
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    } finally {
+      setPendingRuleId(null);
+    }
+  };
+
+  return { pendingRuleId, updateStatus };
 };
 
 /**

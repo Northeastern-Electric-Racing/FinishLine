@@ -5,9 +5,8 @@ import RuleRow from '../RuleRow';
 import RuleStatusTag from './RuleStatusTag';
 import RuleContent from './RuleContent';
 import RuleStatusHistoryModal from './RuleStatusHistoryModal';
-import { useSetRuleStatus } from '../../../hooks/rules.hooks';
+import { useRuleStatusUpdate, useSetRuleStatus } from '../../../hooks/rules.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { useToast } from '../../../hooks/toasts.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
 
 interface RulesetGeneralViewProps {
@@ -30,41 +29,22 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   navigateToRule
 }) => {
   const theme = useTheme();
-  const toast = useToast();
   const user = useCurrentUser();
   const [historyModalRule, setHistoryModalRule] = useState<Rule | null>(null);
-  // the rule currently being written, so only its checkboxes disable
-  const [pendingRuleId, setPendingRuleId] = useState<string | null>(null);
 
   const canUpdateStatus = isLeadership(user.role);
 
-  const backgroundColor = theme.palette.background.default;
   const tableBackgroundColor = theme.palette.background.paper;
   const tableTextColor = theme.palette.text.primary;
   const tableHoverColor = theme.palette.action.hover;
+  const backgroundColor = theme.palette.background.default;
 
   // Status in general view is independent of any project
   const { mutateAsync: setStatus } = useSetRuleStatus(rulesetId);
+  const { pendingRuleId, updateStatus } = useRuleStatusUpdate((ruleId, status) => setStatus({ ruleId, status }));
 
   // Sort once by rule code so top-level rows render in a stable numeric order.
   const sortedTopLevelRules = useMemo(() => [...topLevelRules].sort(compareRuleCodes), [topLevelRules]);
-
-  const handleStatusChange = useCallback(
-    async (ruleId: string, status: RuleStatus) => {
-      setPendingRuleId(ruleId);
-      try {
-        await setStatus({ ruleId, status });
-        toast.success('Rule status updated successfully');
-      } catch (error) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        }
-      } finally {
-        setPendingRuleId(null);
-      }
-    },
-    [setStatus, toast]
-  );
 
   // Hoisted out of the JSX so their identity is stable across renders of this component. Without this
   // every RuleRow re-renders whenever any state here changes, and memo(RuleRow) can never hold.
@@ -78,12 +58,12 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
       <RuleStatusTag
         rule={r}
         isLeaf={r.subRuleIds.length === 0}
-        onStatusChange={canUpdateStatus ? (status) => handleStatusChange(r.ruleId, status) : undefined}
+        onStatusChange={canUpdateStatus ? (status) => updateStatus(r.ruleId, status) : undefined}
         disabled={pendingRuleId === r.ruleId}
         onInfoClick={setHistoryModalRule}
       />
     ),
-    [canUpdateStatus, handleStatusChange, pendingRuleId]
+    [canUpdateStatus, updateStatus, pendingRuleId]
   );
 
   return (
