@@ -18,6 +18,7 @@ import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ChecklistIcon from '@mui/icons-material/Checklist';
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import NavPageLink from './NavPageLink';
 import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
@@ -168,6 +169,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       name: 'Sponsors',
       icon: <VolunteerActivismIcon />,
       route: routes.SPONSORS
+    },
+    !onGuestHomePage && {
+      name: 'Rules',
+      icon: <WarningAmberRoundedIcon />,
+      route: routes.RULES
     },
     {
       name: 'Info',

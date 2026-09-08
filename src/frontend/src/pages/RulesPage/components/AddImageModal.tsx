@@ -1,0 +1,96 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+import { Box, Button, Typography } from '@mui/material';
+import { useState } from 'react';
+import { FileUpload } from '@mui/icons-material';
+import { MAX_FILE_SIZE, Rule } from 'shared';
+import NERModal from '../../../components/NERModal';
+import { useToast } from '../../../hooks/toasts.hooks';
+import { useAddRuleImage } from '../../../hooks/rules.hooks';
+
+interface AddImageModalProps {
+  open: boolean;
+  onClose: () => void;
+  ruleId: string | null;
+  allRules: Rule[];
+}
+
+const isImage = (fileName: string) => {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+  return extension === 'png' || extension === 'jpg' || extension === 'jpeg';
+};
+
+const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, allRules }) => {
+  const toast = useToast();
+  const [file, setFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutateAsync: addRuleImage } = useAddRuleImage();
+
+  const activeRule = ruleId ? allRules.find((r) => r.ruleId === ruleId) : undefined;
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) {
+      return;
+    }
+
+    const [selectedFile] = e.target.files;
+
+    if (!isImage(selectedFile.name)) {
+      toast.error('File must be a PNG or JPEG image');
+      return;
+    }
+
+    if (selectedFile.size > MAX_FILE_SIZE) {
+      toast.error(`File exceeds the maximum size limit of ${MAX_FILE_SIZE / (1024 * 1024)} MB`);
+      return;
+    }
+
+    setFile(selectedFile);
+  };
+
+  const handleClose = () => {
+    setFile(null);
+    onClose();
+  };
+
+  const handleSubmit = async () => {
+    if (!file || !activeRule) return;
+
+    setIsSubmitting(true);
+    try {
+      await addRuleImage({ rule: activeRule, file });
+      handleClose();
+    } catch (err) {
+      console.error('Failed to add image:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <NERModal
+      open={open}
+      onHide={handleClose}
+      title="Add Image"
+      onSubmit={handleSubmit}
+      submitText="Submit"
+      disabled={!file || isSubmitting}
+      showCloseButton
+    >
+      <Box sx={{ minWidth: '400px', display: 'flex', flexDirection: 'column', gap: 2, py: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {file && <Typography>{file.name}</Typography>}
+          <Button variant="contained" color="success" component="label" startIcon={<FileUpload />} disabled={!!file}>
+            {file ? 'Image Selected' : 'Select Image'}
+            <input type="file" accept="image/png, image/jpeg" hidden onChange={handleFileSelect} />
+          </Button>
+        </Box>
+      </Box>
+    </NERModal>
+  );
+};
+
+export default AddImageModal;

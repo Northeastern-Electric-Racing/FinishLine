@@ -11,6 +11,7 @@ import { PageNotFound } from '../pages/PageNotFound';
 import Home from '../pages/HomePage/Home';
 import Settings from '../pages/SettingsPage/SettingsPage';
 import InfoPage from '../pages/InfoPage';
+import Rules from '../pages/RulesPage/Rules';
 import GanttChartPage from '../pages/GanttPage/ProjectGanttChart/ProjectGanttChartPage';
 import GlobalTasksPage from '../pages/GlobalTasksPage/GlobalTasksPage';
 import Teams from '../pages/TeamsPage/Teams';
@@ -85,6 +86,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, c
               <Route path={routes.STATISTICS} component={Statistics} />
               <Route path={routes.HOME} component={Home} />
               <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
+              <Route path={routes.RULES} component={Rules} />
               <Route path={routes.PROJECT_MANAGEMENT} component={ProjectManagementPage} />
               <Route path={routes.EVENTS} component={GuestEventPage} />
               <Route path={routes.SPONSORS} component={GuestSponsorsPage} />

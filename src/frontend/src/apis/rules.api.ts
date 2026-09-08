@@ -1,0 +1,283 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+import axios from '../utils/axios';
+import { ProjectRule, Rule as SharedRule, RulesetType, Ruleset, RuleStatus, RuleStatusHistoryEntry } from 'shared';
+import { apiUrls } from '../utils/urls';
+import { CreateRulesetPayload, ParseRulesetPayload, CreateRulePayload } from '../hooks/rules.hooks';
+import {
+  projectRuleTransformer,
+  rulesetTransformer,
+  rulesetTypeTransformer,
+  ruleTransformer,
+  ruleStatusHistoryTransformer
+} from './transformers/rules.transformers';
+
+/**
+ * Gets a single ruleset by ID (dashboard usage)
+ */
+export const getSingleRuleset = (rulesetId: string) => {
+  return axios.get<Ruleset>(apiUrls.singleRuleset(rulesetId), {
+    transformResponse: (data) => rulesetTransformer(JSON.parse(data))
+  });
+};
+
+/**
+ * Toggles team assignment for a rule
+ */
+export const toggleRuleTeam = (ruleId: string, teamId: string) => {
+  return axios.post<SharedRule>(apiUrls.rulesToggleTeam(ruleId), { teamId });
+};
+
+/**
+ * Creates a new ruleset type
+ */
+export const createRulesetType = (payload: { name: string }) => {
+  return axios.post<RulesetType>(apiUrls.rulesetTypeCreate(), payload);
+};
+
+/**
+ * Creates a new rule
+ *
+ * @param payload the data for creating the rule
+ * @returns the created rule
+ */
+export const createRule = (payload: CreateRulePayload) => {
+  return axios.post<SharedRule>(apiUrls.ruleCreate(), { ...payload });
+};
+
+/**
+ * Fetches all Ruleset Types for the current organization.
+ *
+ * @returns A list of Ruleset Types.
+ */
+export const getAllRulesetTypes = () => {
+  return axios.get<RulesetType[]>(apiUrls.rulesetTypes(), {
+    transformResponse: (data) => JSON.parse(data).map(rulesetTypeTransformer)
+  });
+};
+
+/**
+ * Gets the active ruleset for a given ruleset type.
+ */
+export const getActiveRuleset = (rulesetTypeId: string, carNumber?: number) => {
+  return axios.get<Ruleset>(apiUrls.rulesGetActiveRuleset(rulesetTypeId), {
+    params: { carNumber },
+    transformResponse: (data) => rulesetTransformer(JSON.parse(data))
+  });
+};
+
+/**
+ * Gets all project rules for a given ruleset and project.
+ */
+export const getProjectRules = (rulesetId: string, projectId: string) => {
+  return axios.get<ProjectRule[]>(apiUrls.rulesGetProjectRules(rulesetId, projectId), {
+    transformResponse: (data) => JSON.parse(data).map(projectRuleTransformer)
+  });
+};
+
+/**
+ * Gets rules assignable to a project, across all of its teams, that aren't already assigned
+ */
+export const getUnassignedRulesForRuleset = (rulesetId: string, projectId: string) => {
+  return axios.get<SharedRule[]>(apiUrls.rulesGetUnassignedRulesForRuleset(rulesetId, projectId), {
+    transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
+  });
+};
+
+/**
+ * Creates a project rule
+ */
+export const createProjectRule = (ruleId: string, projectId: string) => {
+  return axios.post<ProjectRule>(apiUrls.rulesCreateProjectRule(), { ruleId, projectId });
+};
+
+/**
+ * Deletes a project rule
+ */
+export const deleteProjectRule = (projectRuleId: string) => {
+  return axios.post<ProjectRule>(apiUrls.rulesDeleteProjectRule(projectRuleId));
+};
+
+/**
+ * Sets a rule's general-view status. This status is independent of any project.
+ * @param ruleId the rule to update
+ * @param status the new status of the rule
+ */
+export const setRuleStatus = (ruleId: string, status: RuleStatus) => {
+  return axios.post<SharedRule>(apiUrls.rulesSetRuleStatus(ruleId), { status });
+};
+
+/**
+ * Sets a rule's status within a single project. This status is local to that project.
+ * @param projectRuleId the project rule to update
+ * @param status the new status of the rule in this project
+ */
+export const setProjectRuleStatus = (projectRuleId: string, status: RuleStatus) => {
+  return axios.post<ProjectRule>(apiUrls.rulesSetProjectRuleStatus(projectRuleId), { status });
+};
+
+/**
+ * Gets a rule's full status history - every time it was marked PASS or FAIL.
+ * @param ruleId the rule to get history for
+ * @param projectRuleId if provided, scopes the history to just this project rule instead of every context the rule appears in
+ */
+export const getRuleStatusHistory = (ruleId: string, projectRuleId?: string) => {
+  return axios.get<RuleStatusHistoryEntry[]>(apiUrls.rulesGetStatusHistory(ruleId), {
+    params: { projectRuleId },
+    transformResponse: (data) => JSON.parse(data).map(ruleStatusHistoryTransformer)
+  });
+};
+
+/**
+ * Resets every rule's general-view status back to Pending, for a whole ruleset.
+ * @param rulesetId the ruleset to reset
+ */
+export const resetRulesetStatuses = (rulesetId: string) => {
+  return axios.post<{ count: number }>(apiUrls.rulesResetRulesetStatuses(rulesetId));
+};
+
+/**
+ * Resets every project rule's status back to Pending, for a single project scoped to a single ruleset.
+ * @param rulesetId the ruleset to scope the reset to
+ * @param projectId the project whose rules should be reset
+ */
+export const resetProjectRuleStatuses = (rulesetId: string, projectId: string) => {
+  return axios.post<{ count: number }>(apiUrls.rulesResetProjectRuleStatuses(rulesetId, projectId));
+};
+
+/**
+ * Gets child rules
+ */
+export const getChildRules = (ruleId: string) => {
+  return axios.get<SharedRule[]>(apiUrls.rulesChildRules(ruleId), {
+    transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
+  });
+};
+
+/**
+ * Gets top-level rules
+ */
+export const getTopLevelRules = (rulesetId: string) => {
+  return axios.get<SharedRule[]>(apiUrls.rulesTopLevel(rulesetId), {
+    transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
+  });
+};
+
+/**
+ * Gets every rule in a ruleset (top-level and all descendants) in a single request
+ */
+export const getAllRulesForRuleset = (rulesetId: string) => {
+  return axios.get<SharedRule[]>(apiUrls.rulesAllRules(rulesetId), {
+    transformResponse: (data) => JSON.parse(data).map(ruleTransformer)
+  });
+};
+
+/**
+ * Fetch rulesets by type
+ */
+export const getRulesetsByRulesetType = (rulesetTypeId: string) => {
+  return axios.get<Ruleset[]>(apiUrls.rulesetsByType(rulesetTypeId), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * Deletes a rule
+ */
+export const deleteRule = (ruleId: string) => {
+  return axios.post(apiUrls.rulesDelete(ruleId));
+};
+
+/**
+ * Edits a rule's content and/or code
+ * @param ruleId - The ID of the rule to edit
+ * @param ruleContent - The new content for the rule
+ * @param ruleCode - The new code for the rule (optional, keeps existing if not provided)
+ * @param imageFileIds - Image file IDs for the rule
+ */
+export const editRule = (ruleId: string, ruleContent: string, ruleCode?: string, imageFileIds?: string[]) => {
+  return axios.post<SharedRule>(apiUrls.rulesEdit(ruleId), {
+    ruleContent,
+    ruleCode,
+    ...(imageFileIds !== undefined && { imageFileIds })
+  });
+};
+
+/**
+ * Adds a referenced rule to a rule
+ * @param ruleId the rule receiving the reference
+ * @param referencedRuleId the rule ID to add as a reference
+ */
+export const addRuleReferences = (ruleId: string, referencedRuleId: string) => {
+  return axios.post<SharedRule>(apiUrls.rulesAddReferences(ruleId), { referencedRuleId });
+};
+
+/**
+ * Removes a referenced rule from a rule
+ * @param ruleId the rule losing the reference
+ * @param referencedRuleId the rule ID to remove from the references
+ */
+export const removeRuleReferences = (ruleId: string, referencedRuleId: string) => {
+  return axios.post<SharedRule>(apiUrls.rulesRemoveReferences(ruleId), { referencedRuleId });
+};
+
+/**
+ * Updates a rulesets active status
+ */
+export const updateRuleset = (rulesetId: string, name: string, isActive: boolean) => {
+  return axios.post<Ruleset>(apiUrls.rulesetUpdate(rulesetId), { name, isActive });
+};
+
+/**
+ * Deletes a ruleset
+ */
+export const deleteRuleset = (rulesetId: string) => {
+  return axios.post(apiUrls.rulesetDelete(rulesetId));
+};
+
+/**
+ * Deletes a ruleset type
+ */
+export const deleteRulesetType = (rulesetTypeId: string) => {
+  return axios.post(apiUrls.rulesetTypeDelete(rulesetTypeId));
+};
+
+/**
+ * Gets a ruleset type given its ID
+ */
+export const getRulesetType = (rulesetTypeId: string) => {
+  return axios.get(apiUrls.rulesetType(rulesetTypeId));
+};
+
+/**
+ * Creates a new ruleset
+ */
+export const createRuleset = (payload: CreateRulesetPayload) => {
+  return axios.post<Ruleset>(apiUrls.rulesetsCreate(), payload);
+};
+
+/**
+ * Parses a ruleset PDF
+ */
+export const parseRuleset = (payload: ParseRulesetPayload) => {
+  return axios.post<SharedRule[]>(apiUrls.parseRuleset(payload.rulesetId), {
+    fileId: payload.fileId,
+    parserType: payload.parserType,
+    firstRulePage: payload.firstRulePage
+  });
+};
+
+/**
+ * Upload ruleset PDF file
+ */
+export const uploadRulesetFile = (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return axios.post(apiUrls.uploadRulesetFile(), formData, {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
