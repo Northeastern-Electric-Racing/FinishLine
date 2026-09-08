@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
-import { Rule, RuleStatus, isLeadership } from 'shared';
+import { Rule, isLeadership } from 'shared';
 import RuleRow from '../RuleRow';
 import RuleStatusCell, { RuleStatusActions, RuleStatusActionsProvider } from './RuleStatusCell';
 import RuleContent from './RuleContent';

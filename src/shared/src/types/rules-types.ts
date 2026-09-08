@@ -87,18 +87,15 @@ export interface ProjectRule {
   hasStatusHistory: boolean;
 }
 
-/**
- * A rule whose status was recalculated from its children rather than set directly.
- */
+
+// rule whose status was recalculated from its children rather than set directly
 export interface RuleStatusRollup {
   ruleId: string;
   parentRuleId: string | null;
   status: RuleStatus;
 }
 
-/**
- * The result of setting a rule's general-view status
- */
+// rule whose general-view status is updated
 export interface RuleStatusUpdate {
   rule: Rule;
   ancestors: RuleStatusRollup[];
