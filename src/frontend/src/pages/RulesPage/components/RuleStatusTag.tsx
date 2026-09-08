@@ -44,7 +44,18 @@ const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onStatusCha
   const checkboxSx = (checkedColor: string) => ({
     color: checkedColor,
     '&.Mui-checked': { color: checkedColor },
-    p: 0.1
+    p: 0.1,
+    '&:hover::after': {
+      content: '""',
+      position: 'absolute',
+      inset: 0,
+      m: 'auto',
+      width: '18px',
+      height: '18px',
+      borderRadius: '2px',
+      bgcolor: 'currentColor',
+      opacity: 0.25
+    }
   });
 
   return (
@@ -57,6 +68,7 @@ const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onStatusCha
               onClick={(e) => e.stopPropagation()}
               onChange={() => onStatusChange?.(rule.status === RuleStatus.PASS ? RuleStatus.PENDING : RuleStatus.PASS)}
               disabled={disabled}
+              disableRipple
               sx={checkboxSx(passColor)}
               slotProps={{ input: { 'aria-label': 'Pass' } }}
             />
@@ -65,6 +77,7 @@ const RuleStatusTag: React.FC<RuleStatusTagProps> = ({ rule, isLeaf, onStatusCha
               onClick={(e) => e.stopPropagation()}
               onChange={() => onStatusChange?.(rule.status === RuleStatus.FAIL ? RuleStatus.PENDING : RuleStatus.FAIL)}
               disabled={disabled}
+              disableRipple
               sx={checkboxSx(failColor)}
               slotProps={{ input: { 'aria-label': 'Fail' } }}
             />

@@ -63,7 +63,7 @@ const RulesetViewPage = () => {
   // Expand All needs the whole tree, load it on click instead of on page load
   const fetchFullRuleTree = useFetchFullRuleTree(rulesetId!);
 
-  const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded, isLoadingFullTree } =
+  const { expansionStore, navigateToRule, expandAll, collapseAll, areAllExpanded, isLoadingFullTree } =
     useRuleTreeNavigation(topLevelRules ?? [], fetchFullRuleTree);
 
   const {
@@ -73,8 +73,7 @@ const RulesetViewPage = () => {
   } = useTeamRuleOrganization(allRules ?? []);
 
   const {
-    expandedIds: teamExpandedIds,
-    toggleExpand: teamToggleExpand,
+    expansionStore: teamExpansionStore,
     expandAll: teamExpandAll,
     collapseAll: teamCollapseAll,
     areAllExpanded: teamAreAllExpanded
@@ -153,8 +152,7 @@ const RulesetViewPage = () => {
               key={resetNonce}
               topLevelRules={topLevelRules}
               rulesetId={rulesetId!}
-              expandedIds={expandedIds}
-              toggleExpand={toggleExpand}
+              expansionStore={expansionStore}
               navigateToRule={navigateToRule}
             />
           ) : isRulesLoading || !allRules ? (
@@ -164,8 +162,7 @@ const RulesetViewPage = () => {
               topLevelItems={teamTopLevelItems}
               rowsById={teamRowsById}
               actualRuleIds={teamActualRuleIds}
-              expandedIds={teamExpandedIds}
-              toggleExpand={teamToggleExpand}
+              expansionStore={teamExpansionStore}
             />
           )}
         </Box>

@@ -9,6 +9,7 @@ import { Rule } from 'shared';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useGetChildRules } from '../../hooks/rules.hooks';
 import { compareRuleCodes } from '../../utils/rules.utils';
+import { useRuleExpansion } from './ruleExpansion';
 
 // how many children of an expanded rule are mounted at a time
 const RULE_PAGE_SIZE = 20;
@@ -44,9 +45,6 @@ interface RuleRowProps {
   indentWidth?: number;
   // If a rule's code/name should span the entire row - used for team view header rows
   fullWidthCode?: (rule: Rule) => boolean;
-  // Optional controlled expansion, otherwise each row manages its own open/closed state
-  expandedIds?: Set<string>;
-  onToggleExpand?: (ruleId: string) => void;
   // Mounts children incrementally instead of all at once. Opt-in so other views keep rendering every row.
   windowChildren?: boolean;
 }
@@ -76,13 +74,11 @@ const RuleRow: React.FC<RuleRowProps> = ({
   indentRow = false,
   indentWidth = 10,
   fullWidthCode,
-  expandedIds,
-  onToggleExpand,
   windowChildren = false
 }) => {
   const [localExpanded, setLocalExpanded] = useState(initiallyExpanded);
-  // Controlled by the parent when `expandedIds` is provided, otherwise from this row's own state
-  const isExpanded = expandedIds ? expandedIds.has(rule.ruleId) : localExpanded;
+  const expansion = useRuleExpansion(rule.ruleId);
+  const isExpanded = expansion ? expansion.isExpanded : localExpanded;
 
   // a parent rule whose sub rules aren't in the set (e.g. rule T.1 was assigned to a project but T.1.1 wasn't)
   // will render as a leaf rule but with no expand dropdown
@@ -138,8 +134,8 @@ const RuleRow: React.FC<RuleRowProps> = ({
 
   const toggleExpand = () => {
     if (!hasSubRules) return;
-    if (onToggleExpand) {
-      onToggleExpand(rule.ruleId);
+    if (expansion) {
+      expansion.toggle();
     } else {
       setLocalExpanded((prev) => !prev);
     }
@@ -332,8 +328,6 @@ const RuleRow: React.FC<RuleRowProps> = ({
             indentRow={indentRow}
             indentWidth={indentWidth}
             fullWidthCode={fullWidthCode}
-            expandedIds={expandedIds}
-            onToggleExpand={onToggleExpand}
             windowChildren={windowChildren}
           />
         ))}

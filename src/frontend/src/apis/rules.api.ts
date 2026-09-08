@@ -4,7 +4,15 @@
  */
 
 import axios from '../utils/axios';
-import { ProjectRule, Rule as SharedRule, RulesetType, Ruleset, RuleStatus, RuleStatusHistoryEntry } from 'shared';
+import {
+  ProjectRule,
+  Rule as SharedRule,
+  RulesetType,
+  Ruleset,
+  RuleStatus,
+  RuleStatusHistoryEntry,
+  RuleStatusUpdate
+} from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateRulesetPayload, ParseRulesetPayload, CreateRulePayload } from '../hooks/rules.hooks';
 import {
@@ -12,7 +20,8 @@ import {
   rulesetTransformer,
   rulesetTypeTransformer,
   ruleTransformer,
-  ruleStatusHistoryTransformer
+  ruleStatusHistoryTransformer,
+  ruleStatusUpdateTransformer
 } from './transformers/rules.transformers';
 
 /**
@@ -105,9 +114,19 @@ export const deleteProjectRule = (projectRuleId: string) => {
  * Sets a rule's general-view status. This status is independent of any project.
  * @param ruleId the rule to update
  * @param status the new status of the rule
+ * @returns the updated rule plus every ancestor whose status rolled up as a result
  */
 export const setRuleStatus = (ruleId: string, status: RuleStatus) => {
-  return axios.post<SharedRule>(apiUrls.rulesSetRuleStatus(ruleId), { status });
+  return axios.post<RuleStatusUpdate>(
+    apiUrls.rulesSetRuleStatus(ruleId),
+    { status },
+    {
+      transformResponse: (data) => {
+        const parsed = JSON.parse(data);
+        return parsed?.rule ? ruleStatusUpdateTransformer(parsed) : parsed;
+      }
+    }
+  );
 };
 
 /**

@@ -1233,7 +1233,7 @@ describe('Rule Tests', () => {
       const car = await createUniqueCar(orgId);
       const { leafRule1 } = await setupRules(car);
 
-      const updatedRule = await RulesService.setRuleStatus(admin, organization, leafRule1.ruleId, RuleStatus.PASS);
+      const { rule: updatedRule } = await RulesService.setRuleStatus(admin, organization, leafRule1.ruleId, RuleStatus.PASS);
 
       expect(updatedRule.ruleId).toBe(leafRule1.ruleId);
       expect(updatedRule.status).toBe(RuleStatus.PASS);
@@ -1247,11 +1247,64 @@ describe('Rule Tests', () => {
       const { leafRule1 } = await setupRules(car);
 
       await RulesService.setRuleStatus(admin, organization, leafRule1.ruleId, RuleStatus.FAIL);
-      const updatedRule = await RulesService.setRuleStatus(admin, organization, leafRule1.ruleId, RuleStatus.PENDING);
+      const { rule: updatedRule } = await RulesService.setRuleStatus(
+        admin,
+        organization,
+        leafRule1.ruleId,
+        RuleStatus.PENDING
+      );
 
       expect(updatedRule.status).toBe(RuleStatus.PENDING);
       expect(updatedRule.statusUpdatedBy).toBeUndefined();
       expect(updatedRule.statusUpdatedAt).toBeUndefined();
+    });
+
+    it('Returns every ancestor recalculated by the rollup, nearest first, with its parent id', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      const grandparentRule = await RulesService.createRule(
+        admin,
+        'G',
+        'Grandparent Rule',
+        ruleset1.rulesetId,
+        organization
+      );
+      const parentRule = await RulesService.createRule(
+        admin,
+        'G.1',
+        'Parent Rule',
+        ruleset1.rulesetId,
+        organization,
+        grandparentRule.ruleId
+      );
+      const childRule = await RulesService.createRule(
+        admin,
+        'G.1.1',
+        'Child Rule',
+        ruleset1.rulesetId,
+        organization,
+        parentRule.ruleId
+      );
+
+      // each rule is its parent's only child, so FAIL rolls all the way up the chain
+      const { ancestors } = await RulesService.setRuleStatus(admin, organization, childRule.ruleId, RuleStatus.FAIL);
+
+      // the client relies on this order and on parentRuleId to place each rule without searching
+      expect(ancestors).toEqual([
+        { ruleId: parentRule.ruleId, parentRuleId: grandparentRule.ruleId, status: RuleStatus.FAIL },
+        { ruleId: grandparentRule.ruleId, parentRuleId: null, status: RuleStatus.FAIL }
+      ]);
+    });
+
+    it('Returns no ancestors when the rule set is top level', async () => {
+      const car = await createUniqueCar(orgId);
+      const { referencedRule } = await setupRules(car);
+
+      // referencedRule has no parent, so there is no chain to roll up
+      const { ancestors } = await RulesService.setRuleStatus(admin, organization, referencedRule.ruleId, RuleStatus.PASS);
+
+      expect(ancestors).toEqual([]);
     });
 
     it('Set rule status fails if user does not have permission', async () => {

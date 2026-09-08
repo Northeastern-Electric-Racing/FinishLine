@@ -10,7 +10,9 @@ import {
   isHead,
   Ruleset,
   RuleStatus,
-  RuleStatusHistoryEntry
+  RuleStatusHistoryEntry,
+  RuleStatusRollup,
+  RuleStatusUpdate
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -135,10 +137,11 @@ export default class RulesService {
   /**
    * Recomputes and saves ruleId's status, then repeats up the parent chain.
    * @param ruleId the rule to recompute the status for
-   * @returns the updated status of the rule
+   * @returns every rule whose status was recalculated, nearest first, so a status write can tell a
+   * client exactly which other rows changed instead of making it refetch the tree
    */
-  private static async recalculateRuleStatusChain(ruleId: string | null): Promise<void> {
-    if (!ruleId) return;
+  private static async recalculateRuleStatusChain(ruleId: string | null): Promise<RuleStatusRollup[]> {
+    if (!ruleId) return [];
 
     const children = await prisma.rule.findMany({
       where: { parentRuleId: ruleId, dateDeleted: null },
@@ -158,7 +161,7 @@ export default class RulesService {
       select: { parentRuleId: true }
     });
 
-    await RulesService.recalculateRuleStatusChain(parentRuleId);
+    return [{ ruleId, parentRuleId, status }, ...(await RulesService.recalculateRuleStatusChain(parentRuleId))];
   }
 
   /**
@@ -927,14 +930,14 @@ export default class RulesService {
    * @param organization the organization of the rule
    * @param ruleId the id of the rule to update
    * @param status the new status of the rule
-   * @returns the rule with updated status
+   * @returns the updated rule, plus every ancestor whose status was recalculated as a result
    */
   static async setRuleStatus(
     submitter: User,
     organization: Organization,
     ruleId: string,
     status: RuleStatus
-  ): Promise<SharedRule> {
+  ): Promise<RuleStatusUpdate> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership))) {
       throw new AccessDeniedException('You do not have permissions to update rule status');
     }
@@ -981,9 +984,9 @@ export default class RulesService {
     });
 
     // updating a rules status may update the status of its parent chain, so recalculate the parent chain's statuses
-    await RulesService.recalculateRuleStatusChain(rule.parentRuleId);
+    const ancestors = await RulesService.recalculateRuleStatusChain(rule.parentRuleId);
 
-    return ruleTransformer(updatedRule);
+    return { rule: ruleTransformer(updatedRule), ancestors };
   }
 
   /**
