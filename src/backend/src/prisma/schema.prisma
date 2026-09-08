@@ -579,16 +579,16 @@ model Work_Package {
 }
 
 model Link_Type {
-  id                     String       @id @default(uuid())
-  name                   String
-  dateCreated            DateTime     @default(now())
-  iconName               String
-  required               Boolean
-  creatorId              String
-  creator                User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links                  Link[]       @relation(name: "linkTypes")
-  organizationId         String
-  organization           Organization @relation(fields: [organizationId], references: [organizationId])
+  id                      String       @id @default(uuid())
+  name                    String
+  dateCreated             DateTime     @default(now())
+  iconName                String
+  required                Boolean
+  creatorId               String
+  creator                 User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links                   Link[]       @relation(name: "linkTypes")
+  organizationId          String
+  organization            Organization @relation(fields: [organizationId], references: [organizationId])
   isOnGuestHomePage       Boolean      @default(false)
   isOnNewMemberDashboard  Boolean      @default(false)
   isOnOnboardingDashboard Boolean      @default(false)
@@ -1415,6 +1415,7 @@ model Organization {
   sponsorshipNotificationsSlackChannelId String?
   platformDescription                    String    @default("")
   platformLogoImageId                    String?
+  activationBufferDays                   Int       @default(7)
 
   // Relation references
   wbsElements              WBS_Element[]
