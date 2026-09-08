@@ -1452,7 +1452,7 @@ describe('Rule Tests', () => {
       expect(historyCount).toBe(1);
     });
 
-    it('Deleting a project rule resets its parent chain to Pending once the parent becomes childless in the project', async () => {
+    it('Deleting a project rule removes the ancestors it leaves childless in the project', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
 
@@ -1505,8 +1505,8 @@ describe('Rule Tests', () => {
       expect(projectRulesBeforeDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
       expect(projectRulesBeforeDelete.find((pr) => pr.rule.ruleId === grandparentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
 
-      // deleting childRule's project rule leaves parentRule's project rule childless (in this project); its
-      // rolled-up status should reset to Pending, and that change should keep propagating up to grandparentRule
+      // deleting childRule's project rule leaves parentRule childless in this project, and removing
+      // parentRule in turn leaves grandparentRule childless, so the whole chain is unassigned
       await RulesService.deleteProjectRule(childProjectRule.projectRuleId, admin, organization);
 
       const projectRulesAfterDelete = await RulesService.getProjectRules(
@@ -1515,11 +1515,208 @@ describe('Rule Tests', () => {
         project.projectId,
         organization
       );
-      const updatedParent = projectRulesAfterDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId);
-      const updatedGrandparent = projectRulesAfterDelete.find((pr) => pr.rule.ruleId === grandparentRule.ruleId);
 
-      expect(updatedParent?.status).toBe(RuleStatus.PENDING);
-      expect(updatedGrandparent?.status).toBe(RuleStatus.PENDING);
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === childRule.ruleId)).toBeUndefined();
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)).toBeUndefined();
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === grandparentRule.ruleId)).toBeUndefined();
+    });
+
+    it('Deleting a project rule recalculates the status of an ancestor that keeps other children', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      // G keeps two branches: G.1 -> G.1.1, and the leaf G.2. Deleting G.1.1 removes the G.1 branch
+      // but leaves G assigned, so G's status has to be rolled up again from G.2 alone
+      const grandparentRule = await RulesService.createRule(
+        admin,
+        'G',
+        'Grandparent Rule',
+        ruleset1.rulesetId,
+        organization
+      );
+      const parentRule = await RulesService.createRule(
+        admin,
+        'G.1',
+        'Parent Rule',
+        ruleset1.rulesetId,
+        organization,
+        grandparentRule.ruleId
+      );
+      const childRule = await RulesService.createRule(
+        admin,
+        'G.1.1',
+        'Child Rule',
+        ruleset1.rulesetId,
+        organization,
+        parentRule.ruleId
+      );
+      const siblingRule = await RulesService.createRule(
+        admin,
+        'G.2',
+        'Sibling Rule',
+        ruleset1.rulesetId,
+        organization,
+        grandparentRule.ruleId
+      );
+      await RulesService.toggleRuleTeam(grandparentRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(parentRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(childRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(siblingRule.ruleId, testTeam.teamId, admin, organization);
+
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      const childProjectRule = await RulesService.createProjectRule(
+        admin,
+        organization,
+        childRule.ruleId,
+        project.projectId
+      );
+      // grandparentRule is already assigned as childRule's ancestor, so this only adds the sibling
+      await RulesService.createProjectRule(admin, organization, siblingRule.ruleId, project.projectId);
+
+      // failing G.1.1 fails G.1, and a failing child makes G fail too even though G.2 is still Pending
+      await RulesService.setProjectRuleStatus(admin, organization, childProjectRule.projectRuleId, RuleStatus.FAIL);
+
+      const projectRulesBeforeDelete = await RulesService.getProjectRules(
+        admin,
+        ruleset1.rulesetId,
+        project.projectId,
+        organization
+      );
+      expect(projectRulesBeforeDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
+      expect(projectRulesBeforeDelete.find((pr) => pr.rule.ruleId === grandparentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
+
+      await RulesService.deleteProjectRule(childProjectRule.projectRuleId, admin, organization);
+
+      const projectRulesAfterDelete = await RulesService.getProjectRules(
+        admin,
+        ruleset1.rulesetId,
+        project.projectId,
+        organization
+      );
+
+      // the G.1 branch is gone, but G survives on G.2 and now rolls up that lone Pending child
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === childRule.ruleId)).toBeUndefined();
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)).toBeUndefined();
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === siblingRule.ruleId)?.status).toBe(RuleStatus.PENDING);
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === grandparentRule.ruleId)?.status).toBe(
+        RuleStatus.PENDING
+      );
+    });
+
+    it('Deleting a rule that is assigned to a project unassigns it and recalculates the project chain', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      const parentRule = await RulesService.createRule(admin, 'G', 'Parent Rule', ruleset1.rulesetId, organization);
+      const childRule = await RulesService.createRule(
+        admin,
+        'G.1',
+        'Child Rule',
+        ruleset1.rulesetId,
+        organization,
+        parentRule.ruleId
+      );
+      await RulesService.toggleRuleTeam(parentRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(childRule.ruleId, testTeam.teamId, admin, organization);
+
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      // creating childRule's project rule also assigns parentRule as its ancestor
+      const childProjectRule = await RulesService.createProjectRule(
+        admin,
+        organization,
+        childRule.ruleId,
+        project.projectId
+      );
+
+      // childRule is parentRule's only child in the project, so FAIL rolls up to parentRule
+      await RulesService.setProjectRuleStatus(admin, organization, childProjectRule.projectRuleId, RuleStatus.FAIL);
+
+      const projectRulesBeforeDelete = await RulesService.getProjectRules(
+        admin,
+        ruleset1.rulesetId,
+        project.projectId,
+        organization
+      );
+      expect(projectRulesBeforeDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)?.status).toBe(RuleStatus.FAIL);
+
+      // deleting the rule itself, not just its project assignment
+      await RulesService.deleteRule(childRule.ruleId, admin, organization);
+
+      const projectRulesAfterDelete = await RulesService.getProjectRules(
+        admin,
+        ruleset1.rulesetId,
+        project.projectId,
+        organization
+      );
+
+      // delete rule removes project rules with the same logic as the remove project rule modal
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === childRule.ruleId)).toBeUndefined();
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)).toBeUndefined();
+
+      // child and parent ancestors with no remaining children are soft-deleted
+      const deletedChildProjectRule = await prisma.project_Rule.findUnique({
+        where: { projectRuleId: childProjectRule.projectRuleId }
+      });
+      expect(deletedChildProjectRule?.dateDeleted).not.toBeNull();
+      expect(deletedChildProjectRule?.deletedByUserId).toBe(admin.userId);
+
+      const deletedParentProjectRule = await prisma.project_Rule.findUnique({
+        where: { ruleId_projectId: { ruleId: parentRule.ruleId, projectId: project.projectId } }
+      });
+      expect(deletedParentProjectRule?.dateDeleted).not.toBeNull();
+      expect(deletedParentProjectRule?.deletedByUserId).toBe(admin.userId);
+    });
+
+    it('Deleting a rule leaves ancestors assigned when they still have other children in the project', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      // G keeps two children in the project, so deleting G.1 must not unassign G
+      const parentRule = await RulesService.createRule(admin, 'G', 'Parent Rule', ruleset1.rulesetId, organization);
+      const childRule = await RulesService.createRule(
+        admin,
+        'G.1',
+        'Child Rule',
+        ruleset1.rulesetId,
+        organization,
+        parentRule.ruleId
+      );
+      const siblingRule = await RulesService.createRule(
+        admin,
+        'G.2',
+        'Sibling Rule',
+        ruleset1.rulesetId,
+        organization,
+        parentRule.ruleId
+      );
+      for (const rule of [parentRule, childRule, siblingRule]) {
+        await RulesService.toggleRuleTeam(rule.ruleId, testTeam.teamId, admin, organization);
+      }
+
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.createProjectRule(admin, organization, childRule.ruleId, project.projectId);
+      const siblingProjectRule = await RulesService.createProjectRule(
+        admin,
+        organization,
+        siblingRule.ruleId,
+        project.projectId
+      );
+
+      await RulesService.setProjectRuleStatus(admin, organization, siblingProjectRule.projectRuleId, RuleStatus.PASS);
+
+      await RulesService.deleteRule(childRule.ruleId, admin, organization);
+
+      const projectRulesAfterDelete = await RulesService.getProjectRules(
+        admin,
+        ruleset1.rulesetId,
+        project.projectId,
+        organization
+      );
+
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === childRule.ruleId)).toBeUndefined();
+      // G survives on G.2 and now rolls up that lone passing child
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === siblingRule.ruleId)?.status).toBe(RuleStatus.PASS);
+      expect(projectRulesAfterDelete.find((pr) => pr.rule.ruleId === parentRule.ruleId)?.status).toBe(RuleStatus.PASS);
     });
   });
 
@@ -1633,6 +1830,40 @@ describe('Rule Tests', () => {
       expect(updated?.status).toBe(RuleStatus.PENDING);
       expect(updated?.statusUpdatedBy).toBeUndefined();
       expect(updated?.statusUpdatedAt).toBeUndefined();
+    });
+
+    it('Reset project status count leaves out project rules whose rule was deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+
+      const otherTopLevelRule = await RulesService.createRule(admin, 'Z', 'Other Rule', ruleset1.rulesetId, organization);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(otherTopLevelRule.ruleId, testTeam.teamId, admin, organization);
+
+      const projectRule = await RulesService.createProjectRule(admin, organization, topLevelRule.ruleId, project.projectId);
+      const otherProjectRule = await RulesService.createProjectRule(
+        admin,
+        organization,
+        otherTopLevelRule.ruleId,
+        project.projectId
+      );
+
+      await RulesService.setProjectRuleStatus(admin, organization, projectRule.projectRuleId, RuleStatus.PASS);
+      await RulesService.setProjectRuleStatus(admin, organization, otherProjectRule.projectRuleId, RuleStatus.PASS);
+
+      await prisma.rule.update({
+        where: { ruleId: otherTopLevelRule.ruleId },
+        data: { dateDeleted: new Date(), deletedByUserId: admin.userId }
+      });
+
+      const count = await RulesService.resetProjectRuleStatuses(admin, organization, ruleset1.rulesetId, project.projectId);
+
+      // only the rule the project actually displays is counted
+      expect(count).toBe(1);
+
+      const projectRules = await RulesService.getProjectRules(admin, ruleset1.rulesetId, project.projectId, organization);
+      expect(projectRules.find((pr) => pr.projectRuleId === projectRule.projectRuleId)?.status).toBe(RuleStatus.PENDING);
     });
 
     it('Reset project status does not create Rule_Status_History entries', async () => {
@@ -2300,6 +2531,99 @@ describe('Rule Tests', () => {
       await expect(
         async () => await RulesService.deleteProjectRule('fake-project-rule-id', admin, organization)
       ).rejects.toThrow(new NotFoundException('Project Rule', 'fake-project-rule-id'));
+    });
+    it('Deletes an ancestor project rule when it has no remaining children in the project', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
+      // creating the leaf's project rule also creates the top-level rule's project rule as an ancestor
+      const leafProjectRule = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
+      const topLevelProjectRule = await prisma.project_Rule.findUniqueOrThrow({
+        where: { ruleId_projectId: { ruleId: topLevelRule.ruleId, projectId: project.projectId } }
+      });
+      expect(topLevelProjectRule.dateDeleted).toBeNull();
+
+      await RulesService.deleteProjectRule(leafProjectRule.projectRuleId, admin, organization);
+
+      const foundLeaf = await prisma.project_Rule.findUniqueOrThrow({
+        where: { projectRuleId: leafProjectRule.projectRuleId }
+      });
+      expect(foundLeaf.dateDeleted).toBeDefined();
+      const foundTopLevel = await prisma.project_Rule.findUniqueOrThrow({
+        where: { projectRuleId: topLevelProjectRule.projectRuleId }
+      });
+      expect(foundTopLevel.dateDeleted).toBeDefined();
+    });
+    it('Fails to delete a project rule that still has children assigned to the project', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
+      // creating the leaf's project rule also creates the top-level rule's project rule as an ancestor
+      await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
+      const topLevelProjectRule = await prisma.project_Rule.findUniqueOrThrow({
+        where: { ruleId_projectId: { ruleId: topLevelRule.ruleId, projectId: project.projectId } }
+      });
+
+      await expect(
+        async () => await RulesService.deleteProjectRule(topLevelProjectRule.projectRuleId, admin, organization)
+      ).rejects.toThrow(new HttpException(400, 'Cannot delete a project rule that has children assigned to this project'));
+
+      const foundTopLevel = await prisma.project_Rule.findUniqueOrThrow({
+        where: { projectRuleId: topLevelProjectRule.projectRuleId }
+      });
+      expect(foundTopLevel.dateDeleted).toBeNull();
+    });
+    it('Keeps an ancestor project rule when it still has other children in the project', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1, leafRule2, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule2.ruleId, testTeam.teamId, admin, organization);
+      const leafProjectRule1 = await RulesService.createProjectRule(
+        admin,
+        organization,
+        leafRule1.ruleId,
+        project.projectId
+      );
+      const leafProjectRule2 = await RulesService.createProjectRule(
+        admin,
+        organization,
+        leafRule2.ruleId,
+        project.projectId
+      );
+
+      await RulesService.deleteProjectRule(leafProjectRule1.projectRuleId, admin, organization);
+
+      const foundTopLevel = await prisma.project_Rule.findUniqueOrThrow({
+        where: { ruleId_projectId: { ruleId: topLevelRule.ruleId, projectId: project.projectId } }
+      });
+      expect(foundTopLevel.dateDeleted).toBeNull();
+      const foundLeaf2 = await prisma.project_Rule.findUniqueOrThrow({
+        where: { projectRuleId: leafProjectRule2.projectRuleId }
+      });
+      expect(foundLeaf2.dateDeleted).toBeNull();
+    });
+    it('Allows a rule to be added, deleted, re-added, and deleted again without error', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1, topLevelRule } = await setupRules(car);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
+
+      const firstAdd = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
+      await RulesService.deleteProjectRule(firstAdd.projectRuleId, admin, organization);
+
+      const secondAdd = await RulesService.createProjectRule(admin, organization, leafRule1.ruleId, project.projectId);
+      const secondDelete = await RulesService.deleteProjectRule(secondAdd.projectRuleId, admin, organization);
+
+      expect(secondDelete.projectRuleId).toBe(secondAdd.projectRuleId);
+      const found = await prisma.project_Rule.findUniqueOrThrow({ where: { projectRuleId: secondAdd.projectRuleId } });
+      expect(found.dateDeleted).toBeDefined();
     });
   });
 

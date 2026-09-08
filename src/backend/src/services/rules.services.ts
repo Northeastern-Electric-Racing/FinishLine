@@ -179,7 +179,7 @@ export default class RulesService {
     if (!projectRule) return;
 
     const children = await prisma.project_Rule.findMany({
-      where: { projectId, dateDeleted: null, rule: { parentRuleId: ruleId } },
+      where: { projectId, dateDeleted: null, rule: { parentRuleId: ruleId, dateDeleted: null } },
       select: { status: true }
     });
 
@@ -372,7 +372,9 @@ export default class RulesService {
 
     if (rule.ruleset?.car?.wbsElement?.organizationId !== org.organizationId) throw new InvalidOrganizationException('Rule');
 
-    await prisma.$transaction(async (tx) => {
+    const deletedRuleIds: string[] = [];
+
+    const affectedProjects = await prisma.$transaction(async (tx) => {
       const deleteParentChildReferencing = async (currRuleId: string): Promise<void> => {
         const referencingRules = await tx.rule.findMany({
           where: {
@@ -412,13 +414,45 @@ export default class RulesService {
             deletedByUserId: deleter.userId
           }
         });
+
+        deletedRuleIds.push(currRuleId);
       };
 
       await deleteParentChildReferencing(ruleId);
+
+      // A deleted rule must not stay assigned to any project. Left behind it is invisible in the
+      // project's rules (those are filtered to undeleted rules) while still counting as a child,
+      // which blocks its parent from being removed or having its status set.
+      const assignedProjectRules = await tx.project_Rule.findMany({
+        where: { ruleId: { in: deletedRuleIds }, dateDeleted: null },
+        select: { projectId: true }
+      });
+
+      await tx.project_Rule.updateMany({
+        where: { ruleId: { in: deletedRuleIds }, dateDeleted: null },
+        data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
+      });
+
+      return [...new Set(assignedProjectRules.map((projectRule) => projectRule.projectId))];
     });
 
     // this rule (and its descendants) are gone, so its old parent chain may update their statuses
     await RulesService.recalculateRuleStatusChain(rule.parentRuleId);
+
+    for (const projectId of affectedProjects) {
+      // delete rule removes project rules with the same logic as the remove project rule modal
+      // ancestor chain gets the same childless-ancestor prune as deleteProjectRule
+      const { projectRuleIds: orphanedAncestorIds, survivingAncestorRuleId } =
+        await RulesService.findChildlessAncestorProjectRules(projectId, rule.parentRuleId, []);
+
+      await prisma.project_Rule.updateMany({
+        where: { projectRuleId: { in: orphanedAncestorIds } },
+        data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
+      });
+
+      // the parent chain within this project recalculates from the surviving ancestor
+      await RulesService.recalculateProjectRuleStatusChain(projectId, survivingAncestorRuleId);
+    }
 
     const deletedRule = await prisma.rule.findUnique({
       where: { ruleId }
@@ -1031,7 +1065,11 @@ export default class RulesService {
     }
 
     const childProjectRuleCount = await prisma.project_Rule.count({
-      where: { projectId: projectRule.projectId, dateDeleted: null, rule: { parentRuleId: projectRule.ruleId } }
+      where: {
+        projectId: projectRule.projectId,
+        dateDeleted: null,
+        rule: { parentRuleId: projectRule.ruleId, dateDeleted: null }
+      }
     });
 
     if (childProjectRuleCount > 0) {
@@ -1155,7 +1193,12 @@ export default class RulesService {
     }
 
     const result = await prisma.project_Rule.updateMany({
-      where: { projectId, dateDeleted: null, rule: { rulesetId }, status: { not: RuleStatus.PENDING } },
+      where: {
+        projectId,
+        dateDeleted: null,
+        rule: { rulesetId, dateDeleted: null },
+        status: { not: RuleStatus.PENDING }
+      },
       data: { status: RuleStatus.PENDING, statusUpdatedByUserId: null, statusUpdatedAt: null }
     });
 
@@ -1419,9 +1462,54 @@ export default class RulesService {
   }
 
   /**
-   * Deletes a project rule and its associated rule status changes
+   * Deletes a project rule and its associated rule status changes.
+   * Walks up the rule tree finding the ancestors that would be left with no children in this project
+   * once the given rules are unassigned from it. Shared logic for deleteProjectRule and deleteRule.
+   *
+   * @param projectId the project being pruned
+   * @param startParentRuleId the parent of the rule being unassigned
+   * @param removedRuleIds rules the caller is about to unassign, which must not count as remaining
+   *   children even though they are still assigned in the database
+   * @returns the project rules to unassign, and the first ancestor that survives the prune
+   */
+  private static async findChildlessAncestorProjectRules(
+    projectId: string,
+    startParentRuleId: string | null,
+    removedRuleIds: string[]
+  ): Promise<{ projectRuleIds: string[]; survivingAncestorRuleId: string | null }> {
+    const projectRuleIds: string[] = [];
+    const removed = new Set(removedRuleIds);
+    let currentParentRuleId = startParentRuleId;
+
+    while (currentParentRuleId) {
+      // If the ancestor still has children in this project, it and everything above it survive
+      const children = await prisma.project_Rule.findMany({
+        where: { projectId, dateDeleted: null, rule: { parentRuleId: currentParentRuleId, dateDeleted: null } },
+        select: { ruleId: true }
+      });
+      if (children.some((child) => !removed.has(child.ruleId))) break;
+
+      // If the ancestor isn't assigned to this project, there is nothing to remove
+      const parentProjectRule = await prisma.project_Rule.findUnique({
+        where: { ruleId_projectId: { ruleId: currentParentRuleId, projectId } },
+        include: { rule: true }
+      });
+      if (!parentProjectRule || parentProjectRule.dateDeleted) break;
+
+      projectRuleIds.push(parentProjectRule.projectRuleId);
+      // this ancestor is being removed too, so it cannot hold up its own parent
+      removed.add(currentParentRuleId);
+      currentParentRuleId = parentProjectRule.rule.parentRuleId;
+    }
+
+    return { projectRuleIds, survivingAncestorRuleId: currentParentRuleId };
+  }
+
+  /**
+   * Deletes a project rule, and any ancestors it leaves with no children in that project.
+   *
    * @param projectRuleId The ID of the project rule to delete
-   * @param deleter The user deleting the project rule (must be admin)
+   * @param deleter The user deleting the project rule
    * @param organization The organization the project rule belongs to
    * @returns The deleted project rule
    */
@@ -1470,17 +1558,40 @@ export default class RulesService {
       throw new DeletedException('Project Rule', projectRuleId);
     }
 
-    const deletedProjectRule = await prisma.project_Rule.update({
-      where: { projectRuleId },
-      data: {
-        dateDeleted: new Date(),
-        deletedByUserId: deleter.userId
-      },
-      ...getProjectRuleQueryArgs()
-    });
+    const { projectId } = projectRule;
 
-    // this project rule no longer counts towards its parents' status calculations
-    await RulesService.recalculateProjectRuleStatusChain(projectRule.projectId, projectRule.rule.parentRuleId);
+    const childProjectRule = await prisma.project_Rule.findFirst({
+      where: { projectId, dateDeleted: null, rule: { parentRuleId: projectRule.rule.ruleId, dateDeleted: null } }
+    });
+    if (childProjectRule) {
+      throw new HttpException(400, 'Cannot delete a project rule that has children assigned to this project');
+    }
+
+    // The ancestors this removal will orphan, and the first ancestor that survives it
+    const { projectRuleIds: orphanedAncestorIds, survivingAncestorRuleId } =
+      await RulesService.findChildlessAncestorProjectRules(projectId, projectRule.rule.parentRuleId, [
+        projectRule.rule.ruleId
+      ]);
+
+    // project can never be left holding an ancestor with nothing under it
+    const [deletedProjectRule] = await prisma.$transaction([
+      prisma.project_Rule.update({
+        where: { projectRuleId },
+        data: {
+          dateDeleted: new Date(),
+          deletedByUserId: deleter.userId
+        },
+        ...getProjectRuleQueryArgs()
+      }),
+      prisma.project_Rule.updateMany({
+        where: { projectRuleId: { in: orphanedAncestorIds } },
+        data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
+      })
+    ]);
+
+    // the deleted project rule, and any ancestors removed along with it,
+    // no longer count towards the surviving ancestors' status calculations
+    await RulesService.recalculateProjectRuleStatusChain(projectId, survivingAncestorRuleId);
 
     return projectRuleTransformer(deletedProjectRule);
   }
