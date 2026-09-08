@@ -19,7 +19,7 @@ import {
   IconButton,
   Tooltip
 } from '@mui/material';
-import { isHead, Project, ProjectRule, Rule, RuleStatus, isLeadership } from 'shared';
+import { isHead, Project, ProjectRule, Rule, isLeadership } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
@@ -40,7 +40,6 @@ import {
   useBulkDeleteProjectRules
 } from '../../../../hooks/rules.hooks';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
-import { useToast } from '../../../../hooks/toasts.hooks';
 import { InfoOutlined } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../../utils/routes';
@@ -54,7 +53,6 @@ interface ProjectRulesTabProps {
 }
 
 export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
-  const toast = useToast();
   const theme = useTheme();
   const history = useHistory();
   const user = useCurrentUser();
@@ -62,7 +60,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const [selectedRulesetTypeIndex, setSelectedRulesetTypeIndex] = useState(0);
   const [addRuleModalOpen, setAddRuleModalOpen] = useState(false);
   const [removeRuleModalOpen, setRemoveRuleModalOpen] = useState(false);
-  const [selectedProjectRule, setSelectedProjectRule] = useState<ProjectRule | null>(null);
   const [historyModalProjectRule, setHistoryModalProjectRule] = useState<ProjectRule | null>(null);
   const [showResetModal, setShowResetModal] = useState(false);
 
@@ -147,20 +144,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     if (!projectRule) throw new Error('That rule is no longer assigned to this project');
     await setStatusMutation({ projectRuleId: projectRule.projectRuleId, status });
   });
-
-  // Handle add rules
-  const handleAddRules = async (ruleIds: string[]) => {
-    try {
-      for (const ruleId of ruleIds) {
-        await createProjectRuleMutation({ ruleId, projectId: project.id });
-      }
-      toast.success(`${ruleIds.length} rule${ruleIds.length !== 1 ? 's' : ''} added successfully`);
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
-  };
 
   // Handle opening the status history modal, scoped to this project
   const handleInfoClick = (rule: Rule) => {
