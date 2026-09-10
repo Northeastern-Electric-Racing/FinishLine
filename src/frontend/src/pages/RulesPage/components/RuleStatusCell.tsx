@@ -3,43 +3,32 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { createContext, memo, useContext, useState } from 'react';
+import { memo, useState } from 'react';
 import { Rule, RuleStatus } from 'shared';
 import RuleStatusTag from './RuleStatusTag';
-
-export interface RuleStatusActions {
-  /** Writes a rule's new status. Omitted when the user can't update statuses, making cells read-only. */
-  setStatus?: (rule: Rule, status: RuleStatus) => Promise<unknown>;
-  openHistory: (rule: Rule) => void;
-}
-
-const RuleStatusActionsContext = createContext<RuleStatusActions | null>(null);
-
-export const RuleStatusActionsProvider = RuleStatusActionsContext.Provider;
 
 interface RuleStatusCellProps {
   rule: Rule;
   isLeaf: boolean;
+  // Writes a rule's new status. Omitted when the user can't update statuses, making the status read only
+  onSetStatus?: (rule: Rule, status: RuleStatus) => Promise<unknown>;
+  onOpenHistory: (rule: Rule) => void;
 }
 
 /**
  * Status cell for a rule row, connecting a rule's status tag to whatever writes statuses in this view.
  * A click re-renders this one cell rather than every row in the tree.
  */
-const RuleStatusCell: React.FC<RuleStatusCellProps> = ({ rule, isLeaf }) => {
-  const actions = useContext(RuleStatusActionsContext);
-  if (!actions) throw new Error('RuleStatusCell must be rendered inside a RuleStatusActionsProvider');
-  const { setStatus, openHistory } = actions;
-
+const RuleStatusCell: React.FC<RuleStatusCellProps> = ({ rule, isLeaf, onSetStatus, onOpenHistory }) => {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleStatusChange = async (status: RuleStatus) => {
-    if (!setStatus) return;
+    if (!onSetStatus) return;
     setIsUpdating(true);
     try {
-      await setStatus(rule, status);
+      await onSetStatus(rule, status);
     } catch {
-      // the mutation hook toasts the failure; cell only needs to stop showing pending
+      // the mutation hook toasts the failure, cell only needs to stop showing pending
     } finally {
       setIsUpdating(false);
     }
@@ -49,9 +38,9 @@ const RuleStatusCell: React.FC<RuleStatusCellProps> = ({ rule, isLeaf }) => {
     <RuleStatusTag
       rule={rule}
       isLeaf={isLeaf}
-      onStatusChange={setStatus ? handleStatusChange : undefined}
+      onStatusChange={onSetStatus ? handleStatusChange : undefined}
       disabled={isUpdating}
-      onInfoClick={openHistory}
+      onInfoClick={onOpenHistory}
     />
   );
 };

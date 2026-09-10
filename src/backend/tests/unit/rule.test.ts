@@ -1259,7 +1259,7 @@ describe('Rule Tests', () => {
       expect(updatedRule.statusUpdatedAt).toBeUndefined();
     });
 
-    it('Returns every ancestor recalculated by the rollup, nearest first, with its parent id', async () => {
+    it('Returns every ancestor recalculated by the status rollup', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1 } = await setupRules(car);
 
@@ -1289,8 +1289,6 @@ describe('Rule Tests', () => {
 
       // each rule is its parent's only child, so FAIL rolls all the way up the chain
       const { ancestors } = await RulesService.setRuleStatus(admin, organization, childRule.ruleId, RuleStatus.FAIL);
-
-      // the client relies on this order and on parentRuleId to place each rule without searching
       expect(ancestors).toEqual([
         { ruleId: parentRule.ruleId, parentRuleId: grandparentRule.ruleId, status: RuleStatus.FAIL },
         { ruleId: grandparentRule.ruleId, parentRuleId: null, status: RuleStatus.FAIL }
@@ -1303,7 +1301,6 @@ describe('Rule Tests', () => {
 
       // referencedRule has no parent, so there is no chain to roll up
       const { ancestors } = await RulesService.setRuleStatus(admin, organization, referencedRule.ruleId, RuleStatus.PASS);
-
       expect(ancestors).toEqual([]);
     });
 

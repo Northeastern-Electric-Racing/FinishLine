@@ -48,6 +48,7 @@ import {
 } from '../apis/rules.api';
 import { useToast } from './toasts.hooks';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
+import { getRuleStatusConfig } from '../utils/rules.utils';
 
 /**
  * Hook to supply all ruleset types.
@@ -142,29 +143,48 @@ export interface CreateRulePayload {
 
 /**
  * Writes the result of a status write straight into the cached rule lists, so a click costs no refetch.
- * Setting a status rolls the new value up the ancestor chain server-side.
+ * Rules are cached as arrays: top-level rules, and then one array of children per expanded rule
  */
 const applyRuleStatusUpdate = (queryClient: QueryClient, rulesetId: string, { rule, ancestors }: RuleStatusUpdate) => {
-  const patches = new Map<string, (cached: SharedRule) => SharedRule>();
-  patches.set(rule.ruleId, () => rule);
-  for (const { ruleId, status } of ancestors) patches.set(ruleId, (cached) => ({ ...cached, status }));
+  // for this action an ancestor will only ever update its status field
+  const rolledUpStatus = new Map<string, RuleStatus>(ancestors.map(({ ruleId, status }) => [ruleId, status]));
 
-  const patchList = (key: unknown[]) => {
-    const cached = queryClient.getQueryData<SharedRule[]>(key);
-    // an uncached list holds no rows on screen, so there is nothing to update and nothing to resurrect
-    if (cached)
-      queryClient.setQueryData<SharedRule[]>(
-        key,
-        cached.map((r) => patches.get(r.ruleId)?.(r) ?? r)
-      );
+  // key examples
+  //   ['rules', 'top-level', 'ruleset_id']
+  //   ['rules','children','T']
+  //   ['rules', 'allRules', 'ruleset_id']
+
+  // updates only statuses that have changed for one cached array of Rule objects
+  const applyUpdatesTo = (key: unknown[]) => {
+    const cachedRules = queryClient.getQueryData<SharedRule[]>(key);
+    // uncached list has no rows on the screen and was not loaded, so do not update
+    if (!cachedRules) return;
+
+    queryClient.setQueryData<SharedRule[]>(
+      key,
+      cachedRules.map((cachedRule) => {
+        // the rule whose status was directly updated gets a full update since
+        // other fields such as dateUpdated or hasStatusHistory will also change
+        if (cachedRule.ruleId === rule.ruleId) return rule;
+
+        // an ancestor keeps all fields, only its status is overwritten if the status changed
+        // for example, if an ancestor status was FAIL and this change updated it to FAIL, it will not rerender
+        const newStatus = rolledUpStatus.get(cachedRule.ruleId);
+        if (newStatus && newStatus !== cachedRule.status) return { ...cachedRule, status: newStatus };
+
+        // everything else is returned as the same object, so React skips rerendering those rows
+        return cachedRule;
+      })
+    );
   };
 
-  const listKey = (parentRuleId: string | null | undefined) =>
+  // a rule's row is stored in its parent's children list, this grabs the cache list the clicked rule exists in
+  const listForParent = (parentRuleId: string | null | undefined) =>
     parentRuleId ? ['rules', 'children', parentRuleId] : ['rules', 'top-level', rulesetId];
+  applyUpdatesTo(listForParent(rule.parentRule?.ruleId));
 
-  patchList(listKey(rule.parentRule?.ruleId));
-  for (const { parentRuleId } of ancestors) patchList(listKey(parentRuleId));
-  patchList(['rules', 'allRules', rulesetId]);
+  // one cache list per ancestor, walking up the chain the server recalculated
+  for (const { parentRuleId } of ancestors) applyUpdatesTo(listForParent(parentRuleId));
 };
 
 /**
@@ -189,7 +209,7 @@ export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
     },
     {
       enabled, // only fetch when true
-      staleTime: 5 * 60 * 1000
+      staleTime: 5 * 60 * 1000 // 5 minutes
     }
   );
 };
@@ -416,11 +436,14 @@ export const useSetRuleStatus = (rulesetId: string) => {
       return data;
     },
     {
-      onSuccess: (statusUpdate, { ruleId }) => {
-        applyRuleStatusUpdate(queryClient, rulesetId, statusUpdate);
-        // only fetched while a history modal is open, so this refetches at most for one rule
+      onSuccess: ({ rule, ancestors }, { ruleId }) => {
+        // updates in cache only the rules whose status are updated by this action, no extra refetching
+        applyRuleStatusUpdate(queryClient, rulesetId, { rule, ancestors });
+        // only fetched while a history modal is open, refetches at most for one rule
         queryClient.invalidateQueries(['rules', 'statusHistory', ruleId]);
-        toast.success('Rule status updated successfully');
+        toast.success(
+          `Rule status updated successfully. Rule ${rule.ruleCode} marked as ${getRuleStatusConfig(rule.status).label}.`
+        );
       },
       onError: (error) => {
         toast.error(error.message);
@@ -442,11 +465,12 @@ export const useSetProjectRuleStatus = (rulesetId: string, projectId: string) =>
       return data;
     },
     {
-      onSuccess: (updatedProjectRule) => {
+      onSuccess: ({ rule, status }) => {
         queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
-        queryClient.invalidateQueries(['rules', 'unassigned']);
-        queryClient.invalidateQueries(['rules', 'statusHistory', updatedProjectRule.rule.ruleId]);
-        toast.success('Rule status updated successfully');
+        queryClient.invalidateQueries(['rules', 'statusHistory', rule.ruleId]);
+        toast.success(
+          `Rule status updated successfully. Rule ${rule.ruleCode} marked as ${getRuleStatusConfig(status).label}`
+        );
       },
       onError: (error) => {
         toast.error(error.message);

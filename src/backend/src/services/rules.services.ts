@@ -137,8 +137,7 @@ export default class RulesService {
   /**
    * Recomputes and saves ruleId's status, then repeats up the parent chain.
    * @param ruleId the rule to recompute the status for
-   * @returns every rule whose status was recalculated, nearest first, so a status write can tell a
-   * client exactly which other rows changed instead of making it refetch the tree
+   * @returns exactly every rule whose status was recalculated, nearest first
    */
   private static async recalculateRuleStatusChain(ruleId: string | null): Promise<RuleStatusRollup[]> {
     if (!ruleId) return [];
@@ -930,7 +929,7 @@ export default class RulesService {
    * @param organization the organization of the rule
    * @param ruleId the id of the rule to update
    * @param status the new status of the rule
-   * @returns the updated rule, plus every ancestor whose status was recalculated as a result
+   * @returns the updated rule, plus every ancestor whose status was recalculated
    */
   static async setRuleStatus(
     submitter: User,

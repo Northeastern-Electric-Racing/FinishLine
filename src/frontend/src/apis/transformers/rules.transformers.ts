@@ -42,7 +42,7 @@ export const ruleStatusUpdateTransformer = (update: RuleStatusUpdate): RuleStatu
  * Transforms a project rule (support Date objects)
  *
  * @param projectRule Incoming project rule object
- * @returns transformed project rule object.
+ * @returns Properly transformed project rule object.
  */
 export const projectRuleTransformer = (projectRule: ProjectRule): ProjectRule => {
   return {

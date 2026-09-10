@@ -19,7 +19,7 @@ import {
   IconButton,
   Tooltip
 } from '@mui/material';
-import { Project, ProjectRule, Rule, isLeadership } from 'shared';
+import { Project, ProjectRule, Rule, RuleStatus, isLeadership } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
@@ -42,7 +42,7 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { InfoOutlined } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../../utils/routes';
-import RuleStatusCell, { RuleStatusActions, RuleStatusActionsProvider } from '../../../RulesPage/components/RuleStatusCell';
+import RuleStatusCell from '../../../RulesPage/components/RuleStatusCell';
 import { NERButton } from '../../../../components/NERButton';
 import { compareRuleCodes } from '../../../../utils/rules.utils';
 import { isUserOnTeam } from '../../../../utils/teams.utils';
@@ -125,27 +125,25 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   // controlled expansion + click-to-navigate
   const { expansionStore, navigateToRule, expandAll, collapseAll, areAllExpanded } = useRuleTreeNavigation(projectRuleList);
 
+  // projectRuleList flattens project rules and drops projectRUleId, so connect a rule row back to its project rule
+  const projectRuleByRuleId = useMemo(() => new Map((projectRules ?? []).map((pr) => [pr.rule.ruleId, pr])), [projectRules]);
+
   // Handle opening the status history modal, scoped to this project
-  const handleInfoClick = (rule: Rule) => {
-    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
+  const handleHistoryClick = (rule: Rule) => {
+    const projectRule = projectRuleByRuleId.get(rule.ruleId);
     if (projectRule) {
       setHistoryModalProjectRule(projectRule);
     }
   };
 
   // status writes are local to this project
-  const statusActions: RuleStatusActions = {
-    setStatus: canUpdateStatus
-      ? async (rule, status) => {
-          const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
-          if (!projectRule) {
-            toast.error('That rule is no longer assigned to this project');
-            return;
-          }
-          await setStatusMutation({ projectRuleId: projectRule.projectRuleId, status });
-        }
-      : undefined,
-    openHistory: handleInfoClick
+  const handleSetStatus = async (rule: Rule, status: RuleStatus) => {
+    const projectRule = projectRuleByRuleId.get(rule.ruleId);
+    if (!projectRule) {
+      toast.error(`Rule ${rule.ruleCode} is no longer assigned to this project.`);
+      return;
+    }
+    await setStatusMutation({ projectRuleId: projectRule.projectRuleId, status });
   };
 
   // Handle add rules
@@ -202,7 +200,14 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const renderRightContent = (rule: Rule) => {
     const isLeafRule = !projectRuleList.some((r) => r.parentRule?.ruleId === rule.ruleId);
 
-    return <RuleStatusCell rule={rule} isLeaf={isLeafRule} />;
+    return (
+      <RuleStatusCell
+        rule={rule}
+        isLeaf={isLeafRule}
+        onSetStatus={canUpdateStatus ? handleSetStatus : undefined}
+        onOpenHistory={handleHistoryClick}
+      />
+    );
   };
 
   const backgroundColor = theme.palette.background.default;
@@ -287,30 +292,28 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
             >
               <TableBody>
                 <RuleExpansionProvider value={expansionStore}>
-                  <RuleStatusActionsProvider value={statusActions}>
-                    {topLevelRules.map((rule) => (
-                      <RuleRow
-                        key={rule.ruleId}
-                        rule={rule}
-                        allRules={projectRuleList}
-                        middleContent={(r) => (
-                          <RuleContent
-                            rule={r}
-                            color={tableTextColor}
-                            onReferenceClick={navigateToRule}
-                            isReferenceInteractive={(id) => projectRuleIds.has(id)}
-                          />
-                        )}
-                        rightContent={renderRightContent}
-                        backgroundColor={tableBackgroundColor}
-                        textColor={tableTextColor}
-                        hoverColor={tableHoverColor}
-                        rowHeight="40px"
-                        verticalPadding="8px"
-                        indentRow
-                      />
-                    ))}
-                  </RuleStatusActionsProvider>
+                  {topLevelRules.map((rule) => (
+                    <RuleRow
+                      key={rule.ruleId}
+                      rule={rule}
+                      allRules={projectRuleList}
+                      middleContent={(r) => (
+                        <RuleContent
+                          rule={r}
+                          color={tableTextColor}
+                          onReferenceClick={navigateToRule}
+                          isReferenceInteractive={(id) => projectRuleIds.has(id)}
+                        />
+                      )}
+                      rightContent={renderRightContent}
+                      backgroundColor={tableBackgroundColor}
+                      textColor={tableTextColor}
+                      hoverColor={tableHoverColor}
+                      rowHeight="40px"
+                      verticalPadding="8px"
+                      indentRow
+                    />
+                  ))}
                 </RuleExpansionProvider>
               </TableBody>
             </Table>
