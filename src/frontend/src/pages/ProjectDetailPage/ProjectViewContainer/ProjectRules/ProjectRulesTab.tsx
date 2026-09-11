@@ -39,6 +39,7 @@ import {
   useBulkDeleteProjectRules
 } from '../../../../hooks/rules.hooks';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
+import { useToast } from '../../../../hooks/toasts.hooks';
 import { InfoOutlined } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../../utils/routes';
@@ -52,6 +53,7 @@ interface ProjectRulesTabProps {
 }
 
 export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
+  const toast = useToast();
   const theme = useTheme();
   const history = useHistory();
   const user = useCurrentUser();
@@ -156,28 +158,6 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       return;
     }
     await setStatusMutation({ projectRuleId: projectRule.projectRuleId, status });
-  };
-
-  // Handle add rules
-  const handleAddRules = async (ruleIds: string[]) => {
-    try {
-      for (const ruleId of ruleIds) {
-        await createProjectRuleMutation({ ruleId, projectId: project.id });
-      }
-      toast.success(`${ruleIds.length} rule${ruleIds.length !== 1 ? 's' : ''} added successfully`);
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
-  };
-
-  // Handle opening the status history modal, scoped to this project
-  const handleInfoClick = (rule: Rule) => {
-    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
-    if (projectRule) {
-      setHistoryModalProjectRule(projectRule);
-    }
   };
 
   // Handle resetting all of this project's statuses (for the active ruleset) back to Pending

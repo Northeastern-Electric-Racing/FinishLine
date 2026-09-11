@@ -13,7 +13,7 @@ interface RuleStatusTagProps {
   rule: Rule;
   // whether this rule is a leaf in the tree being displayed
   isLeaf: boolean;
-  // writes the rule's new status. If the user can't update statuses, the tag is read only
+  // called with the new status when a Pass/Fail checkbox is toggled
   onStatusChange?: (rule: Rule, status: RuleStatus) => Promise<unknown>;
   // if provided, the info icon opens a full status-history modal instead of a one-line tooltip
   onInfoClick?: (rule: Rule) => void;

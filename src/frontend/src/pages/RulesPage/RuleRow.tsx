@@ -37,6 +37,7 @@ interface RuleRowProps {
   leftWidth?: string;
   middleWidth?: string;
   rightWidth?: string;
+  initiallyExpanded?: boolean;
   // When true, the entire rule is shifted right per child depth
   indentRow?: boolean;
   // Amount of indentation per child depth when indentRow is enabled
@@ -71,6 +72,7 @@ const RuleRow: React.FC<RuleRowProps> = ({
   leftWidth = '10%',
   middleWidth = '80%',
   rightWidth = '10%',
+  initiallyExpanded = false,
   indentRow = false,
   indentWidth = 10,
   fullWidthCode,
@@ -78,7 +80,7 @@ const RuleRow: React.FC<RuleRowProps> = ({
   onToggleExpand,
   windowChildren = false
 }) => {
-  const [localExpanded, setLocalExpanded] = useState(false);
+  const [localExpanded, setLocalExpanded] = useState(initiallyExpanded);
   // Controlled by the parent when `expandedIds` is provided, otherwise from this row's own state
   const isExpanded = expandedIds ? expandedIds.has(rule.ruleId) : localExpanded;
 
