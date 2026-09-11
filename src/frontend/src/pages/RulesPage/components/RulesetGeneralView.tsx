@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
 import { Rule, RuleStatus, isLeadership } from 'shared';
 import RuleRow from '../RuleRow';
-import RuleStatusCell from './RuleStatusCell';
+import RuleStatusTag from './RuleStatusTag';
 import RuleContent from './RuleContent';
 import RuleStatusHistoryModal from './RuleStatusHistoryModal';
 import { useSetRuleStatus } from '../../../hooks/rules.hooks';
@@ -50,8 +50,6 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
     [setStatus]
   );
 
-  // Hoisted out of the JSX so their identity is stable across renders of this component. Without this
-  // every RuleRow re-renders whenever any state here changes, and memo(RuleRow) can never hold.
   const renderMiddleContent = useCallback(
     (r: Rule) => <RuleContent rule={r} onReferenceClick={navigateToRule} color={tableTextColor} />,
     [navigateToRule, tableTextColor]
@@ -59,11 +57,11 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
 
   const renderRightContent = useCallback(
     (r: Rule) => (
-      <RuleStatusCell
+      <RuleStatusTag
         rule={r}
         isLeaf={r.subRuleIds.length === 0}
-        onSetStatus={canUpdateStatus ? handleSetStatus : undefined}
-        onOpenHistory={setHistoryModalRule}
+        onStatusChange={canUpdateStatus ? handleSetStatus : undefined}
+        onInfoClick={setHistoryModalRule}
       />
     ),
     [canUpdateStatus, handleSetStatus]

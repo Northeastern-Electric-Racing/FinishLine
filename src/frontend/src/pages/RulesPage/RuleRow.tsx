@@ -37,15 +37,15 @@ interface RuleRowProps {
   leftWidth?: string;
   middleWidth?: string;
   rightWidth?: string;
-  // Optional controlled expansion, otherwise each row manages its own open/closed state
-  expandedIds?: Set<string>;
-  onToggleExpand?: (ruleId: string) => void;
   // When true, the entire rule is shifted right per child depth
   indentRow?: boolean;
   // Amount of indentation per child depth when indentRow is enabled
   indentWidth?: number;
   // If a rule's code/name should span the entire row - used for team view header rows
   fullWidthCode?: (rule: Rule) => boolean;
+  // Optional controlled expansion, otherwise each row manages its own open/closed state
+  expandedIds?: Set<string>;
+  onToggleExpand?: (ruleId: string) => void;
   // Mounts children incrementally instead of all at once. Opt-in so other views keep rendering every row.
   windowChildren?: boolean;
 }
@@ -71,11 +71,11 @@ const RuleRow: React.FC<RuleRowProps> = ({
   leftWidth = '10%',
   middleWidth = '80%',
   rightWidth = '10%',
-  expandedIds,
-  onToggleExpand,
   indentRow = false,
   indentWidth = 10,
   fullWidthCode,
+  expandedIds,
+  onToggleExpand,
   windowChildren = false
 }) => {
   const [localExpanded, setLocalExpanded] = useState(false);
@@ -94,35 +94,35 @@ const RuleRow: React.FC<RuleRowProps> = ({
   const { data: fetchedSubRules = EMPTY_SUB_RULES } = useGetChildRules(rule.ruleId, !allRules && isExpanded && hasSubRules);
 
   // Use allRules if provided, otherwise use fetched.
-  // Sorted by rule code so children render in a stable numeric order (e.g. F.2 before F.10).
-  // Skipped entirely while collapsed - a collapsed row renders none of its children.
+  // Sorted by rule code so children render in a stable numeric order (e.g. F.2 before F.10)
+  // Collapsed rows are skipped and render none of their children
   const subRules = useMemo(() => {
     if (!isExpanded || !hasSubRules) return EMPTY_SUB_RULES;
     return [...(presentSubRules ?? fetchedSubRules)].sort(compareRuleCodes);
   }, [isExpanded, hasSubRules, presentSubRules, fetchedSubRules]);
 
-  // Incremental rendering: only the first `visibleCount` children are mounted. The sentinel rendered
-  // after the last child grows this as it scrolls into view.
+  // Only the first RULE_PAGE_SIZE children are mounted, rendering continues as rows scroll into view
   const [visibleCount, setVisibleCount] = useState(RULE_PAGE_SIZE);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  const setSentinel = useCallback((node: HTMLDivElement | null) => {
-    observerRef.current?.disconnect();
+  const loadMoreWhenVisible = useCallback((node: HTMLDivElement | null) => {
+    observerRef.current?.disconnect(); // protects against collapsed/expanded row changes
     if (!node) return;
+    // tells when an element enters or leaves visible area
     observerRef.current = new IntersectionObserver(
       (entries) => {
+        // if we hit the invisible marker, load RULE_PAGE_SIZE more rules, invisible marker will move down automatically
         if (entries[0].isIntersecting) setVisibleCount((count) => count + RULE_PAGE_SIZE);
       },
-      { rootMargin: '400px' }
+      { rootMargin: '400px' } // treat viewport as extra large so next rules are rendered before they are reached
     );
     observerRef.current.observe(node);
   }, []);
 
+  // disconnect if a row unmounts, say from a row collapsing
   useEffect(() => () => observerRef.current?.disconnect(), []);
 
-  // Start fresh when this row collapses or its child count changes, so reopening a huge branch
-  // doesn't mount everything that was revealed last time. Keyed on length rather than identity so a
-  // status refetch (same children, new array) doesn't yank the window back.
+  // Start fresh when this row collapses or its child count changes
   useEffect(() => {
     setVisibleCount(RULE_PAGE_SIZE);
   }, [isExpanded, subRules.length]);
@@ -338,7 +338,7 @@ const RuleRow: React.FC<RuleRowProps> = ({
       {hasHiddenSubRules && (
         <TableRow>
           <TableCell colSpan={3} sx={{ p: 0, border: 'none', height: 0 }}>
-            <div ref={setSentinel} style={{ height: 1 }} />
+            <div ref={loadMoreWhenVisible} style={{ height: 1 }} />
           </TableCell>
         </TableRow>
       )}

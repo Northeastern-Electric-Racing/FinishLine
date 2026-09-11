@@ -41,7 +41,7 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { InfoOutlined } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../../utils/routes';
-import RuleStatusCell from '../../../RulesPage/components/RuleStatusCell';
+import RuleStatusTag from '../../../RulesPage/components/RuleStatusTag';
 import { NERButton } from '../../../../components/NERButton';
 import { compareRuleCodes } from '../../../../utils/rules.utils';
 import { isUserOnTeam } from '../../../../utils/teams.utils';
@@ -201,11 +201,11 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
     const isLeafRule = !projectRuleList.some((r) => r.parentRule?.ruleId === rule.ruleId);
 
     return (
-      <RuleStatusCell
+      <RuleStatusTag
         rule={rule}
         isLeaf={isLeafRule}
-        onSetStatus={canUpdateStatus ? handleSetStatus : undefined}
-        onOpenHistory={handleHistoryClick}
+        onStatusChange={canUpdateStatus ? handleSetStatus : undefined}
+        onInfoClick={handleHistoryClick}
       />
     );
   };

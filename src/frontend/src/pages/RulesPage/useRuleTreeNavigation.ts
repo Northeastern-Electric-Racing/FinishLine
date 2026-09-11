@@ -26,12 +26,10 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
 
   const [isLoadingFullTree, setIsLoadingFullTree] = useState(false);
 
-  // read through a ref so navigateToRule keeps one identity for the life of the page. It is handed to
-  // every rule's content as a click handler, and re-creating it re-renders every row that holds one.
   const latestRules = useRef(rules);
   latestRules.current = rules;
 
-  // the rules to act on: the whole tree when this view can load it, otherwise what is already here
+  // the rules to act on
   const resolveRules = useCallback(async () => {
     if (!loadFullTree) return latestRules.current;
     setIsLoadingFullTree(true);
@@ -56,7 +54,6 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
   const toggleExpand = useCallback((ruleId: string) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
-      // delete reports whether it removed anything, so this is one lookup instead of has + add/delete
       if (!next.delete(ruleId)) next.add(ruleId);
       return next;
     });
