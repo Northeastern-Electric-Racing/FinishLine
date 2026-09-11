@@ -9,7 +9,6 @@ import { Rule } from 'shared';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useGetChildRules } from '../../hooks/rules.hooks';
 import { compareRuleCodes } from '../../utils/rules.utils';
-import { useRuleExpansion } from './ruleExpansion';
 
 // how many children of an expanded rule are mounted at a time
 const RULE_PAGE_SIZE = 20;
@@ -38,7 +37,9 @@ interface RuleRowProps {
   leftWidth?: string;
   middleWidth?: string;
   rightWidth?: string;
-  initiallyExpanded?: boolean;
+  // Optional controlled expansion, otherwise each row manages its own open/closed state
+  expandedIds?: Set<string>;
+  onToggleExpand?: (ruleId: string) => void;
   // When true, the entire rule is shifted right per child depth
   indentRow?: boolean;
   // Amount of indentation per child depth when indentRow is enabled
@@ -70,15 +71,16 @@ const RuleRow: React.FC<RuleRowProps> = ({
   leftWidth = '10%',
   middleWidth = '80%',
   rightWidth = '10%',
-  initiallyExpanded = false,
+  expandedIds,
+  onToggleExpand,
   indentRow = false,
   indentWidth = 10,
   fullWidthCode,
   windowChildren = false
 }) => {
-  const [localExpanded, setLocalExpanded] = useState(initiallyExpanded);
-  const expansion = useRuleExpansion(rule.ruleId);
-  const isExpanded = expansion ? expansion.isExpanded : localExpanded;
+  const [localExpanded, setLocalExpanded] = useState(false);
+  // Controlled by the parent when `expandedIds` is provided, otherwise from this row's own state
+  const isExpanded = expandedIds ? expandedIds.has(rule.ruleId) : localExpanded;
 
   // a parent rule whose sub rules aren't in the set (e.g. rule T.1 was assigned to a project but T.1.1 wasn't)
   // will render as a leaf rule but with no expand dropdown
@@ -134,8 +136,8 @@ const RuleRow: React.FC<RuleRowProps> = ({
 
   const toggleExpand = () => {
     if (!hasSubRules) return;
-    if (expansion) {
-      expansion.toggle();
+    if (onToggleExpand) {
+      onToggleExpand(rule.ruleId);
     } else {
       setLocalExpanded((prev) => !prev);
     }
@@ -325,6 +327,8 @@ const RuleRow: React.FC<RuleRowProps> = ({
             leftWidth={leftWidth}
             middleWidth={middleWidth}
             rightWidth={rightWidth}
+            expandedIds={expandedIds}
+            onToggleExpand={onToggleExpand}
             indentRow={indentRow}
             indentWidth={indentWidth}
             fullWidthCode={fullWidthCode}

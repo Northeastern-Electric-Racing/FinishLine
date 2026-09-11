@@ -8,12 +8,12 @@ import RuleStatusHistoryModal from './RuleStatusHistoryModal';
 import { useSetRuleStatus } from '../../../hooks/rules.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
-import { RuleExpansionProvider, RuleExpansionStore } from '../ruleExpansion';
 
 interface RulesetGeneralViewProps {
   topLevelRules: Rule[];
   rulesetId: string;
-  expansionStore: RuleExpansionStore;
+  expandedIds: Set<string>;
+  toggleExpand: (ruleId: string) => void;
   navigateToRule: (ruleId: string) => void;
 }
 
@@ -24,7 +24,8 @@ interface RulesetGeneralViewProps {
 const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   topLevelRules,
   rulesetId,
-  expansionStore,
+  expandedIds,
+  toggleExpand,
   navigateToRule
 }) => {
   const theme = useTheme();
@@ -69,35 +70,33 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
   );
 
   return (
-    <RuleExpansionProvider value={expansionStore}>
-      <Box>
-        <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor }}>
-          <Table sx={{ borderCollapse: 'separate', borderSpacing: '0 8px', backgroundColor }}>
-            <TableBody>
-              {sortedTopLevelRules.map((rule) => (
-                <RuleRow
-                  key={rule.ruleId}
-                  rule={rule}
-                  middleContent={renderMiddleContent}
-                  rightContent={renderRightContent}
-                  backgroundColor={tableBackgroundColor}
-                  textColor={tableTextColor}
-                  hoverColor={tableHoverColor}
-                  rowHeight="40px"
-                  verticalPadding="8px"
-                  indentRow
-                  windowChildren
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+    <Box>
+      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '8px', overflow: 'hidden', backgroundColor }}>
+        <Table sx={{ borderCollapse: 'separate', borderSpacing: '0 8px', backgroundColor }}>
+          <TableBody>
+            {sortedTopLevelRules.map((rule) => (
+              <RuleRow
+                key={rule.ruleId}
+                rule={rule}
+                expandedIds={expandedIds}
+                onToggleExpand={toggleExpand}
+                middleContent={renderMiddleContent}
+                rightContent={renderRightContent}
+                backgroundColor={tableBackgroundColor}
+                textColor={tableTextColor}
+                hoverColor={tableHoverColor}
+                rowHeight="40px"
+                verticalPadding="8px"
+                indentRow
+                windowChildren
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-        {historyModalRule && (
-          <RuleStatusHistoryModal open onClose={() => setHistoryModalRule(null)} rule={historyModalRule} />
-        )}
-      </Box>
-    </RuleExpansionProvider>
+      {historyModalRule && <RuleStatusHistoryModal open onClose={() => setHistoryModalRule(null)} rule={historyModalRule} />}
+    </Box>
   );
 };
 

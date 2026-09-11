@@ -6,18 +6,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Rule } from 'shared';
 import { getAncestorIds } from '../../utils/rules.utils';
-import { createRuleExpansionStore, useExpandedIds } from './ruleExpansion';
 
 /**
  * Controlled expand + click-to-navigate for referenced rules.
  * Clicking a referenced rule link expands its full ancestor path and scrolls to it on the page.
  * @param rules the rules currently rendered/loaded on this page (may just be top-level rules)
  * @param loadFullTree optional loader for the entire rule tree
- * @returns the expansion store to provide to the rows, plus expansion state + handlers
+ * @returns expansion state + handlers
  */
 export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promise<Rule[]>) => {
-  const expansionStore = useMemo(() => createRuleExpansionStore(), []);
-  const expandedIds = useExpandedIds(expansionStore);
+  // set of rule ids currently expanded
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   // rule pending to scroll to
   const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
   // ids of rules that are expandable (have sub-rules)
@@ -27,9 +26,12 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
 
   const [isLoadingFullTree, setIsLoadingFullTree] = useState(false);
 
+  // read through a ref so navigateToRule keeps one identity for the life of the page. It is handed to
+  // every rule's content as a click handler, and re-creating it re-renders every row that holds one.
   const latestRules = useRef(rules);
   latestRules.current = rules;
 
+  // the rules to act on: the whole tree when this view can load it, otherwise what is already here
   const resolveRules = useCallback(async () => {
     if (!loadFullTree) return latestRules.current;
     setIsLoadingFullTree(true);
@@ -41,23 +43,34 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
   }, [loadFullTree]);
 
   const expandAll = useCallback(async () => {
-    if (!loadFullTree) return expansionStore.expandOnly(expandableIds);
+    if (!loadFullTree) return setExpandedIds(new Set(expandableIds));
     const allRules = await resolveRules();
-    expansionStore.expandOnly(allRules.filter((r) => r.subRuleIds.length > 0).map((r) => r.ruleId));
-  }, [expandableIds, loadFullTree, resolveRules, expansionStore]);
+    setExpandedIds(new Set(allRules.filter((r) => r.subRuleIds.length > 0).map((r) => r.ruleId)));
+  }, [expandableIds, loadFullTree, resolveRules]);
 
-  const { collapseAll } = expansionStore;
+  const collapseAll = useCallback(() => {
+    setExpandedIds(new Set());
+  }, []);
 
-  // Expand the target's full ancestor path and queue a scroll to it.
-  // Scroll doesn't happen until the newly-expanded ancestor rows complete expansion.
+  // flips a rule's expanded/collapsed state
+  const toggleExpand = useCallback((ruleId: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      // delete reports whether it removed anything, so this is one lookup instead of has + add/delete
+      if (!next.delete(ruleId)) next.add(ruleId);
+      return next;
+    });
+  }, []);
+
+  // Expand the target's full ancestor path and queue a scroll to it
   const navigateToRule = useCallback(
     async (targetId: string) => {
       const searchRules = await resolveRules();
       if (!searchRules.some((r) => r.ruleId === targetId)) return; // ensure target rule exists in this view
-      expansionStore.expand([...getAncestorIds(targetId, searchRules), targetId]);
+      setExpandedIds((prev) => new Set([...prev, ...getAncestorIds(targetId, searchRules), targetId]));
       setPendingScrollId(targetId); // queue the scroll
     },
-    [resolveRules, expansionStore]
+    [resolveRules]
   );
 
   // Scrolls to target rule after ancestors expand
@@ -70,5 +83,5 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
     }
   }, [pendingScrollId, expandedIds]);
 
-  return { expansionStore, navigateToRule, expandAll, collapseAll, areAllExpanded, isLoadingFullTree };
+  return { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded, isLoadingFullTree };
 };

@@ -41,7 +41,6 @@ import { Rule, isLeadership } from 'shared';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useRuleTreeNavigation } from './useRuleTreeNavigation';
-import { RuleExpansionProvider } from './ruleExpansion';
 
 /**
  * RulesetPage component for displaying and managing ruleset rules.
@@ -114,7 +113,7 @@ const RulesetEditPage: React.FC = () => {
   // Expand All needs whole tree, so load it on demand rather than up front
   const fetchFullRuleTree = useFetchFullRuleTree(rulesetId!);
 
-  const { expansionStore, expandAll, collapseAll, areAllExpanded, isLoadingFullTree } = useRuleTreeNavigation(
+  const { expandedIds, toggleExpand, expandAll, collapseAll, areAllExpanded, isLoadingFullTree } = useRuleTreeNavigation(
     topLevelRules ?? [],
     fetchFullRuleTree
   );
@@ -376,87 +375,52 @@ const RulesetEditPage: React.FC = () => {
             <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
               <Table sx={{ borderCollapse: 'collapse' }}>
                 <TableBody sx={{ backgroundColor: theme.palette.grey[500] }}>
-                  <RuleExpansionProvider value={expansionStore}>
-                    {sortedTopLevelRules.map((rule) => (
-                      <RuleRow
-                        key={rule.ruleId}
-                        rule={rule}
-                        leftContent={(currentRule, level, isExpanded, hasSubRules, toggleExpand) => {
-                          const isEditing = editingRuleId === currentRule.ruleId;
-                          return (
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1,
-                                paddingLeft: `${level * 20}px`,
-                                color: theme.palette.common.black
-                              }}
-                            >
-                              {hasSubRules && (
-                                <ChevronRightIcon
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleExpand();
-                                  }}
-                                  sx={{
-                                    fontSize: '20px',
-                                    color: theme.palette.common.black,
-                                    transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                                    transition: 'transform 0.2s',
-                                    cursor: 'pointer',
-                                    '&:hover': {
-                                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                                      borderRadius: '50%'
-                                    }
-                                  }}
-                                />
-                              )}
-                              {isEditing ? (
-                                <TextField
-                                  value={editedCode}
-                                  onChange={(e) => setEditedCode(e.target.value)}
-                                  onClick={(e) => e.stopPropagation()}
-                                  variant="outlined"
-                                  size="small"
-                                  autoFocus
-                                  sx={{
-                                    width: '80px',
-                                    flexShrink: 0,
-                                    backgroundColor: theme.palette.grey[100],
-                                    '& .MuiOutlinedInput-root': {
-                                      color: theme.palette.common.black,
-                                      '& fieldset': {
-                                        borderColor: '#dd514c'
-                                      },
-                                      '&:hover fieldset': {
-                                        borderColor: '#dd514c'
-                                      },
-                                      '&.Mui-focused fieldset': {
-                                        borderColor: '#dd514c'
-                                      }
-                                    }
-                                  }}
-                                />
-                              ) : (
-                                <span style={{ color: theme.palette.common.black }}>{currentRule.ruleCode}</span>
-                              )}
-                            </Box>
-                          );
-                        }}
-                        middleContent={(currentRule) => {
-                          const isEditing = editingRuleId === currentRule.ruleId;
-                          if (isEditing) {
-                            return (
+                  {sortedTopLevelRules.map((rule) => (
+                    <RuleRow
+                      key={rule.ruleId}
+                      rule={rule}
+                      leftContent={(currentRule, level, isExpanded, hasSubRules, toggleExpand) => {
+                        const isEditing = editingRuleId === currentRule.ruleId;
+                        return (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              paddingLeft: `${level * 20}px`,
+                              color: theme.palette.common.black
+                            }}
+                          >
+                            {hasSubRules && (
+                              <ChevronRightIcon
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleExpand();
+                                }}
+                                sx={{
+                                  fontSize: '20px',
+                                  color: theme.palette.common.black,
+                                  transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                                  transition: 'transform 0.2s',
+                                  cursor: 'pointer',
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                    borderRadius: '50%'
+                                  }
+                                }}
+                              />
+                            )}
+                            {isEditing ? (
                               <TextField
-                                fullWidth
-                                multiline
-                                value={editedContent}
-                                onChange={(e) => setEditedContent(e.target.value)}
+                                value={editedCode}
+                                onChange={(e) => setEditedCode(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
                                 variant="outlined"
                                 size="small"
                                 autoFocus
                                 sx={{
+                                  width: '80px',
+                                  flexShrink: 0,
                                   backgroundColor: theme.palette.grey[100],
                                   '& .MuiOutlinedInput-root': {
                                     color: theme.palette.common.black,
@@ -472,38 +436,73 @@ const RulesetEditPage: React.FC = () => {
                                   }
                                 }}
                               />
-                            );
-                          }
+                            ) : (
+                              <span style={{ color: theme.palette.common.black }}>{currentRule.ruleCode}</span>
+                            )}
+                          </Box>
+                        );
+                      }}
+                      middleContent={(currentRule) => {
+                        const isEditing = editingRuleId === currentRule.ruleId;
+                        if (isEditing) {
                           return (
-                            (currentRule.ruleContent || currentRule.referencedRules.length > 0) && (
-                              <RuleContent
-                                rule={currentRule}
-                                color={theme.palette.common.black}
-                                onReferenceRemove={(refId) => handleRemoveReference(currentRule.ruleId, refId)}
-                                onImageRemove={(fileId) => handleRemoveImage(currentRule.ruleId, fileId)}
-                              />
-                            )
+                            <TextField
+                              fullWidth
+                              multiline
+                              value={editedContent}
+                              onChange={(e) => setEditedContent(e.target.value)}
+                              variant="outlined"
+                              size="small"
+                              autoFocus
+                              sx={{
+                                backgroundColor: theme.palette.grey[100],
+                                '& .MuiOutlinedInput-root': {
+                                  color: theme.palette.common.black,
+                                  '& fieldset': {
+                                    borderColor: '#dd514c'
+                                  },
+                                  '&:hover fieldset': {
+                                    borderColor: '#dd514c'
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#dd514c'
+                                  }
+                                }
+                              }}
+                            />
                           );
-                        }}
-                        rightContent={(currentRule) => (
-                          <RuleActions
-                            ruleId={currentRule.ruleId}
-                            onAdd={handleOpenAddMenu}
-                            onRemove={handleRemoveRule}
-                            onEdit={handleEditRule}
-                            iconColor={theme.palette.common.black}
-                          />
-                        )}
-                        backgroundColor={(currentRule) =>
-                          editingRuleId === currentRule.ruleId ? theme.palette.grey[400] : theme.palette.grey[500]
                         }
-                        textColor={theme.palette.common.black}
-                        hoverColor={theme.palette.grey[700]}
-                        rowHeight="10px"
-                        verticalPadding="5px"
-                      />
-                    ))}
-                  </RuleExpansionProvider>
+                        return (
+                          (currentRule.ruleContent || currentRule.referencedRules.length > 0) && (
+                            <RuleContent
+                              rule={currentRule}
+                              color={theme.palette.common.black}
+                              onReferenceRemove={(refId) => handleRemoveReference(currentRule.ruleId, refId)}
+                              onImageRemove={(fileId) => handleRemoveImage(currentRule.ruleId, fileId)}
+                            />
+                          )
+                        );
+                      }}
+                      rightContent={(currentRule) => (
+                        <RuleActions
+                          ruleId={currentRule.ruleId}
+                          onAdd={handleOpenAddMenu}
+                          onRemove={handleRemoveRule}
+                          onEdit={handleEditRule}
+                          iconColor={theme.palette.common.black}
+                        />
+                      )}
+                      backgroundColor={(currentRule) =>
+                        editingRuleId === currentRule.ruleId ? theme.palette.grey[400] : theme.palette.grey[500]
+                      }
+                      textColor={theme.palette.common.black}
+                      hoverColor={theme.palette.grey[700]}
+                      rowHeight="10px"
+                      verticalPadding="5px"
+                      expandedIds={expandedIds}
+                      onToggleExpand={toggleExpand}
+                    />
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>

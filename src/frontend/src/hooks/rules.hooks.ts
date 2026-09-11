@@ -143,16 +143,12 @@ export interface CreateRulePayload {
 
 /**
  * Writes the result of a status write straight into the cached rule lists, so a click costs no refetch.
- * Rules are cached as arrays: top-level rules, and then one array of children per expanded rule
+ * For example ['rules', 'children', ruleId] or ['rules', 'top-level', rulesetId].
+ * Swaps in the rules this update changed and leaves the rest alone.
  */
 const applyRuleStatusUpdate = (queryClient: QueryClient, rulesetId: string, { rule, ancestors }: RuleStatusUpdate) => {
   // for this action an ancestor will only ever update its status field
   const rolledUpStatus = new Map<string, RuleStatus>(ancestors.map(({ ruleId, status }) => [ruleId, status]));
-
-  // key examples
-  //   ['rules', 'top-level', 'ruleset_id']
-  //   ['rules','children','T']
-  //   ['rules', 'allRules', 'ruleset_id']
 
   // updates only statuses that have changed for one cached array of Rule objects
   const applyUpdatesTo = (key: unknown[]) => {

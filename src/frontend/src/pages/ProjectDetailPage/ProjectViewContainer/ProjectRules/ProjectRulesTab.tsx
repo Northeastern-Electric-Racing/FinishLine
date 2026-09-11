@@ -27,7 +27,6 @@ import RuleContent from '../../../RulesPage/components/RuleContent';
 import RuleStatusHistoryModal from '../../../RulesPage/components/RuleStatusHistoryModal';
 import ResetStatusesModal from '../../../RulesPage/components/ResetStatusesModal';
 import { useRuleTreeNavigation } from '../../../RulesPage/useRuleTreeNavigation';
-import { RuleExpansionProvider } from '../../../RulesPage/ruleExpansion';
 import AddRuleModal from './AddProjectRuleModal';
 import {
   useAllRulesetTypes,
@@ -123,9 +122,10 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const projectRuleIds = useMemo(() => new Set(projectRuleList.map((r) => r.ruleId)), [projectRuleList]);
 
   // controlled expansion + click-to-navigate
-  const { expansionStore, navigateToRule, expandAll, collapseAll, areAllExpanded } = useRuleTreeNavigation(projectRuleList);
+  const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded } =
+    useRuleTreeNavigation(projectRuleList);
 
-  // projectRuleList flattens project rules and drops projectRUleId, so connect a rule row back to its project rule
+  // projectRuleList flattens project rules and drops projectRuleId, so connect a rule row back to its project rule
   const projectRuleByRuleId = useMemo(() => new Map((projectRules ?? []).map((pr) => [pr.rule.ruleId, pr])), [projectRules]);
 
   // Handle opening the status history modal, scoped to this project
@@ -291,30 +291,30 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
               }}
             >
               <TableBody>
-                <RuleExpansionProvider value={expansionStore}>
-                  {topLevelRules.map((rule) => (
-                    <RuleRow
-                      key={rule.ruleId}
-                      rule={rule}
-                      allRules={projectRuleList}
-                      middleContent={(r) => (
-                        <RuleContent
-                          rule={r}
-                          color={tableTextColor}
-                          onReferenceClick={navigateToRule}
-                          isReferenceInteractive={(id) => projectRuleIds.has(id)}
-                        />
-                      )}
-                      rightContent={renderRightContent}
-                      backgroundColor={tableBackgroundColor}
-                      textColor={tableTextColor}
-                      hoverColor={tableHoverColor}
-                      rowHeight="40px"
-                      verticalPadding="8px"
-                      indentRow
-                    />
-                  ))}
-                </RuleExpansionProvider>
+                {topLevelRules.map((rule) => (
+                  <RuleRow
+                    key={rule.ruleId}
+                    rule={rule}
+                    allRules={projectRuleList}
+                    expandedIds={expandedIds}
+                    onToggleExpand={toggleExpand}
+                    middleContent={(r) => (
+                      <RuleContent
+                        rule={r}
+                        color={tableTextColor}
+                        onReferenceClick={navigateToRule}
+                        isReferenceInteractive={(id) => projectRuleIds.has(id)}
+                      />
+                    )}
+                    rightContent={renderRightContent}
+                    backgroundColor={tableBackgroundColor}
+                    textColor={tableTextColor}
+                    hoverColor={tableHoverColor}
+                    rowHeight="40px"
+                    verticalPadding="8px"
+                    indentRow
+                  />
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
