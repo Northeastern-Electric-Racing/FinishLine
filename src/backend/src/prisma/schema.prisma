@@ -171,6 +171,16 @@ enum Team_Join_Request_Status {
   DENIED
 }
 
+enum Term {
+  FALL
+  SPRING
+}
+
+enum Data_Source {
+  AUTO
+  MANUAL
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -302,6 +312,8 @@ model User {
   createdTaskLabels                       Task_Label[]                         @relation(name: "taskLabelCreator")
   deletedTaskLabels                       Task_Label[]                         @relation(name: "taskLabelDeleter")
   dashboards                              Dashboard[]                          @relation(name: "userDashboards")
+  createdExecutiveSummaries               Executive_Summary[]                  @relation(name: "executiveSummaryCreator")
+  deletedExecutiveSummaries               Executive_Summary[]                  @relation(name: "executiveSummaryDeleter")
 }
 
 model Role {
@@ -322,6 +334,7 @@ model Team {
   slackId                String
   description            String                     @default("")
   financeTeam            Boolean                    @default(false)
+  operationsTeam         Boolean                    @default(false)
   projects               Project[]                  @relation(name: "assignedBy")
   members                User[]                     @relation(name: "teamsAsMember")
   leads                  User[]                     @relation(name: "teamsAsLead")
@@ -571,6 +584,7 @@ model Work_Package {
   orderInProject Int
   startDate      DateTime
   duration       Int
+  actualEndDate  DateTime?
   blockedBy      WBS_Element[]       @relation(name: "blockedBy")
   stage          Work_Package_Stage?
   events         Event[]
@@ -579,16 +593,16 @@ model Work_Package {
 }
 
 model Link_Type {
-  id                     String       @id @default(uuid())
-  name                   String
-  dateCreated            DateTime     @default(now())
-  iconName               String
-  required               Boolean
-  creatorId              String
-  creator                User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links                  Link[]       @relation(name: "linkTypes")
-  organizationId         String
-  organization           Organization @relation(fields: [organizationId], references: [organizationId])
+  id                      String       @id @default(uuid())
+  name                    String
+  dateCreated             DateTime     @default(now())
+  iconName                String
+  required                Boolean
+  creatorId               String
+  creator                 User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links                   Link[]       @relation(name: "linkTypes")
+  organizationId          String
+  organization            Organization @relation(fields: [organizationId], references: [organizationId])
   isOnGuestHomePage       Boolean      @default(false)
   isOnNewMemberDashboard  Boolean      @default(false)
   isOnOnboardingDashboard Boolean      @default(false)
@@ -1257,10 +1271,11 @@ model Team_Type {
   usersOnboarding User[]       @relation(name: "onboardingTeamTypes")
   usersOnboarded  User[]       @relation(name: "onboardedTeamTypes")
 
-  dateDeleted DateTime?
-  deletedById String?
-  deletedBy   User?     @relation(name: "teamTypeDeleter", fields: [deletedById], references: [userId])
-  events      Event[]
+  dateDeleted               DateTime?
+  deletedById               String?
+  deletedBy                 User?                        @relation(name: "teamTypeDeleter", fields: [deletedById], references: [userId])
+  events                    Event[]
+  recruitmentDivisionCounts Recruitment_Division_Count[]
 
   @@unique([name, organizationId], name: "uniqueTeamType")
   @@index([organizationId])
@@ -1458,6 +1473,8 @@ model Organization {
   meetingAttendances       Meeting_Attendance[]
   taskLabels               Task_Label[]
   dashboards               Dashboard[]
+  executiveSummaries       Executive_Summary[]
+  competitions             Competition[]
 }
 
 model Dashboard {
@@ -1856,4 +1873,106 @@ model Meeting_Attendance {
 
   @@index([organizationId])
   @@index([teamId])
+}
+
+model Executive_Summary {
+  executiveSummaryId String       @id @default(uuid())
+  organizationId     String
+  organization       Organization @relation(fields: [organizationId], references: [organizationId])
+  seasonName         String
+  seasonStartDate    DateTime
+  seasonEndDate      DateTime
+
+  goals               String @default("")
+  winsAndImprovements String @default("")
+  budgetNotes         String @default("")
+  recruitmentNotes    String @default("")
+
+  dateCreated     DateTime  @default(now())
+  userCreatedId   String
+  userCreated     User      @relation(fields: [userCreatedId], references: [userId], name: "executiveSummaryCreator")
+  dateDeleted     DateTime?
+  deletedByUserId String?
+  deletedBy       User?     @relation(fields: [deletedByUserId], references: [userId], name: "executiveSummaryDeleter")
+
+  competitionPerformances     Competition_Performance[]
+  competitionDocumentsSummary Competition_Documents_Summary?
+  recruitmentCycles           Recruitment_Cycle[]
+
+  @@unique([seasonName, organizationId], name: "uniqueExecutiveSummarySeason")
+  @@index([organizationId])
+}
+
+model Competition {
+  competitionId  String                    @id @default(uuid())
+  name           String
+  organizationId String
+  organization   Organization              @relation(fields: [organizationId], references: [organizationId])
+  dateDeleted    DateTime?
+  performances   Competition_Performance[]
+
+  @@unique([name, organizationId], name: "uniqueCompetitionName")
+  @@index([organizationId])
+}
+
+model Competition_Performance {
+  competitionPerformanceId String            @id @default(uuid())
+  executiveSummaryId       String
+  executiveSummary         Executive_Summary @relation(fields: [executiveSummaryId], references: [executiveSummaryId])
+  competitionId            String
+  competition              Competition       @relation(fields: [competitionId], references: [competitionId])
+
+  finalPlace                 Int?
+  totalPointsEarned          Int?
+  bestStaticEvent            String?
+  worstStaticEvent           String?
+  bestDynamicEvent           String?
+  worstDynamicEvent          String?
+  accelerationTopTimeSeconds Int?
+  autocrossTopTimeSeconds    Int?
+  enduranceLapsCompleted     Int?
+  enduranceAvgLapTimeSeconds Int?
+
+  @@unique([executiveSummaryId, competitionId], name: "uniqueExecSummaryCompetition")
+  @@index([executiveSummaryId])
+  @@index([competitionId])
+}
+
+model Competition_Documents_Summary {
+  competitionDocumentsSummaryId String            @id @default(uuid())
+  executiveSummaryId            String            @unique
+  executiveSummary              Executive_Summary @relation(fields: [executiveSummaryId], references: [executiveSummaryId])
+  submittedOnTimeCount          Int
+  firstSubmissionRejectedCount  Int
+  source                        Data_Source       @default(MANUAL)
+  dateSynced                    DateTime?
+}
+
+model Recruitment_Cycle {
+  recruitmentCycleId String                       @id @default(uuid())
+  executiveSummaryId String
+  executiveSummary   Executive_Summary            @relation(fields: [executiveSummaryId], references: [executiveSummaryId])
+  term               Term
+  eventsHeld         Int
+  signUps            Int
+  onboarded          Int
+  activeMembers      Int
+  divisionCounts     Recruitment_Division_Count[]
+
+  @@unique([executiveSummaryId, term], name: "uniqueRecruitmentCycleTerm")
+  @@index([executiveSummaryId])
+}
+
+model Recruitment_Division_Count {
+  recruitmentDivisionCountId String            @id @default(uuid())
+  recruitmentCycleId         String
+  recruitmentCycle           Recruitment_Cycle @relation(fields: [recruitmentCycleId], references: [recruitmentCycleId])
+  teamTypeId                 String
+  teamType                   Team_Type         @relation(fields: [teamTypeId], references: [teamTypeId])
+  newMembers                 Int
+  returningMembers           Int
+
+  @@unique([recruitmentCycleId, teamTypeId], name: "uniqueDivisionCountPerCycle")
+  @@index([recruitmentCycleId])
+  @@index([teamTypeId])
 }
