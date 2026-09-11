@@ -250,7 +250,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     isLoading: ssIsLoading,
     error: ssError
   } = useUserScheduleSettings(user.userId);
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [sameDayPickerOpen, setSameDayPickerOpen] = useState(false);
+  const [multipleDaysPickerOpen, setMultipleDaysPickerOpen] = useState(false);
   const [startTimePickerOpen, setStartTimePickerOpen] = useState(false);
   const [endTimePickerOpen, setEndTimePickerOpen] = useState(false);
   const [showRecurringOptions, setShowRecurringOptions] = useState(false);
@@ -628,6 +629,33 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       };
     }
 
+    if (requiresConfirmation) {
+      if (eventStatus === EventStatus.SCHEDULED) {
+        const combinedStartTime = new Date(data.scheduleDate);
+        combinedStartTime.setHours(
+          data.startTime.getHours(),
+          data.startTime.getMinutes(),
+          data.startTime.getSeconds(),
+          data.startTime.getMilliseconds()
+        );
+
+        const combinedEndTime = new Date(data.scheduleDate);
+        combinedEndTime.setHours(
+          data.endTime.getHours(),
+          data.endTime.getMinutes(),
+          data.endTime.getSeconds(),
+          data.endTime.getMilliseconds()
+        );
+
+        payload.rescheduleArgs = {
+          startTime: combinedStartTime,
+          endTime: combinedEndTime
+        };
+      } else {
+        payload.initialDateScheduled = data.scheduleDate;
+      }
+    }
+
     return payload;
   };
 
@@ -840,11 +868,11 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     </Tooltip>
                     {!(!!initialValues?.selectedScheduleSlotId && !selectedEventType.requiresConfirmation) ? (
                       <Typography variant="body2" color="white" fontWeight={500}>
-                        To be scheduled within (multiple days):
+                        To be scheduled for (multiple days):
                       </Typography>
                     ) : (
                       <Typography variant="body2" color="white" fontWeight={500}>
-                        To be scheduled within:
+                        To be scheduled for:
                       </Typography>
                     )}
                   </Box>
@@ -857,15 +885,23 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                         <DatePicker
                           value={value}
                           disabled={!!initialValues?.selectedScheduleSlotId && eventStatus !== EventStatus.SCHEDULED}
-                          open={datePickerOpen}
-                          onClose={() => setDatePickerOpen(false)}
-                          onOpen={() => setDatePickerOpen(true)}
+                          open={multipleDaysPickerOpen}
+                          onClose={() => {
+                            setMultipleDaysPickerOpen(false);
+                          }}
+                          onOpen={() => {
+                            setSameDayPickerOpen(false);
+                            setMultipleDaysPickerOpen(true);
+                          }}
                           onChange={(newValue) => onChange(newValue ?? defaultDate)}
                           slotProps={{
                             textField: {
                               variant: 'standard',
                               error: !!errors.scheduleDate,
-                              onClick: () => setDatePickerOpen(true),
+                              onClick: () => {
+                                setSameDayPickerOpen(false);
+                                setMultipleDaysPickerOpen(true);
+                              },
                               sx: { minWidth: 150 }
                             },
                             day: {
@@ -930,11 +966,11 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     </Tooltip>
                     {!(!!initialValues?.selectedScheduleSlotId && !selectedEventType.requiresConfirmation) ? (
                       <Typography variant="body2" color="white" fontWeight={500}>
-                        To be scheduled within (same day):
+                        To be scheduled for (same day):
                       </Typography>
                     ) : (
                       <Typography variant="body2" color="white" fontWeight={500}>
-                        To be scheduled within:
+                        To be scheduled for:
                       </Typography>
                     )}
                   </Box>
@@ -946,15 +982,23 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       render={({ field: { onChange, value } }) => (
                         <DatePicker
                           value={value}
-                          open={datePickerOpen}
-                          onClose={() => setDatePickerOpen(false)}
-                          onOpen={() => setDatePickerOpen(true)}
+                          open={sameDayPickerOpen}
+                          onClose={() => {
+                            setSameDayPickerOpen(false);
+                          }}
+                          onOpen={() => {
+                            setMultipleDaysPickerOpen(false);
+                            setSameDayPickerOpen(true);
+                          }}
                           onChange={(newValue) => onChange(newValue ?? defaultDate)}
                           slotProps={{
                             textField: {
                               variant: 'standard',
                               error: !!errors.scheduleDate,
-                              onClick: () => setDatePickerOpen(true),
+                              onClick: () => {
+                                setMultipleDaysPickerOpen(false);
+                                setSameDayPickerOpen(true);
+                              },
                               sx: { minWidth: 150 }
                             },
                             day: {
