@@ -181,6 +181,11 @@ enum Data_Source {
   MANUAL
 }
 
+enum Competition {
+  FSAE
+  FHE
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -1474,7 +1479,6 @@ model Organization {
   taskLabels               Task_Label[]
   dashboards               Dashboard[]
   executiveSummaries       Executive_Summary[]
-  competitions             Competition[]
 }
 
 model Dashboard {
@@ -1903,24 +1907,11 @@ model Executive_Summary {
   @@index([organizationId])
 }
 
-model Competition {
-  competitionId  String                    @id @default(uuid())
-  name           String
-  organizationId String
-  organization   Organization              @relation(fields: [organizationId], references: [organizationId])
-  dateDeleted    DateTime?
-  performances   Competition_Performance[]
-
-  @@unique([name, organizationId], name: "uniqueCompetitionName")
-  @@index([organizationId])
-}
-
 model Competition_Performance {
   competitionPerformanceId String            @id @default(uuid())
   executiveSummaryId       String
   executiveSummary         Executive_Summary @relation(fields: [executiveSummaryId], references: [executiveSummaryId])
-  competitionId            String
-  competition              Competition       @relation(fields: [competitionId], references: [competitionId])
+  competition              Competition
 
   finalPlace                 Int?
   totalPointsEarned          Int?
@@ -1933,9 +1924,8 @@ model Competition_Performance {
   enduranceLapsCompleted     Int?
   enduranceAvgLapTimeSeconds Int?
 
-  @@unique([executiveSummaryId, competitionId], name: "uniqueExecSummaryCompetition")
+  @@unique([executiveSummaryId, competition], name: "uniqueExecSummaryCompetition")
   @@index([executiveSummaryId])
-  @@index([competitionId])
 }
 
 model Competition_Documents_Summary {
