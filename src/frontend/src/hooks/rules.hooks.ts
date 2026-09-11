@@ -3,9 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useCallback, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { ProjectRule, Rule as SharedRule, Ruleset, RulesetType, RuleStatus, RuleStatusHistoryEntry } from 'shared';
+import { useCallback } from 'react';
+import { QueryClient, useMutation, useQuery, useQueryClient } from 'react-query';
+import {
+  ProjectRule,
+  Rule as SharedRule,
+  Ruleset,
+  RulesetType,
+  RuleStatus,
+  RuleStatusHistoryEntry,
+  RuleStatusUpdate
+} from 'shared';
 import {
   createRulesetType,
   getAllRulesetTypes,
@@ -40,6 +48,7 @@ import {
 } from '../apis/rules.api';
 import { useToast } from './toasts.hooks';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
+import { getRuleStatusConfig } from '../utils/rules.utils';
 
 /**
  * Hook to supply all ruleset types.
@@ -133,6 +142,48 @@ export interface CreateRulePayload {
 }
 
 /**
+ * Writes the result of a status write straight into the cached rule lists, so a click costs no refetch.
+ * For example ['rules', 'children', ruleId] or ['rules', 'top-level', rulesetId].
+ * Swaps in the rules this update changed and leaves the rest alone.
+ */
+const applyRuleStatusUpdate = (queryClient: QueryClient, rulesetId: string, { rule, ancestors }: RuleStatusUpdate) => {
+  // for this action an ancestor will only ever update its status field
+  const rolledUpStatus = new Map<string, RuleStatus>(ancestors.map(({ ruleId, status }) => [ruleId, status]));
+
+  // updates only statuses that have changed for one cached array of Rule objects
+  const applyUpdatesTo = (key: unknown[]) => {
+    const cachedRules = queryClient.getQueryData<SharedRule[]>(key);
+    // uncached list has no rows on the screen and was not loaded, so do not update
+    if (!cachedRules) return;
+
+    queryClient.setQueryData<SharedRule[]>(
+      key,
+      cachedRules.map((cachedRule) => {
+        // the rule whose status was directly updated gets a full update since
+        // other fields such as dateUpdated or hasStatusHistory will also change
+        if (cachedRule.ruleId === rule.ruleId) return rule;
+
+        // an ancestor keeps all fields, only its status is overwritten if the status changed
+        // for example, if an ancestor status was FAIL and this change updated it to FAIL, it will not rerender
+        const newStatus = rolledUpStatus.get(cachedRule.ruleId);
+        if (newStatus && newStatus !== cachedRule.status) return { ...cachedRule, status: newStatus };
+
+        // everything else is returned as the same object, so React skips rerendering those rows
+        return cachedRule;
+      })
+    );
+  };
+
+  // a rule's row is stored in its parent's children list, this grabs the cache list the clicked rule exists in
+  const listForParent = (parentRuleId: string | null | undefined) =>
+    parentRuleId ? ['rules', 'children', parentRuleId] : ['rules', 'top-level', rulesetId];
+  applyUpdatesTo(listForParent(rule.parentRule?.ruleId));
+
+  // one cache list per ancestor, walking up the chain the server recalculated
+  for (const { parentRuleId } of ancestors) applyUpdatesTo(listForParent(parentRuleId));
+};
+
+/**
  * Hook to get all top level rules for a given ruleset.
  */
 export const useGetTopLevelRules = (rulesetId: string) => {
@@ -153,7 +204,8 @@ export const useGetChildRules = (ruleId: string, enabled: boolean = true) => {
       return data;
     },
     {
-      enabled // only fetch when true
+      enabled, // only fetch when true
+      staleTime: 5 * 60 * 1000 // 5 minutes
     }
   );
 };
@@ -441,50 +493,30 @@ export const useBulkDeleteProjectRules = (rulesetId: string, projectId: string) 
 };
 
 /**
- * Hook to update a rule's status.
- *
- * @param writeStatus writes the new status for a rule
- * status can be ruleset wide or scoped to a single project
- * @returns the rule currently being updated
- */
-export const useRuleStatusUpdate = (writeStatus: (ruleId: string, status: RuleStatus) => Promise<unknown>) => {
-  const toast = useToast();
-  const [pendingRuleId, setPendingRuleId] = useState<string | null>(null);
-
-  const updateStatus = async (ruleId: string, status: RuleStatus) => {
-    setPendingRuleId(ruleId);
-    try {
-      await writeStatus(ruleId, status);
-      toast.success('Rule status updated successfully');
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    } finally {
-      setPendingRuleId(null);
-    }
-  };
-
-  return { pendingRuleId, updateStatus };
-};
-
-/**
  * Hook to set a rule's general-view status. This status is independent of any project.
+ * Applies the result to the cache directly instead of refetching, so a click costs one request.
  */
 export const useSetRuleStatus = (rulesetId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<SharedRule, Error, { ruleId: string; status: RuleStatus }>(
+  const toast = useToast();
+  return useMutation<RuleStatusUpdate, Error, { ruleId: string; status: RuleStatus }>(
     ['rules', 'setStatus'],
     async ({ ruleId, status }) => {
       const { data } = await setRuleStatus(ruleId, status);
       return data;
     },
     {
-      onSuccess: (_data, { ruleId }) => {
-        queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
-        queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
-        queryClient.invalidateQueries(['rules', 'children']);
+      onSuccess: ({ rule, ancestors }, { ruleId }) => {
+        // updates in cache only the rules whose status are updated by this action, no extra refetching
+        applyRuleStatusUpdate(queryClient, rulesetId, { rule, ancestors });
+        // only fetched while a history modal is open, refetches at most for one rule
         queryClient.invalidateQueries(['rules', 'statusHistory', ruleId]);
+        toast.success(
+          `Rule status updated successfully. Rule ${rule.ruleCode} marked as ${getRuleStatusConfig(rule.status).label}.`
+        );
+      },
+      onError: (error) => {
+        toast.error(error.message);
       }
     }
   );
@@ -495,6 +527,7 @@ export const useSetRuleStatus = (rulesetId: string) => {
  */
 export const useSetProjectRuleStatus = (rulesetId: string, projectId: string) => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation<ProjectRule, Error, { projectRuleId: string; status: RuleStatus }>(
     ['rules', 'setProjectRuleStatus'],
     async ({ projectRuleId, status }) => {
@@ -502,10 +535,15 @@ export const useSetProjectRuleStatus = (rulesetId: string, projectId: string) =>
       return data;
     },
     {
-      onSuccess: (updatedProjectRule) => {
+      onSuccess: ({ rule, status }) => {
         queryClient.invalidateQueries(['rules', 'projectRules', rulesetId, projectId]);
-        queryClient.invalidateQueries(['rules', 'unassigned']);
-        queryClient.invalidateQueries(['rules', 'statusHistory', updatedProjectRule.rule.ruleId]);
+        queryClient.invalidateQueries(['rules', 'statusHistory', rule.ruleId]);
+        toast.success(
+          `Rule status updated successfully. Rule ${rule.ruleCode} marked as ${getRuleStatusConfig(status).label}`
+        );
+      },
+      onError: (error) => {
+        toast.error(error.message);
       }
     }
   );

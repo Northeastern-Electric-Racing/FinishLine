@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import RulesService from '../services/rules.services.js';
-import { ProjectRule, Rule, Ruleset, RuleStatus, RuleStatusHistoryEntry } from 'shared';
+import { ProjectRule, Rule, Ruleset, RuleStatus, RuleStatusHistoryEntry, RuleStatusUpdate } from 'shared';
 import { HttpException } from '../utils/errors.utils.js';
 
 export default class RulesController {
@@ -186,9 +186,14 @@ export default class RulesController {
       const { ruleId } = req.params as Record<string, string>;
       const { status } = req.body as { status: RuleStatus };
 
-      const rule: Rule = await RulesService.setRuleStatus(req.currentUser, req.organization, ruleId, status);
+      const statusUpdate: RuleStatusUpdate = await RulesService.setRuleStatus(
+        req.currentUser,
+        req.organization,
+        ruleId,
+        status
+      );
 
-      res.status(200).json(rule);
+      res.status(200).json(statusUpdate);
     } catch (error: unknown) {
       next(error);
     }

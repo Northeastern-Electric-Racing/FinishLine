@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Rule } from 'shared';
 import { getAncestorIds } from '../../utils/rules.utils';
 
@@ -19,8 +19,6 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   // rule pending to scroll to
   const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
-  // list of rules in this view to determine if a referenced rule is able to be scrolled to (for project view)
-  const ruleIds = useMemo(() => new Set(rules.map((r) => r.ruleId)), [rules]);
   // ids of rules that are expandable (have sub-rules)
   const expandableIds = useMemo(() => new Set(rules.filter((r) => r.subRuleIds.length > 0).map((r) => r.ruleId)), [rules]);
 
@@ -28,20 +26,28 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
 
   const [isLoadingFullTree, setIsLoadingFullTree] = useState(false);
 
-  const expandAll = useCallback(async () => {
-    if (loadFullTree) {
-      setIsLoadingFullTree(true);
-      try {
-        const allRules = await loadFullTree();
-        const allExpandableIds = allRules.filter((r) => r.subRuleIds.length > 0).map((r) => r.ruleId);
-        setExpandedIds(new Set(allExpandableIds));
-      } finally {
-        setIsLoadingFullTree(false);
-      }
-      return;
+  const latestRules = useRef(rules);
+  latestRules.current = rules;
+
+  // the rules to work with, fetching the whole tree when this view only holds part of it
+  const resolveRules = useCallback(async () => {
+    // no loader means view already has every rule needed (project/team view)
+    if (!loadFullTree) return latestRules.current;
+    setIsLoadingFullTree(true); // loading for expand all and clicked ref rule link
+    try {
+      // fetch the whole tree
+      return await loadFullTree();
+    } finally {
+      setIsLoadingFullTree(false);
     }
-    setExpandedIds(new Set(expandableIds));
-  }, [expandableIds, loadFullTree]);
+  }, [loadFullTree]);
+
+  // expands every rule with children, fetching the whole tree first when this view loads lazily
+  const expandAll = useCallback(async () => {
+    if (!loadFullTree) return setExpandedIds(new Set(expandableIds));
+    const allRules = await resolveRules();
+    setExpandedIds(new Set(allRules.filter((r) => r.subRuleIds.length > 0).map((r) => r.ruleId)));
+  }, [expandableIds, loadFullTree, resolveRules]);
 
   const collapseAll = useCallback(() => {
     setExpandedIds(new Set());
@@ -61,28 +67,14 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
   }, []);
 
   // Expand the target's full ancestor path and queue a scroll to it
-  // Scroll doesnt happen until the newly-expanded ancestor rows complete expansion
   const navigateToRule = useCallback(
     async (targetId: string) => {
-      if (loadFullTree) {
-        setIsLoadingFullTree(true);
-        try {
-          const allRules = await loadFullTree();
-          if (!allRules.some((r) => r.ruleId === targetId)) return; // ensure target rule exists in this view
-          const ancestors = getAncestorIds(targetId, allRules);
-          setExpandedIds((prev) => new Set([...prev, ...ancestors, targetId]));
-          setPendingScrollId(targetId); // queue the scroll
-        } finally {
-          setIsLoadingFullTree(false);
-        }
-        return;
-      }
-      if (!ruleIds.has(targetId)) return; // ensure target rule exists in this view
-      const ancestors = getAncestorIds(targetId, rules);
-      setExpandedIds((prev) => new Set([...prev, ...ancestors, targetId]));
+      const searchRules = await resolveRules();
+      if (!searchRules.some((r) => r.ruleId === targetId)) return; // ensure target rule exists in this view
+      setExpandedIds((prev) => new Set([...prev, ...getAncestorIds(targetId, searchRules), targetId]));
       setPendingScrollId(targetId); // queue the scroll
     },
-    [rules, ruleIds, loadFullTree]
+    [resolveRules]
   );
 
   // Scrolls to target rule after ancestors expand

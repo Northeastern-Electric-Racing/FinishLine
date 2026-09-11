@@ -107,3 +107,16 @@ export interface RulesetPreview {
     name: string;
   };
 }
+
+// rule whose status was recalculated from its children rather than set directly
+export interface RuleStatusRollup {
+  ruleId: string;
+  parentRuleId: string | null;
+  status: RuleStatus;
+}
+
+// rule whose general-view status is updated
+export interface RuleStatusUpdate {
+  rule: Rule;
+  ancestors: RuleStatusRollup[];
+}
