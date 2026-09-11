@@ -84,10 +84,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   } = useProjectRules(activeRuleset?.rulesetId || '', project.id);
 
   // Mutations
-  const { mutateAsync: setStatusMutation, isLoading: isUpdatingStatus } = useSetProjectRuleStatus(
-    activeRuleset?.rulesetId || '',
-    project.id
-  );
+  const { mutateAsync: setStatusMutation } = useSetProjectRuleStatus(activeRuleset?.rulesetId || '', project.id);
 
   const { mutate: addProjectRules, isLoading: isCreating } = useBulkCreateProjectRules(
     activeRuleset?.rulesetId || '',
@@ -439,8 +436,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         />
       )}
 
-      {/* Loading overlay */}
-      {(isUpdatingStatus || isCreating || isResetting || isDeleting) && (
+      {(isCreating || isResetting || isDeleting) && (
         <Box
           sx={{
             position: 'fixed',

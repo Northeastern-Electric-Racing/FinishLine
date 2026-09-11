@@ -47,7 +47,7 @@ interface RuleRowProps {
   // Optional controlled expansion, otherwise each row manages its own open/closed state
   expandedIds?: Set<string>;
   onToggleExpand?: (ruleId: string) => void;
-  // Mounts children incrementally instead of all at once. Opt-in so other views keep rendering every row.
+  // When true, renders rows incrementally instead of all at once
   windowChildren?: boolean;
 }
 
@@ -86,11 +86,11 @@ const RuleRow: React.FC<RuleRowProps> = ({
 
   // a parent rule whose sub rules aren't in the set (e.g. rule T.1 was assigned to a project but T.1.1 wasn't)
   // will render as a leaf rule but with no expand dropdown
-  const presentSubRules = useMemo(
+  const providedSubRules = useMemo(
     () => (allRules ? allRules.filter((r) => rule.subRuleIds.includes(r.ruleId)) : null),
     [allRules, rule.subRuleIds]
   );
-  const hasSubRules = presentSubRules ? presentSubRules.length > 0 : rule.subRuleIds.length > 0;
+  const hasSubRules = providedSubRules ? providedSubRules.length > 0 : rule.subRuleIds.length > 0;
 
   // Lazy load if allRules not provided
   const { data: fetchedSubRules = EMPTY_SUB_RULES } = useGetChildRules(rule.ruleId, !allRules && isExpanded && hasSubRules);
@@ -100,8 +100,8 @@ const RuleRow: React.FC<RuleRowProps> = ({
   // Collapsed rows are skipped and render none of their children
   const subRules = useMemo(() => {
     if (!isExpanded || !hasSubRules) return EMPTY_SUB_RULES;
-    return [...(presentSubRules ?? fetchedSubRules)].sort(compareRuleCodes);
-  }, [isExpanded, hasSubRules, presentSubRules, fetchedSubRules]);
+    return [...(providedSubRules ?? fetchedSubRules)].sort(compareRuleCodes);
+  }, [isExpanded, hasSubRules, providedSubRules, fetchedSubRules]);
 
   // Only the first RULE_PAGE_SIZE children are mounted, rendering continues as rows scroll into view
   const [visibleCount, setVisibleCount] = useState(RULE_PAGE_SIZE);

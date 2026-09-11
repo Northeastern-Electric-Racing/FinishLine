@@ -29,17 +29,20 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
   const latestRules = useRef(rules);
   latestRules.current = rules;
 
-  // the rules to act on
+  // the rules to work with, fetching the whole tree when this view only holds part of it
   const resolveRules = useCallback(async () => {
+    // no loader means view already has every rule needed (project/team view)
     if (!loadFullTree) return latestRules.current;
-    setIsLoadingFullTree(true);
+    setIsLoadingFullTree(true); // loading for expand all and clicked ref rule link
     try {
+      // fetch the whole tree
       return await loadFullTree();
     } finally {
       setIsLoadingFullTree(false);
     }
   }, [loadFullTree]);
 
+  // expands every rule with children, fetching the whole tree first when this view loads lazily
   const expandAll = useCallback(async () => {
     if (!loadFullTree) return setExpandedIds(new Set(expandableIds));
     const allRules = await resolveRules();
@@ -54,7 +57,11 @@ export const useRuleTreeNavigation = (rules: Rule[], loadFullTree?: () => Promis
   const toggleExpand = useCallback((ruleId: string) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
-      if (!next.delete(ruleId)) next.add(ruleId);
+      if (next.has(ruleId)) {
+        next.delete(ruleId); // expanded -> collapsed
+      } else {
+        next.add(ruleId); // collapsed -> expanded
+      }
       return next;
     });
   }, []);
