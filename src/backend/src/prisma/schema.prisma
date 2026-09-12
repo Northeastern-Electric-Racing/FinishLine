@@ -414,6 +414,9 @@ model Change_Request {
   notificationSlackThreads Message_Info[]
   wbsProposedChangesId     String?                             @unique
   wbsProposedChanges       Wbs_Proposed_Changes?               @relation("wbsProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  snapshotBlockingCount    Int?
+  snapshotStartDate        DateTime?
+  snapshotDuration         Int?
 
   @@unique([identifier, organizationId], name: "uniqueChangeRequest")
   @@index([reviewerId])
@@ -579,16 +582,16 @@ model Work_Package {
 }
 
 model Link_Type {
-  id                     String       @id @default(uuid())
-  name                   String
-  dateCreated            DateTime     @default(now())
-  iconName               String
-  required               Boolean
-  creatorId              String
-  creator                User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links                  Link[]       @relation(name: "linkTypes")
-  organizationId         String
-  organization           Organization @relation(fields: [organizationId], references: [organizationId])
+  id                      String       @id @default(uuid())
+  name                    String
+  dateCreated             DateTime     @default(now())
+  iconName                String
+  required                Boolean
+  creatorId               String
+  creator                 User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links                   Link[]       @relation(name: "linkTypes")
+  organizationId          String
+  organization            Organization @relation(fields: [organizationId], references: [organizationId])
   isOnGuestHomePage       Boolean      @default(false)
   isOnNewMemberDashboard  Boolean      @default(false)
   isOnOnboardingDashboard Boolean      @default(false)
@@ -1322,15 +1325,16 @@ model Project_Proposed_Changes {
 }
 
 model Work_Package_Proposed_Changes {
-  workPackageProposedChangesId String                    @id @default(uuid())
-  startDate                    DateTime                  @db.Date
-  duration                     Int
-  blockedBy                    WBS_Element[]             @relation(name: "proposedBlockedBy")
-  stage                        Work_Package_Stage?
-  wbsProposedChanges           Wbs_Proposed_Changes      @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
-  wbsProposedChangesId         String                    @unique
-  projectProposedChanges       Project_Proposed_Changes? @relation(fields: [projectProposedChangesId], references: [projectProposedChangesId])
-  projectProposedChangesId     String?
+  workPackageProposedChangesId      String                    @id @default(uuid())
+  startDate                         DateTime                  @db.Date
+  duration                          Int
+  blockedBy                         WBS_Element[]             @relation(name: "proposedBlockedBy")
+  stage                             Work_Package_Stage?
+  wbsProposedChanges                Wbs_Proposed_Changes      @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  wbsProposedChangesId              String                    @unique
+  projectProposedChanges            Project_Proposed_Changes? @relation(fields: [projectProposedChangesId], references: [projectProposedChangesId])
+  projectProposedChangesId          String?
+  timelineChangeFromUnmarkedBlocker Boolean                   @default(false)
 
   @@index([wbsProposedChangesId])
   @@index([projectProposedChangesId])
@@ -1415,6 +1419,7 @@ model Organization {
   sponsorshipNotificationsSlackChannelId String?
   platformDescription                    String    @default("")
   platformLogoImageId                    String?
+  activationBufferDays                   Int       @default(7)
 
   // Relation references
   wbsElements              WBS_Element[]
