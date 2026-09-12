@@ -102,5 +102,8 @@
       { "weight": 19, "min": 25, "max": 50 },
       { "weight": 6, "min": 51, "max": 80 }
     ]
+  },
+  "executiveSummary": {
+    "executiveSummaryCount": 4
   }
 }

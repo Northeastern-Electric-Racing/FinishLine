@@ -64,6 +64,9 @@ export interface SeedConfig {
   task: {
     countForProject: WeightedCount[];
   };
+  executiveSummary: {
+    executiveSummaryCount: number;
+  };
 }
 
 export const seedConfig: SeedConfig = JSON.parse(
