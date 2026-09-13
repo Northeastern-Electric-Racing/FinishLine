@@ -4,4 +4,7 @@ ADD COLUMN     "snapshotDuration" INTEGER,
 ADD COLUMN     "snapshotStartDate" TIMESTAMP(3);
 
 -- AlterTable
+ALTER TABLE "Organization" ADD COLUMN     "activationBufferDays" INTEGER NOT NULL DEFAULT 7;
+
+-- AlterTable
 ALTER TABLE "Work_Package_Proposed_Changes" ADD COLUMN     "timelineChangeFromUnmarkedBlocker" BOOLEAN NOT NULL DEFAULT false;
