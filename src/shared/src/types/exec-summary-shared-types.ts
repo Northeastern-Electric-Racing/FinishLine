@@ -22,8 +22,8 @@ export enum DataSource {
 export interface ExecutiveSummary {
   executiveSummaryId: string;
   car: Car;
-  seasonStartDate: Date;
-  seasonEndDate: Date;
+  seasonStartDate?: Date;
+  seasonEndDate?: Date;
   goals: string;
   winsAndImprovements: string;
   budgetNotes: string;
@@ -66,10 +66,10 @@ export interface RecruitmentCycle {
   recruitmentCycleId: string;
   executiveSummaryId: string;
   term: Term;
-  eventsHeld: number;
-  signUps: number;
-  onboarded: number;
-  activeMembers: number;
+  eventsHeld?: number;
+  signUps?: number;
+  onboarded?: number;
+  activeMembers?: number;
   divisionCounts: RecruitmentDivisionCount[];
 }
 

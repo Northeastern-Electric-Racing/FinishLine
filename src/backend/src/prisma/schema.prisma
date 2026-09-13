@@ -1880,13 +1880,11 @@ model Meeting_Attendance {
 }
 
 model Executive_Summary {
-  executiveSummaryId String       @id @default(uuid())
-  organizationId     String
-  organization       Organization @relation(fields: [organizationId], references: [organizationId])
-  carId              String       @unique
-  car                Car          @relation(fields: [carId], references: [carId])
-  seasonStartDate    DateTime
-  seasonEndDate      DateTime
+  executiveSummaryId String    @id @default(uuid())
+  carId              String    @unique
+  car                Car       @relation(fields: [carId], references: [carId])
+  seasonStartDate    DateTime?
+  seasonEndDate      DateTime?
 
   goals               String @default("")
   winsAndImprovements String @default("")
@@ -1904,7 +1902,8 @@ model Executive_Summary {
   competitionDocumentsSummary Competition_Documents_Summary?
   recruitmentCycles           Recruitment_Cycle[]
 
-  @@index([organizationId])
+  organization               Organization? @relation(fields: [organizationOrganizationId], references: [organizationId])
+  organizationOrganizationId String?
 }
 
 model Competition_Performance {
@@ -1943,10 +1942,10 @@ model Recruitment_Cycle {
   executiveSummaryId String
   executiveSummary   Executive_Summary            @relation(fields: [executiveSummaryId], references: [executiveSummaryId])
   term               Term
-  eventsHeld         Int
-  signUps            Int
-  onboarded          Int
-  activeMembers      Int
+  eventsHeld         Int?
+  signUps            Int?
+  onboarded          Int?
+  activeMembers      Int?
   divisionCounts     Recruitment_Division_Count[]
 
   @@unique([executiveSummaryId, term], name: "uniqueRecruitmentCycleTerm")

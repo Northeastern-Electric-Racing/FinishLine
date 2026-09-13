@@ -30,7 +30,7 @@ export class RecruitmentDivisionCountProcess extends SeedProcess<
     const planned = recruitmentCycles.flatMap((cycle) => {
       // New members are split across every division so they sum back to the cycle's own
       // onboarded count, rather than each division inventing an unrelated number.
-      const newMemberShares = splitIntoParts(this.faker, cycle.onboarded, teamTypes.length);
+      const newMemberShares = splitIntoParts(this.faker, cycle.onboarded ?? 0, teamTypes.length);
       return teamTypes.map((teamType, i) => ({
         recruitmentCycleId: cycle.recruitmentCycleId,
         teamTypeId: teamType.teamTypeId,

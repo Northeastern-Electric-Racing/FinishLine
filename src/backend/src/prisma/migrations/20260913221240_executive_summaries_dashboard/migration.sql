@@ -13,10 +13,9 @@ ALTER TABLE "Team" ADD COLUMN     "operationsTeam" BOOLEAN NOT NULL DEFAULT fals
 -- CreateTable
 CREATE TABLE "Executive_Summary" (
     "executiveSummaryId" TEXT NOT NULL,
-    "organizationId" TEXT NOT NULL,
     "carId" TEXT NOT NULL,
-    "seasonStartDate" TIMESTAMP(3) NOT NULL,
-    "seasonEndDate" TIMESTAMP(3) NOT NULL,
+    "seasonStartDate" TIMESTAMP(3),
+    "seasonEndDate" TIMESTAMP(3),
     "goals" TEXT NOT NULL DEFAULT '',
     "winsAndImprovements" TEXT NOT NULL DEFAULT '',
     "budgetNotes" TEXT NOT NULL DEFAULT '',
@@ -25,6 +24,7 @@ CREATE TABLE "Executive_Summary" (
     "userCreatedId" TEXT NOT NULL,
     "dateDeleted" TIMESTAMP(3),
     "deletedByUserId" TEXT,
+    "organizationOrganizationId" TEXT,
 
     CONSTRAINT "Executive_Summary_pkey" PRIMARY KEY ("executiveSummaryId")
 );
@@ -65,10 +65,10 @@ CREATE TABLE "Recruitment_Cycle" (
     "recruitmentCycleId" TEXT NOT NULL,
     "executiveSummaryId" TEXT NOT NULL,
     "term" "Term" NOT NULL,
-    "eventsHeld" INTEGER NOT NULL,
-    "signUps" INTEGER NOT NULL,
-    "onboarded" INTEGER NOT NULL,
-    "activeMembers" INTEGER NOT NULL,
+    "eventsHeld" INTEGER,
+    "signUps" INTEGER,
+    "onboarded" INTEGER,
+    "activeMembers" INTEGER,
 
     CONSTRAINT "Recruitment_Cycle_pkey" PRIMARY KEY ("recruitmentCycleId")
 );
@@ -86,9 +86,6 @@ CREATE TABLE "Recruitment_Division_Count" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Executive_Summary_carId_key" ON "Executive_Summary"("carId");
-
--- CreateIndex
-CREATE INDEX "Executive_Summary_organizationId_idx" ON "Executive_Summary"("organizationId");
 
 -- CreateIndex
 CREATE INDEX "Competition_Performance_executiveSummaryId_idx" ON "Competition_Performance"("executiveSummaryId");
@@ -115,9 +112,6 @@ CREATE INDEX "Recruitment_Division_Count_teamTypeId_idx" ON "Recruitment_Divisio
 CREATE UNIQUE INDEX "Recruitment_Division_Count_recruitmentCycleId_teamTypeId_key" ON "Recruitment_Division_Count"("recruitmentCycleId", "teamTypeId");
 
 -- AddForeignKey
-ALTER TABLE "Executive_Summary" ADD CONSTRAINT "Executive_Summary_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Executive_Summary" ADD CONSTRAINT "Executive_Summary_carId_fkey" FOREIGN KEY ("carId") REFERENCES "Car"("carId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -125,6 +119,9 @@ ALTER TABLE "Executive_Summary" ADD CONSTRAINT "Executive_Summary_userCreatedId_
 
 -- AddForeignKey
 ALTER TABLE "Executive_Summary" ADD CONSTRAINT "Executive_Summary_deletedByUserId_fkey" FOREIGN KEY ("deletedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Executive_Summary" ADD CONSTRAINT "Executive_Summary_organizationOrganizationId_fkey" FOREIGN KEY ("organizationOrganizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Competition_Performance" ADD CONSTRAINT "Competition_Performance_executiveSummaryId_fkey" FOREIGN KEY ("executiveSummaryId") REFERENCES "Executive_Summary"("executiveSummaryId") ON DELETE RESTRICT ON UPDATE CASCADE;
