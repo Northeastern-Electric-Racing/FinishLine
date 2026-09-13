@@ -589,7 +589,6 @@ model Work_Package {
   orderInProject Int
   startDate      DateTime
   duration       Int
-  actualEndDate  DateTime?
   blockedBy      WBS_Element[]       @relation(name: "blockedBy")
   stage          Work_Package_Stage?
   events         Event[]
@@ -1408,6 +1407,7 @@ model Car {
   wbsElementId           String                     @unique
   wbsElement             WBS_Element                @relation(fields: [wbsElementId], references: [wbsElementId])
   linkedGraphs           Graph[]                    @relation(name: "graphCars")
+  executiveSummary       Executive_Summary?
 
   @@index([wbsElementId])
 }
@@ -1883,7 +1883,8 @@ model Executive_Summary {
   executiveSummaryId String       @id @default(uuid())
   organizationId     String
   organization       Organization @relation(fields: [organizationId], references: [organizationId])
-  seasonName         String
+  carId              String       @unique
+  car                Car          @relation(fields: [carId], references: [carId])
   seasonStartDate    DateTime
   seasonEndDate      DateTime
 
@@ -1903,7 +1904,6 @@ model Executive_Summary {
   competitionDocumentsSummary Competition_Documents_Summary?
   recruitmentCycles           Recruitment_Cycle[]
 
-  @@unique([seasonName, organizationId], name: "uniqueExecutiveSummarySeason")
   @@index([organizationId])
 }
 
@@ -1932,8 +1932,8 @@ model Competition_Documents_Summary {
   competitionDocumentsSummaryId String            @id @default(uuid())
   executiveSummaryId            String            @unique
   executiveSummary              Executive_Summary @relation(fields: [executiveSummaryId], references: [executiveSummaryId])
-  submittedOnTimeCount          Int
-  firstSubmissionRejectedCount  Int
+  submittedOnTimeCount          Int?
+  firstSubmissionRejectedCount  Int?
   source                        Data_Source       @default(MANUAL)
   dateSynced                    DateTime?
 }

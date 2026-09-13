@@ -2,6 +2,7 @@ import { GraphData } from './statistics-types.js';
 import { TeamType } from './calendar-types.js';
 import { TeamPreview } from './team-types.js';
 import { User } from './user-types.js';
+import { Car } from './project-types.js';
 
 export enum Competition {
   FSAE = 'FSAE',
@@ -20,7 +21,7 @@ export enum DataSource {
 
 export interface ExecutiveSummary {
   executiveSummaryId: string;
-  seasonName: string;
+  car: Car;
   seasonStartDate: Date;
   seasonEndDate: Date;
   goals: string;
@@ -55,8 +56,8 @@ export interface CompetitionPerformance {
 export interface CompetitionDocumentsSummary {
   competitionDocumentsSummaryId: string;
   executiveSummaryId: string;
-  submittedOnTimeCount: number;
-  firstSubmissionRejectedCount: number;
+  submittedOnTimeCount?: number;
+  firstSubmissionRejectedCount?: number;
   source: DataSource;
   dateSynced?: Date;
 }
@@ -81,7 +82,7 @@ export interface RecruitmentDivisionCount {
 }
 
 export interface CreateExecutiveSummaryArgs {
-  seasonName: string;
+  carId: string;
   seasonStartDate: Date;
   seasonEndDate: Date;
   goals?: string;
@@ -90,7 +91,7 @@ export interface CreateExecutiveSummaryArgs {
   recruitmentNotes?: string;
 }
 
-export type EditExecutiveSummaryArgs = Omit<CreateExecutiveSummaryArgs, 'seasonName' | 'seasonStartDate' | 'seasonEndDate'>;
+export type EditExecutiveSummaryArgs = Omit<CreateExecutiveSummaryArgs, 'carId' | 'seasonStartDate' | 'seasonEndDate'>;
 
 export interface CreateCompetitionPerformanceArgs {
   executiveSummaryId: string;
@@ -111,8 +112,8 @@ export type EditCompetitionPerformanceArgs = Omit<CreateCompetitionPerformanceAr
 
 export interface CreateCompetitionDocumentsSummaryArgs {
   executiveSummaryId: string;
-  submittedOnTimeCount: number;
-  firstSubmissionRejectedCount: number;
+  submittedOnTimeCount?: number;
+  firstSubmissionRejectedCount?: number;
   source?: DataSource;
   dateSynced?: Date;
 }
@@ -143,7 +144,6 @@ export interface VehicleDevelopmentProjectSummary {
   team: TeamPreview;
   startDate: Date;
   plannedEndDate: Date;
-  actualEndDate?: Date;
 }
 
 export interface VehicleDevelopmentSummary {

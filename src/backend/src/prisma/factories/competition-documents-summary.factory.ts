@@ -8,9 +8,13 @@ export const DOCUMENTS_SUMMARY_CHANCE = 0.6;
 // Chance the documents summary was synced automatically vs entered by hand.
 export const AUTO_SOURCE_CHANCE = 0.4;
 
+// Chance a given count is missing entirely - older, backfilled seasons don't always have
+// complete records.
+export const COUNT_MISSING_CHANCE = 0.2;
+
 export type PlannedCompetitionDocumentsSummary = {
-  submittedOnTimeCount: number;
-  firstSubmissionRejectedCount: number;
+  submittedOnTimeCount: number | undefined;
+  firstSubmissionRejectedCount: number | undefined;
   source: Data_Source;
   dateSynced: Date | undefined;
 };
@@ -21,8 +25,12 @@ export const planCompetitionDocumentsSummary = (
 ): PlannedCompetitionDocumentsSummary => {
   const isAuto = faker.datatype.boolean({ probability: AUTO_SOURCE_CHANCE });
   return {
-    submittedOnTimeCount: faker.number.int({ min: 0, max: 20 }),
-    firstSubmissionRejectedCount: faker.number.int({ min: 0, max: 10 }),
+    submittedOnTimeCount: faker.datatype.boolean({ probability: COUNT_MISSING_CHANCE })
+      ? undefined
+      : faker.number.int({ min: 0, max: 20 }),
+    firstSubmissionRejectedCount: faker.datatype.boolean({ probability: COUNT_MISSING_CHANCE })
+      ? undefined
+      : faker.number.int({ min: 0, max: 10 }),
     source: isAuto ? Data_Source.AUTO : Data_Source.MANUAL,
     // Only an AUTO source has ever actually run a sync.
     dateSynced: isAuto ? faker.date.between(dateRange) : undefined
@@ -34,8 +42,8 @@ export const competitionDocumentsSummaryCreateInput = (
   planned: PlannedCompetitionDocumentsSummary
 ): Prisma.Competition_Documents_SummaryCreateInput => ({
   executiveSummary: { connect: { executiveSummaryId } },
-  submittedOnTimeCount: planned.submittedOnTimeCount,
-  firstSubmissionRejectedCount: planned.firstSubmissionRejectedCount,
+  submittedOnTimeCount: planned.submittedOnTimeCount ?? null,
+  firstSubmissionRejectedCount: planned.firstSubmissionRejectedCount ?? null,
   source: planned.source,
   dateSynced: planned.dateSynced ?? null
 });

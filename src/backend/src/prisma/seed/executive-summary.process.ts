@@ -2,17 +2,15 @@ import { Executive_Summary } from '@prisma/client';
 import { SeedProcess } from '../processes/seed-process.js';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
-import { FullUser } from '../context.js';
+import { CarProcess } from './car.process.js';
+import { CarOutput, FullUser } from '../context.js';
 import {
-  EXECUTIVE_SUMMARY_COUNT,
   EXECUTIVE_SUMMARY_DELETED_CHANCE,
   executiveSummaryCreateInput,
-  generateNotes,
-  seasonDateRangeForIndex,
-  seasonNameForIndex
+  generateNotes
 } from '../factories/executive-summary.factory.js';
 
-type ExecutiveSummaryInput = OrganizationOutput & UsersOutput;
+type ExecutiveSummaryInput = OrganizationOutput & UsersOutput & CarOutput;
 
 export type ExecutiveSummaryOutput = {
   executiveSummaries: Executive_Summary[];
@@ -20,10 +18,10 @@ export type ExecutiveSummaryOutput = {
 
 export class ExecutiveSummaryProcess extends SeedProcess<ExecutiveSummaryInput, ExecutiveSummaryOutput> {
   dependencies() {
-    return [OrganizationProcess, UsersProcess];
+    return [OrganizationProcess, UsersProcess, CarProcess];
   }
 
-  async run({ organization, admins, heads, leadership }: ExecutiveSummaryInput): Promise<ExecutiveSummaryOutput> {
+  async run({ organization, admins, heads, leadership, cars }: ExecutiveSummaryInput): Promise<ExecutiveSummaryOutput> {
     const { organizationId } = organization;
     const now = new Date();
 
@@ -32,8 +30,10 @@ export class ExecutiveSummaryProcess extends SeedProcess<ExecutiveSummaryInput, 
       throw new Error('ExecutiveSummaryProcess requires at least one leadership-level user.');
     }
 
-    const planned = Array.from({ length: EXECUTIVE_SUMMARY_COUNT }, (_, index) => {
-      const { seasonStartDate, seasonEndDate } = seasonDateRangeForIndex(index);
+    // Each car represents one season, so every car gets exactly one executive summary.
+    const planned = cars.map(({ car, dateRange }) => {
+      const seasonStartDate = dateRange.start;
+      const seasonEndDate = dateRange.end;
       // A season only gets its write-up once it has ended - if it hasn't (the newest, ongoing
       // season), the summary is dated "now" rather than a future date past the report itself.
       const dateCreated =
@@ -42,7 +42,7 @@ export class ExecutiveSummaryProcess extends SeedProcess<ExecutiveSummaryInput, 
       const isDeleted = this.faker.datatype.boolean({ probability: EXECUTIVE_SUMMARY_DELETED_CHANCE });
 
       return {
-        seasonName: seasonNameForIndex(index),
+        carId: car.carId,
         seasonStartDate,
         seasonEndDate,
         dateCreated,
@@ -68,7 +68,7 @@ export class ExecutiveSummaryProcess extends SeedProcess<ExecutiveSummaryInput, 
         this.prisma.executive_Summary.create({
           data: executiveSummaryCreateInput(
             organizationId,
-            p.seasonName,
+            p.carId,
             p.seasonStartDate,
             p.seasonEndDate,
             p.notes,

@@ -9,6 +9,7 @@ export type SeedTeamConfig = {
   description: string;
   teamTypeName: string;
   financeTeam?: boolean;
+  operationsTeam?: boolean;
 };
 
 export const seedTeamConfigs: SeedTeamConfig[] = [
@@ -80,7 +81,8 @@ export const seedTeamConfigs: SeedTeamConfig[] = [
   {
     teamName: 'Operations',
     description: 'Coordinates logistics, planning, and internal processes.',
-    teamTypeName: 'Business'
+    teamTypeName: 'Business',
+    operationsTeam: true
   },
   {
     teamName: 'Finance',
@@ -150,6 +152,7 @@ export const teamCreateInput = (
     slackId: slackIdForTeam(faker, config.teamName),
     description: config.description,
     financeTeam: config.financeTeam ?? false,
+    operationsTeam: config.operationsTeam ?? false,
     head: {
       connect: { userId: head.userId }
     },
