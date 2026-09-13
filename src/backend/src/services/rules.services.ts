@@ -1515,7 +1515,7 @@ export default class RulesService {
    */
   static async deleteProjectRule(projectRuleId: string, deleter: User, organization: Organization): Promise<ProjectRule> {
     if (!(await userHasPermission(deleter.userId, organization.organizationId, isHead))) {
-      throw new AccessDeniedAdminOnlyException('delete project rules');
+      throw new AccessDeniedException('You do not have permissions to delete project rules');
     }
 
     const projectRule = await prisma.project_Rule.findUnique({
