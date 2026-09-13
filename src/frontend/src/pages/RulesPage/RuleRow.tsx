@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TableCell, TableRow, Box } from '@mui/material';
+import { TableCell, TableRow, Box, Typography } from '@mui/material';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Rule } from 'shared';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -93,7 +93,12 @@ const RuleRow: React.FC<RuleRowProps> = ({
   const hasSubRules = providedSubRules ? providedSubRules.length > 0 : rule.subRuleIds.length > 0;
 
   // Lazy load if allRules not provided
-  const { data: fetchedSubRules = EMPTY_SUB_RULES } = useGetChildRules(rule.ruleId, !allRules && isExpanded && hasSubRules);
+  const {
+    data: fetchedSubRules = EMPTY_SUB_RULES,
+    isLoading,
+    isError,
+    error
+  } = useGetChildRules(rule.ruleId, !allRules && isExpanded && hasSubRules);
 
   // Use allRules if provided, otherwise use fetched.
   // Sorted by rule code so children render in a stable numeric order (e.g. F.2 before F.10)
@@ -219,6 +224,8 @@ const RuleRow: React.FC<RuleRowProps> = ({
         // id so a parent can scroll to this row
         id={`rule-row-${rule.ruleId}`}
         onClick={handleRowClick}
+        aria-busy={isLoading}
+        aria-expanded={hasSubRules ? isExpanded : undefined}
         sx={{
           borderBottom: '1px solid #7d7d7d',
           backgroundColor: indentRow ? 'transparent' : bgColor,
@@ -308,6 +315,15 @@ const RuleRow: React.FC<RuleRowProps> = ({
           </>
         )}
       </TableRow>
+      {isExpanded && hasSubRules && isError && (
+        <TableRow>
+          <TableCell colSpan={3} sx={commonCellStyles}>
+            <Typography variant="body2" color="error">
+              {`Failed to load sub-rules${error?.message ? `: ${error.message}` : ''}`}
+            </Typography>
+          </TableCell>
+        </TableRow>
+      )}
       {isExpanded &&
         hasSubRules &&
         visibleSubRules.map((subRule) => (
