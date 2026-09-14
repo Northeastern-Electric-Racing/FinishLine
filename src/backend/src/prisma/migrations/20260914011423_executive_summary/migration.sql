@@ -24,7 +24,6 @@ CREATE TABLE "Executive_Summary" (
     "userCreatedId" TEXT NOT NULL,
     "dateDeleted" TIMESTAMP(3),
     "deletedByUserId" TEXT,
-    "organizationOrganizationId" TEXT,
 
     CONSTRAINT "Executive_Summary_pkey" PRIMARY KEY ("executiveSummaryId")
 );
@@ -78,8 +77,8 @@ CREATE TABLE "Recruitment_Division_Count" (
     "recruitmentDivisionCountId" TEXT NOT NULL,
     "recruitmentCycleId" TEXT NOT NULL,
     "teamTypeId" TEXT NOT NULL,
-    "newMembers" INTEGER NOT NULL,
-    "returningMembers" INTEGER NOT NULL,
+    "newMembers" INTEGER,
+    "returningMembers" INTEGER,
 
     CONSTRAINT "Recruitment_Division_Count_pkey" PRIMARY KEY ("recruitmentDivisionCountId")
 );
@@ -119,9 +118,6 @@ ALTER TABLE "Executive_Summary" ADD CONSTRAINT "Executive_Summary_userCreatedId_
 
 -- AddForeignKey
 ALTER TABLE "Executive_Summary" ADD CONSTRAINT "Executive_Summary_deletedByUserId_fkey" FOREIGN KEY ("deletedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Executive_Summary" ADD CONSTRAINT "Executive_Summary_organizationOrganizationId_fkey" FOREIGN KEY ("organizationOrganizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Competition_Performance" ADD CONSTRAINT "Competition_Performance_executiveSummaryId_fkey" FOREIGN KEY ("executiveSummaryId") REFERENCES "Executive_Summary"("executiveSummaryId") ON DELETE RESTRICT ON UPDATE CASCADE;

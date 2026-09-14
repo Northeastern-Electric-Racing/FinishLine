@@ -7,7 +7,6 @@ export const EXECUTIVE_SUMMARY_DELETED_CHANCE = 0.05;
 export const generateNotes = (faker: Faker): string => faker.lorem.paragraph();
 
 export const executiveSummaryCreateInput = (
-  organizationId: string,
   carId: string,
   seasonStartDate: Date,
   seasonEndDate: Date,
@@ -24,7 +23,6 @@ export const executiveSummaryCreateInput = (
   budgetNotes: notes.budgetNotes,
   recruitmentNotes: notes.recruitmentNotes,
   dateCreated,
-  organization: { connect: { organizationId } },
   userCreated: { connect: { userId: userCreatedId } },
   ...(deleted ? { dateDeleted: deleted.dateDeleted, deletedBy: { connect: { userId: deleted.deletedByUserId } } } : {})
 });

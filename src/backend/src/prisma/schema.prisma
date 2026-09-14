@@ -1478,7 +1478,6 @@ model Organization {
   meetingAttendances       Meeting_Attendance[]
   taskLabels               Task_Label[]
   dashboards               Dashboard[]
-  executiveSummaries       Executive_Summary[]
 }
 
 model Dashboard {
@@ -1901,9 +1900,6 @@ model Executive_Summary {
   competitionPerformances     Competition_Performance[]
   competitionDocumentsSummary Competition_Documents_Summary?
   recruitmentCycles           Recruitment_Cycle[]
-
-  organization               Organization? @relation(fields: [organizationOrganizationId], references: [organizationId])
-  organizationOrganizationId String?
 }
 
 model Competition_Performance {
@@ -1958,8 +1954,8 @@ model Recruitment_Division_Count {
   recruitmentCycle           Recruitment_Cycle @relation(fields: [recruitmentCycleId], references: [recruitmentCycleId])
   teamTypeId                 String
   teamType                   Team_Type         @relation(fields: [teamTypeId], references: [teamTypeId])
-  newMembers                 Int
-  returningMembers           Int
+  newMembers                 Int?
+  returningMembers           Int?
 
   @@unique([recruitmentCycleId, teamTypeId], name: "uniqueDivisionCountPerCycle")
   @@index([recruitmentCycleId])

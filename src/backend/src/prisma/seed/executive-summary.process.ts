@@ -1,6 +1,5 @@
 import { Executive_Summary } from '@prisma/client';
 import { SeedProcess } from '../processes/seed-process.js';
-import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
 import { CarProcess } from './car.process.js';
 import { CarOutput, FullUser } from '../context.js';
@@ -10,7 +9,7 @@ import {
   generateNotes
 } from '../factories/executive-summary.factory.js';
 
-type ExecutiveSummaryInput = OrganizationOutput & UsersOutput & CarOutput;
+type ExecutiveSummaryInput = UsersOutput & CarOutput;
 
 export type ExecutiveSummaryOutput = {
   executiveSummaries: Executive_Summary[];
@@ -18,11 +17,10 @@ export type ExecutiveSummaryOutput = {
 
 export class ExecutiveSummaryProcess extends SeedProcess<ExecutiveSummaryInput, ExecutiveSummaryOutput> {
   dependencies() {
-    return [OrganizationProcess, UsersProcess, CarProcess];
+    return [UsersProcess, CarProcess];
   }
 
-  async run({ organization, admins, heads, leadership, cars }: ExecutiveSummaryInput): Promise<ExecutiveSummaryOutput> {
-    const { organizationId } = organization;
+  async run({ admins, heads, leadership, cars }: ExecutiveSummaryInput): Promise<ExecutiveSummaryOutput> {
     const now = new Date();
 
     const leadershipPool: FullUser[] = [...admins, ...heads, ...leadership];
@@ -67,7 +65,6 @@ export class ExecutiveSummaryProcess extends SeedProcess<ExecutiveSummaryInput, 
       planned.map((p) =>
         this.prisma.executive_Summary.create({
           data: executiveSummaryCreateInput(
-            organizationId,
             p.carId,
             p.seasonStartDate,
             p.seasonEndDate,
