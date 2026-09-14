@@ -19,7 +19,7 @@ import {
   IconButton,
   Tooltip
 } from '@mui/material';
-import { isHead, Project, ProjectRule, Rule, isLeadership } from 'shared';
+import { isHead, Project, ProjectRule, Rule, RuleStatus, isLeadership } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
@@ -33,13 +33,13 @@ import {
   useAllRulesetTypes,
   useActiveRuleset,
   useProjectRules,
-  useRuleStatusUpdate,
   useSetProjectRuleStatus,
   useBulkCreateProjectRules,
   useResetProjectRuleStatuses,
   useBulkDeleteProjectRules
 } from '../../../../hooks/rules.hooks';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
+import { useToast } from '../../../../hooks/toasts.hooks';
 import { InfoOutlined } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../../utils/routes';
@@ -53,6 +53,7 @@ interface ProjectRulesTabProps {
 }
 
 export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
+  const toast = useToast();
   const theme = useTheme();
   const history = useHistory();
   const user = useCurrentUser();
@@ -83,10 +84,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   } = useProjectRules(activeRuleset?.rulesetId || '', project.id);
 
   // Mutations
-  const { mutateAsync: setStatusMutation, isLoading: isUpdatingStatus } = useSetProjectRuleStatus(
-    activeRuleset?.rulesetId || '',
-    project.id
-  );
+  const { mutateAsync: setStatusMutation } = useSetProjectRuleStatus(activeRuleset?.rulesetId || '', project.id);
 
   const { mutate: addProjectRules, isLoading: isCreating } = useBulkCreateProjectRules(
     activeRuleset?.rulesetId || '',
@@ -138,19 +136,25 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const { expandedIds, toggleExpand, navigateToRule, expandAll, collapseAll, areAllExpanded } =
     useRuleTreeNavigation(projectRuleList);
 
-  // Handle status update, local to this project
-  const { pendingRuleId, updateStatus } = useRuleStatusUpdate(async (ruleId, status) => {
-    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === ruleId);
-    if (!projectRule) throw new Error('That rule is no longer assigned to this project');
-    await setStatusMutation({ projectRuleId: projectRule.projectRuleId, status });
-  });
+  // projectRuleList flattens project rules and drops projectRuleId, so connect a rule row back to its project rule
+  const projectRuleByRuleId = useMemo(() => new Map((projectRules ?? []).map((pr) => [pr.rule.ruleId, pr])), [projectRules]);
 
   // Handle opening the status history modal, scoped to this project
-  const handleInfoClick = (rule: Rule) => {
-    const projectRule = projectRules?.find((pr) => pr.rule.ruleId === rule.ruleId);
+  const handleHistoryClick = (rule: Rule) => {
+    const projectRule = projectRuleByRuleId.get(rule.ruleId);
     if (projectRule) {
       setHistoryModalProjectRule(projectRule);
     }
+  };
+
+  // status writes are local to this project
+  const handleSetStatus = async (rule: Rule, status: RuleStatus) => {
+    const projectRule = projectRuleByRuleId.get(rule.ruleId);
+    if (!projectRule) {
+      toast.error(`Rule ${rule.ruleCode} is no longer assigned to this project.`);
+      return;
+    }
+    await setStatusMutation({ projectRuleId: projectRule.projectRuleId, status });
   };
 
   // Handle resetting all of this project's statuses (for the active ruleset) back to Pending
@@ -197,9 +201,8 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
       <RuleStatusTag
         rule={rule}
         isLeaf={isLeafRule}
-        onStatusChange={canUpdateStatus ? (status) => updateStatus(rule.ruleId, status) : undefined}
-        disabled={pendingRuleId === rule.ruleId}
-        onInfoClick={handleInfoClick}
+        onStatusChange={canUpdateStatus ? handleSetStatus : undefined}
+        onInfoClick={handleHistoryClick}
       />
     );
   };
@@ -433,8 +436,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
         />
       )}
 
-      {/* Loading overlay */}
-      {(isUpdatingStatus || isCreating || isResetting || isDeleting) && (
+      {(isCreating || isResetting || isDeleting) && (
         <Box
           sx={{
             position: 'fixed',
