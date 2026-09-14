@@ -77,8 +77,8 @@ export interface RecruitmentDivisionCount {
   recruitmentDivisionCountId: string;
   recruitmentCycleId: string;
   teamType: TeamType;
-  newMembers: number;
-  returningMembers: number;
+  newMembers?: number;
+  returningMembers?: number;
 }
 
 export interface CreateExecutiveSummaryArgs {
