@@ -1,7 +1,7 @@
 -- AlterTable
 ALTER TABLE "Change_Request" ADD COLUMN     "snapshotBlockingCount" INTEGER,
 ADD COLUMN     "snapshotDuration" INTEGER,
-ADD COLUMN     "snapshotStartDate" TIMESTAMP(3);
+ADD COLUMN     "snapshotStartDate" DATE;
 
 -- AlterTable
 ALTER TABLE "Organization" ADD COLUMN     "activationBufferDays" INTEGER NOT NULL DEFAULT 7;

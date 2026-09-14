@@ -415,7 +415,7 @@ model Change_Request {
   wbsProposedChangesId     String?                             @unique
   wbsProposedChanges       Wbs_Proposed_Changes?               @relation("wbsProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   snapshotBlockingCount    Int?
-  snapshotStartDate        DateTime?
+  snapshotStartDate        DateTime?                           @db.Date
   snapshotDuration         Int?
 
   @@unique([identifier, organizationId], name: "uniqueChangeRequest")
