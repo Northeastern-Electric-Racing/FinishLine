@@ -27,6 +27,7 @@ import { SponsorProcess } from './seed/sponsor.process.js';
 import { PartProcess } from './seed/parts.process.js';
 import { OrganizationContentProcess } from './seed/organization-content.process.js';
 import { GraphProcess } from './seed/graphs.process.js';
+import { RulesProcess } from './seed/rules.process.js';
 
 const prisma = new PrismaClient();
 
@@ -52,7 +53,8 @@ await new SeedRunner()
     new PartProcess(),
     new SponsorProcess(),
     new OrganizationContentProcess(),
-    new GraphProcess()
+    new GraphProcess(),
+    new RulesProcess()
   )
   .run();
 

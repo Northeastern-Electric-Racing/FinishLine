@@ -34,6 +34,7 @@ import PartsReviewPage from './PartReview/PartsReviewPage';
 import ActionsMenu from '../../../components/ActionsMenu';
 import ProjectSpendingHistory from '../../ProjectPage/ProjectSpendingHistory';
 import { useMyTeamAsHead } from '../../../hooks/teams.hooks';
+import { ProjectRulesTab } from './ProjectRules/ProjectRulesTab';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -214,7 +215,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             { tabUrlValue: 'gantt', tabName: 'Gantt' },
             { tabUrlValue: 'change-requests', tabName: 'Change Requests' },
             { tabUrlValue: 'parts-review', tabName: 'Parts Review' },
-            { tabUrlValue: 'spending', tabName: 'Budget' }
+            { tabUrlValue: 'spending', tabName: 'Budget' },
+            { tabUrlValue: 'rules', tabName: 'Rules' }
           ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
@@ -237,8 +239,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <ChangeRequestTab wbsElement={project} />
       ) : tab === 6 ? (
         <PartsReviewPage project={project} />
-      ) : (
+      ) : tab === 7 ? (
         <ProjectSpendingHistory wbsNum={project.wbsNum} />
+      ) : (
+        <ProjectRulesTab project={project} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />
