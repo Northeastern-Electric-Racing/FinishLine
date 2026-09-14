@@ -5,7 +5,7 @@
 
 import { Box, CircularProgress, IconButton, Tooltip, useTheme } from '@mui/material';
 import { Close, ErrorOutline } from '@mui/icons-material';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Rule } from 'shared';
 import { useGetImageUrls } from '../../../hooks/onboarding.hook';
 import ImagePreviewModal from './ImagePreviewModal';
@@ -182,4 +182,4 @@ const RuleContent: React.FC<RuleContentProps> = ({
   );
 };
 
-export default RuleContent;
+export default memo(RuleContent);

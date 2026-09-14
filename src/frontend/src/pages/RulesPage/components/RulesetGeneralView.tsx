@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Box, Paper, Table, TableBody, TableContainer, useTheme } from '@mui/material';
-import { Rule, isLeadership } from 'shared';
+import { Rule, RuleStatus, isLeadership } from 'shared';
 import RuleRow from '../RuleRow';
 import RuleStatusTag from './RuleStatusTag';
 import RuleContent from './RuleContent';
 import RuleStatusHistoryModal from './RuleStatusHistoryModal';
-import { useRuleStatusUpdate, useSetRuleStatus } from '../../../hooks/rules.hooks';
+import { useSetRuleStatus } from '../../../hooks/rules.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { compareRuleCodes } from '../../../utils/rules.utils';
 
@@ -41,10 +41,31 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
 
   // Status in general view is independent of any project
   const { mutateAsync: setStatus } = useSetRuleStatus(rulesetId);
-  const { pendingRuleId, updateStatus } = useRuleStatusUpdate((ruleId, status) => setStatus({ ruleId, status }));
 
   // Sort once by rule code so top-level rows render in a stable numeric order.
   const sortedTopLevelRules = useMemo(() => [...topLevelRules].sort(compareRuleCodes), [topLevelRules]);
+
+  const handleSetStatus = useCallback(
+    (rule: Rule, status: RuleStatus) => setStatus({ ruleId: rule.ruleId, status }),
+    [setStatus]
+  );
+
+  const renderMiddleContent = useCallback(
+    (r: Rule) => <RuleContent rule={r} onReferenceClick={navigateToRule} color={tableTextColor} />,
+    [navigateToRule, tableTextColor]
+  );
+
+  const renderRightContent = useCallback(
+    (r: Rule) => (
+      <RuleStatusTag
+        rule={r}
+        isLeaf={r.subRuleIds.length === 0}
+        onStatusChange={canUpdateStatus ? handleSetStatus : undefined}
+        onInfoClick={setHistoryModalRule}
+      />
+    ),
+    [canUpdateStatus, handleSetStatus]
+  );
 
   return (
     <Box>
@@ -57,22 +78,15 @@ const RulesetGeneralView: React.FC<RulesetGeneralViewProps> = ({
                 rule={rule}
                 expandedIds={expandedIds}
                 onToggleExpand={toggleExpand}
-                middleContent={(r) => <RuleContent rule={r} onReferenceClick={navigateToRule} color={tableTextColor} />}
-                rightContent={(r) => (
-                  <RuleStatusTag
-                    rule={r}
-                    isLeaf={r.subRuleIds.length === 0}
-                    onStatusChange={canUpdateStatus ? (status) => updateStatus(r.ruleId, status) : undefined}
-                    disabled={pendingRuleId === r.ruleId}
-                    onInfoClick={setHistoryModalRule}
-                  />
-                )}
+                middleContent={renderMiddleContent}
+                rightContent={renderRightContent}
                 backgroundColor={tableBackgroundColor}
                 textColor={tableTextColor}
                 hoverColor={tableHoverColor}
                 rowHeight="40px"
                 verticalPadding="8px"
                 indentRow
+                windowChildren
               />
             ))}
           </TableBody>

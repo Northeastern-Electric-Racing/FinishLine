@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ProjectRule, Rule, RulesetType, Ruleset, RuleStatusHistoryEntry } from 'shared';
+import { ProjectRule, Rule, RulesetType, Ruleset, RuleStatusHistoryEntry, RuleStatusUpdate } from 'shared';
 
 /**
  * Transforms a rule to proper field types.
@@ -21,6 +21,20 @@ export const ruleTransformer = (rule: Rule): Rule => {
       ...project,
       statusUpdatedAt: project.statusUpdatedAt ? new Date(project.statusUpdatedAt) : undefined
     }))
+  };
+};
+
+/**
+ * Transforms the result of a status write.
+ *
+ * @param update Incoming status update object
+ * @returns transformed status update object
+ */
+export const ruleStatusUpdateTransformer = (update: RuleStatusUpdate): RuleStatusUpdate => {
+  return {
+    ...update,
+    rule: ruleTransformer(update.rule),
+    ancestors: update.ancestors || []
   };
 };
 
