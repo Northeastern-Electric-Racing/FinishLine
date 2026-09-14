@@ -2562,7 +2562,7 @@ describe('Rule Tests', () => {
 
       await expect(
         async () => await RulesService.deleteProjectRule(projectRule.projectRuleId, nonLeadership, organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete project rules'));
+      ).rejects.toThrow(new AccessDeniedException('You do not have permissions to delete project rules'));
     });
     it('Delete project rule fails if project rule was already deleted', async () => {
       const car = await createUniqueCar(orgId);
