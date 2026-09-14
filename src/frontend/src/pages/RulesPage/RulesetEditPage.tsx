@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Button, CircularProgress, Paper, Table, TableBody, TableContainer, TextField, useTheme } from '@mui/material';
+import { Box, CircularProgress, Paper, Table, TableBody, TableContainer, TextField, useTheme } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useMemo, useState } from 'react';
 import { Redirect, useParams } from 'react-router-dom';
@@ -24,6 +24,8 @@ import RuleContent from './components/RuleContent';
 import { AddRuleBox } from './components/AddRuleBox';
 import AssignRulesTab from './AssignRulesTab';
 import { NERButton } from '../../components/NERButton';
+import NERFailButton from '../../components/NERFailButton';
+import NERSuccessButton from '../../components/NERSuccessButton';
 import DeleteRuleModal from './components/DeleteRuleModal';
 import MismatchedRuleCodeModal from './components/MismatchedRuleCodeModal';
 import {
@@ -288,8 +290,17 @@ const RulesetEditPage: React.FC = () => {
   const handleSaveEdit = async () => {
     if (!editingRuleId) return;
 
-    if (!editedCode.trim()) {
+    const trimmedCode = editedCode.trim();
+
+    if (!trimmedCode) {
       toast.error('Rule code cannot be empty');
+      return;
+    }
+
+    // a duplicate code cannot be saved, so reject it before any of the warnings below
+    const duplicateRule = (allRules ?? []).find((r) => r.ruleId !== editingRuleId && r.ruleCode === trimmedCode);
+    if (duplicateRule) {
+      toast.error(`Rule with code ${trimmedCode} already exists in this ruleset`);
       return;
     }
 
@@ -306,7 +317,7 @@ const RulesetEditPage: React.FC = () => {
         warnings.push(
           `This rule has ${affectedCount} child rule${affectedCount === 1 ? '' : 's'} whose code${
             affectedCount === 1 ? '' : 's'
-          } won't update with the new prefix.`
+          } will not update with the new prefix.`
         );
       }
     }
@@ -387,6 +398,7 @@ const RulesetEditPage: React.FC = () => {
                               display: 'flex',
                               alignItems: 'center',
                               gap: 1,
+                              width: '100%',
                               paddingLeft: `${level * 20}px`,
                               color: theme.palette.common.black
                             }}
@@ -419,8 +431,8 @@ const RulesetEditPage: React.FC = () => {
                                 size="small"
                                 autoFocus
                                 sx={{
-                                  width: '80px',
-                                  flexShrink: 0,
+                                  flex: 1,
+                                  minWidth: 0,
                                   backgroundColor: theme.palette.grey[100],
                                   '& .MuiOutlinedInput-root': {
                                     color: theme.palette.common.black,
@@ -483,15 +495,29 @@ const RulesetEditPage: React.FC = () => {
                           )
                         );
                       }}
-                      rightContent={(currentRule) => (
-                        <RuleActions
-                          ruleId={currentRule.ruleId}
-                          onAdd={handleOpenAddMenu}
-                          onRemove={handleRemoveRule}
-                          onEdit={handleEditRule}
-                          iconColor={theme.palette.common.black}
-                        />
-                      )}
+                      rightContent={(currentRule) =>
+                        editingRuleId === currentRule.ruleId ? (
+                          <Box
+                            sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <NERFailButton size="small" onClick={handleCancelEdit} sx={{ whiteSpace: 'nowrap' }}>
+                              Cancel
+                            </NERFailButton>
+                            <NERSuccessButton size="small" onClick={handleSaveEdit} sx={{ whiteSpace: 'nowrap' }}>
+                              Save
+                            </NERSuccessButton>
+                          </Box>
+                        ) : (
+                          <RuleActions
+                            ruleId={currentRule.ruleId}
+                            onAdd={handleOpenAddMenu}
+                            onRemove={handleRemoveRule}
+                            onEdit={handleEditRule}
+                            iconColor={theme.palette.common.black}
+                          />
+                        )
+                      }
                       backgroundColor={(currentRule) =>
                         editingRuleId === currentRule.ruleId ? theme.palette.grey[400] : theme.palette.grey[500]
                       }
@@ -601,36 +627,9 @@ const RulesetEditPage: React.FC = () => {
                 }}
               />
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pr: '30px', pb: 2 }}>
-                {editingRuleId ? (
-                  <>
-                    <Button
-                      variant="outlined"
-                      onClick={handleCancelEdit}
-                      sx={{
-                        borderRadius: '8px',
-                        color: '#ededed',
-                        borderColor: '#ededed',
-                        padding: '2px 15px',
-                        fontSize: '16px',
-                        fontWeight: 700,
-                        textTransform: 'none',
-                        '&:hover': {
-                          borderColor: '#ededed',
-                          backgroundColor: 'rgba(237, 237, 237, 0.1)'
-                        }
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <NERButton variant="contained" sx={{ color: '#ededed' }} onClick={handleSaveEdit}>
-                      Save
-                    </NERButton>
-                  </>
-                ) : (
-                  <NERButton variant="contained" sx={{ color: '#ededed' }} onClick={handleAddRuleSection}>
-                    Add Rule Section
-                  </NERButton>
-                )}
+                <NERButton variant="contained" sx={{ color: '#ededed' }} onClick={handleAddRuleSection}>
+                  Add Rule Section
+                </NERButton>
               </Box>
             </Box>
           </Box>
