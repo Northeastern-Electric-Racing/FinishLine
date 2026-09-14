@@ -83,15 +83,15 @@ export interface RecruitmentDivisionCount {
 
 export interface CreateExecutiveSummaryArgs {
   carId: string;
-  seasonStartDate: Date;
-  seasonEndDate: Date;
+  seasonStartDate?: Date;
+  seasonEndDate?: Date;
   goals?: string;
   winsAndImprovements?: string;
   budgetNotes?: string;
   recruitmentNotes?: string;
 }
 
-export type EditExecutiveSummaryArgs = Omit<CreateExecutiveSummaryArgs, 'carId' | 'seasonStartDate' | 'seasonEndDate'>;
+export type EditExecutiveSummaryArgs = Omit<CreateExecutiveSummaryArgs, 'carId'>;
 
 export interface CreateCompetitionPerformanceArgs {
   executiveSummaryId: string;
