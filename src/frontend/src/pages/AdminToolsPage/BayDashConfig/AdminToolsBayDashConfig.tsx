@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 
 /**
  * The Bay Dashboard tab in Admin Tools
