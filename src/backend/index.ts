@@ -35,6 +35,7 @@ import { mcpNodeHandler } from './src/mcp/handler.js';
 import { attachAuthInfo, requireApiToken } from './src/utils/mcp-auth.utils.js';
 import dashboardsRouter from './src/routes/dashboards.routes.js';
 import bayDashboardRouter from './src/routes/bay-dashboard.routes.js';
+import bayDashboardAdminRouter from './src/routes/bay-dashboard-admin.routes.js';
 
 const app = express();
 
@@ -144,6 +145,7 @@ app.use('/calendar', calendarRouter);
 app.use('/prospective-sponsors', prospectiveSponsorRouter);
 app.use('/attendance', attendanceRouter);
 app.use('/dashboards', dashboardsRouter);
+app.use('/bay-dashboard', bayDashboardAdminRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });
