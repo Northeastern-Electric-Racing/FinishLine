@@ -22,8 +22,8 @@ export interface RuleDraft {
 }
 
 const editFieldStyles = (theme: Theme) => ({
-  backgroundColor: theme.palette.grey[100],
   '& .MuiOutlinedInput-root': {
+    backgroundColor: theme.palette.grey[100],
     color: theme.palette.common.black,
     '& fieldset': {
       borderColor: '#dd514c'
