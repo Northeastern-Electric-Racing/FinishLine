@@ -1923,6 +1923,7 @@ model Bay_Dashboard_Countdown {
   name                    String
   startDate               DateTime
   endDate                 DateTime?
+  isPrimary               Boolean      @default(false)
   dateCreated             DateTime     @default(now())
   dateDeleted             DateTime?
   userCreated             User         @relation(fields: [userCreatedId], references: [userId], name: "bayDashboardCountdownCreator")

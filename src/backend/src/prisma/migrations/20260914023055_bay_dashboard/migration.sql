@@ -43,6 +43,7 @@ CREATE TABLE "Bay_Dashboard_Countdown" (
     "name" TEXT NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3),
+    "isPrimary" BOOLEAN NOT NULL DEFAULT false,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
     "userCreatedId" TEXT NOT NULL,
@@ -69,6 +70,14 @@ CREATE UNIQUE INDEX "Bay_Dashboard_Widget_bayDashboardSlotId_order_key" ON "Bay_
 
 -- CreateIndex
 CREATE INDEX "Bay_Dashboard_Countdown_organizationId_idx" ON "Bay_Dashboard_Countdown"("organizationId");
+
+-- CreateIndex
+-- Hand-written: Prisma cannot express partial indexes, so this is not represented in schema.prisma
+-- and will be lost if this migration is regenerated. Enforces at most one primary countdown per
+-- organization, ignoring soft-deleted rows so a deleted primary does not block its replacement.
+CREATE UNIQUE INDEX "Bay_Dashboard_Countdown_primary_org_key"
+  ON "Bay_Dashboard_Countdown"("organizationId")
+  WHERE "isPrimary" AND "dateDeleted" IS NULL;
 
 -- AddForeignKey
 ALTER TABLE "Bay_Dashboard_Config" ADD CONSTRAINT "Bay_Dashboard_Config_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
