@@ -171,6 +171,22 @@ enum Team_Join_Request_Status {
   DENIED
 }
 
+enum Bay_Dashboard_Widget_Size {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum Bay_Dashboard_Widget_Type {
+  CALENDAR
+  OVERDUE_WORK_PACKAGES
+  TEXT_FIELD
+  TIER_LIST
+  MBTA_TRACKER
+  SLACK_APPRECIATIONS
+  SLACK_MENTIONS
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -302,6 +318,9 @@ model User {
   createdTaskLabels                       Task_Label[]                         @relation(name: "taskLabelCreator")
   deletedTaskLabels                       Task_Label[]                         @relation(name: "taskLabelDeleter")
   dashboards                              Dashboard[]                          @relation(name: "userDashboards")
+  createdBayDashboardConfigs              Bay_Dashboard_Config[]               @relation(name: "bayDashboardConfigCreator")
+  createdBayDashboardCountdowns           Bay_Dashboard_Countdown[]            @relation(name: "bayDashboardCountdownCreator")
+  deletedBayDashboardCountdowns           Bay_Dashboard_Countdown[]            @relation(name: "bayDashboardCountdownDeleter")
 }
 
 model Role {
@@ -579,16 +598,16 @@ model Work_Package {
 }
 
 model Link_Type {
-  id                     String       @id @default(uuid())
-  name                   String
-  dateCreated            DateTime     @default(now())
-  iconName               String
-  required               Boolean
-  creatorId              String
-  creator                User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links                  Link[]       @relation(name: "linkTypes")
-  organizationId         String
-  organization           Organization @relation(fields: [organizationId], references: [organizationId])
+  id                      String       @id @default(uuid())
+  name                    String
+  dateCreated             DateTime     @default(now())
+  iconName                String
+  required                Boolean
+  creatorId               String
+  creator                 User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links                   Link[]       @relation(name: "linkTypes")
+  organizationId          String
+  organization            Organization @relation(fields: [organizationId], references: [organizationId])
   isOnGuestHomePage       Boolean      @default(false)
   isOnNewMemberDashboard  Boolean      @default(false)
   isOnOnboardingDashboard Boolean      @default(false)
@@ -1458,6 +1477,8 @@ model Organization {
   meetingAttendances       Meeting_Attendance[]
   taskLabels               Task_Label[]
   dashboards               Dashboard[]
+  bayDashboardConfigs      Bay_Dashboard_Config[]
+  bayDashboardCountdowns   Bay_Dashboard_Countdown[]
 }
 
 model Dashboard {
@@ -1856,4 +1877,61 @@ model Meeting_Attendance {
 
   @@index([organizationId])
   @@index([teamId])
+}
+
+model Bay_Dashboard_Config {
+  bayDashboardConfigId String               @id @default(uuid())
+  slots                Bay_Dashboard_Slot[]
+  dateCreated          DateTime             @default(now())
+  dateDeleted          DateTime?
+  userCreated          User                 @relation(fields: [userCreatedId], references: [userId], name: "bayDashboardConfigCreator")
+  userCreatedId        String
+  organizationId       String
+  organization         Organization         @relation(fields: [organizationId], references: [organizationId])
+
+  @@index([organizationId])
+}
+
+model Bay_Dashboard_Slot {
+  bayDashboardSlotId   String                    @id @default(uuid())
+  size                 Bay_Dashboard_Widget_Size
+  // 0 = left large, 1 = right medium, 2 = right small
+  position             Int
+  rotationSeconds      Int                       @default(30)
+  widgets              Bay_Dashboard_Widget[]
+  bayDashboardConfigId String
+  bayDashboardConfig   Bay_Dashboard_Config      @relation(fields: [bayDashboardConfigId], references: [bayDashboardConfigId], onDelete: Cascade)
+
+  @@unique([bayDashboardConfigId, position])
+  @@index([bayDashboardConfigId])
+}
+
+model Bay_Dashboard_Widget {
+  bayDashboardWidgetId String                    @id @default(uuid())
+  type                 Bay_Dashboard_Widget_Type
+  order                Int
+  text                 String?
+  bayDashboardSlotId   String
+  bayDashboardSlot     Bay_Dashboard_Slot        @relation(fields: [bayDashboardSlotId], references: [bayDashboardSlotId], onDelete: Cascade)
+
+  @@unique([bayDashboardSlotId, order])
+  @@index([bayDashboardSlotId])
+}
+
+model Bay_Dashboard_Countdown {
+  bayDashboardCountdownId String       @id @default(uuid())
+  name                    String
+  startDate               DateTime
+  endDate                 DateTime?
+  isPrimary               Boolean      @default(false)
+  dateCreated             DateTime     @default(now())
+  dateDeleted             DateTime?
+  userCreated             User         @relation(fields: [userCreatedId], references: [userId], name: "bayDashboardCountdownCreator")
+  userCreatedId           String
+  userDeleted             User?        @relation(fields: [userDeletedId], references: [userId], name: "bayDashboardCountdownDeleter")
+  userDeletedId           String?
+  organizationId          String
+  organization            Organization @relation(fields: [organizationId], references: [organizationId])
+
+  @@index([organizationId])
 }
