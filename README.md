@@ -1,6 +1,6 @@
 # FinishLine by NER
 
-Also known as PM Dashboard v4.
+Also known as PM Dashboard v5.
 
 A project management web application built in Typescript, React, and Express.
 
@@ -8,7 +8,7 @@ A project management web application built in Typescript, React, and Express.
 
 All of our documentation is on [our Confluence page](https://nerdocs.atlassian.net/wiki/spaces/NER/pages/5603329/Software). Start there to learn what the project is all about.
 
-All questions can be directed to `#software` in the [NER Slack](https://nu-electric-racing.slack.com) (backup contact: [`@RChandler234`](https://github.com/RChandler234)).
+All questions can be directed to `#software` in the [NER Slack](https://nu-electric-racing.slack.com) (backup contact: [`@Peyton-McKee`](https://github.com/Peyton-McKee)).
 
 ## Environment Setup
 

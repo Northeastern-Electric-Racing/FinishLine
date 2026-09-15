@@ -1,27 +1,26 @@
 import { NextFunction, Request, Response } from 'express';
-import { getCurrentUser } from '../utils/auth.utils';
-import TasksService from '../services/tasks.services';
+import TasksService from '../services/tasks.services.js';
 import { validateWBS, WbsNumber } from 'shared';
-import { User } from '@prisma/client';
 
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, deadline, priority, status, assignees } = req.body;
-
-      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
-
-      const createdBy: User = await getCurrentUser(res);
+      const { title, deadline, startDate, priority, status, assignees, notes, labelIds, blockedByIds } = req.body;
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
 
       const task = await TasksService.createTask(
-        createdBy,
+        req.currentUser,
         wbsNum,
         title,
-        '',
-        new Date(deadline),
+        notes ?? '',
         priority,
         status,
-        assignees
+        assignees,
+        req.organization,
+        labelIds,
+        blockedByIds,
+        startDate ? new Date(startDate) : undefined,
+        deadline ? new Date(deadline) : undefined
       );
 
       res.status(200).json(task);
@@ -32,13 +31,22 @@ export default class TasksController {
 
   static async editTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, notes, priority, deadline } = req.body;
+      const { title, notes, priority, deadline, startDate, wbsNum, labelIds, blockedByIds } = req.body;
+      const { taskId } = req.params as Record<string, string>;
 
-      const { taskId } = req.params;
-
-      const user: User = await getCurrentUser(res);
-
-      const updateTask = await TasksService.editTask(user, taskId, title, notes, priority, deadline);
+      const updateTask = await TasksService.editTask(
+        req.currentUser,
+        req.organization.organizationId,
+        taskId,
+        title,
+        notes,
+        priority,
+        labelIds,
+        blockedByIds,
+        startDate ? new Date(startDate) : undefined,
+        deadline ? new Date(deadline) : undefined,
+        wbsNum
+      );
 
       res.status(200).json(updateTask);
     } catch (error: unknown) {
@@ -49,12 +57,14 @@ export default class TasksController {
   static async editTaskStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { status } = req.body;
+      const { taskId } = req.params as Record<string, string>;
 
-      const { taskId } = req.params;
-
-      const user: User = await getCurrentUser(res);
-
-      const updatedTask = await TasksService.editTaskStatus(user, taskId, status);
+      const updatedTask = await TasksService.editTaskStatus(
+        req.currentUser,
+        req.organization.organizationId,
+        taskId,
+        status
+      );
 
       res.status(200).json(updatedTask);
     } catch (error: unknown) {
@@ -65,12 +75,9 @@ export default class TasksController {
   static async editTaskAssignees(req: Request, res: Response, next: NextFunction) {
     try {
       const { assignees } = req.body;
+      const { taskId } = req.params as Record<string, string>;
 
-      const { taskId } = req.params;
-
-      const user: User = await getCurrentUser(res);
-
-      const updatedTask = await TasksService.editTaskAssignees(user, taskId, assignees);
+      const updatedTask = await TasksService.editTaskAssignees(req.currentUser, taskId, assignees, req.organization);
 
       res.status(200).json(updatedTask);
     } catch (error: unknown) {
@@ -80,13 +87,101 @@ export default class TasksController {
 
   static async deleteTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { taskId } = req.params;
+      const { taskId } = req.params as Record<string, string>;
 
-      const user: User = await getCurrentUser(res);
-
-      const updatedTask = await TasksService.deleteTask(user, taskId);
+      const updatedTask = await TasksService.deleteTask(req.currentUser, taskId, req.organization);
 
       res.status(200).json(updatedTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getFilteredTasks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        memberIds,
+        teamIds,
+        startPeriod,
+        endPeriod,
+        labelIds,
+        wbsNum,
+        carNumbers,
+        projectWbsNums,
+        workPackageWbsNums,
+        search,
+        andMemberTeam
+      } = req.body;
+
+      const tasks = await TasksService.getFilteredTasks(
+        {
+          memberIds,
+          teamIds,
+          startPeriod: startPeriod ? new Date(startPeriod) : undefined,
+          endPeriod: endPeriod ? new Date(endPeriod) : undefined,
+          labelIds,
+          wbsNum,
+          carNumbers,
+          projectWbsNums,
+          workPackageWbsNums,
+          search,
+          andMemberTeam
+        },
+        req.organization
+      );
+
+      res.status(200).json(tasks);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getOverdueTasksByTeamLeadership(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params as Record<string, string>;
+
+      const tasks = await TasksService.getOverdueTasksByTeamLeadership(userId, req.organization);
+      res.status(200).json(tasks);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllTaskLabels(req: Request, res: Response, next: NextFunction) {
+    try {
+      const labels = await TasksService.getAllTaskLabels(req.organization);
+      res.status(200).json(labels);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createTaskLabel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, colorHexCode } = req.body;
+      const label = await TasksService.createTaskLabel(req.currentUser, name, colorHexCode, req.organization);
+      res.status(200).json(label);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editTaskLabel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { taskLabelId } = req.params as Record<string, string>;
+      const { name, colorHexCode } = req.body;
+      const label = await TasksService.editTaskLabel(req.currentUser, taskLabelId, name, colorHexCode, req.organization);
+      res.status(200).json(label);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteTaskLabel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { taskLabelId } = req.params as Record<string, string>;
+      const deletedId = await TasksService.deleteTaskLabel(req.currentUser, taskLabelId, req.organization);
+      res.status(200).json(deletedId);
     } catch (error: unknown) {
       next(error);
     }

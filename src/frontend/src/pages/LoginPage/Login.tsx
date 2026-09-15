@@ -4,26 +4,37 @@
  */
 
 import { FormEvent, useState } from 'react';
-import { useHistory } from 'react-router';
+import { Redirect, useHistory } from 'react-router-dom';
 import { useToggleTheme } from '../../hooks/theme.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
 import LoginPage from './LoginPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useQuery } from '../../hooks/utils.hooks';
-import { GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
+import { useOrganization } from '../../hooks/organizations.hooks';
+import { CredentialResponse } from '@react-oauth/google';
 
 /**
  * Page for unauthenticated users to do login.
  */
 const Login = () => {
-  const [devUserId, setDevUserId] = useState(1);
+  const [devUserId, setDevUserId] = useState('');
   const history = useHistory();
   const query = useQuery();
   const theme = useToggleTheme();
   const auth = useAuth();
+  const organizationContext = useOrganization();
+
+  if (!auth.user && !auth.triedCurrent) {
+    auth.signInCurrent();
+    return <LoadingIndicator />;
+  }
 
   if (auth.isLoading) return <LoadingIndicator />;
+
+  if (auth.user) {
+    return <Redirect to={routes.HOME} />;
+  }
 
   /**
    * Produce the path of the page redirected from the login page.
@@ -59,24 +70,30 @@ const Login = () => {
     if (authedUser.defaultTheme && authedUser.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
       theme.toggleTheme();
     }
+    if (authedUser.organizations.length > 0) {
+      const [defaultOrganization] = authedUser.organizations;
+      organizationContext.selectOrganization(defaultOrganization);
+    }
     redirectAfterLogin();
   };
 
-  const verifyLogin = async (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
-    if (response.code) {
-      throw new Error('Invalid login object');
+  const verifyLogin = async (response: CredentialResponse) => {
+    if (!response.credential) {
+      throw new Error('Failed to get credentials');
     }
-    const { id_token } = (response as GoogleLoginResponse).getAuthResponse();
-    if (!id_token) throw new Error('Invalid login object');
-    const authedUser = await auth.signin(id_token);
+    const authedUser = await auth.signin(response.credential);
     if (authedUser.defaultTheme && authedUser.defaultTheme !== theme.activeTheme.toUpperCase()) {
       theme.toggleTheme();
     }
+    if (authedUser.organizations.length > 0) {
+      const [defaultOrganization] = authedUser.organizations;
+      organizationContext.selectOrganization(defaultOrganization);
+    }
     redirectAfterLogin();
   };
 
-  const handleFailure = (response: any) => {
-    console.log(response);
+  const handleFailure = () => {
+    console.log('Failed to login');
   };
 
   return (

@@ -4,14 +4,14 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 import {
   ChangeRequest,
-  ChangeRequestReason,
-  ChangeRequestType,
   ProjectProposedChangesCreateArgs,
-  ProposedSolutionCreateArgs,
   WbsNumber,
-  WorkPackageProposedChangesCreateArgs
+  WorkPackageProposedChangesCreateArgs,
+  LeadershipChangeCreateArgs,
+  GuestChangeRequest
 } from 'shared';
 import {
   createActivationChangeRequest,
@@ -20,19 +20,68 @@ import {
   getAllChangeRequests,
   getSingleChangeRequest,
   reviewChangeRequest,
-  addProposedSolution,
   deleteChangeRequest,
-  requestCRReview
+  requestCRReview,
+  getToReviewChangeRequests,
+  getUnreviewedChangeRequests,
+  getApprovedChangeRequests,
+  createBudgetChangeRequest,
+  createLeadershipChangeRequest,
+  getAllGuestChangeRequests
 } from '../apis/change-requests.api';
 
 /**
  * Custom React Hook to supply all change requests.
  */
 export const useAllChangeRequests = () => {
-  return useQuery<ChangeRequest[], Error>(['change requests'], async () => {
-    const { data } = await getAllChangeRequests();
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ChangeRequest[], Error>(
+    ['change requests', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllChangeRequests();
+      return data;
+    }
+  );
+};
+
+export const useAllGuestChangeRequests = () => {
+  return useQuery<GuestChangeRequest[], Error>(['guest change requests'], async () => {
+    const { data } = await getAllGuestChangeRequests();
     return data;
   });
+};
+
+export const useGetToReviewChangeRequests = () => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ChangeRequest[], Error>(
+    ['change requests', 'to-review', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getToReviewChangeRequests();
+      return data;
+    }
+  );
+};
+
+export const useGetUnreviewedChangeRequests = (wbsNum?: WbsNumber) => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ChangeRequest[], Error>(
+    ['change requests', 'unreviewed', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id, wbsNum],
+    async () => {
+      const { data } = await getUnreviewedChangeRequests(wbsNum);
+      return data;
+    }
+  );
+};
+
+export const useGetApprovedChangeRequests = (wbsNum?: WbsNumber) => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ChangeRequest[], Error>(
+    ['change requests', 'approved', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id, wbsNum],
+    async () => {
+      const { data } = await getApprovedChangeRequests(wbsNum);
+      return data;
+    }
+  );
 };
 
 /**
@@ -40,7 +89,7 @@ export const useAllChangeRequests = () => {
  *
  * @param id Change request ID of the requested change request.
  */
-export const useSingleChangeRequest = (id: number) => {
+export const useSingleChangeRequest = (id: string) => {
   return useQuery<ChangeRequest, Error>(['change requests', id], async () => {
     const { data } = await getSingleChangeRequest(id);
     return data;
@@ -48,11 +97,10 @@ export const useSingleChangeRequest = (id: number) => {
 };
 
 export interface ReviewPayload {
-  reviewerId: number;
-  crId: number;
+  reviewerId: string;
+  crId: string;
   accepted: boolean;
-  reviewNotes: string;
-  psId: string;
+  reviewNotes?: string;
 }
 
 /**
@@ -67,8 +115,7 @@ export const useReviewChangeRequest = () => {
         reviewPayload.reviewerId,
         reviewPayload.crId,
         reviewPayload.accepted,
-        reviewPayload.reviewNotes,
-        reviewPayload.psId
+        reviewPayload.reviewNotes
       );
       return data;
     },
@@ -85,9 +132,9 @@ export const useReviewChangeRequest = () => {
  */
 export const useDeleteChangeRequest = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, number>(
+  return useMutation<{ message: string }, Error, string>(
     ['change requests', 'delete'],
-    async (id: number) => {
+    async (id: string) => {
       const { data } = await deleteChangeRequest(id);
       return data;
     },
@@ -101,10 +148,8 @@ export const useDeleteChangeRequest = () => {
 
 export type CreateStandardChangeRequestPayload = {
   wbsNum: WbsNumber;
-  type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
-  what: string;
-  why: { explain: string; type: ChangeRequestReason }[];
-  proposedSolutions: ProposedSolutionCreateArgs[];
+  why: string;
+  requestedReviewerId?: string;
   projectProposedChanges?: ProjectProposedChangesCreateArgs;
   workPackageProposedChanges?: WorkPackageProposedChangesCreateArgs;
 };
@@ -129,29 +174,29 @@ export const useCreateStandardChangeRequest = () => {
 };
 
 export interface CreateActivationChangeRequestPayload {
-  submitterId: number;
+  submitterId: string;
   wbsNum: WbsNumber;
-  projectLeadId: number;
-  projectManagerId: number;
+  leadId: string;
+  managerId: string;
   startDate: string;
   confirmDetails: boolean;
   type: string;
 }
 
 export interface CreateStageGateChangeRequestPayload {
-  submitterId: number;
+  submitterId: string;
   wbsNum: WbsNumber;
   confirmDone: boolean;
   type: string;
+  dateCompleted: Date;
 }
 
-export interface CreateProposeSolutionPayload {
-  submitterId: number;
-  crId: number;
-  description: string;
-  scopeImpact: string;
-  timelineImpact: number;
-  budgetImpact: number;
+export interface CreateBudgetChangeRequestPayload {
+  submitterId: string;
+  otherReasonId?: string;
+  accountCodeId?: string;
+  proposedBudget: number;
+  type: string;
 }
 
 /**
@@ -164,8 +209,8 @@ export const useCreateActivationChangeRequest = () => {
       const { data } = await createActivationChangeRequest(
         payload.submitterId,
         payload.wbsNum,
-        payload.projectLeadId,
-        payload.projectManagerId,
+        payload.leadId,
+        payload.managerId,
         payload.startDate,
         payload.confirmDetails
       );
@@ -181,40 +226,64 @@ export const useCreateStageGateChangeRequest = () => {
   return useMutation<{ message: string }, Error, CreateStageGateChangeRequestPayload>(
     ['change requests', 'create', 'stage gate'],
     async (payload: CreateStageGateChangeRequestPayload) => {
-      const { data } = await createStageGateChangeRequest(payload.submitterId, payload.wbsNum, payload.confirmDone);
+      const { data } = await createStageGateChangeRequest(
+        payload.submitterId,
+        payload.wbsNum,
+        payload.confirmDone,
+        payload.dateCompleted
+      );
       return data;
     }
   );
 };
 
 /**
- * Custom React Hook to create a proposed solution
+ * Custom React Hook to create a budget change request.
  */
-export const useCreateProposeSolution = () => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, CreateProposeSolutionPayload>(
-    ['change requests', 'create', 'propose solution'],
-    async (payload: CreateProposeSolutionPayload) => {
-      const { data } = await addProposedSolution(
+export const useCreateBudgetChangeRequest = () => {
+  return useMutation<{ message: string }, Error, CreateBudgetChangeRequestPayload>(
+    ['change requests', 'create', 'budget'],
+    async (payload: CreateBudgetChangeRequestPayload) => {
+      const { data } = await createBudgetChangeRequest(
         payload.submitterId,
-        payload.crId,
-        payload.description,
-        payload.scopeImpact,
-        payload.timelineImpact,
-        payload.budgetImpact
+        payload.proposedBudget,
+        payload.otherReasonId,
+        payload.accountCodeId
+      );
+      return data;
+    }
+  );
+};
+
+/**
+ * Custome React hook to create a leadership change request
+ * to change lead and/or manager of a project or work package
+ */
+export const useCreateLeadershipChangeRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, LeadershipChangeCreateArgs>(
+    ['change requests', 'create', 'leadership'],
+    async (payload: LeadershipChangeCreateArgs) => {
+      const { data } = await createLeadershipChangeRequest(
+        payload.submitterId,
+        payload.wbsNum,
+        payload.leadId,
+        payload.managerId
       );
       return data;
     },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['change requests']);
+        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['work packages']);
       }
     }
   );
 };
 
 export interface CRReviewPayload {
-  userIds: number[];
+  userIds: string[];
 }
 
 /**

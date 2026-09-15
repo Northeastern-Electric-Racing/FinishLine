@@ -7,19 +7,20 @@ import { Box, Link, useTheme } from '@mui/material';
 import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Project, WbsElementStatus } from 'shared';
+import { Project, WbsElementStatus, WbsNumber, WorkPackage } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { GridColDefStyle } from '../../utils/tables';
-import { getProjectTeamsName } from '../../utils/gantt.utils';
 import TableCustomToolbar from '../../components/TableCustomToolbar';
+import { getProjectTeamsName } from '../ProjectDetailPage/ProjectViewContainer/ProjectDetails';
 
 /**
  * Table of all projects.
  */
 const ProjectsTable: React.FC = () => {
   const { isLoading, data, error } = useAllProjects();
+
   if (!localStorage.getItem('projectsTableRowCount')) localStorage.setItem('projectsTableRowCount', '30');
   const [pageSize, setPageSize] = useState(localStorage.getItem('projectsTableRowCount'));
   const [windowSize, setWindowSize] = useState(window.innerWidth);
@@ -42,19 +43,25 @@ const ProjectsTable: React.FC = () => {
     ...baseColDef,
     field: 'wbsNum',
     headerName: 'WBS #',
-    valueFormatter: (params) => wbsPipe(params.value),
+    valueFormatter: (params: { value?: WbsNumber }) => {
+      return params.value ? wbsPipe(params.value) : '';
+    },
     maxWidth: 100,
     filterable: false,
-    sortComparator: (v1, v2, param1, param2) => {
+    sortComparator: (_v1, _v2, param1, param2) => {
       if (param1.value.carNumber !== param2.value.carNumber) {
         return param1.value.carNumber - param2.value.carNumber;
       } else if (param1.value.projectNumber !== param2.value.projectNumber) {
         return param1.value.projectNumber - param2.value.projectNumber;
       } else if (param1.value.workPackageNumber !== param2.value.workPackageNumber) {
         return param1.value.workPackageNumber - param2.value.workPackageNumber;
-      } else {
-        return 0;
       }
+      return 0;
+    },
+    getApplyQuickFilterFn: (filterValue: string) => {
+      return (cellValue) => {
+        return wbsPipe(cellValue.value).includes(filterValue);
+      };
     }
   };
 
@@ -69,7 +76,7 @@ const ProjectsTable: React.FC = () => {
     field: 'duration',
     headerName: 'Duration',
     type: 'number',
-    valueFormatter: (params) => weeksPipe(params.value),
+    valueFormatter: (params: { value: number }) => weeksPipe(params.value),
     maxWidth: 100
   };
 
@@ -78,7 +85,7 @@ const ProjectsTable: React.FC = () => {
     field: 'budget',
     headerName: 'Budget',
     type: 'number',
-    valueFormatter: (params) => dollars(params.value),
+    valueFormatter: (params: { value: number }) => dollars(params.value),
     maxWidth: 100
   };
 
@@ -99,14 +106,14 @@ const ProjectsTable: React.FC = () => {
     projectNameColumn,
     {
       ...baseColDef,
-      field: 'projectLead',
-      headerName: 'Project Lead',
+      field: 'lead',
+      headerName: 'Lead',
       maxWidth: 250
     },
     {
       ...baseColDef,
-      field: 'projectManager',
-      headerName: 'Project Manager',
+      field: 'manager',
+      headerName: 'Manager',
       maxWidth: 250
     },
     {
@@ -123,7 +130,7 @@ const ProjectsTable: React.FC = () => {
       headerName: '# Work Packages',
       filterable: false,
       maxWidth: 150,
-      valueFormatter: (params) => params.value.length
+      valueFormatter: (params: { value: WorkPackage[] }) => params.value.length
     },
     statusColumn
   ];
@@ -166,7 +173,7 @@ const ProjectsTable: React.FC = () => {
         density="compact"
         pageSize={Number(pageSize)}
         rowsPerPageOptions={[15, 30, 60, 100]}
-        onPageSizeChange={(newPageSize) => {
+        onPageSizeChange={(newPageSize: number) => {
           localStorage.setItem('projectsTableRowCount', newPageSize.toString());
           setPageSize(newPageSize.toString());
         }}
@@ -177,8 +184,8 @@ const ProjectsTable: React.FC = () => {
           data?.map((v) => ({
             ...v,
             carNumber: v.wbsNum.carNumber,
-            projectLead: fullNamePipe(v.lead),
-            projectManager: fullNamePipe(v.manager),
+            lead: fullNamePipe(v.lead),
+            manager: fullNamePipe(v.manager),
             team: getProjectTeamsName(v)
           })) || []
         }
@@ -203,7 +210,7 @@ const ProjectsTable: React.FC = () => {
         components={{
           Toolbar: TableCustomToolbar,
           Row: (props: GridRowProps & { row: Project }) => {
-            const wbsNum = props.row.wbsNum;
+            const { wbsNum } = props.row;
             return (
               <Link
                 component={RouterLink}
@@ -222,7 +229,7 @@ const ProjectsTable: React.FC = () => {
           }
         }}
         onFilterModelChange={(filterModel: GridFilterModel) => {
-          const filterItems = filterModel.items[0];
+          const [filterItems] = filterModel.items;
           if (filterItems) localStorage.setItem('projectsTableFilter', JSON.stringify(filterItems));
         }}
         initialState={{

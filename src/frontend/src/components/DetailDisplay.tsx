@@ -18,7 +18,7 @@ const DetailDisplay: React.FC<DetailDisplayProps> = ({ label, content, paddingRi
   return (
     <Box display="flex" alignItems="center">
       <div>
-        <Typography sx={{ fontWeight: 'bold', paddingRight: paddingRight }} display="inline">
+        <Typography sx={{ fontWeight: 'bold', paddingRight }} display="inline">
           {label}
           {': '}
         </Typography>

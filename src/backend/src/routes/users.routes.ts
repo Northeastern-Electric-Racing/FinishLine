@@ -1,16 +1,27 @@
 import { Theme } from '@prisma/client';
 import express from 'express';
-import { body } from 'express-validator';
-import UsersController from '../controllers/users.controllers';
-import { validateInputs } from '../utils/utils';
-import { isRole, nonEmptyString, intMinZero } from '../utils/validation.utils';
+import { body, query } from 'express-validator';
+import UsersController from '../controllers/users.controllers.js';
+import { isRole, nonEmptyString, intMinZero, validateInputs, isDateOnly } from '../utils/validation.utils.js';
 
 const userRouter = express.Router();
 
 userRouter.get('/', UsersController.getAllUsers);
+userRouter.get('/organization', UsersController.getAllOrgUsers);
+userRouter.get('/members', UsersController.getAllMembers);
+userRouter.get('/members/dropdown', UsersController.getAllMembersDropdown);
+userRouter.post(
+  '/scheduleSettings',
+  body('userIds').isArray(),
+  nonEmptyString(body('userIds.*')),
+  validateInputs,
+  UsersController.getManyUsersWithScheduleSettings
+);
 userRouter.get('/:userId', UsersController.getSingleUser);
 userRouter.get('/:userId/settings', UsersController.getUserSettings);
 userRouter.get('/secure-settings/current-user', UsersController.getCurrentUserSecureSettings);
+userRouter.get('/api-token/current-user', UsersController.getCurrentUserApiToken);
+userRouter.post('/api-token/generate', UsersController.generateApiToken);
 userRouter.get('/:userId/favorite-projects', UsersController.getUsersFavoriteProjects);
 userRouter.post(
   '/:userId/settings',
@@ -32,18 +43,38 @@ userRouter.post(
   nonEmptyString(body('phoneNumber')),
   UsersController.setUserSecureSettings
 );
+userRouter.get('/auth/current', UsersController.getCurrentUser);
+userRouter.post('/auth/log-out', UsersController.logUserOut);
 
 userRouter.post(
   '/schedule-settings/set',
-  nonEmptyString(body('personalGmail')).isEmail(),
-  nonEmptyString(body('personalZoomLink')).isURL(),
+  body('personalGmail').isString(),
+  body('personalZoomLink').isString(),
+  body('importedIcsCalendarUrl').optional().isString(),
   body('availability').isArray(),
-  intMinZero(body('availibility.*')),
+  body('availability.*.availability').isArray(),
+  intMinZero(body('availability.*.availability.*')),
+  isDateOnly(body('availability.*.dateSet')),
   validateInputs,
   UsersController.setUserScheduleSettings
 );
 
 userRouter.get('/:userId/secure-settings', UsersController.getUserSecureSettings);
 userRouter.get('/:userId/schedule-settings', UsersController.getUserScheduleSettings);
+userRouter.get(
+  '/:userId/schedule-settings/busy-times',
+  isDateOnly(query('startDate')),
+  isDateOnly(query('endDate')),
+  validateInputs,
+  UsersController.getUserBusyTimes
+);
+userRouter.get('/:userId/tasks', UsersController.getUserTasks);
+userRouter.post(
+  '/tasks/get-many',
+  body('userIds').isArray(),
+  nonEmptyString(body('userIds.*')),
+  validateInputs,
+  UsersController.getManyUserTasks
+);
 
 export default userRouter;

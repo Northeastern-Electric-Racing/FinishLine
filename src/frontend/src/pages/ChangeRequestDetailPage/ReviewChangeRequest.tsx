@@ -8,9 +8,10 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { useReviewChangeRequest } from '../../hooks/change-requests.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import ReviewChangeRequestsView from './ReviewChangeRequestView';
 import { ChangeRequest } from 'shared';
 import { useToast } from '../../hooks/toasts.hooks';
+import ReviewChangeRequestsViewWBSWrapper from './ReviewChangeRequestsViewWBSWrapper';
+import ReviewChangeRequestsViewCategoryAccountCodeWrapper from './ReviewChangeRequestsViewCategoryAccountCodeWrapper';
 
 interface ReviewChangeRequestProps {
   modalShow: boolean;
@@ -19,9 +20,8 @@ interface ReviewChangeRequestProps {
 }
 
 export interface FormInput {
-  reviewNotes: string;
+  reviewNotes?: string;
   accepted: boolean;
-  psId: string;
 }
 
 const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
@@ -33,12 +33,12 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
     id: string;
   }
   const { id } = useParams<ParamTypes>();
-  const crId = parseInt(id);
+  const crId = id;
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useReviewChangeRequest();
   const toast = useToast();
 
-  const handleConfirm = async ({ reviewNotes, accepted, psId }: FormInput) => {
+  const handleConfirm = async ({ reviewNotes, accepted }: FormInput) => {
     handleClose();
     if (auth.user?.userId === undefined) throw new Error('Cannot review change request without being logged in');
 
@@ -46,8 +46,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
       reviewerId: auth.user?.userId,
       crId,
       reviewNotes,
-      accepted,
-      psId
+      accepted
     }).catch((error) => {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -55,11 +54,23 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
     });
   };
 
+  if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (cr.wbsNum) {
+    return (
+      <ReviewChangeRequestsViewWBSWrapper cr={cr} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />
+    );
+  }
 
-  return <ReviewChangeRequestsView cr={cr} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
+  return (
+    <ReviewChangeRequestsViewCategoryAccountCodeWrapper
+      cr={cr}
+      modalShow={modalShow}
+      onHide={handleClose}
+      onSubmit={handleConfirm}
+    />
+  );
 };
 
 export default ReviewChangeRequest;

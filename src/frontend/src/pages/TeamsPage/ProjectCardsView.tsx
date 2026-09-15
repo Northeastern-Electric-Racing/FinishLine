@@ -1,5 +1,5 @@
 import { Card, CardContent, Typography, Link } from '@mui/material';
-import { ProjectPreview } from 'shared';
+import { ProjectGantt } from 'shared';
 import { routes } from '../../utils/routes';
 import { fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { useSingleProject } from '../../hooks/projects.hooks';
@@ -8,7 +8,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 
 interface ActiveProjectCardViewProps {
-  project: ProjectPreview;
+  project: ProjectGantt;
 }
 const ActiveProjectCardView: React.FC<ActiveProjectCardViewProps> = ({ project }) => {
   const { isLoading, isError, error, data } = useSingleProject(project.wbsNum);

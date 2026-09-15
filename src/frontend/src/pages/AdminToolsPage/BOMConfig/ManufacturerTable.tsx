@@ -6,7 +6,7 @@ import { useDeleteManufacturer, useGetAllManufacturers } from '../../../hooks/bo
 import { useToast } from '../../../hooks/toasts.hooks';
 import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
-import AdminToolTable from '../AdminToolTable';
+import NERTable from '../../../components/NERTable';
 import CreateManufacturerModal from './CreateManufacturerFormModal';
 import ManufacturerDeleteModal from './ManufacturerDeleteModal';
 import { useState } from 'react';
@@ -36,7 +36,7 @@ const ManufacturerTable: React.FC = () => {
 
   const handleDeleteManufacturer = async (manufacturerName: string) => {
     try {
-      await mutateAsync({ manufacturerName: manufacturerName });
+      await mutateAsync({ manufacturerName });
       toast.success(`Manufacturer: ${manufacturerName} Deleted Successfully!`);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -71,13 +71,15 @@ const ManufacturerTable: React.FC = () => {
     );
   };
 
-  const manufacturersTableRows = manufacturers.map((manufacturer) => (
+  const manufacturersTableRows = manufacturers.map((manufacturer, index) => (
     <TableRow>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : 'default' }}>
         {datePipe(manufacturer.dateCreated)}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{manufacturer.name}</TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black' }}>
+      <TableCell sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : 'default' }}>
+        {manufacturer.name}
+      </TableCell>
+      <TableCell align="center" sx={{ borderBottom: index === manufacturers.length - 1 ? 'none' : 'default' }}>
         <ManufacturerDeleteButton name={manufacturer.name} onDelete={handleDeleteManufacturer} />
       </TableCell>
     </TableRow>
@@ -86,7 +88,7 @@ const ManufacturerTable: React.FC = () => {
   return (
     <Box>
       <CreateManufacturerModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
-      <AdminToolTable
+      <NERTable
         columns={[{ name: 'Date Registered' }, { name: 'Manufacturer Name' }, { name: '', width: '10%' }]}
         rows={manufacturersTableRows}
       />

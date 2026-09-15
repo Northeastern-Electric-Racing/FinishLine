@@ -1,6 +1,6 @@
 import { Box, FormControl, FormLabel } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
-import { Control, Controller, FieldErrors } from 'react-hook-form';
+import { Control, Controller } from 'react-hook-form';
 import { AuthenticatedUser, ChangeRequest, wbsPipe } from 'shared';
 import { useAllChangeRequests } from '../hooks/change-requests.hooks';
 import { useCurrentUser } from '../hooks/users.hooks';
@@ -18,7 +18,7 @@ const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: Authen
   );
 
   // The current user's CRs should be at the top
-  filteredRequests.sort((a, b) => {
+  filteredRequests.sort((a: ChangeRequest, b: ChangeRequest) => {
     const isSubmitterAUser = a.submitter.userId === user.userId;
     const isSubmitterBUser = b.submitter.userId === user.userId;
 
@@ -26,7 +26,7 @@ const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: Authen
     if (isSubmitterAUser) return -1;
     if (isSubmitterBUser) return 1;
 
-    return a.crId - b.crId;
+    return a.identifier - b.identifier;
   });
 
   return filteredRequests;
@@ -35,10 +35,9 @@ const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: Authen
 interface ChangeRequestDropdownProps {
   control: Control<any, any>;
   name: string;
-  errors: FieldErrors<ChangeRequest>;
 }
 
-const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownProps) => {
+const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) => {
   const user = useCurrentUser();
   const { isLoading, data: changeRequests } = useAllChangeRequests();
   if (isLoading || !changeRequests) return <LoadingIndicator />;
@@ -46,8 +45,8 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
   const filteredRequests = getFilteredChangeRequests(changeRequests, user);
 
   const approvedChangeRequestOptions = filteredRequests.map((cr) => ({
-    label: `${cr.crId} - ${wbsPipe(cr.wbsNum)} - ${cr.submitter.firstName} ${cr.submitter.lastName} - ${cr.type}`,
-    id: cr.crId.toString()
+    label: `${cr.identifier} - ${cr.wbsNum ? wbsPipe(cr.wbsNum) : cr.category ? cr.category.name : cr.accountCode ? `${cr.accountCode.code} - ${cr.accountCode.name}` : ''} - ${cr.submitter.firstName} ${cr.submitter.lastName} - ${cr.type}`,
+    id: cr.crId
   }));
 
   return (
@@ -61,11 +60,11 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
             <NERAutocomplete
               sx={{ width: '100%' }}
               id="change-request-id-autocomplete"
-              onChange={(_event, newValue) => onChange(newValue ? newValue.id : '')}
+              onChange={(_event, newValue) => onChange(newValue ? newValue.id : undefined)}
               options={approvedChangeRequestOptions}
               size="small"
               placeholder="Change Request ID"
-              value={approvedChangeRequestOptions.find((cr) => cr.id === value) || { id: '', label: '' }}
+              value={approvedChangeRequestOptions.find((cr) => cr.id === value) || undefined}
             />
           )}
         />

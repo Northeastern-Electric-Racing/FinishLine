@@ -4,7 +4,7 @@
  */
 
 import { render, screen } from '../../test-support/test-utils';
-import { ChangeRequestExplanation, StandardChangeRequest } from 'shared';
+import { StandardChangeRequest } from 'shared';
 import { exampleStandardChangeRequest as cr } from '../../test-support/test-data/change-requests.stub';
 import StandardDetails from '../../../pages/ChangeRequestDetailPage/StandardDetails';
 
@@ -18,13 +18,7 @@ const renderComponent = (cr: StandardChangeRequest) => {
 describe('Change request details standard cr display element tests', () => {
   it('Renders what and why section', () => {
     renderComponent(cr);
-    expect(screen.getByText(`What`)).toBeInTheDocument();
-    expect(screen.getByText(`${cr.what}`)).toBeInTheDocument();
 
     expect(screen.getByText(`Why`)).toBeInTheDocument();
-    cr.why.forEach((explanation: ChangeRequestExplanation) => {
-      expect(screen.getByText(`${explanation.type}`)).toBeInTheDocument();
-      expect(screen.getByText(`${explanation.explain}`)).toBeInTheDocument();
-    });
   });
 });

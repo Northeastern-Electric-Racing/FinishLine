@@ -1,0 +1,103 @@
+import axios from '../utils/axios';
+import { MilestonePayload, MilestoneCreatePayload, FaqPayload, GuestDefinitionPayload } from '../hooks/recruitment.hooks';
+import { apiUrls } from '../utils/urls';
+import { dateToMidnightUTC, GuestDefinition, Milestone } from 'shared';
+import { FrequentlyAskedQuestion } from 'shared';
+
+export const getAllMilestones = () => {
+  return axios.get<Milestone[]>(apiUrls.allMilestones(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const getNewMemberMilestones = () => {
+  return axios.get<Milestone[]>(apiUrls.newMemberMilestones(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const getRecruitingMilestones = () => {
+  return axios.get<Milestone[]>(apiUrls.recruitingMilestones(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const createMilestone = (payload: MilestoneCreatePayload) => {
+  return axios.post(apiUrls.milestoneCreate(), {
+    ...payload,
+    dateOfEvent: dateToMidnightUTC(payload.dateOfEvent)
+  });
+};
+
+export const editMilestone = (payload: MilestonePayload, id: string) => {
+  return axios.post(apiUrls.milestoneEdit(id), {
+    ...payload,
+    dateOfEvent: dateToMidnightUTC(payload.dateOfEvent)
+  });
+};
+
+export const deleteMilestone = (milestoneId: string) => {
+  return axios.delete<{ message: string }>(apiUrls.milestoneDelete(milestoneId));
+};
+
+export const getAllFaqs = () => {
+  return axios.get<FrequentlyAskedQuestion[]>(apiUrls.allFaqs(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const getRecruitingFaqs = () => {
+  return axios.get<FrequentlyAskedQuestion[]>(apiUrls.recruitingFaqs(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const getNewMemberFaqs = () => {
+  return axios.get<FrequentlyAskedQuestion[]>(apiUrls.newMemberFaqs(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const createRecruitingFaq = (payload: FaqPayload) => {
+  return axios.post(apiUrls.recruitingFaqCreate(), {
+    ...payload
+  });
+};
+
+export const createNewMemberFaq = (payload: FaqPayload) => {
+  return axios.post(apiUrls.newMemberFaqCreate(), {
+    ...payload
+  });
+};
+
+export const editFaq = (payload: FaqPayload, id: string) => {
+  return axios.post(apiUrls.faqEdit(id), {
+    ...payload
+  });
+};
+
+export const deleteFaq = (faqId: string) => {
+  return axios.delete<{ message: string }>(apiUrls.faqDelete(faqId));
+};
+
+export const getAllGuestDefinitions = () => {
+  return axios.get<GuestDefinition[]>(apiUrls.allGuestDefinitions(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const deleteGuestDefinition = (definitionId: string) => {
+  return axios.delete<{ message: string }>(apiUrls.guestDefinitionDelete(definitionId));
+};
+
+export const createGuestDefinition = (payload: GuestDefinitionPayload) => {
+  return axios.post(apiUrls.guestDefinitionCreate(), {
+    ...payload
+  });
+};
+
+export const editGuestDefinition = (payload: GuestDefinitionPayload, id: string) => {
+  return axios.post(apiUrls.guestDefintionEdit(id), {
+    ...payload
+  });
+};

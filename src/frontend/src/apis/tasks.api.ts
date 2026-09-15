@@ -3,35 +3,76 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TaskPriority, TaskStatus, WbsNumber, wbsPipe } from 'shared';
+import {
+  CalendarTask,
+  dateToMidnightUTC,
+  FilterTaskArgs,
+  Task,
+  TaskCardPreview,
+  TaskLabel,
+  TaskPriority,
+  TaskStatus,
+  WbsNumber,
+  wbsPipe
+} from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+import { taskLabelTransformer, taskTransformer } from './transformers/tasks.transformers';
 
 /**
  * Api call to create a task.
  * @param wbsNum wbsNum of the wbsElement that the task is associated with
  * @param title the title of the task
- * @param deadline the datestring deadline of the task
  * @param priority the priority of the task
  * @param status the status of the task
  * @param assignees the ids of the users assigned to the task
+ * @param notes the notes for the task
+ * @param labelIds the ids of the labels for the task
+ * @param blockedByIds the ids of the tasks that block this task
+ * @param deadline the datestring deadline of the task
+ * @param startDate the datestring start date of the task
  * @returns
  */
 export const createSingleTask = (
   wbsNum: WbsNumber,
   title: string,
-  deadline: string,
   priority: TaskPriority,
   status: TaskStatus,
-  assignees: number[]
+  assignees: string[],
+  notes: string,
+  labelIds: string[],
+  blockedByIds: string[],
+  deadline?: string,
+  startDate?: string
 ) => {
-  return axios.post<{ message: string }>(apiUrls.tasksCreate(wbsPipe(wbsNum)), {
-    title,
-    deadline,
-    priority,
-    status,
-    assignees
-  });
+  return axios.post<Task>(
+    apiUrls.tasksCreate(wbsPipe(wbsNum)),
+    {
+      title,
+      deadline,
+      startDate,
+      priority,
+      status,
+      assignees,
+      notes,
+      labelIds,
+      blockedByIds
+    },
+    {
+      // axios runs transformResponse on error bodies too (e.g. { message: string } from a rejected
+      // request), so taskTransformer would otherwise crash reading a field that only exists on success
+      // responses. Falling back to the raw parsed body lets the interceptor in axios.ts read
+      // error.response.data.message instead of a confusing TypeError.
+      transformResponse: (data) => {
+        const parsed = JSON.parse(data);
+        try {
+          return taskTransformer(parsed);
+        } catch {
+          return parsed;
+        }
+      }
+    }
+  );
 };
 
 /**
@@ -40,16 +81,33 @@ export const createSingleTask = (
  * @param title the new title
  * @param notes the new notes
  * @param priority the new priority
+ * @param labelIds the new label ids
+ * @param blockedByIds the new ids of the tasks that block this task
  * @param deadline the new deadline
- * @param assignees the new assignees
+ * @param startDate the new start date
+ * @param wbsNum the new wbs element
  * @returns the edited task
  */
-export const editTask = (taskId: string, title: string, notes: string, priority: TaskPriority, deadline: Date) => {
+export const editTask = (
+  taskId: string,
+  title: string,
+  notes: string,
+  priority: TaskPriority,
+  labelIds: string[],
+  blockedByIds: string[],
+  deadline?: Date,
+  startDate?: Date,
+  wbsNum?: WbsNumber
+) => {
   return axios.post<{ message: string }>(apiUrls.editTaskById(taskId), {
     title,
     notes,
     priority,
-    deadline
+    labelIds,
+    blockedByIds,
+    deadline: deadline ? dateToMidnightUTC(deadline) : undefined,
+    startDate: startDate ? dateToMidnightUTC(startDate) : undefined,
+    wbsNum
   });
 };
 
@@ -59,10 +117,24 @@ export const editTask = (taskId: string, title: string, notes: string, priority:
  * @param assignees the ids of the users to assign to the task
  * @returns the edited task
  */
-export const editTaskAssignees = (taskId: string, assignees: number[]) => {
-  return axios.post<{ message: string }>(apiUrls.editTaskAssignees(taskId), {
-    assignees
-  });
+export const editTaskAssignees = (taskId: string, assignees: string[]) => {
+  return axios.post<Task>(
+    apiUrls.editTaskAssignees(taskId),
+    {
+      assignees
+    },
+    {
+      // same fallback as createSingleTask above: avoid crashing taskTransformer on an error body
+      transformResponse: (data) => {
+        const parsed = JSON.parse(data);
+        try {
+          return taskTransformer(parsed);
+        } catch {
+          return parsed;
+        }
+      }
+    }
+  );
 };
 
 /**
@@ -84,4 +156,73 @@ export const editSingleTaskStatus = (id: string, status: TaskStatus) => {
  */
 export const deleteSingleTask = (taskId: string) => {
   return axios.post<{ message: string }>(apiUrls.deleteTask(taskId), {});
+};
+
+/**
+ * Gets all tasks that match the filter criteria.
+ * @param payload the filter criteria
+ * @returns an array of tasks that match the filter criteria
+ */
+export const getFilterTasks = (payload: FilterTaskArgs) => {
+  return axios.post<CalendarTask[]>(apiUrls.tasksFilter(), payload, {
+    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  });
+};
+
+export const getOverdueTasksByTeamLeader = (userId: string) => {
+  return axios.get<TaskCardPreview[]>(apiUrls.overdueTasksByTeamLeadership(userId), {
+    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  });
+};
+
+/**
+ * Gets all tasks labels for a given organization
+ * @returns array of task labels
+ */
+export const getAllTaskLabels = () => {
+  return axios.get<TaskLabel[]>(apiUrls.taskLabels(), {
+    transformResponse: (data) => JSON.parse(data).map(taskLabelTransformer)
+  });
+};
+
+/**
+ * Api call to create a task label.
+ * @param name the name of the task label
+ * @param colorHexCode the hex code for the task label color
+ * @returns the created task label
+ */
+export const createTaskLabel = (name: string, colorHexCode: string) => {
+  return axios.post<TaskLabel>(
+    apiUrls.taskLabelCreate(),
+    { name, colorHexCode },
+    {
+      transformResponse: (data) => taskLabelTransformer(JSON.parse(data))
+    }
+  );
+};
+
+/**
+ * Edits the task label.
+ * @param id the id of the task label
+ * @param name the name of the task label
+ * @param colorHexCode the hex code for the task label color
+ * @returns the edited task label
+ */
+export const editTaskLabel = (taskLabelId: string, name: string, colorHexCode: string) => {
+  return axios.post<TaskLabel>(
+    apiUrls.taskLabelEdit(taskLabelId),
+    { name, colorHexCode },
+    {
+      transformResponse: (data) => taskLabelTransformer(JSON.parse(data))
+    }
+  );
+};
+
+/**
+ * Soft deletes a task label.
+ * @param taskLabelId
+ * @returns the deleted taskLabelId
+ */
+export const deleteTaskLabel = (taskLabelId: string) => {
+  return axios.post<string>(apiUrls.taskLabelDelete(taskLabelId), {});
 };

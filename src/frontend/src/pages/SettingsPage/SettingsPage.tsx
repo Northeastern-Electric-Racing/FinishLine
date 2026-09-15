@@ -8,7 +8,7 @@ import PageLayout from '../../components/PageLayout';
 import SettingsPreferences from './SettingsPreferences';
 import SettingsDetails from './SettingsDetails';
 import { routes } from '../../utils/routes';
-import NERTabs from '../../components/Tabs';
+import FullPageTabs from '../../components/FullPageTabs';
 import { Box } from '@mui/material';
 
 const SettingsPage: React.FC = () => {
@@ -19,7 +19,7 @@ const SettingsPage: React.FC = () => {
       title="Settings"
       tabs={
         <Box borderBottom={1} borderColor={'divider'} width={'100%'}>
-          <NERTabs
+          <FullPageTabs
             noUnderline
             setTab={setTabIndex}
             tabsLabels={[

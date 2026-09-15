@@ -7,8 +7,8 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import NERFormModal from '../../components/NERFormModal';
 import { FormControl, FormLabel, Select, MenuItem } from '@mui/material';
-import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
-import { useSetTeamType } from '../../hooks/team-types.hooks';
+import { TeamType } from 'shared';
+import { useAllTeamTypes, useSetTeamType } from '../../hooks/team-types.hooks';
 
 interface SetTeamTypeInputs {
   teamId: string;
@@ -45,7 +45,7 @@ const SetTeamTypeModal: React.FC<SetTeamTypeModelProps> = ({ teamId, showModal, 
     try {
       await mutateAsync(teamType);
       onHide();
-      toast.success('Team type set successfully!');
+      toast.success('Division set successfully!');
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -61,25 +61,25 @@ const SetTeamTypeModal: React.FC<SetTeamTypeModelProps> = ({ teamId, showModal, 
     <NERFormModal
       open={showModal}
       onHide={onHide}
-      title={'Set Team Type'}
+      title={'Set Division'}
       reset={() => reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={handleConfirm}
-      formId="set-team-type"
+      formId="set-division"
       submitText="Submit"
       disabled={!isValid || isLoading}
       showCloseButton
     >
       <FormControl fullWidth>
-        <FormLabel>Team Type</FormLabel>
+        <FormLabel>Division</FormLabel>
         <Controller
           name="teamType"
           control={control}
           render={({ field: { onChange, value } }) => (
             <Select value={value} onChange={(event) => onChange(event.target.value)}>
               {teamTypeOptions
-                ?.filter((teamType) => teamType.name)
-                .map((teamType) => (
+                ?.filter((teamType: TeamType) => teamType.name)
+                .map((teamType: TeamType) => (
                   <MenuItem key={teamType.teamTypeId} value={teamType.teamTypeId}>
                     {teamType.name}
                   </MenuItem>

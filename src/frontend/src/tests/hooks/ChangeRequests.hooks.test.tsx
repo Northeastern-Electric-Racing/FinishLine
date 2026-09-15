@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook, waitFor } from '@testing-library/react';
 import { AxiosResponse } from 'axios';
 import { ChangeRequest } from 'shared';
 import wrapper from '../../app/AppContextQuery';
@@ -13,14 +13,23 @@ import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/change-
 import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/change-requests.hooks';
 
 vi.mock('../../apis/change-requests.api');
+vi.mock('../../app/AppGlobalCarFilterContext', () => ({
+  useGlobalCarFilter: () => ({
+    selectedCar: 'all-cars',
+    allCars: [],
+    setSelectedCar: vi.fn(),
+    isLoading: false,
+    error: null
+  })
+}));
 
 describe('change request hooks', () => {
   it('handles getting a list of change requests', async () => {
     const mockedGetAllChangeRequests = getAllChangeRequests as jest.Mock<Promise<AxiosResponse<ChangeRequest[]>>>;
     mockedGetAllChangeRequests.mockReturnValue(mockPromiseAxiosResponse<ChangeRequest[]>(exampleAllChangeRequests));
 
-    const { result, waitFor } = renderHook(() => useAllChangeRequests(), { wrapper });
-    await waitFor(() => result.current.isSuccess);
+    const { result } = renderHook(() => useAllChangeRequests(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(exampleAllChangeRequests);
   });
 
@@ -28,8 +37,8 @@ describe('change request hooks', () => {
     const mockedGetSingleChangeRequest = getSingleChangeRequest as jest.Mock<Promise<AxiosResponse<ChangeRequest>>>;
     mockedGetSingleChangeRequest.mockReturnValue(mockPromiseAxiosResponse<ChangeRequest>(exampleStageGateChangeRequest));
 
-    const { result, waitFor } = renderHook(() => useSingleChangeRequest(1), { wrapper });
-    await waitFor(() => result.current.isSuccess);
+    const { result } = renderHook(() => useSingleChangeRequest('1'), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(exampleStageGateChangeRequest);
   });
 });

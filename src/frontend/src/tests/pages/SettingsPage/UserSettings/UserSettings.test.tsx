@@ -11,7 +11,11 @@ import { mockUseMutationResult, mockUseQueryResult } from '../../../test-support
 import { exampleUserSettingsLight } from '../../../test-support/test-data/user-settings.stub';
 import { fireEvent, render, screen } from '../../../test-support/test-utils';
 import UserSettingsComponent from '../../../../pages/SettingsPage/UserSettings/UserSettings';
-import { mockLogUserInReturnValue, mockLogUserInDevReturnValue } from '../../../test-support/mock-hooks';
+import {
+  mockLogUserInReturnValue,
+  mockLogUserInDevReturnValue,
+  mockGetCurrentUserValue
+} from '../../../test-support/mock-hooks';
 
 vi.mock('../../../../pages/SettingsPage/UserSettings/UserSettingsView', () => {
   return {
@@ -76,6 +80,7 @@ describe('user settings component', () => {
   beforeEach(() => {
     vi.spyOn(userHooks, 'useLogUserIn').mockReturnValue(mockLogUserInReturnValue);
     vi.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
+    vi.spyOn(userHooks, 'useGetCurrentUser').mockReturnValue(mockGetCurrentUserValue);
   });
 
   it('renders everything', () => {

@@ -1,0 +1,53 @@
+name: finishline-development
+services:
+  database:
+    container_name: database-test
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: finishline_database
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d finishline_database']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    container_name: backend-test
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - '3001:3001'
+    volumes:
+      - ./src/backend:/src/backend
+      - ./src/shared:/src/shared
+    depends_on:
+      database:
+        condition: service_healthy
+    env_file:
+      - ./src/backend/.env
+    environment:
+      DATABASE_URL: 'postgresql://postgres:docker@database:5432/finishline_database'
+
+  frontend:
+    container_name: frontend-dev
+    build:
+      context: ./
+      dockerfile: src/frontend/Dockerfile
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./src/frontend:/src/frontend
+      - ./src/shared:/src/shared
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

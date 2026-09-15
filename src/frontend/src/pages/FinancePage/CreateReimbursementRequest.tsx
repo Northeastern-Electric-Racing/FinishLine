@@ -2,7 +2,10 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import LoadingIndicator from '../../components/LoadingIndicator';
+import confetti from 'canvas-confetti';
+import { useHistory, useLocation } from 'react-router-dom';
+import { WbsNumber, CreateRefundSourceArgs, ReimbursementReceiptUploadArgs } from 'shared';
+import { ReimbursementRequestFormInput } from './ReimbursementRequestForm/ReimbursementRequestForm';
 import PageLayout from '../../components/PageLayout';
 import { useCreateReimbursementRequest, useUploadManyReceipts } from '../../hooks/finance.hooks';
 import { routes } from '../../utils/routes';
@@ -10,28 +13,82 @@ import ReimbursementRequestForm, {
   ReimbursementRequestDataSubmission
 } from './ReimbursementRequestForm/ReimbursementRequestForm';
 
+type CreateRRPrefillState = {
+  projectWbsNum: WbsNumber;
+  materialId: string;
+  materialName: string;
+  prefillCost?: number;
+};
+
 const CreateReimbursementRequestPage: React.FC = () => {
   const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
     useCreateReimbursementRequest();
   const { isLoading: receiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
-
-  if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
+  const history = useHistory();
 
   const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
-    const { reimbursementRequestId } = await createReimbursementRequest({ ...data, account: data.account! });
+    const { reimbursementRequestId } = await createReimbursementRequest({ ...data, indexCodeId: data.indexCodeId! });
     await uploadReceipts({
       id: reimbursementRequestId,
       files: data.receiptFiles.map((file) => file.file!)
     });
+    [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9].forEach((xPos) => {
+      confetti({
+        origin: { y: -0.5, x: xPos },
+        angle: 270,
+        gravity: 1.5,
+        startVelocity: 35,
+        spread: 70,
+        particleCount: 50,
+        zIndex: 1300
+      });
+    });
     return reimbursementRequestId;
   };
+
+  const onCancel = () => {
+    history.goBack();
+  };
+
+  const isSubmitting = createReimbursementRequestIsLoading || receiptsIsLoading;
+
+  // for pre-filling the form when user clicks "Create Reimbursement Request" from a material in the BOM table
+  const location = useLocation<CreateRRPrefillState | undefined>();
+  const prefill = location.state;
+
+  const defaultValues: ReimbursementRequestFormInput | undefined =
+    prefill?.projectWbsNum && prefill?.materialId
+      ? {
+          vendorId: '',
+          dateOfExpense: undefined,
+          accountCodeId: '',
+          indexCodeId: '',
+          secondaryAccount: undefined,
+          receiptFiles: [] as ReimbursementReceiptUploadArgs[],
+          reimbursementProducts: [
+            {
+              name: prefill.materialName,
+              materialId: prefill.materialId,
+              reason: prefill.projectWbsNum,
+              cost: prefill.prefillCost ?? 0,
+              refundSources: [] as CreateRefundSourceArgs[]
+            }
+          ]
+        }
+      : undefined;
 
   return (
     <PageLayout
       title="Create Reimbursement Request"
-      previousPages={[{ name: 'Reimbursement Requests', route: routes.FINANCE }]}
+      previousPages={[{ name: 'Reimbursement Requests', route: routes.REIMBURSEMENT_REQUESTS }]}
     >
-      <ReimbursementRequestForm submitText="Submit" submitData={onSubmit} previousPage={routes.FINANCE} />
+      <ReimbursementRequestForm
+        onFormExit={onCancel}
+        submitText="Submit"
+        submitData={onSubmit}
+        isSubmitting={isSubmitting}
+        defaultValues={defaultValues}
+      />
     </PageLayout>
   );
 };

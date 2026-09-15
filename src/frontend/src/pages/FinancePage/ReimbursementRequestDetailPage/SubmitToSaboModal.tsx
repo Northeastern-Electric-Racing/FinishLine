@@ -1,13 +1,13 @@
 import NERModal from '../../../components/NERModal';
 import { Box, Grid, Typography, Stack } from '@mui/material';
-import { useApproveReimbursementRequest } from '../../../hooks/finance.hooks';
+import { useInputReimbursementRequestInSabo } from '../../../hooks/finance.hooks';
 import { OtherProductReason, ReimbursementRequest, WBSElementData, wbsPipe } from 'shared';
 import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { centsToDollar, datePipe } from '../../../utils/pipes';
 import DetailDisplay from '../../../components/DetailDisplay';
-import { imagePreviewUrl, isReimbursementRequestSaboSubmitted } from '../../../utils/reimbursement-request.utils';
+import { imagePreviewUrl, isReimbursementRequestPendingSaboSubmission } from '../../../utils/reimbursement-request.utils';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
 import CopyToClipboardButton from '../../../components/CopyToClipboardButton';
@@ -20,18 +20,17 @@ interface SubmitToSaboModalProps {
 
 const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSaboModalProps) => {
   const user = useCurrentUser();
-  const { mutateAsync: submitToSabo } = useApproveReimbursementRequest(reimbursementRequest.reimbursementRequestId);
-  const { recipient, dateOfExpense, totalCost, vendor, expenseType, reimbursementProducts, receiptPictures } =
+  const { mutateAsync: inputInSabo } = useInputReimbursementRequestInSabo(reimbursementRequest.reimbursementRequestId);
+  const { recipient, dateOfExpense, totalCost, vendor, accountCode, reimbursementProducts, receiptPictures } =
     reimbursementRequest;
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
   const toast = useToast();
-  const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
+  const isPendingSaboSubmission = isReimbursementRequestPendingSaboSubmission(reimbursementRequest);
   if (!user.isFinance) return <></>;
   if (isLoading || !userInfo) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   const filteredProductsNames = reimbursementProducts
-    .filter((product) => !product.dateDeleted)
     .map((product) =>
       !!(product.reimbursementProductReason as WBSElementData).wbsNum
         ? wbsPipe((product.reimbursementProductReason as WBSElementData).wbsNum) +
@@ -42,9 +41,9 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     .filter((product, index, self) => index === self.indexOf(product))
     .join(', ');
 
-  const handleSubmitToSabo = () => {
+  const handleInputInSabo = () => {
     try {
-      submitToSabo();
+      inputInSabo();
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -54,15 +53,22 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     setOpen(false);
   };
 
+  // TODO: don't hardcode for multitenancy
+  const treasurerName = 'Andrew Berkovich';
+  const treasurerEmail = 'berkovich.a@northeastern.edu';
+
+  const advisorName = 'Andrew Gouldstone';
+  const advisorEmail = 'a.gouldstone@northeastern.edu';
+
   return (
     <NERModal
       open={open}
       onHide={() => setOpen(false)}
-      title="Input these fields into the SABO Form"
-      submitText={isSaboSubmitted ? '' : 'Submit to SABO'}
-      showCloseButton={isSaboSubmitted}
-      hideFormButtons={isSaboSubmitted}
-      onSubmit={() => handleSubmitToSabo()}
+      title="Input these fields into Concur"
+      submitText={isPendingSaboSubmission ? undefined : 'Mark as added to Concur'}
+      showCloseButton={isPendingSaboSubmission}
+      hideFormButtons={isPendingSaboSubmission}
+      onSubmit={() => handleInputInSabo()}
     >
       <Grid container spacing={1}>
         <Grid item xs={4}>
@@ -113,12 +119,12 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={7}>
           <DetailDisplay
             label={'SABO Form Index'}
-            content={codeAndRefundSourceName(reimbursementRequest.account)}
+            content={codeAndRefundSourceName(reimbursementRequest.indexCode)}
             copyButton
           />
         </Grid>
         <Grid item xs={6}>
-          <DetailDisplay label={'Expense Type'} content={`${expenseType.code} - ${expenseType.name}`} copyButton />
+          <DetailDisplay label={'Account Code'} content={`${accountCode.code} - ${accountCode.name}`} copyButton />
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
@@ -128,12 +134,12 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={8}>
           <Stack>
             <Box display="flex" alignItems="center">
-              <Typography>Brody Pearlman</Typography>
-              <CopyToClipboardButton msg={'Brody Pearlman'} />
+              <Typography>{treasurerName}</Typography>
+              <CopyToClipboardButton msg={treasurerName} />
             </Box>
             <Box display="flex" alignItems="center">
-              <Typography>pearlman.br@northeastern.edu</Typography>
-              <CopyToClipboardButton msg={'pearlman.br@northeastern.edu'} />
+              <Typography>{treasurerEmail}</Typography>
+              <CopyToClipboardButton msg={treasurerEmail} />
             </Box>
           </Stack>
         </Grid>
@@ -145,12 +151,12 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={8}>
           <Stack>
             <Box display="flex" alignItems="center">
-              <Typography style={{ marginRight: '0.5rem' }}>Andrew Gouldstone</Typography>
-              <CopyToClipboardButton msg={'Andrew Gouldstone'} />
+              <Typography style={{ marginRight: '0.5rem' }}>{advisorName}</Typography>
+              <CopyToClipboardButton msg={advisorName} />
             </Box>
             <Box display="flex" alignItems="center">
-              <Typography>a.gouldstone@northeastern.edu</Typography>
-              <CopyToClipboardButton msg={'a.gouldstone@northeastern.edu'} />
+              <Typography>{advisorEmail}</Typography>
+              <CopyToClipboardButton msg={advisorEmail} />
             </Box>
           </Stack>
         </Grid>

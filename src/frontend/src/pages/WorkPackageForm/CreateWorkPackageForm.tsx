@@ -5,12 +5,12 @@ import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
-import { startDateTester } from '../../utils/form';
 import * as yup from 'yup';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useSingleProject } from '../../hooks/projects.hooks';
+import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 
 const CreateWorkPackageForm: React.FC = () => {
   const query = useQuery();
@@ -19,7 +19,6 @@ const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
 
   if (!wbsNum) throw new Error('WBS number not included in request.');
-  if (!crId) throw new Error('CR ID not included in request.');
 
   const { mutateAsync: createWorkPackage } = useCreateSingleWorkPackage();
   const { mutateAsync: createWorkPackageScopeCR } = useCreateStandardChangeRequest();
@@ -30,12 +29,12 @@ const CreateWorkPackageForm: React.FC = () => {
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
-    startDate: yup
-      .date()
-      .required('Start Date is required!')
-      .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
+    startDate: yup.date().required('Start Date is required!'),
     duration: yup.number().required()
   });
+
+  const createWorkPackageWrapper = (workPackageInput: WorkPackageApiInputs) =>
+    createWorkPackage({ ...workPackageInput, projectWbsNum: wbsElement.wbsNum });
 
   const breadcrumbs =
     crId && crId !== 'null'
@@ -62,10 +61,11 @@ const CreateWorkPackageForm: React.FC = () => {
   return (
     <WorkPackageForm
       wbsNum={validateWBS(wbsNum)}
-      workPackageMutateAsync={createWorkPackage}
+      workPackageMutateAsync={createWorkPackageWrapper}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
+      createLeadershipCR={() => {}} // leadership changes can't happen on creation
       exitActiveMode={() => history.push(`${routes.PROJECTS}/${projectWbsPipe(validateWBS(wbsNum))}`)}
-      crId={crId}
+      crId={crId ?? undefined}
       schema={schema}
       breadcrumbs={breadcrumbs}
     />

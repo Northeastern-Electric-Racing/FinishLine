@@ -1,8 +1,8 @@
 import { Box } from '@mui/system';
-import { ReactElement, useState } from 'react';
+import { ElementType, ReactElement, useState } from 'react';
 import { NERButton } from './NERButton';
 import { ArrowDropDown } from '@mui/icons-material';
-import { Divider, ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { Divider, ListItemIcon, Menu, MenuItem, Tooltip } from '@mui/material';
 import { isGuest } from 'shared';
 import { useCurrentUser } from '../hooks/users.hooks';
 
@@ -12,6 +12,9 @@ export type ButtonInfo = {
   disabled?: boolean;
   icon?: ReactElement;
   dividerTop?: boolean;
+  component?: ElementType<any>;
+  to?: string;
+  tooltip?: string;
 };
 
 interface ActionsMenuProps {
@@ -48,6 +51,14 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
         open={dropdownOpen}
         anchorEl={anchorEl}
         onClose={handleDropdownClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right'
+        }}
         sx={{
           '& .MuiPaper-root': {
             minWidth: anchorEl ? anchorEl.clientWidth : undefined
@@ -55,10 +66,11 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
         }}
       >
         {buttons.flatMap((button, index) => {
-          return [
-            button.dividerTop && <Divider key={`${index}-divider`} />,
+          const menuItem = (
             <MenuItem
               key={index}
+              {...(button.component ? { component: button.component } : {})}
+              {...(button.to ? { to: button.to } : {})}
               onClick={() => {
                 handleDropdownClose();
                 button.onClick();
@@ -68,6 +80,17 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
               {button.icon && <ListItemIcon>{button.icon}</ListItemIcon>}
               {button.title}
             </MenuItem>
+          );
+
+          return [
+            button.dividerTop && <Divider key={`${index}-divider`} />,
+            button.tooltip && button.disabled ? (
+              <Tooltip key={index} title={button.tooltip} placement="left" arrow>
+                <span>{menuItem}</span>
+              </Tooltip>
+            ) : (
+              menuItem
+            )
           ];
         })}
       </Menu>

@@ -3,14 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AuthenticatedUser, LinkCreateArgs } from 'shared';
+import { AuthenticatedUser, DescriptionBulletPreview, LinkCreateArgs } from 'shared';
 
 export interface Auth {
   user: AuthenticatedUser | undefined;
-  devSignin: (userId: number) => Promise<AuthenticatedUser>;
+  devSignin: (userId: string) => Promise<AuthenticatedUser>;
   signin: (token: string) => Promise<AuthenticatedUser>;
   signout: () => void;
+  signInCurrent: () => Promise<void>;
   isLoading: boolean;
+  triedCurrent: boolean;
 }
 
 export const themeChoices = ['DARK', 'LIGHT'];
@@ -19,6 +21,7 @@ export interface LinkItem {
   name: string;
   icon?: JSX.Element;
   route: string;
+  subItems?: LinkItem[];
 }
 
 export interface VersionObject {
@@ -26,38 +29,26 @@ export interface VersionObject {
 }
 
 export interface EditSingleProjectPayload {
-  projectId: number;
-  crId: number;
+  projectId: string;
+  crId: string;
   name: string;
   budget: number;
   summary: string;
-  rules: string[];
-  goals: { id: number; detail: string }[];
-  features: { id: number; detail: string }[];
-  otherConstraints: { id: number; detail: string }[];
+  descriptionBullets: DescriptionBulletPreview[];
   links: LinkCreateArgs[];
-  projectLeadId?: number;
-  projectManagerId?: number;
+  leadId?: string;
+  managerId?: string;
 }
 
 export interface CreateSingleProjectPayload {
-  crId: number;
+  crId?: string;
   name: string;
   carNumber: number;
   summary: string;
   teamIds: string[];
   budget: number;
-  rules: string[];
-  goals: { id: number; detail: string }[];
-  features?: { id: number; detail: string }[];
-  otherConstraints?: { id: number; detail: string }[];
+  descriptionBullets: DescriptionBulletPreview[];
   links?: LinkCreateArgs[];
-  projectLeadId?: number;
-  projectManagerId?: number;
-}
-
-export interface LinkTypeCreatePayload {
-  name: string;
-  iconName: string;
-  required: boolean;
+  leadId?: string;
+  managerId?: string;
 }

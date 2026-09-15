@@ -15,8 +15,8 @@ const CommaSeparatedNumbersInput = ({
   onChange,
   error
 }: {
-  value: number[];
-  onChange: (saboNumbers: number[]) => void;
+  value: string[];
+  onChange: (saboNumbers: string[]) => void;
   error: Merge<FieldError, (FieldError | undefined)[]> | undefined;
 }) => {
   const [inputValue, setInputValue] = useState<string>(value.join(', '));
@@ -25,11 +25,8 @@ const CommaSeparatedNumbersInput = ({
     const inputValue = e.target.value;
     setInputValue(inputValue);
 
-    // Split the input string by commas and parse each number
-    const saboNumbers = inputValue
-      .split(',')
-      .map((saboNumber) => parseInt(saboNumber.trim()))
-      .filter((num) => !isNaN(num)); // Filter out NaN values
+    // Split the input string by commas
+    const saboNumbers = inputValue.split(',');
 
     onChange(saboNumbers);
   };
@@ -49,12 +46,12 @@ const CommaSeparatedNumbersInput = ({
 };
 
 const schema = yup.object().shape({
-  saboNumbers: yup.array().of(yup.number().required('SABO Number is required')).required('SABO Numbers are required')
+  saboNumbers: yup.array().of(yup.string().required('SABO Number is required')).required('SABO Numbers are required')
 });
 
 interface PendingAdvisorModalProps {
   open: boolean;
-  saboNumbers: number[];
+  saboNumbers: string[];
   onHide: () => void;
 }
 const PendingAdvisorModal: React.FC<PendingAdvisorModalProps> = ({ open, saboNumbers, onHide }) => {
@@ -68,13 +65,13 @@ const PendingAdvisorModal: React.FC<PendingAdvisorModalProps> = ({ open, saboNum
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      saboNumbers: saboNumbers
+      saboNumbers
     }
   });
 
   const toast = useToast();
 
-  const onSubmit = async (data: { saboNumbers: number[] }) => {
+  const onSubmit = async (data: { saboNumbers: string[] }) => {
     try {
       await sendPendingAdvisorList(data.saboNumbers);
     } catch (error: unknown) {

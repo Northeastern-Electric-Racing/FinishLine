@@ -3,22 +3,41 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamType } from './design-review-types';
-import { ProjectPreview } from './project-types';
-import { User } from './user-types';
+import { ProjectGantt } from './project-types.js';
+import { User } from './user-types.js';
 
-export interface Team {
+export interface TeamBase {
   teamId: string;
   teamName: string;
-  head: User;
   slackId: string;
   description: string;
-  members: User[];
-  projects: ProjectPreview[];
-  leads: User[];
-  userArchived?: User;
   dateArchived?: Date;
-  teamType?: TeamType;
+  teamType?: {
+    teamTypeId: string;
+    name: string;
+  };
 }
 
-export type TeamPreview = Pick<Team, 'teamId' | 'teamName' | 'members' | 'head' | 'leads' | 'teamType'>;
+export interface TeamPreview extends TeamBase {
+  members: User[];
+  head: User;
+  leads: User[];
+  userArchived?: User;
+}
+
+export interface Team extends TeamPreview {
+  projects: ProjectGantt[];
+}
+
+export type TeamJoinRequestStatus = 'PENDING' | 'APPROVED' | 'DENIED';
+
+export interface TeamJoinRequest {
+  teamJoinRequestId: string;
+  user: User;
+  team: TeamPreview;
+  status: TeamJoinRequestStatus;
+  dateRequested: Date;
+  denialReason?: string;
+  reviewedBy?: User;
+  dateReviewed?: Date;
+}

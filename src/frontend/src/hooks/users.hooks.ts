@@ -17,21 +17,38 @@ import {
   getCurrentUserSecureSettings,
   getUserSecureSettings,
   getUserScheduleSettings,
-  updateUserScheduleSettings
+  getUserBusyTimes,
+  updateUserScheduleSettings,
+  getUserTasks,
+  getManyUserTasks,
+  getCurrentUser,
+  logUserOut,
+  getManyUsersWithScheduleSettings,
+  getAllOrgUsers,
+  getAllOrgMembers,
+  getCurrentUserApiToken,
+  generateApiToken
 } from '../apis/users.api';
 import {
   User,
   AuthenticatedUser,
   UserSettings,
   UpdateUserRolePayload,
-  Project,
   UserSecureSettings,
   UserScheduleSettings,
-  UserWithScheduleSettings
+  SetUserScheduleSettingsPayload,
+  Task,
+  UserWithRole,
+  UserWithScheduleSettings,
+  ProjectOverview,
+  BusySlots,
+  ApiTokenMetadata,
+  GeneratedApiToken
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
 import { UserContext } from '../app/AppContextUser';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Custom React Hook to supply the current user
@@ -43,10 +60,31 @@ export const useCurrentUser = (): AuthenticatedUser => {
 };
 
 /**
- * Custom React Hook to supply all users.
+ * Custom React Hook to supply all users. (only users in the current org)
  */
 export const useAllUsers = () => {
-  return useQuery<UserWithScheduleSettings[], Error>(['users'], async () => {
+  return useQuery<UserWithRole[], Error>(['users'], async () => {
+    const { data } = await getAllOrgUsers();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply all members (members and up in the current org)
+ */
+export const useAllMembers = () => {
+  return useQuery<UserWithRole[], Error>(['users', 'members'], async () => {
+    const { data } = await getAllOrgMembers();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply all users for login (no org filtering).
+ * @returns all users regardless of org
+ */
+export const useAllLoginUsers = () => {
+  return useQuery<UserWithRole[], Error>(['users', 'login'], async () => {
     const { data } = await getAllUsers();
     return data;
   });
@@ -57,7 +95,7 @@ export const useAllUsers = () => {
  *
  * @param id User ID of the requested user.
  */
-export const useSingleUser = (id: number) => {
+export const useSingleUser = (id: string) => {
   return useQuery<User, Error>(['users', id], async () => {
     const { data } = await getSingleUser(id);
     return data;
@@ -74,11 +112,22 @@ export const useLogUserIn = () => {
   });
 };
 
+export const useGetCurrentUser = () => {
+  return useMutation<AuthenticatedUser, Error>(
+    ['users', 'login'],
+    async () => {
+      const { data } = await getCurrentUser();
+      return data;
+    },
+    { retry: false }
+  );
+};
+
 /**
  * Custom React Hook to log a dev user in.
  */
 export const useLogUserInDev = () => {
-  return useMutation<AuthenticatedUser, Error, number>(['users', 'login'], async (userId: number) => {
+  return useMutation<AuthenticatedUser, Error, string>(['users', 'login'], async (userId: string) => {
     const { data } = await logUserInDev(userId);
     return data;
   });
@@ -89,7 +138,7 @@ export const useLogUserInDev = () => {
  *
  * @param id User ID of the requested user's settings.
  */
-export const useSingleUserSettings = (id: number) => {
+export const useSingleUserSettings = (id: string) => {
   return useQuery<UserSettings, Error>(['users', id, 'settings'], async () => {
     const { data } = await getSingleUserSettings(id);
     return data;
@@ -116,7 +165,7 @@ export const useCurrentUserSecureSettings = () => {
  * @param id User ID of the requested user's secure settings
  * @returns the user's secure settings
  */
-export const useUserSecureSettings = (id: number) => {
+export const useUserSecureSettings = (id: string) => {
   return useQuery<UserSecureSettings, Error>(['users', id, 'secure-settings'], async () => {
     const { data } = await getUserSecureSettings(id);
     return data;
@@ -129,13 +178,18 @@ export const useUserSecureSettings = (id: number) => {
  * @param id User ID of the requested user's schedule settings
  * @returns the user's schedule settings
  */
-export const useUserScheduleSettings = (id: number) => {
+export const useUserScheduleSettings = (id: string) => {
   return useQuery<UserScheduleSettings, Error>(['users', id, 'schedule-settings'], async () => {
     try {
       const { data } = await getUserScheduleSettings(id);
       return data;
     } catch (error: unknown) {
-      return { drScheduleSettingsId: '', personalGmail: '', personalZoomLink: '', availability: [] };
+      return {
+        drScheduleSettingsId: '',
+        personalGmail: '',
+        personalZoomLink: '',
+        availabilities: []
+      };
     }
   });
 };
@@ -145,11 +199,15 @@ export const useUserScheduleSettings = (id: number) => {
  *
  * @param id User ID of the requested user's settings.
  */
-export const useUsersFavoriteProjects = (id: number) => {
-  return useQuery<Project[], Error>(['users', id, 'favorite projects'], async () => {
-    const { data } = await getUsersFavoriteProjects(id);
-    return data;
-  });
+export const useUsersFavoriteProjects = (id: string) => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<ProjectOverview[], Error>(
+    ['users', id, 'favorite projects', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getUsersFavoriteProjects(id);
+      return data;
+    }
+  );
 };
 
 /**
@@ -198,9 +256,9 @@ export const useUpdateUserSecureSettings = () => {
 export const useUpdateUserScheduleSettings = () => {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
-  return useMutation<UserScheduleSettings, Error, UserScheduleSettings>(
+  return useMutation<UserScheduleSettings, Error, SetUserScheduleSettingsPayload>(
     ['users', 'schedule-settings', 'update'],
-    async (settings: UserScheduleSettings) => {
+    async (settings: SetUserScheduleSettingsPayload) => {
       const { data } = await updateUserScheduleSettings(settings);
       return data;
     },
@@ -228,6 +286,99 @@ export const useUpdateUserRole = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['users']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get the user's assigned tasks
+ * @param userId user to get assigned tasks of
+ * @returns user's assigned task
+ */
+export const useUserTasks = (userId: string) => {
+  return useQuery<Task[], Error>(['users', userId, 'tasks'], async () => {
+    const { data } = await getUserTasks(userId);
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to get the assigned tasks of all users in the list
+ * @param userIds ids of users to get assigned tasks from
+ * @returns tasks assigned to all users in list
+ */
+export const useManyUserTasks = (userIds: string[]) => {
+  return useQuery<Task[], Error>(['users', userIds, 'tasks'], async () => {
+    const { data } = await getManyUserTasks(userIds);
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to get the users with their schedule settings for all users in the list
+ * @param userIds ids of users to get schedule settings from
+ * @returns users with their schedule settings
+ */
+export const useManyUsersWithScheduleSettings = (userIds: string[]) => {
+  return useQuery<UserWithScheduleSettings[], Error>(['users', userIds, 'with-schedule-settings'], async () => {
+    const { data } = await getManyUsersWithScheduleSettings(userIds);
+    return data;
+  });
+};
+
+export const useLogUserOut = () => {
+  return useMutation<{ message: string }, Error, void>([], async () => {
+    const { data } = await logUserOut();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to get a user's busy times, combining their imported ics calendar feed and
+ * Finishline events they're on
+ *
+ * @returns user's busy times per day
+ */
+export const useUserBusyTimes = (id: string, startDate: Date, endDate: Date, enabled: boolean) => {
+  return useQuery<BusySlots[], Error>(
+    ['users', id, 'schedule-settings', 'busy-times', startDate.getTime(), endDate.getTime()],
+    async () => {
+      const { data } = await getUserBusyTimes(id, startDate, endDate);
+      return data;
+    },
+    { enabled: enabled && !!id }
+  );
+};
+
+/**
+ * Custom react hook to get the current user's active API token metadata.
+ *
+ * @returns the token metadata, or null if they have not generated one
+ */
+export const useCurrentUserApiToken = () => {
+  return useQuery<ApiTokenMetadata | null, Error>(['users', 'api-token'], async () => {
+    const { data } = await getCurrentUserApiToken();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to generate a new API token for the current user, revoking any existing one.
+ *
+ * @returns the generated token, including the raw token value
+ */
+export const useGenerateApiToken = () => {
+  const queryClient = useQueryClient();
+  return useMutation<GeneratedApiToken, Error, void>(
+    ['users', 'api-token', 'generate'],
+    async () => {
+      const { data } = await generateApiToken();
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['users', 'api-token']);
       }
     }
   );

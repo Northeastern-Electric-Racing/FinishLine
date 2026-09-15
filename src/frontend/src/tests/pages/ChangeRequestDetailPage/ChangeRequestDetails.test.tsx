@@ -10,17 +10,16 @@ import {
   exampleActivationChangeRequest as exActivationCR,
   exampleStandardChangeRequest as exStandardCR
 } from '../../test-support/test-data/change-requests.stub';
-import {
-  exampleAdminUser,
-  exampleAdminUser2,
-  exampleGuestUser,
-  exampleMemberUser
-} from '../../test-support/test-data/users.stub';
-import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder, fireEvent } from '../../test-support/test-utils';
 import { mockUseQueryResult, mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { useSingleChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import ChangeRequestDetails from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetails';
+import {
+  exampleAuthenticatedAdminUser,
+  exampleAuthenticatedGuestUser,
+  exampleAuthenticatedMemberUser
+} from '../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../hooks/change-requests.hooks');
 
@@ -34,7 +33,7 @@ vi.mock('../../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
-const mockAuthHook = (user = exampleAdminUser) => {
+const mockAuthHook = (user = exampleAuthenticatedAdminUser) => {
   mockedUseAuth.mockReturnValue(mockAuth(false, user));
 };
 
@@ -62,7 +61,7 @@ describe.skip('change request details container', () => {
 
   it('enables review if the user is an admin', () => {
     mockSingleCRHook(false, false, exActivationCR);
-    mockAuthHook(exampleAdminUser2);
+    mockAuthHook(exampleAuthenticatedAdminUser);
     renderComponent();
 
     expect(screen.getByText('Review')).not.toHaveAttribute('aria-disabled');
@@ -70,7 +69,7 @@ describe.skip('change request details container', () => {
 
   it("disables review of admin's own change requests", () => {
     mockSingleCRHook(false, false, exActivationCR);
-    mockAuthHook(exampleAdminUser);
+    mockAuthHook(exampleAuthenticatedAdminUser);
     renderComponent();
 
     expect(screen.getByText('Review')).toHaveAttribute('aria-disabled');
@@ -78,7 +77,7 @@ describe.skip('change request details container', () => {
 
   it('disables reviewing change requests for guests', () => {
     mockSingleCRHook(false, false, exActivationCR);
-    mockAuthHook(exampleGuestUser);
+    mockAuthHook(exampleAuthenticatedGuestUser);
     renderComponent();
 
     expect(screen.getByText('Review')).toHaveAttribute('aria-disabled');
@@ -86,7 +85,7 @@ describe.skip('change request details container', () => {
 
   it('disables reviewing change requests for member users', () => {
     mockSingleCRHook(false, false, exActivationCR);
-    mockAuthHook(exampleMemberUser);
+    mockAuthHook(exampleAuthenticatedMemberUser);
     renderComponent();
 
     expect(screen.getByText('Review')).toHaveAttribute('aria-disabled');
@@ -94,24 +93,20 @@ describe.skip('change request details container', () => {
 
   it('enables implementing if the user is an admin', () => {
     mockSingleCRHook(false, false, exStandardCR);
-    mockAuthHook(exampleAdminUser);
+    mockAuthHook(exampleAuthenticatedAdminUser);
     renderComponent();
 
-    act(() => {
-      fireEvent.click(screen.getByText('Implement Change Request'));
-    });
+    fireEvent.click(screen.getByText('Implement Change Request'));
     expect(screen.getByText('Create New Project')).not.toHaveAttribute('disabled');
     expect(screen.getByText('Create New Work Package')).not.toHaveAttribute('disabled');
   });
 
   it('disables implementing change requests for guests', () => {
     mockSingleCRHook(false, false, exStandardCR);
-    mockAuthHook(exampleGuestUser);
+    mockAuthHook(exampleAuthenticatedGuestUser);
     renderComponent();
 
-    act(() => {
-      fireEvent.click(screen.getByText('Implement Change Request'));
-    });
+    fireEvent.click(screen.getByText('Implement Change Request'));
     expect(screen.getByText('Create New Project')).toHaveAttribute('disabled');
     expect(screen.getByText('Create New Work Package')).toHaveAttribute('disabled');
   });

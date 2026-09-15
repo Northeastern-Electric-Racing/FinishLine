@@ -21,12 +21,12 @@ const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
     <Grid container rowSpacing={'10px'} mb="40px">
       <Grid item xs={6} md={6}>
         <InfoBlock title={'Project Lead'} icon={<HandymanIcon />}>
-          <Typography>{fullNamePipe(cr.projectLead)}</Typography>
+          <Typography>{fullNamePipe(cr.lead)}</Typography>
         </InfoBlock>
       </Grid>
       <Grid item xs={6} md={6}>
         <InfoBlock title={'Project Manager'} icon={<WorkIcon />}>
-          <Typography>{fullNamePipe(cr.projectManager)}</Typography>
+          <Typography>{fullNamePipe(cr.manager)}</Typography>
         </InfoBlock>
       </Grid>
       <Grid item xs={6} md={6}>

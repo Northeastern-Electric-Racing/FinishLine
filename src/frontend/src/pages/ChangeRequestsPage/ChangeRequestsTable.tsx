@@ -8,14 +8,18 @@ import { Box, useTheme } from '@mui/system';
 import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { ChangeRequest, ChangeRequestType, WbsNumber, validateWBS } from 'shared';
+import { ChangeRequest, ChangeRequestType, WbsElement } from 'shared';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
-import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
+import { datePipe, displayEnum, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { GridColDefStyle } from '../../utils/tables';
 import ErrorPage from '../ErrorPage';
 import TableCustomToolbar from '../../components/TableCustomToolbar';
+
+function isWBSElement(value: any): value is WbsElement {
+  return typeof value === 'object' && value !== null && 'wbsNum' in value;
+}
 
 const ChangeRequestsTable: React.FC = () => {
   const [windowSize, setWindowSize] = useState(window.innerWidth);
@@ -52,9 +56,25 @@ const ChangeRequestsTable: React.FC = () => {
 
   if (isError) return <ErrorPage message={error?.message} />;
 
+  const rows = data.map((v) => ({
+    ...v,
+    carNumber: v.wbsNum ? v.wbsNum.carNumber : undefined,
+    wbsOrCategoryOrAccountCode: v.wbsNum
+      ? { wbsNum: v.wbsNum, name: v.wbsName }
+      : v.category
+        ? { category: v.category, name: v.category.name }
+        : v.accountCode
+          ? { accountCode: v.accountCode, name: v.accountCode.name }
+          : undefined,
+    submitter: fullNamePipe(v.submitter),
+    reviewer: fullNamePipe(v.reviewer)
+  }));
+
+  const wbsOrCategoryOrAccountCodeById = new Map(rows.map((row) => [row.crId, row.wbsOrCategoryOrAccountCode]));
+
   const idColumn: GridColDef = {
     ...baseColDef,
-    field: 'crId',
+    field: 'identifier',
     type: 'number',
     headerName: 'ID',
     maxWidth: 75
@@ -69,27 +89,39 @@ const ChangeRequestsTable: React.FC = () => {
     maxWidth: 200
   };
 
-  const wbsColumn: GridColDef = {
+  const dynamicColumn: GridColDef = {
     ...baseColDef,
-    field: 'wbs',
-    headerName: 'WBS',
+    field: 'wbsOrCategoryOrAccountCode',
+    headerName: 'WBS / Category / AccountCode',
     filterable: true,
     sortable: true,
     maxWidth: 300,
-    valueGetter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
-    sortComparator: (_v1, _v2, param1, param2) => {
-      const wbs1: WbsNumber = validateWBS((param1.value as string).split(' ')[0]);
-      const wbs2: WbsNumber = validateWBS((param2.value as string).split(' ')[0]);
-
-      if (wbs1.carNumber !== wbs2.carNumber) {
-        return wbs1.carNumber - wbs2.carNumber;
-      } else if (wbs1.projectNumber !== wbs2.projectNumber) {
-        return wbs1.projectNumber - wbs2.projectNumber;
-      } else if (wbs1.workPackageNumber !== wbs2.workPackageNumber) {
-        return wbs1.workPackageNumber - wbs2.workPackageNumber;
-      } else {
-        return 0;
+    valueGetter: (params) => {
+      const { value } = params;
+      if (isWBSElement(value)) {
+        return `${wbsPipe(value.wbsNum)} - ${value.name}`;
       }
+      return `${value?.name ? displayEnum(value?.name) : ''}`;
+    },
+    sortComparator: (_v1, _v2, param1, param2) => {
+      const val1 = wbsOrCategoryOrAccountCodeById.get(param1.id as string);
+      const val2 = wbsOrCategoryOrAccountCodeById.get(param2.id as string);
+
+      if (isWBSElement(val1) && isWBSElement(val2)) {
+        const wbs1 = val1.wbsNum;
+        const wbs2 = val2.wbsNum;
+
+        if (wbs1.carNumber !== wbs2.carNumber) return wbs1.carNumber - wbs2.carNumber;
+        if (wbs1.projectNumber !== wbs2.projectNumber) return wbs1.projectNumber - wbs2.projectNumber;
+        return wbs1.workPackageNumber - wbs2.workPackageNumber;
+      }
+
+      if (!isWBSElement(val1) && !isWBSElement(val2)) {
+        return (val1?.name ?? '').localeCompare(val2?.name ?? '');
+      }
+
+      // Prefer WBS entries first, or reverse depending on your preference
+      return isWBSElement(val1) ? -1 : 1;
     }
   };
 
@@ -100,7 +132,7 @@ const ChangeRequestsTable: React.FC = () => {
     maxWidth: 200
   };
 
-  const smallColumns: GridColDef[] = [idColumn, dateReviewedColumn, wbsColumn, submitterColumn];
+  const smallColumns: GridColDef[] = [idColumn, dateReviewedColumn, dynamicColumn, submitterColumn];
 
   const columns: GridColDef[] = [
     idColumn,
@@ -113,7 +145,7 @@ const ChangeRequestsTable: React.FC = () => {
       maxWidth: 150
     },
     { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
-    wbsColumn,
+    dynamicColumn,
     {
       ...baseColDef,
       field: 'dateSubmitted',
@@ -161,10 +193,25 @@ const ChangeRequestsTable: React.FC = () => {
     }
   ];
 
-  const filterValues = JSON.parse(
-    // sets filter to a default value if no filter is stored in local storage
-    localStorage.getItem('changeRequestsTableFilter') ?? '{"columnField": "crId", "operatorValue": "=", "value": ""}'
-  );
+  const defaultFilter = { columnField: 'identifier', operatorValue: '=', value: '' };
+  let filterValues: { columnField: string; operatorValue: string; value: string };
+  try {
+    const parsed = JSON.parse(localStorage.getItem('changeRequestsTableFilter') ?? 'null');
+    if (
+      parsed &&
+      typeof parsed.columnField === 'string' &&
+      typeof parsed.operatorValue === 'string' &&
+      typeof parsed.value === 'string'
+    ) {
+      filterValues = parsed;
+    } else {
+      localStorage.removeItem('changeRequestsTableFilter');
+      filterValues = defaultFilter;
+    }
+  } catch {
+    localStorage.removeItem('changeRequestsTableFilter');
+    filterValues = defaultFilter;
+  }
 
   return (
     <Box
@@ -175,6 +222,7 @@ const ChangeRequestsTable: React.FC = () => {
         },
         '& .Mui-odd': { border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}` }
       }}
+      data-testid={'Change Request Table'}
     >
       <DataGrid
         autoHeight
@@ -188,16 +236,7 @@ const ChangeRequestsTable: React.FC = () => {
         }}
         loading={isLoading}
         error={error}
-        rows={
-          // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
-          data.map((v) => ({
-            ...v,
-            carNumber: v.wbsNum.carNumber,
-            wbs: { wbsNum: v.wbsNum, name: v.wbsName },
-            submitter: fullNamePipe(v.submitter),
-            reviewer: fullNamePipe(v.reviewer)
-          })) || []
-        }
+        rows={rows}
         columns={windowSize < 900 ? smallColumns : columns}
         getRowId={(row) => row.crId}
         sx={{
@@ -238,7 +277,11 @@ const ChangeRequestsTable: React.FC = () => {
           }
         }}
         onFilterModelChange={(filterModel: GridFilterModel) => {
-          localStorage.setItem('changeRequestsTableFilter', JSON.stringify(filterModel.items[0]));
+          if (filterModel.items.length === 0 || filterModel.items[0].value === undefined) {
+            localStorage.removeItem('changeRequestsTableFilter');
+          } else {
+            localStorage.setItem('changeRequestsTableFilter', JSON.stringify(filterModel.items[0]));
+          }
         }}
         initialState={{
           filter: {
@@ -253,7 +296,7 @@ const ChangeRequestsTable: React.FC = () => {
             }
           },
           sorting: {
-            sortModel: [{ field: 'crId', sort: 'desc' }]
+            sortModel: [{ field: 'identifier', sort: 'desc' }]
           },
           columns: {
             columnVisibilityModel: {

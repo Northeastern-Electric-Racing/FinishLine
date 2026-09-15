@@ -3,43 +3,48 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Receipt, Reimbursement, ReimbursementProduct, ReimbursementRequest, ReimbursementStatus, Vendor } from 'shared';
+import {
+  Receipt,
+  Reimbursement,
+  ReimbursementProduct,
+  ReimbursementRequest,
+  ReimbursementRequestData,
+  ReimbursementStatus,
+  SpendingBarData,
+  Vendor
+} from 'shared';
 
-const reimbursementStatusTransformer = (status: ReimbursementStatus) => {
+const reimbursementStatusTransformer = (status: ReimbursementStatus): ReimbursementStatus => {
   return {
     ...status,
     dateCreated: new Date(status.dateCreated)
   };
 };
 
-export const vendorTransformer = (vendor: Vendor) => {
+export const vendorTransformer = (vendor: Vendor): Vendor => {
   return {
     ...vendor,
-    id: vendor.vendorId,
     dateCreated: new Date(vendor.dateCreated)
   };
 };
 
-const receiptTransformer = (receipt: Receipt) => {
+const receiptTransformer = (receipt: Receipt): Receipt => {
   return {
-    ...receipt,
-    dateDeleted: receipt.dateDeleted ? new Date(receipt.dateDeleted) : undefined
+    ...receipt
   };
 };
 
-const reimbursementProductTransformer = (product: ReimbursementProduct) => {
+const reimbursementProductTransformer = (product: ReimbursementProduct): ReimbursementProduct => {
   return {
-    ...product,
-    dateDeleted: product.dateDeleted ? new Date(product.dateDeleted) : undefined
+    ...product
   };
 };
 
-export const reimbursementRequestTransformer = (request: ReimbursementRequest) => {
+export const reimbursementRequestTransformer = (request: ReimbursementRequest): ReimbursementRequest => {
   return {
     ...request,
     dateCreated: new Date(request.dateCreated),
-    dateDeleted: request.dateDeleted ? new Date(request.dateDeleted) : undefined,
-    dateOfExpense: new Date(request.dateOfExpense),
+    dateOfExpense: request.dateOfExpense ? new Date(request.dateOfExpense) : undefined,
     reimbursementStatuses: request.reimbursementStatuses.map(reimbursementStatusTransformer),
     vendor: vendorTransformer(request.vendor),
     receiptPictures: request.receiptPictures.map(receiptTransformer),
@@ -48,9 +53,27 @@ export const reimbursementRequestTransformer = (request: ReimbursementRequest) =
   };
 };
 
-export const reimbursementTransformer = (reimbursement: Reimbursement) => {
+export const reimbursementTransformer = (reimbursement: Reimbursement): Reimbursement => {
   return {
     ...reimbursement,
     dateCreated: new Date(reimbursement.dateCreated)
+  };
+};
+
+export const reimbursementRequestDataTransformer = (
+  reimbursementRequestData: ReimbursementRequestData
+): ReimbursementRequestData => {
+  return {
+    ...reimbursementRequestData
+  };
+};
+
+export const spendingBarDataTransformer = (spendingBarData: SpendingBarData): SpendingBarData => {
+  return {
+    ...spendingBarData,
+    data: spendingBarData.data.map((spend) => ({
+      title: spend.title,
+      spendingInfo: reimbursementRequestDataTransformer(spend.spendingInfo)
+    }))
   };
 };

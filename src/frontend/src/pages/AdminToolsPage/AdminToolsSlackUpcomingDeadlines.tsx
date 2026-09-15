@@ -26,7 +26,7 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
 
   const slackUpcomingDeadlines = async () => {
     try {
-      await mutateAsync(new Date(deadline.toDateString()));
+      await mutateAsync(deadline);
       setDisableButton(true);
     } catch (error: unknown) {
       if (error instanceof Error) {

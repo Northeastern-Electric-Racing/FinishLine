@@ -1,0 +1,574 @@
+import { Checklist, Organization } from '@prisma/client';
+import prisma from '../prisma/prisma.js';
+import { userHasPermission } from '../utils/users.utils.js';
+import { ChecklistItemType, isAdmin, User } from 'shared';
+import {
+  AccessDeniedAdminOnlyException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../utils/errors.utils.js';
+import { downloadFile } from '../utils/google-integration.utils.js';
+
+export default class OnboardingServices {
+  /**
+   * gets all checklists for the given organization
+   * @param organization the organization of the checklists
+   * @returns all checklists for the given organization
+   */
+  static async getAllChecklists(organization: Organization) {
+    const allChecklists = await prisma.checklist.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null, parentChecklistId: null },
+      include: {
+        subtasks: { where: { dateDeleted: null }, orderBy: { displayIndex: 'asc' } },
+        teamType: true,
+        usersChecked: true
+      },
+      orderBy: { displayIndex: 'asc' }
+    });
+
+    return allChecklists;
+  }
+
+  /**
+   * Gets all the checklists that this user has checked
+   * @param user the user who has checked the checklists
+   * @param organization the organization of the checklists
+   * @returns all the checklists that this user has checked
+   */
+  static async getCheckedChecklists(user: User, organization: Organization) {
+    const checkedChecklists = await prisma.checklist.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        // A checklist is checked if the user has checked it, it is an info block, or all its subtasks are checked
+        OR: [
+          { usersChecked: { some: { userId: user.userId } } },
+          { itemType: ChecklistItemType.INFO },
+          {
+            // Checks if the checklist has subtasks and if all subtasks are checked by the user
+            AND: [
+              { subtasks: { some: {} } },
+              {
+                subtasks: {
+                  every: {
+                    OR: [
+                      { isOptional: true },
+                      { usersChecked: { some: { userId: user.userId } } },
+                      { itemType: ChecklistItemType.INFO }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      include: { subtasks: { where: { dateDeleted: null }, orderBy: { displayIndex: 'asc' } } },
+      orderBy: { displayIndex: 'asc' }
+    });
+
+    return checkedChecklists;
+  }
+
+  /**
+   * Gets all the checklists for the given teamType Ids
+   * @param userId the user Id to get the checklists for
+   * @param organization the organization of the checklists
+   * @returns all the checklists for the given teamType Ids
+   */
+  static async getUsersChecklists(userId: string, organization: Organization) {
+    const user = await prisma.user.findUnique({ where: { userId }, include: { onboardingTeamTypes: true } });
+    if (!user) {
+      throw new NotFoundException('User', userId);
+    }
+
+    const teamTypeIds = user.onboardingTeamTypes.map((teamType) => teamType.teamTypeId);
+
+    const teamTypeChecklists = await prisma.checklist.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        teamTypeId: { in: teamTypeIds },
+        parentChecklistId: null
+      },
+      include: {
+        subtasks: {
+          where: { dateDeleted: null },
+          include: {
+            usersChecked: true
+          },
+          orderBy: { displayIndex: 'asc' }
+        },
+        teamType: true
+      },
+      orderBy: { displayIndex: 'asc' }
+    });
+
+    const generalChecklists = await prisma.checklist.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        teamTypeId: null,
+        teamId: null,
+        parentChecklistId: null
+      },
+      include: {
+        subtasks: {
+          where: { dateDeleted: null },
+          include: {
+            usersChecked: true
+          },
+          orderBy: { displayIndex: 'asc' }
+        },
+        teamType: true
+      },
+      orderBy: { displayIndex: 'asc' }
+    });
+
+    return [...generalChecklists, ...teamTypeChecklists];
+  }
+
+  /**
+   * Creates a new checklist
+   * @param content the content of the checklist
+   * @param isOptional whether the checklist is optional
+   * @param teamId the team Id of the checklist
+   * @param teamTypeId the teamType Id of the checklist
+   * @param parentChecklistId the parent checklist Id of the checklist
+   * @param organization the organization of the checklist
+   * @param itemType the type of the checklist item (TASK or INFO)
+   * @returns the created checklist
+   */
+  static async createChecklist(
+    creator: User,
+    content: string,
+    teamId: string | null,
+    teamTypeId: string | null,
+    parentChecklistId: string | null,
+    organization: Organization,
+    isOptional?: boolean,
+    itemType?: ChecklistItemType
+  ) {
+    if (!(await userHasPermission(creator.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('create a checklist');
+    }
+
+    if (teamId && teamTypeId) {
+      throw new HttpException(400, 'Checklist cannot be assigned to both a team and a team type');
+    }
+
+    if (!teamId && !teamTypeId) {
+      if (parentChecklistId) {
+        const parentChecklist = await prisma.checklist.findFirst({ where: { checklistId: parentChecklistId } });
+        if (parentChecklist?.teamId || parentChecklist?.teamTypeId) {
+          throw new HttpException(400, 'Parent checklist must also be a general checklist');
+        }
+      }
+    }
+
+    if (teamId) {
+      const team = await prisma.team.findUnique({ where: { teamId } });
+
+      if (!team) {
+        throw new NotFoundException('Team', teamId);
+      }
+    }
+
+    if (teamTypeId) {
+      const teamType = await prisma.team_Type.findUnique({ where: { teamTypeId } });
+
+      if (!teamType) {
+        throw new NotFoundException('Team Type', teamTypeId);
+      }
+    }
+
+    if (parentChecklistId) {
+      const parentChecklist = await prisma.checklist.findUnique({ where: { checklistId: parentChecklistId } });
+
+      if (!parentChecklist) {
+        throw new NotFoundException('Checklist', parentChecklistId);
+      }
+
+      if (
+        (parentChecklist.teamId ?? null) !== (teamId ?? null) ||
+        (parentChecklist.teamTypeId ?? null) !== (teamTypeId ?? null)
+      ) {
+        throw new HttpException(400, 'Parent checklist must have the same teamId and teamTypeId');
+      }
+
+      if (parentChecklist.dateDeleted) {
+        throw new DeletedException('Checklist', parentChecklistId);
+      }
+    }
+
+    // Calculate next displayIndex
+    const lastChecklist = await prisma.checklist.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        parentChecklistId: parentChecklistId ?? null,
+        dateDeleted: null
+      },
+      orderBy: { displayIndex: 'desc' }
+    });
+
+    // 1 indexed because 0 can be easily confused with null
+    const nextDisplayIndex = lastChecklist && lastChecklist.displayIndex !== null ? lastChecklist.displayIndex + 1 : 1;
+
+    const checklist: Checklist = await prisma.checklist.create({
+      data: {
+        content,
+        isOptional,
+        displayIndex: nextDisplayIndex,
+        itemType: itemType ?? ChecklistItemType.TASK,
+        organizationId: organization.organizationId,
+        teamId,
+        teamTypeId,
+        parentChecklistId,
+        userCreatedId: creator.userId
+      }
+    });
+
+    return checklist;
+  }
+
+  /**
+   * Edits a checklist
+   * @param checklistId the id of the checklist to edit
+   * @param content the content of the checklist
+   * @param isOptional whether the checklist is optional
+   * @param teamId the team Id of the checklist
+   * @param teamTypeId the teamType Id of the checklist
+   * @param parentChecklistId the parent checklist Id of the checklist
+   * @param organization the organization of the checklist
+   * @param itemType the type of the checklist item (TASK or INFO)
+   * @returns the edited checklist
+   */
+  static async editChecklist(
+    editor: User,
+    checklistId: string,
+    content: string,
+    teamId: string | null,
+    teamTypeId: string | null,
+    parentChecklistId: string | null,
+    organization: Organization,
+    isOptional?: boolean,
+    itemType?: ChecklistItemType
+  ) {
+    if (!(await userHasPermission(editor.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('edit a checklist');
+    }
+
+    if (teamId && teamTypeId) {
+      throw new HttpException(400, 'Checklist cannot be assigned to both a team and a team type');
+    }
+
+    if (!teamId && !teamTypeId) {
+      if (parentChecklistId) {
+        const parentChecklist = await prisma.checklist.findFirst({ where: { checklistId: parentChecklistId } });
+        if (parentChecklist?.teamId || parentChecklist?.teamTypeId) {
+          throw new HttpException(400, 'Parent checklist must also be a general checklist');
+        }
+      }
+    }
+
+    if (teamId) {
+      const team = await prisma.team.findUnique({ where: { teamId } });
+
+      if (!team) {
+        throw new NotFoundException('Team', teamId);
+      }
+    }
+
+    if (teamTypeId) {
+      const teamType = await prisma.team_Type.findUnique({ where: { teamTypeId } });
+
+      if (!teamType) {
+        throw new NotFoundException('Team Type', teamTypeId);
+      }
+    }
+
+    if (parentChecklistId) {
+      const parentChecklist = await prisma.checklist.findUnique({ where: { checklistId: parentChecklistId } });
+
+      if (!parentChecklist) {
+        throw new NotFoundException('Checklist', parentChecklistId);
+      }
+
+      if (
+        (parentChecklist.teamId ?? null) !== (teamId ?? null) ||
+        (parentChecklist.teamTypeId ?? null) !== (teamTypeId ?? null)
+      ) {
+        throw new HttpException(400, 'Parent checklist must have the same teamId and teamTypeId');
+      }
+
+      if (parentChecklist.dateDeleted) {
+        throw new DeletedException('Checklist', parentChecklistId);
+      }
+    }
+
+    const checklist = await prisma.checklist.findUnique({ where: { checklistId } });
+
+    if (!checklist) {
+      throw new NotFoundException('Checklist', checklistId);
+    }
+
+    if (checklist.dateDeleted) {
+      throw new DeletedException('Checklist', checklistId);
+    }
+
+    const editedChecklist = await prisma.checklist.update({
+      where: { checklistId },
+      data: {
+        content,
+        isOptional,
+        itemType: itemType ?? checklist.itemType,
+        teamId,
+        teamTypeId,
+        parentChecklistId
+      }
+    });
+
+    return editedChecklist;
+  }
+
+  /**
+   * Deletes a checklist
+   * @param checklistId the id of the checklist to delete
+   */
+  static async deleteChecklist(deleter: User, checklistId: string, organization: Organization) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('delete a checklist');
+    }
+
+    const checklist = await prisma.checklist.findUnique({ where: { checklistId }, include: { subtasks: true } });
+
+    if (!checklist) {
+      throw new NotFoundException('Checklist', checklistId);
+    }
+
+    if (checklist.dateDeleted) {
+      throw new DeletedException('Checklist', checklistId);
+    }
+
+    await prisma.checklist.updateMany({
+      where: { parentChecklistId: checklistId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
+
+    await prisma.checklist.update({
+      where: { checklistId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
+  }
+
+  /**
+   * Toggles a user's check on a checklist
+   * @param checklistId the id of the checklist to toggle
+   * @param userId the id of the user to toggle
+   * @returns the updated checklist
+   */
+  static async toggleChecklist(checklistId: string, user: User, organization: Organization) {
+    const checklist = await prisma.checklist.findUnique({
+      where: { checklistId, organizationId: organization.organizationId },
+      include: {
+        usersChecked: true,
+        subtasks: { where: { dateDeleted: null }, include: { usersChecked: true }, orderBy: { displayIndex: 'asc' } }
+      }
+    });
+
+    if (!checklist) {
+      throw new NotFoundException('Checklist', checklistId);
+    }
+
+    if (checklist.dateDeleted) {
+      throw new DeletedException('Checklist', checklistId);
+    }
+
+    const { userId } = user;
+    const isChecked = checklist.usersChecked.some((user) => user.userId === userId);
+
+    // Only check TASK items (not INFO blocks) when validating subtasks are complete
+    const taskSubtasks = checklist.subtasks.filter((subtask) => subtask.itemType === ChecklistItemType.TASK);
+    if (
+      taskSubtasks.length > 0 &&
+      !taskSubtasks.every((subtask) => subtask.usersChecked.some((user) => user.userId === userId))
+    ) {
+      throw new HttpException(400, 'Cannot check off this checklist item because not all of its subtasks are checked.');
+    }
+
+    if (isChecked) {
+      const childChecklists = await prisma.checklist.findMany({
+        where: { parentChecklistId: checklistId }
+      });
+
+      await Promise.all(
+        childChecklists.map((checklist) =>
+          prisma.checklist.update({
+            where: { checklistId: checklist.checklistId },
+            data: {
+              usersChecked: {
+                disconnect: { userId }
+              }
+            }
+          })
+        )
+      );
+
+      await prisma.checklist.update({
+        where: { checklistId },
+        data: {
+          usersChecked: {
+            disconnect: { userId }
+          }
+        }
+      });
+    } else {
+      await prisma.checklist.update({
+        where: { checklistId },
+        data: {
+          usersChecked: {
+            connect: { userId }
+          }
+        }
+      });
+    }
+
+    // Check off the parent checklist if all subtasks are checked
+    if (checklist.parentChecklistId) {
+      const parentChecklist = await prisma.checklist.findUnique({
+        where: { checklistId: checklist.parentChecklistId },
+        include: {
+          subtasks: {
+            where: { dateDeleted: null },
+            include: { usersChecked: true },
+            orderBy: { displayIndex: 'asc' }
+          }
+        }
+      });
+
+      if (parentChecklist) {
+        const allSubtasksChecked = parentChecklist.subtasks
+          .filter((subtask) => !subtask.isOptional && subtask.itemType === ChecklistItemType.TASK)
+          .every((subtask) => subtask.usersChecked.some((user) => user.userId === userId));
+        if (allSubtasksChecked) {
+          await prisma.checklist.update({
+            where: { checklistId: parentChecklist.checklistId },
+            data: {
+              usersChecked: {
+                connect: { userId }
+              }
+            }
+          });
+        } else {
+          await prisma.checklist.update({
+            where: { checklistId: parentChecklist.checklistId },
+            data: {
+              usersChecked: {
+                disconnect: { userId }
+              }
+            }
+          });
+        }
+      }
+    }
+
+    const updatedChecklist = await prisma.checklist.findUnique({
+      where: { checklistId },
+      include: { usersChecked: true }
+    });
+
+    return updatedChecklist;
+  }
+
+  static async downloadImage(fileId: string) {
+    const fileData = await downloadFile(fileId);
+
+    if (!fileData) throw new NotFoundException('Image File', fileId);
+    return fileData;
+  }
+
+  /**
+   * Reorders top-level tasks
+   * @param taskIds array of checklist IDs in desired order
+   * @param organization the organization of the checklists
+   */
+  static async reorderTasks(user: User, taskIds: string[], organization: Organization) {
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('reorder tasks');
+    }
+
+    // Validate all tasks exist and belong to organization
+    const tasks = await prisma.checklist.findMany({
+      where: {
+        checklistId: { in: taskIds },
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        parentChecklistId: null
+      }
+    });
+
+    if (tasks.length !== taskIds.length) {
+      throw new HttpException(400, 'One or more task IDs are invalid');
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Update displayIndex for each task
+      await Promise.all(
+        taskIds.map((taskId, index) =>
+          tx.checklist.update({
+            where: { checklistId: taskId },
+            data: { displayIndex: index + 1 }
+          })
+        )
+      );
+    });
+  }
+
+  /**
+   * Reorders subtasks and info blocks within a parent checklist
+   * @param parentId the parent checklist ID
+   * @param itemIds array of item IDs in desired order
+   * @param organization the organization of the checklists
+   */
+  static async reorderChecklistItems(user: User, parentId: string, itemIds: string[], organization: Organization) {
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('reorder checklist items');
+    }
+
+    // Validate parent exists
+    const parent = await prisma.checklist.findUnique({
+      where: { checklistId: parentId, organizationId: organization.organizationId }
+    });
+
+    if (!parent) {
+      throw new NotFoundException('Checklist', parentId);
+    }
+
+    // Validate all items exist and belong to parent
+    const items = await prisma.checklist.findMany({
+      where: {
+        checklistId: { in: itemIds },
+        parentChecklistId: parentId,
+        organizationId: organization.organizationId,
+        dateDeleted: null
+      }
+    });
+
+    if (items.length !== itemIds.length) {
+      throw new HttpException(400, 'One or more item IDs are invalid');
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Update displayIndex for each item
+      await Promise.all(
+        itemIds.map((itemId, index) =>
+          tx.checklist.update({
+            where: { checklistId: itemId },
+            data: { displayIndex: index + 1 }
+          })
+        )
+      );
+    });
+  }
+}

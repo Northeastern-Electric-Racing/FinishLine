@@ -6,12 +6,45 @@
 import { RoleEnum, AuthenticatedUser } from 'shared';
 
 export const exampleAuthenticatedAdminUser: AuthenticatedUser = {
-  userId: 2,
+  userId: '2',
   firstName: 'Joe',
   lastName: 'Shmoe',
   email: 'shmoe.j@husky.neu.edu',
-  emailId: 'shmoe.j',
   role: RoleEnum.ADMIN,
-  favoritedProjectsId: [],
-  changeRequestsToReviewId: []
+  organizations: ['yello'],
+  onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: []
+};
+
+export const exampleAuthenticatedGuestUser: AuthenticatedUser = {
+  userId: '5',
+  firstName: 'Guest',
+  lastName: 'User',
+  email: 'guest@ner.edu',
+  role: RoleEnum.GUEST,
+  organizations: ['foo'],
+  onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: []
+};
+
+export const exampleAuthenticatedMemberUser: AuthenticatedUser = {
+  userId: '6',
+  firstName: 'Member',
+  lastName: 'User',
+  email: 'member@ner.edu',
+  role: RoleEnum.MEMBER,
+  organizations: ['bar'],
+  onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: []
+};
+
+export const exampleAuthenticatedNewMemberUser: AuthenticatedUser = {
+  userId: '7',
+  firstName: 'New',
+  lastName: 'Member',
+  email: 'newmember@ner.edu',
+  role: RoleEnum.GUEST,
+  organizations: ['baz'],
+  onboardingTeamTypeIds: [],
+  onboardedTeamTypeIds: ['team-type-1']
 };

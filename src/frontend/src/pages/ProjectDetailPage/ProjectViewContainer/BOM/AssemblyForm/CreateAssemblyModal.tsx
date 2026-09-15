@@ -30,7 +30,7 @@ const CreateAssemblyModal: React.FC<CreateAssemblyModalProps> = ({ open, onHide,
     }
   };
 
-  return <AssemblyForm submitText="Add" onSubmit={onSubmit} wbsElement={wbsElement} onHide={onHide} open={open} />;
+  return <AssemblyForm submitText="Add" onSubmit={onSubmit} onHide={onHide} open={open} />;
 };
 
 export default CreateAssemblyModal;

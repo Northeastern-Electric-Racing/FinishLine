@@ -1,0 +1,181 @@
+import { TableRow, TableCell, Box, Typography, Icon } from '@mui/material';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { NERButton } from '../../../components/NERButton';
+import NERTable from '../../../components/NERTable';
+import CreateTeamTypeFormModal from './CreateTeamTypeFormModal';
+import { MAX_FILE_SIZE, TeamType } from 'shared';
+import EditTeamTypeFormModal from './EditTeamTypeFormModal';
+import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
+import { useState } from 'react';
+import { useToast } from '../../../hooks/toasts.hooks';
+import NERUploadButton from '../../../components/NERUploadButton';
+import { useGetImageUrls } from '../../../hooks/onboarding.hook';
+
+const TeamTypeTable: React.FC = () => {
+  const {
+    data: teamTypes,
+    isLoading: teamTypesIsLoading,
+    isError: teamTypesIsError,
+    error: teamTypesError
+  } = useAllTeamTypes();
+
+  const [createModalShow, setCreateModalShow] = useState<boolean>(false);
+  const [editingTeamType, setEditingTeamType] = useState<TeamType | undefined>(undefined);
+  const [addedImages, setAddedImages] = useState<{ [key: string]: File | undefined }>({});
+  const toast = useToast();
+
+  const teamTypeImageList =
+    teamTypes?.map((teamType) => {
+      return { objectId: teamType.teamTypeId, imageFileId: teamType.imageFileId };
+    }) ?? [];
+
+  const { data: imageUrlsList, isLoading, isError, error } = useGetImageUrls(teamTypeImageList);
+  const { mutateAsync: setTeamTypeImage, isLoading: setTeamTypeIsLoading } = useSetTeamTypeImage();
+
+  if (teamTypesIsError) {
+    return <ErrorPage message={teamTypesError?.message} />;
+  }
+
+  if (isError) {
+    return <ErrorPage message={error?.message} />;
+  }
+
+  if (!teamTypes || teamTypesIsLoading || setTeamTypeIsLoading || !imageUrlsList || isLoading) {
+    return <LoadingIndicator />;
+  }
+
+  const imageUrlsMap: { [key: string]: string | undefined } = {};
+  imageUrlsList.forEach((item) => {
+    imageUrlsMap[item.id] = item.url;
+  });
+
+  const onSubmitTeamTypeImage = async (teamTypeId: string) => {
+    const addedImage = addedImages[teamTypeId];
+    if (addedImage) {
+      try {
+        await setTeamTypeImage({ file: addedImage, id: teamTypeId });
+        toast.success('Image uploaded successfully!', 5000);
+        setAddedImages((prev) => ({ ...prev, [teamTypeId]: undefined }));
+      } catch (error) {
+        if (error instanceof Error) {
+          toast.error('Failed to set team image: ' + error.message);
+        } else {
+          toast.error('Failed to set team image');
+        }
+      }
+    } else {
+      toast.error('No image selected for upload.', 5000);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, teamTypeId: string) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size < MAX_FILE_SIZE) {
+        setAddedImages((prev) => ({ ...prev, [teamTypeId]: file }));
+      } else {
+        toast.error(`Error uploading ${file.name}; file must be less than ${MAX_FILE_SIZE / 1024 / 1024} MB`, 5000);
+      }
+    }
+  };
+
+  const teamTypesTableRows = teamTypes.map((teamType, index) => {
+    return (
+      <TableRow>
+        <TableCell
+          onClick={() => setEditingTeamType(teamType)}
+          sx={{
+            cursor: 'pointer',
+            borderBottom: index === teamTypes.length - 1 ? 'none' : 'default'
+          }}
+        >
+          {teamType.name}
+        </TableCell>
+        <TableCell
+          onClick={() => setEditingTeamType(teamType)}
+          sx={{
+            cursor: 'pointer',
+            verticalAlign: 'middle',
+            borderBottom: index === teamTypes.length - 1 ? 'none' : 'default'
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Icon>{teamType.iconName}</Icon>
+            <Typography variant="body1" sx={{ marginLeft: 1 }}>
+              {teamType.iconName}
+            </Typography>
+          </Box>
+        </TableCell>
+        <TableCell
+          onClick={() => setEditingTeamType(teamType)}
+          sx={{
+            cursor: 'pointer',
+            verticalAlign: 'middle',
+            maxWidth: '15vw',
+            borderBottom: index === teamTypes.length - 1 ? 'none' : 'default'
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="body1" sx={{ marginLeft: 1 }}>
+              {teamType.description}
+            </Typography>
+          </Box>
+        </TableCell>
+        <TableCell sx={{ borderBottom: index === teamTypes.length - 1 ? 'none' : 'default' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>
+            {teamType.imageFileId && !addedImages[teamType.teamTypeId] && (
+              <Box
+                component="img"
+                src={imageUrlsMap[teamType.teamTypeId]}
+                alt="Image Preview"
+                sx={{ maxWidth: '100px', mt: 1, mb: 1 }}
+              />
+            )}
+            <NERUploadButton
+              dataTypeId={teamType.teamTypeId}
+              handleFileChange={(e) => handleFileChange(e, teamType.teamTypeId)}
+              onSubmit={onSubmitTeamTypeImage}
+              addedImage={addedImages[teamType.teamTypeId]}
+              setAddedImage={(newImage) =>
+                setAddedImages((prev) => {
+                  return { ...prev, [teamType.teamTypeId]: newImage } as { [key: string]: File | undefined };
+                })
+              }
+            />
+          </Box>
+        </TableCell>
+      </TableRow>
+    );
+  });
+
+  return (
+    <Box>
+      <CreateTeamTypeFormModal open={createModalShow} handleClose={() => setCreateModalShow(false)} />
+      {editingTeamType && (
+        <EditTeamTypeFormModal
+          open={!!editingTeamType}
+          handleClose={() => setEditingTeamType(undefined)}
+          teamType={editingTeamType}
+        />
+      )}
+      <NERTable
+        columns={[{ name: 'Division Name' }, { name: 'Icon' }, { name: 'Description' }, { name: 'Image' }]}
+        rows={teamTypesTableRows}
+      />
+
+      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
+        <NERButton
+          variant="contained"
+          onClick={() => {
+            setCreateModalShow(true);
+          }}
+        >
+          New Division
+        </NERButton>
+      </Box>
+    </Box>
+  );
+};
+
+export default TeamTypeTable;

@@ -4,30 +4,51 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { WorkPackage, WbsNumber, WorkPackageTemplate } from 'shared';
+import { WorkPackage, WorkPackagePreview, WbsNumber, WorkPackageSelection } from 'shared';
+import { wbsPipe } from '../utils/pipes';
 import {
   createSingleWorkPackage,
   deleteWorkPackage,
   editWorkPackage,
   getAllBlockingWorkPackages,
   getAllWorkPackages,
-  getSingleWorkPackage,
-  slackUpcomingDeadlines,
+  getAllWorkPackagesPreview,
   getManyWorkPackages,
-  WorkPackageApiInputs,
-  WorkPackageTemplateApiInputs,
-  editWorkPackageTemplate,
-  getAllWorkPackageTemplates
+  getSingleWorkPackage,
+  getWorkPackagesByProject,
+  slackUpcomingDeadlines,
+  WorkPackageCreateArgs,
+  WorkPackageEditArgs,
+  getHomePageWorkPackages
 } from '../apis/work-packages.api';
+import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
  * Custom React Hook to supply all work packages.
  */
 export const useAllWorkPackages = (queryParams?: { [field: string]: string }) => {
-  return useQuery<WorkPackage[], Error>(['work packages', queryParams], async () => {
-    const { data } = await getAllWorkPackages(queryParams);
-    return data;
-  });
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<WorkPackage[], Error>(
+    ['work packages', queryParams, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllWorkPackages(queryParams);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to supply all work packages in preview format (minimal data).
+ */
+export const useAllWorkPackagesPreview = (status?: string) => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<WorkPackagePreview[], Error>(
+    ['work packages', 'preview', status, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getAllWorkPackagesPreview(status);
+      return data;
+    }
+  );
 };
 
 /**
@@ -43,36 +64,37 @@ export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
 };
 
 /**
+ * Custom React Hook to get all work packages for a given project
+ * @param projectWbsNum the wbs number of the project
+ */
+export const useWorkPackagesByProject = (projectWbsNum: WbsNumber, enabled = true) => {
+  return useQuery<WorkPackage[], Error>(
+    ['work-packages', 'by-project', wbsPipe(projectWbsNum)],
+    async () => {
+      const { data } = await getWorkPackagesByProject(projectWbsNum);
+      return data;
+    },
+    { enabled }
+  );
+};
+
+/**
  * Custom React Hook to create a new work package.
  *
  * @param wpPayload Payload containing all information needed to create a work package.
  */
 export const useCreateSingleWorkPackage = () => {
-  return useMutation<{ message: string }, Error, WorkPackageApiInputs>(
-    ['work packages', 'create'],
-    async (wpPayload: WorkPackageApiInputs) => {
-      const { data } = await createSingleWorkPackage(wpPayload);
-      return data;
-    }
-  );
-};
-
-/**
- * Custom React Hook to edit a work package.
- *
- * @returns React-query utility functions exposed by the useMutation hook
- */
-export const useEditWorkPackage = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, WorkPackageApiInputs>(
-    ['work packages', 'edit'],
-    async (wpPayload: WorkPackageApiInputs) => {
-      const { data } = await editWorkPackage(wpPayload);
+  return useMutation<WorkPackage, Error, WorkPackageCreateArgs>(
+    ['work packages', 'create'],
+    async (wpPayload: WorkPackageCreateArgs) => {
+      const { data } = await createSingleWorkPackage(wpPayload);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['work packages']);
+        queryClient.invalidateQueries(['teams', false]); //invalidations for gantt chart
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
@@ -83,17 +105,17 @@ export const useEditWorkPackage = (wbsNum: WbsNumber) => {
  *
  * @returns React-query utility functions exposed by the useMutation hook
  */
-export const useEditWorkPackageTemplate = (workPackageTemplateId: string) => {
+export const useEditWorkPackage = (_wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, WorkPackageTemplateApiInputs>(
-    ['work package templates', 'edit'],
-    async (wptPayload: WorkPackageTemplateApiInputs) => {
-      const { data } = await editWorkPackageTemplate(workPackageTemplateId, wptPayload);
+  return useMutation<{ message: string }, Error, WorkPackageEditArgs>(
+    ['work packages', 'edit'],
+    async (wpPayload: WorkPackageEditArgs) => {
+      const { data } = await editWorkPackage(wpPayload);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['work package templates']);
+        queryClient.invalidateQueries(['work packages']);
       }
     }
   );
@@ -132,8 +154,12 @@ export const useGetBlockingWorkPackages = (wbsNum: WbsNumber) => {
  * Custom React Hook to get many work packages
  */
 export const useGetManyWorkPackages = (wbsNums: WbsNumber[]) => {
-  return useQuery<WorkPackage[], Error>(['work packages', 'blocking', wbsNums], async () => {
-    const { data } = await getManyWorkPackages(wbsNums);
+  const { selectedCar } = useGlobalCarFilter();
+  const filteredWbsNums =
+    selectedCar === 'all-cars' ? wbsNums : wbsNums.filter((wbsNum) => wbsNum.carNumber === selectedCar.wbsNum.carNumber);
+  const carKey = selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id;
+  return useQuery<WorkPackage[], Error>(['work packages', 'many', filteredWbsNums, carKey], async () => {
+    const { data } = await getManyWorkPackages(filteredWbsNums);
     return data;
   });
 };
@@ -148,12 +174,13 @@ export const useSlackUpcomingDeadlines = () => {
   });
 };
 
-/**
- * Custom React Hook to get all workpackage templates
- */
-export const useAllWorkPackageTemplates = () => {
-  return useQuery<WorkPackageTemplate[], Error>(['work package templates'], async () => {
-    const { data } = await getAllWorkPackageTemplates();
-    return data;
-  });
+export const useHomeScreenWorkPackages = (selection: WorkPackageSelection) => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<WorkPackage[], Error>(
+    ['teams', 'work-packages', selection, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getHomePageWorkPackages(selection);
+      return data;
+    }
+  );
 };

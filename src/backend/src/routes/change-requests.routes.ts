@@ -1,42 +1,46 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { ChangeRequestReason, ChangeRequestType } from 'shared';
-import ChangeRequestsController from '../controllers/change-requests.controllers';
-import { validateInputs } from '../utils/utils';
+import ChangeRequestsController from '../controllers/change-requests.controllers.js';
 import {
   intMinZero,
+  isDate,
+  isDateOnly,
   nonEmptyString,
   projectProposedChangesValidators,
+  validateInputs,
   workPackageProposedChangesValidators
-} from '../utils/validation.utils';
+} from '../utils/validation.utils.js';
 
 const changeRequestsRouter = express.Router();
 
 changeRequestsRouter.get('/', ChangeRequestsController.getAllChangeRequests);
+changeRequestsRouter.get('/guest', ChangeRequestsController.getAllGuestChangeRequests);
+
+changeRequestsRouter.get('/to-review', ChangeRequestsController.getToReviewChangeRequests);
+changeRequestsRouter.get('/unreviewed', ChangeRequestsController.getUnreviewedChangeRequests);
+changeRequestsRouter.get('/approved', ChangeRequestsController.getApprovedChangeRequests);
 
 changeRequestsRouter.get('/:crId', ChangeRequestsController.getChangeRequestByID);
 
 changeRequestsRouter.post(
   '/review',
-  intMinZero(body('reviewerId')),
-  intMinZero(body('crId')),
-  body('reviewNotes').isString(),
+  nonEmptyString(body('reviewerId')),
+  nonEmptyString(body('crId')),
+  body('reviewNotes').isString().optional(),
   body('accepted').isBoolean(),
-  body('psId').optional().isString().not().isEmpty(),
   validateInputs,
   ChangeRequestsController.reviewChangeRequest
 );
 
 changeRequestsRouter.post(
   '/new/activation',
-  intMinZero(body('submitterId')),
+  nonEmptyString(body('submitterId')),
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
-  body('type').custom((value) => value === ChangeRequestType.Activation),
-  body('startDate').custom((value) => !isNaN(Date.parse(value))),
-  intMinZero(body('projectLeadId')),
-  intMinZero(body('projectManagerId')),
+  isDateOnly(body('startDate')),
+  nonEmptyString(body('leadId')),
+  nonEmptyString(body('managerId')),
   body('confirmDetails').isBoolean(),
   validateInputs,
   ChangeRequestsController.createActivationChangeRequest
@@ -44,36 +48,35 @@ changeRequestsRouter.post(
 
 changeRequestsRouter.post(
   '/new/stage-gate',
-  intMinZero(body('submitterId')),
+  nonEmptyString(body('submitterId')),
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
-  body('type').custom((value) => value === ChangeRequestType.StageGate),
   body('confirmDone').isBoolean(),
+  isDate(body('dateCompleted')),
   validateInputs,
   ChangeRequestsController.createStageGateChangeRequest
 );
 
 changeRequestsRouter.post(
+  '/new/budget',
+  nonEmptyString(body('submitterId')),
+  nonEmptyString(body('otherReasonId')).optional(),
+  nonEmptyString(body('accountCodeId')).optional(),
+  intMinZero(body('proposedBudget')),
+  validateInputs,
+  ChangeRequestsController.createBudgetChangeRequest
+);
+
+changeRequestsRouter.post(
   '/new/standard',
-  nonEmptyString(body('what')),
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
-  body('type').custom(
-    (value) =>
-      value === ChangeRequestType.Other || value === ChangeRequestType.Issue || value === ChangeRequestType.Redefinition
-  ),
-  body('why').isArray(),
-  nonEmptyString(body('why.*.explain')),
-  body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
-  body('proposedSolutions').isArray({ min: 0 }),
-  nonEmptyString(body('proposedSolutions.*.description')),
-  nonEmptyString(body('proposedSolutions.*.scopeImpact')),
-  body('proposedSolutions.*.timelineImpact').isInt(),
-  body('proposedSolutions.*.budgetImpact').isInt(),
+  nonEmptyString(body('why')),
+  nonEmptyString(body('requestedReviewerId')).optional(),
   ...projectProposedChangesValidators,
-  ...workPackageProposedChangesValidators,
+  ...workPackageProposedChangesValidators('workPackageProposedChanges'),
   validateInputs,
   ChangeRequestsController.createStandardChangeRequest
 );
@@ -81,23 +84,22 @@ changeRequestsRouter.post(
 changeRequestsRouter.delete('/:crId/delete', ChangeRequestsController.deleteChangeRequest);
 
 changeRequestsRouter.post(
-  '/new/proposed-solution',
-  intMinZero(body('submitterId')),
-  intMinZero(body('crId')),
-  nonEmptyString(body('description')),
-  nonEmptyString(body('scopeImpact')),
-  body('timelineImpact').isInt(),
-  body('budgetImpact').isInt(),
+  '/:crId/request-review',
+  body('userIds').isArray(),
+  nonEmptyString(body('userIds.*')),
   validateInputs,
-  ChangeRequestsController.addProposedSolution
+  ChangeRequestsController.requestCRReview
 );
 
 changeRequestsRouter.post(
-  '/:crId/request-review',
-  body('userIds').isArray(),
-  intMinZero(body('userIds.*')),
+  '/new/leadership',
+  intMinZero(body('wbsNum.carNumber')),
+  intMinZero(body('wbsNum.projectNumber')),
+  intMinZero(body('wbsNum.workPackageNumber')),
+  nonEmptyString(body('leadId')).optional(),
+  nonEmptyString(body('managerId')).optional(),
   validateInputs,
-  ChangeRequestsController.requestCRReview
+  ChangeRequestsController.createLeadershipChangeRequest
 );
 
 export default changeRequestsRouter;

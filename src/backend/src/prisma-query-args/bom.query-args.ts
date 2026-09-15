@@ -1,21 +1,65 @@
-export const assemblyQueryArgs = {
-  include: {
-    userCreated: true,
-    userDeleted: true,
-    materials: true
-  }
-};
+import { Prisma } from '@prisma/client';
+import { getUserQueryArgs } from './user.query-args.js';
 
-export const materialQueryArgs = {
-  include: {
-    assembly: {
-      ...assemblyQueryArgs
-    },
-    wbsElement: true,
-    userCreated: true,
-    userDeleted: true,
-    materialType: true,
-    quantityUnit: true,
-    manufacturer: true
-  }
-};
+export type AssemblyQueryArgs = ReturnType<typeof getAssemblyQueryArgs>;
+
+export const getAssemblyQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.AssemblyDefaultArgs>()({
+    include: {
+      userCreated: getUserQueryArgs(organizationId),
+      userDeleted: getUserQueryArgs(organizationId),
+      materials: getMaterialPreviewQueryArgs(organizationId),
+      wbsElement: true
+    }
+  });
+
+export type MaterialQueryArgs = ReturnType<typeof getMaterialQueryArgs>;
+
+export const getMaterialQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.MaterialDefaultArgs>()({
+    include: {
+      wbsElement: true,
+      userCreated: getUserQueryArgs(organizationId),
+      userDeleted: getUserQueryArgs(organizationId),
+      materialType: true,
+      unit: true,
+      manufacturer: true,
+      reimbursementProducts: {
+        where: { dateDeleted: null },
+        select: {
+          dateDeleted: true,
+          reimbursementRequest: {
+            select: {
+              reimbursementRequestId: true,
+              identifier: true,
+              dateDeleted: true
+            }
+          }
+        }
+      }
+    }
+  });
+
+export type MaterialPreviewQueryArgs = ReturnType<typeof getMaterialPreviewQueryArgs>;
+
+export const getMaterialPreviewQueryArgs = (_organizationId: string) =>
+  Prisma.validator<Prisma.MaterialDefaultArgs>()({
+    include: {
+      unit: true,
+      manufacturer: true,
+      materialType: true,
+      reimbursementProducts: {
+        where: { dateDeleted: null },
+        select: {
+          dateDeleted: true,
+          reimbursementRequest: {
+            select: {
+              reimbursementRequestId: true,
+              identifier: true,
+              dateDeleted: true
+            }
+          }
+        }
+      }
+    }
+  });

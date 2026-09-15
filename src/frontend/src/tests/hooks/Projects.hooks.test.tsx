@@ -3,25 +3,27 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook, waitFor } from '@testing-library/react';
 import { AxiosResponse } from 'axios';
 import { Project } from 'shared';
-import wrapper from '../../app/AppContextQuery';
+import AppContextQuery from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import { exampleAllProjects, exampleProject1 } from '../test-support/test-data/projects.stub';
 import { exampleWbsProject1 } from '../test-support/test-data/wbs-numbers.stub';
-import { getAllProjects, getSingleProject } from '../../apis/projects.api';
-import { useAllProjects, useSingleProject } from '../../hooks/projects.hooks';
+import { getAllProjectsGantt, getSingleProject } from '../../apis/projects.api';
+import { useAllProjectsGantt, useSingleProject } from '../../hooks/projects.hooks';
+
+const wrapper = ({ children }: { children: React.ReactNode }) => <AppContextQuery>{children}</AppContextQuery>;
 
 vi.mock('../../apis/projects.api');
 
 describe('project hooks', () => {
   it('handles getting a list of projects', async () => {
-    const mockedGetAllProjects = getAllProjects as jest.Mock<Promise<AxiosResponse<Project[]>>>;
+    const mockedGetAllProjects = getAllProjectsGantt as jest.Mock<Promise<AxiosResponse<Project[]>>>;
     mockedGetAllProjects.mockReturnValue(mockPromiseAxiosResponse<Project[]>(exampleAllProjects));
 
-    const { result, waitFor } = renderHook(() => useAllProjects(), { wrapper });
-    await waitFor(() => result.current.isSuccess);
+    const { result } = renderHook(() => useAllProjectsGantt(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(exampleAllProjects);
   });
 
@@ -29,8 +31,8 @@ describe('project hooks', () => {
     const mockedGetSingleProject = getSingleProject as jest.Mock<Promise<AxiosResponse<Project>>>;
     mockedGetSingleProject.mockReturnValue(mockPromiseAxiosResponse<Project>(exampleProject1));
 
-    const { result, waitFor } = renderHook(() => useSingleProject(exampleWbsProject1), { wrapper });
-    await waitFor(() => result.current.isSuccess);
+    const { result } = renderHook(() => useSingleProject(exampleWbsProject1), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(exampleProject1);
   });
 });

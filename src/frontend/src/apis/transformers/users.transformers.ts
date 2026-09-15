@@ -3,7 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AuthenticatedUser, User } from 'shared';
+import {
+  ApiTokenMetadata,
+  AuthenticatedUser,
+  Availability,
+  User,
+  UserScheduleSettings,
+  UserWithScheduleSettings
+} from 'shared';
 
 /**
  * Transforms a user to ensure deep field transformation of date objects.
@@ -11,7 +18,7 @@ import { AuthenticatedUser, User } from 'shared';
  * @param user Incoming user object supplied by the HTTP response.
  * @returns Properly transformed user object.
  */
-export const userTransformer = (user: User) => {
+export const userTransformer = (user: User): User => {
   return {
     ...user
   };
@@ -23,8 +30,62 @@ export const userTransformer = (user: User) => {
  * @param authUser Incoming authenticated user object supplied by the HTTP response.
  * @returns Properly transformed user object.
  */
-export const authUserTransformer = (authUser: AuthenticatedUser) => {
+export const authUserTransformer = (authUser: AuthenticatedUser): AuthenticatedUser => {
   return {
     ...authUser
+  };
+};
+
+/**
+ * Transforms the user schedule settings to ensure deep field transformation of date objects.
+ *
+ * @param settings The user schedule settings to transform
+ * @returns The transformed user schedule settings
+ */
+export const userScheduleSettingsTransformer = (settings: UserScheduleSettings): UserScheduleSettings => {
+  return {
+    ...settings,
+    availabilities: settings.availabilities.map(availabilityTransformer)
+  };
+};
+
+/**
+ * Transforms a user to ensure deep field transformation of date objects.
+ *
+ * @param user The user to transform
+ * @returns The transformed user
+ */
+export const userWithScheduleSettingsTransformer = (user: UserWithScheduleSettings): UserWithScheduleSettings => {
+  return {
+    ...user,
+    scheduleSettings: user.scheduleSettings ? userScheduleSettingsTransformer(user.scheduleSettings) : undefined
+  };
+};
+
+/**
+ * Transforms an availability to ensure deep field transformation of date objects.
+ *
+ * @param availability the availability to transform
+ * @returns the transformed availability
+ */
+export const availabilityTransformer = (availability: Availability): Availability => {
+  const utcDate = new Date(availability.dateSet);
+  return {
+    ...availability,
+    dateSet: new Date(utcDate.getUTCFullYear(), utcDate.getUTCMonth(), utcDate.getUTCDate())
+  };
+};
+
+/**
+ * Transforms api token metadata to ensure deep field transformation of date objects.
+ *
+ * @param apiToken Incoming api token metadata supplied by the HTTP response.
+ * @returns Properly transformed api token metadata.
+ */
+export const apiTokenTransformer = <T extends ApiTokenMetadata>(apiToken: T): T => {
+  return {
+    ...apiToken,
+    dateCreated: new Date(apiToken.dateCreated),
+    lastUsedAt: apiToken.lastUsedAt ? new Date(apiToken.lastUsedAt) : undefined
   };
 };

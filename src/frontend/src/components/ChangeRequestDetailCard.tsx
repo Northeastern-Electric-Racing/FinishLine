@@ -6,17 +6,10 @@
 import { Card, CardContent, Grid, Typography, useTheme } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Link } from '@mui/material';
-import {
-  ActivationChangeRequest,
-  ChangeRequest,
-  ChangeRequestStatus,
-  ChangeRequestType,
-  StandardChangeRequest,
-  wbsPipe
-} from 'shared';
+import { ActivationChangeRequest, ChangeRequest, ChangeRequestStatus, ChangeRequestType, wbsPipe } from 'shared';
 import { routes } from '../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
-import { fullNamePipe } from '../utils/pipes';
+import { displayEnum, fullNamePipe } from '../utils/pipes';
 import ChangeRequestTypePill from './ChangeRequestTypePill';
 import ChangeRequestStatusPill from './ChangeRequestStatusPill';
 
@@ -24,6 +17,7 @@ const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
   const theme = useTheme();
   const isAccepted = cr.status === ChangeRequestStatus.Implemented || cr.status === ChangeRequestStatus.Accepted;
   const isStageGate = cr.type === ChangeRequestType.StageGate;
+  const isBudget = cr.type === ChangeRequestType.Budget;
   const isActivation = cr.type === ChangeRequestType.Activation;
   return (
     <Box
@@ -47,16 +41,18 @@ const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
         ) : isActivation ? (
           <div>
             <Typography variant="body1" fontSize={14}>
-              Lead: {fullNamePipe((cr as ActivationChangeRequest).projectLead)}
+              Lead: {fullNamePipe((cr as ActivationChangeRequest).lead)}
             </Typography>
             <Typography variant="body1" fontSize={14}>
-              Manager: {fullNamePipe((cr as ActivationChangeRequest).projectManager)}
+              Manager: {fullNamePipe((cr as ActivationChangeRequest).manager)}
             </Typography>
           </div>
-        ) : isStageGate ? (
+        ) : isStageGate && cr.wbsNum ? (
           'Stage Gate ' + wbsPipe(cr.wbsNum) + ' - ' + cr.wbsName
+        ) : (isBudget && cr.category) || (isBudget && cr.accountCode) ? (
+          'Change budget'
         ) : (
-          (cr as StandardChangeRequest).what
+          'Standard Change Request (Click To view more details)'
         )}
       </Typography>
     </Box>
@@ -68,8 +64,19 @@ interface ChangeRequestDetailCardProps {
 }
 
 const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ changeRequest }) => {
+  const theme = useTheme();
   return (
-    <Card sx={{ minWidth: 325, maxWidth: 325, mr: 2, borderRadius: 3, mb: 2 }}>
+    <Card
+      sx={{
+        minWidth: 325,
+        maxWidth: 325,
+        mr: 2,
+        borderRadius: 3,
+        mb: 2,
+        minHeight: 'fit-content',
+        background: theme.palette.background.default
+      }}
+    >
       <CardContent>
         <Grid container justifyContent="space-between" alignItems="flex-start">
           <Grid item xs mb={1} mt={-1.5}>
@@ -80,7 +87,7 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
               to={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`}
             >
               <Typography variant="h6" sx={{ mb: 0.5 }}>
-                {'Change Request #' + changeRequest.crId}
+                {'Change Request #' + changeRequest.identifier}
               </Typography>
             </Link>
             <Stack direction={'column'} maxWidth={'195px'}>
@@ -88,9 +95,13 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
                 From: {fullNamePipe(changeRequest.submitter)}
               </Typography>
               <Typography fontWeight={'bold'} fontSize={12} noWrap>
-                <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-                  {wbsPipe(changeRequest.wbsNum)} {changeRequest.wbsName}
-                </Link>
+                {changeRequest.wbsNum && (
+                  <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+                    {wbsPipe(changeRequest.wbsNum)} {changeRequest.wbsName}
+                  </Link>
+                )}
+                {changeRequest.category && displayEnum(changeRequest.category.name)}
+                {changeRequest.accountCode && changeRequest.accountCode.name}
               </Typography>
             </Stack>
           </Grid>

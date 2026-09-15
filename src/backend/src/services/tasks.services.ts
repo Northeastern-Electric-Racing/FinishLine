@@ -1,15 +1,48 @@
-import { Task_Priority, Task_Status, User } from '@prisma/client';
-import { isAdmin, isLeadership, isUnderWordCount, Task, WbsNumber, wbsPipe } from 'shared';
-import projectQueryArgs from '../prisma-query-args/projects.query-args';
-import taskQueryArgs from '../prisma-query-args/tasks.query-args';
-import teamQueryArgs from '../prisma-query-args/teams.query-args';
-import prisma from '../prisma/prisma';
-import taskTransformer from '../transformers/tasks.transformer';
-import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
-import { hasPermissionToEditTask, sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils';
-import { allUsersOnTeam, areUsersPartOfTeams, isUserOnTeam } from '../utils/teams.utils';
-import { getUsers } from '../utils/users.utils';
-import { wbsNumOf } from '../utils/utils';
+import { Task_Priority, Task_Status, Organization } from '@prisma/client';
+import {
+  CalendarTask,
+  FilterTaskArgs,
+  isAdmin,
+  isUnderWordCount,
+  notGuest,
+  Task,
+  TaskCardPreview,
+  TaskLabel,
+  WbsNumber,
+  wbsPipe,
+  User
+} from 'shared';
+import prisma from '../prisma/prisma.js';
+import taskTransformer, {
+  calendarTaskTransformer,
+  getActiveTaskBlockerNames,
+  taskBlockedByTransformer,
+  taskCardPreviewTransformer,
+  taskLabelTransformer
+} from '../transformers/tasks.transformer.js';
+import {
+  NotFoundException,
+  AccessDeniedException,
+  HttpException,
+  DeletedException,
+  InvalidOrganizationException
+} from '../utils/errors.utils.js';
+import {
+  sendSlackTaskAssignedNotificationToUsers,
+  validateTaskBlockedBys,
+  validateTaskLabels
+} from '../utils/tasks.utils.js';
+import { getUsers, userHasPermission } from '../utils/users.utils.js';
+import { wbsNumOf } from '../utils/utils.js';
+import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
+import {
+  getBlockingWorkPackagesArgs,
+  getCalendarTaskQueryArgs,
+  getTaskLabelQueryArgs,
+  getTaskPreviewQueryArgs,
+  getTaskQueryArgs
+} from '../prisma-query-args/tasks.query-args.js';
+import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args.js';
 
 export default class TasksService {
   /**
@@ -18,10 +51,14 @@ export default class TasksService {
    * @param wbsNum the WBS Number to create the task for
    * @param title the title of the tas
    * @param notes the notes of the task
-   * @param deadline the deadline of the task
    * @param priority the priority of the task
    * @param status the status of the task
    * @param assignees the assignees ids of the task
+   * @param organizationId the organization that the user is currently in
+   * @param labelIds the label ids for the task
+   * @param blockedByIds the ids of the tasks that block this task
+   * @param startDate the start date of the task
+   * @param deadline the deadline of the task
    * @returns the id of the successfully created task
    * @throws if the user does not have access to create a task, wbs element does not exist, or wbs element is deleted
    */
@@ -30,76 +67,111 @@ export default class TasksService {
     wbsNum: WbsNumber,
     title: string,
     notes: string,
-    deadline: Date,
     priority: Task_Priority,
     status: Task_Status,
-    assignees: number[]
+    assignees: string[],
+    organization: Organization,
+    labelIds: string[],
+    blockedByIds: string[],
+    startDate?: Date,
+    deadline?: Date
   ): Promise<Task> {
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
-      where: { wbsNumber: wbsNum },
+      where: {
+        wbsNumber: {
+          ...wbsNum,
+          organizationId: organization.organizationId
+        }
+      },
       include: {
         project: {
-          include: { teams: { ...teamQueryArgs }, wbsElement: true, workPackages: { include: { wbsElement: true } } }
+          include: {
+            teams: getTeamQueryArgs(organization.organizationId),
+            wbsElement: true,
+            workPackages: { include: { wbsElement: true } }
+          }
+        },
+        workPackage: {
+          include: {
+            project: {
+              include: {
+                teams: getTeamQueryArgs(organization.organizationId)
+              }
+            }
+          }
         }
       }
     });
     if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
     if (requestedWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
-    const { project } = requestedWbsElement;
-    if (!project) throw new HttpException(400, "This task's wbs element is not linked to a project!");
 
-    const { teams } = project;
+    if (!requestedWbsElement.project && !requestedWbsElement.workPackage)
+      throw new HttpException(400, "This task's wbs element is not linked to a project or work package!");
+
+    const teams = requestedWbsElement.project?.teams ?? requestedWbsElement.workPackage?.project?.teams;
     if (!teams || teams.length === 0)
       throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
 
-    const isProjectLeadOrManager =
-      createdBy.userId === requestedWbsElement.leadId || createdBy.userId === requestedWbsElement.managerId;
-
-    const curWorkPackages = project.workPackages;
-
-    const isWorkPackageLeadOrManager = curWorkPackages.some((workPackage) => {
-      return workPackage.wbsElement.leadId === createdBy.userId || workPackage.wbsElement.managerId === createdBy.userId;
-    });
-
-    if (
-      !isLeadership(createdBy.role) &&
-      !isProjectLeadOrManager &&
-      !isWorkPackageLeadOrManager &&
-      !teams.some((team) => isUserOnTeam(team, createdBy))
-    ) {
-      throw new AccessDeniedException(
-        'Only admins, app-admins, project leads, project managers, work package leads, work package managers, or current team users can create tasks'
-      );
+    if (await !userHasPermission(createdBy.userId, organization.organizationId, notGuest)) {
+      throw new AccessDeniedException('Guests cannot create tasks');
     }
 
     const users = await getUsers(assignees); // this throws if any of the users aren't found
 
-    if (!areUsersPartOfTeams(teams, users))
-      throw new HttpException(400, `All assignees must be part of one of the project's team!`);
-
-    if (!teams.some((team) => allUsersOnTeam(team, users)))
-      throw new HttpException(400, 'All assignees must be part of the same team!');
-
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
+    if (startDate && deadline && startDate > deadline) {
+      throw new HttpException(400, 'Start date must be before or on the same day as the deadline');
+    }
+
+    if (status === 'IN_PROGRESS' && (!deadline || assignees.length === 0)) {
+      throw new HttpException(400, 'A task in progress must have a deadline and assignees!');
+    }
+
+    await validateTaskLabels(labelIds, organization.organizationId);
+    const blockedByTasks = await validateTaskBlockedBys(blockedByIds, organization.organizationId);
+
+    // only worth the extra nested fetch when actually attempting to create the task as done
+    if (status === 'DONE') {
+      const wbsElementForBlockCheck = await prisma.wBS_Element.findUniqueOrThrow({
+        where: { wbsNumber: { ...wbsNum, organizationId: organization.organizationId } },
+        ...getBlockingWorkPackagesArgs()
+      });
+      const blockerNames = getActiveTaskBlockerNames(blockedByTasks.map(taskBlockedByTransformer), wbsElementForBlockCheck);
+      if (blockerNames.length > 0) {
+        throw new HttpException(400, `Cannot create task as done: blocked by ${blockerNames.join(', ')}`);
+      }
+    }
+
     const createdTask = await prisma.task.create({
       data: {
-        wbsElement: { connect: { wbsNumber: wbsNum } },
+        wbsElement: {
+          connect: {
+            wbsNumber: {
+              ...wbsNum,
+              organizationId: organization.organizationId
+            }
+          }
+        },
         title,
         notes,
+        startDate,
         deadline,
         priority,
         status,
         createdBy: { connect: { userId: createdBy.userId } },
-        assignees: { connect: users.map((user) => ({ userId: user.userId })) }
+        assignees: { connect: users.map((user) => ({ userId: user.userId })) },
+        labels: { connect: labelIds.map((id) => ({ taskLabelId: id })) },
+        blockedBy: { connect: blockedByTasks.map((task) => ({ taskId: task.taskId })) }
       },
-      ...taskQueryArgs
+      ...getTaskQueryArgs()
     });
 
     const newTask = taskTransformer(createdTask);
 
-    sendSlackTaskAssignedNotificationToUsers(newTask, assignees);
+    const nonSelfAssigneeIds = assignees.filter((id) => id !== createdBy.userId);
+    await sendSlackTaskAssignedNotificationToUsers(newTask, nonSelfAssigneeIds, organization.organizationId);
 
     return newTask;
   }
@@ -107,32 +179,91 @@ export default class TasksService {
   /**
    * Edits a Task in the database
    * @param user the user editing the task
+   * @param organizationId the organization id
    * @param taskId the task that is being edited
    * @param title the new title for the task
    * @param notes the new notes for the task
    * @param priority the new priority for the task
+   * @param labelIds the new label ids for the task
+   * @param blockedByIds the new ids of the tasks that block this task
+   * @param startDate the new start date for the task
    * @param deadline the new deadline for the task
+   * @param wbsNum the new wbs element for the task
    * @returns the sucessfully edited task
    */
-  static async editTask(user: User, taskId: string, title: string, notes: string, priority: Task_Priority, deadline: Date) {
-    const hasPermission = await hasPermissionToEditTask(user, taskId);
-    if (!hasPermission)
-      throw new AccessDeniedException(
-        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
-      );
+  static async editTask(
+    user: User,
+    organizationId: string,
+    taskId: string,
+    title: string,
+    notes: string,
+    priority: Task_Priority,
+    labelIds: string[],
+    blockedByIds: string[],
+    startDate?: Date,
+    deadline?: Date,
+    wbsNum?: WbsNumber
+  ) {
+    const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
 
-    const originalTask = await prisma.task.findUnique({ where: { taskId } });
+    const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { wbsElement: true } });
+
+    // error if there's a problem with the task
     if (!originalTask) throw new NotFoundException('Task', taskId);
+    if (originalTask.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Task');
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
-
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
+
+    const effectiveStartDate = startDate ?? originalTask.startDate ?? undefined;
+    const effectiveDeadline = deadline ?? originalTask.deadline ?? undefined;
+
+    if (effectiveStartDate && effectiveDeadline && effectiveStartDate > effectiveDeadline) {
+      throw new HttpException(400, 'Start date must be before or on the same day as the deadline');
+    }
+
+    await validateTaskLabels(labelIds, organizationId);
+    const blockedByTasks = await validateTaskBlockedBys(blockedByIds, organizationId, taskId);
+
+    // if wbsNum passed, error if there's a problem with the wbs element
+    if (wbsNum) {
+      const newWbsElement = await prisma.wBS_Element.findUnique({
+        where: {
+          wbsNumber: {
+            ...wbsNum,
+            organizationId
+          }
+        }
+      });
+      if (!newWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+      if (newWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+    }
 
     const updatedTask = await prisma.task.update({
       where: { taskId },
-      data: { title, notes, priority, deadline },
-      ...taskQueryArgs
+      data: {
+        title,
+        notes,
+        priority,
+        startDate,
+        deadline,
+        // if wbsNum passed, update prisma relation to connect task with wbs element
+        ...(wbsNum && {
+          wbsElement: {
+            connect: {
+              wbsNumber: {
+                ...wbsNum,
+                organizationId
+              }
+            }
+          }
+        }),
+        labels: { set: labelIds.map((id) => ({ taskLabelId: id })) },
+        blockedBy: { set: blockedByTasks.map((task) => ({ taskId: task.taskId })) }
+      },
+      ...getTaskQueryArgs()
     });
     return taskTransformer(updatedTask);
   }
@@ -140,24 +271,35 @@ export default class TasksService {
   /**
    * Edits the status of a task in the database
    * @param user the user editing the task
+   * @param organizationId the organization Id
    * @param taskId the id of the task
    * @param status the new status
    * @returns the updated task
    * @throws if the task does not exist, the task is already deleted, or if the user does not have permissions
    */
-  static async editTaskStatus(user: User, taskId: string, status: Task_Status) {
+  static async editTaskStatus(user: User, organizationId: string, taskId: string, status: Task_Status) {
+    const hasPermission = await userHasPermission(user.userId, organizationId, notGuest);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
+
     // Get the original task and check if it exists
-    const originalTask = await prisma.task.findUnique({ where: { taskId } });
+    const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { assignees: true, wbsElement: true } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
+    if (organizationId !== originalTask.wbsElement.organizationId) throw new InvalidOrganizationException('Task');
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
-    const hasPermission = await hasPermissionToEditTask(user, taskId);
-    if (!hasPermission)
-      throw new AccessDeniedException(
-        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
-      );
+    if (status === 'IN_PROGRESS' && (!originalTask.deadline || originalTask.assignees.length === 0)) {
+      throw new HttpException(400, 'A task in progress must have a deadline and assignees!');
+    }
 
-    const updatedTask = await prisma.task.update({ where: { taskId }, data: { status }, ...taskQueryArgs });
+    // Blocked-by is advisory when completing a task: the frontend warns the user about any incomplete
+    // blockers (using the blockedBy data already on the task) and only calls this once they confirm, so
+    // we intentionally don't reject a blocked task here.
+
+    const updatedTask = await prisma.task.update({
+      where: { taskId },
+      data: { status },
+      ...getTaskQueryArgs()
+    });
     return taskTransformer(updatedTask);
   }
 
@@ -166,15 +308,24 @@ export default class TasksService {
    * @param user the user editing the task
    * @param taskId the id of the task
    * @param assignees the new assignees
+   * @param organization the organization that the user is currently in
    * @returns the updated task
    * @throws if the task does not exist, the task is already deleted, any of the assignees don't exist, or if the user does not have permissions
    */
-  static async editTaskAssignees(user: User, taskId: string, assignees: number[]): Promise<Task> {
+  static async editTaskAssignees(
+    user: User,
+    taskId: string,
+    assignees: string[],
+    organization: Organization
+  ): Promise<Task> {
+    const hasPermission = await userHasPermission(user.userId, organization.organizationId, notGuest);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit tasks');
+
     // Get the original task and check if it exists
     const originalTask = await prisma.task.findUnique({
       where: { taskId },
       include: {
-        wbsElement: { include: { project: { ...projectQueryArgs } } },
+        wbsElement: { include: { project: getProjectQueryArgs(organization.organizationId) } },
         assignees: true
       }
     });
@@ -184,26 +335,8 @@ export default class TasksService {
     const originalAssigneeIds = originalTask.assignees.map((assignee) => assignee.userId);
     const newAssigneeIds = assignees.filter((userId) => !originalAssigneeIds.includes(userId));
 
-    const hasPermission = await hasPermissionToEditTask(user, taskId);
-    if (!hasPermission)
-      throw new AccessDeniedException(
-        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
-      );
-
     // this throws if any of the users aren't found
     const assigneeUsers = await getUsers(assignees);
-
-    const teams = originalTask.wbsElement?.project?.teams;
-    if (!teams || teams.length === 0)
-      throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
-
-    // checks if there is a user that does not belong on any team of the project
-    if (!areUsersPartOfTeams(teams, assigneeUsers)) {
-      throw new HttpException(400, "All assignees must be part of one of the project's teams");
-    }
-
-    if (!teams.some((team) => allUsersOnTeam(team, assigneeUsers)))
-      throw new HttpException(400, 'All assignees must be part of the same team!');
 
     // retrieve userId for every assignee to update task's assignees in the database
     const transformedAssigneeUsers = assigneeUsers.map((user) => {
@@ -220,11 +353,12 @@ export default class TasksService {
             set: transformedAssigneeUsers
           }
         },
-        ...taskQueryArgs
+        ...getTaskQueryArgs()
       })
     );
 
-    await sendSlackTaskAssignedNotificationToUsers(updatedTask, newAssigneeIds);
+    const nonSelfAssigneeIds = newAssigneeIds.filter((id) => id !== user.userId);
+    await sendSlackTaskAssignedNotificationToUsers(updatedTask, nonSelfAssigneeIds, organization.organizationId);
 
     return updatedTask;
   }
@@ -233,11 +367,12 @@ export default class TasksService {
    * Delete task in the database
    * @param taskId the id number of the given task
    * @param currentUser the current user currently accessing the task
+   * @param organizationId the organization that the user is currently in
    * @returns the deleted task
    * @throws if the user does not have permission
    */
-  static async deleteTask(currentUser: User, taskId: string): Promise<string> {
-    const task = await prisma.task.findUnique({ where: { taskId }, ...taskQueryArgs });
+  static async deleteTask(currentUser: User, taskId: string, organization: Organization): Promise<string> {
+    const task = await prisma.task.findUnique({ where: { taskId }, ...getTaskQueryArgs() });
     if (!task) throw new NotFoundException('Task', taskId);
     if (task.dateDeleted) throw new DeletedException('Task', taskId);
 
@@ -250,8 +385,11 @@ export default class TasksService {
 
     // this checks the current users permissions
     const isLead = wbsElement.leadId === currentUser.userId || wbsElement.managerId === currentUser.userId;
-    if (!isAdmin(currentUser.role) && !isLead) {
-      throw new AccessDeniedException('Only admin, app-admins, project leads, and project managers can delete tasks');
+    const isCreator = task.createdByUserId === currentUser.userId;
+    if (!(await userHasPermission(currentUser.userId, organization.organizationId, isAdmin)) && !isLead && !isCreator) {
+      throw new AccessDeniedException(
+        'Only admin, app-admins, project leads, project managers, and the task creator can delete tasks'
+      );
     }
 
     const deletedTask = await prisma.task.update({
@@ -260,5 +398,289 @@ export default class TasksService {
     });
 
     return deletedTask.taskId;
+  }
+
+  static async getFilteredTasks(filters: FilterTaskArgs, organization: Organization): Promise<CalendarTask[]> {
+    const {
+      memberIds,
+      teamIds,
+      startPeriod,
+      endPeriod,
+      labelIds,
+      wbsNum,
+      carNumbers,
+      projectWbsNums,
+      workPackageWbsNums,
+      search,
+      andMemberTeam
+    } = filters;
+
+    // Validate memberIds if provided
+    if (memberIds && memberIds.length > 0) {
+      const users = await prisma.user.findMany({
+        where: { userId: { in: memberIds }, organizations: { some: { organizationId: organization.organizationId } } }
+      });
+      if (users.length !== memberIds.length) {
+        throw new NotFoundException('User', 'one or more member IDs');
+      }
+    }
+
+    // Validate teamIds if provided
+    if (teamIds && teamIds.length > 0) {
+      const teams = await prisma.team.findMany({
+        where: {
+          teamId: { in: teamIds },
+          organizationId: organization.organizationId
+        }
+      });
+      if (teams.length !== teamIds.length) {
+        throw new NotFoundException('Team', 'one or more team IDs');
+      }
+    }
+
+    if (labelIds && labelIds.length > 0) {
+      await validateTaskLabels(labelIds, organization.organizationId);
+    }
+
+    // Legacy calendar semantics: member and team OR together (and member also matches the task creator).
+    const orFilters: any[] = [];
+    // Global-page semantics: each filter is its own AND condition, OR-ing only within its own selections.
+    const andConditions: any[] = [];
+
+    if (andMemberTeam) {
+      if (memberIds && memberIds.length > 0) {
+        andConditions.push({ assignees: { some: { userId: { in: memberIds } } } });
+      }
+      if (teamIds && teamIds.length > 0) {
+        // match tasks whose project OR whose work package's project belongs to a selected team
+        andConditions.push({
+          wbsElement: {
+            OR: [
+              { project: { teams: { some: { teamId: { in: teamIds } } } } },
+              { workPackage: { project: { teams: { some: { teamId: { in: teamIds } } } } } }
+            ]
+          }
+        });
+      }
+    } else {
+      if (memberIds && memberIds.length > 0) {
+        orFilters.push({ assignees: { some: { userId: { in: memberIds } } } });
+        orFilters.push({ createdByUserId: { in: memberIds } });
+      }
+      if (teamIds && teamIds.length > 0) {
+        orFilters.push({
+          wbsElement: {
+            project: {
+              teams: { some: { teamId: { in: teamIds } } }
+            }
+          }
+        });
+      }
+    }
+
+    if (carNumbers && carNumbers.length > 0) {
+      andConditions.push({ wbsElement: { carNumber: { in: carNumbers } } });
+    }
+    if (projectWbsNums && projectWbsNums.length > 0) {
+      andConditions.push({
+        wbsElement: {
+          OR: projectWbsNums.map((wbs) => ({ carNumber: wbs.carNumber, projectNumber: wbs.projectNumber }))
+        }
+      });
+    }
+    if (workPackageWbsNums && workPackageWbsNums.length > 0) {
+      andConditions.push({
+        wbsElement: {
+          OR: workPackageWbsNums.map((wbs) => ({
+            carNumber: wbs.carNumber,
+            projectNumber: wbs.projectNumber,
+            workPackageNumber: wbs.workPackageNumber
+          }))
+        }
+      });
+    }
+    if (search && search.trim().length > 0) {
+      andConditions.push({
+        OR: [{ title: { contains: search, mode: 'insensitive' } }, { notes: { contains: search, mode: 'insensitive' } }]
+      });
+    }
+
+    let wbsElementIds: string[] | undefined;
+    if (wbsNum) {
+      const wbsElement = await prisma.wBS_Element.findUnique({
+        where: { wbsNumber: { ...wbsNum, organizationId: organization.organizationId } }
+      });
+      if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+      if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+
+      if (wbsNum.workPackageNumber === 0) {
+        const project = await prisma.project.findUnique({
+          where: { wbsElementId: wbsElement.wbsElementId },
+          include: { workPackages: { include: { wbsElement: true } } }
+        });
+        if (!project) throw new NotFoundException('Project', wbsPipe(wbsNum));
+        wbsElementIds = [wbsElement.wbsElementId, ...project.workPackages.map((wp) => wp.wbsElementId)];
+      } else {
+        wbsElementIds = [wbsElement.wbsElementId];
+      }
+    }
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        dateDeleted: null,
+        ...(startPeriod && endPeriod ? { deadline: { gte: startPeriod, lte: endPeriod } } : {}),
+        ...(wbsElementIds ? { wbsElementId: { in: wbsElementIds } } : {}),
+        ...(labelIds && labelIds.length > 0 ? { labels: { some: { taskLabelId: { in: labelIds } } } } : {}),
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        },
+        ...(orFilters.length > 0 ? { OR: orFilters } : {}),
+        ...(andConditions.length > 0 ? { AND: andConditions } : {})
+      },
+      ...getCalendarTaskQueryArgs()
+    });
+
+    return tasks.map(calendarTaskTransformer);
+  }
+
+  static async getOverdueTasksByTeamLeadership(userId: string, organization: Organization): Promise<TaskCardPreview[]> {
+    const teams = await prisma.team.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        OR: [{ leads: { some: { userId } } }, { headId: userId }],
+        dateArchived: null
+      }
+    });
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        assignees: { some: { userId } },
+        deadline: { lt: new Date() },
+        status: { not: 'DONE' },
+        dateDeleted: null,
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null,
+          OR: [
+            { project: { teams: { some: { teamId: { in: teams.map((team) => team.teamId) } } } } },
+            {
+              workPackage: {
+                wbsElement: { project: { teams: { some: { teamId: { in: teams.map((team) => team.teamId) } } } } }
+              }
+            }
+          ]
+        }
+      },
+      ...getTaskPreviewQueryArgs(organization.organizationId)
+    });
+
+    return tasks.map(taskCardPreviewTransformer);
+  }
+
+  /**
+   * Gets all task labels in the database for a given organization
+   * @param organization the organization that the user is currently in
+   * @returns array of task labels
+   */
+  static async getAllTaskLabels(organization: Organization): Promise<TaskLabel[]> {
+    const labels = await prisma.task_Label.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      ...getTaskLabelQueryArgs()
+    });
+
+    return labels.map(taskLabelTransformer);
+  }
+
+  /**
+   * Creates a task label in the database
+   * @param creator the user creating the task label
+   * @param name the name of the task label
+   * @param colorHexCode the hex code for the task label color
+   * @param organization the organization that the user is currently in
+   * @returns the created task label
+   * @throws if the user does not have permission
+   */
+  static async createTaskLabel(
+    creator: User,
+    name: string,
+    colorHexCode: string,
+    organization: Organization
+  ): Promise<TaskLabel> {
+    const hasPermission = await userHasPermission(creator.userId, organization.organizationId, isAdmin);
+    if (!hasPermission) throw new AccessDeniedException('Non admins cannot create task labels');
+
+    const label = await prisma.task_Label.create({
+      data: {
+        name,
+        colorHexCode,
+        userCreated: { connect: { userId: creator.userId } },
+        organization: { connect: { organizationId: organization.organizationId } }
+      }
+    });
+
+    return taskLabelTransformer(label);
+  }
+
+  /**
+   * Edits a task label in the database
+   * @param user the user creating the task label
+   * @param taskLabelId the id of the task label being edited
+   * @param name the name of the task label
+   * @param colorHexCode the hex code for the task label color
+   * @param organization the organization that the user is currently in
+   * @returns the edited task label
+   * @throws if the user does not have permission
+   */
+  static async editTaskLabel(
+    user: User,
+    taskLabelId: string,
+    name: string,
+    colorHexCode: string,
+    organization: Organization
+  ): Promise<TaskLabel> {
+    const hasPermission = await userHasPermission(user.userId, organization.organizationId, isAdmin);
+    if (!hasPermission) throw new AccessDeniedException('Guests cannot edit task labels');
+
+    const label = await prisma.task_Label.findUnique({ where: { taskLabelId } });
+    if (!label) throw new NotFoundException('Task Label', taskLabelId);
+    if (label.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Task Label');
+    if (label.dateDeleted) throw new DeletedException('Task Label', taskLabelId);
+
+    const updatedLabel = await prisma.task_Label.update({
+      where: { taskLabelId },
+      data: { name, colorHexCode }
+    });
+
+    return taskLabelTransformer(updatedLabel);
+  }
+
+  /**
+   * Deletes a task label in the database
+   * @param user the user creating the task label
+   * @param taskLabelId the id of the task label being deleted
+   * @param organization the organization that the user is currently in
+   * @returns the deleted task label
+   * @throws if the user does not have permission
+   */
+  static async deleteTaskLabel(user: User, taskLabelId: string, organization: Organization): Promise<string> {
+    const hasPermission = await userHasPermission(user.userId, organization.organizationId, isAdmin);
+    if (!hasPermission) throw new AccessDeniedException('Only admins can delete task labels');
+
+    const label = await prisma.task_Label.findUnique({ where: { taskLabelId } });
+    if (!label) throw new NotFoundException('Task Label', taskLabelId);
+    if (label.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Task Label');
+    if (label.dateDeleted) throw new DeletedException('Task Label', taskLabelId);
+
+    await prisma.task_Label.update({
+      where: { taskLabelId },
+      data: {
+        dateDeleted: new Date(),
+        userDeleted: { connect: { userId: user.userId } },
+        tasks: { set: [] }
+      }
+    });
+
+    return taskLabelId;
   }
 }

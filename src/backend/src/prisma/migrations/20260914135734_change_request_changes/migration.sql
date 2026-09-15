@@ -1,0 +1,10 @@
+-- AlterTable
+ALTER TABLE "Change_Request" ADD COLUMN     "snapshotBlockingCount" INTEGER,
+ADD COLUMN     "snapshotDuration" INTEGER,
+ADD COLUMN     "snapshotStartDate" DATE;
+
+-- AlterTable
+ALTER TABLE "Organization" ADD COLUMN     "activationBufferDays" INTEGER NOT NULL DEFAULT 7;
+
+-- AlterTable
+ALTER TABLE "Work_Package_Proposed_Changes" ADD COLUMN     "timelineChangeFromUnmarkedBlocker" BOOLEAN NOT NULL DEFAULT false;

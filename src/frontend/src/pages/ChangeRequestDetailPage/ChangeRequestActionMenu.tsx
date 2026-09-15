@@ -1,20 +1,14 @@
-import { ChangeRequest, ChangeRequestStatus, isLeadership, wbsPipe } from 'shared';
+import { ChangeRequest, ChangeRequestStatus, isLeadership, User } from 'shared';
 import ActionsMenu from '../../components/ActionsMenu';
 import { Autocomplete, Checkbox, TextField, Box } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import PostAddIcon from '@mui/icons-material/PostAdd';
-import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
-import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { useRequestCRReview } from '../../hooks/change-requests.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
-import { useCurrentUser, useAllUsers } from '../../hooks/users.hooks';
-import { projectWbsPipe } from '../../utils/pipes';
-import { routes } from '../../utils/routes';
+import { useCurrentUser, useAllMembers } from '../../hooks/users.hooks';
 import { useState } from 'react';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -22,7 +16,7 @@ import { taskUserToAutocompleteOption } from '../../utils/task.utils';
 
 interface ChangeRequestActionMenuProps {
   isUserAllowedToReview: boolean;
-  isUserAllowedToImplement: boolean;
+  reviewDisabledTooltip?: string;
   isUserAllowedToDelete: boolean;
   changeRequest: ChangeRequest;
   handleReviewOpen: () => void;
@@ -31,7 +25,7 @@ interface ChangeRequestActionMenuProps {
 
 const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   isUserAllowedToReview,
-  isUserAllowedToImplement,
+  reviewDisabledTooltip,
   isUserAllowedToDelete,
   changeRequest,
   handleReviewOpen,
@@ -40,9 +34,8 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   const { mutateAsync: requestCRReview } = useRequestCRReview(changeRequest.crId.toString());
   const toast = useToast();
   const currentUser = useCurrentUser();
-  const history = useHistory();
   const [reviewers, setReviewers] = useState(changeRequest.requestedReviewers.map(taskUserToAutocompleteOption));
-  const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
+  const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllMembers();
 
   if (isErrorAllUsers) return <ErrorPage message={errorAllUsers?.message} />;
   if (isLoadingAllUsers || !users) return <LoadingIndicator />;
@@ -65,6 +58,10 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   const isRequestAllowed =
     changeRequest.submitter.userId === currentUser.userId && changeRequest.status === ChangeRequestStatus.Open;
 
+  const potentialCrReviewers = (value: User): boolean => {
+    return isLeadership(value.role) && value.userId !== currentUser.userId;
+  };
+
   const UnreviewedActionsDropdown = () => (
     <div style={{ marginTop: '10px' }}>
       <ActionsMenu
@@ -73,7 +70,8 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
             title: 'Review',
             onClick: handleReviewOpen,
             disabled: !isUserAllowedToReview,
-            icon: <ContentPasteIcon fontSize="small" />
+            icon: <ContentPasteIcon fontSize="small" />,
+            tooltip: reviewDisabledTooltip
           },
           {
             title: 'Delete',
@@ -86,6 +84,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
       />
     </div>
   );
+
   const requestReviewerDropdown = () => (
     <>
       <Autocomplete
@@ -93,7 +92,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
         limitTags={1}
         disableCloseOnSelect
         multiple
-        options={users.filter((user) => isLeadership(user.role)).map(taskUserToAutocompleteOption)}
+        options={users.filter(potentialCrReviewers).map(taskUserToAutocompleteOption)}
         getOptionLabel={(option) => option.label}
         onChange={(_, values) => setReviewers(values)}
         defaultValue={reviewers}
@@ -131,38 +130,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   const renderUnreviewedActionsDropdown = () =>
     isRequestAllowed ? requestReviewerDropdown() : <UnreviewedActionsDropdown />;
 
-  const ImplementCrDropdown = () => (
-    <ActionsMenu
-      buttons={[
-        {
-          title: 'Create New Project',
-          onClick: () =>
-            history.push(`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`),
-          disabled: !isUserAllowedToImplement,
-          icon: <CreateNewFolderIcon fontSize="small" />
-        },
-        {
-          title: 'Create New Work Package',
-          onClick: () =>
-            history.push(
-              `${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`
-            ),
-          disabled: !isUserAllowedToImplement,
-          icon: <PostAddIcon fontSize="small" />
-        },
-        {
-          title: `Edit ${changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}`,
-          onClick: () =>
-            history.push(`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`),
-          disabled: !isUserAllowedToImplement,
-          icon: <EditIcon fontSize="small" />
-        }
-      ]}
-      title="Implement Change Request"
-    />
-  );
-
-  return changeRequest.accepted ? <ImplementCrDropdown /> : <>{renderUnreviewedActionsDropdown()}</>;
+  return changeRequest.accepted ? null : <>{renderUnreviewedActionsDropdown()}</>;
 };
 
 export default ChangeRequestActionMenu;

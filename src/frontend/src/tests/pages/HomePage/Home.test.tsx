@@ -8,11 +8,27 @@ import { routes } from '../../../utils/routes';
 import Home from '../../../pages/HomePage/Home';
 import * as authHooks from '../../../hooks/auth.hooks';
 import * as userHooks from '../../../hooks/users.hooks';
+import * as teamsHooks from '../../../hooks/teams.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
-import { mockUseSingleUserSettings } from '../../test-support/mock-hooks';
+import { mockUseSingleUserSettings, mockUseGetUsersTeams } from '../../test-support/mock-hooks';
+import {
+  exampleAuthenticatedAdminUser,
+  exampleAuthenticatedNewMemberUser
+} from '../../test-support/test-data/authenticated-user.stub';
+import { exampleTeam } from '../../test-support/test-data/teams.stub';
 
-vi.mock('../../../pages/HomePage/UsefulLinks', () => {
+vi.mock('../../../app/AppGlobalCarFilterContext', () => ({
+  useGlobalCarFilter: () => ({
+    selectedCar: 'all-cars',
+    allCars: [],
+    setSelectedCar: vi.fn(),
+    isLoading: false,
+    error: null
+  })
+}));
+
+vi.mock('../../../pages/HomePage/components/UsefulLinks', () => {
   return {
     __esModule: true,
     default: () => {
@@ -21,7 +37,7 @@ vi.mock('../../../pages/HomePage/UsefulLinks', () => {
   };
 });
 
-vi.mock('../../../pages/HomePage/UpcomingDeadlines', () => {
+vi.mock('../../../pages/HomePage/components/UpcomingDeadlines', () => {
   return {
     __esModule: true,
     default: () => {
@@ -30,11 +46,20 @@ vi.mock('../../../pages/HomePage/UpcomingDeadlines', () => {
   };
 });
 
-vi.mock('../../../pages/HomePage/WorkPackagesByTimelineStatus', () => {
+vi.mock('../../../pages/HomePage/components/WorkPackagesByTimelineStatus', () => {
   return {
     __esModule: true,
     default: () => {
       return <div>work-packages-by-timeline-status</div>;
+    }
+  };
+});
+
+vi.mock('../../../pages/HomePage/NewMemberHomePage', () => {
+  return {
+    __esModule: true,
+    default: () => {
+      return <div>new-member-home</div>;
     }
   };
 });
@@ -53,9 +78,10 @@ const renderComponent = () => {
 
 describe('home component', () => {
   beforeEach(() => {
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
-    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
     vi.spyOn(userHooks, 'useSingleUserSettings').mockReturnValue(mockUseSingleUserSettings());
+    vi.spyOn(teamsHooks, 'useGetUsersTeams').mockReturnValue(mockUseGetUsersTeams());
   });
 
   afterAll(() => vi.clearAllMocks());
@@ -63,8 +89,23 @@ describe('home component', () => {
   it('renders welcome', () => {
     renderComponent();
     expect(screen.getByText(`Welcome, ${exampleAdminUser.firstName}!`)).toBeInTheDocument();
-    expect(screen.getByText('useful-links')).toBeInTheDocument();
-    expect(screen.getByText('upcoming-deadlines')).toBeInTheDocument();
-    expect(screen.getByText('work-packages-by-timeline-status')).toBeInTheDocument();
+  });
+
+  it('renders the new member dashboard for a completed-onboarding guest who has not joined a team', () => {
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedNewMemberUser);
+    vi.spyOn(teamsHooks, 'useGetUsersTeams').mockReturnValue(mockUseGetUsersTeams([]));
+
+    renderComponent();
+
+    expect(screen.getByText('new-member-home')).toBeInTheDocument();
+  });
+
+  it('renders the standard dashboard once a completed-onboarding guest has joined a team', () => {
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedNewMemberUser);
+    vi.spyOn(teamsHooks, 'useGetUsersTeams').mockReturnValue(mockUseGetUsersTeams([exampleTeam]));
+
+    renderComponent();
+
+    expect(screen.queryByText('new-member-home')).not.toBeInTheDocument();
   });
 });

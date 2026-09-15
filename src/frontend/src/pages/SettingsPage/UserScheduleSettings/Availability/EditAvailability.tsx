@@ -1,75 +1,298 @@
-import { Grid } from '@mui/material';
-import { useState } from 'react';
-import { HeatmapColors, EnumToArray, DAY_NAMES, REVIEW_TIMES } from '../../../../utils/design-review.utils';
-import TimeSlot from '../../../../components/TimeSlot';
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  useMediaQuery
+} from '@mui/material';
+import { useEffect, useState } from 'react';
+import {
+  HeatmapColors,
+  enumToArray,
+  REVIEW_TIMES,
+  reviewTimesInCurrentTimeZone,
+  yourTimeZoneInitials
+} from '../../../../utils/design-review.utils';
+import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
+import { datePipe } from '../../../../utils/pipes';
+import NERArrows from '../../../../components/NERArrows';
+import { NERButton } from '../../../../components/NERButton';
+import EventTimeSlot from '../../../CalendarPage/Components/EventTimeSlot';
+import { useCurrentUser, useUserBusyTimes } from '../../../../hooks/users.hooks';
+import { busySlotsByDay, isSlotBusy } from '../../../../utils/ics.utils';
+import { useToast } from '../../../../hooks/toasts.hooks';
 
 interface EditAvailabilityProps {
-  selectedTimes: number[];
-  setSelectedTimes: (val: number[]) => void;
-  existingMeetingData: Map<number, string>;
+  editedAvailabilities: Map<number, Availability>;
+  setEditedAvailabilities: (val: Map<number, Availability>) => void;
+  totalAvailabilities: Availability[];
+  initialDate: Date;
+  canChangeDateRange?: boolean;
 }
 
-const EditAvailability: React.FC<EditAvailabilityProps> = ({ selectedTimes, setSelectedTimes, existingMeetingData }) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const [isFirstItemSelected, setIsFirstItemSelected] = useState(false);
+const EditAvailability: React.FC<EditAvailabilityProps> = ({
+  editedAvailabilities,
+  totalAvailabilities,
+  setEditedAvailabilities,
+  initialDate,
+  canChangeDateRange = true
+}) => {
+  const currentUser = useCurrentUser();
+  const toast = useToast();
+  const [currentlyDisplayedAvailabilities, setCurrentlyDisplayedAvailabilities] = useState(() => {
+    const availabilities = Array.from(editedAvailabilities.values());
+    if (availabilities.length === 0) {
+      const existingForWeek = getMostRecentAvailabilities(totalAvailabilities, initialDate);
 
-  const handleMouseDown = (event: any, selectedTime: number) => {
+      existingForWeek.forEach((availability) => {
+        editedAvailabilities.set(availability.dateSet.getTime(), availability);
+      });
+      setEditedAvailabilities(editedAvailabilities);
+
+      return existingForWeek;
+    }
+    return availabilities;
+  });
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [isInverted, setIsInverted] = useState(false);
+
+  const weekStart = currentlyDisplayedAvailabilities[0]?.dateSet ?? initialDate;
+  const weekEnd = addDaysToDate(
+    currentlyDisplayedAvailabilities[currentlyDisplayedAvailabilities.length - 1]?.dateSet ?? initialDate,
+    1
+  );
+  const { data: busyTimes, isFetching: busyTimesIsFetching } = useUserBusyTimes(
+    currentUser.userId,
+    weekStart,
+    weekEnd,
+    true
+  );
+
+  const busyByDay = busySlotsByDay(busyTimes ?? []);
+
+  const handleMouseDown = (event: any, availability: Availability, selectedTime: number) => {
     event.preventDefault();
-    const isCurrentItemSelected = selectedTimes.includes(selectedTime);
-    setIsFirstItemSelected(isCurrentItemSelected);
-    setSelectedTimes(
-      isCurrentItemSelected ? selectedTimes.filter((time) => time !== selectedTime) : [...selectedTimes, selectedTime]
-    );
+    toggleTimeSlot(availability, selectedTime);
     setIsDragging(true);
   };
 
-  const handleMouseEnter = (event: any, selectedTime: number) => {
+  const increaseDateRange = () => {
+    const lastDate = currentlyDisplayedAvailabilities[currentlyDisplayedAvailabilities.length - 1].dateSet;
+    const newDate = addDaysToDate(lastDate, 1);
+
+    const newAvailabilities = getMostRecentAvailabilities(totalAvailabilities, newDate);
+    newAvailabilities.forEach((availability) => {
+      const existingAvailability = editedAvailabilities.get(availability.dateSet.getTime());
+      if (!existingAvailability) {
+        editedAvailabilities.set(availability.dateSet.getTime(), availability);
+      }
+    });
+
+    setCurrentlyDisplayedAvailabilities(getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), newDate));
+  };
+
+  const decreaseDateRange = () => {
+    const firstDate = currentlyDisplayedAvailabilities[0].dateSet;
+    const newDate = addDaysToDate(firstDate, -7);
+
+    const newAvailabilities = getMostRecentAvailabilities(totalAvailabilities, newDate);
+    newAvailabilities.forEach((availability) => {
+      const existingAvailability = editedAvailabilities.get(availability.dateSet.getTime());
+      if (!existingAvailability) {
+        editedAvailabilities.set(availability.dateSet.getTime(), availability);
+      }
+    });
+
+    setCurrentlyDisplayedAvailabilities(getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), newDate));
+  };
+
+  const handleMouseEnter = (_event: any, availability: Availability, selectedTime: number) => {
     if (!isDragging) return;
-    toggleTimeSlot(selectedTime);
+    toggleTimeSlot(availability, selectedTime);
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
   };
 
-  const toggleTimeSlot = (selectedTime: number) => {
-    let newSelectedTimes: number[];
+  useEffect(() => {
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
 
-    isFirstItemSelected
-      ? (newSelectedTimes = selectedTimes.filter((time) => time !== selectedTime))
-      : (newSelectedTimes = selectedTimes.includes(selectedTime) ? selectedTimes : [...selectedTimes, selectedTime]);
-
-    setSelectedTimes(newSelectedTimes);
+  const invertAvailabilities = () => {
+    currentlyDisplayedAvailabilities.forEach((availability) =>
+      enumToArray(REVIEW_TIMES).forEach((_time, timeIndex) => toggleTimeSlot(availability, timeIndex))
+    );
+    setIsInverted(!isInverted);
   };
 
+  const syncFromBusyTimes = () => {
+    const allSlots = enumToArray(REVIEW_TIMES).map((_time, timeIndex) => timeIndex);
+    let busyCount = 0;
+
+    currentlyDisplayedAvailabilities.forEach((availability) => {
+      const busySlots = busyByDay.get(availability.dateSet.getTime()) ?? new Set<number>();
+      busyCount += busySlots.size;
+      availability.availability = allSlots.filter((slot) => !busySlots.has(slot));
+      editedAvailabilities.set(availability.dateSet.getTime(), availability);
+    });
+
+    setEditedAvailabilities(editedAvailabilities);
+    const currentStartDate = currentlyDisplayedAvailabilities[0]?.dateSet ?? initialDate;
+    setCurrentlyDisplayedAvailabilities(
+      getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), currentStartDate)
+    );
+
+    toast.success(
+      busyCount > 0
+        ? 'Filled this week from your busy times — adjust any slots before saving.'
+        : 'No conflicts found this week — marked you available across the window.'
+    );
+  };
+
+  const toggleTimeSlot = (availability: Availability, selectedTime: number) => {
+    availability.availability.includes(selectedTime)
+      ? availability.availability.splice(availability.availability.indexOf(selectedTime), 1)
+      : availability.availability.push(selectedTime);
+
+    editedAvailabilities.set(availability.dateSet.getTime(), availability);
+    setEditedAvailabilities(editedAvailabilities);
+
+    const currentStartDate = currentlyDisplayedAvailabilities[0]?.dateSet ?? initialDate;
+    setCurrentlyDisplayedAvailabilities(
+      getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), currentStartDate)
+    );
+  };
+
+  const stickyLeft = {
+    position: 'sticky',
+    left: 0,
+    zIndex: 2,
+    bgcolor: 'background.paper'
+  };
+
+  const isMobile = useMediaQuery('(max-width:480px)');
+
   return (
-    <Grid container>
-      <TimeSlot backgroundColor={HeatmapColors[0]} small={true} />
-      {EnumToArray(DAY_NAMES).map((day) => (
-        <TimeSlot key={day} backgroundColor={HeatmapColors[0]} small={true} text={day} fontSize={'12px'} />
-      ))}
-      {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
-        <Grid container item>
-          <TimeSlot backgroundColor={HeatmapColors[0]} small={true} text={time} fontSize={'13px'} />
-          {EnumToArray(DAY_NAMES).map((_day, dayIndex) => {
-            const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;
-            const backgroundColor = selectedTimes.includes(index) ? HeatmapColors[3] : HeatmapColors[0];
-            return (
-              <TimeSlot
-                key={index}
-                backgroundColor={backgroundColor}
-                small={true}
-                onMouseDown={(e) => handleMouseDown(e, index)}
-                onMouseEnter={(e) => handleMouseEnter(e, index)}
-                onMouseUp={handleMouseUp}
-                icon={existingMeetingData.get(index)}
-              />
-            );
-          })}
-        </Grid>
-      ))}
-    </Grid>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
+        <Box>
+          <Typography variant="subtitle1">
+            Available times in
+            {isInverted ? (
+              <span style={{ color: HeatmapColors[0] }}> white</span>
+            ) : (
+              <span style={{ color: HeatmapColors[3] }}> green</span>
+            )}
+            . &nbsp;&nbsp; All times are in local time, {yourTimeZoneInitials()}.{' '}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Hatched slots are busy on your imported calendar or Finishline events. Use "Fill from busy times" to pre-fill,
+            then adjust any slots manually.
+          </Typography>
+        </Box>
+        <Box display="flex" gap={1} flexShrink={0}>
+          <NERButton variant="outlined" onClick={syncFromBusyTimes} disabled={busyTimesIsFetching}>
+            {busyTimesIsFetching ? 'Filling out...' : 'Fill from busy times'}
+          </NERButton>
+          <NERButton variant="outlined" onClick={invertAvailabilities}>
+            Invert Availability
+          </NERButton>
+        </Box>
+      </Box>
+
+      <TableContainer
+        sx={{
+          overflowX: 'auto',
+          overflowY: 'auto',
+          maxWidth: '100%',
+          maxHeight: '100%',
+          scrollSnapType: 'x mandatory',
+          flex: 1
+        }}
+      >
+        <Table
+          stickyHeader
+          size="small"
+          sx={{
+            height: '100%',
+            tableLayout: 'fixed',
+            '& .MuiTableCell-head': {
+              bgcolor: 'background.paper',
+              px: 0.5,
+              py: 0.5
+            },
+            '& .MuiTableCell-body': {
+              px: 0,
+              py: 0,
+              height: `calc((100% - 50px) / 12)`
+            },
+            '& .MuiTableCell-root': {
+              borderRight: '1px solid',
+              borderColor: 'divider'
+            },
+            minWidth: 700
+          }}
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ ...stickyLeft, scrollSnapAlign: 'start' }}></TableCell>
+              {currentlyDisplayedAvailabilities.map((availability, idx) => (
+                <TableCell key={idx} sx={{ scrollSnapAlign: 'start' }}>
+                  <Typography variant="body1" align="center" fontWeight="bold" sx={{ fontSize: 15 }}>
+                    {!isMobile && getDayOfWeek(availability.dateSet)}
+                    {isMobile && getDayOfWeek(availability.dateSet).slice(0, 3)}
+                    <br />
+                    {!isMobile && datePipe(availability.dateSet)}
+                    {isMobile && datePipe(availability.dateSet, false)}
+                  </Typography>
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
+              <TableRow key={time}>
+                <TableCell sx={{ ...stickyLeft, zIndex: 1, scrollSnapAlign: 'start' }}>
+                  <Typography variant="body1" align="center" sx={{ fontSize: 15 }}>
+                    {reviewTimesInCurrentTimeZone(time)}
+                  </Typography>
+                </TableCell>
+                {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
+                  const isAvailable = availability.availability.includes(timeIndex);
+                  return (
+                    <TableCell key={dayIndex} sx={{ p: 0, scrollSnapAlign: 'start' }}>
+                      <EventTimeSlot
+                        backgroundColor={isAvailable ? HeatmapColors[3] : HeatmapColors[0]}
+                        selected={false}
+                        busy={isSlotBusy(busyByDay, availability.dateSet, timeIndex)}
+                        onMouseDown={(e) => handleMouseDown(e, availability, timeIndex)}
+                        onMouseEnter={(e) => handleMouseEnter(e, availability, timeIndex)}
+                        onMouseUp={handleMouseUp}
+                      />
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {canChangeDateRange && (
+        <Box display="flex" justifyContent="center" width="100%" mt={2}>
+          <NERArrows onLeftArrowPressed={decreaseDateRange} onRightArrowPressed={increaseDateRange} />
+        </Box>
+      )}
+    </Box>
   );
 };
-
 export default EditAvailability;

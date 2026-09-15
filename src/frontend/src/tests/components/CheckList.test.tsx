@@ -6,16 +6,15 @@
 import { render, screen } from '@testing-library/react';
 import CheckList, { CheckListItem } from '../../components/CheckList';
 import { routerWrapperBuilder } from '../test-support/test-utils';
-import * as authHooks from '../../hooks/auth.hooks';
+import * as userHooks from '../../hooks/users.hooks';
 import * as descBulletHooks from '../../hooks/description-bullets.hooks';
-import { mockAuth } from '../test-support/test-data/test-utils.stub';
-import { exampleAdminUser } from '../test-support/test-data/users.stub';
+import { mockCurrentUser } from '../test-support/test-data/test-utils.stub';
 import { mockCheckDescBulletReturnValue } from '../test-support/mock-hooks';
 import { ToastProvider } from '../../components/Toast/ToastProvider';
 
 const testItems: CheckListItem[] = [
-  { id: 1, detail: 'testItem1', resolved: false },
-  { id: 2, detail: 'testItem2', resolved: true }
+  { id: '1', detail: 'testItem1', resolved: false },
+  { id: '2', detail: 'testItem2', resolved: true }
 ];
 
 /**
@@ -34,7 +33,7 @@ const renderComponent = (items: CheckListItem[] = [], title: string = '', isDisa
 
 describe('Rendering CheckList Component', () => {
   beforeEach(() => {
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(mockCurrentUser());
     vi.spyOn(descBulletHooks, 'useCheckDescriptionBullet').mockReturnValue(mockCheckDescBulletReturnValue);
   });
 

@@ -3,8 +3,9 @@ import NERFailButton from './NERFailButton';
 import NERSuccessButton from './NERSuccessButton';
 import { ReactNode } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
+import { CancelText, SubmitText } from '../utils/teams.utils';
 
-const background = '#ef4345';
+const headerBackground = '#ef4345';
 
 export interface NERModalProps {
   open: boolean;
@@ -13,8 +14,10 @@ export interface NERModalProps {
   onSubmit?: () => void;
   onHide: () => void;
   children?: ReactNode;
-  cancelText?: string;
-  submitText?: string;
+  titleChildren?: ReactNode;
+  actionsLeftChildren?: ReactNode;
+  cancelText?: CancelText;
+  submitText?: SubmitText;
   disabled?: boolean;
   showCloseButton?: boolean;
   hideFormButtons?: boolean;
@@ -37,7 +40,9 @@ const NERModal = ({
   hideFormButtons = false,
   hideBackDrop = false,
   icon,
-  paperProps
+  paperProps,
+  titleChildren,
+  actionsLeftChildren
 }: NERModalProps) => {
   return (
     <Dialog
@@ -46,11 +51,11 @@ const NERModal = ({
       onClose={onHide}
       PaperProps={{
         style: paperProps
-          ? { ...paperProps, borderRadius: '10px', maxWidth: '700px' }
+          ? { borderRadius: '10px', maxWidth: '700px', ...paperProps }
           : { borderRadius: '10px', maxWidth: '700px' }
       }}
     >
-      <DialogTitle sx={{ backgroundColor: background, minHeight: '64px' }}>
+      <DialogTitle sx={{ backgroundColor: headerBackground, minHeight: '64px', position: 'relative' }}>
         {icon ? (
           <Box display="flex" justifyContent="left" alignItems="center">
             <Icon
@@ -72,6 +77,7 @@ const NERModal = ({
         ) : (
           title
         )}
+        {titleChildren}
       </DialogTitle>
 
       {showCloseButton && (
@@ -106,7 +112,8 @@ const NERModal = ({
         {children}
       </DialogContent>
       {!hideFormButtons && (
-        <DialogActions>
+        <DialogActions sx={{ justifyContent: actionsLeftChildren ? 'space-between' : 'flex-end' }}>
+          {actionsLeftChildren && <Box sx={{ ml: 1 }}>{actionsLeftChildren}</Box>}
           <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
             <NERFailButton sx={{ mx: 1 }} form={formId} onClick={onHide}>
               {cancelText || 'Cancel'}

@@ -5,7 +5,6 @@
 
 import { useState } from 'react';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
-import { GoogleLogout } from 'react-google-login';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -16,9 +15,16 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { canAccessAdminTools } from '../../utils/users';
 import { Stack, useTheme } from '@mui/system';
 import { Typography } from '@mui/material';
+import { useHomePageContext } from '../../app/HomePageContext';
+import { googleLogout } from '@react-oauth/google';
+import { useLogUserOut } from '../../hooks/users.hooks';
+import { useToast } from '../../hooks/toasts.hooks';
+import AddMembersModal from '../../components/AddMembersModal';
+import { isLeadership } from 'shared';
 
 interface NavUserMenuProps {
   open?: boolean;
@@ -26,13 +32,15 @@ interface NavUserMenuProps {
 
 const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [showAddMembersModal, setShowAddMembersModal] = useState(false);
   const history = useHistory();
   const auth = useAuth();
+  const { onPNMHomePage } = useHomePageContext();
+  const { mutateAsync: logUserOut } = useLogUserOut();
+  const toast = useToast();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-
-  const googleAuthClientId = import.meta.env.VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID;
 
   const logout = () => {
     if (!auth) return;
@@ -41,19 +49,26 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   };
 
   const ProdLogout = () => (
-    <GoogleLogout
-      clientId={googleAuthClientId!}
-      //jsSrc={'accounts.google.com/gsi/client'}
-      onLogoutSuccess={logout}
-      render={(renderProps) => (
-        <MenuItem component="div" sx={{ py: 0 }} onClick={renderProps.onClick} disabled={renderProps.disabled}>
-          <ListItemIcon>
-            <LogoutIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Logout</ListItemText>
-        </MenuItem>
-      )}
-    />
+    <MenuItem
+      component="div"
+      sx={{ py: 0 }}
+      onClick={async () => {
+        try {
+          googleLogout();
+          await logUserOut();
+          history.push(routes.LOGIN);
+        } catch (error) {
+          if (error instanceof Error) {
+            toast.error('Failed to log out' + error.message);
+          }
+        }
+      }}
+    >
+      <ListItemIcon>
+        <LogoutIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText>Logout</ListItemText>
+    </MenuItem>
   );
 
   const DevLogout = () => (
@@ -71,6 +86,21 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
         <HomeRepairServiceIcon fontSize="small" />
       </ListItemIcon>
       <ListItemText>Admin Tools</ListItemText>
+    </MenuItem>
+  );
+
+  const AddMembers = () => (
+    <MenuItem
+      onClick={() => {
+        setShowAddMembersModal(true);
+        handleClose();
+      }}
+      sx={{ py: 0 }}
+    >
+      <ListItemIcon>
+        <PersonAddIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText>Add Members</ListItemText>
     </MenuItem>
   );
 
@@ -130,15 +160,19 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
         >
           {auth.user?.email}
         </MenuItem>
-        <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
-          <ListItemIcon>
-            <SettingsIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Settings</ListItemText>
-        </MenuItem>
+        {!onPNMHomePage && (
+          <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
+            <ListItemIcon>
+              <SettingsIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Settings</ListItemText>
+          </MenuItem>
+        )}
         {canAccessAdminTools(auth.user) && <AdminTools />}
+        {auth.user && isLeadership(auth.user.role) && !canAccessAdminTools(auth.user) && <AddMembers />}
         {import.meta.env.MODE === 'development' ? <DevLogout /> : <ProdLogout />}
       </Menu>
+      <AddMembersModal open={showAddMembersModal} onHide={() => setShowAddMembersModal(false)} />
     </Stack>
   );
 };

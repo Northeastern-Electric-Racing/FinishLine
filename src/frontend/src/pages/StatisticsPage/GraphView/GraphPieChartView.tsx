@@ -1,0 +1,26 @@
+import { Car, Graph } from 'shared';
+import StatsPieChart from '../../../components/StatsPieChart';
+import { displayEnum } from '../../../utils/pipes';
+
+interface GraphPieChartViewProps {
+  graph: Graph;
+  height: number;
+  cars: Car[];
+  width: number;
+}
+
+const GraphPieChartView = ({ graph, height, cars, width }: GraphPieChartViewProps) => {
+  return (
+    <StatsPieChart
+      graphTitle={`${displayEnum(graph.measure)} ${graph.title} - ${displayEnum(graph.graphType)} ${
+        cars.length > 0 ? `(${cars.map((car) => car.name).join(',')})` : ''
+      }`}
+      xAxisData={graph.graphData[0].values.map((data) => data.label)}
+      yAxisData={graph.graphData[0].values.map((data) => data.value)}
+      height={height}
+      width={width}
+    />
+  );
+};
+
+export default GraphPieChartView;

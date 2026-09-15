@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AxiosResponse } from 'axios';
+import { AxiosHeaders, AxiosResponse } from 'axios';
 import { UseMutationResult, UseQueryResult } from 'react-query';
-import { User } from 'shared';
+import { AuthenticatedUser } from 'shared';
 import { exampleAuthenticatedAdminUser } from './authenticated-user.stub';
 import { Auth } from '../../../utils/types';
 
@@ -25,9 +25,17 @@ export const mockContext = {
 };
 
 export const mockPromiseAxiosResponse = <Return>(data: Return) => {
-  return new Promise((res, rej) => res({ status: 0, statusText: '', headers: {}, config: {}, data })) as Promise<
-    AxiosResponse<Return>
-  >;
+  return new Promise((res, _rej) =>
+    res({
+      status: 0,
+      statusText: '',
+      headers: {},
+      config: {
+        headers: new AxiosHeaders()
+      },
+      data
+    })
+  ) as Promise<AxiosResponse<Return>>;
 };
 
 export const mockUseQueryResult = <Return>(isLoading: boolean, isError: boolean, data?: Return, err?: Error) => {
@@ -59,7 +67,7 @@ export const mockUseQueryResult = <Return>(isLoading: boolean, isError: boolean,
   } as UseQueryResult<Return, Error>;
 };
 
-export const mockUseMutationResult = <Input>(isLoading: boolean, isError: boolean, input: Input, err?: Error) => {
+export const mockUseMutationResult = <Input>(isLoading: boolean, isError: boolean, _input: Input, err?: Error) => {
   return {
     error: err ?? null,
     isError,
@@ -80,14 +88,20 @@ export const mockUseMutationResult = <Input>(isLoading: boolean, isError: boolea
   } as UseMutationResult<Input, Error>;
 };
 
-export const mockAuth = (isLoading: boolean, user?: User) => {
+export const mockAuth = (isLoading: boolean, user?: AuthenticatedUser) => {
   return {
     user,
-    devSignin: (u) => new Promise((res, rej) => res(exampleAuthenticatedAdminUser)),
-    signin: (t) => new Promise((res, rej) => res(exampleAuthenticatedAdminUser)),
+    devSignin: () => new Promise((res) => res(exampleAuthenticatedAdminUser)),
+    signin: () => new Promise((res) => res(exampleAuthenticatedAdminUser)),
     signout: () => {},
-    isLoading
+    isLoading,
+    signInCurrent: () => new Promise((res) => res()),
+    triedCurrent: true
   } as Auth;
+};
+
+export const mockCurrentUser = () => {
+  return exampleAuthenticatedAdminUser;
 };
 
 export const mockUtils = {

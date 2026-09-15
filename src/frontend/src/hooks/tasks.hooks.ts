@@ -3,36 +3,78 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useMutation, useQueryClient } from 'react-query';
-import { WbsNumber, TaskPriority, TaskStatus } from 'shared';
-import { createSingleTask, deleteSingleTask, editSingleTaskStatus, editTask, editTaskAssignees } from '../apis/tasks.api';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { CalendarTask, FilterTaskArgs, WbsNumber, TaskPriority, TaskStatus, Task, TaskCardPreview, TaskLabel } from 'shared';
+import {
+  createSingleTask,
+  deleteSingleTask,
+  editSingleTaskStatus,
+  editTask,
+  editTaskAssignees,
+  getOverdueTasksByTeamLeader,
+  getFilterTasks,
+  getAllTaskLabels,
+  createTaskLabel,
+  editTaskLabel,
+  deleteTaskLabel
+} from '../apis/tasks.api';
 
 export interface CreateTaskPayload {
+  wbsNum: WbsNumber;
   title: string;
-  deadline: string;
+  startDate?: string;
+  deadline?: string;
   priority: TaskPriority;
   status: TaskStatus;
-  assignees: number[];
+  notes?: string;
+  assignees: string[];
+  labelIds: string[];
+  blockedByIds: string[];
 }
 
-export const useCreateTask = (wbsNum: WbsNumber) => {
+/**
+ * Custom React Hook for filtering tasks based on various criteria
+ * @returns the filtered tasks query
+ */
+export const useFilterTasks = (filterArgs: FilterTaskArgs | null) => {
+  return useQuery<CalendarTask[], Error>(
+    ['filter-tasks', filterArgs],
+    async () => {
+      const { data } = await getFilterTasks(filterArgs!);
+      return data;
+    },
+    {
+      keepPreviousData: true,
+      enabled: filterArgs !== null
+    }
+  );
+};
+
+export const useCreateTask = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, CreateTaskPayload>(
-    ['tasks'],
+  return useMutation<Task, Error, CreateTaskPayload>(
+    ['tasks', 'create'],
     async (createTaskPayload: CreateTaskPayload) => {
       const { data } = await createSingleTask(
-        wbsNum,
+        createTaskPayload.wbsNum,
         createTaskPayload.title,
-        createTaskPayload.deadline,
         createTaskPayload.priority,
         createTaskPayload.status,
-        createTaskPayload.assignees
+        createTaskPayload.assignees,
+        createTaskPayload.notes ?? '',
+        createTaskPayload.labelIds,
+        createTaskPayload.blockedByIds,
+        createTaskPayload.deadline,
+        createTaskPayload.startDate
       );
       return data;
     },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['tasks']);
+        queryClient.invalidateQueries(['task-labels']);
       }
     }
   );
@@ -40,15 +82,19 @@ export const useCreateTask = (wbsNum: WbsNumber) => {
 
 export interface TaskPayload {
   taskId: string;
-  notes: string;
+  notes?: string;
   title: string;
-  deadline: Date;
+  startDate?: Date;
+  deadline?: Date;
   priority: TaskPriority;
+  wbsNum?: WbsNumber;
+  labelIds: string[];
+  blockedByIds: string[];
 }
 
 /**
  * Custom React Hook for editing a task
- * @returns the edit task mutation'
+ * @returns the edit task mutation
  */
 export const useEditTask = () => {
   const queryClient = useQueryClient();
@@ -58,9 +104,13 @@ export const useEditTask = () => {
       const { data } = await editTask(
         taskPayload.taskId,
         taskPayload.title,
-        taskPayload.notes,
+        taskPayload.notes ?? '',
         taskPayload.priority,
-        taskPayload.deadline
+        taskPayload.labelIds,
+        taskPayload.blockedByIds,
+        taskPayload.deadline,
+        taskPayload.startDate,
+        taskPayload.wbsNum
       );
 
       return data;
@@ -68,6 +118,9 @@ export const useEditTask = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['tasks']);
+        queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['task-labels']);
       }
     }
   );
@@ -79,15 +132,17 @@ export const useEditTask = () => {
  */
 export const useEditTaskAssignees = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, { taskId: string; assignees: number[] }>(
+  return useMutation<Task, Error, { taskId: string; assignees: string[] }>(
     ['tasks', 'edit-assignees'],
-    async (editAssigneesTaskPayload: { taskId: string; assignees: number[] }) => {
+    async (editAssigneesTaskPayload: { taskId: string; assignees: string[] }) => {
       const { data } = await editTaskAssignees(editAssigneesTaskPayload.taskId, editAssigneesTaskPayload.assignees);
       return data;
     },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['tasks']);
       }
     }
   );
@@ -106,8 +161,12 @@ export const useSetTaskStatus = () => {
       return data;
     },
     {
+      // the board updates optimistically, but the cached tasks must also be refreshed or a later
+      // rebuild from the cache (e.g. when the client-side search changes) would revert the move
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['tasks']);
       }
     }
   );
@@ -128,6 +187,86 @@ export const useDeleteTask = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['filter-tasks']);
+        queryClient.invalidateQueries(['tasks']);
+      }
+    }
+  );
+};
+
+export const useOverdueTasksByTeamLeader = (userId: string) => {
+  return useQuery<TaskCardPreview[], Error>([userId, 'tasks'], async () => {
+    const { data } = await getOverdueTasksByTeamLeader(userId);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all task labels for a given organization
+ * @returns the task labels query
+ */
+export const useAllTaskLabels = () => {
+  return useQuery<TaskLabel[], Error>(['task-labels'], async () => {
+    const { data } = await getAllTaskLabels();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to create a task label
+ * @returns the create task label mutation
+ */
+export const useCreateTaskLabel = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TaskLabel, Error, { name: string; colorHexCode: string }>(
+    ['task-labels', 'create'],
+    async ({ name, colorHexCode }) => {
+      const { data } = await createTaskLabel(name, colorHexCode);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['task-labels']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit a task label
+ * @returns the edit task label mutation
+ */
+export const useEditTaskLabel = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TaskLabel, Error, { taskLabelId: string; name: string; colorHexCode: string }>(
+    ['task-labels', 'edit'],
+    async ({ taskLabelId, name, colorHexCode }) => {
+      const { data } = await editTaskLabel(taskLabelId, name, colorHexCode);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['task-labels']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a task label
+ * @returns the delete task label id
+ */
+export const useDeleteTaskLabel = () => {
+  const queryClient = useQueryClient();
+  return useMutation<string, Error, { taskLabelId: string }>(
+    ['task-labels', 'delete'],
+    async ({ taskLabelId }) => {
+      const { data } = await deleteTaskLabel(taskLabelId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['task-labels']);
       }
     }
   );

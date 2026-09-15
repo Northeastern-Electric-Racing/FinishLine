@@ -6,7 +6,7 @@
 import { useState, useContext } from 'react';
 import { AuthenticatedUser } from 'shared';
 import { AuthContext } from '../app/AppContextAuth';
-import { useLogUserIn, useLogUserInDev } from './users.hooks';
+import { useGetCurrentUser, useLogUserIn, useLogUserInDev } from './users.hooks';
 import { Auth } from '../utils/types';
 
 // Provider hook that creates auth object and handles state
@@ -14,12 +14,31 @@ export const useProvideAuth = () => {
   const { isLoading, mutateAsync } = useLogUserIn();
   const { isLoading: isLoadingDev, mutateAsync: mutateAsyncDev } = useLogUserInDev();
   const [user, setUser] = useState<AuthenticatedUser | undefined>(undefined);
+  const { mutateAsync: getCurrentUser, isLoading: currentUserIsLoading } = useGetCurrentUser();
+  const [triedCurrent, setTriedCurrent] = useState(false);
 
-  const devSignin = async (userId: number) => {
-    const user = await mutateAsyncDev(userId);
-    setUser(user);
-    localStorage.setItem('devUserId', userId.toString());
-    return user;
+  const signInCurrent = async () => {
+    try {
+      const user = await getCurrentUser();
+      setUser(user);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setTriedCurrent(true);
+    }
+  };
+
+  const devSignin = async (userId: string) => {
+    try {
+      const user = await mutateAsyncDev(userId);
+      setUser(user);
+      localStorage.setItem('devUserId', userId.toString());
+      return user;
+    } catch (error) {
+      console.log(error);
+      localStorage.removeItem('devUserId');
+      return;
+    }
   };
 
   const signin = async (id_token: string) => {
@@ -38,7 +57,9 @@ export const useProvideAuth = () => {
     devSignin,
     signin,
     signout,
-    isLoading: isLoading || isLoadingDev
+    signInCurrent,
+    triedCurrent,
+    isLoading: isLoading || isLoadingDev || (currentUserIsLoading && !triedCurrent)
   } as Auth;
 };
 

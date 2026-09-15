@@ -1,9 +1,12 @@
 import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import { HttpException } from './errors.utils';
+import SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
+import { HttpException } from './errors.utils.js';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
+import { User } from 'shared';
+import { Schedule_Slot } from '@prisma/client';
+import { getUsers } from './users.utils.js';
 
 const { OAuth2 } = google.auth;
 const {
@@ -13,7 +16,7 @@ const {
   EMAIL_REFRESH_TOKEN,
   USER_EMAIL,
   DRIVE_REFRESH_TOKEN,
-  ADVISOR_EMAIL
+  CALENDAR_REFRESH_TOKEN
 } = process.env;
 
 const oauth2Client = new OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'https://developers.google.com/oauthplayground');
@@ -26,7 +29,7 @@ const createTransporter = async () => {
 
     let accessToken: string | null | undefined;
 
-    await oauth2Client.getAccessToken((err, token) => {
+    oauth2Client.getAccessToken((_err, token) => {
       accessToken = token;
     });
 
@@ -45,15 +48,16 @@ const createTransporter = async () => {
   } catch (err) {
     console.log('ERROR: ' + err);
     if (err instanceof Error) throw new HttpException(500, 'Failed to Create Transporter ' + err.message);
+    throw err;
   }
 };
 
-export const sendMailToAdvisor = async (subject: string, text: string) => {
+export const sendMailToAdvisor = async (subject: string, text: string, advisor: User) => {
   try {
     //this sends an email from our email to our advisor: professor Goldstone
     const mailOptions = {
       from: USER_EMAIL,
-      to: ADVISOR_EMAIL,
+      to: advisor.email,
       subject,
       text
     };
@@ -82,7 +86,6 @@ interface GoogleDriveError {
 export const uploadFile = async (fileObject: Express.Multer.File) => {
   const bufferStream = new stream.PassThrough();
   bufferStream.end(fileObject.buffer);
-
   oauth2Client.setCredentials({
     refresh_token: DRIVE_REFRESH_TOKEN
   });
@@ -95,8 +98,8 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
         body: bufferStream
       },
       requestBody: {
-        name: fileObject.originalname,
-        parents: [GOOGLE_DRIVE_FOLDER_ID || '']
+        name: fileObject.filename ?? fileObject.originalname,
+        parents: GOOGLE_DRIVE_FOLDER_ID ? [GOOGLE_DRIVE_FOLDER_ID] : undefined
       },
       fields: 'id,name'
     });
@@ -117,17 +120,15 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
       const gError = error as GoogleDriveError;
       throw new HttpException(
         gError.code,
-        `Failed to Upload Receipt(s): ${gError.message}, ${gError.errors.reduce(
-          (acc: string, curr: GoogleDriveErrorListError) => {
-            return acc + ' ' + curr.message + ' ' + curr.reason;
-          },
-          ''
-        )}`
+        `Failed to Upload : ${gError.message}, ${gError.errors.reduce((acc: string, curr: GoogleDriveErrorListError) => {
+          return acc + ' ' + curr.message + ' ' + curr.reason;
+        }, '')}`
       );
     } else if (error instanceof Error) {
-      throw new HttpException(500, `Failed to Upload Receipt(s): ${error.message}`);
+      throw new HttpException(500, `Failed to Upload : ${error.message}`);
     }
     console.log('error' + error);
+    throw error;
   }
 };
 
@@ -143,8 +144,8 @@ const readableToBuffer = async (readable: Readable): Promise<Buffer> => {
   });
 };
 
-//given the google file id, downloads the image data and return it as a Buffer along with the image type
-export const downloadImageFile = async (fileId: string) => {
+//given the google file id, downloads the file data and return it as a Buffer along with the file type
+export const downloadFile = async (fileId: string) => {
   oauth2Client.setCredentials({
     refresh_token: DRIVE_REFRESH_TOKEN
   });
@@ -161,7 +162,214 @@ export const downloadImageFile = async (fileId: string) => {
     return { buffer: bufferData, type: res.headers['content-type'] };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw new HttpException(500, `Failed to Download Image(${fileId}): ${error.message}`);
+      throw new HttpException(500, `Failed to Download File(${fileId}): ${error.message}`);
     }
+    throw error;
+  }
+};
+
+/**
+ * Creates a new google calendar on the NER google calendar
+ * @param name
+ * @returns the calendar id
+ */
+export const createCalendar = async (name: string) => {
+  if (process.env.NODE_ENV !== 'production') return;
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
+    });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const createdCalendar = await calendar.calendars.insert({
+      requestBody: { summary: `${name} System Meetings` }
+    });
+
+    return createdCalendar.data.id;
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+/**
+ * Creates Google Calendar Events on the NER Google Calendar for all schedule slot occurrences
+ * @param calendarId the id of the calendar to add the event
+ * @param memberIds required and optional members
+ * @param scheduledSlots the scheduled time slots for the event
+ * @param isInPerson whether the event is in person
+ * @param zoomLink zoom link if online
+ * @param location physical location if in person
+ * @param eventTitle the title of the event
+ * @returns an array of calendar event ids
+ */
+export const createCalendarEvent = async (
+  calendarId: string,
+  memberIds: string[],
+  scheduledSlots: Schedule_Slot[],
+  isInPerson: boolean,
+  zoomLink: string | null,
+  location: string | null,
+  eventTitle: string
+) => {
+  if (process.env.NODE_ENV !== 'production') return [];
+
+  if (scheduledSlots.length === 0) {
+    throw new Error('Event must have at least one schedule slot');
+  }
+
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
+    });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+    const attendees = (await getUsers(memberIds)).map((user) => ({
+      email: user.email
+    }));
+
+    const calendarEventIds: string[] = [];
+
+    for (const slot of scheduledSlots) {
+      const eventInput = {
+        location: isInPerson ? location : zoomLink,
+        summary: eventTitle,
+        start: slot.allDay
+          ? { date: slot.startTime ? slot.startTime.toISOString().split('T')[0] : undefined }
+          : {
+              dateTime: slot.startTime ? slot.startTime.toISOString() : undefined,
+              timeZone: 'America/New_York'
+            },
+        end: slot.allDay
+          ? { date: slot.endTime ? slot.endTime.toISOString().split('T')[0] : undefined }
+          : {
+              dateTime: slot.endTime ? slot.endTime.toISOString() : undefined,
+              timeZone: 'America/New_York'
+            },
+        attendees,
+        reminders: {
+          useDefault: false,
+          overrides: [
+            { method: 'email', minutes: 24 * 60 },
+            { method: 'popup', minutes: 10 }
+          ]
+        }
+      };
+
+      const calendarEvent = await calendar.events.insert({
+        calendarId,
+        requestBody: eventInput
+      });
+
+      if (calendarEvent.data.id) {
+        calendarEventIds.push(calendarEvent.data.id);
+      }
+    }
+
+    return calendarEventIds;
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+/**
+ * Updates Google Calendar Events by deleting old ones and creating new ones
+ * @param calendarId Id of the calendar the event is on
+ * @param oldEventIds Array of old calendar event ids to delete
+ * @param memberIds required and optional members
+ * @param scheduledSlots the scheduled time slots for the event
+ * @param isInPerson whether the event is in person
+ * @param zoomLink zoom link if online
+ * @param location physical location if in person
+ * @param eventTitle the title of the event
+ * @returns an array of new calendar event ids
+ */
+export const updateCalendarEvent = async (
+  calendarId: string,
+  oldEventIds: string[],
+  memberIds: string[],
+  scheduledSlots: Schedule_Slot[],
+  isInPerson: boolean,
+  zoomLink: string | null,
+  location: string | null,
+  eventTitle: string
+) => {
+  if (scheduledSlots.length === 0) {
+    throw new Error('Event must have at least one schedule slot');
+  }
+
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
+    });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+    // Delete old calendar events
+    for (const eventId of oldEventIds) {
+      try {
+        await calendar.events.delete({
+          calendarId,
+          eventId
+        });
+      } catch (error) {
+        console.error(`Failed to delete calendar event ${eventId}:`, error);
+      }
+    }
+
+    // Create new calendar events
+    return await createCalendarEvent(calendarId, memberIds, scheduledSlots, isInPerson, zoomLink, location, eventTitle);
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+/**
+ * Deletes multiple Google Calendar Events
+ * @param calendarId Id of the calendar the events are on
+ * @param eventIds Array of calendar event IDs to delete
+ */
+export const deleteCalendarEvents = async (calendarId: string, eventIds: string[]) => {
+  if (process.env.NODE_ENV !== 'production') return;
+
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
+    });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+    await Promise.all(
+      eventIds.map(async (eventId) => {
+        try {
+          await calendar.events.delete({
+            calendarId,
+            eventId
+          });
+        } catch (error) {
+          console.error(`Failed to delete calendar event ${eventId}:`, error);
+        }
+      })
+    );
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+/**
+ * deletes a Google Calendar Event
+ * @param calendarId id of the calendar the event is on
+ * @param eventId the id of the calendar event
+ * @returns the deleted calendar event
+ */
+export const deleteCalendarEvent = async (calendarId: string, eventId: string) => {
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
+    });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const calendarEvent = await calendar.events.delete({
+      calendarId,
+      eventId
+    });
+    return calendarEvent;
+  } catch (error: unknown) {
+    throw error;
   }
 };

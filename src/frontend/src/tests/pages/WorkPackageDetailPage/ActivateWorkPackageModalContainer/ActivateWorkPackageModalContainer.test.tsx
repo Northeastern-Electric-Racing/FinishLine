@@ -10,7 +10,7 @@ import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import ActivateWorkPackageModalContainer from '../../../../pages/WorkPackageDetailPage/ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
 import { mockAuth, mockUseMutationResult } from '../../../test-support/test-data/test-utils.stub';
 import { useCreateActivationChangeRequest } from '../../../../hooks/change-requests.hooks';
-import { exampleAdminUser, exampleAllUsers } from '../../../test-support/test-data/users.stub';
+import { exampleAllUsers } from '../../../test-support/test-data/users.stub';
 import * as authHooks from '../../../../hooks/auth.hooks';
 import * as userHooks from '../../../../hooks/users.hooks';
 import {
@@ -18,6 +18,7 @@ import {
   mockLogUserInReturnValue,
   mockUseAllUsersReturnValue
 } from '../../../test-support/mock-hooks';
+import { exampleAuthenticatedAdminUser } from '../../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../../hooks/change-requests.hooks');
 vi.mock('../../../../hooks/toasts.hooks');
@@ -37,10 +38,10 @@ const renderComponent = () => {
 
 describe('activate work package modal container test suite', () => {
   beforeEach(() => {
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
     vi.spyOn(userHooks, 'useLogUserIn').mockReturnValue(mockLogUserInReturnValue);
     vi.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
-    vi.spyOn(userHooks, 'useAllUsers').mockReturnValue(mockUseAllUsersReturnValue(exampleAllUsers));
+    vi.spyOn(userHooks, 'useAllMembers').mockReturnValue(mockUseAllUsersReturnValue(exampleAllUsers));
   });
 
   it('renders component without crashing', () => {

@@ -1,0 +1,256 @@
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { Milestone, FrequentlyAskedQuestion, GuestDefinition, GuestDefinitionType } from 'shared';
+import {
+  createRecruitingFaq,
+  createNewMemberFaq,
+  createGuestDefinition,
+  createMilestone,
+  deleteFaq,
+  deleteGuestDefinition,
+  deleteMilestone,
+  editFaq,
+  editGuestDefinition,
+  editMilestone,
+  getAllFaqs,
+  getRecruitingFaqs,
+  getNewMemberFaqs,
+  getAllGuestDefinitions,
+  getAllMilestones,
+  getNewMemberMilestones,
+  getRecruitingMilestones
+} from '../apis/recruitment.api';
+
+export interface MilestonePayload {
+  name: string;
+  description: string;
+  dateOfEvent: Date;
+}
+
+export interface MilestoneCreatePayload extends MilestonePayload {
+  isOnNewMemberDashboard: boolean;
+  isOnRecruitingDashboard: boolean;
+}
+
+export interface FaqPayload {
+  question: string;
+  answer: string;
+}
+
+export interface GuestDefinitionPayload {
+  term: string;
+  description: string;
+  order: number;
+  type: GuestDefinitionType;
+  icon?: string;
+  buttonText?: string;
+  buttonLink?: string;
+}
+
+export const useAllMilestones = () => {
+  return useQuery<Milestone[], Error>(['milestones'], async () => {
+    const { data } = await getAllMilestones();
+    return data;
+  });
+};
+
+export const useNewMemberMilestones = () => {
+  return useQuery<Milestone[], Error>(['milestones', 'new-member'], async () => {
+    const { data } = await getNewMemberMilestones();
+    return data;
+  });
+};
+
+export const useRecruitingMilestones = () => {
+  return useQuery<Milestone[], Error>(['milestones', 'recruiting'], async () => {
+    const { data } = await getRecruitingMilestones();
+    return data;
+  });
+};
+
+export const useCreateMilestone = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Milestone, Error, MilestoneCreatePayload>(
+    ['milestones', 'create'],
+    async (payload) => {
+      const { data } = await createMilestone(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['milestones']);
+      }
+    }
+  );
+};
+
+export const useEditMilestone = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Milestone, Error, MilestonePayload>(
+    ['milestones', 'edit'],
+    async (payload) => {
+      const { data } = await editMilestone(payload, id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['milestones']);
+      }
+    }
+  );
+};
+
+export const useDeleteMilestone = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, string>(
+    ['milestones', 'delete'],
+    async (milestoneId: string) => {
+      const { data } = await deleteMilestone(milestoneId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['milestones']);
+      }
+    }
+  );
+};
+
+export const useAllFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['faqs'], async () => {
+    const { data } = await getAllFaqs();
+    return data;
+  });
+};
+
+export const useRecruitingFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['faqs', 'recruiting'], async () => {
+    const { data } = await getRecruitingFaqs();
+    return data;
+  });
+};
+
+export const useNewMemberFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['faqs', 'new-member'], async () => {
+    const { data } = await getNewMemberFaqs();
+    return data;
+  });
+};
+
+export const useCreateRecruitingFaq = () => {
+  const queryClient = useQueryClient();
+  return useMutation<FrequentlyAskedQuestion, Error, FaqPayload>(
+    ['faqs', 'recruiting', 'create'],
+    async (payload) => {
+      const { data } = await createRecruitingFaq(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['faqs']);
+      }
+    }
+  );
+};
+
+export const useCreateNewMemberFaq = () => {
+  const queryClient = useQueryClient();
+  return useMutation<FrequentlyAskedQuestion, Error, FaqPayload>(
+    ['faqs', 'new-member', 'create'],
+    async (payload) => {
+      const { data } = await createNewMemberFaq(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['faqs']);
+      }
+    }
+  );
+};
+
+export const useEditFaq = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<FrequentlyAskedQuestion, Error, FaqPayload>(
+    ['faqs', 'edit'],
+    async (payload) => {
+      const { data } = await editFaq(payload, id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['faqs']);
+      }
+    }
+  );
+};
+
+export const useDeleteFAQ = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, string>(
+    ['faqs', 'delete'],
+    async (faqId: string) => {
+      const { data } = await deleteFaq(faqId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['faqs']);
+      }
+    }
+  );
+};
+
+export const useAllGuestDefinitions = () => {
+  return useQuery<GuestDefinition[], Error>(['guestdefinitions'], async () => {
+    const { data } = await getAllGuestDefinitions();
+    return data;
+  });
+};
+
+export const useDeleteGuestDefinition = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, string>(
+    ['guestdefinitions', 'delete'],
+    async (definitionId: string) => {
+      const { data } = await deleteGuestDefinition(definitionId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['guestdefinitions']);
+      }
+    }
+  );
+};
+
+export const useCreateGuestDefinition = () => {
+  const queryClient = useQueryClient();
+  return useMutation<GuestDefinition, Error, GuestDefinitionPayload>(
+    ['guestdefinitions', 'create'],
+    async (payload) => {
+      const { data } = await createGuestDefinition(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['guestdefinitions']);
+      }
+    }
+  );
+};
+
+export const useEditGuestDefinitions = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<GuestDefinition, Error, GuestDefinitionPayload>(
+    ['guestdefinitions', 'edit'],
+    async (payload) => {
+      const { data } = await editGuestDefinition(payload, id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['guestdefinitions']);
+      }
+    }
+  );
+};

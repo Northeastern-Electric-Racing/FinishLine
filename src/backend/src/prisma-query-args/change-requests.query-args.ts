@@ -1,26 +1,257 @@
 import { Prisma } from '@prisma/client';
-import scopeCRArgs from './scope-change-requests.query-args';
+import { getUserQueryArgs } from './user.query-args.js';
+import { getWorkPackageQueryArgs } from './work-packages.query-args.js';
+import { getReimbursementProductOtherReasonQueryArgs } from './reimbursement-product-other-reason.query-args.js';
+import { getAccountCodeQueryArgs } from './account-code.query-args.js';
+import { getTeamQueryArgs } from './teams.query-args.js';
 
-export const changeRequestQueryArgs = Prisma.validator<Prisma.Change_RequestArgs>()({
-  include: {
-    submitter: true,
-    wbsElement: true,
-    reviewer: true,
-    changes: {
-      where: {
-        wbsElement: {
-          dateDeleted: null
+export type ChangeRequestQueryArgs = ReturnType<typeof getChangeRequestQueryArgs>;
+export type ChangeRequestWithProjectAndWorkPackageQueryArgs = ReturnType<
+  typeof getChangeRequestWithProjectAndWorkPackageQueryArgs
+>;
+export type WbsProposedChangeQueryArgs = ReturnType<typeof getWbsProposedChangesQueryArgs>;
+export type ChangeRequestManyQueryArgs = ReturnType<typeof getManyChangeRequestQueryArgs>;
+export type WorkPackageProposedChangesQueryArgs = ReturnType<typeof getWorkPackageProposedChangesQueryArgs>;
+export type ProjectProposedChangesQueryArgs = ReturnType<typeof getProjectProposedChangesQueryArgs>;
+
+const getProjectProposedChangesQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Project_Proposed_ChangesDefaultArgs>()({
+    include: {
+      teams: getTeamQueryArgs(organizationId),
+      car: { select: { wbsElement: { select: { carNumber: true } } } },
+      workPackageProposedChanges: getWorkPackageProposedChangesQueryArgs(organizationId)
+    }
+  });
+
+const getWorkPackageProposedChangesQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Work_Package_Proposed_ChangesDefaultArgs>()({
+    select: {
+      workPackageProposedChangesId: true,
+      startDate: true,
+      duration: true,
+      stage: true,
+      wbsProposedChanges: {
+        select: {
+          name: true,
+          status: true,
+          links: {
+            where: { dateDeleted: null },
+            select: {
+              linkId: true,
+              url: true,
+              linkType: {
+                select: {
+                  name: true,
+                  required: true,
+                  iconName: true,
+                  isOnGuestHomePage: true,
+                  isOnNewMemberDashboard: true,
+                  isOnOnboardingDashboard: true
+                }
+              }
+            }
+          },
+          proposedDescriptionBulletChanges: {
+            where: { dateDeleted: null },
+            select: {
+              descriptionId: true,
+              detail: true,
+              dateAdded: true,
+              dateDeleted: true,
+              dateTimeChecked: true,
+              descriptionBulletType: { select: { name: true } },
+              userChecked: getUserQueryArgs(organizationId)
+            }
+          },
+          lead: getUserQueryArgs(organizationId),
+          manager: getUserQueryArgs(organizationId)
         }
       },
-      include: {
-        implementer: true,
-        wbsElement: true
+      blockedBy: true
+    }
+  });
+
+const getWbsProposedChangesQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Wbs_Proposed_ChangesDefaultArgs>()({
+    select: {
+      wbsProposedChangesId: true,
+      name: true,
+      status: true,
+      leadId: true,
+      managerId: true,
+      links: {
+        where: { dateDeleted: null },
+        select: {
+          linkId: true,
+          url: true,
+          linkType: {
+            select: {
+              name: true,
+              required: true,
+              iconName: true,
+              isOnGuestHomePage: true,
+              isOnNewMemberDashboard: true,
+              isOnOnboardingDashboard: true
+            }
+          }
+        }
+      },
+      proposedDescriptionBulletChanges: {
+        where: { dateDeleted: null },
+        select: {
+          descriptionId: true,
+          detail: true,
+          dateAdded: true,
+          dateDeleted: true,
+          dateTimeChecked: true,
+          descriptionBulletType: { select: { name: true } },
+          userChecked: getUserQueryArgs(organizationId)
+        }
+      },
+      lead: getUserQueryArgs(organizationId),
+      manager: getUserQueryArgs(organizationId),
+      projectProposedChanges: {
+        select: {
+          projectProposedChangesId: true,
+          wbsProposedChangesId: true,
+          carId: true,
+          summary: true,
+          budget: true,
+          teams: getTeamQueryArgs(organizationId),
+          car: { select: { wbsElement: { select: { carNumber: true } } } },
+          workPackageProposedChanges: getWorkPackageProposedChangesQueryArgs(organizationId)
+        }
+      },
+      workPackageProposedChanges: getWorkPackageProposedChangesQueryArgs(organizationId)
+    }
+  });
+
+export const getChangeRequestQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Change_RequestDefaultArgs>()({
+    include: {
+      submitter: getUserQueryArgs(organizationId),
+      wbsElement: true,
+      category: getReimbursementProductOtherReasonQueryArgs(organizationId),
+      accountCode: getAccountCodeQueryArgs(organizationId),
+      reviewer: getUserQueryArgs(organizationId),
+      changes: {
+        where: { wbsElement: { dateDeleted: null } },
+        include: {
+          implementer: getUserQueryArgs(organizationId),
+          wbsElement: true
+        }
+      },
+      wbsProposedChanges: getWbsProposedChangesQueryArgs(organizationId),
+      stageGateChangeRequest: true,
+      activationChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      },
+      budgetChangeRequest: true,
+      deletedBy: getUserQueryArgs(organizationId),
+      requestedReviewers: getUserQueryArgs(organizationId),
+      leadershipChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
       }
-    },
-    scopeChangeRequest: scopeCRArgs,
-    stageGateChangeRequest: true,
-    activationChangeRequest: { include: { projectLead: true, projectManager: true } },
-    deletedBy: true,
-    requestedReviewers: true
-  }
-});
+    }
+  });
+
+export const getManyChangeRequestQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Change_RequestDefaultArgs>()({
+    include: {
+      submitter: getUserQueryArgs(organizationId),
+      wbsElement: true,
+      category: getReimbursementProductOtherReasonQueryArgs(organizationId),
+      accountCode: getAccountCodeQueryArgs(organizationId),
+      reviewer: getUserQueryArgs(organizationId),
+      stageGateChangeRequest: true,
+      changes: true,
+      activationChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      },
+      budgetChangeRequest: true,
+      deletedBy: getUserQueryArgs(organizationId),
+      requestedReviewers: getUserQueryArgs(organizationId),
+      leadershipChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      }
+    }
+  });
+
+export type ChangeRequestGuestQueryArgs = ReturnType<typeof getGuestChangeRequestQueryArgs>;
+
+export const getGuestChangeRequestQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Change_RequestDefaultArgs>()({
+    select: {
+      crId: true,
+      identifier: true,
+      dateSubmitted: true,
+      type: true,
+      accepted: true,
+      dateReviewed: true,
+      submitter: getUserQueryArgs(organizationId),
+      reviewer: getUserQueryArgs(organizationId),
+      changes: { select: { changeId: true } },
+      wbsElement: {
+        select: {
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          name: true,
+          project: {
+            select: {
+              wbsElement: { select: { name: true } },
+              teams: { select: { teamType: { select: { name: true } } } }
+            }
+          },
+          workPackage: {
+            select: {
+              project: {
+                select: {
+                  wbsElement: { select: { name: true } },
+                  teams: { select: { teamType: { select: { name: true } } } }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Change_RequestDefaultArgs>()({
+    include: {
+      submitter: getUserQueryArgs(organizationId),
+      wbsElement: {
+        include: {
+          workPackage: getWorkPackageQueryArgs(organizationId),
+          project: { include: { teams: true } },
+          descriptionBullets: { where: { dateDeleted: null } },
+          links: { where: { dateDeleted: null } }
+        }
+      },
+      category: getReimbursementProductOtherReasonQueryArgs(organizationId),
+      accountCode: getAccountCodeQueryArgs(organizationId),
+      reviewer: getUserQueryArgs(organizationId),
+      changes: {
+        where: { wbsElement: { dateDeleted: null } },
+        include: {
+          implementer: getUserQueryArgs(organizationId),
+          wbsElement: true,
+          category: getReimbursementProductOtherReasonQueryArgs(organizationId),
+          accountCode: getAccountCodeQueryArgs(organizationId)
+        }
+      },
+      wbsProposedChanges: getWbsProposedChangesQueryArgs(organizationId),
+      stageGateChangeRequest: true,
+      activationChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      },
+      budgetChangeRequest: true,
+      deletedBy: getUserQueryArgs(organizationId),
+      requestedReviewers: getUserQueryArgs(organizationId),
+      leadershipChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      }
+    }
+  });

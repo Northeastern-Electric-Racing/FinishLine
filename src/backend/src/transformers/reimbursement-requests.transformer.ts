@@ -5,63 +5,69 @@
 
 import { Prisma } from '@prisma/client';
 import {
-  ClubAccount,
-  ExpenseType,
+  AccountCode,
+  IndexCode,
   OtherProductReason,
   Receipt,
+  RefundSource,
   Reimbursement,
   ReimbursementProduct,
   ReimbursementProductReason,
   ReimbursementRequest,
+  ReimbursementRequestComment,
   ReimbursementStatus,
   ReimbursementStatusType,
   Vendor
 } from 'shared';
-import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
-import reimbursementStatusQueryArgs from '../prisma-query-args/reimbursement-statuses.query-args';
-import {
-  reimbursementProductReasonQueryArgs,
-  reimbursementProductQueryArgs
-} from '../prisma-query-args/reimbursement-products.query-args';
-import { wbsNumOf } from '../utils/utils';
-import receiptQueryArgs from '../prisma-query-args/receipt-query.args';
-import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
-import { userTransformer } from './user.transformer';
 
-export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<typeof receiptQueryArgs>): Receipt => {
-  return {
-    receiptId: receipt.receiptId,
-    googleFileId: receipt.googleFileId,
-    name: receipt.name,
-    dateDeleted: receipt.dateDeleted ?? undefined,
-    deletedBy: receipt.deletedBy ? userTransformer(receipt.deletedBy) : undefined
-  };
+import { wbsNumOf } from '../utils/utils.js';
+import { userTransformer } from './user.transformer.js';
+import { ReceiptQueryArgs } from '../prisma-query-args/receipt-query.args.js';
+import { ReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args.js';
+import { ReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args.js';
+import {
+  ReimbursementProductQueryArgs,
+  ReimbursementProductReasonQueryArgs,
+  RefundSourceQueryArgs
+} from '../prisma-query-args/reimbursement-products.query-args.js';
+import { ReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args.js';
+import { VendorQueryArgs } from '../prisma-query-args/vendor.query-args.js';
+import { AccountCodeQueryArgs } from '../prisma-query-args/account-code.query-args.js';
+import { IndexCodeQueryArgs } from '../prisma-query-args/index-code.query-args.js';
+import { ReimbursementProductOtherReasonQueryArgs } from '../prisma-query-args/reimbursement-product-other-reason.query-args.js';
+import { ReimbursementRequestCommentQueryArgs } from '../prisma-query-args/reimbursement-comment.query-args.js';
+import { decrypt } from '../utils/encryption.utils.js';
+
+export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<ReceiptQueryArgs>): Receipt => {
+  return { receiptId: receipt.receiptId, googleFileId: receipt.googleFileId, name: receipt.name };
 };
 
 export const reimbursementRequestTransformer = (
-  reimbursementRequest: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs>
+  reimbursementRequest: Prisma.Reimbursement_RequestGetPayload<ReimbursementRequestQueryArgs>
 ): ReimbursementRequest => {
   return {
     reimbursementRequestId: reimbursementRequest.reimbursementRequestId,
     identifier: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId ?? undefined,
     dateCreated: reimbursementRequest.dateCreated,
-    dateDeleted: reimbursementRequest.dateDeleted ?? undefined,
-    dateOfExpense: reimbursementRequest.dateOfExpense,
+    dateOfExpense: reimbursementRequest.dateOfExpense ?? undefined,
+    description: reimbursementRequest.description,
     reimbursementStatuses: reimbursementRequest.reimbursementStatuses.map(reimbursementStatusTransformer),
     recipient: userTransformer(reimbursementRequest.recipient),
     vendor: vendorTransformer(reimbursementRequest.vendor),
-    account: reimbursementRequest.account as ClubAccount,
+    indexCode: indexCodeTransformer(reimbursementRequest.indexCode),
     totalCost: reimbursementRequest.totalCost,
     receiptPictures: reimbursementRequest.receiptPictures.filter((receipt) => !receipt.dateDeleted).map(receiptTransformer),
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
     dateDelivered: reimbursementRequest.dateDelivered ?? undefined,
-    expenseType: expenseTypeTransformer(reimbursementRequest.expenseType)
+    accountCode: accountCodeTransformer(reimbursementRequest.accountCode),
+    comments: reimbursementRequest.reimbursementComments.map(reimbursementRequestCommentTransformer),
+    assignee: reimbursementRequest.assignee ? userTransformer(reimbursementRequest.assignee) : undefined
   };
 };
 
 export const reimbursementStatusTransformer = (
-  reimbursementStatus: Prisma.Reimbursement_StatusGetPayload<typeof reimbursementStatusQueryArgs>
+  reimbursementStatus: Prisma.Reimbursement_StatusGetPayload<ReimbursementStatusQueryArgs>
 ): ReimbursementStatus => {
   return {
     reimbursementStatusId: reimbursementStatus.reimbursementStatusId,
@@ -72,47 +78,64 @@ export const reimbursementStatusTransformer = (
 };
 
 export const reimbursementProductTransformer = (
-  reimbursementProduct: Prisma.Reimbursement_ProductGetPayload<typeof reimbursementProductQueryArgs>
+  reimbursementProduct: Prisma.Reimbursement_ProductGetPayload<ReimbursementProductQueryArgs>
 ): ReimbursementProduct => {
   return {
     reimbursementProductId: reimbursementProduct.reimbursementProductId,
-    name: reimbursementProduct.name,
-    dateDeleted: reimbursementProduct.dateDeleted ?? undefined,
+    name: reimbursementProduct.name ?? undefined,
+    materialId: reimbursementProduct.materialId ?? undefined,
     cost: reimbursementProduct.cost,
-    reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason)
+    reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason),
+    refundSources: reimbursementProduct.refundSources.map(refundSourceTransformer)
+  };
+};
+
+const refundSourceTransformer = (source: Prisma.Refund_SourceGetPayload<RefundSourceQueryArgs>): RefundSource => {
+  return {
+    refundSourceId: source.refundSourceId,
+    indexCode: indexCodeTransformer(source.indexCode),
+    amount: source.amount
   };
 };
 
 const reimbursementProductReasonTransformer = (
-  reason: Prisma.Reimbursement_Product_ReasonGetPayload<typeof reimbursementProductReasonQueryArgs>
+  reason: Prisma.Reimbursement_Product_ReasonGetPayload<ReimbursementProductReasonQueryArgs>
 ): ReimbursementProductReason => {
   return reason.wbsElement
-    ? { wbsName: reason.wbsElement?.name, wbsNum: wbsNumOf(reason.wbsElement) }
-    : (reason.otherReason! as OtherProductReason);
+    ? { wbsName: reason.wbsElement.name, wbsNum: wbsNumOf(reason.wbsElement) }
+    : {
+        otherProductReasonId: reason.otherReason!.otherReimbursementProductReasonId,
+        name: reason.otherReason!.name,
+        userCreated: userTransformer(reason.otherReason!.userCreated),
+        dateCreated: reason.otherReason!.dateCreated,
+        budget: reason.otherReason!.budget,
+        indexCode: indexCodeTransformer(reason.otherReason!.indexCode),
+        accountCodes: reason.otherReason!.accountCodes.map(accountCodeTransformer)
+      };
 };
 
-export const expenseTypeTransformer = (expenseType: Prisma.Expense_TypeGetPayload<null>): ExpenseType => {
+export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<AccountCodeQueryArgs>): AccountCode => {
   return {
-    expenseTypeId: expenseType.expenseTypeId,
-    name: expenseType.name,
-    code: expenseType.code,
-    allowed: expenseType.allowed,
-    allowedRefundSources: expenseType.allowedRefundSources as ClubAccount[],
-    dateDeleted: expenseType.dateDeleted ?? undefined
+    ...accountCode,
+    amount: accountCode.amount ?? undefined,
+    indexCodes: accountCode.indexCodes.map(indexCodeTransformer)
   };
 };
 
-export const vendorTransformer = (vendor: Prisma.VendorGetPayload<null>): Vendor => {
+export const vendorTransformer = (vendor: Prisma.VendorGetPayload<VendorQueryArgs>): Vendor => {
   return {
-    vendorId: vendor.vendorId,
-    dateCreated: vendor.dateCreated,
-    dateDeleted: vendor.dateDeleted ?? undefined,
-    name: vendor.name
+    ...vendor,
+    password: vendor.password ? decrypt(vendor.password) : undefined,
+    discountCode: vendor.discountCode ? vendor.discountCode : undefined,
+    username: vendor.username ? vendor.username : undefined,
+    twoFactorContacts: vendor.twoFactorContacts.map(userTransformer),
+    notes: vendor.notes ?? undefined,
+    addedBy: userTransformer(vendor.addedBy)
   };
 };
 
 export const reimbursementTransformer = (
-  reimbursement: Prisma.ReimbursementGetPayload<typeof reimbursementQueryArgs>
+  reimbursement: Prisma.ReimbursementGetPayload<ReimbursementQueryArgs>
 ): Reimbursement => {
   return {
     reimbursementId: reimbursement.reimbursementId,
@@ -120,4 +143,28 @@ export const reimbursementTransformer = (
     amount: reimbursement.amount,
     userSubmitted: userTransformer(reimbursement.userSubmitted)
   };
+};
+
+export const indexCodeTransformer = (indexCode: Prisma.Index_CodeGetPayload<IndexCodeQueryArgs>): IndexCode => {
+  return { ...indexCode, userCreated: userTransformer(indexCode.userCreated) };
+};
+
+export const otherProductReasonTransformer = (
+  otherProductReason: Prisma.Reimbursement_Product_Other_ReasonGetPayload<ReimbursementProductOtherReasonQueryArgs>
+): OtherProductReason => {
+  return {
+    otherProductReasonId: otherProductReason.otherReimbursementProductReasonId,
+    name: otherProductReason.name,
+    userCreated: userTransformer(otherProductReason.userCreated),
+    dateCreated: otherProductReason.dateCreated,
+    budget: otherProductReason.budget,
+    indexCode: indexCodeTransformer(otherProductReason.indexCode),
+    accountCodes: otherProductReason.accountCodes.map(accountCodeTransformer)
+  };
+};
+
+export const reimbursementRequestCommentTransformer = (
+  reimbursementRequestComment: Prisma.Reimbursement_Request_CommentGetPayload<ReimbursementRequestCommentQueryArgs>
+): ReimbursementRequestComment => {
+  return { ...reimbursementRequestComment, userCreated: userTransformer(reimbursementRequestComment.userCreated) };
 };

@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-container */
 /*
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
@@ -5,7 +6,7 @@
 
 import { render, routerWrapperBuilder, screen } from '../../../test-support/test-utils';
 import { WorkPackage } from 'shared';
-import { datePipe, fullNamePipe, weeksPipe, percentPipe, timelinePipe } from '../../../../utils/pipes';
+import { datePipe, fullNamePipe, weeksPipe } from '../../../../utils/pipes';
 import {
   exampleResearchWorkPackage,
   exampleDesignWorkPackage,
@@ -21,6 +22,7 @@ import { mockAuth, mockUseQueryResult } from '../../../test-support/test-data/te
 import { UseQueryResult } from 'react-query';
 import { exampleAdminUser, exampleAppAdminUser, exampleLeadershipUser } from '../../../test-support/test-data/users.stub';
 import { Auth } from '../../../../utils/types';
+import { exampleAuthenticatedAdminUser } from '../../../test-support/test-data/authenticated-user.stub';
 
 vi.mock('../../../../hooks/users.hooks');
 vi.mock('../../../../hooks/auth.hooks');
@@ -30,7 +32,7 @@ const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
 const mockHook = (isLoading: boolean, isError: boolean, data?: User[], error?: Error) => {
   mockedUseAllUsers.mockReturnValue(mockUseQueryResult<User[]>(isLoading, isError, data, error));
-  mockedUseAuth.mockReturnValue(mockAuth(isLoading, exampleAppAdminUser));
+  mockedUseAuth.mockReturnValue(mockAuth(isLoading, exampleAuthenticatedAdminUser));
 };
 
 const users = [exampleAdminUser, exampleAppAdminUser, exampleLeadershipUser];
@@ -98,9 +100,6 @@ describe('Work Package Details Component', () => {
       expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
-      expect(screen.getByText(`${wp.progress}%`, { exact: false })).toBeInTheDocument();
-      expect(screen.getByText(`${timelinePipe(wp.timelineStatus)}`, { exact: false })).toBeInTheDocument();
-      expect(screen.getByText(`${percentPipe(wp.expectedProgress)}`, { exact: false })).toBeInTheDocument();
     });
 
     it('renders all the fields, example 2', () => {
@@ -115,9 +114,6 @@ describe('Work Package Details Component', () => {
       expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
-      const progresses = screen.getAllByText(`${percentPipe(wp.progress)}`); // progress and expectedProgress should be equal and return 2 results
-      expect(progresses.length).toBe(2);
-      expect(screen.getByText(`${timelinePipe(wp.timelineStatus)}`, { exact: false })).toBeInTheDocument();
     });
 
     it('renders all the fields, example 3', () => {
@@ -131,9 +127,6 @@ describe('Work Package Details Component', () => {
       expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
-      const progresses = screen.getAllByText(`${percentPipe(wp.progress)}`); // progress and expectedProgress should be equal and return 2 results
-      expect(progresses.length).toBe(2);
-      expect(screen.getByText(`${timelinePipe(wp.timelineStatus)}`, { exact: false })).toBeInTheDocument();
     });
   });
 });

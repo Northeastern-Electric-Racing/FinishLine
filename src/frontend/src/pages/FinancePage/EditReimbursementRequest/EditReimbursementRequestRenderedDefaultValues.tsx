@@ -5,20 +5,25 @@ import ReimbursementRequestForm, {
 import PageLayout from '../../../components/PageLayout';
 import { routes } from '../../../utils/routes';
 import { centsToDollar, fullNamePipe } from '../../../utils/pipes';
+import { isReimbursementRequestLeadershipApproved } from '../../../utils/reimbursement-request.utils';
 
 const EditReimbursementRequestRenderedDefaultValues: React.FC<{
   reimbursementRequest: ReimbursementRequest;
   onSubmitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
-}> = ({ reimbursementRequest, onSubmitData }) => {
-  const previousPage = `${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}`;
+  onExitEditPage: () => void;
+  onSubmitToFinance?: (data: ReimbursementRequestDataSubmission) => Promise<void>;
+  isSubmitting?: boolean;
+}> = ({ reimbursementRequest, onSubmitData, onExitEditPage, onSubmitToFinance, isSubmitting }) => {
+  const previousPage = `${routes.REIMBURSEMENT_REQUESTS}/my-requests/${reimbursementRequest.reimbursementRequestId}`;
+  const isLeadershipApproved = isReimbursementRequestLeadershipApproved(reimbursementRequest);
 
   return (
     <PageLayout
       title="Edit Reimbursement Request"
       previousPages={[
         {
-          name: 'Finance',
-          route: routes.FINANCE
+          name: 'Reimbursement Requests',
+          route: routes.REIMBURSEMENT_REQUESTS
         },
         {
           name: `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`,
@@ -29,24 +34,31 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
       <ReimbursementRequestForm
         submitText="Save"
         submitData={onSubmitData}
+        isLeadershipApproved={isLeadershipApproved}
+        onSubmitToFinance={onSubmitToFinance}
+        isSubmitting={isSubmitting}
         defaultValues={{
           vendorId: reimbursementRequest.vendor.vendorId,
-          account: reimbursementRequest.account,
-          dateOfExpense: new Date(reimbursementRequest.dateOfExpense),
-          expenseTypeId: reimbursementRequest.expenseType.expenseTypeId,
+          indexCodeId: reimbursementRequest.indexCode.indexCodeId,
+          dateOfExpense: reimbursementRequest.dateOfExpense ? new Date(reimbursementRequest.dateOfExpense) : undefined,
+          description: reimbursementRequest.description,
+          accountCodeId: reimbursementRequest.accountCode.accountCodeId,
           reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({
+            id: product.reimbursementProductId,
             reason: (product.reimbursementProductReason as WBSElementData).wbsNum
               ? (product.reimbursementProductReason as WBSElementData).wbsNum
               : (product.reimbursementProductReason as OtherProductReason),
             name: product.name,
+            materialId: product.materialId,
+            refundSources: product.refundSources,
             cost: Number(centsToDollar(product.cost))
           })),
-          receiptFiles: reimbursementRequest.receiptPictures.map((receipt, index) => ({
+          receiptFiles: reimbursementRequest.receiptPictures.map((receipt) => ({
             name: receipt.name,
             googleFileId: receipt.googleFileId
           }))
         }}
-        previousPage={previousPage}
+        onFormExit={onExitEditPage}
       />
     </PageLayout>
   );
