@@ -881,6 +881,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                         <DatePicker
                           value={value}
                           open={multipleDaysPickerOpen}
+                          disabled
                           onClose={() => {
                             setMultipleDaysPickerOpen(false);
                           }}
@@ -926,6 +927,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                         return (
                           <DatePicker
                             value={endDate}
+                            disabled
                             slotProps={{
                               textField: {
                                 variant: 'standard',
@@ -958,11 +960,15 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     >
                       <HelpOutlineIcon sx={{ fontSize: 18, color: 'grey.400', cursor: 'help' }} />
                     </Tooltip>
-                    {
+                    {eventStatus === EventStatus.SCHEDULED ? (
+                      <Typography variant="body2" color="white" fontWeight={500}>
+                        Scheduled for:
+                      </Typography>
+                    ) : (
                       <Typography variant="body2" color="white" fontWeight={500}>
                         To be scheduled for:
                       </Typography>
-                    }
+                    )}
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                     <CalendarTodayIcon sx={{ color: 'text.secondary' }} />
