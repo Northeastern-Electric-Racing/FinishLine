@@ -11,32 +11,17 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
-
-// TODO: fill in place holder
-export type Competition = 'FSAE' | 'FHE';
-
-export interface CompetitionPerformance {
-  competition: Competition;
-  finalPlace?: number;
-  totalPointsEarned?: number;
-  bestStaticEvent?: string;
-  worstStaticEvent?: string;
-  bestDynamicEvent?: string;
-  worstDynamicEvent?: string;
-  accelerationTopTimeSeconds?: number;
-  autocrossTopTimeSeconds?: number;
-  enduranceLapsCompleted?: number;
-  enduranceAvgLapTimeSeconds?: number;
-}
+import { Competition, CompetitionPerformance } from 'shared';
 
 interface CompetitionPerformanceProps {
   competitionPerformances: CompetitionPerformance[];
 }
 
+// TODO: replace with real "total possible" values once that data exists
 const PLACEHOLDER_MAX_POINTS = 650;
 const PLACEHOLDER_MAX_ENDURANCE_LAPS = 40;
 
-const COMPETITIONS: Competition[] = ['FSAE', 'FHE'];
+const COMPETITIONS: Competition[] = [Competition.FSAE, Competition.FHE];
 
 const formatOrdinal = (place?: number): string => {
   if (place === undefined) return 'N/A';
@@ -46,7 +31,7 @@ const formatOrdinal = (place?: number): string => {
   return `${place}${suffix}`;
 };
 
-//placeholder converting seconds into min
+
 const formatTime = (seconds?: number): string => {
   if (seconds === undefined) return 'N/A';
   if (seconds < 60) return seconds.toFixed(2);
@@ -89,7 +74,7 @@ interface PointsRingProps {
   max: number;
 }
 
-//placeholder
+// TODO: placeholder ring, not a true segmented breakdown like the mock
 const PointsRing: React.FC<PointsRingProps> = ({ earned, max }) => {
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
@@ -125,7 +110,7 @@ const PointsRing: React.FC<PointsRingProps> = ({ earned, max }) => {
   );
 };
 
-const CompetitionPerformance: React.FC<CompetitionPerformanceProps> = ({ competitionPerformances }) => {
+const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ competitionPerformances }) => {
   const [tabValue, setTabValue] = useState<number>(0);
 
   const selectedCompetition = COMPETITIONS[tabValue];
@@ -200,4 +185,4 @@ const CompetitionPerformance: React.FC<CompetitionPerformanceProps> = ({ competi
   );
 };
 
-export default CompetitionPerformance;
+export default CompetitionPerformanceSection;
