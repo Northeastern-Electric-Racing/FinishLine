@@ -2,7 +2,7 @@ import React from 'react';
 import EventModal, { EventPayload } from './EventModal';
 import type { EventInstance, EventType, EventDocumentUploadArgs } from 'shared';
 import { convertEventToFormValues } from '../../../utils/calendar.utils';
-import { useEditEvent, useEditScheduleSlot, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
+import { useEditEvent, useEditScheduleSlot, useScheduleEvent, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -16,6 +16,7 @@ export interface EditEventModalProps {
 
 const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, eventTypes }) => {
   const toast = useToast();
+  const { mutateAsync: scheduleEvent } = useScheduleEvent(event.eventId);
   const {
     isLoading: editEventIsLoading,
     isError: editEventIsError,
@@ -38,7 +39,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
 
   const handleSubmit = async (payload: EventPayload) => {
     try {
-      const { documentFiles, editScheduleSlotArgs, ...eventData } = payload;
+      const { documentFiles, editScheduleSlotArgs, rescheduleArgs, ...eventData } = payload;
 
       // First, update the event base information
       const editArgs = {
@@ -58,6 +59,10 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
           allDay: editScheduleSlotArgs.newAllDay,
           editAllInSeries: editScheduleSlotArgs.editAllInSeries
         });
+      }
+
+      if (rescheduleArgs) {
+        await scheduleEvent({ startTime: rescheduleArgs.startTime, endTime: rescheduleArgs.endTime });
       }
 
       const editedEvent = await editEvent(editArgs);
@@ -93,6 +98,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
       initialValues={initialValues}
       eventTypes={eventTypes}
       eventId={event.eventId}
+      eventStatus={event.status}
     />
   );
 };
