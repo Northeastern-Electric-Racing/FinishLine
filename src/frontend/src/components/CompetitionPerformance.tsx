@@ -30,7 +30,7 @@ const formatOrdinal = (place?: number): string => {
   return `${place}${suffix}`;
 };
 
-// Formats a raw seconds value as m:ss (e.g. 112 -> "1:52"), 
+// Formats a raw seconds value as m:ss (e.g. 112 -> "1:52"),
 const formatTime = (seconds?: number): string => {
   if (seconds === undefined) return 'N/A';
   if (seconds < 60) return seconds.toFixed(2);
@@ -96,7 +96,16 @@ const PointsRing: React.FC<PointsRingProps> = ({ earned, max }) => {
           transform="rotate(-90 60 60)"
         />
       </svg>
-      <Box position="absolute" top={0} left={0} width="100%" height="100%" display="flex" alignItems="center" justifyContent="center">
+      <Box
+        position="absolute"
+        top={0}
+        left={0}
+        width="100%"
+        height="100%"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
         <Typography textAlign="center" fontSize={14}>
           {earned}
           <br />
@@ -117,7 +126,7 @@ const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ 
 
   //NOTE: Width  is currently hardcoded to emulate the full mock executive panel
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 2, width: 500}}>
+    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 2, width: 500 }}>
       <CardContent>
         <Typography variant="h4" fontWeight="bold" mb={1}>
           Competition Performance
@@ -166,12 +175,7 @@ const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ 
               <PointsRing earned={performance.totalPointsEarned ?? 0} max={PLACEHOLDER_MAX_POINTS} />
             </Box>
 
-            <Box
-              display="grid"
-              gridTemplateColumns="1fr 1fr"
-              gap={3}
-              width="100%"
-            >
+            <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3} width="100%">
               <StatBlock value={formatTime(performance.accelerationTopTimeSeconds)} label="Acceleration Top Time" />
               <StatBlock
                 value={`${performance.enduranceLapsCompleted ?? 'N/A'}/${PLACEHOLDER_MAX_ENDURANCE_LAPS}`}
