@@ -248,4 +248,18 @@ export default class OrganizationsController {
       next(error);
     }
   }
+
+  static async setActivationBufferDays(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { bufferDays } = req.body;
+      const updatedOrganization = await OrganizationsService.setActivationBufferDays(
+        req.currentUser,
+        req.organization,
+        bufferDays
+      );
+      res.status(200).json(updatedOrganization);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
