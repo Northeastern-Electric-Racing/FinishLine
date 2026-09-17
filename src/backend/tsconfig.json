@@ -5,11 +5,14 @@
     "target": "es2022",
     "moduleResolution": "NodeNext",
     "outDir": "./dist",
+    "rootDir": "..",
     "noEmit": false,
     "esModuleInterop": true,
+    "declaration": true,
+    "declarationMap": true,
     "types": ["multer"]
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["./index.ts", "./src/**/*.ts"],
+  "include": ["./index.ts", "./src/**/*.ts", "../shared/**/*.ts"],
   "files": ["./custom.d.ts"]
 }

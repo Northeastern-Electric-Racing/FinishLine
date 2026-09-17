@@ -6,6 +6,7 @@ import {
   isGuest,
   isLeadership,
   isProjectWbs,
+  isWithinBuffer,
   ProjectProposedChangesCreateArgs,
   StageGateChangeRequest,
   StandardChangeRequest,
@@ -635,6 +636,10 @@ export default class ChangeRequestsService {
     }
 
     await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter);
+
+    const inBuffer = isWithinBuffer(startDate, createdCR.dateSubmitted, organization.activationBufferDays);
+    if (inBuffer) {
+    }
 
     return createdCR.crId;
   }
