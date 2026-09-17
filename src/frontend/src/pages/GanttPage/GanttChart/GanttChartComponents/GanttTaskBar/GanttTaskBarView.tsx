@@ -7,7 +7,9 @@ import {
 import { Collapse } from '@mui/material';
 import GanttTaskBar from './GanttTaskBar';
 import GanttTaskBarDisplay from './GanttTaskBarDisplay';
-import { useState } from 'react';
+import React from 'react';
+
+const noop = () => {};
 
 interface GanttTaskBarViewProps<T> {
   days: Date[];
@@ -21,6 +23,9 @@ interface GanttTaskBarViewProps<T> {
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
   onToggle?: () => void;
+  toggleExpanded: (id: string) => void;
+  isExpanded: boolean;
+  expanded: Set<string>;
 }
 
 const GanttTaskBarView = <T,>({
@@ -34,12 +39,13 @@ const GanttTaskBarView = <T,>({
   onAddTaskPressed,
   highlightSubtaskComparator,
   highlightTaskComparator,
-  onToggle
+  onToggle,
+  toggleExpanded,
+  isExpanded,
+  expanded
 }: GanttTaskBarViewProps<T>) => {
-  const [showChildren, setShowChildren] = useState(false);
-
   const handleToggle = () => {
-    setShowChildren((prev) => !prev);
+    toggleExpanded(task.id);
   };
 
   return (
@@ -49,7 +55,7 @@ const GanttTaskBarView = <T,>({
         task={task}
         handleOnMouseOver={handleOnMouseOver}
         handleOnMouseLeave={handleOnMouseLeave}
-        showChildren={showChildren}
+        isExpanded={isExpanded}
         onShowChildrenToggle={handleToggle}
         highlightedChange={highlightedChange}
         getStartCol={getStartCol}
@@ -58,14 +64,14 @@ const GanttTaskBarView = <T,>({
         highlightTaskComparator={highlightTaskComparator}
       />
 
-      <Collapse in={showChildren} unmountOnExit onEntered={onToggle} onExited={onToggle}>
+      <Collapse in={isExpanded} unmountOnExit onEntered={onToggle} onExited={onToggle}>
         {task.children.map((child) => (
           <GanttTaskBar
             key={child.id}
             days={days}
             task={child}
             isEditMode={false}
-            createChange={() => {}}
+            createChange={noop}
             handleOnMouseOver={handleOnMouseOver}
             handleOnMouseLeave={handleOnMouseLeave}
             highlightedChange={highlightedChange}
@@ -73,6 +79,11 @@ const GanttTaskBarView = <T,>({
             highlightSubtaskComparator={highlightSubtaskComparator}
             highlightTaskComparator={highlightTaskComparator}
             onToggle={onToggle}
+            toggleExpanded={toggleExpanded}
+            isExpanded={expanded.has(child.id)}
+            expanded={expanded}
+            getStartCol={getStartCol}
+            getEndCol={getEndCol}
           />
         ))}
       </Collapse>
@@ -80,4 +91,4 @@ const GanttTaskBarView = <T,>({
   );
 };
 
-export default GanttTaskBarView;
+export default React.memo(GanttTaskBarView) as typeof GanttTaskBarView;
