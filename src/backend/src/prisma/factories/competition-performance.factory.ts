@@ -14,6 +14,7 @@ export type PlannedCompetitionPerformance = {
   competition: Competition;
   finalPlace: number;
   totalPointsEarned: number;
+  maxPoints: number;
   bestStaticEvent: string;
   worstStaticEvent: string;
   bestDynamicEvent: string;
@@ -21,24 +22,29 @@ export type PlannedCompetitionPerformance = {
   accelerationTopTimeSeconds: number;
   autocrossTopTimeSeconds: number;
   enduranceLapsCompleted: number;
+  maxLaps: number;
   enduranceAvgLapTimeSeconds: number;
 };
 
 export const planCompetitionPerformance = (faker: Faker, competition: Competition): PlannedCompetitionPerformance => {
   const [bestStaticEvent, worstStaticEvent] = faker.helpers.shuffle([...STATIC_EVENT_FIXTURES]);
   const [bestDynamicEvent, worstDynamicEvent] = faker.helpers.shuffle([...DYNAMIC_EVENT_FIXTURES]);
+  const maxPoints = faker.number.int({ min: 900, max: 1000 });
+  const maxLaps = faker.number.int({ min: 20, max: 22 });
 
   return {
     competition,
     finalPlace: faker.number.int({ min: 1, max: 100 }),
-    totalPointsEarned: faker.number.int({ min: 0, max: 1000 }),
+    totalPointsEarned: faker.number.int({ min: 0, max: maxPoints }),
+    maxPoints,
     bestStaticEvent,
     worstStaticEvent,
     bestDynamicEvent,
     worstDynamicEvent,
     accelerationTopTimeSeconds: faker.number.int({ min: 4, max: 8 }),
     autocrossTopTimeSeconds: faker.number.int({ min: 45, max: 70 }),
-    enduranceLapsCompleted: faker.number.int({ min: 0, max: 22 }),
+    enduranceLapsCompleted: faker.number.int({ min: 0, max: maxLaps }),
+    maxLaps,
     enduranceAvgLapTimeSeconds: faker.number.int({ min: 60, max: 100 })
   };
 };
@@ -51,6 +57,7 @@ export const competitionPerformanceCreateInput = (
   competition: planned.competition,
   finalPlace: planned.finalPlace,
   totalPointsEarned: planned.totalPointsEarned,
+  maxPoints: planned.maxPoints,
   bestStaticEvent: planned.bestStaticEvent,
   worstStaticEvent: planned.worstStaticEvent,
   bestDynamicEvent: planned.bestDynamicEvent,
@@ -58,5 +65,6 @@ export const competitionPerformanceCreateInput = (
   accelerationTopTimeSeconds: planned.accelerationTopTimeSeconds,
   autocrossTopTimeSeconds: planned.autocrossTopTimeSeconds,
   enduranceLapsCompleted: planned.enduranceLapsCompleted,
+  maxLaps: planned.maxLaps,
   enduranceAvgLapTimeSeconds: planned.enduranceAvgLapTimeSeconds
 });

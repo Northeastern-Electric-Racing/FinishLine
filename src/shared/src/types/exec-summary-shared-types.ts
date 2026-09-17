@@ -43,6 +43,7 @@ export interface CompetitionPerformance {
   competition: Competition;
   finalPlace?: number;
   totalPointsEarned?: number;
+  maxPoints?: number;
   bestStaticEvent?: string;
   worstStaticEvent?: string;
   bestDynamicEvent?: string;
@@ -50,6 +51,7 @@ export interface CompetitionPerformance {
   accelerationTopTimeSeconds?: number;
   autocrossTopTimeSeconds?: number;
   enduranceLapsCompleted?: number;
+  maxLaps?: number;
   enduranceAvgLapTimeSeconds?: number;
 }
 
@@ -98,6 +100,7 @@ export interface CreateCompetitionPerformanceArgs {
   competition: Competition;
   finalPlace?: number;
   totalPointsEarned?: number;
+  maxPoints?: number;
   bestStaticEvent?: string;
   worstStaticEvent?: string;
   bestDynamicEvent?: string;
@@ -105,6 +108,7 @@ export interface CreateCompetitionPerformanceArgs {
   accelerationTopTimeSeconds?: number;
   autocrossTopTimeSeconds?: number;
   enduranceLapsCompleted?: number;
+  maxLaps?: number;
   enduranceAvgLapTimeSeconds?: number;
 }
 
