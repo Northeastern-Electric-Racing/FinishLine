@@ -3,7 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AuthenticatedUser, Availability, User, UserScheduleSettings, UserWithScheduleSettings } from 'shared';
+import {
+  ApiTokenMetadata,
+  AuthenticatedUser,
+  Availability,
+  User,
+  UserScheduleSettings,
+  UserWithScheduleSettings
+} from 'shared';
 
 /**
  * Transforms a user to ensure deep field transformation of date objects.
@@ -66,5 +73,19 @@ export const availabilityTransformer = (availability: Availability): Availabilit
   return {
     ...availability,
     dateSet: new Date(utcDate.getUTCFullYear(), utcDate.getUTCMonth(), utcDate.getUTCDate())
+  };
+};
+
+/**
+ * Transforms api token metadata to ensure deep field transformation of date objects.
+ *
+ * @param apiToken Incoming api token metadata supplied by the HTTP response.
+ * @returns Properly transformed api token metadata.
+ */
+export const apiTokenTransformer = <T extends ApiTokenMetadata>(apiToken: T): T => {
+  return {
+    ...apiToken,
+    dateCreated: new Date(apiToken.dateCreated),
+    lastUsedAt: apiToken.lastUsedAt ? new Date(apiToken.lastUsedAt) : undefined
   };
 };

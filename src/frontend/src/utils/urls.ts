@@ -22,6 +22,8 @@ const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
 const currentUserSecureSettings = () => `${users()}/secure-settings/current-user`;
 const userSecureSettingsSet = () => `${users()}/secure-settings/set`;
+const currentUserApiToken = () => `${users()}/api-token/current-user`;
+const generateApiToken = () => `${users()}/api-token/generate`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
@@ -490,6 +492,7 @@ const calendarCreateEventType = () => `${calendar()}/event-type/create`;
 const calendarEditEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/edit`;
 const calendarDeleteEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/delete`;
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
+const calendarEventRemindUnconfirmed = (id: string) => `${calendar()}/event/${id}/remind-unconfirmed`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
 const calendarGetSingleEventWithMembers = (id: string) => `${calendar()}/event-members/${id}`;
 const calendarGetConflictingEvent = (id: string) => `${calendar()}/event/${id}/conflict`;
@@ -553,6 +556,8 @@ export const apiUrls = {
   userSettingsByUserId,
   userSecureSettingsSet,
   currentUserSecureSettings,
+  currentUserApiToken,
+  generateApiToken,
   userRoleByUserId,
   userFavoriteProjects,
   userSecureSettings,
@@ -894,6 +899,7 @@ export const apiUrls = {
   calendarAddMachineryToShop,
   calendarEditShop,
   calendarEventMarkUserConfirmed,
+  calendarEventRemindUnconfirmed,
   calendarGetSingleEvent,
   calendarGetSingleEventWithMembers,
   calendarGetConflictingEvent,

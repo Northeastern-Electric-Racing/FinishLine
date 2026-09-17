@@ -7,14 +7,18 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Link, LinkCreateArgs, LinkType } from 'shared';
 import { linkToLinkCreateArgs } from '../../../../utils/link.utils';
+import { useEditLinkTypeByName } from '../../../../hooks/projects.hooks';
 
 interface UsefulLinkFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaulValues?: Link;
-  onSubmit: (data: LinkCreateArgs[]) => void;
+  onSubmit: (data: LinkCreateArgs[]) => Promise<unknown>;
   linkTypes: LinkType[];
   currentLinks: Link[];
+  isOnGuestHomePage: boolean;
+  isOnNewMemberDashboard: boolean;
+  isOnOnboardingDashboard: boolean;
 }
 
 const UsefulLinkFormModal = ({
@@ -23,9 +27,13 @@ const UsefulLinkFormModal = ({
   defaulValues,
   onSubmit,
   linkTypes,
-  currentLinks
+  currentLinks,
+  isOnGuestHomePage,
+  isOnNewMemberDashboard,
+  isOnOnboardingDashboard
 }: UsefulLinkFormModalProps) => {
   const toast = useToast();
+  const { mutateAsync: editLinkTypeAsync } = useEditLinkTypeByName();
 
   const schema = yup.object().shape({
     linkTypeName: yup.string().required('LinkType is Required'),
@@ -47,17 +55,38 @@ const UsefulLinkFormModal = ({
 
   const onFormSubmit = async (data: LinkCreateArgs) => {
     try {
+      const selectedLinkType = linkTypes.find((linkType) => linkType.name === data.linkTypeName);
+      const needsDashboardFlag =
+        selectedLinkType &&
+        ((isOnGuestHomePage && !selectedLinkType.isOnGuestHomePage) ||
+          (isOnNewMemberDashboard && !selectedLinkType.isOnNewMemberDashboard) ||
+          (isOnOnboardingDashboard && !selectedLinkType.isOnOnboardingDashboard));
+
+      if (selectedLinkType && needsDashboardFlag) {
+        await editLinkTypeAsync({
+          name: selectedLinkType.name,
+          data: {
+            name: selectedLinkType.name,
+            iconName: selectedLinkType.iconName,
+            required: selectedLinkType.required,
+            isOnGuestHomePage: selectedLinkType.isOnGuestHomePage || isOnGuestHomePage,
+            isOnNewMemberDashboard: selectedLinkType.isOnNewMemberDashboard || isOnNewMemberDashboard,
+            isOnOnboardingDashboard: selectedLinkType.isOnOnboardingDashboard || isOnOnboardingDashboard
+          }
+        });
+      }
+
       const previousLinks = linkToLinkCreateArgs(currentLinks);
       const newLinks = defaulValues
         ? [...previousLinks.filter((link) => link.linkId !== defaulValues.linkId), data]
         : [...previousLinks, data];
-      onSubmit(newLinks);
+      await onSubmit(newLinks);
+      handleClose();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    handleClose();
   };
   return (
     <NERFormModal

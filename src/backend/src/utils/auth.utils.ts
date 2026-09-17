@@ -144,7 +144,8 @@ export const getOrganization = async (headers: IncomingHttpHeaders, currentUser:
     include: {
       advisor: true,
       usefulLinks: true,
-      users: true
+      // only this user's membership row is needed, so don't hydrate every member of the organization
+      users: { where: { userId: currentUser.userId }, select: { userId: true } }
     }
   });
 
@@ -156,7 +157,7 @@ export const getOrganization = async (headers: IncomingHttpHeaders, currentUser:
     throw new DeletedException('Organization', organization.organizationId);
   }
 
-  if (!organization.users.some((user) => user.userId === currentUser.userId)) {
+  if (organization.users.length === 0) {
     throw new AccessDeniedException('Cannot access this organization');
   }
 

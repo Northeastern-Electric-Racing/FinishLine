@@ -100,6 +100,7 @@ export const createTestUser = async (
 };
 
 export const resetUsers = async () => {
+  await prisma.user_API_Token.deleteMany();
   await prisma.guest_Definition.deleteMany();
   await prisma.part_Review_Popup.deleteMany();
   await prisma.part_Review_Request.deleteMany();

@@ -166,6 +166,7 @@ export type ExceptionObjectNames =
   | 'Reimbursement Request'
   | 'Reimbursement'
   | 'User Secure Settings'
+  | 'API Token'
   | 'Material'
   | 'Image File'
   | 'Material'

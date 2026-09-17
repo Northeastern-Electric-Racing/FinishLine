@@ -51,6 +51,7 @@ export type SubmitText =
   | 'Send'
   | 'Close Attendance'
   | 'Copy BOM'
+  | 'Regenerate'
   | 'Deny';
 
 export type CancelText = 'Cancel' | 'Delete' | 'Exit' | 'No';

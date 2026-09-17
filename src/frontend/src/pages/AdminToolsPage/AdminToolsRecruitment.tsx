@@ -20,7 +20,7 @@ const AdminToolsProjectsConfig: React.FC = () => {
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Useful Links
       </Typography>
-      <UsefulLinksTable />
+      <UsefulLinksTable isOnGuestHomePage={false} isOnNewMemberDashboard={false} isOnOnboardingDashboard={false} />
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Description Bullet Types
       </Typography>

@@ -62,7 +62,7 @@ const OnboardingConfigSection: React.FC = () => {
             Onboarding Page Useful Links
           </Typography>
           <LinkTypeTable isOnOnboardingDashboard />
-          <UsefulLinksTable isOnOnboardingDashboard />
+          <UsefulLinksTable isOnGuestHomePage={false} isOnNewMemberDashboard={false} isOnOnboardingDashboard={true} />
         </Box>
       </Grid>
       <Grid item>

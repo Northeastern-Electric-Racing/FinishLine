@@ -27,7 +27,7 @@ const NewMemberDashboardUsefulLinksSection: React.FC = () => {
         New Member Dashboard Useful Links
       </Typography>
       <LinkTypeTable isOnNewMemberDashboard />
-      <UsefulLinksTable isOnNewMemberDashboard />
+      <UsefulLinksTable isOnGuestHomePage={false} isOnNewMemberDashboard={true} isOnOnboardingDashboard={false} />
     </Box>
   );
 };

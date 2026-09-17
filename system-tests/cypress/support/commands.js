@@ -12,7 +12,7 @@ import { LOADING_INDICATOR, LOGIN_ICON, DEV_LOGIN_TEXT } from '../utils/selector
 //
 // -- This is a parent command --
 Cypress.Commands.add('login', (username = 'Thomas Emrax', redirect = '/home') => {
-  cy.visit(Cypress.env('base_url') + '/login');
+  cy.visit(Cypress.expose('base_url') + '/login');
   cy.waitForLoading();
   cy.contains(DEV_LOGIN_TEXT).parent().click();
   cy.contains(username).click();
@@ -27,14 +27,14 @@ Cypress.Commands.add('login', (username = 'Thomas Emrax', redirect = '/home') =>
     const organizationId = win.localStorage.getItem('organizationId');
     cy.request({
       method: 'GET',
-      url: `${Cypress.env('backend_url')}/cars`,
+      url: `${Cypress.expose('backend_url')}/cars`,
       headers: { Authorization: devUserId || '', organizationId: organizationId || '' }
     }).then(({ body }) => {
       const ner25 = body.find((car) => car.name === 'NER-25');
       if (ner25) win.localStorage.setItem('selectedCarId', ner25.id);
     });
   });
-  cy.visit(Cypress.env('base_url') + redirect);
+  cy.visit(Cypress.expose('base_url') + redirect);
   cy.waitForLoading();
 });
 
