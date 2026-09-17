@@ -6,6 +6,7 @@ import {
   isGuest,
   isLeadership,
   isProjectWbs,
+  isWithinBuffer,
   ProjectProposedChangesCreateArgs,
   StageGateChangeRequest,
   StandardChangeRequest,
@@ -62,6 +63,7 @@ import {
 } from '../prisma-query-args/change-requests.query-args.js';
 import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils.js';
 import { GuestChangeRequest } from '../../../shared/src/types/change-request-types.js';
+import { log } from 'node:console';
 
 export default class ChangeRequestsService {
   /**
@@ -635,6 +637,10 @@ export default class ChangeRequestsService {
     }
 
     await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter);
+
+    const inBuffer = isWithinBuffer(startDate, createdCR.dateSubmitted, organization.activationBufferDays);
+    if (inBuffer) {
+    }
 
     return createdCR.crId;
   }
