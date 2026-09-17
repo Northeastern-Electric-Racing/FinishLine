@@ -251,11 +251,11 @@ export default class OrganizationsController {
 
   static async setActivationBufferDays(req: Request, res: Response, next: NextFunction) {
     try {
-      const { bufferDays } = req.body;
+      const { activationBufferDays } = req.body;
       const updatedOrganization = await OrganizationsService.setActivationBufferDays(
         req.currentUser,
         req.organization,
-        bufferDays
+        activationBufferDays
       );
       res.status(200).json(updatedOrganization);
     } catch (error: unknown) {
