@@ -16,10 +16,6 @@ interface CompetitionPerformanceProps {
   competitionPerformances: CompetitionPerformance[];
 }
 
-// TODO: replace with real total possible values once schema is updated
-const PLACEHOLDER_MAX_POINTS = 650;
-const PLACEHOLDER_MAX_ENDURANCE_LAPS = 40;
-
 const COMPETITIONS: Competition[] = [Competition.FSAE, Competition.FHE];
 
 const formatOrdinal = (place?: number): string => {
@@ -73,7 +69,8 @@ interface PointsRingProps {
   max: number;
 }
 
-// TODO: placeholder ring, needs to be fixed once we have points per event data
+// TODO: this is a simple two-tone ring (earned vs. remaining). The mock shows a segmented
+// ring broken out by event category, which would need per-category point data we don't have.
 const PointsRing: React.FC<PointsRingProps> = ({ earned, max }) => {
   const radius = 46;
   const circumference = 2 * Math.PI * radius;
@@ -124,9 +121,9 @@ const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ 
   const selectedCompetition = COMPETITIONS[tabValue];
   const performance = competitionPerformances.find((cp) => cp.competition === selectedCompetition);
 
-  //NOTE: Width  is currently hardcoded to emulate the full mock executive panel
+  //NOTE: Width and height are currently hardcoded to emulate the full mock executive panel
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 2, width: 500 }}>
+    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 2, width: 500, minHeight: 560 }}>
       <CardContent>
         <Typography variant="h4" fontWeight="bold" mb={1}>
           Competition Performance
@@ -152,7 +149,7 @@ const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ 
           <Typography>No data available for {selectedCompetition}.</Typography>
         ) : (
           <Box display="flex" flexWrap="wrap" gap={3}>
-            <Box flex="2 1 220px">
+            <Box flex="1 1 220px" maxWidth={300}>
               <Box
                 sx={{
                   backgroundColor: '#ef4345',
@@ -171,18 +168,30 @@ const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ 
               <UnderlinedLabel label="Worst Dynamic Event" value={performance.worstDynamicEvent ?? 'N/A'} />
             </Box>
 
-            <Box flex="1 1 140px" display="flex" justifyContent="center" alignItems="flex-start">
-              <PointsRing earned={performance.totalPointsEarned ?? 0} max={PLACEHOLDER_MAX_POINTS} />
-            </Box>
+            {performance.totalPointsEarned !== undefined && performance.maxPoints !== undefined && (
+              <Box flex="1 1 140px" display="flex" justifyContent="center" alignItems="flex-start">
+                <PointsRing earned={performance.totalPointsEarned} max={performance.maxPoints} />
+              </Box>
+            )}
 
-            <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3} width="100%">
-              <StatBlock value={formatTime(performance.accelerationTopTimeSeconds)} label="Acceleration Top Time" />
-              <StatBlock
-                value={`${performance.enduranceLapsCompleted ?? 'N/A'}/${PLACEHOLDER_MAX_ENDURANCE_LAPS}`}
-                label="Endurance Laps Completed"
-              />
-              <StatBlock value={formatTime(performance.autocrossTopTimeSeconds)} label="Autocross Top Time" />
-              <StatBlock value={formatTime(performance.enduranceAvgLapTimeSeconds)} label="Endurance Average Lap Time" />
+            <Box display="flex" flexWrap="wrap" justifyContent="center" gap={3} width="100%">
+              <Box flexBasis="45%">
+                <StatBlock value={formatTime(performance.accelerationTopTimeSeconds)} label="Acceleration Top Time" />
+              </Box>
+              {performance.enduranceLapsCompleted !== undefined && performance.maxLaps !== undefined && (
+                <Box flexBasis="45%">
+                  <StatBlock
+                    value={`${performance.enduranceLapsCompleted}/${performance.maxLaps}`}
+                    label="Endurance Laps Completed"
+                  />
+                </Box>
+              )}
+              <Box flexBasis="45%">
+                <StatBlock value={formatTime(performance.autocrossTopTimeSeconds)} label="Autocross Top Time" />
+              </Box>
+              <Box flexBasis="45%">
+                <StatBlock value={formatTime(performance.enduranceAvgLapTimeSeconds)} label="Endurance Average Lap Time" />
+              </Box>
             </Box>
           </Box>
         )}
