@@ -220,4 +220,5 @@ export type ExceptionObjectNames =
   | 'Task Label'
   | 'Notification Channel'
   | 'Dashboard'
-  | 'Team Join Request';
+  | 'Team Join Request'
+  | 'Executive Summary';
