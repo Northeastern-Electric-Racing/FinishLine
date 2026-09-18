@@ -1,6 +1,6 @@
 import { Organization } from '@prisma/client';
 import prisma from '../prisma/prisma.js';
-import { NotFoundException } from '../utils/errors.utils.js';
+import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils.js';
 import { getExecutiveSummaryQueryArgs } from '../prisma-query-args/executive-summary.query-args.js';
 import { executiveSummaryTransformer } from '../transformers/executive-summary.transformer.js';
 
@@ -13,6 +13,12 @@ export default class ExecSummaryServices {
 
     if (!executiveSummary) {
       throw new NotFoundException('Executive Summary', executiveSummaryId);
+    }
+    if (executiveSummary.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Executive Summary');
+    }
+    if (executiveSummary.dateDeleted) {
+      throw new DeletedException('Executive Summary', executiveSummaryId);
     }
 
     return executiveSummaryTransformer(executiveSummary);
