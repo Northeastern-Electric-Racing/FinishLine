@@ -1915,6 +1915,7 @@ model Competition_Performance {
 
   finalPlace                 Int?
   totalPointsEarned          Int?
+  maxPoints                  Int?
   bestStaticEvent            String?
   worstStaticEvent           String?
   bestDynamicEvent           String?
@@ -1922,6 +1923,7 @@ model Competition_Performance {
   accelerationTopTimeSeconds Int?
   autocrossTopTimeSeconds    Int?
   enduranceLapsCompleted     Int?
+  maxLaps                    Int?
   enduranceAvgLapTimeSeconds Int?
 
   @@unique([executiveSummaryId, competition], name: "uniqueExecSummaryCompetition")
