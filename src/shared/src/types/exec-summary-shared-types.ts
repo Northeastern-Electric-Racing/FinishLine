@@ -2,7 +2,6 @@ import { GraphData } from './statistics-types.js';
 import { TeamType } from './calendar-types.js';
 import { TeamPreview } from './team-types.js';
 import { User } from './user-types.js';
-import { Car } from './project-types.js';
 
 export enum Competition {
   FSAE = 'FSAE',
@@ -19,9 +18,13 @@ export enum DataSource {
   MANUAL = 'MANUAL'
 }
 
+export interface ExecutiveSummaryCar {
+  name: string;
+}
+
 export interface ExecutiveSummary {
   executiveSummaryId: string;
-  car: Car;
+  car: ExecutiveSummaryCar;
   seasonStartDate?: Date;
   seasonEndDate?: Date;
   goals: string;
