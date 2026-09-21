@@ -3021,6 +3021,31 @@ describe('Rule Tests', () => {
       expect(rules.length).toEqual(0);
     });
 
+    it('Leaves deleted children out of a parent subRuleIds', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+
+      await RulesService.deleteRule(leafRule1.ruleId, admin, organization);
+
+      const rules = await RulesService.getTopLevelRules(admin, ruleset1.rulesetId, organization.organizationId);
+      const topRule = rules.find((r) => r.ruleId === topLevelRule.ruleId);
+
+      expect(topRule?.subRuleIds).not.toContain(leafRule1.ruleId);
+      expect(topRule?.subRuleIds).toContain(leafRule2.ruleId);
+    });
+
+    it('Reports no sub rules once every child is deleted', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+
+      await RulesService.deleteRule(leafRule1.ruleId, admin, organization);
+      await RulesService.deleteRule(leafRule2.ruleId, admin, organization);
+
+      const rules = await RulesService.getTopLevelRules(admin, ruleset1.rulesetId, organization.organizationId);
+
+      expect(rules.find((r) => r.ruleId === topLevelRule.ruleId)?.subRuleIds).toHaveLength(0);
+    });
+
     it('Does not return child rules', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset1, topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
