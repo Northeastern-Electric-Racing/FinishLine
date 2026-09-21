@@ -14,7 +14,6 @@ import {
   RecruitmentCycleQueryArgs,
   RecruitmentDivisionCountQueryArgs
 } from '../prisma-query-args/executive-summary.query-args.js';
-import { carTransformer } from './cars.transformer.js';
 import { teamTypeTransformer } from './team-types.transformer.js';
 import { userTransformer } from './user.transformer.js';
 
@@ -23,7 +22,7 @@ export const executiveSummaryTransformer = (
 ): ExecutiveSummary => {
   return {
     executiveSummaryId: executiveSummary.executiveSummaryId,
-    car: carTransformer(executiveSummary.car),
+    car: { name: executiveSummary.car.wbsElement.name },
     seasonStartDate: executiveSummary.seasonStartDate ?? undefined,
     seasonEndDate: executiveSummary.seasonEndDate ?? undefined,
     goals: executiveSummary.goals,

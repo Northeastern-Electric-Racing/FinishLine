@@ -1,5 +1,4 @@
 import { Prisma } from '@prisma/client';
-import { getCarQueryArgs } from './cars.query-args.js';
 import { getUserQueryArgs } from './user.query-args.js';
 
 export type ExecutiveSummaryQueryArgs = ReturnType<typeof getExecutiveSummaryQueryArgs>;
@@ -9,7 +8,7 @@ export type RecruitmentDivisionCountQueryArgs = ReturnType<typeof getRecruitment
 export const getExecutiveSummaryQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Executive_SummaryDefaultArgs>()({
     include: {
-      car: getCarQueryArgs(organizationId),
+      car: { select: { wbsElement: { select: { organizationId: true, name: true } } } },
       userCreated: getUserQueryArgs(organizationId),
       deletedBy: getUserQueryArgs(organizationId),
       competitionPerformances: true,

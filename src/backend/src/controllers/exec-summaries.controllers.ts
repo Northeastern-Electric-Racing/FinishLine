@@ -6,7 +6,7 @@ export default class ExecSummaryController {
     try {
       const { execSummaryId } = req.params as Record<string, string>;
 
-      const summary = await ExecSummaryServices.getSingleExecutiveSummary(req.organization, execSummaryId);
+      const summary = await ExecSummaryServices.getSingleExecutiveSummary(req.organization, execSummaryId, req.currentUser);
       res.status(200).json(summary);
     } catch (error: unknown) {
       next(error);

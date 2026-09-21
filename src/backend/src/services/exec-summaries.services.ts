@@ -1,11 +1,18 @@
 import { Organization } from '@prisma/client';
+import { notGuest, User } from 'shared';
 import prisma from '../prisma/prisma.js';
-import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils.js';
+import { AccessDeniedException, DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils.js';
 import { getExecutiveSummaryQueryArgs } from '../prisma-query-args/executive-summary.query-args.js';
 import { executiveSummaryTransformer } from '../transformers/executive-summary.transformer.js';
+import { userHasPermission } from '../utils/users.utils.js';
 
 export default class ExecSummaryServices {
-  static async getSingleExecutiveSummary(organization: Organization, executiveSummaryId: string) {
+  static async getSingleExecutiveSummary(organization: Organization, executiveSummaryId: string, viewer: User) {
+    const hasPermission = await userHasPermission(viewer.userId, organization.organizationId, notGuest);
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only members can view executive summaries');
+    }
+
     const executiveSummary = await prisma.executive_Summary.findUnique({
       where: { executiveSummaryId },
       ...getExecutiveSummaryQueryArgs(organization.organizationId)

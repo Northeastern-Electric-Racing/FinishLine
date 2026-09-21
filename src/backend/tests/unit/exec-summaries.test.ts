@@ -22,7 +22,7 @@ describe('Executive Summaries Tests', () => {
     await resetUsers();
   });
 
-  describe('Get single executive sumamary', () => {
+  describe('Get single executive summary', () => {
     it('successful get single exec summary', async () => {
       const createdSummary = await prisma.executive_Summary.create({
         data: {
@@ -32,11 +32,11 @@ describe('Executive Summaries Tests', () => {
         ...getExecutiveSummaryQueryArgs(organization.organizationId)
       });
 
-      const summary = await ExecSummaryServices.getSingleExecutiveSummary(organization, createdSummary.executiveSummaryId);
+      const summary = await ExecSummaryServices.getSingleExecutiveSummary(organization, createdSummary.executiveSummaryId, user);
       expect(summary).toStrictEqual(executiveSummaryTransformer(createdSummary));
     });
     it('invalid id get single exec summary', async () => {
-      await expect(async () => ExecSummaryServices.getSingleExecutiveSummary(organization, 'badid')).rejects.toThrow(
+      await expect(async () => ExecSummaryServices.getSingleExecutiveSummary(organization, 'badid', user)).rejects.toThrow(
         new NotFoundException('Executive Summary', 'badid')
       );
     });
