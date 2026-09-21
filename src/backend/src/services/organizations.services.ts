@@ -595,11 +595,15 @@ export default class OrganizationsService {
       throw new HttpException(400, 'Activation buffer days must not be negative');
     }
 
+    if (activationBufferDays < 0 || activationBufferDays > 365) {
+      throw new HttpException(400, 'Activation buffer days must be between 0 and 365');
+    }
+
     const updatedOrg = await prisma.organization.update({
       where: { organizationId: organization.organizationId },
       data: { activationBufferDays }
     });
 
-    return updatedOrg;
+    return organizationTransformer(updatedOrg);
   }
 }

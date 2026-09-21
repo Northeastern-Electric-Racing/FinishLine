@@ -93,7 +93,7 @@ organizationRouter.post(
 
 organizationRouter.post(
   '/activation-buffer-days/set',
-  body('activationBufferDays').isInt({ min: 0 }).toInt(),
+  body('activationBufferDays').isInt({ min: 0, max: 365 }).toInt(),
   validateInputs,
   OrganizationsController.setActivationBufferDays
 );
