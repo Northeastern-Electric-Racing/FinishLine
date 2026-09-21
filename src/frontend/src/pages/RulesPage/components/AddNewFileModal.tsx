@@ -238,7 +238,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
                   control={control}
                   render={({ field }) => (
                     // a min width keeps the empty state from collapsing before a car is picked
-                    <Select {...field} value={field.value ?? ''} size="small" sx={{ minWidth: '120px' }}>
+                    <Select {...field} value={field.value ?? ''} size="small" sx={{ minWidth: '100px' }}>
                       {cars?.map((car) => (
                         <MenuItem key={car.id} value={car.wbsNum.carNumber}>
                           {car.name}
