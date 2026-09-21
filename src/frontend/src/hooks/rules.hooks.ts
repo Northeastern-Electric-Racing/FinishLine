@@ -597,8 +597,6 @@ export const useDeleteRule = (rulesetId: string) => {
 
 /**
  * Swaps edited rule into cache so editing does not refetch.
- *
- * @returns whether the edit was fully applied to the cache
  */
 const applyRuleUpdate = (queryClient: QueryClient, rulesetId: string, updatedRule: SharedRule) => {
   // swaps in the edited rule and leaves every other row as the same object, so React skips rerendering them
@@ -647,7 +645,7 @@ export const useEditRule = (rulesetId: string) => {
 /**
  * React Query hook to upload an image and attach it to a rule.
  */
-export const useAddRuleImage = () => {
+export const useAddRuleImage = (rulesetId: string) => {
   const queryClient = useQueryClient();
   const toast = useToast();
   const { mutateAsync: uploadFile } = useUploadRulesetFile();
@@ -660,10 +658,9 @@ export const useAddRuleImage = () => {
       return data;
     },
     {
-      onSuccess: () => {
+      onSuccess: (updatedRule) => {
         toast.success('Image uploaded successfully');
-        queryClient.invalidateQueries(['rules']);
-        queryClient.invalidateQueries(['rulesets']);
+        applyRuleUpdate(queryClient, rulesetId, updatedRule);
       },
       onError: (error: Error) => {
         toast.error(error.message);

@@ -484,6 +484,7 @@ const RulesetEditPage: React.FC = () => {
               open={showAddImageModal}
               onClose={() => setShowAddImageModal(false)}
               ruleId={activeRule?.ruleId ?? null}
+              rulesetId={rulesetId}
               allRules={allRules ?? []}
             />
 
