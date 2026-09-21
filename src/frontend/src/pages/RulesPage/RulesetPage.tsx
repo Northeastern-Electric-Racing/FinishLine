@@ -111,7 +111,8 @@ const RulesetPage: React.FC = () => {
             <Box
               sx={(theme) => ({
                 borderBottom: `2px solid ${theme.palette.divider}`,
-                mb: 2
+                mb: 2,
+                ml: '20px'
               })}
             />
             <Box

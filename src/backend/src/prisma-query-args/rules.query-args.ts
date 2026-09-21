@@ -13,8 +13,6 @@ export const getRulePreviewQueryArgs = () =>
         }
       },
       subRules: {
-        // check since rules are soft deleted
-        where: { dateDeleted: null },
         select: {
           ruleId: true
         }

@@ -40,7 +40,7 @@ const RulesetTypeTable: React.FC = () => {
   const headCells: readonly RulesetTypeHeadCell[] = [
     {
       id: 'name',
-      label: 'Ruleset Type Name'
+      label: 'Ruleset Name'
     },
     {
       id: 'lastUpdated',
@@ -127,6 +127,7 @@ const RulesetTypeTable: React.FC = () => {
                   <TableCell
                     align="center"
                     sx={{ fontSize: '16px', fontWeight: 600, backgroundColor: '#dd514c' }}
+                    style={{ paddingLeft: '24px', paddingRight: '0px' }}
                     key={headCell.id}
                   >
                     {headCell.label}

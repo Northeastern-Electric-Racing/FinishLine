@@ -276,6 +276,7 @@ const RulesetTable: React.FC = () => {
                   <TableCell
                     align="center"
                     sx={{ fontSize: '16px', fontWeight: 600, backgroundColor: '#dd514c' }}
+                    style={{ paddingLeft: '24px', paddingRight: '0px' }}
                     key={headCell.id}
                   >
                     {headCell.label}
@@ -299,10 +300,7 @@ const RulesetTable: React.FC = () => {
                       '&:last-child td, &:last-child th': { border: 0 }
                     }}
                   >
-                    <TableCell
-                      align="center"
-                      sx={{ maxWidth: '20vw', wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'normal' }}
-                    >
+                    <TableCell align="center" sx={{ maxWidth: '20vw' }}>
                       {ruleset.name}
                     </TableCell>
                     <TableCell align="center">{datePipe(ruleset.dateCreated)}</TableCell>

@@ -14,7 +14,7 @@ import {
   AccordionSummary,
   AccordionDetails
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -119,11 +119,17 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
     defaultValues: {
       fileId: '',
       name: '',
-      carNumber: undefined,
+      carNumber: 100,
       parserType: 'FSAE',
       firstRulePage: undefined
     }
   });
+
+  useEffect(() => {
+    if (cars && cars.length > 0) {
+      setValue('carNumber', cars[0].wbsNum.carNumber);
+    }
+  }, [cars, setValue]);
 
   const handleFormSubmit = async (data: NewFileFormData) => {
     try {
@@ -237,8 +243,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
                   name="carNumber"
                   control={control}
                   render={({ field }) => (
-                    // a min width keeps the empty state from collapsing before a car is picked
-                    <Select {...field} value={field.value ?? ''} size="small" sx={{ minWidth: '120px' }}>
+                    <Select {...field} size="small">
                       {cars?.map((car) => (
                         <MenuItem key={car.id} value={car.wbsNum.carNumber}>
                           {car.name}
