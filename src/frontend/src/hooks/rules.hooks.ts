@@ -181,6 +181,9 @@ const applyRuleStatusUpdate = (queryClient: QueryClient, rulesetId: string, { ru
 
   // one cache list per ancestor, walking up the chain the server recalculated
   for (const { parentRuleId } of ancestors) applyUpdatesTo(listForParent(parentRuleId));
+
+  // the full tree keeps its own copy of every row above and reseeds the children lists on expand all, so update
+  applyUpdatesTo(['rules', 'allRules', rulesetId]);
 };
 
 /**
@@ -573,17 +576,16 @@ export const useDeleteRule = (rulesetId: string) => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  return useMutation<void, Error, { ruleId: string; parentRuleId?: string; totalRulesToDelete: number }>(
+  return useMutation<void, Error, { ruleId: string; totalRulesToDelete: number }>(
     ['rules', 'delete'],
     async ({ ruleId }) => {
       await deleteRule(ruleId);
     },
     {
-      onSuccess: (_data, { parentRuleId, totalRulesToDelete }) => {
+      onSuccess: (_data, { totalRulesToDelete }) => {
         toast.success(`${totalRulesToDelete} ${totalRulesToDelete === 1 ? 'rule' : 'rules'} deleted successfully`);
-        queryClient.invalidateQueries(
-          parentRuleId ? ['rules', 'children', parentRuleId] : ['rules', 'top-level', rulesetId]
-        );
+        queryClient.invalidateQueries(['rules', 'children']);
+        queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
         queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
         queryClient.invalidateQueries(['rules', 'ruleset', rulesetId]);
         queryClient.invalidateQueries(['rulesets']);

@@ -54,7 +54,9 @@ const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({ open, o
     try {
       await addReferences({ ruleId, referencedRuleId: selected.id });
       handleClose();
-    } catch (error) {}
+    } catch {
+      // the modal stays open so the reference can be retried
+    }
   };
 
   return (

@@ -50,7 +50,7 @@ interface RuleCodeCellProps {
 /**
  * Left cell of a rule row: the expand chevron and the rule code, swapped for an input while editing.
  */
-export const RuleCodeCell: React.FC<RuleCodeCellProps> = ({
+const RuleCodeCellComponent: React.FC<RuleCodeCellProps> = ({
   rule,
   level,
   isExpanded,
@@ -222,6 +222,7 @@ const RuleActionsCellComponent: React.FC<RuleActionsCellProps> = ({
 };
 
 // memo so that starting or ending an edit, which rerenders every mounted row,
-// doesn't rebuild the content and actions of the rows that didn't change
+// doesn't rebuild the code, content and actions of the rows that didn't change
+export const RuleCodeCell = memo(RuleCodeCellComponent);
 export const RuleBodyCell = memo(RuleBodyCellComponent);
 export const RuleActionsCell = memo(RuleActionsCellComponent);
