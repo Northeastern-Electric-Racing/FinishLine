@@ -15,7 +15,6 @@ interface AddImageModalProps {
   open: boolean;
   onClose: () => void;
   ruleId: string | null;
-  rulesetId: string;
   allRules: Rule[];
 }
 
@@ -24,11 +23,11 @@ const isImage = (fileName: string) => {
   return extension === 'png' || extension === 'jpg' || extension === 'jpeg';
 };
 
-const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, rulesetId, allRules }) => {
+const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, allRules }) => {
   const toast = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { mutateAsync: addRuleImage } = useAddRuleImage(rulesetId);
+  const { mutateAsync: addRuleImage } = useAddRuleImage();
 
   const activeRule = ruleId ? allRules.find((r) => r.ruleId === ruleId) : undefined;
 
@@ -64,8 +63,8 @@ const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, ru
     try {
       await addRuleImage({ rule: activeRule, file });
       handleClose();
-    } catch {
-      // the modal stays open so the upload can be retried
+    } catch (err) {
+      console.error('Failed to add image:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -78,7 +77,7 @@ const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, ru
       title="Add Image"
       onSubmit={handleSubmit}
       submitText="Submit"
-      disabled={!file || !activeRule || isSubmitting}
+      disabled={!file || isSubmitting}
       showCloseButton
     >
       <Box sx={{ minWidth: '400px', display: 'flex', flexDirection: 'column', gap: 2, py: 1 }}>

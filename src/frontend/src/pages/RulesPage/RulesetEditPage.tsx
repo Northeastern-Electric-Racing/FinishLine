@@ -73,12 +73,7 @@ const RulesetEditPage: React.FC = () => {
   const draftRef = useRef<RuleDraft>({ ruleCode: '', ruleContent: '' });
 
   // Editing rule code warnings
-  const [pendingCodeWarning, setPendingCodeWarning] = useState<{
-    ruleId: string;
-    messages: string[];
-    originalCode: string;
-    updatedCode: string;
-  } | null>(null);
+  const [pendingCodeWarnings, setPendingCodeWarnings] = useState<string[] | null>(null);
 
   // work that blocks the page (loading the full tree, expanding every rule) shows a spinner by the tabs
   const [isFetchingTree, setIsFetchingTree] = useState(false);
@@ -108,9 +103,9 @@ const RulesetEditPage: React.FC = () => {
   const { data: allRules } = useAllRulesForRuleset(rulesetId!, showAddReferencedRuleModal || showAddImageModal);
 
   const { mutateAsync: deleteRuleMutation } = useDeleteRule(rulesetId!);
-  const { mutateAsync: editRuleMutation } = useEditRule(rulesetId!);
-  const { mutateAsync: removeRuleReferencesMutation } = useRemoveRuleReferences(rulesetId!);
-  const { mutateAsync: removeRuleImageMutation } = useRemoveRuleImage(rulesetId!);
+  const { mutateAsync: editRuleMutation } = useEditRule();
+  const { mutateAsync: removeRuleReferencesMutation } = useRemoveRuleReferences();
+  const { mutateAsync: removeRuleImageMutation } = useRemoveRuleImage();
 
   // Expand All and the rule code checks need the whole tree, so load it on demand rather than up front
   const fetchFullRuleTree = useFetchFullRuleTree(rulesetId!);
@@ -305,12 +300,7 @@ const RulesetEditPage: React.FC = () => {
       }
 
       if (warnings.length > 0) {
-        setPendingCodeWarning({
-          ruleId: rule.ruleId,
-          messages: warnings,
-          originalCode: rule.ruleCode,
-          updatedCode: trimmedCode
-        });
+        setPendingCodeWarnings(warnings);
         return;
       }
 
@@ -320,13 +310,12 @@ const RulesetEditPage: React.FC = () => {
   );
 
   const handleConfirmCodeWarning = useCallback(async () => {
-    if (!pendingCodeWarning) return;
-    const { ruleId } = pendingCodeWarning;
-    setPendingCodeWarning(null);
-    await performSaveEdit(ruleId);
-  }, [pendingCodeWarning, performSaveEdit]);
+    if (!editingRuleId) return;
+    setPendingCodeWarnings(null);
+    await performSaveEdit(editingRuleId);
+  }, [editingRuleId, performSaveEdit]);
 
-  const handleCancelCodeWarning = useCallback(() => setPendingCodeWarning(null), []);
+  const handleCancelCodeWarning = useCallback(() => setPendingCodeWarnings(null), []);
 
   const renderLeftContent = useCallback(
     (currentRule: Rule, level: number, isExpanded: boolean, hasSubRules: boolean, toggleRuleExpand: () => void) => (
@@ -489,7 +478,6 @@ const RulesetEditPage: React.FC = () => {
             <AddReferencedRuleModal
               open={showAddReferencedRuleModal}
               onClose={() => setShowAddReferencedRuleModal(false)}
-              rulesetId={rulesetId}
               ruleId={activeRule?.ruleId ?? null}
               allRules={allRules ?? []}
             />
@@ -498,17 +486,14 @@ const RulesetEditPage: React.FC = () => {
               open={showAddImageModal}
               onClose={() => setShowAddImageModal(false)}
               ruleId={activeRule?.ruleId ?? null}
-              rulesetId={rulesetId}
               allRules={allRules ?? []}
             />
 
             <MismatchedRuleCodeModal
-              open={!!pendingCodeWarning}
+              open={!!pendingCodeWarnings}
               onHide={handleCancelCodeWarning}
               onConfirm={handleConfirmCodeWarning}
-              messages={pendingCodeWarning?.messages ?? []}
-              originalCode={pendingCodeWarning?.originalCode}
-              updatedCode={pendingCodeWarning?.updatedCode}
+              messages={pendingCodeWarnings ?? []}
             />
 
             {referenceToRemove && (

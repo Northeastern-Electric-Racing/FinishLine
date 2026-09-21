@@ -607,31 +607,21 @@ export const useDeleteRule = (rulesetId: string) => {
 };
 
 /**
- * Swaps edited rule into cache so editing does not refetch.
+ * Refetches only the list the edited row lives in, so the rest of the tree stays put.
  */
-const applyRuleUpdate = (queryClient: QueryClient, rulesetId: string, updatedRule: SharedRule) => {
-  // swaps in the edited rule and leaves every other row as the same object, so React skips rerendering them
-  const replaceIn = (key: unknown[]) => {
-    const cachedRules = queryClient.getQueryData<SharedRule[]>(key);
-    // uncached list has no rows on the screen and was not loaded, so do not update
-    if (!cachedRules) return;
-    queryClient.setQueryData<SharedRule[]>(
-      key,
-      cachedRules.map((rule) => (rule.ruleId === updatedRule.ruleId ? updatedRule : rule))
-    );
-  };
-
+const invalidateRuleLists = (queryClient: QueryClient, updatedRule: SharedRule) => {
   // the edited row is stored in its parent's children list, or the top level list when it has no parent
-  replaceIn(
-    updatedRule.parentRule ? ['rules', 'children', updatedRule.parentRule.ruleId] : ['rules', 'top-level', rulesetId]
+  queryClient.invalidateQueries(
+    updatedRule.parentRule ? ['rules', 'children', updatedRule.parentRule.ruleId] : ['rules', 'top-level']
   );
-  replaceIn(['rules', 'allRules', rulesetId]);
+  // the full tree reseeds the children lists on expand all, so a stale copy would undo the edit
+  queryClient.invalidateQueries(['rules', 'allRules']);
 };
 
 /**
  * React Query hook to edit a rule's content and/or code.
  */
-export const useEditRule = (rulesetId: string) => {
+export const useEditRule = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
@@ -643,8 +633,8 @@ export const useEditRule = (rulesetId: string) => {
     },
     {
       onSuccess: (updatedRule) => {
-        toast.success(`Rule ${updatedRule.ruleCode} updated successfully`);
-        applyRuleUpdate(queryClient, rulesetId, updatedRule);
+        toast.success('Rule updated successfully');
+        invalidateRuleLists(queryClient, updatedRule);
       },
       onError: (error: Error) => {
         toast.error(`Failed to update rule: ${error.message}`);
@@ -656,7 +646,7 @@ export const useEditRule = (rulesetId: string) => {
 /**
  * React Query hook to upload an image and attach it to a rule.
  */
-export const useAddRuleImage = (rulesetId: string) => {
+export const useAddRuleImage = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
   const { mutateAsync: uploadFile } = useUploadRulesetFile();
@@ -671,7 +661,7 @@ export const useAddRuleImage = (rulesetId: string) => {
     {
       onSuccess: (updatedRule) => {
         toast.success('Image uploaded successfully');
-        applyRuleUpdate(queryClient, rulesetId, updatedRule);
+        invalidateRuleLists(queryClient, updatedRule);
       },
       onError: (error: Error) => {
         toast.error(error.message);
@@ -683,7 +673,7 @@ export const useAddRuleImage = (rulesetId: string) => {
 /**
  * React Query hook to remove an image from a rule.
  */
-export const useRemoveRuleImage = (rulesetId: string) => {
+export const useRemoveRuleImage = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
@@ -700,8 +690,8 @@ export const useRemoveRuleImage = (rulesetId: string) => {
     },
     {
       onSuccess: (updatedRule) => {
-        toast.success(`Image removed from rule ${updatedRule.ruleCode} successfully`);
-        applyRuleUpdate(queryClient, rulesetId, updatedRule);
+        toast.success('Image removed successfully');
+        invalidateRuleLists(queryClient, updatedRule);
       },
       onError: (error: Error) => {
         toast.error(error.message);
@@ -713,9 +703,8 @@ export const useRemoveRuleImage = (rulesetId: string) => {
 /**
  * React Query hook to add referenced rules to a rule.
  */
-export const useAddRuleReferences = (rulesetId: string) => {
+export const useAddRuleReferences = () => {
   const queryClient = useQueryClient();
-  const toast = useToast();
 
   return useMutation<SharedRule, Error, { ruleId: string; referencedRuleId: string }>(
     ['rules', 'addReference'],
@@ -725,11 +714,7 @@ export const useAddRuleReferences = (rulesetId: string) => {
     },
     {
       onSuccess: (updatedRule) => {
-        toast.success(`Referenced rule added to rule ${updatedRule.ruleCode} successfully`);
-        applyRuleUpdate(queryClient, rulesetId, updatedRule);
-      },
-      onError: (error: Error) => {
-        toast.error(`Failed to add referenced rule: ${error.message}`);
+        invalidateRuleLists(queryClient, updatedRule);
       }
     }
   );
@@ -738,9 +723,8 @@ export const useAddRuleReferences = (rulesetId: string) => {
 /**
  * React Query hook to remove referenced rules from a rule.
  */
-export const useRemoveRuleReferences = (rulesetId: string) => {
+export const useRemoveRuleReferences = () => {
   const queryClient = useQueryClient();
-  const toast = useToast();
 
   return useMutation<SharedRule, Error, { ruleId: string; referencedRuleId: string }>(
     ['rules', 'removeReference'],
@@ -750,11 +734,7 @@ export const useRemoveRuleReferences = (rulesetId: string) => {
     },
     {
       onSuccess: (updatedRule) => {
-        toast.success(`Referenced rule removed from rule ${updatedRule.ruleCode} successfully`);
-        applyRuleUpdate(queryClient, rulesetId, updatedRule);
-      },
-      onError: (error: Error) => {
-        toast.error(`Failed to remove referenced rule: ${error.message}`);
+        invalidateRuleLists(queryClient, updatedRule);
       }
     }
   );

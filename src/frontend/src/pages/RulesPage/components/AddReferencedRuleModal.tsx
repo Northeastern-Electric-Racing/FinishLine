@@ -9,13 +9,13 @@ import { Rule } from 'shared';
 import NERModal from '../../../components/NERModal';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { useAddRuleReferences } from '../../../hooks/rules.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface AddReferencedRuleModalProps {
   open: boolean;
   onClose: () => void;
   // The rule recieving a reference, whose "+" menu was used to open this modal
   ruleId: string | null;
-  rulesetId: string;
   allRules: Rule[];
 }
 
@@ -24,9 +24,10 @@ type RuleOption = { label: string; id: string };
 /**
  * Modal for attaching an existing rule as a referenced rule to the currently-edited rule
  */
-const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({ open, onClose, ruleId, rulesetId, allRules }) => {
+const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({ open, onClose, ruleId, allRules }) => {
   const [selected, setSelected] = useState<RuleOption | null>(null);
-  const { mutateAsync: addReferences, isLoading } = useAddRuleReferences(rulesetId);
+  const { mutateAsync: addReferences, isLoading } = useAddRuleReferences();
+  const toast = useToast();
 
   const activeRule = ruleId ? allRules.find((r) => r.ruleId === ruleId) : undefined;
 
@@ -53,9 +54,10 @@ const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({ open, o
     if (!ruleId || !selected) return;
     try {
       await addReferences({ ruleId, referencedRuleId: selected.id });
+      toast.success('Referenced rule added successfully');
       handleClose();
-    } catch {
-      // the modal stays open so the reference can be retried
+    } catch (err) {
+      toast.error('Failed to add referenced rule');
     }
   };
 

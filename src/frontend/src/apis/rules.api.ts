@@ -223,21 +223,11 @@ export const deleteRule = (ruleId: string) => {
  * @param imageFileIds - Image file IDs for the rule
  */
 export const editRule = (ruleId: string, ruleContent: string, ruleCode?: string, imageFileIds?: string[]) => {
-  return axios.post<SharedRule>(
-    apiUrls.rulesEdit(ruleId),
-    {
-      ruleContent,
-      ruleCode,
-      ...(imageFileIds !== undefined && { imageFileIds })
-    },
-    {
-      transformResponse: (data) => {
-        const parsed = JSON.parse(data);
-        // error responses will not contain a rule
-        return parsed?.ruleId ? ruleTransformer(parsed) : parsed;
-      }
-    }
-  );
+  return axios.post<SharedRule>(apiUrls.rulesEdit(ruleId), {
+    ruleContent,
+    ruleCode,
+    ...(imageFileIds !== undefined && { imageFileIds })
+  });
 };
 
 /**
@@ -246,16 +236,7 @@ export const editRule = (ruleId: string, ruleContent: string, ruleCode?: string,
  * @param referencedRuleId the rule ID to add as a reference
  */
 export const addRuleReferences = (ruleId: string, referencedRuleId: string) => {
-  return axios.post<SharedRule>(
-    apiUrls.rulesAddReferences(ruleId),
-    { referencedRuleId },
-    {
-      transformResponse: (data) => {
-        const parsed = JSON.parse(data);
-        return parsed?.ruleId ? ruleTransformer(parsed) : parsed;
-      }
-    }
-  );
+  return axios.post<SharedRule>(apiUrls.rulesAddReferences(ruleId), { referencedRuleId });
 };
 
 /**
@@ -264,16 +245,7 @@ export const addRuleReferences = (ruleId: string, referencedRuleId: string) => {
  * @param referencedRuleId the rule ID to remove from the references
  */
 export const removeRuleReferences = (ruleId: string, referencedRuleId: string) => {
-  return axios.post<SharedRule>(
-    apiUrls.rulesRemoveReferences(ruleId),
-    { referencedRuleId },
-    {
-      transformResponse: (data) => {
-        const parsed = JSON.parse(data);
-        return parsed?.ruleId ? ruleTransformer(parsed) : parsed;
-      }
-    }
-  );
+  return axios.post<SharedRule>(apiUrls.rulesRemoveReferences(ruleId), { referencedRuleId });
 };
 
 /**
