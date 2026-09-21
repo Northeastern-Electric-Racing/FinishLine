@@ -200,9 +200,9 @@ const RulesetEditPage: React.FC = () => {
     try {
       await removeRuleReferencesMutation({
         ruleId: referenceToRemove.rule.ruleId,
-        referencedRuleId: referenceToRemove.referencedRule.ruleId
+        referencedRuleId: referenceToRemove.referencedRule.ruleId,
+        referencedRuleCode: referenceToRemove.referencedRule.ruleCode
       });
-      toast.success('Referenced rule removed successfully');
       setShowRemoveReferenceModal(false);
       setReferenceToRemove(null);
     } catch (err) {
@@ -249,6 +249,7 @@ const RulesetEditPage: React.FC = () => {
     try {
       await deleteRuleMutation({
         ruleId: ruleToDelete.ruleId,
+        ruleCode: ruleToDelete.ruleCode,
         totalRulesToDelete: countRulesToDelete(ruleToDelete, allRules ?? [])
       });
       setDeleteModalOpen(false);

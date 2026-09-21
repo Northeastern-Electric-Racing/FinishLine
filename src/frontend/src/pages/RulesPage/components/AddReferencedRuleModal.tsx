@@ -9,7 +9,6 @@ import { Rule } from 'shared';
 import NERModal from '../../../components/NERModal';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { useAddRuleReferences } from '../../../hooks/rules.hooks';
-import { useToast } from '../../../hooks/toasts.hooks';
 
 interface AddReferencedRuleModalProps {
   open: boolean;
@@ -27,7 +26,6 @@ type RuleOption = { label: string; id: string };
 const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({ open, onClose, ruleId, allRules }) => {
   const [selected, setSelected] = useState<RuleOption | null>(null);
   const { mutateAsync: addReferences, isLoading } = useAddRuleReferences();
-  const toast = useToast();
 
   const activeRule = ruleId ? allRules.find((r) => r.ruleId === ruleId) : undefined;
 
@@ -53,11 +51,10 @@ const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({ open, o
   const handleSubmit = async () => {
     if (!ruleId || !selected) return;
     try {
-      await addReferences({ ruleId, referencedRuleId: selected.id });
-      toast.success('Referenced rule added successfully');
+      await addReferences({ ruleId, referencedRuleId: selected.id, referencedRuleCode: selected.label });
       handleClose();
-    } catch (err) {
-      toast.error('Failed to add referenced rule');
+    } catch {
+      // the modal stays open so the reference can be retried
     }
   };
 

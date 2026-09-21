@@ -63,8 +63,8 @@ const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, al
     try {
       await addRuleImage({ rule: activeRule, file });
       handleClose();
-    } catch (err) {
-      console.error('Failed to add image:', err);
+    } catch {
+      // the modal stays open so the upload can be retried
     } finally {
       setIsSubmitting(false);
     }
@@ -77,7 +77,7 @@ const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, al
       title="Add Image"
       onSubmit={handleSubmit}
       submitText="Submit"
-      disabled={!file || isSubmitting}
+      disabled={!file || !activeRule || isSubmitting}
       showCloseButton
     >
       <Box sx={{ minWidth: '400px', display: 'flex', flexDirection: 'column', gap: 2, py: 1 }}>
