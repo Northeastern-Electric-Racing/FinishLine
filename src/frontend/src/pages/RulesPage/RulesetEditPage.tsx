@@ -139,6 +139,8 @@ const RulesetEditPage: React.FC = () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     try {
       await expandAll();
+    } catch (err) {
+      if (err instanceof Error) toastRef.current.error(`Failed to load rules: ${err.message}`);
     } finally {
       setTimeout(() => setIsFetchingTree(false), 0);
     }
@@ -187,7 +189,9 @@ const RulesetEditPage: React.FC = () => {
         referencedRuleId: referenceToRemove.referencedRule.ruleId
       });
       setReferenceToRemove(null);
-    } catch (err) {}
+    } catch {
+      // the modal stays open so the removal can be retried
+    }
   }, [referenceToRemove, removeRuleReferencesMutation]);
 
   const handleRemoveImage = useCallback((rule: Rule, fileId: string) => setImageToRemove({ rule, fileId }), []);
@@ -200,16 +204,20 @@ const RulesetEditPage: React.FC = () => {
     try {
       await removeRuleImageMutation({ rule: imageToRemove.rule, fileId: imageToRemove.fileId });
       setImageToRemove(null);
-    } catch (err) {
-      console.error('Failed to remove image:', err);
+    } catch {
+      // the modal stays open so the removal can be retried
     }
   }, [imageToRemove, removeRuleImageMutation]);
 
   const handleRemoveRule = useCallback(
     async (rule: Rule) => {
       // deleting a rule deletes its whole subtree, which only the full tree can count
-      const allRulesInRuleset = await loadFullTree();
-      setRuleToDelete({ rule, totalRulesToDelete: countRulesToDelete(rule, allRulesInRuleset) });
+      try {
+        const allRulesInRuleset = await loadFullTree();
+        setRuleToDelete({ rule, totalRulesToDelete: countRulesToDelete(rule, allRulesInRuleset) });
+      } catch (err) {
+        if (err instanceof Error) toastRef.current.error(`Failed to load rules: ${err.message}`);
+      }
     },
     [loadFullTree]
   );
@@ -222,12 +230,11 @@ const RulesetEditPage: React.FC = () => {
     try {
       await deleteRuleMutation({
         ruleId: ruleToDelete.rule.ruleId,
-        parentRuleId: ruleToDelete.rule.parentRule?.ruleId,
         totalRulesToDelete: ruleToDelete.totalRulesToDelete
       });
       setRuleToDelete(null);
-    } catch (err) {
-      console.error('Failed to delete rule:', err);
+    } catch {
+      // the modal stays open so the delete can be retried
     }
   }, [deleteRuleMutation, ruleToDelete]);
 
@@ -245,8 +252,8 @@ const RulesetEditPage: React.FC = () => {
       try {
         await editRuleMutation({ ruleId, ruleContent, ruleCode: ruleCode.trim() });
         setEditingRuleId(null);
-      } catch (err) {
-        console.error('Failed to update rule:', err);
+      } catch {
+        // the row stays in edit mode with the typed text intact
       }
     },
     [editRuleMutation]
@@ -267,7 +274,14 @@ const RulesetEditPage: React.FC = () => {
         return;
       }
 
-      const allRulesInRuleset = await loadFullTree();
+      let allRulesInRuleset: Rule[];
+      try {
+        allRulesInRuleset = await loadFullTree();
+      } catch (err) {
+        // the row stays in edit mode so the save can be retried
+        if (err instanceof Error) toastRef.current.error(`Failed to load rules: ${err.message}`);
+        return;
+      }
 
       // a duplicate code cannot be saved, so reject it before any of the warnings below
       if (allRulesInRuleset.some((r) => r.ruleId !== rule.ruleId && r.ruleCode === trimmedCode)) {
