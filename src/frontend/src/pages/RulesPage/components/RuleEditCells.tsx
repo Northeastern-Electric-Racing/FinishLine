@@ -197,8 +197,9 @@ const RuleActionsCellComponent: React.FC<RuleActionsCellProps> = ({
   const theme = useTheme();
 
   return (
-    // Cancel and Save stay side by side on one line
-    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap' }}>
+    // Cancel and Save stay side by side on one line, held off the right wall since the cell is a
+    // percentage of the page and the buttons crowd its edge once the sidebar opens
+    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap', pr: 2 }}>
       {isEditing ? (
         <>
           <NERFailButton size="small" onClick={onCancel} sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
