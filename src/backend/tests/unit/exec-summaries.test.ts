@@ -32,7 +32,11 @@ describe('Executive Summaries Tests', () => {
         ...getExecutiveSummaryQueryArgs(organization.organizationId)
       });
 
-      const summary = await ExecSummaryServices.getSingleExecutiveSummary(organization, createdSummary.executiveSummaryId, user);
+      const summary = await ExecSummaryServices.getSingleExecutiveSummary(
+        organization,
+        createdSummary.executiveSummaryId,
+        user
+      );
       expect(summary).toStrictEqual(executiveSummaryTransformer(createdSummary));
     });
     it('invalid id get single exec summary', async () => {

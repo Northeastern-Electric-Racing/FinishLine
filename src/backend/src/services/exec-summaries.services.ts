@@ -1,7 +1,12 @@
 import { Organization } from '@prisma/client';
 import { notGuest, User } from 'shared';
 import prisma from '../prisma/prisma.js';
-import { AccessDeniedException, DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils.js';
+import {
+  AccessDeniedException,
+  DeletedException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../utils/errors.utils.js';
 import { getExecutiveSummaryQueryArgs } from '../prisma-query-args/executive-summary.query-args.js';
 import { executiveSummaryTransformer } from '../transformers/executive-summary.transformer.js';
 import { userHasPermission } from '../utils/users.utils.js';
