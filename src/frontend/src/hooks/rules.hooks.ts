@@ -582,10 +582,19 @@ export const useDeleteRule = (rulesetId: string) => {
       await deleteRule(ruleId);
     },
     {
-      onSuccess: (_data, { totalRulesToDelete }) => {
+      onSuccess: (_data, { ruleId, totalRulesToDelete }) => {
         toast.success(`${totalRulesToDelete} ${totalRulesToDelete === 1 ? 'rule' : 'rules'} deleted successfully`);
-        queryClient.invalidateQueries(['rules', 'children']);
         queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
+        // identify which list holds the deleted rule or its parent, and invalidate that list so it refetches
+        queryClient
+          .getQueryCache()
+          .findAll(['rules', 'children'])
+          .filter((query) =>
+            (query.state.data as SharedRule[] | undefined)?.some(
+              (rule) => rule.ruleId === ruleId || rule.subRuleIds.includes(ruleId)
+            )
+          )
+          .forEach((query) => queryClient.invalidateQueries(query.queryKey));
         queryClient.invalidateQueries(['rules', 'allRules', rulesetId]);
         queryClient.invalidateQueries(['rules', 'ruleset', rulesetId]);
         queryClient.invalidateQueries(['rulesets']);
