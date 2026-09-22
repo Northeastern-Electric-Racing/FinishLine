@@ -6,7 +6,6 @@ import {
   isGuest,
   isLeadership,
   isProjectWbs,
-  isWithinBuffer,
   ProjectProposedChangesCreateArgs,
   StageGateChangeRequest,
   StandardChangeRequest,
@@ -16,6 +15,7 @@ import {
   User,
   isHead
 } from 'shared';
+import { isWithinBuffer } from '../../../shared/src/change-request-utils.js';
 import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
