@@ -13,6 +13,7 @@ import PartReviewSampleImage from './ProjectsConfig/PartReviewSampleImage';
 import CommonMistakesTable from './ProjectsConfig/CommonMistakesTable';
 import PartTagsTable from './ProjectsConfig/PartTagsTable';
 import TaskLabelsTable from './ProjectsConfig/TaskLabelsTable';
+import ActivationBuffer from './ProjectsConfig/ActivationBuffer';
 
 const AdminToolsProjectsConfig: React.FC = () => {
   return (
@@ -56,6 +57,10 @@ const AdminToolsProjectsConfig: React.FC = () => {
         Task Labels
       </Typography>
       <TaskLabelsTable />
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+        Change Request Config
+      </Typography>
+      <ActivationBuffer />
     </Box>
   );
 };
