@@ -573,14 +573,19 @@ export const useDeleteRule = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  return useMutation<void, Error, { ruleId: string; totalRulesToDelete: number }>(
+  return useMutation<void, Error, { ruleId: string; ruleCode: string; totalRulesToDelete: number }>(
     ['rules', 'delete'],
     async ({ ruleId }) => {
       await deleteRule(ruleId);
     },
     {
-      onSuccess: (_data, { totalRulesToDelete }) => {
-        toast.success(`${totalRulesToDelete} ${totalRulesToDelete === 1 ? 'rule' : 'rules'} deleted successfully`);
+      onSuccess: (_data, { ruleCode, totalRulesToDelete }) => {
+        const subRuleCount = totalRulesToDelete - 1;
+        toast.success(
+          subRuleCount > 0
+            ? `Rule ${ruleCode} and ${subRuleCount} sub-rule${subRuleCount === 1 ? '' : 's'} deleted successfully`
+            : `Rule ${ruleCode} deleted successfully`
+        );
         queryClient.invalidateQueries(['rules']);
         queryClient.invalidateQueries(['rulesets']);
       },
@@ -605,8 +610,8 @@ export const useEditRule = () => {
       return data;
     },
     {
-      onSuccess: () => {
-        toast.success('Rule updated successfully');
+      onSuccess: (updatedRule) => {
+        toast.success(`Rule ${updatedRule.ruleCode} updated successfully`);
         queryClient.invalidateQueries(['rules']);
         queryClient.invalidateQueries(['rulesets']);
       },
@@ -633,8 +638,8 @@ export const useAddRuleImage = () => {
       return data;
     },
     {
-      onSuccess: () => {
-        toast.success('Image uploaded successfully');
+      onSuccess: (updatedRule) => {
+        toast.success(`Image added to rule ${updatedRule.ruleCode} successfully`);
         queryClient.invalidateQueries(['rules']);
         queryClient.invalidateQueries(['rulesets']);
       },
@@ -664,8 +669,8 @@ export const useRemoveRuleImage = () => {
       return data;
     },
     {
-      onSuccess: () => {
-        toast.success('Image removed successfully');
+      onSuccess: (updatedRule) => {
+        toast.success(`Image removed from rule ${updatedRule.ruleCode} successfully`);
         queryClient.invalidateQueries(['rules']);
         queryClient.invalidateQueries(['rulesets']);
       },
@@ -681,16 +686,21 @@ export const useRemoveRuleImage = () => {
  */
 export const useAddRuleReferences = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
-  return useMutation<SharedRule, Error, { ruleId: string; referencedRuleId: string }>(
+  return useMutation<SharedRule, Error, { ruleId: string; referencedRuleId: string; referencedRuleCode: string }>(
     ['rules', 'addReference'],
     async ({ ruleId, referencedRuleId }) => {
       const { data } = await addRuleReferences(ruleId, referencedRuleId);
       return data;
     },
     {
-      onSuccess: () => {
+      onSuccess: (updatedRule, { referencedRuleCode }) => {
+        toast.success(`Referenced rule ${referencedRuleCode} added to rule ${updatedRule.ruleCode} successfully`);
         queryClient.invalidateQueries(['rules']);
+      },
+      onError: (error: Error) => {
+        toast.error(`Failed to add referenced rule: ${error.message}`);
       }
     }
   );
@@ -701,16 +711,21 @@ export const useAddRuleReferences = () => {
  */
 export const useRemoveRuleReferences = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
-  return useMutation<SharedRule, Error, { ruleId: string; referencedRuleId: string }>(
+  return useMutation<SharedRule, Error, { ruleId: string; referencedRuleId: string; referencedRuleCode: string }>(
     ['rules', 'removeReference'],
     async ({ ruleId, referencedRuleId }) => {
       const { data } = await removeRuleReferences(ruleId, referencedRuleId);
       return data;
     },
     {
-      onSuccess: () => {
+      onSuccess: (updatedRule, { referencedRuleCode }) => {
+        toast.success(`Referenced rule ${referencedRuleCode} removed from rule ${updatedRule.ruleCode} successfully`);
         queryClient.invalidateQueries(['rules']);
+      },
+      onError: (error: Error) => {
+        toast.error(`Failed to remove referenced rule: ${error.message}`);
       }
     }
   );
