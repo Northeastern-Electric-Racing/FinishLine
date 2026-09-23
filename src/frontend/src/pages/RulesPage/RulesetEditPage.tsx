@@ -184,7 +184,8 @@ const RulesetEditPage: React.FC = () => {
     try {
       await removeRuleReferencesMutation({
         ruleId: referenceToRemove.rule.ruleId,
-        referencedRuleId: referenceToRemove.referencedRule.ruleId
+        referencedRuleId: referenceToRemove.referencedRule.ruleId,
+        referencedRuleCode: referenceToRemove.referencedRule.ruleCode
       });
       setReferenceToRemove(null);
     } catch {
@@ -228,6 +229,7 @@ const RulesetEditPage: React.FC = () => {
     try {
       await deleteRuleMutation({
         ruleId: ruleToDelete.rule.ruleId,
+        ruleCode: ruleToDelete.rule.ruleCode,
         totalRulesToDelete: ruleToDelete.totalRulesToDelete
       });
       setRuleToDelete(null);
