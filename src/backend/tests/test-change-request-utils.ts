@@ -1,5 +1,4 @@
-import { describe, it } from 'node:test';
-import { isWithinBuffer } from '../../shared/src/change-request-utils.js';
+import { isWithinBuffer } from 'shared';
 describe('isWithinBuffer', () => {
   it('returns true when newDate is the same as scheduledDate', () => {
     const newDate = new Date(2026, 6, 2);

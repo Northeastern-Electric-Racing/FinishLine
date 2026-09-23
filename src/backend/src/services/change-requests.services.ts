@@ -13,9 +13,9 @@ import {
   wbsPipe,
   WorkPackageProposedChangesCreateArgs,
   User,
-  isHead
+  isHead,
+  isWithinBuffer
 } from 'shared';
-import { isWithinBuffer } from '../../../shared/src/change-request-utils.js';
 import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
