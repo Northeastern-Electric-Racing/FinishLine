@@ -14,6 +14,9 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 
 // how far a rule (code and content) steps right per level of depth
 const RULE_INDENT_PX = 12;
+// deep rules stop stepping right so the code keeps the width it needs to stay readable
+const MAX_INDENT_LEVEL = 4;
+const indentFor = (level: number) => `${Math.min(level, MAX_INDENT_LEVEL) * RULE_INDENT_PX}px`;
 
 // the code and content being edited, kept in a ref so typing does not rerender
 export interface RuleDraft {
@@ -68,8 +71,7 @@ const RuleCodeCellComponent: React.FC<RuleCodeCellProps> = ({
         alignItems: 'center',
         gap: 1,
         width: '100%',
-        minWidth: 0,
-        paddingLeft: `${level * RULE_INDENT_PX}px`,
+        paddingLeft: indentFor(level),
         color: theme.palette.common.black
       }}
     >
@@ -106,17 +108,8 @@ const RuleCodeCellComponent: React.FC<RuleCodeCellProps> = ({
           sx={{ flex: 1, minWidth: 0, ...editFieldStyles(theme) }}
         />
       ) : (
-        <span
-          style={{
-            color: theme.palette.common.black,
-            minWidth: 0,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}
-        >
-          {rule.ruleCode}
-        </span>
+        // a rule code always stays on one line, the column widens and pushes the content across instead
+        <span style={{ color: theme.palette.common.black, whiteSpace: 'nowrap', flexShrink: 0 }}>{rule.ruleCode}</span>
       )}
     </Box>
   );
@@ -145,7 +138,7 @@ const RuleBodyCellComponent: React.FC<RuleBodyCellProps> = ({
   const theme = useTheme();
 
   return (
-    <Box sx={{ pl: `${level * RULE_INDENT_PX}px` }}>
+    <Box sx={{ pl: indentFor(level) }}>
       {isEditing ? (
         <TextField
           fullWidth
