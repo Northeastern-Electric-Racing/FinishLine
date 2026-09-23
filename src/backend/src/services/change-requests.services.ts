@@ -635,11 +635,17 @@ export default class ChangeRequestsService {
       await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
     }
 
-    await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter);
-
-    const inBuffer = isWithinBuffer(startDate, createdCR.dateSubmitted, organization.activationBufferDays);
-    if (inBuffer) {
+    if (createdCR.wbsElement?.workPackage) {
+      const inBuffer = isWithinBuffer(
+        startDate,
+        createdCR.wbsElement?.workPackage?.startDate,
+        organization.activationBufferDays
+      );
+      if (inBuffer) {
+      }
     }
+
+    await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter);
 
     return createdCR.crId;
   }

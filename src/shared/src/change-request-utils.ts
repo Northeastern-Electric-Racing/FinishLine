@@ -11,5 +11,5 @@ export const isWithinBuffer = (scheduledDate: Date, newDate: Date, bufferDays: n
 
   const millisecondDifference = UTCNewDate - UTCScheduledDate;
   const dayDifference = Math.floor(Math.abs(millisecondDifference / (1000 * 3600 * 24)));
-  return bufferDays > dayDifference;
+  return bufferDays >= dayDifference;
 };
