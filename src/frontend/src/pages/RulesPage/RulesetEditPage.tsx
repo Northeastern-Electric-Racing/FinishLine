@@ -282,7 +282,7 @@ const RulesetEditPage: React.FC = () => {
         if (err instanceof Error) toastRef.current.error(`Failed to load rules: ${err.message}`);
         return;
       }
-      
+
       if (editingRuleIdRef.current !== rule.ruleId) return;
 
       // a duplicate code cannot be saved, so reject it before any of the warnings below
