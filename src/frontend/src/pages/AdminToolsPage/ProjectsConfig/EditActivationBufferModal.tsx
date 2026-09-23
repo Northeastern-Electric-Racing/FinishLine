@@ -38,6 +38,7 @@ const EditActivationBufferModal: React.FC<EditActivationBufferModalProps> = ({
       if (error instanceof Error) {
         toast.error(error.message);
       }
+      throw error;
     }
   };
 

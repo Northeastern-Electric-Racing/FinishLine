@@ -15,11 +15,16 @@ const ActivationBuffer: React.FC = () => {
 
   return (
     <Box>
-      <EditActivationBufferModal
-        showModal={showModal}
-        handleClose={() => setShowModal(false)}
-        activationBufferDays={organization.activationBufferDays}
-      />
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+        Change Request Config
+      </Typography>
+      {showModal && (
+        <EditActivationBufferModal
+          showModal={showModal}
+          handleClose={() => setShowModal(false)}
+          activationBufferDays={organization.activationBufferDays}
+        />
+      )}
       <Box display="flex" alignItems="center" gap={1}>
         <Typography>Activation Buffer: {organization.activationBufferDays} days</Typography>
         <IconButton onClick={() => setShowModal(true)}>

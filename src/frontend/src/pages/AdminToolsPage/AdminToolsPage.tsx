@@ -23,6 +23,7 @@ import AdminToolsSlackIds from './AdminToolsSlackIds';
 import AdminToolsOnboardingConfig from './OnboardingConfig/AdminToolsOnboardingConfig';
 import AdminToolsScheduleConfig from './ScheduleConfig/AdminToolsScheduleConfig';
 import AdminToolsAttendanceConfig from './AdminToolsAttendanceConfig';
+import ActivationBuffer from './ProjectsConfig/ActivationBuffer';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -78,6 +79,7 @@ const AdminToolsPage: React.FC = () => {
         <Box>
           <AdminToolsProjectsConfig />
           {isUserAdmin && <AdminToolsBOMConfig />}
+          {isUserAdmin && <ActivationBuffer />}
         </Box>
       ) : tabIndex === 2 ? (
         <AdminToolsScheduleConfig />
