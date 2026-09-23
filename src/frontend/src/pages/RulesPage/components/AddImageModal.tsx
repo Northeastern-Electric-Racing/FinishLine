@@ -15,6 +15,7 @@ interface AddImageModalProps {
   open: boolean;
   onClose: () => void;
   ruleId: string | null;
+  rulesetId: string;
   allRules: Rule[];
 }
 
@@ -23,11 +24,11 @@ const isImage = (fileName: string) => {
   return extension === 'png' || extension === 'jpg' || extension === 'jpeg';
 };
 
-const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, allRules }) => {
+const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, rulesetId, allRules }) => {
   const toast = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { mutateAsync: addRuleImage } = useAddRuleImage();
+  const { mutateAsync: addRuleImage } = useAddRuleImage(rulesetId);
 
   const activeRule = ruleId ? allRules.find((r) => r.ruleId === ruleId) : undefined;
 
