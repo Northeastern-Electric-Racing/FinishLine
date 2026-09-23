@@ -587,7 +587,7 @@ export const useDeleteRule = (rulesetId: string) => {
             : `Rule ${ruleCode} deleted successfully`
         );
         queryClient.invalidateQueries(['rules', 'top-level', rulesetId]);
-        // identify which list holds the deleted rule or its parent, and invalidate that list so it refetches
+        // identify which list holds the deleted rule or its parent, and only invalidate that list
         queryClient
           .getQueryCache()
           .findAll(['rules', 'children'])
@@ -612,7 +612,6 @@ export const useDeleteRule = (rulesetId: string) => {
  * Swaps edited rule into cache so editing does not refetch.
  */
 const applyRuleUpdate = (queryClient: QueryClient, rulesetId: string, updatedRule: SharedRule) => {
-  // swaps in the edited rule and leaves every other row as the same object, so React skips rerendering them
   const replaceIn = (key: unknown[]) => {
     const cachedRules = queryClient.getQueryData<SharedRule[]>(key);
     // uncached list has no rows on the screen and was not loaded, so do not update

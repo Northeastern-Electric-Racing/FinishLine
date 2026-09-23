@@ -12,9 +12,9 @@ import RuleContent from './RuleContent';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 
-// how far a rule (code and content) steps right per level of depth
+// how far a rule steps right per level of depth
 const RULE_INDENT_PX = 12;
-// deep rules stop stepping right so the code keeps the width it needs to stay readable
+// when deep rules stop stepping right so content stays readable
 const MAX_INDENT_LEVEL = 4;
 const indentFor = (level: number) => `${Math.min(level, MAX_INDENT_LEVEL) * RULE_INDENT_PX}px`;
 

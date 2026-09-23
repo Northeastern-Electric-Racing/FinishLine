@@ -317,8 +317,8 @@ const RulesetEditPage: React.FC = () => {
   );
 
   const handleConfirmCodeWarning = useCallback(async () => {
-    if (!editingRuleId) return;
     setPendingCodeWarnings(null);
+    if (!editingRuleId) return;
     await performSaveEdit(editingRuleId, { ...draftRef.current });
   }, [editingRuleId, performSaveEdit]);
 
