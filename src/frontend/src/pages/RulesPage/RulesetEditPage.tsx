@@ -72,6 +72,9 @@ const RulesetEditPage: React.FC = () => {
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
   const draftRef = useRef<RuleDraft>({ ruleCode: '', ruleContent: '' });
 
+  const editingRuleIdRef = useRef(editingRuleId);
+  editingRuleIdRef.current = editingRuleId;
+
   // Editing rule code warnings
   const [pendingCodeWarnings, setPendingCodeWarnings] = useState<string[] | null>(null);
 
@@ -103,9 +106,9 @@ const RulesetEditPage: React.FC = () => {
   const { data: allRules } = useAllRulesForRuleset(rulesetId!, showAddReferencedRuleModal || showAddImageModal);
 
   const { mutateAsync: deleteRuleMutation } = useDeleteRule(rulesetId!);
-  const { mutateAsync: editRuleMutation } = useEditRule();
-  const { mutateAsync: removeRuleReferencesMutation } = useRemoveRuleReferences();
-  const { mutateAsync: removeRuleImageMutation } = useRemoveRuleImage();
+  const { mutateAsync: editRuleMutation } = useEditRule(rulesetId!);
+  const { mutateAsync: removeRuleReferencesMutation } = useRemoveRuleReferences(rulesetId!);
+  const { mutateAsync: removeRuleImageMutation } = useRemoveRuleImage(rulesetId!);
 
   // Expand All and the rule code checks need the whole tree, so load it on demand rather than up front
   const fetchFullRuleTree = useFetchFullRuleTree(rulesetId!);
@@ -241,12 +244,11 @@ const RulesetEditPage: React.FC = () => {
   const handleCancelEdit = useCallback(() => setEditingRuleId(null), []);
 
   const performSaveEdit = useCallback(
-    async (ruleId: string) => {
-      const { ruleCode, ruleContent } = draftRef.current;
-
+    async (ruleId: string, draft: RuleDraft) => {
       try {
-        await editRuleMutation({ ruleId, ruleContent, ruleCode: ruleCode.trim() });
-        setEditingRuleId(null);
+        await editRuleMutation({ ruleId, ruleContent: draft.ruleContent, ruleCode: draft.ruleCode.trim() });
+        // another row may have started editing while this save was in flight, so leave it open
+        setEditingRuleId((currentlyEditing) => (currentlyEditing === ruleId ? null : currentlyEditing));
       } catch {
         // the row stays in edit mode with the typed text intact
       }
@@ -256,7 +258,8 @@ const RulesetEditPage: React.FC = () => {
 
   const handleSaveEdit = useCallback(
     async (rule: Rule) => {
-      const trimmedCode = draftRef.current.ruleCode.trim();
+      const draft = { ...draftRef.current };
+      const trimmedCode = draft.ruleCode.trim();
 
       if (!trimmedCode) {
         toastRef.current.error('Rule code cannot be empty');
@@ -265,7 +268,7 @@ const RulesetEditPage: React.FC = () => {
 
       // an unchanged code can't collide or strand child codes, so content only edits skip the tree entirely
       if (trimmedCode === rule.ruleCode) {
-        await performSaveEdit(rule.ruleId);
+        await performSaveEdit(rule.ruleId, draft);
         return;
       }
 
@@ -277,6 +280,8 @@ const RulesetEditPage: React.FC = () => {
         if (err instanceof Error) toastRef.current.error(`Failed to load rules: ${err.message}`);
         return;
       }
+      
+      if (editingRuleIdRef.current !== rule.ruleId) return;
 
       // a duplicate code cannot be saved, so reject it before any of the warnings below
       if (allRulesInRuleset.some((r) => r.ruleId !== rule.ruleId && r.ruleCode === trimmedCode)) {
@@ -304,7 +309,7 @@ const RulesetEditPage: React.FC = () => {
         return;
       }
 
-      await performSaveEdit(rule.ruleId);
+      await performSaveEdit(rule.ruleId, draft);
     },
     [loadFullTree, performSaveEdit]
   );
@@ -312,7 +317,7 @@ const RulesetEditPage: React.FC = () => {
   const handleConfirmCodeWarning = useCallback(async () => {
     if (!editingRuleId) return;
     setPendingCodeWarnings(null);
-    await performSaveEdit(editingRuleId);
+    await performSaveEdit(editingRuleId, { ...draftRef.current });
   }, [editingRuleId, performSaveEdit]);
 
   const handleCancelCodeWarning = useCallback(() => setPendingCodeWarnings(null), []);
@@ -426,7 +431,7 @@ const RulesetEditPage: React.FC = () => {
         {tabValue === 0 ? (
           <Box sx={{ paddingBottom: '100px' }}>
             <TableContainer component={Paper} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
-              <Table sx={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+              <Table sx={{ borderCollapse: 'collapse' }}>
                 <TableBody sx={{ backgroundColor: theme.palette.grey[500] }}>
                   {sortedTopLevelRules.map((rule) => (
                     <RuleRow
@@ -438,8 +443,8 @@ const RulesetEditPage: React.FC = () => {
                       backgroundColor={getRowBackgroundColor}
                       textColor={theme.palette.common.black}
                       hoverColor={theme.palette.grey[700]}
-                      rowHeight="10px"
-                      verticalPadding="5px"
+                      rowHeight="40px"
+                      verticalPadding="8px"
                       leftWidth="12%"
                       middleWidth="76%"
                       rightWidth="12%"
@@ -479,6 +484,7 @@ const RulesetEditPage: React.FC = () => {
               open={showAddReferencedRuleModal}
               onClose={() => setShowAddReferencedRuleModal(false)}
               ruleId={activeRule?.ruleId ?? null}
+              rulesetId={rulesetId}
               allRules={allRules ?? []}
             />
 
@@ -486,6 +492,7 @@ const RulesetEditPage: React.FC = () => {
               open={showAddImageModal}
               onClose={() => setShowAddImageModal(false)}
               ruleId={activeRule?.ruleId ?? null}
+              rulesetId={rulesetId}
               allRules={allRules ?? []}
             />
 

@@ -16,6 +16,7 @@ interface AddReferencedRuleModalProps {
   onClose: () => void;
   // The rule recieving a reference, whose "+" menu was used to open this modal
   ruleId: string | null;
+  rulesetId: string;
   allRules: Rule[];
 }
 
@@ -24,9 +25,9 @@ type RuleOption = { label: string; id: string };
 /**
  * Modal for attaching an existing rule as a referenced rule to the currently-edited rule
  */
-const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({ open, onClose, ruleId, allRules }) => {
+const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({ open, onClose, ruleId, rulesetId, allRules }) => {
   const [selected, setSelected] = useState<RuleOption | null>(null);
-  const { mutateAsync: addReferences, isLoading } = useAddRuleReferences();
+  const { mutateAsync: addReferences, isLoading } = useAddRuleReferences(rulesetId);
   const toast = useToast();
 
   const activeRule = ruleId ? allRules.find((r) => r.ruleId === ruleId) : undefined;
