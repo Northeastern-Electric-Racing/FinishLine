@@ -52,7 +52,8 @@ import {
   sendAndGetSlackCRNotifications,
   sendSlackCRStatusToThread,
   sendSlackRequestedReviewNotification,
-  sendStandardCRCreatedNotification
+  sendStandardCRCreatedNotification,
+  sendActivationStartDateChangedNotification
 } from '../utils/slack.utils.js';
 import {
   ChangeRequestWithProjectAndWorkPackageQueryArgs,
@@ -642,6 +643,14 @@ export default class ChangeRequestsService {
         organization.activationBufferDays
       );
       if (inBuffer) {
+        sendActivationStartDateChangedNotification(
+          teams,
+          leadId,
+          managerId,
+          startDate,
+          createdCR.wbsElement?.workPackage?.startDate,
+          organization.activationBufferDays
+        );
       }
     }
 
