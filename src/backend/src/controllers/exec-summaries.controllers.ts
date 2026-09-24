@@ -12,4 +12,13 @@ export default class ExecSummaryController {
       next(error);
     }
   }
+
+  static async getAllExecutiveSummaries(req: Request, res: Response, next: NextFunction) {
+    try {
+      const summaries = await ExecSummaryServices.getAllExecutiveSummaries(req.organization, req.currentUser);
+      res.status(200).json(summaries);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
