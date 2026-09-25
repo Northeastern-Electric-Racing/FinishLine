@@ -11,7 +11,7 @@ const GUEST_INFO = `/guestinfo`;
 const GANTT = `/gantt`;
 const TASKS = `/tasks`;
 const CREDITS = `/credits`;
-const BAY_DASHBOARD = `/bay-dashboard/:slug`; // scoped to one org by slug (/bay-dashboard/ner)
+const BAY_DASHBOARD = `/bay-dashboard/:slug`; /* /bay-dashboard/ner */
 
 /**************** Home Section ****************/
 const HOME = `/home`;
