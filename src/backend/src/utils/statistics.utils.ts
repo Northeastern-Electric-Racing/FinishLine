@@ -719,7 +719,7 @@ const getMeetingAttendanceDateWhereInput = (
 };
 
 const getGraphDataForAttendanceByTeam = async (
-  measure: Measure,
+  _measure: Measure,
   organizationId: string,
   startDate: Date | null,
   endDate: Date | null,
@@ -744,7 +744,7 @@ const getGraphDataForAttendanceByTeam = async (
         return prev + calculateTeamMemberAttendancePercent(team, session.attendees);
       }, 0);
 
-      if (measure === Measure.AVG && team.meetingAttendances.length > 0) {
+      if (team.meetingAttendances.length > 0) {
         value = value / team.meetingAttendances.length;
       }
 
@@ -759,7 +759,7 @@ const getGraphDataForAttendanceByTeam = async (
 };
 
 const getGraphDataForAttendanceByDivision = async (
-  measure: Measure,
+  _measure: Measure,
   organizationId: string,
   startDate: Date | null,
   endDate: Date | null,
@@ -769,7 +769,7 @@ const getGraphDataForAttendanceByDivision = async (
     where: { organizationId, dateDeleted: null },
     include: {
       teams: {
-        where: { dateArchived: null },
+        where: { organizationId, dateArchived: null },
         include: {
           members: { select: { userId: true } },
           leads: { select: { userId: true } },
@@ -797,7 +797,7 @@ const getGraphDataForAttendanceByDivision = async (
         );
       }, 0);
 
-      if (measure === Measure.AVG && numSessions > 0) {
+      if (numSessions > 0) {
         value = value / numSessions;
       }
 

@@ -243,10 +243,8 @@ export const planGraphs = (
   const standaloneWindow: DateRange = { start: span.start, end: new Date(Math.min(span.end.getTime(), now.getTime())) };
 
   // Pick a visible (non-deleted) collection to showcase BOTH attendance graph types together.
-  const showcaseIndex = Math.max(
-    0,
-    collectionPlans.findIndex((collectionPlan) => !collectionPlan.dateDeleted)
-  );
+  // If every collection is deleted, findIndex returns -1 and no collection gets the showcase.
+  const showcaseIndex = collectionPlans.findIndex((collectionPlan) => !collectionPlan.dateDeleted);
 
   collectionPlans.forEach((collectionPlan, collectionIndex) => {
     const count = graphsPerCollection(faker);

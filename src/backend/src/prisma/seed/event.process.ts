@@ -20,6 +20,7 @@ import {
   generateInitialDateOffset,
   generateLocation,
   generateQuestionDocumentLink,
+  generateRosterAttendeeCount,
   generateScheduleSlotCount,
   generateScheduleSlotTimes,
   generateZoomLink,
@@ -210,7 +211,7 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
         const rosterIds = rosterIdsByTeamId.get(team.teamId) ?? [];
 
         if (rosterIds.length > 0) {
-          const attendeeCount = Math.max(1, Math.round(rosterIds.length * this.faker.number.float({ min: 0.4, max: 1 })));
+          const attendeeCount = generateRosterAttendeeCount(this.faker, rosterIds.length);
           const attendees = this.faker.helpers.arrayElements(rosterIds, Math.min(attendeeCount, rosterIds.length));
 
           await this.prisma.meeting_Attendance.create({
