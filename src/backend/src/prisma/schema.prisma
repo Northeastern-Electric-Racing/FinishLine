@@ -186,6 +186,12 @@ enum Competition {
   FHE
 }
 
+enum Event_Reminder_Tier {
+  HOURS_48
+  HOURS_24
+  HOURS_1
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -1145,13 +1151,25 @@ enum DayOfWeek {
   SUNDAY
 }
 
+model Event_Reminder {
+  eventReminderId String              @id @default(uuid())
+  scheduleSlotId  String
+  scheduleSlot    Schedule_Slot       @relation(fields: [scheduleSlotId], references: [scheduleSlotId], onDelete: Cascade)
+  tier            Event_Reminder_Tier
+  slotStartTime   DateTime
+  dateSent        DateTime            @default(now())
+
+  @@unique([scheduleSlotId, tier, slotStartTime])
+}
+
 model Schedule_Slot {
-  scheduleSlotId String   @id @default(uuid())
+  scheduleSlotId String           @id @default(uuid())
   startTime      DateTime
   endTime        DateTime
-  allDay         Boolean  @default(false)
+  allDay         Boolean          @default(false)
   eventId        String
-  event          Event    @relation(fields: [eventId], references: [eventId])
+  event          Event            @relation(fields: [eventId], references: [eventId])
+  eventReminders Event_Reminder[]
 
   @@index([endTime])
   @@index([startTime])

@@ -1,6 +1,16 @@
-import { Task as Prisma_Task, WBS_Element, Event, Work_Package, Team, Event_Type } from '@prisma/client';
+import {
+  Task as Prisma_Task,
+  WBS_Element,
+  Event,
+  Work_Package,
+  Team,
+  Event_Type,
+  Event_Reminder_Tier,
+} from '@prisma/client';
 import { UserWithSettings } from './auth.utils.js';
 import { ScheduleSlot } from 'shared';
+import { HOUR_MS } from '../prisma/dates.js';
+import { EventForReminder } from '../transformers/notifications.transformer.js';
 
 export type TaskWithAssignees = Prisma_Task & {
   assignees: UserWithSettings[] | null;
@@ -15,6 +25,35 @@ export type EventWithAttendees = Event & {
   workPackages: (Work_Package & {
     wbsElement: WBS_Element;
   })[];
+};
+
+const GRACE_MS = 2 * HOUR_MS;
+
+const REMINDER_TIERS = [
+  { tier: Event_Reminder_Tier.HOURS_48, hoursBefore: 48, label: 'in 2 days' },
+  { tier: Event_Reminder_Tier.HOURS_24, hoursBefore: 24, label: 'in 1 day' },
+  { tier: Event_Reminder_Tier.HOURS_1, hoursBefore: 1, label: 'within the hour' }
+] as const;
+
+export const getEventChannelIds = (event: EventForReminder): Set<string> => {
+  const ids = new Set<string>();
+  event.teams.forEach((t) => t.slackId && ids.add(t.slackId));
+  event.workPackages.forEach((wp) => wp.project.teams.forEach((t) => t.slackId && ids.add(t.slackId)));
+  return ids;
+};
+
+export const getEventAttendees = (event: EventForReminder) =>
+  [...event.requiredMembers, ...event.optionalMembers, event.userCreated].filter(
+    (user, i, arr) => arr.findIndex((u) => u.userId === user.userId) === i
+  );
+
+export const getDueTier = (startTime: Date, now: Date) => {
+  const msUntil = startTime.getTime() - now.getTime();
+  return REMINDER_TIERS.find(({ hoursBefore }) => {
+    const upper = hoursBefore * HOUR_MS;
+    const lower = Math.max(0, upper - GRACE_MS);
+    return msUntil <= upper && msUntil >= lower;
+  });
 };
 
 export const usersToSlackPings = (users: UserWithSettings[]) => {
