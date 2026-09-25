@@ -316,14 +316,18 @@ export const sendSlackEventConfirmNotification = async (
   slackId: string,
   eventId: string,
   eventName: string,
-  projectName: string,
-  remindUnconfirmed: boolean = false
+  projectName: string
 ) => {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
-  const msg = remindUnconfirmed
-    ? `REMINDER: Please fill out your availability for ${eventName} in project ${projectName}!`
-    : `You have been invited to ${eventName} in project ${projectName}!`;
+
+  let msg;
+  if (projectName) {
+    msg = `You have been invited to ${eventName} in project ${projectName}!`;
+  } else {
+    msg = `You have been invited to ${eventName}!`;
+  }
+
   const fullLink = isProduction
     ? `https://finishlinebyner.com/calendar/event/${eventId}`
     : `http://localhost:3000/calendar/event/${eventId}`;
@@ -455,12 +459,17 @@ export const sendSlackEventNotifications = async (
   const notifications: { channelId: string; ts: string }[] = [];
 
   const mentionPrefix = buildSlackMentionPrefix(options.mention ?? SlackMentionType.USER, options.memberSlackIds ?? []);
+  const projectNameNotEmpty = projectName && projectName !== '';
 
   let message;
-  if (workPackageName) {
+  if (workPackageName && projectNameNotEmpty) {
     message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
-  } else {
+  } else if (workPackageName) {
+    message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
+  } else if (projectNameNotEmpty) {
     message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
+  } else {
+    message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
   }
 
   const completion: Promise<void>[] = teams.map(async (team) => {
