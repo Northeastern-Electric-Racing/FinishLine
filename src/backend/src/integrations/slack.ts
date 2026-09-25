@@ -62,7 +62,6 @@ export const sendMessage = async (slackId: string, message: string, link?: strin
   if (!client) return;
 
   const block = generateSlackTextBlock(message, link, linkButtonText);
-  /*
   try {
     const response = await client.chat.postMessage({
       channel: slackId,
@@ -76,8 +75,6 @@ export const sendMessage = async (slackId: string, message: string, link?: strin
     console.error('Failed to send Slack message:', (error as any)?.data?.error ?? error);
     return undefined;
   }
-  */
-  console.log(message)
 };
 
 /**

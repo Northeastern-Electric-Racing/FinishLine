@@ -460,13 +460,14 @@ export const sendSlackEventNotifications = async (
   const notifications: { channelId: string; ts: string }[] = [];
 
   const mentionPrefix = buildSlackMentionPrefix(options.mention ?? SlackMentionType.USER, options.memberSlackIds ?? []);
+  const projectNameNotEmpty = projectName && projectName !== '';
 
   let message;
-  if (workPackageName && projectName) {
+  if (workPackageName && projectNameNotEmpty) {
     message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
   } else if (workPackageName) {
     message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
-  } else if (projectName) {
+  } else if (projectNameNotEmpty) {
     message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`; 
   } else {
     message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
