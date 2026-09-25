@@ -321,7 +321,7 @@ export const sendSlackEventConfirmNotification = async (
 ) => {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
-  
+
   let msg;
   if (projectName) {
     msg = `You have been invited to ${eventName} in project ${projectName}!`;
@@ -468,7 +468,7 @@ export const sendSlackEventNotifications = async (
   } else if (workPackageName) {
     message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
   } else if (projectNameNotEmpty) {
-    message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`; 
+    message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
   } else {
     message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
   }
