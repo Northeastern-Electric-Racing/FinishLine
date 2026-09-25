@@ -316,8 +316,7 @@ export const sendSlackEventConfirmNotification = async (
   slackId: string,
   eventId: string,
   eventName: string,
-  projectName: string,
-  remindUnconfirmed: boolean = false
+  projectName: string
 ) => {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
