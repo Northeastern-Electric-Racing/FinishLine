@@ -28,7 +28,7 @@ export const addBayDashboardClient = (slug: string, res: Response): boolean => {
   group.add(res);
   clients.set(slug, group);
 
-  // holds nothing open when nobody is listening 
+  // holds nothing open when nobody is listening
   if (!keepAlive) {
     keepAlive = setInterval(() => {
       for (const listeners of clients.values()) {
@@ -41,7 +41,7 @@ export const addBayDashboardClient = (slug: string, res: Response): boolean => {
 };
 
 /**
- * Unregisters a closed SSE response. 
+ * Unregisters a closed SSE response.
  * Safe to call for a response that was never registered.
  *
  * @param slug the organization slug the response was registered under
@@ -62,8 +62,8 @@ export const removeBayDashboardClient = (slug: string, res: Response) => {
 };
 
 /**
- * Tells every bay dashboard connected to this organization that something it displays has changed. 
- * The event carries no content; the TV refetches over the normal REST endpoints. 
+ * Tells every bay dashboard connected to this organization that something it displays has changed.
+ * The event carries no content; the TV refetches over the normal REST endpoints.
  * Always safe to call even if nobody is listening.
  *
  * @param slug the slug of the organization whose dashboard changed
