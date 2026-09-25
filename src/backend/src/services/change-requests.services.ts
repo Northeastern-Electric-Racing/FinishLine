@@ -13,7 +13,8 @@ import {
   wbsPipe,
   WorkPackageProposedChangesCreateArgs,
   User,
-  isHead
+  isHead,
+  isWithinBuffer
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -632,6 +633,16 @@ export default class ChangeRequestsService {
         createdCR.wbsElement?.workPackage?.project.wbsElement.name || ''
       );
       await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
+    }
+
+    if (createdCR.wbsElement?.workPackage) {
+      const inBuffer = isWithinBuffer(
+        startDate,
+        createdCR.wbsElement?.workPackage?.startDate,
+        organization.activationBufferDays
+      );
+      if (inBuffer) {
+      }
     }
 
     await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter);
