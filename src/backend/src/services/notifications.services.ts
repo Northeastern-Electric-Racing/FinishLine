@@ -3,27 +3,31 @@ import {
   TaskWithAssignees,
   endOfDayTomorrow,
   startOfDayTomorrow,
-  startOfTodayEST,
-  startOfTomorrowEST,
   usersToSlackPings,
-  EventWithAttendees
+  getDueTier,
+  getEventChannelIds,
+  buildReminderLine
 } from '../utils/notifications.utils.js';
 import { sendMessage } from '../integrations/slack.js';
-import { daysBetween, wbsPipe, formatTimeForSlack } from 'shared';
+import { daysBetween, wbsPipe } from 'shared';
 import { buildDueString, sendThreadResponse } from '../utils/slack.utils.js';
 import WorkPackagesService from './work-packages.services.js';
 import { addWeeksToDate } from 'shared';
 import { HttpException } from '../utils/errors.utils.js';
 import { Reimbursement_Status_Type } from '@prisma/client';
-import { scheduleTimesTransformer } from '../transformers/calendar.transformer.js';
+import { HOUR_MS } from '../prisma/dates.js';
+import { eventReminderInclude } from '../transformers/notifications.transformer.js';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
     await NotificationsService.sendTaskDeadlineSlackNotifications();
-    await NotificationsService.sendEventSlackNotifications();
     await NotificationsService.sendWorkPackageDeadlineSlackNotifications();
     await NotificationsService.sendSponsorTaskNotifications();
     await NotificationsService.sendPendingSaboSubmissionNotifications();
+  }
+
+  static async sendHourlySlackNotifications() {
+    await NotificationsService.sendEventReminderSlackNotifications();
   }
 
   /**
@@ -124,120 +128,195 @@ export default class NotificationsService {
     }
   }
 
-  /**
-   * Sends Slack notifications for all events scheduled for today whose event type has sendSlackNotifications enabled
-   */
-  static async sendEventSlackNotifications() {
-    const endOfToday = startOfTomorrowEST();
-    const startOfToday = startOfTodayEST();
+  static async sendEventReminderSlackNotifications() {
+    if (process.env.NODE_ENV !== 'production' && process.env.SEND_SLACK_MESSAGES_IN_DEV !== 'true') return;
 
-    const events = await prisma.event.findMany({
+    const now = new Date();
+    const horizon = new Date(now.getTime() + 48 * HOUR_MS);
+
+    const slots = await prisma.schedule_Slot.findMany({
       where: {
-        status: 'SCHEDULED',
-        dateDeleted: null,
-        scheduledTimes: {
-          some: {
-            AND: [{ endTime: { gte: startOfToday } }, { startTime: { lte: endOfToday } }]
-          }
-        },
-        eventType: {
-          sendSlackNotifications: true
-        }
+        startTime: { gt: now, lte: horizon },
+        event: { status: 'SCHEDULED', dateDeleted: null, eventType: { sendSlackNotifications: true } }
       },
-      include: {
-        requiredMembers: { include: { userSettings: true } },
-        optionalMembers: { include: { userSettings: true } },
-        userCreated: { include: { userSettings: true } },
-        scheduledTimes: true,
-        teams: true,
-        eventType: true,
-        workPackages: {
-          include: {
-            wbsElement: true,
-            project: {
-              include: {
-                teams: true,
-                wbsElement: true
-              }
-            }
-          }
-        }
-      }
+      orderBy: { startTime: 'asc' },
+      include: { event: { include: eventReminderInclude } }
     });
 
-    const eventTeamMap = new Map<string, EventWithAttendees[]>();
-
-    events.forEach((event) => {
-      // Collect unique team Slack IDs: first from teams directly on the event, then from work packages
-      const teamSlackIds = new Set<string>();
-
-      event.teams.forEach((team) => {
-        if (team.slackId) {
-          teamSlackIds.add(team.slackId);
-        }
-      });
-
-      event.workPackages.forEach((workPackage) => {
-        workPackage.project.teams.forEach((team) => {
-          if (team.slackId) {
-            teamSlackIds.add(team.slackId);
-          }
-        });
-      });
-
-      const attendees = event.requiredMembers
-        .concat(event.optionalMembers)
-        .concat(event.userCreated)
-        .filter((user, index, arr) => arr.findIndex((other) => other.userId === user.userId) === index);
-
-      teamSlackIds.forEach((teamSlackId) => {
-        const currentEvents = eventTeamMap.get(teamSlackId);
-        const eventWithAttendees = {
-          ...event,
-          attendees,
-          scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer)
-        };
-
-        if (currentEvents) {
-          currentEvents.push(eventWithAttendees);
-        } else {
-          eventTeamMap.set(teamSlackId, [eventWithAttendees]);
-        }
-      });
+    const due = slots.flatMap((slot) => {
+      if (!slot.startTime) return [];
+      const tier = getDueTier(slot.startTime, now);
+      return tier ? [{ slot, startTime: slot.startTime, tier }] : [];
     });
 
-    // Send the notifications to each team for their respective events
-    const promises = Array.from(eventTeamMap).map(async ([slackId, events]) => {
-      const messageBlock = events
-        .map((event) => {
-          const zoomLink = event.zoomLink ? `<${event.zoomLink}|Zoom Link>\n` : '';
-          const questionDocLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Question Doc Link>\n` : '';
+    const candidates = due.flatMap(({ slot, startTime, tier }) =>
+      [...getEventChannelIds(slot.event)].map((slackChannelId) => ({ slot, startTime, tier, slackChannelId }))
+    );
 
-          const workPackageNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
-          const workPackagesPart = workPackageNames ? ` (${workPackageNames})` : '';
+    console.log(candidates);
 
-          // Get the earliest scheduled start time for display
-          const [earliestSlot] = event.scheduledTimes
-            .filter((slot) => slot.startTime)
-            .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime());
-          const timeDisplay = earliestSlot ? formatTimeForSlack(new Date(earliestSlot.startTime!)) : 'TBD';
+    if (candidates.length === 0) return;
 
-          return (
-            `${usersToSlackPings(event.attendees ?? [])} *${event.eventType.name}*: ${event.title}${workPackagesPart} ` +
-            `will be having an event today at ${timeDisplay} ET! ` +
-            zoomLink +
-            questionDocLink
-          );
+    const claimed = await prisma.event_Reminder.createManyAndReturn({
+      data: candidates.map(({ slot, startTime, tier, slackChannelId }) => ({
+        scheduleSlotId: slot.scheduleSlotId,
+        tier: tier.tier,
+        slotStartTime: startTime,
+        slackChannelId
+      })),
+      skipDuplicates: true
+    });
+
+    const claimKey = (scheduleSlotId: string, slackChannelId: string) => `${scheduleSlotId}:${slackChannelId}`;
+    const claimedIdByKey = new Map(claimed.map((r) => [claimKey(r.scheduleSlotId, r.slackChannelId), r.eventReminderId]));
+
+    const byChannel = new Map<string, { lines: string[]; reminderIds: string[] }>();
+
+    candidates.forEach(({ slot, startTime, tier, slackChannelId }) => {
+      const reminderId = claimedIdByKey.get(claimKey(slot.scheduleSlotId, slackChannelId));
+      if (!reminderId) return;
+
+      const entry = byChannel.get(slackChannelId) ?? { lines: [], reminderIds: [] };
+      entry.lines.push(buildReminderLine(slot.event, startTime, tier.label));
+      entry.reminderIds.push(reminderId);
+      byChannel.set(slackChannelId, entry);
+    });
+
+    const failedReminderIds = (
+      await Promise.all(
+        [...byChannel].map(async ([channelId, { lines, reminderIds }]) => {
+          try {
+            const sent = await sendMessage(
+              channelId,
+              ':calendar: :clock9: Upcoming Events! :clock9: :calendar:\n\n\n' + lines.join('\n\n')
+            );
+            return sent ? [] : reminderIds;
+          } catch {
+            return reminderIds;
+          }
         })
-        .join('\n\n');
+      )
+    ).flat();
 
-      // messageBlock will be empty if there are events with no attendees
-      if (messageBlock !== '')
-        await sendMessage(slackId, ':calendar: :clock9: Upcoming Events! :clock9: :calendar: \n\n\n' + messageBlock);
-    });
-
-    await Promise.all(promises);
+    if (failedReminderIds.length > 0) {
+      await prisma.event_Reminder.deleteMany({ where: { eventReminderId: { in: failedReminderIds } } });
+    }
   }
+
+  // /**
+  //  * Sends Slack notifications for all events scheduled for today whose event type has sendSlackNotifications enabled
+  //  */
+  // static async sendEventSlackNotifications() {
+  //   const endOfToday = startOfTomorrowEST();
+  //   const startOfToday = startOfTodayEST();
+
+  //   const events = await prisma.event.findMany({
+  //     where: {
+  //       status: 'SCHEDULED',
+  //       dateDeleted: null,
+  //       scheduledTimes: {
+  //         some: {
+  //           AND: [{ endTime: { gte: startOfToday } }, { startTime: { lte: endOfToday } }]
+  //         }
+  //       },
+  //       eventType: {
+  //         sendSlackNotifications: true
+  //       }
+  //     },
+  //     include: {
+  //       requiredMembers: { include: { userSettings: true } },
+  //       optionalMembers: { include: { userSettings: true } },
+  //       userCreated: { include: { userSettings: true } },
+  //       scheduledTimes: true,
+  //       teams: true,
+  //       eventType: true,
+  //       workPackages: {
+  //         include: {
+  //           wbsElement: true,
+  //           project: {
+  //             include: {
+  //               teams: true,
+  //               wbsElement: true
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+  //   });
+
+  //   const eventTeamMap = new Map<string, EventWithAttendees[]>();
+
+  //   events.forEach((event) => {
+  //     // Collect unique team Slack IDs: first from teams directly on the event, then from work packages
+  //     const teamSlackIds = new Set<string>();
+
+  //     event.teams.forEach((team) => {
+  //       if (team.slackId) {
+  //         teamSlackIds.add(team.slackId);
+  //       }
+  //     });
+
+  //     event.workPackages.forEach((workPackage) => {
+  //       workPackage.project.teams.forEach((team) => {
+  //         if (team.slackId) {
+  //           teamSlackIds.add(team.slackId);
+  //         }
+  //       });
+  //     });
+
+  //     const attendees = event.requiredMembers
+  //       .concat(event.optionalMembers)
+  //       .concat(event.userCreated)
+  //       .filter((user, index, arr) => arr.findIndex((other) => other.userId === user.userId) === index);
+
+  //     teamSlackIds.forEach((teamSlackId) => {
+  //       const currentEvents = eventTeamMap.get(teamSlackId);
+  //       const eventWithAttendees = {
+  //         ...event,
+  //         attendees,
+  //         scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer)
+  //       };
+
+  //       if (currentEvents) {
+  //         currentEvents.push(eventWithAttendees);
+  //       } else {
+  //         eventTeamMap.set(teamSlackId, [eventWithAttendees]);
+  //       }
+  //     });
+  //   });
+
+  //   // Send the notifications to each team for their respective events
+  //   const promises = Array.from(eventTeamMap).map(async ([slackId, events]) => {
+  //     const messageBlock = events
+  //       .map((event) => {
+  //         const zoomLink = event.zoomLink ? `<${event.zoomLink}|Zoom Link>\n` : '';
+  //         const questionDocLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Question Doc Link>\n` : '';
+
+  //         const workPackageNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
+  //         const workPackagesPart = workPackageNames ? ` (${workPackageNames})` : '';
+
+  //         // Get the earliest scheduled start time for display
+  //         const [earliestSlot] = event.scheduledTimes
+  //           .filter((slot) => slot.startTime)
+  //           .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime());
+  //         const timeDisplay = earliestSlot ? formatTimeForSlack(new Date(earliestSlot.startTime!)) : 'TBD';
+
+  //         return (
+  //           `${usersToSlackPings(event.attendees ?? [])} *${event.eventType.name}*: ${event.title}${workPackagesPart} ` +
+  //           `will be having an event today at ${timeDisplay} ET! ` +
+  //           zoomLink +
+  //           questionDocLink
+  //         );
+  //       })
+  //       .join('\n\n');
+
+  //     // messageBlock will be empty if there are events with no attendees
+  //     if (messageBlock !== '')
+  //       await sendMessage(slackId, ':calendar: :clock9: Upcoming Events! :clock9: :calendar: \n\n\n' + messageBlock);
+  //   });
+
+  //   await Promise.all(promises);
+  // }
 
   /**
    * Sends the sponsor task slack notifications for all tasks with a notify date of today
