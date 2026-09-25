@@ -6,11 +6,10 @@ import {
   usersToSlackPings,
   getDueTier,
   getEventChannelIds,
-  getEventAttendees,
   buildReminderLine
 } from '../utils/notifications.utils.js';
 import { sendMessage } from '../integrations/slack.js';
-import { daysBetween, wbsPipe, formatTimeForSlack } from 'shared';
+import { daysBetween, wbsPipe } from 'shared';
 import { buildDueString, sendThreadResponse } from '../utils/slack.utils.js';
 import WorkPackagesService from './work-packages.services.js';
 import { addWeeksToDate } from 'shared';
@@ -18,7 +17,6 @@ import { HttpException } from '../utils/errors.utils.js';
 import { Reimbursement_Status_Type } from '@prisma/client';
 import { HOUR_MS } from '../prisma/dates.js';
 import { eventReminderInclude } from '../transformers/notifications.transformer.js';
-import { channel } from 'diagnostics_channel';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
@@ -188,12 +186,10 @@ export default class NotificationsService {
       await Promise.all(
         [...byChannel].map(async ([channelId, { lines, reminderIds }]) => {
           try {
-            // const sent = await sendMessage(
-            //   channelId,
-            //   ':calendar: :clock9: Upcoming Events! :clock9: :calendar:\n\n\n' + lines.join('\n\n')
-            // );
-            const sent = undefined;
-            console.log(':calendar: :clock9: Upcoming Events! :clock9: :calendar:\n\n\n' + lines.join('\n\n'));
+            const sent = await sendMessage(
+              channelId,
+              ':calendar: :clock9: Upcoming Events! :clock9: :calendar:\n\n\n' + lines.join('\n\n')
+            );
             return sent ? [] : reminderIds;
           } catch {
             return reminderIds;
