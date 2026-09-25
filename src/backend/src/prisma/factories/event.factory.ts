@@ -51,7 +51,6 @@ export const EVENTS_PER_PROJECT = 3;
 export const DOCUMENT_PROBABILITY = 0.6;
 export const MEETING_ATTENDANCE_PROBABILITY = 0.4;
 const EVENT_DATE_BUFFER_DAYS = 7;
-const MAX_ATTENDEES = 10;
 export const DAYS_AFTER_NO_EVENT = 20;
 const CONFIRMED_WINDOW = 14;
 
@@ -80,8 +79,9 @@ export const shouldCreateDocument = (faker: Faker): boolean => faker.datatype.bo
 export const shouldCreateMeetingAttendance = (faker: Faker): boolean =>
   faker.datatype.boolean({ probability: MEETING_ATTENDANCE_PROBABILITY });
 
-export const generateAttendeeCount = (faker: Faker, maxUsers: number): number =>
-  faker.number.int({ min: 2, max: Math.min(MAX_ATTENDEES, maxUsers) });
+// Picks between 40% and 100% of the team's roster to attend, always at least one person.
+export const generateRosterAttendeeCount = (faker: Faker, rosterSize: number): number =>
+  Math.max(1, Math.round(rosterSize * faker.number.float({ min: 0.4, max: 1 })));
 
 export const generateLocation = (faker: Faker): string | null => arrayOrNull(faker, EVENT_LOCATIONS, 0.5);
 
