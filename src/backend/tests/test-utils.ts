@@ -1008,3 +1008,52 @@ export const createTestGuestDefinition = async (user: User, organizationId: stri
 
   return def;
 };
+
+export const createOpsTeamAndMember = async (organization?: Organization) => {
+  if (!organization) organization = await createTestOrganization();
+  const head = await createTestUser(
+    { ...batmanAppAdmin, googleAuthId: 'opsHead', email: 'opshead@ner.com' },
+    organization.organizationId
+  );
+
+  const opsMember = await createTestUser(
+    {
+      firstName: 'John',
+      lastName: 'Test',
+      email: 'test.j@northeastern.edu',
+      googleAuthId: 'opsMember',
+      role: RoleEnum.MEMBER
+    },
+    organization.organizationId
+  );
+
+  const team = await TeamsService.createTeam(head, 'Ops Team', head.userId, 'Ops Team', '', false, organization);
+
+  await prisma.team.update({
+    where: { teamId: team.teamId },
+    data: { operationsTeam: true }
+  });
+
+  await TeamsService.setTeamMembers(head, team.teamId, [opsMember.userId], organization);
+
+  return opsMember;
+};
+
+export const createTestExecutiveSummary = async (organization?: Organization, carId?: string, userCreatedId?: string) => {
+  if (!organization) organization = await createTestOrganization();
+  if (!userCreatedId) userCreatedId = (await createTestUser(supermanAdmin, organization.organizationId)).userId;
+  if (!carId) carId = (await createTestCar(organization.organizationId, userCreatedId)).carId;
+
+  return prisma.executive_Summary.create({
+    data: {
+      car: { connect: { carId } },
+      goals: 'goals',
+      winsAndImprovements: 'wins and improvements',
+      budgetNotes: 'budget notes',
+      recruitmentNotes: 'recruitment notes',
+      seasonStartDate: new Date('01/01/2024'),
+      seasonEndDate: new Date('06/01/2024'),
+      userCreated: { connect: { userId: userCreatedId } }
+    }
+  });
+};
