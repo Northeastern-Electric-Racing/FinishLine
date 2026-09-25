@@ -5,7 +5,7 @@
 
 import express from 'express';
 import { body } from 'express-validator';
-import { isDate, nonEmptyString, validateInputs } from '../utils/validation.utils.js';
+import { isDate, validateInputs } from '../utils/validation.utils.js';
 import ExecSummaryController from '../controllers/exec-summaries.controllers.js';
 
 const execSummaryRouter = express.Router();
