@@ -35,4 +35,18 @@ export default class ExecSummaryServices {
 
     return executiveSummaryTransformer(executiveSummary);
   }
+
+  static async getAllExecutiveSummaries(organization: Organization, viewer: User) {
+    const hasPermission = await userHasPermission(viewer.userId, organization.organizationId, notGuest);
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only members can view executive summaries');
+    }
+
+    const executiveSummaries = await prisma.executive_Summary.findMany({
+      where: { car: { wbsElement: { organizationId: organization.organizationId } }, dateDeleted: null },
+      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+    });
+
+    return executiveSummaries.map(executiveSummaryTransformer);
+  }
 }
