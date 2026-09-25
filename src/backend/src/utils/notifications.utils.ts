@@ -52,7 +52,7 @@ export const getDueTier = (startTime: Date, now: Date) => {
   return REMINDER_TIERS.find(({ hoursBefore }) => {
     const upper = hoursBefore * HOUR_MS;
     const lower = Math.max(0, upper - GRACE_MS);
-    return msUntil <= upper && msUntil >= lower;
+    return msUntil <= upper && msUntil > lower;
   });
 };
 
