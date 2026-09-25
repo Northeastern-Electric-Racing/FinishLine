@@ -12,4 +12,25 @@ export default class ExecSummaryController {
       next(error);
     }
   }
+
+  static async createExecutiveSummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { carId, seasonStartDate, seasonEndDate, goals, winsAndImprovements, budgetNotes, recruitmentNotes } = req.body;
+
+      const executiveSummary = await ExecSummaryServices.createExecutiveSummary(
+        req.currentUser,
+        req.organization,
+        carId,
+        seasonStartDate ? new Date(seasonStartDate) : undefined,
+        seasonEndDate ? new Date(seasonEndDate) : undefined,
+        goals,
+        winsAndImprovements,
+        budgetNotes,
+        recruitmentNotes
+      );
+      res.status(200).json(executiveSummary);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
