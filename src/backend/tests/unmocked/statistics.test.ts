@@ -563,7 +563,7 @@ describe('Statistics Tests', () => {
   });
 
   describe('Attendance Graphs', () => {
-    it('Create graph works for getting sum and average attendance percent by team, excluding open sessions', async () => {
+    it('Create graph averages attendance percent by team per session for both sum and average measures, excluding open sessions', async () => {
       const division = await createTestTeamType('aDivision', orgId);
       const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
       const m1 = await createTestUser(member, orgId);
@@ -643,13 +643,14 @@ describe('Statistics Tests', () => {
         new Date('2024-02-01')
       );
 
+      // attendance percents are always averaged per session, so SUM matches AVG
       expect(sumResult.graphData).toStrictEqual([
         {
           tipLabel: '% Attendance',
           values: [
             {
               label: team.teamName,
-              value: 150
+              value: 75
             }
           ]
         }
