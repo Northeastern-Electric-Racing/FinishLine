@@ -14,10 +14,10 @@ execSummaryRouter.get('/:execSummaryId', ExecSummaryController.getSingleExecutiv
 
 execSummaryRouter.post(
   '/:executiveSummaryId/edit',
-  nonEmptyString(body('goals')),
-  nonEmptyString(body('winsAndImprovements')),
-  nonEmptyString(body('budgetNotes')),
-  nonEmptyString(body('recruitmentNotes')),
+  body('goals').isString(),
+  body('winsAndImprovements').isString(),
+  body('budgetNotes').isString(),
+  body('recruitmentNotes').isString(),
   isDate(body('seasonStartDate')),
   isDate(body('seasonEndDate')),
   validateInputs,
