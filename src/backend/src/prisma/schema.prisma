@@ -1157,9 +1157,10 @@ model Event_Reminder {
   scheduleSlot    Schedule_Slot       @relation(fields: [scheduleSlotId], references: [scheduleSlotId], onDelete: Cascade)
   tier            Event_Reminder_Tier
   slotStartTime   DateTime
+  slackChannelId  String
   dateSent        DateTime            @default(now())
 
-  @@unique([scheduleSlotId, tier, slotStartTime])
+  @@unique([scheduleSlotId, tier, slotStartTime, slackChannelId])
 }
 
 model Schedule_Slot {

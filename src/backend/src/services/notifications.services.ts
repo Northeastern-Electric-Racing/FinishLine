@@ -6,7 +6,8 @@ import {
   usersToSlackPings,
   getDueTier,
   getEventChannelIds,
-  getEventAttendees
+  getEventAttendees,
+  buildReminderLine
 } from '../utils/notifications.utils.js';
 import { sendMessage } from '../integrations/slack.js';
 import { daysBetween, wbsPipe, formatTimeForSlack } from 'shared';
@@ -17,6 +18,7 @@ import { HttpException } from '../utils/errors.utils.js';
 import { Reimbursement_Status_Type } from '@prisma/client';
 import { HOUR_MS } from '../prisma/dates.js';
 import { eventReminderInclude } from '../transformers/notifications.transformer.js';
+import { channel } from 'diagnostics_channel';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
@@ -149,44 +151,60 @@ export default class NotificationsService {
       return tier ? [{ slot, startTime: slot.startTime, tier }] : [];
     });
 
-    if (due.length === 0) return;
+    const candidates = due.flatMap(({ slot, startTime, tier }) =>
+      [...getEventChannelIds(slot.event)].map((slackChannelId) => ({ slot, startTime, tier, slackChannelId }))
+    );
+
+    console.log(candidates);
+
+    if (candidates.length === 0) return;
 
     const claimed = await prisma.event_Reminder.createManyAndReturn({
-      data: due.map(({ slot, startTime, tier }) => ({
+      data: candidates.map(({ slot, startTime, tier, slackChannelId }) => ({
         scheduleSlotId: slot.scheduleSlotId,
         tier: tier.tier,
-        slotStartTime: startTime
+        slotStartTime: startTime,
+        slackChannelId
       })),
       skipDuplicates: true
     });
 
-    const claimedIds = new Set(claimed.map((r) => r.scheduleSlotId));
-    const toSend = due.filter(({ slot }) => claimedIds.has(slot.scheduleSlotId));
+    const claimKey = (scheduleSlotId: string, slackChannelId: string) => `${scheduleSlotId}:${slackChannelId}`;
+    const claimedIdByKey = new Map(claimed.map((r) => [claimKey(r.scheduleSlotId, r.slackChannelId), r.eventReminderId]));
 
-    const channelLines = new Map<string, string[]>();
+    const byChannel = new Map<string, { lines: string[]; reminderIds: string[] }>();
 
-    toSend.forEach(async ({ slot, startTime, tier }) => {
-      const { event } = slot;
-      const wpNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
-      const unix = Math.floor(startTime.getTime() / 1000);
-      const when = `<!date^${unix}^{date_short_pretty} at {time}|${formatTimeForSlack(startTime)} ET>`;
-      const zoom = event.zoomLink ? `\n<${event.zoomLink}|Zoom Link>` : '';
-      const doc = event.questionDocumentLink ? `\n<${event.questionDocumentLink}|Question Doc Link>` : '';
+    candidates.forEach(({ slot, startTime, tier, slackChannelId }) => {
+      const reminderId = claimedIdByKey.get(claimKey(slot.scheduleSlotId, slackChannelId));
+      if (!reminderId) return;
 
-      const line =
-        `${usersToSlackPings(getEventAttendees(event))} *${event.eventType.name}*: ${event.title}` +
-        `${wpNames ? ` (${wpNames})` : ''} is ${tier.label}: ${when}${zoom}${doc}`;
-
-      getEventChannelIds(event).forEach((channelId) => {
-        channelLines.set(channelId, [...(channelLines.get(channelId) ?? []), line]);
-      });
-
-      await Promise.all(
-        [...channelLines].map(([channelId, lines]) =>
-          sendMessage(channelId, ':calendar: :clock9: Upcoming Events! :clock9: :calendar:\n\n\n' + lines.join('\n\n'))
-        )
-      );
+      const entry = byChannel.get(slackChannelId) ?? { lines: [], reminderIds: [] };
+      entry.lines.push(buildReminderLine(slot.event, startTime, tier.label));
+      entry.reminderIds.push(reminderId);
+      byChannel.set(slackChannelId, entry);
     });
+
+    const failedReminderIds = (
+      await Promise.all(
+        [...byChannel].map(async ([channelId, { lines, reminderIds }]) => {
+          try {
+            // const sent = await sendMessage(
+            //   channelId,
+            //   ':calendar: :clock9: Upcoming Events! :clock9: :calendar:\n\n\n' + lines.join('\n\n')
+            // );
+            const sent = undefined;
+            console.log(':calendar: :clock9: Upcoming Events! :clock9: :calendar:\n\n\n' + lines.join('\n\n'));
+            return sent ? [] : reminderIds;
+          } catch {
+            return reminderIds;
+          }
+        })
+      )
+    ).flat();
+
+    if (failedReminderIds.length > 0) {
+      await prisma.event_Reminder.deleteMany({ where: { eventReminderId: { in: failedReminderIds } } });
+    }
   }
 
   // /**

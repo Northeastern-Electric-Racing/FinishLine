@@ -5,10 +5,10 @@ import {
   Work_Package,
   Team,
   Event_Type,
-  Event_Reminder_Tier,
+  Event_Reminder_Tier
 } from '@prisma/client';
 import { UserWithSettings } from './auth.utils.js';
-import { ScheduleSlot } from 'shared';
+import { formatTimeForSlack, ScheduleSlot } from 'shared';
 import { HOUR_MS } from '../prisma/dates.js';
 import { EventForReminder } from '../transformers/notifications.transformer.js';
 
@@ -54,6 +54,19 @@ export const getDueTier = (startTime: Date, now: Date) => {
     const lower = Math.max(0, upper - GRACE_MS);
     return msUntil <= upper && msUntil >= lower;
   });
+};
+
+export const buildReminderLine = (event: EventForReminder, startTime: Date, label: string): string => {
+  const wpNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
+  const unix = Math.floor(startTime.getTime() / 1000);
+  const when = `<!date^${unix}^{date_short_pretty} at {time}|${formatTimeForSlack(startTime)} ET>`;
+  const zoom = event.zoomLink ? `\n<${event.zoomLink}|Zoom Link>` : '';
+  const doc = event.questionDocumentLink ? `\n<${event.questionDocumentLink}|Question Doc Link>` : '';
+
+  return (
+    `${usersToSlackPings(getEventAttendees(event))} *${event.eventType.name}*: ${event.title}` +
+    `${wpNames ? ` (${wpNames})` : ''} is ${label}: ${when}${zoom}${doc}`
+  );
 };
 
 export const usersToSlackPings = (users: UserWithSettings[]) => {
