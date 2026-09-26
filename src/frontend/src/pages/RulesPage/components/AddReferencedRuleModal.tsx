@@ -13,7 +13,7 @@ import { useAddRuleReferences } from '../../../hooks/rules.hooks';
 interface AddReferencedRuleModalProps {
   open: boolean;
   onClose: () => void;
-  // The rule recieving a reference, whose "+" menu was used to open this modal
+  // The rule receiving a reference, whose "+" menu was used to open this modal
   ruleId: string | null;
   rulesetId: string;
   allRules: Rule[];

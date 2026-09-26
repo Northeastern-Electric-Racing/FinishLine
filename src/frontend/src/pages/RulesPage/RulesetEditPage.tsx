@@ -41,11 +41,10 @@ import { useRuleTreeNavigation } from './useRuleTreeNavigation';
 import { RuleActionsCell, RuleBodyCell, RuleCodeCell, RuleDraft } from './components/RuleEditCells';
 
 /**
- * RulesetPage component for displaying and managing ruleset rules.
- * Supports editing and adding rules.
+ * RulesetEditPage component for displaying and editing ruleset rules.
  */
 const RulesetEditPage: React.FC = () => {
-  const { rulesetId } = useParams<{ rulesetId: string; tabValue?: string }>(); //why tab value??
+  const { rulesetId } = useParams<{ rulesetId: string }>();
   const user = useCurrentUser();
   const [tabValue, setTabValue] = useState(0);
   const defaultTab = 'edit-rules';
@@ -430,7 +429,7 @@ const RulesetEditPage: React.FC = () => {
         { name: 'Rules', route: routes.RULES },
         {
           name: `${ruleset.rulesetType?.name} Rulesets`,
-          route: `${routes.RULESET_BY_ID.replace(':rulesetTypeId', ruleset.rulesetType.rulesetTypeId)}` // <-- rulesetId variable should eventually be replaced by ruleset.rulestType.rulesetTypeId or somethign like that
+          route: `${routes.RULESET_BY_ID.replace(':rulesetTypeId', ruleset.rulesetType.rulesetTypeId)}`
         }
       ]}
       tabs={

@@ -277,7 +277,7 @@ export const removeRuleReferences = (ruleId: string, referencedRuleId: string) =
 };
 
 /**
- * Updates a rulesets active status
+ * Updates a ruleset's name and active status
  */
 export const updateRuleset = (rulesetId: string, name: string, isActive: boolean) => {
   return axios.post<Ruleset>(apiUrls.rulesetUpdate(rulesetId), { name, isActive });

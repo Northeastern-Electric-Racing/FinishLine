@@ -102,7 +102,7 @@ export interface TeamRules {
 
 /**
  * Groups ruleset's rules by team and project for team view. First groups by team
- * assigned to, then by projects assign to within that team, or unassigned to any
+ * assigned to, then by projects assigned to within that team, or unassigned to any
  * project. Finally groups by rules not assigned to any team.
  * Note that rules can be on more than one team and in more than one project for that team.
  */
