@@ -14,6 +14,17 @@ const clients = new Map<string, Set<Response>>();
 let keepAlive: NodeJS.Timeout | undefined;
 
 /**
+ * Writes to a stream only if it is still open.
+ *
+ * @param client the response to write to
+ * @param frame the SSE frame to send
+ */
+const writeIfOpen = (client: Response, frame: string) => {
+  if (client.writableEnded || client.destroyed) return;
+  client.write(frame);
+};
+
+/**
  * Registers an open SSE response against an organization slug.
  *
  * @param slug the organization slug taken from the request URL
@@ -32,7 +43,7 @@ export const addBayDashboardClient = (slug: string, res: Response): boolean => {
   if (!keepAlive) {
     keepAlive = setInterval(() => {
       for (const listeners of clients.values()) {
-        for (const client of listeners) client.write(': keepalive\n\n');
+        for (const client of listeners) writeIfOpen(client, ': keepalive\n\n');
       }
     }, KEEPALIVE_MS);
   }
@@ -71,5 +82,5 @@ export const removeBayDashboardClient = (slug: string, res: Response) => {
 export const broadcastBayDashboardUpdate = (slug: string) => {
   const group = clients.get(slug);
   if (!group) return;
-  for (const client of group) client.write('event: update\ndata: update\n\n');
+  for (const client of group) writeIfOpen(client, 'event: update\ndata: update\n\n');
 };
