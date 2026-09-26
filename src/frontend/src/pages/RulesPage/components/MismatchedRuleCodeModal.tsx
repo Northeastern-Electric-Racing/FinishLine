@@ -15,8 +15,8 @@ interface MismatchedRuleCodeModalProps {
 }
 
 /**
- * Warns that a rule code doesn't follow the parent-code-prefix convention, without blocking
- * the action. Rule codes aren't required to share their parent's prefix, but it does make the display a bit more confusing.
+ * Lists the warnings for a rule code change before it saves, such as the code not starting with its parent's
+ * code or child codes not updating with the new prefix. Neither blocks the save, the user can submit anyway.
  */
 const MismatchedRuleCodeModal = ({ open, onHide, onConfirm, messages }: MismatchedRuleCodeModalProps) => {
   return (

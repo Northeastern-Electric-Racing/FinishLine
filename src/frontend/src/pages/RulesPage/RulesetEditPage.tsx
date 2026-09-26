@@ -75,6 +75,9 @@ const RulesetEditPage: React.FC = () => {
   const editingRuleIdRef = useRef(editingRuleId);
   editingRuleIdRef.current = editingRuleId;
 
+  // covers loading the tree for the code checks as well as the save itself, so Save can't be clicked twice
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
   // Editing rule code warnings
   const [pendingCodeWarnings, setPendingCodeWarnings] = useState<string[] | null>(null);
 
@@ -258,7 +261,7 @@ const RulesetEditPage: React.FC = () => {
     [editRuleMutation]
   );
 
-  const handleSaveEdit = useCallback(
+  const saveEdit = useCallback(
     async (rule: Rule) => {
       const draft = { ...draftRef.current };
       const trimmedCode = draft.ruleCode.trim();
@@ -285,19 +288,22 @@ const RulesetEditPage: React.FC = () => {
 
       if (editingRuleIdRef.current !== rule.ruleId) return;
 
+      // the row's copy can be out of date, such as its parent's code after the parent was renamed
+      const currentRule = allRulesInRuleset.find((r) => r.ruleId === rule.ruleId) ?? rule;
+
       // a duplicate code cannot be saved, so reject it before any of the warnings below
-      if (allRulesInRuleset.some((r) => r.ruleId !== rule.ruleId && r.ruleCode === trimmedCode)) {
+      if (allRulesInRuleset.some((r) => r.ruleId !== currentRule.ruleId && r.ruleCode === trimmedCode)) {
         toastRef.current.error(`Rule with code ${trimmedCode} already exists in this ruleset`);
         return;
       }
 
       const warnings: string[] = [];
 
-      if (rule.parentRule && !trimmedCode.startsWith(rule.parentRule.ruleCode)) {
-        warnings.push(`This code doesn't start with its parent rule's code: ${rule.parentRule.ruleCode}.`);
+      if (currentRule.parentRule && !trimmedCode.startsWith(currentRule.parentRule.ruleCode)) {
+        warnings.push(`This code doesn't start with its parent rule's code: ${currentRule.parentRule.ruleCode}.`);
       }
 
-      const affectedCount = countRulesToDelete(rule, allRulesInRuleset) - 1;
+      const affectedCount = countRulesToDelete(currentRule, allRulesInRuleset) - 1;
       if (affectedCount > 0) {
         warnings.push(
           `This rule has ${affectedCount} child rule${affectedCount === 1 ? '' : 's'} whose code${
@@ -311,15 +317,32 @@ const RulesetEditPage: React.FC = () => {
         return;
       }
 
-      await performSaveEdit(rule.ruleId, draft);
+      await performSaveEdit(currentRule.ruleId, draft);
     },
     [loadFullTree, performSaveEdit]
+  );
+
+  const handleSaveEdit = useCallback(
+    async (rule: Rule) => {
+      setIsSavingEdit(true);
+      try {
+        await saveEdit(rule);
+      } finally {
+        setIsSavingEdit(false);
+      }
+    },
+    [saveEdit]
   );
 
   const handleConfirmCodeWarning = useCallback(async () => {
     setPendingCodeWarnings(null);
     if (!editingRuleId) return;
-    await performSaveEdit(editingRuleId, { ...draftRef.current });
+    setIsSavingEdit(true);
+    try {
+      await performSaveEdit(editingRuleId, { ...draftRef.current });
+    } finally {
+      setIsSavingEdit(false);
+    }
   }, [editingRuleId, performSaveEdit]);
 
   const handleCancelCodeWarning = useCallback(() => setPendingCodeWarnings(null), []);
@@ -358,6 +381,7 @@ const RulesetEditPage: React.FC = () => {
       <RuleActionsCell
         rule={currentRule}
         isEditing={editingRuleId === currentRule.ruleId}
+        isSaving={editingRuleId === currentRule.ruleId && isSavingEdit}
         onAdd={handleOpenAddMenu}
         onRemove={handleRemoveRule}
         onEdit={handleEditRule}
@@ -365,7 +389,7 @@ const RulesetEditPage: React.FC = () => {
         onCancel={handleCancelEdit}
       />
     ),
-    [editingRuleId, handleCancelEdit, handleEditRule, handleOpenAddMenu, handleRemoveRule, handleSaveEdit]
+    [editingRuleId, isSavingEdit, handleCancelEdit, handleEditRule, handleOpenAddMenu, handleRemoveRule, handleSaveEdit]
   );
 
   const getRowBackgroundColor = useCallback(

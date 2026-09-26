@@ -608,6 +608,10 @@ export const useDeleteRule = (rulesetId: string) => {
   );
 };
 
+// the edited row is stored in its parent's children list, or the top level list when it has no parent
+const ruleListKey = (rulesetId: string, rule: SharedRule) =>
+  rule.parentRule ? ['rules', 'children', rule.parentRule.ruleId] : ['rules', 'top-level', rulesetId];
+
 /**
  * Swaps edited rule into cache so editing does not refetch.
  */
@@ -622,10 +626,7 @@ const applyRuleUpdate = (queryClient: QueryClient, rulesetId: string, updatedRul
     );
   };
 
-  // the edited row is stored in its parent's children list, or the top level list when it has no parent
-  replaceIn(
-    updatedRule.parentRule ? ['rules', 'children', updatedRule.parentRule.ruleId] : ['rules', 'top-level', rulesetId]
-  );
+  replaceIn(ruleListKey(rulesetId, updatedRule));
   replaceIn(['rules', 'allRules', rulesetId]);
 };
 
@@ -635,6 +636,7 @@ const applyRuleUpdate = (queryClient: QueryClient, rulesetId: string, updatedRul
 export const useEditRule = (rulesetId: string) => {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const fetchFullRuleTree = useFetchFullRuleTree(rulesetId);
 
   return useMutation<SharedRule, Error, { ruleId: string; ruleContent: string; ruleCode?: string }>(
     ['rules', 'edit'],
@@ -645,7 +647,19 @@ export const useEditRule = (rulesetId: string) => {
     {
       onSuccess: (updatedRule) => {
         toast.success(`Rule ${updatedRule.ruleCode} updated successfully`);
+        const previousRule = queryClient
+          .getQueryData<SharedRule[]>(ruleListKey(rulesetId, updatedRule))
+          ?.find((rule) => rule.ruleId === updatedRule.ruleId);
         applyRuleUpdate(queryClient, rulesetId, updatedRule);
+
+        // other rows show this rule's code in their references and as their parent's code,
+        // so a code change reloads the ruleset instead of only swapping this row
+        if (previousRule?.ruleCode !== updatedRule.ruleCode) {
+          Promise.all([
+            queryClient.invalidateQueries(['rules', 'top-level', rulesetId]),
+            fetchFullRuleTree()
+          ]).catch(() => queryClient.invalidateQueries(['rules']));
+        }
       },
       onError: (error: Error) => {
         toast.error(`Failed to update rule: ${error.message}`);

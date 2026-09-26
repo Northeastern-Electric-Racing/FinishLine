@@ -168,6 +168,7 @@ const RuleBodyCellComponent: React.FC<RuleBodyCellProps> = ({
 interface RuleActionsCellProps {
   rule: Rule;
   isEditing: boolean;
+  isSaving: boolean;
   onAdd: (rule: Rule, anchorEl: HTMLElement) => void;
   onRemove: (rule: Rule) => void;
   onEdit: (rule: Rule) => void;
@@ -181,6 +182,7 @@ interface RuleActionsCellProps {
 const RuleActionsCellComponent: React.FC<RuleActionsCellProps> = ({
   rule,
   isEditing,
+  isSaving,
   onAdd,
   onRemove,
   onEdit,
@@ -198,7 +200,12 @@ const RuleActionsCellComponent: React.FC<RuleActionsCellProps> = ({
           <NERFailButton size="small" onClick={onCancel} sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
             Cancel
           </NERFailButton>
-          <NERSuccessButton size="small" onClick={() => onSave(rule)} sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <NERSuccessButton
+            size="small"
+            onClick={() => onSave(rule)}
+            disabled={isSaving}
+            sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
             Save
           </NERSuccessButton>
         </>
