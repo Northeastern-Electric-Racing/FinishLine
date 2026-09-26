@@ -1078,6 +1078,7 @@ describe('Reimbursement Requests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org',
+          slug: 'other-org',
           userCreated: { connect: { userId: financeHead.userId } }
         }
       });

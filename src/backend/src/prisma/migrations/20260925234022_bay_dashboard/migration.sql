@@ -4,6 +4,15 @@ CREATE TYPE "Bay_Dashboard_Widget_Size" AS ENUM ('SMALL', 'MEDIUM', 'LARGE');
 -- CreateEnum
 CREATE TYPE "Bay_Dashboard_Widget_Type" AS ENUM ('CALENDAR', 'OVERDUE_WORK_PACKAGES', 'TEXT_FIELD', 'TIER_LIST', 'MBTA_TRACKER', 'SLACK_APPRECIATIONS', 'SLACK_MENTIONS');
 
+-- AlterTable
+-- Hand-written: slug is added nullable and backfilled before being made required, since a NOT NULL
+-- column with no value fails on any database that already has organizations.
+ALTER TABLE "Organization" ADD COLUMN "slug" TEXT;
+UPDATE "Organization" SET "slug" = 'ner' WHERE "name" = 'Northeastern Electric Racing';
+-- slug is unique, so any other organization falls back to its id until it is given a real slug
+UPDATE "Organization" SET "slug" = "organizationId" WHERE "slug" IS NULL;
+ALTER TABLE "Organization" ALTER COLUMN "slug" SET NOT NULL;
+
 -- CreateTable
 CREATE TABLE "Bay_Dashboard_Config" (
     "bayDashboardConfigId" TEXT NOT NULL,
@@ -70,6 +79,9 @@ CREATE UNIQUE INDEX "Bay_Dashboard_Widget_bayDashboardSlotId_order_key" ON "Bay_
 
 -- CreateIndex
 CREATE INDEX "Bay_Dashboard_Countdown_organizationId_idx" ON "Bay_Dashboard_Countdown"("organizationId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Organization_slug_key" ON "Organization"("slug");
 
 -- CreateIndex
 -- Hand-written: Prisma cannot express partial indexes, so this is not represented in schema.prisma

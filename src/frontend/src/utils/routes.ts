@@ -11,6 +11,7 @@ const GUEST_INFO = `/guestinfo`;
 const GANTT = `/gantt`;
 const TASKS = `/tasks`;
 const CREDITS = `/credits`;
+const BAY_DASHBOARD = `/bay-dashboard/:slug`; /* /bay-dashboard/ner */
 
 /**************** Home Section ****************/
 const HOME = `/home`;
@@ -89,6 +90,7 @@ export const routes = {
   INFO,
   GUEST_INFO,
   CREDITS,
+  BAY_DASHBOARD,
 
   HOME,
   HOME_PNM,

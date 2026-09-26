@@ -268,6 +268,7 @@ export const createTestOrganization = async () => {
   return await prisma.organization.create({
     data: {
       name: 'Joe mama',
+      slug: 'joe-mama',
       description: 'Joe mama`s organization',
       applicationLink: '',
       userCreated: {

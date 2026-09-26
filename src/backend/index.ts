@@ -34,6 +34,8 @@ import agentRouter from './src/routes/agent.routes.js';
 import { mcpNodeHandler } from './src/mcp/handler.js';
 import { attachAuthInfo, requireApiToken } from './src/utils/mcp-auth.utils.js';
 import dashboardsRouter from './src/routes/dashboards.routes.js';
+import bayDashboardRouter from './src/routes/bay-dashboard.routes.js';
+import bayDashboardAdminRouter from './src/routes/bay-dashboard-admin.routes.js';
 
 const app = express();
 
@@ -93,6 +95,9 @@ app.use(cors(options));
 // Public ICS feed routes — mounted before JWT middleware so calendar apps can subscribe without auth
 app.use('/ics', icsRouter);
 
+// Bay TV can display the dashboard read-only with no one logged in
+app.use('/bay-dashboard', bayDashboardRouter);
+
 // API token routes — mounted before the JWT middleware so that per-user API tokens authenticate here
 // and ONLY here. Keeping this above the cookie middleware is what stops a token from reaching the
 // rest of the API.
@@ -140,6 +145,7 @@ app.use('/calendar', calendarRouter);
 app.use('/prospective-sponsors', prospectiveSponsorRouter);
 app.use('/attendance', attendanceRouter);
 app.use('/dashboards', dashboardsRouter);
+app.use('/bay-dashboard', bayDashboardAdminRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });
