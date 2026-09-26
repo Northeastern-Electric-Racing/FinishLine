@@ -28,7 +28,13 @@ const createOtherOrganization = async () => {
     data: { firstName: 'Other', lastName: 'Creator', email: 'other-org-creator@test.com', googleAuthId: 'otherOrgCreator' }
   });
   return prisma.organization.create({
-    data: { name: 'Other Org', description: '', applicationLink: '', userCreated: { connect: { userId: user.userId } } }
+    data: {
+      name: 'Other Org',
+      slug: 'other-org',
+      description: '',
+      applicationLink: '',
+      userCreated: { connect: { userId: user.userId } }
+    }
   });
 };
 

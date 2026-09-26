@@ -1,10 +1,3 @@
-/*
-  Warnings:
-
-  - A unique constraint covering the columns `[slug]` on the table `Organization` will be added. If there are existing duplicate values, this will fail.
-  - The required column `slug` was added to the `Organization` table with a prisma-level default value. This is not possible if the table is not empty. Please add this column as optional, then populate it before making it required.
-
-*/
 -- CreateEnum
 CREATE TYPE "Bay_Dashboard_Widget_Size" AS ENUM ('SMALL', 'MEDIUM', 'LARGE');
 
@@ -12,7 +5,13 @@ CREATE TYPE "Bay_Dashboard_Widget_Size" AS ENUM ('SMALL', 'MEDIUM', 'LARGE');
 CREATE TYPE "Bay_Dashboard_Widget_Type" AS ENUM ('CALENDAR', 'OVERDUE_WORK_PACKAGES', 'TEXT_FIELD', 'TIER_LIST', 'MBTA_TRACKER', 'SLACK_APPRECIATIONS', 'SLACK_MENTIONS');
 
 -- AlterTable
-ALTER TABLE "Organization" ADD COLUMN     "slug" TEXT NOT NULL;
+-- Hand-written: slug is added nullable and backfilled before being made required, since a NOT NULL
+-- column with no value fails on any database that already has organizations.
+ALTER TABLE "Organization" ADD COLUMN "slug" TEXT;
+UPDATE "Organization" SET "slug" = 'ner' WHERE "name" = 'Northeastern Electric Racing';
+-- slug is unique, so any other organization falls back to its id until it is given a real slug
+UPDATE "Organization" SET "slug" = "organizationId" WHERE "slug" IS NULL;
+ALTER TABLE "Organization" ALTER COLUMN "slug" SET NOT NULL;
 
 -- CreateTable
 CREATE TABLE "Bay_Dashboard_Config" (
