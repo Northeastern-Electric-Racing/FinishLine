@@ -655,10 +655,9 @@ export const useEditRule = (rulesetId: string) => {
         // other rows show this rule's code in their references and as their parent's code,
         // so a code change reloads the ruleset instead of only swapping this row
         if (previousRule?.ruleCode !== updatedRule.ruleCode) {
-          Promise.all([
-            queryClient.invalidateQueries(['rules', 'top-level', rulesetId]),
-            fetchFullRuleTree()
-          ]).catch(() => queryClient.invalidateQueries(['rules']));
+          Promise.all([queryClient.invalidateQueries(['rules', 'top-level', rulesetId]), fetchFullRuleTree()]).catch(() =>
+            queryClient.invalidateQueries(['rules'])
+          );
         }
       },
       onError: (error: Error) => {
