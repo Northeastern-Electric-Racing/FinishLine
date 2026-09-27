@@ -762,5 +762,169 @@ describe('Statistics Tests', () => {
         }
       ]);
     });
+
+    it('Create graph excludes teams with no closed sessions in range from attendance by team', async () => {
+      const division = await createTestTeamType('aDivision', orgId);
+      const teamA = await createTestTeam(user.userId, division.teamTypeId, orgId);
+      const teamAMember = await createTestUser(member, orgId);
+      await prisma.team.update({
+        where: { teamId: teamA.teamId },
+        data: { members: { connect: [{ userId: teamAMember.userId }] } }
+      });
+
+      const teamBHead = await createTestUser(greenlanternHead, orgId);
+      const teamB = await createTestTeam(teamBHead.userId, division.teamTypeId, orgId);
+
+      // team A: 50% attendance
+      await prisma.meeting_Attendance.create({
+        data: {
+          organizationId: orgId,
+          teamId: teamA.teamId,
+          userCreatedId: user.userId,
+          openedAt: new Date('2024-01-01'),
+          closedAt: new Date('2024-01-01T01:00:00'),
+          slackChannelId: 'aChannel',
+          slackMessageTimestamp: '1',
+          attendees: { connect: [{ userId: user.userId }] }
+        }
+      });
+
+      // team B: closed session outside the range
+      await prisma.meeting_Attendance.create({
+        data: {
+          organizationId: orgId,
+          teamId: teamB.teamId,
+          userCreatedId: teamBHead.userId,
+          openedAt: new Date('2020-01-01'),
+          closedAt: new Date('2020-01-01T01:00:00'),
+          slackChannelId: 'aChannel',
+          slackMessageTimestamp: '2',
+          attendees: { connect: [{ userId: teamBHead.userId }] }
+        }
+      });
+
+      // team B: open session inside the range
+      await prisma.meeting_Attendance.create({
+        data: {
+          organizationId: orgId,
+          teamId: teamB.teamId,
+          userCreatedId: teamBHead.userId,
+          openedAt: new Date('2024-01-08'),
+          closedAt: null,
+          slackChannelId: 'aChannel',
+          slackMessageTimestamp: '3',
+          attendees: { connect: [{ userId: teamBHead.userId }] }
+        }
+      });
+
+      const result = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.ATTENDANCE_BY_TEAM,
+        Measure.AVG,
+        Graph_Display_Type.BAR,
+        organization,
+        [],
+        [],
+        new Date('2023-12-01'),
+        new Date('2024-02-01')
+      );
+
+      expect(result.graphData).toStrictEqual([
+        {
+          tipLabel: '% Attendance',
+          values: [
+            {
+              label: teamA.teamName,
+              value: 50
+            }
+          ]
+        }
+      ]);
+    });
+
+    it('Create graph excludes divisions with no closed sessions in range from attendance by division', async () => {
+      const divisionWithSessions = await createTestTeamType('aDivision', orgId);
+      const divisionWithoutSessions = await createTestTeamType('bDivision', orgId);
+      const teamA = await createTestTeam(user.userId, divisionWithSessions.teamTypeId, orgId);
+      const teamBHead = await createTestUser(greenlanternHead, orgId);
+      await createTestTeam(teamBHead.userId, divisionWithoutSessions.teamTypeId, orgId);
+
+      // team A: 100% attendance
+      await prisma.meeting_Attendance.create({
+        data: {
+          organizationId: orgId,
+          teamId: teamA.teamId,
+          userCreatedId: user.userId,
+          openedAt: new Date('2024-01-01'),
+          closedAt: new Date('2024-01-01T01:00:00'),
+          slackChannelId: 'aChannel',
+          slackMessageTimestamp: '1',
+          attendees: { connect: [{ userId: user.userId }] }
+        }
+      });
+
+      const result = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.ATTENDANCE_BY_DIVISION,
+        Measure.AVG,
+        Graph_Display_Type.BAR,
+        organization,
+        [],
+        [],
+        new Date('2023-12-01'),
+        new Date('2024-02-01')
+      );
+
+      expect(result.graphData).toStrictEqual([
+        {
+          tipLabel: '% Attendance',
+          values: [
+            {
+              label: divisionWithSessions.name,
+              value: 100
+            }
+          ]
+        }
+      ]);
+    });
+
+    it('Create graph forces average measure and no cars for attendance graphs', async () => {
+      const car = await createTestCar(orgId, user.userId);
+
+      const result = await StatisticsService.createGraph(
+        user,
+        'New Graph',
+        Graph_Type.ATTENDANCE_BY_TEAM,
+        Measure.SUM,
+        Graph_Display_Type.BAR,
+        organization,
+        [car.carId],
+        []
+      );
+
+      expect(result.measure).toStrictEqual(Measure.AVG);
+      expect(result.carIds).toStrictEqual([]);
+    });
+
+    it('Edit graph forces average measure and no cars for attendance graphs', async () => {
+      const car = await createTestCar(orgId, user.userId);
+
+      const result = await StatisticsService.editGraph(
+        user,
+        graph.graphId,
+        'Updated Graph',
+        Graph_Type.ATTENDANCE_BY_DIVISION,
+        Measure.SUM,
+        Graph_Display_Type.BAR,
+        organization,
+        [car.carId],
+        []
+      );
+
+      expect(result.measure).toStrictEqual(Measure.AVG);
+      expect(result.carIds).toStrictEqual([]);
+    });
   });
 });

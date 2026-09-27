@@ -739,19 +739,22 @@ const getGraphDataForAttendanceByTeam = async (
 
   const data: GraphData = {
     tipLabel: '% Attendance',
-    values: teams.map((team) => {
-      let value = team.meetingAttendances.reduce((prev, session) => {
+    // teams with no sessions in range are excluded so they aren't confused with 0% attendance
+    values: teams.flatMap((team) => {
+      const numSessions = team.meetingAttendances.length;
+
+      if (numSessions === 0) return [];
+
+      const totalPercent = team.meetingAttendances.reduce((prev, session) => {
         return prev + calculateTeamMemberAttendancePercent(team, session.attendees);
       }, 0);
 
-      if (team.meetingAttendances.length > 0) {
-        value = value / team.meetingAttendances.length;
-      }
-
-      return {
-        value,
-        label: team.teamName
-      };
+      return [
+        {
+          value: totalPercent / numSessions,
+          label: team.teamName
+        }
+      ];
     })
   };
 
@@ -784,10 +787,11 @@ const getGraphDataForAttendanceByDivision = async (
 
   const data: GraphData = {
     tipLabel: '% Attendance',
-    values: divisions.map((division) => {
+    // divisions with no sessions in range are excluded so they aren't confused with 0% attendance
+    values: divisions.flatMap((division) => {
       let numSessions = 0;
 
-      let value = division.teams.reduce((prev, team) => {
+      const totalPercent = division.teams.reduce((prev, team) => {
         return (
           prev +
           team.meetingAttendances.reduce((prev, session) => {
@@ -797,14 +801,14 @@ const getGraphDataForAttendanceByDivision = async (
         );
       }, 0);
 
-      if (numSessions > 0) {
-        value = value / numSessions;
-      }
+      if (numSessions === 0) return [];
 
-      return {
-        value,
-        label: division.name
-      };
+      return [
+        {
+          value: totalPercent / numSessions,
+          label: division.name
+        }
+      ];
     })
   };
 
