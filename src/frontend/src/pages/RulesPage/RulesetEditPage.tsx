@@ -105,7 +105,11 @@ const RulesetEditPage: React.FC = () => {
   } = useGetTopLevelRules(rulesetId!);
 
   // Only the modals that browse the whole ruleset need every rule, so this stays unfetched until one opens
-  const { data: allRules } = useAllRulesForRuleset(rulesetId!, showAddReferencedRuleModal || showAddImageModal);
+  const {
+    data: allRules,
+    isError: isAllRulesError,
+    isLoading: isAllRulesLoading
+  } = useAllRulesForRuleset(rulesetId!, showAddReferencedRuleModal || showAddImageModal);
 
   const { mutateAsync: deleteRuleMutation } = useDeleteRule(rulesetId!);
   const { mutateAsync: editRuleMutation } = useEditRule(rulesetId!);
@@ -511,6 +515,8 @@ const RulesetEditPage: React.FC = () => {
               ruleId={activeRule?.ruleId ?? null}
               rulesetId={rulesetId}
               allRules={allRules ?? []}
+              isAllRulesLoading={isAllRulesLoading}
+              isAllRulesError={isAllRulesError}
             />
 
             <AddImageModal
@@ -519,6 +525,8 @@ const RulesetEditPage: React.FC = () => {
               ruleId={activeRule?.ruleId ?? null}
               rulesetId={rulesetId}
               allRules={allRules ?? []}
+              isAllRulesLoading={isAllRulesLoading}
+              isAllRulesError={isAllRulesError}
             />
 
             <MismatchedRuleCodeModal

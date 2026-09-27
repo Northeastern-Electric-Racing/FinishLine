@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { Rule } from 'shared';
 import NERModal from '../../../components/NERModal';
@@ -17,6 +17,8 @@ interface AddReferencedRuleModalProps {
   ruleId: string | null;
   rulesetId: string;
   allRules: Rule[];
+  isAllRulesLoading: boolean;
+  isAllRulesError: boolean;
 }
 
 type RuleOption = { label: string; id: string };
@@ -24,7 +26,15 @@ type RuleOption = { label: string; id: string };
 /**
  * Modal for attaching an existing rule as a referenced rule to the currently-edited rule
  */
-const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({ open, onClose, ruleId, rulesetId, allRules }) => {
+const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({
+  open,
+  onClose,
+  ruleId,
+  rulesetId,
+  allRules,
+  isAllRulesLoading,
+  isAllRulesError
+}) => {
   const [selected, setSelected] = useState<RuleOption | null>(null);
   const { mutateAsync: addReferences, isLoading } = useAddRuleReferences(rulesetId);
 
@@ -42,7 +52,8 @@ const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({ open, o
       .map((r) => ({ label: r.ruleCode, id: r.ruleId }));
   }, [allRules, activeRule]);
 
-  if (!activeRule) return null;
+  // once loading finishes with no error, a missing activeRule means the ruleId doesn't exist, so there's nothing to show
+  if (!isAllRulesLoading && !isAllRulesError && !activeRule) return null;
 
   const handleClose = () => {
     setSelected(null);
@@ -66,19 +77,27 @@ const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({ open, o
       title="Add Referenced Rule"
       onSubmit={handleSubmit}
       submitText="Submit"
-      disabled={!selected || isLoading}
+      disabled={!selected || isLoading || isAllRulesLoading || isAllRulesError || !activeRule}
       showCloseButton
     >
       <Box sx={{ minWidth: '500px', py: 1 }}>
-        <NERAutocomplete
-          id="referenced-rule-autocomplete"
-          options={options}
-          value={selected}
-          onChange={(_event, value) => setSelected(value)}
-          size="small"
-          placeholder="Search for an existing rule"
-          filterSelectedOptions
-        />
+        {isAllRulesLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+            <CircularProgress size={24} />
+          </Box>
+        ) : isAllRulesError ? (
+          <Typography color="error">Failed to load rules. Please close and try again.</Typography>
+        ) : (
+          <NERAutocomplete
+            id="referenced-rule-autocomplete"
+            options={options}
+            value={selected}
+            onChange={(_event, value) => setSelected(value)}
+            size="small"
+            placeholder="Search for an existing rule"
+            filterSelectedOptions
+          />
+        )}
       </Box>
     </NERModal>
   );

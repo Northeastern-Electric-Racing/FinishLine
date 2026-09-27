@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import { useState } from 'react';
 import { FileUpload } from '@mui/icons-material';
 import { MAX_FILE_SIZE, Rule } from 'shared';
@@ -17,6 +17,8 @@ interface AddImageModalProps {
   ruleId: string | null;
   rulesetId: string;
   allRules: Rule[];
+  isAllRulesLoading: boolean;
+  isAllRulesError: boolean;
 }
 
 const isImage = (fileName: string) => {
@@ -24,7 +26,15 @@ const isImage = (fileName: string) => {
   return extension === 'png' || extension === 'jpg' || extension === 'jpeg';
 };
 
-const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, rulesetId, allRules }) => {
+const AddImageModal: React.FC<AddImageModalProps> = ({
+  open,
+  onClose,
+  ruleId,
+  rulesetId,
+  allRules,
+  isAllRulesLoading,
+  isAllRulesError
+}) => {
   const toast = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,17 +88,25 @@ const AddImageModal: React.FC<AddImageModalProps> = ({ open, onClose, ruleId, ru
       title="Add Image"
       onSubmit={handleSubmit}
       submitText="Submit"
-      disabled={!file || !activeRule || isSubmitting}
+      disabled={!file || !activeRule || isSubmitting || isAllRulesLoading || isAllRulesError}
       showCloseButton
     >
       <Box sx={{ minWidth: '400px', display: 'flex', flexDirection: 'column', gap: 2, py: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {file && <Typography>{file.name}</Typography>}
-          <Button variant="contained" color="success" component="label" startIcon={<FileUpload />} disabled={!!file}>
-            {file ? 'Image Selected' : 'Select Image'}
-            <input type="file" accept="image/png, image/jpeg" hidden onChange={handleFileSelect} />
-          </Button>
-        </Box>
+        {isAllRulesLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+            <CircularProgress size={24} />
+          </Box>
+        ) : isAllRulesError ? (
+          <Typography color="error">Failed to load rules. Please close and try again.</Typography>
+        ) : (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {file && <Typography>{file.name}</Typography>}
+            <Button variant="contained" color="success" component="label" startIcon={<FileUpload />} disabled={!!file}>
+              {file ? 'Image Selected' : 'Select Image'}
+              <input type="file" accept="image/png, image/jpeg" hidden onChange={handleFileSelect} />
+            </Button>
+          </Box>
+        )}
       </Box>
     </NERModal>
   );
