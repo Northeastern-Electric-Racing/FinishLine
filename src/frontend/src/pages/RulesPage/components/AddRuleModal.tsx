@@ -62,26 +62,21 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
   }, [open, initialParentRuleId, parentRuleCode, reset]);
 
   const onSubmit = async (data: FormData) => {
-    try {
-      const referencedRules =
-        selectedReferenceHierarchy.length > 0 ? [selectedReferenceHierarchy[selectedReferenceHierarchy.length - 1]] : [];
+    const referencedRules =
+      selectedReferenceHierarchy.length > 0 ? [selectedReferenceHierarchy[selectedReferenceHierarchy.length - 1]] : [];
 
-      await createRule({
-        ruleCode: data.ruleCode,
-        ruleContent: data.ruleContent ?? '',
-        rulesetId,
-        parentRuleId: initialParentRuleId,
-        referencedRules,
-        imageFileIds: []
-      });
+    // only resets the draft on success
+    await createRule({
+      ruleCode: data.ruleCode,
+      ruleContent: data.ruleContent ?? '',
+      rulesetId,
+      parentRuleId: initialParentRuleId,
+      referencedRules,
+      imageFileIds: []
+    });
 
-      toast.success('Rule created successfully');
-      handleClose();
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(`Failed to create rule: ${error.message}`);
-      }
-    }
+    toast.success('Rule created successfully');
+    handleClose();
   };
 
   const handleClose = () => {
