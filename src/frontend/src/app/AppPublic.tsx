@@ -11,6 +11,7 @@ import AppAuthenticated from './AppAuthenticated';
 import { useProvideThemeToggle } from '../hooks/theme.hooks';
 import LoadingIndicator from '../components/LoadingIndicator';
 import { useOrganization } from '../hooks/organizations.hooks';
+import BayDashboardPage from '../pages/BayDashboardPage/BayDashboardPage';
 
 const AppPublic: React.FC = () => {
   const auth = useAuth();
@@ -89,6 +90,9 @@ const AppPublic: React.FC = () => {
     <Switch>
       <Route path={routes.LOGIN}>
         <Login />
+      </Route>
+      <Route path={routes.BAY_DASHBOARD}>
+        <BayDashboardPage />
       </Route>
       <Route path="*" render={render} />
     </Switch>

@@ -1414,6 +1414,7 @@ model Car {
 model Organization {
   organizationId                         String    @id @default(uuid())
   name                                   String
+  slug                                   String    @unique
   dateCreated                            DateTime  @default(now())
   userCreatedId                          String
   userCreated                            User      @relation(fields: [userCreatedId], references: [userId], name: "organizationCreator")

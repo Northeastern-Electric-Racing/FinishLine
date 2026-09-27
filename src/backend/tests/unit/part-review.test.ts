@@ -757,6 +757,7 @@ describe('part review tests', () => {
       const org2 = await prisma.organization.create({
         data: {
           name: 'Joe mama2',
+          slug: 'joe-mama2-a',
           description: 'Joe mama2`s organization',
           applicationLink: '',
           userCreated: {
@@ -899,6 +900,7 @@ describe('part review tests', () => {
     const org2 = await prisma.organization.create({
       data: {
         name: 'Joe mama2',
+        slug: 'joe-mama2-b',
         description: 'Joe mama2`s organization',
         applicationLink: '',
         userCreated: {
