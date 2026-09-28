@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, CircularProgress, Typography, useTheme } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { Rule } from 'shared';
 import NERModal from '../../../components/NERModal';
@@ -35,6 +35,7 @@ const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({
   isAllRulesLoading,
   isAllRulesError
 }) => {
+  const theme = useTheme();
   const [selected, setSelected] = useState<RuleOption | null>(null);
   const { mutateAsync: addReferences, isLoading } = useAddRuleReferences(rulesetId);
 
@@ -96,6 +97,12 @@ const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({
             size="small"
             placeholder="Search for an existing rule"
             filterSelectedOptions
+            sx={{
+              backgroundColor: 'transparent',
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: theme.palette.background.default
+              }
+            }}
           />
         )}
       </Box>
