@@ -321,13 +321,14 @@ export const sendSlackEventConfirmNotification = async (
 ) => {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
+  const projectNameNotEmpty = projectName && projectName.trim() !== '';
 
   let msg = '';
-  if (projectName && remindUnconfirmed) {
+  if (projectNameNotEmpty && remindUnconfirmed) {
     msg = `REMINDER: Please fill out your availability for ${eventName} in project ${projectName}!`;
   } else if (remindUnconfirmed) {
     msg = `REMINDER: Please fill out your availability for ${eventName}!`;
-  } else if (projectName) {
+  } else if (projectNameNotEmpty) {
     msg = `You have been invited to ${eventName} in project ${projectName}!`;
   } else {
     msg = `You have been invited to ${eventName}!`;
@@ -464,7 +465,7 @@ export const sendSlackEventNotifications = async (
   const notifications: { channelId: string; ts: string }[] = [];
 
   const mentionPrefix = buildSlackMentionPrefix(options.mention ?? SlackMentionType.USER, options.memberSlackIds ?? []);
-  const projectNameNotEmpty = projectName && projectName !== '';
+  const projectNameNotEmpty = projectName && projectName.trim() !== '';
 
   let message;
   if (workPackageName && projectNameNotEmpty) {
