@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, CircularProgress, Typography, useTheme } from '@mui/material';
+import { Box, CircularProgress, FormLabel, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { Rule } from 'shared';
 import NERModal from '../../../components/NERModal';
@@ -23,6 +23,16 @@ interface AddReferencedRuleModalProps {
 
 type RuleOption = { label: string; id: string };
 
+const sectionHeaderStyle = {
+  display: 'block',
+  fontWeight: 'bold',
+  color: '#ef4345',
+  textDecoration: 'underline',
+  fontSize: '1rem',
+  textUnderlineOffset: '5px',
+  marginBottom: '10px'
+};
+
 /**
  * Modal for attaching an existing rule as a referenced rule to the currently-edited rule
  */
@@ -35,7 +45,6 @@ const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({
   isAllRulesLoading,
   isAllRulesError
 }) => {
-  const theme = useTheme();
   const [selected, setSelected] = useState<RuleOption | null>(null);
   const { mutateAsync: addReferences, isLoading } = useAddRuleReferences(rulesetId);
 
@@ -89,21 +98,20 @@ const AddReferencedRuleModal: React.FC<AddReferencedRuleModalProps> = ({
         ) : isAllRulesError ? (
           <Typography color="error">Failed to load rules. Please close and try again.</Typography>
         ) : (
-          <NERAutocomplete
-            id="referenced-rule-autocomplete"
-            options={options}
-            value={selected}
-            onChange={(_event, value) => setSelected(value)}
-            size="small"
-            placeholder="Search for an existing rule"
-            filterSelectedOptions
-            sx={{
-              backgroundColor: 'transparent',
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: theme.palette.background.default
-              }
-            }}
-          />
+          <Box>
+            <FormLabel sx={sectionHeaderStyle}>Referenced Rule Code</FormLabel>
+            <NERAutocomplete
+              id="referenced-rule-autocomplete"
+              options={options}
+              value={selected}
+              onChange={(_event, value) => setSelected(value)}
+              size="small"
+              placeholder="Search for an existing rule code"
+              filterSelectedOptions
+              disablePortal={false}
+              sx={{ backgroundColor: 'transparent' }}
+            />
+          </Box>
         )}
       </Box>
     </NERModal>
