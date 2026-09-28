@@ -77,7 +77,10 @@ const RuleImages: React.FC<RuleImagesProps> = ({ rule, onImageRemove }) => {
                   component="img"
                   src={image.url}
                   alt="Rule attachment"
-                  onClick={() => setPreviewIndex(index)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewIndex(index);
+                  }}
                   sx={{ maxWidth: 300, maxHeight: 300, borderRadius: 1, cursor: 'pointer', display: 'block' }}
                 />
                 {onImageRemove && (
