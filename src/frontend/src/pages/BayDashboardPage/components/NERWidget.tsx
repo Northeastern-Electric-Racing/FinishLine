@@ -12,7 +12,7 @@ export enum WidgetSize {
   SMALL,
   MEDIUM,
   LARGE
-}
+} //export for BayDashboardPage
 
 const NERWidget: React.FC<WidgetProps> = ({ title, size, children }) => {
   //scaled variable(s) for box, default is medium
