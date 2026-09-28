@@ -21,7 +21,10 @@ interface FormData {
 }
 
 const schema = yup.object().shape({
-  ruleCode: yup.string().required('Rule Code is required'),
+  ruleCode: yup
+    .string()
+    .required('Rule Code is required')
+    .test('not-blank', 'Rule Code is required', (value) => !!value?.trim()),
   ruleContent: yup.string()
 });
 
@@ -114,7 +117,9 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
           <Controller
             name="ruleCode"
             control={control}
-            render={({ field }) => <TextField {...field} fullWidth placeholder="Enter Rule Code" error={!!errors.ruleCode} />}
+            render={({ field }) => (
+              <TextField {...field} fullWidth placeholder="Enter Rule Code" error={!!errors.ruleCode} />
+            )}
           />
           <FormHelperText error={!!errors.ruleCode}>{errors.ruleCode?.message}</FormHelperText>
           {showPrefixWarning && (
