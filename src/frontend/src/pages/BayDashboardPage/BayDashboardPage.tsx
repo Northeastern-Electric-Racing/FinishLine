@@ -5,6 +5,7 @@
 
 import { Box, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
+import NERWidget, { WidgetSize } from './components/NERWidget';
 import { useBayDashboardEvents } from '../../hooks/bay-dashboard.hooks';
 
 interface ParamTypes {
@@ -22,6 +23,17 @@ const BayDashboardPage: React.FC = () => {
   return (
     <Box>
       <Typography variant="body2">Bay Dashboard</Typography>
+      {/* <NERWidget title={'testing'}> </NERWidget> */}
+      <NERWidget title={'Widget Title Bar'} size={WidgetSize.LARGE}>
+        {' '}
+      </NERWidget>
+      <NERWidget title={'Widget Title Bar'} size={WidgetSize.MEDIUM}>
+        {' '}
+      </NERWidget>
+      <NERWidget title={'Widget Title Bar'} size={WidgetSize.SMALL}>
+        {' '}
+      </NERWidget>
+      {/* test each size w title */}
     </Box>
   );
 };
