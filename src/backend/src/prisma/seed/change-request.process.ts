@@ -10,7 +10,6 @@ import { TeamOutput, TeamProcess } from './team.process.js';
 import { TeamJoinRequestProcess } from './team-join-request.process.js';
 import { CarProcess } from './car.process.js';
 import { CarOutput, DateRange } from '../context.js';
-import { WEEK_MS } from '../dates.js';
 import {
   buildAccountCodeChangeRequests,
   buildWbsChangeRequests,
@@ -20,6 +19,7 @@ import {
   SeedCrActor,
   SeedCrParent
 } from '../factories/change-request.factory.js';
+import { WEEK_MS } from '../../utils/time.utils.js';
 
 // Matches the car name the system-tests dev login (system-tests/cypress/support/commands.js)
 // selects after logging in -- the "Change Requests To Review" home page section is filtered

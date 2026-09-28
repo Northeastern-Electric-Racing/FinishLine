@@ -9,9 +9,8 @@ import {
 } from '@prisma/client';
 import { UserWithSettings } from './auth.utils.js';
 import { formatTimeForSlack, ScheduleSlot } from 'shared';
-import { HOUR_MS } from '../prisma/dates.js';
 import { EventForReminder } from '../transformers/notifications.transformer.js';
-
+import { HOUR_MS } from './time.utils.js';
 export type TaskWithAssignees = Prisma_Task & {
   assignees: UserWithSettings[] | null;
   wbsElement: WBS_Element;

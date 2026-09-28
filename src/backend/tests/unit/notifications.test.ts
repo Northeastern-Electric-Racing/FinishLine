@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Event_Reminder_Tier } from '@prisma/client';
 import { getDueTier, getEventChannelIds } from '../../src/utils/notifications.utils';
-import { HOUR_MS } from '../../src/prisma/dates';
+import { HOUR_MS } from '../../src/utils/time.utils';
 
 type ReminderEvent = Parameters<typeof getEventChannelIds>[0];
 

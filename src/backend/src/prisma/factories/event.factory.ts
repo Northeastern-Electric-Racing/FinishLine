@@ -1,9 +1,8 @@
 import { Faker } from '@faker-js/faker';
 import { Conflict_Status, Event_Status, Prisma } from '@prisma/client';
 import { arrayOrNull } from '../utils/arrays.js';
-import { DAY_MS, MINUTE_MS } from '../dates.js';
 import { addDaysToDate } from 'shared';
-
+import { DAY_MS, MINUTE_MS } from '../../utils/time.utils.js';
 type ConflictResult = {
   approved: Conflict_Status;
   approvalRequiredFromUserId: string | undefined;
