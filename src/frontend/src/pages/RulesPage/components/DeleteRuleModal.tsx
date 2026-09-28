@@ -35,11 +35,11 @@ const DeleteRuleModal = ({ open, onHide, onConfirm, rule, totalRulesToDelete }: 
       formId="delete-rule-form"
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Typography sx={{ fontWeight: 400, fontSize: '1.25rem' }}>{modalTitle}</Typography>
+        <Typography sx={{ fontWeight: 400, fontSize: '1rem' }}>{modalTitle}</Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningIcon sx={{ color: '#ef4345', fontSize: 30 }} />
-          <Typography sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
+          <WarningIcon sx={{ color: '#ef4345', fontSize: 24, flexShrink: 0 }} />
+          <Typography sx={{ fontWeight: 600, fontSize: '1rem' }}>
             {totalRulesToDelete} {totalRulesToDelete === 1 ? 'rule' : 'rules'} will be deleted
           </Typography>
         </Box>

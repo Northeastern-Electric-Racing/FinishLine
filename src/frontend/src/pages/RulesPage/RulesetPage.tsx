@@ -19,8 +19,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 
 /**
- * RulesetPage component for displaying and managing ruleset rules.
- * Supports editing and assigning rules to projects and teams.
+ * RulesetPage for uploading and listing rulesets.
  */
 const RulesetPage: React.FC = () => {
   const { rulesetTypeId } = useParams<{ rulesetTypeId: string }>();

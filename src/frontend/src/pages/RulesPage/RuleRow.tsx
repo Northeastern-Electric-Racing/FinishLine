@@ -141,14 +141,14 @@ const RuleRow: React.FC<RuleRowProps> = ({
   const color = typeof textColor === 'function' ? textColor(rule) : textColor;
   const hoverBgColor = typeof hoverColor === 'function' ? hoverColor(rule) : hoverColor;
 
-  const toggleExpand = () => {
+  const toggleExpand = useCallback(() => {
     if (!hasSubRules) return;
     if (onToggleExpand) {
       onToggleExpand(rule.ruleId);
     } else {
       setLocalExpanded((prev) => !prev);
     }
-  };
+  }, [hasSubRules, onToggleExpand, rule.ruleId]);
 
   const handleChevronClick = (e: React.MouseEvent) => {
     e.stopPropagation();

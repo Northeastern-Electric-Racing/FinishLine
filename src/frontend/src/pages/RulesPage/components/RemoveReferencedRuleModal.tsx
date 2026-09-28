@@ -12,7 +12,7 @@ interface RemoveReferencedRuleModalProps {
   onHide: () => void;
   onConfirm: () => void;
   rule: Rule; // The rule the reference is being removed from
-  referencedRule: Rule;
+  referencedRule: { ruleId: string; ruleCode: string };
 }
 
 const RemoveReferencedRuleModal = ({ open, onHide, onConfirm, rule, referencedRule }: RemoveReferencedRuleModalProps) => {
