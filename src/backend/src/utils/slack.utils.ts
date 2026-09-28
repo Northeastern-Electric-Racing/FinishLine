@@ -316,13 +316,18 @@ export const sendSlackEventConfirmNotification = async (
   slackId: string,
   eventId: string,
   eventName: string,
-  projectName: string
+  projectName: string,
+  remindUnconfirmed: boolean = false
 ) => {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
 
-  let msg;
-  if (projectName) {
+  let msg = '';
+  if (projectName && remindUnconfirmed) {
+    msg = `REMINDER: Please fill out your availability for ${eventName} in project ${projectName}!`;
+  } else if (remindUnconfirmed) {
+    msg = `REMINDER: Please fill out your availability for ${eventName}!`;
+  } else if (projectName) {
     msg = `You have been invited to ${eventName} in project ${projectName}!`;
   } else {
     msg = `You have been invited to ${eventName}!`;
