@@ -4,7 +4,17 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Box, Typography, FormControl, Select, MenuItem, SelectChangeEvent, IconButton, useTheme } from '@mui/material';
+import {
+  Box,
+  Typography,
+  FormControl,
+  FormLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
+  IconButton,
+  useTheme
+} from '@mui/material';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { ProjectRule } from 'shared';
 import NERModal from '../../../../components/NERModal';
@@ -63,27 +73,14 @@ const RemoveRuleModal = ({ open, onHide, projectRules, projectName, onSubmit }: 
     onHide();
   };
 
-  const selectStyles = {
-    backgroundColor: theme.palette.action.hover,
-    borderRadius: '8px',
-    color: theme.palette.text.primary,
-    '& .MuiSelect-select': {
-      py: 1.5,
-      px: 2.5
-    },
-    '& .MuiOutlinedInput-notchedOutline': {
-      border: 'none'
-    },
-    '& .MuiSvgIcon-root': {
-      color: theme.palette.text.primary
-    }
-  };
-
-  const labelStyles = {
-    color: theme.palette.primary.main,
+  const sectionHeaderStyle = {
+    display: 'block',
+    fontWeight: 'bold',
+    color: '#ef4345',
     textDecoration: 'underline',
-    fontSize: '2rem',
-    mb: '10px'
+    fontSize: '1rem',
+    textUnderlineOffset: '5px',
+    marginBottom: '10px'
   };
 
   const selectedRuleStyles = {
@@ -115,9 +112,7 @@ const RemoveRuleModal = ({ open, onHide, projectRules, projectName, onSubmit }: 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {selectedProjectRuleIds.length > 0 && (
               <Box>
-                <Typography variant="h4" sx={labelStyles}>
-                  Selected Rules
-                </Typography>
+                <FormLabel sx={sectionHeaderStyle}>Selected Rule Codes</FormLabel>
                 {selectedProjectRuleIds.map((projectRuleId) => (
                   <Box key={projectRuleId} sx={selectedRuleStyles}>
                     <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
@@ -139,15 +134,12 @@ const RemoveRuleModal = ({ open, onHide, projectRules, projectName, onSubmit }: 
 
             {availableOptions.length > 0 ? (
               <Box>
-                <Typography variant="h4" sx={labelStyles}>
-                  Select Rule
-                </Typography>
+                <FormLabel sx={sectionHeaderStyle}>Rule Code</FormLabel>
                 <FormControl fullWidth>
                   <Select
                     value=""
                     onChange={handleSelectChange}
                     displayEmpty
-                    sx={selectStyles}
                     MenuProps={{
                       PaperProps: {
                         sx: { backgroundColor: theme.palette.background.paper, maxHeight: 300 }

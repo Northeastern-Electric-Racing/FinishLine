@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, useTheme, TextField } from '@mui/material';
+import { Box, Typography, TextField, FormControl, FormLabel, FormHelperText } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -25,8 +25,17 @@ const schema = yup.object().shape({
   ruleContent: yup.string()
 });
 
+const sectionHeaderStyle = {
+  display: 'block',
+  fontWeight: 'bold',
+  color: '#ef4345',
+  textDecoration: 'underline',
+  fontSize: '1rem',
+  textUnderlineOffset: '5px',
+  marginBottom: '10px'
+};
+
 const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, initialParentRuleId, parentRuleCode }) => {
-  const theme = useTheme();
   const toast = useToast();
   const { mutateAsync: createRule } = useCreateRule();
 
@@ -84,27 +93,6 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
     onClose();
   };
 
-  const textFieldStyles = {
-    '& .MuiOutlinedInput-root': {
-      backgroundColor: theme.palette.action.hover,
-      borderRadius: '8px',
-      '& fieldset': {
-        border: 'none'
-      },
-      '&:hover fieldset': {
-        border: 'none'
-      },
-      '&.Mui-focused fieldset': {
-        border: 'none'
-      }
-    },
-    '& .MuiInputBase-input': {
-      color: theme.palette.text.primary,
-      py: 1.5,
-      px: 2.5
-    }
-  };
-
   return (
     <NERFormModal
       open={open}
@@ -119,29 +107,16 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
       formId="add-rule-form"
       showCloseButton
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, py: 2, minWidth: '500px' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: '500px' }}>
         {/* Rule Code */}
-        <Box>
-          <Typography
-            variant="h4"
-            sx={{ color: theme.palette.primary.main, textDecoration: 'underline', fontSize: 30, mb: 2 }}
-          >
-            Rule Code*
-          </Typography>
+        <FormControl fullWidth error={!!errors.ruleCode}>
+          <FormLabel sx={sectionHeaderStyle}>Rule Code*</FormLabel>
           <Controller
             name="ruleCode"
             control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                fullWidth
-                placeholder="Enter Rule Code"
-                error={!!errors.ruleCode}
-                helperText={errors.ruleCode?.message}
-                sx={textFieldStyles}
-              />
-            )}
+            render={({ field }) => <TextField {...field} fullWidth placeholder="Enter Rule Code" error={!!errors.ruleCode} />}
           />
+          <FormHelperText error={!!errors.ruleCode}>{errors.ruleCode?.message}</FormHelperText>
           {showPrefixWarning && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
               <Typography sx={{ color: '#ef4345', fontSize: '0.9rem' }}>
@@ -149,31 +124,20 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({ open, onClose, rulesetId, i
               </Typography>
             </Box>
           )}
-        </Box>
+        </FormControl>
 
         {/* Rule Content */}
-        <Box>
-          <Typography
-            variant="h4"
-            sx={{ color: theme.palette.primary.main, textDecoration: 'underline', fontSize: 30, mb: 2 }}
-          >
-            Rule Content
-          </Typography>
+        <FormControl fullWidth error={!!errors.ruleContent}>
+          <FormLabel sx={sectionHeaderStyle}>Rule Content</FormLabel>
           <Controller
             name="ruleContent"
             control={control}
             render={({ field }) => (
-              <TextField
-                {...field}
-                fullWidth
-                placeholder="Enter Rule Content"
-                error={!!errors.ruleContent}
-                helperText={errors.ruleContent?.message}
-                sx={textFieldStyles}
-              />
+              <TextField {...field} fullWidth placeholder="Enter Rule Content" error={!!errors.ruleContent} />
             )}
           />
-        </Box>
+          <FormHelperText error={!!errors.ruleContent}>{errors.ruleContent?.message}</FormHelperText>
+        </FormControl>
       </Box>
     </NERFormModal>
   );
