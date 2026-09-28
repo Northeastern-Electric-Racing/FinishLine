@@ -98,7 +98,7 @@ const RemoveRuleModal = ({ open, onHide, projectRules, projectName, onSubmit }: 
     <NERModal
       open={open}
       onHide={handleClose}
-      title="Remove Rule"
+      title="Remove Project Rule"
       onSubmit={handleSubmit}
       submitText="Delete"
       disabled={selectedProjectRuleIds.length === 0}

@@ -159,7 +159,7 @@ const AddRuleModal = ({ open, onHide, rulesetId, projectId, teamNames, onSubmit 
     <NERModal
       open={open}
       onHide={handleClose}
-      title="Add Rule"
+      title="Add Project Rule"
       onSubmit={handleSubmit}
       submitText="Save"
       disabled={selectedRuleIds.length === 0}
