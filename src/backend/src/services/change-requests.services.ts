@@ -637,8 +637,8 @@ export default class ChangeRequestsService {
 
     if (createdCR.wbsElement?.workPackage) {
       const inBuffer = isWithinBuffer(
-        startDate,
         createdCR.wbsElement?.workPackage?.startDate,
+        new Date(startDate),
         organization.activationBufferDays
       );
       if (inBuffer) {
