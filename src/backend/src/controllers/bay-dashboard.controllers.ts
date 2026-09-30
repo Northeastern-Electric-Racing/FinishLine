@@ -34,13 +34,4 @@ export default class BayDashboardController {
       next(error);
     }
   }
-
-  static async getBayDashboardOrganization(_req: Request, res: Response, next: NextFunction) {
-    try {
-      const organization = await BayDashboardService.getBayDashboardOrganization();
-      res.status(200).json(organization);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
 }

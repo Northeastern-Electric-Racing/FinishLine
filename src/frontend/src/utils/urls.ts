@@ -948,7 +948,5 @@ export const apiUrls = {
 
   bayDashboardEvents,
 
-  bayDashboardOrganization,
-
   version
 };

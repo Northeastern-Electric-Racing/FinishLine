@@ -4,10 +4,8 @@
  */
 
 import { useEffect } from 'react';
-import { useQueryClient, useQuery } from 'react-query';
+import { useQueryClient } from 'react-query';
 import { apiUrls } from '../utils/urls';
-import { BayDashboardOrganization } from 'shared';
-import { getBayDashboardOrganization } from '../apis/bay-dashboard.api';
 
 /**
  * Subscribes the public bay dashboard to config changes for one organization. Server sends an empty
@@ -45,16 +43,4 @@ export const useBayDashboardEvents = (slug: string) => {
       source.close();
     };
   }, [queryClient, slug]);
-};
-
-/**
- * Custom react hook to get the organization the public bay dashboard belongs to.
- *
- * @returns the public bay dashboard's organization
- */
-export const useBayDashboardOrganization = () => {
-  return useQuery<BayDashboardOrganization, Error>(['bay-dashboard', 'organization'], async () => {
-    const { data } = await getBayDashboardOrganization();
-    return data;
-  });
 };
