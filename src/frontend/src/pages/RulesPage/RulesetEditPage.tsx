@@ -12,7 +12,6 @@ import { routes } from '../../utils/routes';
 import RuleRow from './RuleRow';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import AddRuleSectionModal from './components/AddRuleSectionModal';
 import AddRuleModal from './components/AddRuleModal';
 import AddReferencedRuleModal from './components/AddReferencedRuleModal';
 import AddImageModal from './components/AddImageModal';
@@ -52,7 +51,6 @@ const RulesetEditPage: React.FC = () => {
   const [addMenuAnchorEl, setAddMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [activeRule, setActiveRule] = useState<Rule | null>(null);
 
-  const [showAddRuleSectionModal, setShowAddRuleSectionModal] = useState(false);
   const [showAddRuleModal, setShowAddRuleModal] = useState(false);
   const [showAddReferencedRuleModal, setShowAddReferencedRuleModal] = useState(false);
   const [showAddImageModal, setShowAddImageModal] = useState(false);
@@ -150,7 +148,11 @@ const RulesetEditPage: React.FC = () => {
     }
   }, [areAllExpanded, collapseAll, expandAll]);
 
-  const handleAddRuleSection = useCallback(() => setShowAddRuleSectionModal(true), []);
+  // the top-level "Add Rule" button creates a rule with no parent, same modal as the row-level "+" menu
+  const handleAddRule = useCallback(() => {
+    setActiveRule(null);
+    setShowAddRuleModal(true);
+  }, []);
 
   const handleOpenAddMenu = useCallback((rule: Rule, anchorEl: HTMLElement) => {
     setActiveRule(rule);
@@ -495,12 +497,6 @@ const RulesetEditPage: React.FC = () => {
               onAddImage={handleAddImageFromMenu}
             />
 
-            <AddRuleSectionModal
-              open={showAddRuleSectionModal}
-              onClose={() => setShowAddRuleSectionModal(false)}
-              rulesetId={rulesetId}
-            />
-
             <AddRuleModal
               open={showAddRuleModal}
               onClose={() => setShowAddRuleModal(false)}
@@ -585,8 +581,8 @@ const RulesetEditPage: React.FC = () => {
                 }}
               />
               <Box sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-end' }, gap: 2, pr: '30px', pb: 2 }}>
-                <NERButton variant="contained" sx={{ color: '#ededed' }} onClick={handleAddRuleSection}>
-                  Add Rule Section
+                <NERButton variant="contained" sx={{ color: '#ededed' }} onClick={handleAddRule}>
+                  Add Rule
                 </NERButton>
               </Box>
             </Box>

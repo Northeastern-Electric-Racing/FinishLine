@@ -147,6 +147,7 @@ const RuleBodyCellComponent: React.FC<RuleBodyCellProps> = ({
           onChange={(e) => {
             draftRef.current.ruleContent = e.target.value;
           }}
+          onClick={(e) => e.stopPropagation()}
           variant="outlined"
           size="small"
           sx={editFieldStyles(theme)}
@@ -195,12 +196,22 @@ const RuleActionsCellComponent: React.FC<RuleActionsCellProps> = ({
     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap', pr: 2 }}>
       {isEditing ? (
         <>
-          <NERFailButton size="small" onClick={onCancel} sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <NERFailButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCancel();
+            }}
+            sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
             Cancel
           </NERFailButton>
           <NERSuccessButton
             size="small"
-            onClick={() => onSave(rule)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSave(rule);
+            }}
             disabled={isSaving}
             sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
           >

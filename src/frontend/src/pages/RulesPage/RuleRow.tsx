@@ -283,7 +283,6 @@ const RuleRow: React.FC<RuleRowProps> = ({
             <TableCell
               align="left"
               className={cardCellClass}
-              onClick={(e) => e.stopPropagation()}
               sx={{
                 ...commonCellStyles,
                 ...cardCellBg,
@@ -301,12 +300,10 @@ const RuleRow: React.FC<RuleRowProps> = ({
             <TableCell
               align="center"
               className={cardCellClass}
-              onClick={(e) => e.stopPropagation()}
               sx={{
                 ...commonCellStyles,
                 ...cardCellBg,
                 ...rightCellRadius,
-                cursor: 'default',
                 width: rightWidth
               }}
             >

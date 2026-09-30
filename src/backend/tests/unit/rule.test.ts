@@ -203,6 +203,18 @@ describe('Create Rules Tests', () => {
       );
     });
 
+    it('fails when rule code is blank', async () => {
+      await expect(RulesService.createRule(batman, '', 'Some rule', rulesetId, organization)).rejects.toThrow(
+        new HttpException(400, 'Rule code cannot be empty')
+      );
+    });
+
+    it('fails when rule code is whitespace only', async () => {
+      await expect(RulesService.createRule(batman, '   ', 'Some rule', rulesetId, organization)).rejects.toThrow(
+        new HttpException(400, 'Rule code cannot be empty')
+      );
+    });
+
     it('fails when parent rule does not exist', async () => {
       await expect(
         RulesService.createRule(batman, 'T.1.1', 'Some rule', rulesetId, organization, 'fake-parent-id')

@@ -255,6 +255,10 @@ export default class RulesService {
 
     ruleCode = ruleCode.trim();
 
+    if (ruleCode === '') {
+      throw new HttpException(400, 'Rule code cannot be empty');
+    }
+
     // Check for duplicate rule code within the same ruleset
     await RulesService.assertRuleCodeAvailable(rulesetId, ruleCode);
 

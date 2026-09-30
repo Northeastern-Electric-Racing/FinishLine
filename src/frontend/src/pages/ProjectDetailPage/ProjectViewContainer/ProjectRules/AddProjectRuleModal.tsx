@@ -10,6 +10,7 @@ import {
   CircularProgress,
   Alert,
   FormControl,
+  FormLabel,
   Select,
   MenuItem,
   SelectChangeEvent,
@@ -132,28 +133,14 @@ const AddRuleModal = ({ open, onHide, rulesetId, projectId, teamNames, onSubmit 
   // Get rule display name
   const getRuleName = (ruleId: string): string => rulesById.get(ruleId)?.ruleCode ?? ruleId;
 
-  // Dropdown styling
-  const selectStyles = {
-    backgroundColor: theme.palette.action.hover,
-    borderRadius: '8px',
-    color: theme.palette.text.primary,
-    '& .MuiSelect-select': {
-      py: 1.5,
-      px: 2.5
-    },
-    '& .MuiOutlinedInput-notchedOutline': {
-      border: 'none'
-    },
-    '& .MuiSvgIcon-root': {
-      color: theme.palette.text.primary
-    }
-  };
-
-  const labelStyles = {
-    color: theme.palette.primary.main,
+  const sectionHeaderStyle = {
+    display: 'block',
+    fontWeight: 'bold',
+    color: '#ef4345',
     textDecoration: 'underline',
-    fontSize: '2rem',
-    mb: '10px'
+    fontSize: '1rem',
+    textUnderlineOffset: '5px',
+    marginBottom: '10px'
   };
 
   // Selected rule row styling
@@ -172,7 +159,7 @@ const AddRuleModal = ({ open, onHide, rulesetId, projectId, teamNames, onSubmit 
     <NERModal
       open={open}
       onHide={handleClose}
-      title="Add Rule"
+      title="Add Project Rule"
       onSubmit={handleSubmit}
       submitText="Save"
       disabled={selectedRuleIds.length === 0}
@@ -196,9 +183,7 @@ const AddRuleModal = ({ open, onHide, rulesetId, projectId, teamNames, onSubmit 
             {/* Selected Rules */}
             {selectedRuleIds.length > 0 && (
               <Box>
-                <Typography variant="h4" sx={labelStyles}>
-                  Selected Rules
-                </Typography>
+                <FormLabel sx={sectionHeaderStyle}>Selected Rule Codes</FormLabel>
                 {selectedRuleIds.map((ruleId) => (
                   <Box key={ruleId} sx={selectedRuleStyles}>
                     <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
@@ -219,9 +204,7 @@ const AddRuleModal = ({ open, onHide, rulesetId, projectId, teamNames, onSubmit 
             {/* Continuous dropdowns: start at a top-level rule and pick sub-rules until reaching a leaf */}
             {hasAddableRules ? (
               <Box>
-                <Typography variant="h4" sx={labelStyles}>
-                  Select Rule
-                </Typography>
+                <FormLabel sx={sectionHeaderStyle}>Rule Code</FormLabel>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   {/* Non-leaf options are flagged with a › to show the ability to continue selecting */}
                   {levels.map((level, levelIndex) => (
@@ -231,7 +214,6 @@ const AddRuleModal = ({ open, onHide, rulesetId, projectId, teamNames, onSubmit 
                         onChange={(event) => handleLevelChange(levelIndex, event)}
                         displayEmpty
                         disabled={level.options.length === 0}
-                        sx={selectStyles}
                         MenuProps={{
                           PaperProps: {
                             sx: { backgroundColor: theme.palette.background.paper, maxHeight: 300 }

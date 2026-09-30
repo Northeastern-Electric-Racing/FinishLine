@@ -45,6 +45,7 @@ interface ButtonGroupProps {
 }
 
 const sectionHeaderStyle = {
+  display: 'block',
   fontWeight: 'bold',
   color: '#ef4345',
   textDecoration: 'underline',
@@ -207,7 +208,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
           <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
             {/* File Upload */}
             <FormControl sx={{ flex: 2 }} error={!!errors.fileId}>
-              <FormLabel sx={sectionHeaderStyle}>Upload Ruleset File:</FormLabel>
+              <FormLabel sx={sectionHeaderStyle}>Upload Ruleset File</FormLabel>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 {file && <Typography>{file.name}</Typography>}
                 {uploading && <Typography>Uploading...</Typography>}
@@ -227,7 +228,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
 
             {/* Car */}
             <FormControl error={!!errors.carNumber}>
-              <FormLabel sx={sectionHeaderStyle}>Car:</FormLabel>
+              <FormLabel sx={sectionHeaderStyle}>Car</FormLabel>
               {carsLoading ? (
                 <Typography sx={{ fontSize: '0.875rem' }}>Loading cars...</Typography>
               ) : carsError ? (
@@ -253,7 +254,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
 
             {/* Parser Type */}
             <FormControl error={!!errors.parserType}>
-              <FormLabel sx={sectionHeaderStyle}>Parser Type:</FormLabel>
+              <FormLabel sx={sectionHeaderStyle}>Parser Type</FormLabel>
               <Controller
                 name="parserType"
                 control={control}
@@ -267,12 +268,12 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
 
           {/* Ruleset Name */}
           <FormControl error={!!errors.name}>
-            <FormLabel sx={sectionHeaderStyle}>Name Ruleset File:</FormLabel>
+            <FormLabel sx={sectionHeaderStyle}>Name Ruleset File</FormLabel>
             <Controller
               name="name"
               control={control}
               render={({ field }) => (
-                <TextField {...field} autoComplete="off" placeholder="Name File" error={!!errors.name} />
+                <TextField {...field} autoComplete="off" placeholder="Enter File Name" error={!!errors.name} />
               )}
             />
             <FormHelperText error>{errors.name?.message}</FormHelperText>
@@ -308,7 +309,7 @@ const AddNewFileModal: React.FC<AddNewFileModalProps> = ({ open, onHide, onFormS
             <AccordionDetails sx={{ display: 'flex', gap: 3, alignItems: 'flex-start', px: 0 }}>
               {/* First Rule Page */}
               <FormControl error={!!errors.firstRulePage} sx={{ whiteSpace: 'nowrap' }}>
-                <FormLabel sx={sectionHeaderStyle}>First Page #:</FormLabel>
+                <FormLabel sx={sectionHeaderStyle}>First Page #</FormLabel>
                 <Controller
                   name="firstRulePage"
                   control={control}
