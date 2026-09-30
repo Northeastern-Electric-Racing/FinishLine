@@ -130,6 +130,10 @@ export const markUserConfirmed = async (id: string, payload: { availability: Ava
   });
 };
 
+export const remindUnconfirmed = async (id: string) => {
+  return axios.post(apiUrls.calendarEventRemindUnconfirmed(id));
+};
+
 export const getSingleEvent = async (id: string) => {
   return axios.get(apiUrls.calendarGetSingleEvent(id), {
     transformResponse: (data) => eventTransformer(JSON.parse(data))

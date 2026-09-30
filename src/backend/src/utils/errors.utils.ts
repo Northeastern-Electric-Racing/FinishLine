@@ -166,6 +166,7 @@ export type ExceptionObjectNames =
   | 'Reimbursement Request'
   | 'Reimbursement'
   | 'User Secure Settings'
+  | 'API Token'
   | 'Material'
   | 'Image File'
   | 'Material'
@@ -226,4 +227,5 @@ export type ExceptionObjectNames =
   | 'Task Label'
   | 'Notification Channel'
   | 'Dashboard'
-  | 'Team Join Request';
+  | 'Team Join Request'
+  | 'Slack Channel';

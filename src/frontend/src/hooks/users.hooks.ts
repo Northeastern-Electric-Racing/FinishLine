@@ -25,7 +25,9 @@ import {
   logUserOut,
   getManyUsersWithScheduleSettings,
   getAllOrgUsers,
-  getAllOrgMembers
+  getAllOrgMembers,
+  getCurrentUserApiToken,
+  generateApiToken
 } from '../apis/users.api';
 import {
   User,
@@ -39,7 +41,9 @@ import {
   UserWithRole,
   UserWithScheduleSettings,
   ProjectOverview,
-  BusySlots
+  BusySlots,
+  ApiTokenMetadata,
+  GeneratedApiToken
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -344,5 +348,38 @@ export const useUserBusyTimes = (id: string, startDate: Date, endDate: Date, ena
       return data;
     },
     { enabled: enabled && !!id }
+  );
+};
+
+/**
+ * Custom react hook to get the current user's active API token metadata.
+ *
+ * @returns the token metadata, or null if they have not generated one
+ */
+export const useCurrentUserApiToken = () => {
+  return useQuery<ApiTokenMetadata | null, Error>(['users', 'api-token'], async () => {
+    const { data } = await getCurrentUserApiToken();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to generate a new API token for the current user, revoking any existing one.
+ *
+ * @returns the generated token, including the raw token value
+ */
+export const useGenerateApiToken = () => {
+  const queryClient = useQueryClient();
+  return useMutation<GeneratedApiToken, Error, void>(
+    ['users', 'api-token', 'generate'],
+    async () => {
+      const { data } = await generateApiToken();
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['users', 'api-token']);
+      }
+    }
   );
 };

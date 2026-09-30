@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import UsersService from '../services/users.services.js';
+import ApiTokenService from '../services/api-tokens.services.js';
 import { AccessDeniedException } from '../utils/errors.utils.js';
 import { Task } from 'shared';
 export default class UsersController {
@@ -266,6 +267,26 @@ export default class UsersController {
       const users = await UsersService.getManyUsersWithScheduleSettings(userIds, req.organization);
 
       res.status(200).json(users);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getCurrentUserApiToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const apiToken = await ApiTokenService.getCurrentUserApiToken(req.currentUser);
+
+      res.status(200).json(apiToken);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async generateApiToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const apiToken = await ApiTokenService.generateApiToken(req.currentUser, req.organization);
+
+      res.status(200).json(apiToken);
     } catch (error: unknown) {
       next(error);
     }

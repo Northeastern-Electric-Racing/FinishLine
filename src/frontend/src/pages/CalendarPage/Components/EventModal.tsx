@@ -419,10 +419,10 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   // made it so it only fills when the field is empty, that way doesn't overwrite a link or anythingi me
   useEffect(() => {
     if (!open || isEditMode) return;
-    if (scheduleSettings?.personalZoomLink && !getValues('zoomLink')) {
+    if (scheduleSettings?.personalZoomLink && selectedEventType?.zoomLink && !getValues('zoomLink')) {
       setValue('zoomLink', scheduleSettings.personalZoomLink);
     }
-  }, [open, isEditMode, scheduleSettings, getValues, setValue]);
+  }, [open, isEditMode, scheduleSettings, getValues, setValue, selectedEventType]);
 
   const computedTitle = isEditMode ? 'Edit Event' : 'Add Event';
 
