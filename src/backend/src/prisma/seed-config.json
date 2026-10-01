@@ -19,7 +19,7 @@
     ]
   },
   "project": {
-    "projectsPerCar": 5
+    "projectsPerCar": 50
   },
   "user": {
     "totalUsers": 350
