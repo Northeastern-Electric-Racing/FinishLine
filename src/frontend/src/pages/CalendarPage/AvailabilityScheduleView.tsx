@@ -9,7 +9,7 @@ import {
   reviewTimesInCurrentTimeZone
 } from '../../utils/design-review.utils';
 import { datePipe } from '../../utils/pipes';
-import EventTimeSlot from './Components/EventTimeSlot';
+import EventTimeSlot, { timeSlotCellSx } from './Components/EventTimeSlot';
 
 interface AvailabilityScheduleViewProps {
   availableUsers: Map<number, User[]>;
@@ -178,12 +178,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
               {potentialDays.map((day, dayIndex) => {
                 const index = dayIndex * enumToArray(REVIEW_TIMES).length + timeIndex;
                 return (
-                  <TableCell
-                    key={index}
-                    sx={{
-                      p: 0
-                    }}
-                  >
+                  <TableCell key={index} sx={timeSlotCellSx}>
                     <EventTimeSlot
                       backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
                       selected={selectedTimeslot === index}
