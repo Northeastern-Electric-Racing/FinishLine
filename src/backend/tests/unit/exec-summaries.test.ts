@@ -17,19 +17,21 @@ import {
   createTestExecutiveSummary,
   resetUsers
 } from '../test-utils.js';
-import { batmanAppAdmin, member, supermanAdmin } from '../test-data/users.test-data.js';
+import { batmanAppAdmin, member, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data.js';
 
 describe('Executive Summary Tests', () => {
   let orgId: string;
   let organization: Organization;
   let superman: User;
   let car: Car;
+  let guestUser: User;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     superman = await createTestUser(supermanAdmin, orgId);
     car = await createTestCar(orgId, superman.userId);
+    guestUser = await createTestUser(wonderwomanGuest, orgId);
   });
 
   afterEach(async () => {
@@ -167,6 +169,39 @@ describe('Executive Summary Tests', () => {
       await expect(async () =>
         ExecSummaryServices.getSingleExecutiveSummary(organization, 'badid', superman)
       ).rejects.toThrow(new NotFoundException('Executive Summary', 'badid'));
+    });
+  });
+
+  describe('get all executive summaries', () => {
+    it('successful get all exec summaries', async () => {
+      const createdSummary1 = await prisma.executive_Summary.create({
+        data: {
+          carId: car.carId,
+          userCreatedId: superman.userId
+        },
+        ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      });
+
+      const car2 = await createTestCar(organization.organizationId, superman.userId, 1);
+
+      const createdSummary2 = await prisma.executive_Summary.create({
+        data: {
+          carId: car2.carId,
+          userCreatedId: superman.userId
+        },
+        ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      });
+
+      const summaries = await ExecSummaryServices.getAllExecutiveSummaries(organization, superman);
+      expect(summaries).toHaveLength(2);
+      expect(summaries).toContainEqual(executiveSummaryTransformer(createdSummary1));
+      expect(summaries).toContainEqual(executiveSummaryTransformer(createdSummary2));
+    });
+
+    it('invalid guest tries to get all exec summaries', async () => {
+      await expect(async () => ExecSummaryServices.getAllExecutiveSummaries(organization, guestUser)).rejects.toThrow(
+        new AccessDeniedException('Only members can view executive summaries')
+      );
     });
   });
 });

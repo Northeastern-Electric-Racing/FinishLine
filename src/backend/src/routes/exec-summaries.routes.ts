@@ -10,6 +10,7 @@ import ExecSummaryController from '../controllers/exec-summaries.controllers.js'
 
 const execSummaryRouter = express.Router();
 
+execSummaryRouter.get('/', ExecSummaryController.getAllExecutiveSummaries);
 execSummaryRouter.get('/:execSummaryId', ExecSummaryController.getSingleExecutiveSummary);
 
 execSummaryRouter.post(
