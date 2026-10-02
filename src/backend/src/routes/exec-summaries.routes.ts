@@ -5,7 +5,7 @@
 
 import express from 'express';
 import { body } from 'express-validator';
-import { isDate, validateInputs } from '../utils/validation.utils.js';
+import { isOptionalDate, validateInputs } from '../utils/validation.utils.js';
 import ExecSummaryController from '../controllers/exec-summaries.controllers.js';
 
 const execSummaryRouter = express.Router();
@@ -18,8 +18,8 @@ execSummaryRouter.post(
   body('winsAndImprovements').isString(),
   body('budgetNotes').isString(),
   body('recruitmentNotes').isString(),
-  isDate(body('seasonStartDate')),
-  isDate(body('seasonEndDate')),
+  isOptionalDate(body('seasonStartDate')),
+  isOptionalDate(body('seasonEndDate')),
   validateInputs,
   ExecSummaryController.editExecutiveSummary
 );

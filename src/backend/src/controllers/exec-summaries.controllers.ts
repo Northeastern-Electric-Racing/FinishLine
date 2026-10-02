@@ -19,8 +19,8 @@ export default class ExecSummaryController {
         winsAndImprovements,
         budgetNotes,
         recruitmentNotes,
-        seasonStartDate,
-        seasonEndDate,
+        seasonStartDate ? new Date(seasonStartDate) : null,
+        seasonEndDate ? new Date(seasonEndDate) : null,
         executiveSummaryId
       );
       res.status(200).json(executiveSummary);

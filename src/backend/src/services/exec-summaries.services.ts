@@ -9,6 +9,7 @@ import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedException,
   DeletedException,
+  HttpException,
   InvalidOrganizationException,
   NotFoundException
 } from '../utils/errors.utils.js';
@@ -26,14 +27,15 @@ export default class ExecSummaryServices {
    * @param winsAndImprovements the updated wins and improvements
    * @param budgetNotes the updated budget notes
    * @param recruitmentNotes the updated recruitment notes
-   * @param seasonStartDate the updated season start date
-   * @param seasonEndDate the updated season end date
+   * @param seasonStartDate the updated season start date, or null to leave/clear it
+   * @param seasonEndDate the updated season end date, or null to leave/clear it
    * @param executiveSummaryId the id of the executive summary being edited
    * @returns the updated executive summary
    * @throws AccessDeniedException if the submitter is not an admin and not on the ops team
    * @throws NotFoundException if the executive summary does not exist
    * @throws InvalidOrganizationException if the executive summary belongs to a different organization
    * @throws DeletedException if the executive summary has been deleted
+   * @throws HttpException if the resolved season end date is before the resolved season start date
    */
   static async editExecutiveSummary(
     submitter: User,
@@ -42,8 +44,8 @@ export default class ExecSummaryServices {
     winsAndImprovements: string,
     budgetNotes: string,
     recruitmentNotes: string,
-    seasonStartDate: Date,
-    seasonEndDate: Date,
+    seasonStartDate: Date | null,
+    seasonEndDate: Date | null,
     executiveSummaryId: string
   ) {
     const isAdminUser = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
@@ -73,6 +75,15 @@ export default class ExecSummaryServices {
 
     if (currentExecutiveSummary.dateDeleted) {
       throw new DeletedException('Executive Summary', executiveSummaryId);
+    }
+
+    // Compare the resolved dates (new value if provided, otherwise whatever's already stored)
+    // so this still catches a bad ordering even if only one of the two dates is being changed.
+    const resolvedStartDate = seasonStartDate ?? currentExecutiveSummary.seasonStartDate;
+    const resolvedEndDate = seasonEndDate ?? currentExecutiveSummary.seasonEndDate;
+
+    if (resolvedStartDate && resolvedEndDate && resolvedEndDate < resolvedStartDate) {
+      throw new HttpException(400, 'Season end date cannot be before season start date');
     }
 
     const updatedExecutiveSummary = await prisma.executive_Summary.update({
