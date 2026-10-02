@@ -40,6 +40,10 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
+# Cap the V8 heap so a memory spike crashes and restarts the container
+# instead of exhausting the 2 GB host and freezing it
+ENV NODE_OPTIONS=--max-old-space-size=768
+
 EXPOSE 3001
 
 # Use entrypoint to run migrations before starting app
