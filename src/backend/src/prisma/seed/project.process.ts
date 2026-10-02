@@ -93,7 +93,7 @@ export class ProjectProcess extends SeedProcess<ProjectInput, ProjectOutput> {
           Array.from({ length: seedConfig.project.projectsPerCar }, async (_, index) => {
             const timeline = generateProjectTimeline(this.faker, dateRange);
 
-            if (!shouldExist(this.faker, timeline)) {
+            if (!shouldExist(this.faker, timeline, this.now)) {
               return;
             }
 
