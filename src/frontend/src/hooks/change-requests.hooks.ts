@@ -203,6 +203,7 @@ export interface CreateBudgetChangeRequestPayload {
  * Custom React Hook to create an activation change request.
  */
 export const useCreateActivationChangeRequest = () => {
+  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, CreateActivationChangeRequestPayload>(
     ['change requests', 'create', 'activation'],
     async (payload: CreateActivationChangeRequestPayload) => {
@@ -215,6 +216,13 @@ export const useCreateActivationChangeRequest = () => {
         payload.confirmDetails
       );
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['change requests']);
+        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['work packages']);
+      }
     }
   );
 };

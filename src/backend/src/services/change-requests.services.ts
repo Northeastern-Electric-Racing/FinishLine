@@ -63,7 +63,6 @@ import {
 } from '../prisma-query-args/change-requests.query-args.js';
 import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils.js';
 import { GuestChangeRequest } from '../../../shared/src/types/change-request-types.js';
-
 export default class ChangeRequestsService {
   /**
    * Gets the change request for the given Id
@@ -635,17 +634,11 @@ export default class ChangeRequestsService {
       await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
     }
 
-    if (createdCR.wbsElement?.workPackage) {
-      const inBuffer = isWithinBuffer(
-        createdCR.wbsElement?.workPackage?.startDate,
-        new Date(startDate),
-        organization.activationBufferDays
-      );
-      if (inBuffer) {
-      }
-    }
-
     await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter);
+
+    const inBuffer = isWithinBuffer(startDate, createdCR.dateSubmitted, organization.activationBufferDays);
+    if (inBuffer) {
+    }
 
     return createdCR.crId;
   }
