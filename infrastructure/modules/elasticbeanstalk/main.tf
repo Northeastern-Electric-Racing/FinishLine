@@ -158,6 +158,34 @@ resource "aws_elastic_beanstalk_environment" "main" {
     value     = var.alb_security_group_id
   }
 
+  # Load balancer access logs, written to S3 every 5 minutes
+  dynamic "setting" {
+    for_each = var.access_logs_bucket != "" ? [1] : []
+    content {
+      namespace = "aws:elbv2:loadbalancer"
+      name      = "AccessLogsS3Enabled"
+      value     = "true"
+    }
+  }
+
+  dynamic "setting" {
+    for_each = var.access_logs_bucket != "" ? [1] : []
+    content {
+      namespace = "aws:elbv2:loadbalancer"
+      name      = "AccessLogsS3Bucket"
+      value     = var.access_logs_bucket
+    }
+  }
+
+  dynamic "setting" {
+    for_each = var.access_logs_bucket != "" ? [1] : []
+    content {
+      namespace = "aws:elbv2:loadbalancer"
+      name      = "AccessLogsS3Prefix"
+      value     = var.access_logs_prefix
+    }
+  }
+
   # HTTP Listener (default)
   setting {
     namespace = "aws:elbv2:listener:default"

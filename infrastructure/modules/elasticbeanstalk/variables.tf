@@ -127,3 +127,15 @@ variable "ec2_key_name" {
   type        = string
   default     = ""
 }
+
+variable "access_logs_bucket" {
+  description = "S3 bucket for load balancer access logs (leave empty to disable access logs)"
+  type        = string
+  default     = ""
+}
+
+variable "access_logs_prefix" {
+  description = "Prefix within the access logs bucket that the load balancer writes under"
+  type        = string
+  default     = "alb"
+}
