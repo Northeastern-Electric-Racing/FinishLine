@@ -3,12 +3,21 @@ import {
   createTestCar,
   createTestOrganization,
   createTestProject,
+  createTestTeam,
+  createTestTeamType,
   createTestUser,
   createTestWorkPackage,
   resetUsers
 } from '../test-utils.js';
-import { batmanAppAdmin } from '../test-data/users.test-data.js';
-import { HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
+import {
+  aquamanLeadership,
+  batmanAppAdmin,
+  cyborgMember,
+  flashAdmin,
+  greenlanternHead,
+  robinMember
+} from '../test-data/users.test-data.js';
+import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import McpService from '../../src/services/mcp.services.js';
 
@@ -109,15 +118,15 @@ describe('MCP Endpoint Tests', () => {
   });
 
   describe('Get Project', () => {
-    it('collapses users to name strings and leaks no user object', async () => {
+    it('collapses users to their id and name and leaks no user object', async () => {
       await makeProject(1);
 
       const project = await McpService.getProject('1.1.0', organization);
 
-      expect(project.lead).toBe(`${user.firstName} ${user.lastName}`);
-      expect(project.manager).toBe(`${user.firstName} ${user.lastName}`);
-      expect(JSON.stringify(project)).not.toContain('userId');
+      expect(project.lead).toEqual({ userId: user.userId, name: `${user.firstName} ${user.lastName}` });
+      expect(project.manager).toEqual({ userId: user.userId, name: `${user.firstName} ${user.lastName}` });
       expect(JSON.stringify(project)).not.toContain('googleAuthId');
+      expect(JSON.stringify(project)).not.toContain('email');
     });
 
     it('derives status and dates from work packages', async () => {
@@ -206,7 +215,7 @@ describe('MCP Endpoint Tests', () => {
       expect(workPackage.wbsNum).toBe('1.1.1');
       expect(workPackage.durationWeeks).toBe(4);
       expect(workPackage.endDate).toEqual(new Date('2024-01-29'));
-      expect(workPackage.lead).toBe(`${user.firstName} ${user.lastName}`);
+      expect(workPackage.lead).toEqual({ userId: user.userId, name: `${user.firstName} ${user.lastName}` });
     });
   });
 
@@ -244,7 +253,7 @@ describe('MCP Endpoint Tests', () => {
       expect(tasks.find((task) => task.title === 'Project task')?.parentWbsNum).toBe('1.1.0');
     });
 
-    it('collapses assignees to name strings and links to the project tasks tab', async () => {
+    it('collapses assignees to their id and name and links to the project tasks tab', async () => {
       const project = await makeProject(1);
       const projectWbsElement = await prisma.project.findUniqueOrThrow({
         where: { projectId: project.projectId },
@@ -256,8 +265,8 @@ describe('MCP Endpoint Tests', () => {
         tasks: [task]
       } = await McpService.getTasks('1.1.0', organization);
 
-      expect(task.assignees).toEqual([`${user.firstName} ${user.lastName}`]);
-      expect(task.createdBy).toBe(`${user.firstName} ${user.lastName}`);
+      expect(task.assignees).toEqual([{ userId: user.userId, name: `${user.firstName} ${user.lastName}` }]);
+      expect(task.createdBy).toEqual({ userId: user.userId, name: `${user.firstName} ${user.lastName}` });
       expect(task.viewOnFinishline).toContain('/projects/1.1.0/tasks');
       expect(JSON.stringify(task)).not.toContain('googleAuthId');
     });
@@ -313,6 +322,254 @@ describe('MCP Endpoint Tests', () => {
       await prisma.task.update({ where: { taskId: task.taskId }, data: { dateDeleted: new Date() } });
 
       expect((await McpService.getTasks('1.1.0', organization)).tasks).toEqual([]);
+    });
+  });
+
+  /**
+   * A project on a team headed by Aquaman, with Robin as a member. Cyborg is a member of the
+   * organization but not on the team, and Green Lantern is a head who is not on the team either.
+   */
+  const makeTeamProject = async () => {
+    const aquaman = await createTestUser(aquamanLeadership, orgId);
+    const robin = await createTestUser(robinMember, orgId);
+    const cyborg = await createTestUser(cyborgMember, orgId);
+    const greenlantern = await createTestUser(greenlanternHead, orgId);
+
+    const teamType = await createTestTeamType('aTeam', orgId);
+    const team = await createTestTeam(aquaman.userId, teamType.teamTypeId, orgId);
+    await prisma.team.update({
+      where: { teamId: team.teamId },
+      data: { members: { connect: { userId: robin.userId } } }
+    });
+
+    const project = await createTestProject(user, orgId, team.teamId, carId, 1, 1);
+
+    return { project, team, aquaman, robin, cyborg, greenlantern };
+  };
+
+  const idAndName = (person: User) => ({ userId: person.userId, name: `${person.firstName} ${person.lastName}` });
+
+  describe('Get Project Members', () => {
+    it("returns each team's head, leads, and members as ids and names", async () => {
+      const { team, aquaman, robin, cyborg } = await makeTeamProject();
+      await prisma.team.update({
+        where: { teamId: team.teamId },
+        data: { leads: { connect: { userId: cyborg.userId } } }
+      });
+
+      const teams = await McpService.getProjectMembers('1.1.0', organization);
+
+      expect(teams).toEqual([
+        { teamName: 'aTeamName', head: idAndName(aquaman), leads: [idAndName(cyborg)], members: [idAndName(robin)] }
+      ]);
+    });
+
+    it('excludes archived teams', async () => {
+      const { team } = await makeTeamProject();
+      await prisma.team.update({ where: { teamId: team.teamId }, data: { dateArchived: new Date() } });
+
+      expect(await McpService.getProjectMembers('1.1.0', organization)).toEqual([]);
+    });
+
+    it('rejects a work package wbs number', async () => {
+      await expect(async () => await McpService.getProjectMembers('1.1.1', organization)).rejects.toThrow(
+        new HttpException(400, '"1.1.1" is a work package, not a project')
+      );
+    });
+  });
+
+  describe('Create Task', () => {
+    const baseInput = { title: 'Machine the uprights', priority: Task_Priority.MEDIUM };
+
+    it('lets a member of the project team create a task and assign teammates', async () => {
+      const { robin, aquaman } = await makeTeamProject();
+
+      const task = await McpService.createTask(robin, organization, '1.1.0', {
+        ...baseInput,
+        notes: 'Use the new fixture',
+        assigneeIds: [aquaman.userId, robin.userId]
+      });
+
+      expect(task.title).toBe('Machine the uprights');
+      expect(task.notes).toBe('Use the new fixture');
+      expect(task.status).toBe(Task_Status.IN_BACKLOG);
+      expect(task.parentWbsNum).toBe('1.1.0');
+      expect(task.createdBy).toEqual(idAndName(robin));
+      expect(task.assignees).toHaveLength(2);
+      expect(task.assignees).toEqual(expect.arrayContaining([idAndName(aquaman), idAndName(robin)]));
+    });
+
+    it('lets the team head create a task', async () => {
+      const { aquaman } = await makeTeamProject();
+
+      const task = await McpService.createTask(aquaman, organization, '1.1.0', baseInput);
+
+      expect(task.createdBy).toEqual(idAndName(aquaman));
+    });
+
+    it('lets a head who is not on the team create a task', async () => {
+      const { greenlantern } = await makeTeamProject();
+
+      const task = await McpService.createTask(greenlantern, organization, '1.1.0', baseInput);
+
+      expect(task.createdBy).toEqual(idAndName(greenlantern));
+    });
+
+    it('rejects a member who is not on the project team', async () => {
+      const { cyborg } = await makeTeamProject();
+
+      await expect(async () => await McpService.createTask(cyborg, organization, '1.1.0', baseInput)).rejects.toThrow(
+        new AccessDeniedException("only heads, admins, and members of the project's teams can create its tasks")
+      );
+    });
+
+    it('rejects an assignee who is not on the project team', async () => {
+      const { robin, cyborg } = await makeTeamProject();
+
+      await expect(
+        async () => await McpService.createTask(robin, organization, '1.1.0', { ...baseInput, assigneeIds: [cyborg.userId] })
+      ).rejects.toThrow(
+        new HttpException(400, "Victor Stone cannot be assigned because they are not on any of this project's teams")
+      );
+    });
+
+    it('ignores a repeated assignee', async () => {
+      const { robin } = await makeTeamProject();
+
+      const task = await McpService.createTask(robin, organization, '1.1.0', {
+        ...baseInput,
+        assigneeIds: [robin.userId, robin.userId]
+      });
+
+      expect(task.assignees).toEqual([idAndName(robin)]);
+    });
+
+    it('rejects a work package wbs number', async () => {
+      const { project, robin } = await makeTeamProject();
+      await createTestWorkPackage(user, orgId, project.projectId, 1, 1, 1);
+
+      await expect(async () => await McpService.createTask(robin, organization, '1.1.1', baseInput)).rejects.toThrow(
+        new HttpException(400, '"1.1.1" is a work package, not a project')
+      );
+    });
+
+    it('still applies the regular task rules', async () => {
+      const { robin } = await makeTeamProject();
+
+      await expect(
+        async () =>
+          await McpService.createTask(robin, organization, '1.1.0', { ...baseInput, status: Task_Status.IN_PROGRESS })
+      ).rejects.toThrow(HttpException);
+    });
+  });
+
+  describe('Update Task', () => {
+    const createTask = (creator: User) =>
+      McpService.createTask(creator, organization, '1.1.0', { title: 'Order bearings', priority: Task_Priority.LOW });
+
+    it('lets the creator update a task and leaves omitted fields alone', async () => {
+      const { robin } = await makeTeamProject();
+      const { taskId } = await createTask(robin);
+      const label = await prisma.task_Label.create({
+        data: { name: 'Urgent', colorHexCode: '#ff0000', organizationId: orgId, userCreatedId: user.userId }
+      });
+      await prisma.task.update({ where: { taskId }, data: { labels: { connect: { taskLabelId: label.taskLabelId } } } });
+
+      const task = await McpService.updateTask(robin, organization, taskId, { priority: Task_Priority.HIGH });
+
+      expect(task.priority).toBe(Task_Priority.HIGH);
+      expect(task.title).toBe('Order bearings');
+      expect(task.labels).toEqual(['Urgent']);
+    });
+
+    it('lets a head who did not create the task update it', async () => {
+      const { robin, greenlantern } = await makeTeamProject();
+      const { taskId } = await createTask(robin);
+
+      const task = await McpService.updateTask(greenlantern, organization, taskId, { title: 'Order more bearings' });
+
+      expect(task.title).toBe('Order more bearings');
+    });
+
+    it('rejects a team member who did not create the task', async () => {
+      const { aquaman, robin } = await makeTeamProject();
+      const { taskId } = await createTask(aquaman);
+
+      await expect(
+        async () => await McpService.updateTask(robin, organization, taskId, { title: 'Order more bearings' })
+      ).rejects.toThrow(new AccessDeniedException('only heads, admins, and the creator of a task can update it'));
+    });
+
+    it('sets assignees and a deadline before moving the task in progress', async () => {
+      const { robin } = await makeTeamProject();
+      const { taskId } = await createTask(robin);
+
+      const task = await McpService.updateTask(robin, organization, taskId, {
+        status: Task_Status.IN_PROGRESS,
+        assigneeIds: [robin.userId],
+        deadline: new Date('2030-01-01')
+      });
+
+      expect(task.status).toBe(Task_Status.IN_PROGRESS);
+      expect(task.assignees).toEqual([idAndName(robin)]);
+      expect(task.deadline).toEqual(new Date('2030-01-01'));
+    });
+
+    it('rejects an assignee who is not on the project team', async () => {
+      const { robin, cyborg } = await makeTeamProject();
+      const { taskId } = await createTask(robin);
+
+      await expect(
+        async () => await McpService.updateTask(robin, organization, taskId, { assigneeIds: [cyborg.userId] })
+      ).rejects.toThrow(
+        new HttpException(400, "Victor Stone cannot be assigned because they are not on any of this project's teams")
+      );
+    });
+
+    it('checks assignees against the project team for a task on a work package', async () => {
+      const { project, robin, cyborg } = await makeTeamProject();
+      const workPackage = await createTestWorkPackage(user, orgId, project.projectId, 1, 1, 1);
+      const { taskId } = await prisma.task.create({
+        data: {
+          title: 'Work package task',
+          notes: '',
+          priority: Task_Priority.LOW,
+          status: Task_Status.IN_BACKLOG,
+          createdByUserId: robin.userId,
+          wbsElementId: workPackage.wbsElementId
+        }
+      });
+
+      const task = await McpService.updateTask(robin, organization, taskId, { assigneeIds: [robin.userId] });
+      expect(task.assignees).toEqual([idAndName(robin)]);
+      expect(task.parentWbsNum).toBe('1.1.1');
+
+      await expect(
+        async () => await McpService.updateTask(robin, organization, taskId, { assigneeIds: [cyborg.userId] })
+      ).rejects.toThrow(HttpException);
+    });
+
+    it('rejects an update with nothing to change', async () => {
+      const { robin } = await makeTeamProject();
+      const { taskId } = await createTask(robin);
+
+      await expect(async () => await McpService.updateTask(robin, organization, taskId, {})).rejects.toThrow(
+        new HttpException(400, 'Nothing to update, give at least one field to change')
+      );
+    });
+
+    it('reports a task in another organization as missing', async () => {
+      const { robin } = await makeTeamProject();
+      const { taskId } = await createTask(robin);
+      // an admin, so the only thing stopping them is that the task is in a different organization
+      const otherOrganization = await prisma.organization.create({
+        data: { name: 'Other', description: '', applicationLink: '', userCreatedId: user.userId }
+      });
+      const otherAdmin = await createTestUser(flashAdmin, otherOrganization.organizationId);
+
+      await expect(
+        async () => await McpService.updateTask(otherAdmin, otherOrganization, taskId, { title: 'Hijacked' })
+      ).rejects.toThrow(new NotFoundException('Task', taskId));
     });
   });
 

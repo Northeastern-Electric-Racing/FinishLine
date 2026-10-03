@@ -1,7 +1,24 @@
-import { Organization } from '@prisma/client';
-import { McpEvent, McpProjectDetail, McpProjectList, McpTaskList, McpWorkPackage, validateWBS } from 'shared';
+import { Organization, Prisma, Task_Priority, Task_Status } from '@prisma/client';
+import {
+  isHead,
+  McpEvent,
+  McpProjectDetail,
+  McpProjectList,
+  McpProjectTeam,
+  McpTask,
+  McpTaskList,
+  McpWorkPackage,
+  User,
+  validateWBS,
+  wbsPipe
+} from 'shared';
 import prisma from '../prisma/prisma.js';
-import { HttpException, NotFoundException } from '../utils/errors.utils.js';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
+import { getUsers, userHasPermission } from '../utils/users.utils.js';
+import { isUserPartOfTeams } from '../utils/teams.utils.js';
+import { wbsNumOf } from '../utils/utils.js';
+import { getTeamPreviewQueryArgs } from '../prisma-query-args/teams.query-args.js';
+import TasksService from './tasks.services.js';
 import { buildScheduledTimesOverlap } from '../utils/calendar.utils.js';
 import {
   getMcpProjectDetailQueryArgs,
@@ -10,10 +27,12 @@ import {
 import { getMcpWorkPackageQueryArgs } from '../prisma-query-args/mcp/work-packages.query-args.js';
 import { getMcpTaskQueryArgs } from '../prisma-query-args/mcp/tasks.query-args.js';
 import { getMcpEventQueryArgs } from '../prisma-query-args/mcp/events.query-args.js';
+import { getMcpProjectTeamQueryArgs } from '../prisma-query-args/mcp/teams.query-args.js';
 import { mcpProjectDetailTransformer, mcpProjectSummaryTransformer } from '../transformers/mcp/projects.transformer.js';
 import { mcpWorkPackageTransformer } from '../transformers/mcp/work-packages.transformer.js';
 import { mcpTaskTransformer } from '../transformers/mcp/tasks.transformer.js';
 import { mcpEventTransformer } from '../transformers/mcp/events.transformer.js';
+import { mcpProjectTeamTransformer } from '../transformers/mcp/teams.transformer.js';
 
 /** The widest event range the MCP API will serve, to keep responses small enough for an LLM. */
 const MAX_EVENT_RANGE_DAYS = 7;
@@ -66,11 +85,12 @@ const parseProjectWbsNum = (wbsNum: string) => {
 
 /**
  * Looks up a project by wbs number within an organization.
- * @returns the project's id and wbs element id
+ * @returns the project's id, wbs element id, and parsed wbs number
  * @throws if no such project exists
  */
 const findProject = async (wbsNum: string, organization: Organization) => {
-  const { carNumber, projectNumber, workPackageNumber } = parseProjectWbsNum(wbsNum);
+  const parsedWbsNum = parseProjectWbsNum(wbsNum);
+  const { carNumber, projectNumber, workPackageNumber } = parsedWbsNum;
 
   const wbsElement = await prisma.wBS_Element.findUnique({
     where: {
@@ -83,8 +103,79 @@ const findProject = async (wbsNum: string, organization: Organization) => {
     throw new NotFoundException('Project', wbsNum);
   }
 
-  return { projectId: wbsElement.project.projectId, wbsElementId: wbsElement.wbsElementId };
+  return { projectId: wbsElement.project.projectId, wbsElementId: wbsElement.wbsElementId, parsedWbsNum };
 };
+
+/** What a model can set when creating a task. Labels and blockers are left out: it has no way to look them up. */
+export interface McpCreateTaskInput {
+  title: string;
+  notes?: string;
+  priority: Task_Priority;
+  status?: Task_Status;
+  assigneeIds?: string[];
+  startDate?: Date;
+  deadline?: Date;
+}
+
+/** What a model can change on a task. Every field is optional; anything omitted is left as it is. */
+export type McpUpdateTaskInput = Partial<McpCreateTaskInput>;
+
+/**
+ * Gets the active teams working on a project, with their heads, leads, and members, which is the
+ * shape the team membership helpers need.
+ */
+const getProjectTeams = async (projectId: string, organization: Organization) => {
+  return prisma.team.findMany({
+    where: {
+      organizationId: organization.organizationId,
+      dateArchived: null,
+      projects: { some: { projectId } }
+    },
+    ...getTeamPreviewQueryArgs(organization.organizationId)
+  });
+};
+
+/**
+ * Asserts that everyone being assigned a task is on one of its project's teams. The regular API
+ * does not check this, but an agent has no other sense of who belongs on a project, so the MCP does.
+ * @param assigneeIds the ids of the users being assigned, already deduplicated
+ * @param teams the project's teams
+ * @throws if any assignee does not exist or is not on one of the teams
+ */
+const assertAssigneesOnTeams = async (
+  assigneeIds: string[],
+  teams: Awaited<ReturnType<typeof getProjectTeams>>
+): Promise<void> => {
+  if (assigneeIds.length === 0) return;
+
+  const assignees = await getUsers(assigneeIds);
+  const outsiders = assignees.filter((assignee) => !isUserPartOfTeams(teams, assignee));
+
+  if (outsiders.length > 0) {
+    const names = outsiders.map((outsider) => `${outsider.firstName} ${outsider.lastName}`).join(', ');
+    throw new HttpException(400, `${names} cannot be assigned because they are not on any of this project's teams`);
+  }
+};
+
+/**
+ * Loads a task in the MCP shape.
+ * @param taskId the task to load
+ * @param projectWbsNum the piped wbs number of the project the task belongs to
+ */
+const getMcpTask = async (taskId: string, projectWbsNum: string): Promise<McpTask> => {
+  const task = await prisma.task.findUnique({ where: { taskId }, ...getMcpTaskQueryArgs() });
+
+  if (!task) throw new NotFoundException('Task', taskId);
+
+  return mcpTaskTransformer(task, projectWbsNum);
+};
+
+const projectWbsSelect = {
+  select: {
+    projectId: true,
+    wbsElement: { select: { carNumber: true, projectNumber: true, workPackageNumber: true } }
+  }
+} satisfies Prisma.ProjectDefaultArgs;
 
 export default class McpService {
   /**
@@ -235,6 +326,178 @@ export default class McpService {
       total,
       nextOffset: nextOffsetOf(offset, tasks.length, total)
     };
+  }
+
+  /**
+   * Gets the teams working on a project and everyone on them. These are exactly the people who can
+   * be assigned the project's tasks through the MCP.
+   * @param wbsNum the project's wbs number
+   * @param organization the organization the request is scoped to
+   */
+  static async getProjectMembers(wbsNum: string, organization: Organization): Promise<McpProjectTeam[]> {
+    const { projectId } = await findProject(wbsNum, organization);
+
+    const teams = await prisma.team.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateArchived: null,
+        projects: { some: { projectId } }
+      },
+      orderBy: { teamName: 'asc' },
+      ...getMcpProjectTeamQueryArgs()
+    });
+
+    return teams.map(mcpProjectTeamTransformer);
+  }
+
+  /**
+   * Creates a task directly on a project.
+   *
+   * The task itself is created by TasksService so every rule the app enforces still applies. On top
+   * of those, only heads and admins, or someone on one of the project's teams, can create a task
+   * here, and every assignee has to be on one of the project's teams.
+   *
+   * @param user the user the agent is acting as
+   * @param organization the organization the request is scoped to
+   * @param wbsNum the project's wbs number
+   * @param input the task's fields
+   * @returns the created task
+   */
+  static async createTask(
+    user: User,
+    organization: Organization,
+    wbsNum: string,
+    input: McpCreateTaskInput
+  ): Promise<McpTask> {
+    const { projectId, parsedWbsNum } = await findProject(wbsNum, organization);
+    const teams = await getProjectTeams(projectId, organization);
+
+    const canCreate =
+      isUserPartOfTeams(teams, user) || (await userHasPermission(user.userId, organization.organizationId, isHead));
+    if (!canCreate) {
+      throw new AccessDeniedException("only heads, admins, and members of the project's teams can create its tasks");
+    }
+
+    const assigneeIds = [...new Set(input.assigneeIds ?? [])];
+    await assertAssigneesOnTeams(assigneeIds, teams);
+
+    const task = await TasksService.createTask(
+      user,
+      parsedWbsNum,
+      input.title,
+      input.notes ?? '',
+      input.priority,
+      input.status ?? Task_Status.IN_BACKLOG,
+      assigneeIds,
+      organization,
+      [],
+      [],
+      input.startDate,
+      input.deadline
+    );
+
+    return getMcpTask(task.taskId, wbsNum);
+  }
+
+  /**
+   * Updates a task, leaving anything not given as it is.
+   *
+   * The changes are made by TasksService so every rule the app enforces still applies. On top of
+   * those, only heads and admins, or whoever created the task, can update it here, and every new
+   * assignee has to be on one of the project's teams.
+   *
+   * TasksService splits a task's fields, assignees, and status across separate updates, so this
+   * applies them in that order: a task can only move to IN_PROGRESS once it has a deadline and
+   * assignees, so the status has to go last to see the others. The updates are not one transaction,
+   * so a failure part way through can leave the earlier ones applied.
+   *
+   * @param user the user the agent is acting as
+   * @param organization the organization the request is scoped to
+   * @param taskId the task to update
+   * @param input the fields to change
+   * @returns the updated task
+   */
+  static async updateTask(
+    user: User,
+    organization: Organization,
+    taskId: string,
+    input: McpUpdateTaskInput
+  ): Promise<McpTask> {
+    const { title, notes, priority, status, assigneeIds, startDate, deadline } = input;
+
+    if (Object.values(input).every((value) => value === undefined)) {
+      throw new HttpException(400, 'Nothing to update, give at least one field to change');
+    }
+
+    const task = await prisma.task.findUnique({
+      where: { taskId },
+      select: {
+        title: true,
+        notes: true,
+        priority: true,
+        dateDeleted: true,
+        createdByUserId: true,
+        labels: { where: { dateDeleted: null }, select: { taskLabelId: true } },
+        blockedBy: { where: { dateDeleted: null }, select: { taskId: true } },
+        wbsElement: {
+          select: {
+            organizationId: true,
+            dateDeleted: true,
+            project: projectWbsSelect,
+            workPackage: { select: { project: projectWbsSelect } }
+          }
+        }
+      }
+    });
+
+    // a task in another organization is reported as missing rather than confirmed to exist
+    if (!task || task.wbsElement.organizationId !== organization.organizationId || task.wbsElement.dateDeleted) {
+      throw new NotFoundException('Task', taskId);
+    }
+    if (task.dateDeleted) throw new DeletedException('Task', taskId);
+
+    const canUpdate =
+      task.createdByUserId === user.userId || (await userHasPermission(user.userId, organization.organizationId, isHead));
+    if (!canUpdate) {
+      throw new AccessDeniedException('only heads, admins, and the creator of a task can update it');
+    }
+
+    // the task hangs off either the project itself or one of its work packages
+    const project = task.wbsElement.project ?? task.wbsElement.workPackage?.project;
+    if (!project) throw new NotFoundException('Project', taskId);
+    const projectWbsNum = wbsPipe(wbsNumOf(project.wbsElement));
+
+    const uniqueAssigneeIds = assigneeIds && [...new Set(assigneeIds)];
+    if (uniqueAssigneeIds) {
+      await assertAssigneesOnTeams(uniqueAssigneeIds, await getProjectTeams(project.projectId, organization));
+    }
+
+    if ([title, notes, priority, startDate, deadline].some((value) => value !== undefined)) {
+      // editTask overwrites the title, notes, priority, labels, and blockers, so anything not being
+      // changed is passed back as it is; dates left undefined are already left alone
+      await TasksService.editTask(
+        user,
+        organization.organizationId,
+        taskId,
+        title ?? task.title,
+        notes ?? task.notes,
+        priority ?? task.priority,
+        task.labels.map((label) => label.taskLabelId),
+        task.blockedBy.map((blocker) => blocker.taskId),
+        startDate,
+        deadline
+      );
+    }
+
+    if (uniqueAssigneeIds) {
+      await TasksService.editTaskAssignees(user, taskId, uniqueAssigneeIds, organization);
+    }
+
+    if (status) {
+      await TasksService.editTaskStatus(user, organization.organizationId, taskId, status);
+    }
+
+    return getMcpTask(taskId, projectWbsNum);
   }
 
   /**
