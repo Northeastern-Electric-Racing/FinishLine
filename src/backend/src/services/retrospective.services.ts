@@ -3,7 +3,7 @@ import projectTransformer, {
   RetrospectiveProjectPreviewQueryArgs,
   retrospectiveProjectPreviewTransformer
 } from '../transformers/projects.transformer.js';
-import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args.js';
+import { getProjectGanttQueryArgs, getProjectQueryArgs } from '../prisma-query-args/projects.query-args.js';
 import { ProjectGantt, RetrospectiveProjectPreview } from 'shared';
 
 export default class RetrospectiveService {
@@ -13,8 +13,8 @@ export default class RetrospectiveService {
     endDate?: Date
   ): Promise<RetrospectiveProjectPreview[]> {
     const projects = await prisma.project.findMany({
-      where: { wbsElement: { organizationId } },
-      ...getProjectQueryArgs(organizationId)
+      where: { wbsElement: { organizationId, dateDeleted: null } },
+      ...getProjectGanttQueryArgs(organizationId)
     });
 
     const retroProjects: RetrospectiveProjectPreviewQueryArgs[] = projects.map((project) => {
