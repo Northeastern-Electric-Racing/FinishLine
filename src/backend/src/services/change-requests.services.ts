@@ -636,8 +636,14 @@ export default class ChangeRequestsService {
 
     await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter);
 
-    const inBuffer = isWithinBuffer(startDate, createdCR.dateSubmitted, organization.activationBufferDays);
-    if (inBuffer) {
+    if (createdCR.wbsElement?.workPackage) {
+      const inBuffer = isWithinBuffer(
+        createdCR.wbsElement?.workPackage?.startDate,
+        new Date(startDate),
+        organization.activationBufferDays
+      );
+      if (inBuffer) {
+      }
     }
 
     return createdCR.crId;
