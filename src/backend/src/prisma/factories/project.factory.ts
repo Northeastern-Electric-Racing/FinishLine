@@ -225,11 +225,11 @@ export const generateProjectBudgets = (
   return budgets;
 };
 
-export const shouldExist = (faker: Faker, dateRange: DateRange): boolean => {
+export const shouldExist = (faker: Faker, dateRange: DateRange, now: Date): boolean => {
   // Date is in the past, obviously it should exist
-  if (dateRange.start < new Date()) return true;
+  if (dateRange.start < now) return true;
 
-  const daysUpcoming = daysBetween({ start: new Date(), end: dateRange.start });
+  const daysUpcoming = daysBetween({ start: now, end: dateRange.start });
 
   // inverse exponential: starts at ~80% incomplete chance, drops rapidly toward 0
   const incompleteChance = 0.8 * Math.exp(-0.02 * daysUpcoming);
