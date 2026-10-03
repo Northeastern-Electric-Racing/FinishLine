@@ -212,10 +212,6 @@ module "elasticbeanstalk" {
     USER_EMAIL                 = var.user_email
     ADMIN_USER_ID              = var.admin_user_id
   }
-
-  # Load balancer access logs. Referencing the bucket policy makes sure the load balancer is allowed
-  # to write to the bucket before Elastic Beanstalk turns logging on
-  access_logs_bucket = aws_s3_bucket_policy.alb_access_logs.bucket
 }
 
 #############
@@ -248,78 +244,6 @@ module "frontend" {
     VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID = var.google_client_id,
     VITE_REACT_APP_CLARITY_PROJECT_ID = var.clarity_project_id
   }
-}
-
-#############
-# Load Balancer Access Logs
-#############
-data "aws_caller_identity" "current" {}
-
-# the AWS account that load balancers in this region deliver access logs from
-data "aws_elb_service_account" "main" {}
-
-resource "aws_s3_bucket" "alb_access_logs" {
-  bucket = "${local.project_name}-${local.environment}-alb-access-logs-${data.aws_caller_identity.current.account_id}"
-
-  tags = {
-    Name        = "${local.project_name}-${local.environment}-alb-access-logs"
-    Environment = local.environment
-    Project     = local.project_name
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "alb_access_logs" {
-  bucket = aws_s3_bucket.alb_access_logs.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-# load balancer log delivery only supports S3 managed keys, not KMS
-resource "aws_s3_bucket_server_side_encryption_configuration" "alb_access_logs" {
-  bucket = aws_s3_bucket.alb_access_logs.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_s3_bucket_lifecycle_configuration" "alb_access_logs" {
-  bucket = aws_s3_bucket.alb_access_logs.id
-
-  rule {
-    id     = "expire-access-logs"
-    status = "Enabled"
-
-    filter {}
-
-    expiration {
-      days = var.alb_access_log_retention_days
-    }
-  }
-}
-
-resource "aws_s3_bucket_policy" "alb_access_logs" {
-  bucket = aws_s3_bucket.alb_access_logs.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "AllowLoadBalancerLogDelivery"
-        Effect    = "Allow"
-        Principal = { AWS = data.aws_elb_service_account.main.arn }
-        Action    = "s3:PutObject"
-        Resource  = "${aws_s3_bucket.alb_access_logs.arn}/alb/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
-      }
-    ]
-  })
-
-  depends_on = [aws_s3_bucket_public_access_block.alb_access_logs]
 }
 
 #############

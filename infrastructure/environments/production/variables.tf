@@ -287,9 +287,3 @@ variable "admin_user_id" {
   type        = string
   default     = ""
 }
-
-variable "alb_access_log_retention_days" {
-  description = "Number of days to keep load balancer access logs in S3"
-  type        = number
-  default     = 30
-}
