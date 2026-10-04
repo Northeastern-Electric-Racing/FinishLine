@@ -107,11 +107,20 @@ const AssignRulesTab: React.FC = () => {
   const fetchFullRuleTree = useFetchFullRuleTree(rulesetId);
   const [rules, setRules] = useState<Rule[]>([]);
 
+  const toastRef = useRef(toast);
+  toastRef.current = toast;
+
   useEffect(() => {
     let cancelled = false;
-    fetchFullRuleTree().then((loadedRules) => {
-      if (!cancelled) setRules(loadedRules);
-    });
+    const loadFullRuleTree = async () => {
+      try {
+        const loadedRules = await fetchFullRuleTree();
+        if (!cancelled) setRules(loadedRules);
+      } catch (e) {
+        if (!cancelled) toastRef.current.error(e instanceof Error ? e.message : 'Failed to load rules');
+      }
+    };
+    loadFullRuleTree();
     return () => {
       cancelled = true;
     };
