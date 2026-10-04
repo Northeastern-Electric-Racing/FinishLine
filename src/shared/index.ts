@@ -36,5 +36,6 @@ export * from './src/word-count.js';
 export * from './src/permission-utils.js';
 export * from './src/types/bom-types.js';
 export * from './src/types/statistics-types.js';
+export * from './src/types/rules-types.js';
 
 export * from './src/utils.js';
