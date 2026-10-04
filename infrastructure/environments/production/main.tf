@@ -260,6 +260,57 @@ resource "aws_sns_topic" "alerts" {
 }
 
 #############
+# Slack Notifications for Alerts (Amazon Q Developer in chat applications, formerly AWS Chatbot)
+#############
+# The Chatbot API isn't available in us-east-1; it can still subscribe to SNS topics in any region
+provider "aws" {
+  alias  = "chatbot"
+  region = "us-east-2"
+
+  default_tags {
+    tags = {
+      Project     = var.project_name
+      Environment = var.environment
+      ManagedBy   = "Terraform"
+    }
+  }
+}
+
+resource "aws_iam_role" "chatbot" {
+  name = "${local.project_name}-${local.environment}-chatbot"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Service = "chatbot.amazonaws.com" }
+        Action    = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# Lets the alarm cards in Slack render their metric graphs
+resource "aws_iam_role_policy_attachment" "chatbot_cloudwatch_read" {
+  role       = aws_iam_role.chatbot.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess"
+}
+
+resource "aws_chatbot_slack_channel_configuration" "alerts" {
+  provider = aws.chatbot
+
+  configuration_name = "${local.project_name}-${local.environment}-alerts"
+  iam_role_arn       = aws_iam_role.chatbot.arn
+  slack_team_id      = var.slack_alerts_team_id
+  slack_channel_id   = var.slack_alerts_channel_id
+  sns_topic_arns     = [aws_sns_topic.alerts.arn]
+  # caps what anyone in the channel can do through the bot: read-only CloudWatch, no changes to AWS resources
+  guardrail_policy_arns = ["arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess"]
+  logging_level         = "ERROR"
+}
+
+#############
 # Data Source: Fetch Autoscaling Group Name
 #############
 # Query AWS directly to get the actual autoscaling group name
