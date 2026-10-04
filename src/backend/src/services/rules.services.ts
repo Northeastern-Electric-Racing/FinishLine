@@ -847,6 +847,8 @@ export default class RulesService {
   static async deleteRuleset(rulesetId: string, deleterId: string, organizationId: string) {
     const ruleset = await RulesService.getRulesetWithQueryArgs(rulesetId);
 
+    if (ruleset.car.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Ruleset');
+
     // admins can delete any ruleset; leadership and heads can only delete a ruleset they created themselves
     const isCreator = deleterId === ruleset.createdByUserId;
     const hasPermission =
@@ -1397,6 +1399,21 @@ export default class RulesService {
 
     if (!car) {
       throw new NotFoundException('Car', carNumber);
+    }
+
+    if (active) {
+      const activeRuleset = await prisma.ruleset.findFirst({
+        where: {
+          active: true,
+          carId: car.carId,
+          rulesetTypeId,
+          deletedByUserId: null
+        }
+      });
+
+      if (activeRuleset) {
+        throw new HttpException(400, 'There is already an active ruleset for this ruleset type and car');
+      }
     }
 
     const ruleset = await prisma.ruleset.create({

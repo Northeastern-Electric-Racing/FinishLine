@@ -326,6 +326,93 @@ describe('Create Rules Tests', () => {
             await RulesService.createRuleset(superman, organization, 'ruleset name', 'bad ruleset type', 0, false, 'fileId')
         ).rejects.toThrow(new NotFoundException('Ruleset Type', 'bad ruleset type'));
       });
+      it('Create active ruleset succeeds when no other ruleset is active for the type and car', async () => {
+        const ruleset = await RulesService.createRuleset(
+          superman,
+          organization,
+          'active ruleset',
+          rulesetType.rulesetTypeId,
+          0,
+          true,
+          'fileId'
+        );
+
+        expect(ruleset.active).toBe(true);
+      });
+      it('Create active ruleset fails when another ruleset is already active for the type and car', async () => {
+        await RulesService.createRuleset(
+          superman,
+          organization,
+          'first active ruleset',
+          rulesetType.rulesetTypeId,
+          0,
+          true,
+          'fileId'
+        );
+
+        await expect(
+          async () =>
+            await RulesService.createRuleset(
+              superman,
+              organization,
+              'second active ruleset',
+              rulesetType.rulesetTypeId,
+              0,
+              true,
+              'fileId2'
+            )
+        ).rejects.toThrow(new HttpException(400, 'There is already an active ruleset for this ruleset type and car'));
+      });
+      it('Create active ruleset succeeds when the existing active ruleset is deleted', async () => {
+        const first = await RulesService.createRuleset(
+          superman,
+          organization,
+          'first active ruleset',
+          rulesetType.rulesetTypeId,
+          0,
+          true,
+          'fileId'
+        );
+        await prisma.ruleset.update({
+          where: { rulesetId: first.rulesetId },
+          data: { deletedByUserId: superman.userId, dateDeleted: new Date() }
+        });
+
+        const second = await RulesService.createRuleset(
+          superman,
+          organization,
+          'second active ruleset',
+          rulesetType.rulesetTypeId,
+          0,
+          true,
+          'fileId2'
+        );
+
+        expect(second.active).toBe(true);
+      });
+      it('Create inactive ruleset succeeds even when another ruleset is already active', async () => {
+        await RulesService.createRuleset(
+          superman,
+          organization,
+          'active ruleset',
+          rulesetType.rulesetTypeId,
+          0,
+          true,
+          'fileId'
+        );
+
+        const inactive = await RulesService.createRuleset(
+          superman,
+          organization,
+          'inactive ruleset',
+          rulesetType.rulesetTypeId,
+          0,
+          false,
+          'fileId2'
+        );
+
+        expect(inactive.active).toBe(false);
+      });
       it('Create ruleset fails when given bad car number', async () => {
         await expect(
           async () =>
@@ -2316,6 +2403,30 @@ describe('Rule Tests', () => {
       await expect(
         async () => await RulesService.deleteRuleset(ruleset1.rulesetId, admin.userId, organization.organizationId)
       ).rejects.toThrow(new DeletedException('Ruleset', ruleset1.rulesetId));
+    });
+    it('Delete ruleset fails if ruleset belongs to a different organization', async () => {
+      const otherCar = await createUniqueCar(otherOrg.organizationId);
+      const otherOrgRulesetType = await prisma.ruleset_Type.create({
+        data: {
+          name: 'Other Org FHE',
+          createdByUserId: admin.userId,
+          organizationId: otherOrg.organizationId
+        }
+      });
+      const otherRuleset = await prisma.ruleset.create({
+        data: {
+          name: 'Other Org Ruleset',
+          fileId: 'other-org-ruleset-file',
+          active: false,
+          carId: otherCar.carId,
+          createdByUserId: admin.userId,
+          rulesetTypeId: otherOrgRulesetType.rulesetTypeId
+        }
+      });
+
+      await expect(
+        async () => await RulesService.deleteRuleset(otherRuleset.rulesetId, admin.userId, organization.organizationId)
+      ).rejects.toThrow(new InvalidOrganizationException('Ruleset'));
     });
     it('Delete ruleset fails if ruleset does not exist', async () => {
       await expect(
