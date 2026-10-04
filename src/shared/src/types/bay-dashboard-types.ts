@@ -21,3 +21,26 @@ export interface BayDashboardSlotInput {
     text?: string;
   };
 }
+
+export interface BayDashboardWidget {
+  bayDashboardWidgetId: string;
+  type: BayDashboardWidgetType;
+  order: number;
+  text?: string;
+}
+
+export interface BayDashboardSlot {
+  bayDashboardSlotId: string;
+  position: number;
+  size: BayDashboardWidgetSize;
+  rotationSeconds: number;
+  widgets: BayDashboardWidget[];
+}
+
+export interface BayDashboardConfig {
+  bayDashboardConfigId: string;
+  dateCreated: Date;
+  dateDeleted?: Date;
+  userCreatedId: string;
+  slots: BayDashboardSlot[];
+}

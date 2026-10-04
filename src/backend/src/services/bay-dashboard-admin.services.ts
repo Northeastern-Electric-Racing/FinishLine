@@ -1,6 +1,8 @@
 import { Organization } from '@prisma/client';
-import { BayDashboardSlotInput, isHead, User } from 'shared';
+import { BayDashboardConfig, BayDashboardSlotInput, isHead, User } from 'shared';
 import prisma from '../prisma/prisma.js';
+import { getBayDashboardConfigQueryArgs } from '../prisma-query-args/bay-dashboard.query-args.js';
+import bayDashboardConfigTransformer from '../transformers/bay-dashboard.transformer.js';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
 
@@ -14,7 +16,11 @@ export default class BayDashboardAdminService {
    * @param slots the slots to display, each with at most one widget
    * @returns the newly created config with its slots and widgets
    */
-  static async saveBayDashboardConfig(submitter: User, organization: Organization, slots: BayDashboardSlotInput[]) {
+  static async saveBayDashboardConfig(
+    submitter: User,
+    organization: Organization,
+    slots: BayDashboardSlotInput[]
+  ): Promise<BayDashboardConfig> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedException('Only heads and above can save the bay dashboard config');
     }
@@ -26,7 +32,7 @@ export default class BayDashboardAdminService {
     }
 
     // soft delete existing bay dash config and create a new one with the provided slots and widgets
-    return await prisma.$transaction(async (tx) => {
+    const config = await prisma.$transaction(async (tx) => {
       await tx.bay_Dashboard_Config.updateMany({
         where: { organizationId: organization.organizationId, dateDeleted: null },
         data: { dateDeleted: new Date() }
@@ -45,13 +51,10 @@ export default class BayDashboardAdminService {
             }))
           }
         },
-        include: {
-          slots: {
-            orderBy: { position: 'asc' },
-            include: { widgets: { orderBy: { order: 'asc' } } }
-          }
-        }
+        ...getBayDashboardConfigQueryArgs()
       });
     });
+
+    return bayDashboardConfigTransformer(config);
   }
 }
