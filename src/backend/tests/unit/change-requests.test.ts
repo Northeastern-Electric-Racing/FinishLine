@@ -18,6 +18,7 @@ import {
 } from '../test-data/users.test-data.js';
 import prisma from '../../src/prisma/prisma.js';
 import { AccessDeniedException, AccessDeniedMemberException } from '../../src/utils/errors.utils.js';
+import { ChangeRequestStatus } from 'shared';
 
 describe('Change Request Tests', () => {
   let orgId: string;
@@ -411,6 +412,28 @@ describe('Change Request Tests', () => {
         const results = await ChangeRequestsService.getAllChangeRequests(organization);
 
         expect(results).toHaveLength(2);
+      });
+
+      it('marks a CR with changes as implemented on the date of its earliest change', async () => {
+        const cr = await ChangeRequestsService.createStandardChangeRequest(user, 0, 1, 0, 'reason', organization);
+        const projectWbs = await prisma.wBS_Element.findFirstOrThrow({
+          where: { organizationId: orgId, carNumber: 0, projectNumber: 1, workPackageNumber: 0 }
+        });
+        const earliest = new Date('2024-02-01');
+        await prisma.change.createMany({
+          data: [new Date('2024-03-01'), earliest, new Date('2024-04-01')].map((dateImplemented) => ({
+            changeRequestId: cr.crId,
+            implementerId: user.userId,
+            wbsElementId: projectWbs.wbsElementId,
+            detail: 'changed something',
+            dateImplemented
+          }))
+        });
+
+        const [result] = await ChangeRequestsService.getAllChangeRequests(organization, carAId);
+
+        expect(result.status).toBe(ChangeRequestStatus.Implemented);
+        expect(result.dateImplemented).toEqual(earliest);
       });
     });
 

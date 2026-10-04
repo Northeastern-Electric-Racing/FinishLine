@@ -164,12 +164,11 @@ export const getManyChangeRequestQueryArgs = (organizationId: string) =>
       accountCode: getAccountCodeQueryArgs(organizationId),
       reviewer: getUserQueryArgs(organizationId),
       stageGateChangeRequest: true,
-      changes: true,
+      changes: { select: { dateImplemented: true }, orderBy: { dateImplemented: 'asc' }, take: 1 },
       activationChangeRequest: {
         include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
       },
       budgetChangeRequest: true,
-      deletedBy: getUserQueryArgs(organizationId),
       requestedReviewers: getUserQueryArgs(organizationId),
       leadershipChangeRequest: {
         include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
