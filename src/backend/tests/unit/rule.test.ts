@@ -394,6 +394,9 @@ describe('Create Rules Tests', () => {
         ).rejects.toThrow(new NotFoundException('Ruleset Type', 'bad ruleset type'));
       });
       it('Create active ruleset succeeds when no other ruleset is active for the type and car', async () => {
+        // the beforeEach ruleset is active on this type and car, so deactivate it first
+        await prisma.ruleset.update({ where: { rulesetId }, data: { active: false } });
+
         const ruleset = await RulesService.createRuleset(
           superman,
           organization,
@@ -407,16 +410,7 @@ describe('Create Rules Tests', () => {
         expect(ruleset.active).toBe(true);
       });
       it('Create active ruleset fails when another ruleset is already active for the type and car', async () => {
-        await RulesService.createRuleset(
-          superman,
-          organization,
-          'first active ruleset',
-          rulesetType.rulesetTypeId,
-          0,
-          true,
-          'fileId'
-        );
-
+        // the beforeEach ruleset is already active on this type and car
         await expect(
           async () =>
             await RulesService.createRuleset(
@@ -431,17 +425,8 @@ describe('Create Rules Tests', () => {
         ).rejects.toThrow(new HttpException(400, 'There is already an active ruleset for this ruleset type and car'));
       });
       it('Create active ruleset succeeds when the existing active ruleset is deleted', async () => {
-        const first = await RulesService.createRuleset(
-          superman,
-          organization,
-          'first active ruleset',
-          rulesetType.rulesetTypeId,
-          0,
-          true,
-          'fileId'
-        );
         await prisma.ruleset.update({
-          where: { rulesetId: first.rulesetId },
+          where: { rulesetId },
           data: { deletedByUserId: superman.userId, dateDeleted: new Date() }
         });
 
@@ -458,16 +443,7 @@ describe('Create Rules Tests', () => {
         expect(second.active).toBe(true);
       });
       it('Create inactive ruleset succeeds even when another ruleset is already active', async () => {
-        await RulesService.createRuleset(
-          superman,
-          organization,
-          'active ruleset',
-          rulesetType.rulesetTypeId,
-          0,
-          true,
-          'fileId'
-        );
-
+        // the beforeEach ruleset is already active on this type and car
         const inactive = await RulesService.createRuleset(
           superman,
           organization,

@@ -1481,7 +1481,7 @@ export default class RulesService {
       for (const ruleset of rulesetType.revisionFiles) {
         await tx.ruleset.update({
           where: { rulesetId: ruleset.rulesetId },
-          data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
+          data: { dateDeleted: new Date(), deletedByUserId: deleter.userId, active: false }
         });
       }
 
