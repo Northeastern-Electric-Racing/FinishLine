@@ -4,7 +4,7 @@
  */
 
 import { Organization } from '@prisma/client';
-import { isAdmin, notGuest, User } from 'shared';
+import { calculateProjectEndDate, calculateProjectStartDate, isAdmin, notGuest, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedException,
@@ -15,8 +15,14 @@ import {
 } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
 import { isUserOnOpsTeam } from '../utils/exec-summaries.utils.js';
-import { getExecutiveSummaryQueryArgs } from '../prisma-query-args/executive-summary.query-args.js';
-import { executiveSummaryTransformer } from '../transformers/executive-summary.transformer.js';
+import {
+  getExecutiveSummaryQueryArgs,
+  getVehicleDevelopmentProjectQueryArgs
+} from '../prisma-query-args/executive-summary.query-args.js';
+import {
+  executiveSummaryTransformer,
+  vehicleDevelopmentSummaryTransformer
+} from '../transformers/executive-summary.transformer.js';
 
 export default class ExecSummaryServices {
   /**
@@ -149,5 +155,78 @@ export default class ExecSummaryServices {
     });
 
     return executiveSummaries.map(executiveSummaryTransformer);
+  }
+
+  /**
+   * Gets the vehicle development data (projects over time) for an executive summary's season.
+   * @param organization the organization the executive summary belongs to
+   * @param executiveSummaryId the id of the executive summary
+   * @param viewer the user requesting the data
+   * @param teamId optional team id; when provided only that team's projects are returned
+   * @returns the projects overlapping the executive summary's season, with their teams and dates
+   * @throws AccessDeniedException if the viewer is a guest
+   * @throws NotFoundException if the executive summary does not exist
+   * @throws InvalidOrganizationException if the executive summary belongs to a different organization
+   * @throws DeletedException if the executive summary has been deleted
+   * @throws NotFoundException if the team id is provided and the team does not exist
+   * @throws InvalidOrganizationException if the team belongs to a different organization
+   */
+  static async getVehicleDevelopmentSummary(
+    organization: Organization,
+    executiveSummaryId: string,
+    viewer: User,
+    teamId?: string
+  ) {
+    const hasPermission = await userHasPermission(viewer.userId, organization.organizationId, notGuest);
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only members can view executive summaries');
+    }
+
+    const executiveSummary = await prisma.executive_Summary.findUnique({
+      where: { executiveSummaryId },
+      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+    });
+
+    if (!executiveSummary) {
+      throw new NotFoundException('Executive Summary', executiveSummaryId);
+    }
+    if (executiveSummary.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Executive Summary');
+    }
+    if (executiveSummary.dateDeleted) {
+      throw new DeletedException('Executive Summary', executiveSummaryId);
+    }
+
+    if (teamId) {
+      const team = await prisma.team.findUnique({ where: { teamId } });
+      if (!team) {
+        throw new NotFoundException('Team', teamId);
+      }
+      if (team.organizationId !== organization.organizationId) {
+        throw new InvalidOrganizationException('Team');
+      }
+    }
+
+    const { carId, seasonStartDate, seasonEndDate } = executiveSummary;
+
+    const projects = await prisma.project.findMany({
+      where: {
+        carId,
+        wbsElement: { organizationId: organization.organizationId, dateDeleted: null },
+        ...(teamId ? { teams: { some: { teamId } } } : {})
+      },
+      ...getVehicleDevelopmentProjectQueryArgs()
+    });
+
+    const projectsInSeason = projects.filter((project) => {
+      const start = calculateProjectStartDate(project.workPackages);
+      const end = calculateProjectEndDate(project.workPackages);
+      if (!start || !end) return false;
+      if (seasonStartDate && end < seasonStartDate) return false;
+      if (seasonEndDate && start > seasonEndDate) return false;
+      return true;
+    });
+
+    return vehicleDevelopmentSummaryTransformer(executiveSummaryId, projectsInSeason);
   }
 }

@@ -1,4 +1,4 @@
-import { CompetitionDocumentsSummary, ExecutiveSummary } from 'shared';
+import { CompetitionDocumentsSummary, ExecutiveSummary, VehicleDevelopmentSummary } from 'shared';
 
 /**
  * Transforms a competition documents summary received from the API so that its
@@ -36,5 +36,23 @@ export const executiveSummaryTransformer = (executiveSummary: ExecutiveSummary):
     competitionDocumentsSummary: executiveSummary.competitionDocumentsSummary
       ? competitionDocumentsSummaryTransformer(executiveSummary.competitionDocumentsSummary)
       : undefined
+  };
+};
+
+/**
+ * Transforms a vehicle development summary received from the API so that each
+ * project's date string fields are converted into Date objects.
+ *
+ * @param summary The vehicle development summary with dates as strings.
+ * @returns The vehicle development summary with `startDate` and `plannedEndDate` as Dates.
+ */
+export const vehicleDevelopmentSummaryTransformer = (summary: VehicleDevelopmentSummary): VehicleDevelopmentSummary => {
+  return {
+    ...summary,
+    projects: summary.projects.map((project) => ({
+      ...project,
+      startDate: new Date(project.startDate),
+      plannedEndDate: new Date(project.plannedEndDate)
+    }))
   };
 };
