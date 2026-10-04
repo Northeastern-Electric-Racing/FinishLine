@@ -25,33 +25,33 @@ export default class BayDashboardAdminService {
       throw new HttpException(400, 'Each slot must have a unique position');
     }
 
-    // delete existing bay dash config
-    await prisma.bay_Dashboard_Config.updateMany({
-      where: { organizationId: organization.organizationId, dateDeleted: null },
-      data: { dateDeleted: new Date() }
-    });
+    // soft delete existing bay dash config and create a new one with the provided slots and widgets
+    return await prisma.$transaction(async (tx) => {
+      await tx.bay_Dashboard_Config.updateMany({
+        where: { organizationId: organization.organizationId, dateDeleted: null },
+        data: { dateDeleted: new Date() }
+      });
 
-    return await prisma.bay_Dashboard_Config.create({
-      data: {
-        organizationId: organization.organizationId,
-        userCreatedId: submitter.userId,
-        slots: {
-          create: slots.map((slot) => ({
-            position: slot.position,
-            size: slot.size,
-            rotationSeconds: slot.rotationSeconds,
-            widgets: slot.widget
-              ? { create: { type: slot.widget.type, order: 0, text: slot.widget.text } }
-              : undefined
-          }))
+      return await tx.bay_Dashboard_Config.create({
+        data: {
+          organizationId: organization.organizationId,
+          userCreatedId: submitter.userId,
+          slots: {
+            create: slots.map((slot) => ({
+              position: slot.position,
+              size: slot.size,
+              rotationSeconds: slot.rotationSeconds,
+              widgets: slot.widget ? { create: { type: slot.widget.type, order: 0, text: slot.widget.text } } : undefined
+            }))
+          }
+        },
+        include: {
+          slots: {
+            orderBy: { position: 'asc' },
+            include: { widgets: { orderBy: { order: 'asc' } } }
+          }
         }
-      },
-      include: {
-        slots: {
-          orderBy: { position: 'asc' },
-          include: { widgets: { orderBy: { order: 'asc' } } }
-        }
-      }
+      });
     });
   }
 }
