@@ -8,7 +8,7 @@ import prisma from '../../src/prisma/prisma.js';
 
 const textSlot = (position: number, text: string): BayDashboardSlotInput => ({
   position,
-  size: 'LARGE',
+  size: 'SMALL',
   widget: { type: 'TEXT_FIELD', text }
 });
 
@@ -107,6 +107,27 @@ describe('Bay Dashboard Admin Tests', () => {
       });
       expect(activeConfigs).toHaveLength(1);
       expect(activeConfigs[0].bayDashboardConfigId).toBe(newConfig.bayDashboardConfigId);
+    });
+
+    it('keeps the previous config active when the new config fails to save', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      const oldConfig = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+        textSlot(0, 'old')
+      ]);
+
+      // an invalid widget type makes the create fail after the old config has been soft deleted in the transaction
+      await expect(
+        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+          { position: 0, size: 'SMALL', widget: { type: 'NOT_A_WIDGET_TYPE' as any } }
+        ])
+      ).rejects.toThrow();
+
+      const activeConfigs = await prisma.bay_Dashboard_Config.findMany({
+        where: { organizationId: orgId, dateDeleted: null }
+      });
+      expect(activeConfigs).toHaveLength(1);
+      expect(activeConfigs[0].bayDashboardConfigId).toBe(oldConfig.bayDashboardConfigId);
     });
 
     it('leaves another organization`s config untouched', async () => {
