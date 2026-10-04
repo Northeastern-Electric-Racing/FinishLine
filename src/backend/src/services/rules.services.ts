@@ -676,6 +676,19 @@ export default class RulesService {
       if (parentRule.rulesetId !== currentRule.rulesetId) {
         throw new HttpException(400, 'Parent rule must be in the same ruleset');
       }
+
+      // a rule can't be its own parent or sit under one of its own descendants, which would create a cycle
+      let ancestorRuleId: string | null = parentRuleId;
+      while (ancestorRuleId) {
+        if (ancestorRuleId === ruleId) {
+          throw new HttpException(400, 'Parent rule cannot be the rule itself or one of its descendants');
+        }
+        const ancestor: { parentRuleId: string | null } | null = await prisma.rule.findUnique({
+          where: { ruleId: ancestorRuleId },
+          select: { parentRuleId: true }
+        });
+        ancestorRuleId = ancestor?.parentRuleId ?? null;
+      }
     }
 
     const updatedRule = await prisma.rule.update({
@@ -1314,6 +1327,22 @@ export default class RulesService {
         .filter((currTeam) => currTeam.teamId !== teamId)
         .map((currTeam) => currTeam.teamId);
 
+      // Since a project can belong to multiple teams, only soft delete the project rule
+      // when the project shares no remaining team with the rule.
+      const projectRulesToDeleteWhere = {
+        ruleId: rule.ruleId,
+        dateDeleted: null,
+        project: {
+          teams: {
+            some: { teamId }, // project has the team where the assignment is being removed
+            none: { teamId: { in: remainingTeamIds } } // project has no remaining teams that the rule is still assigned to
+          }
+        }
+      };
+      const affectedProjectIds = (
+        await prisma.project_Rule.findMany({ where: projectRulesToDeleteWhere, select: { projectId: true } })
+      ).map((projectRule) => projectRule.projectId);
+
       // Disconnect the team and soft delete its project rules, ensure we never leave
       // the rule unassigned from the team while its project rules stay active
       await prisma.$transaction(async (tx) => {
@@ -1327,25 +1356,19 @@ export default class RulesService {
             }
           }
         });
-        // Since a project can belong to multiple teams, only soft delete the project rule
-        // when the project shares no remaining team with the rule.
         await tx.project_Rule.updateMany({
-          where: {
-            ruleId: rule.ruleId,
-            dateDeleted: null,
-            project: {
-              teams: {
-                some: { teamId }, // project has the team where the assignment is being removed
-                none: { teamId: { in: remainingTeamIds } } // project has no remaining teams that the rule is still assigned to
-              }
-            }
-          },
+          where: projectRulesToDeleteWhere,
           data: {
             dateDeleted: new Date(),
             deletedByUserId: user.userId
           }
         });
       });
+
+      // deleted project rules no longer count towards their ancestors' status calcs
+      for (const projectId of affectedProjectIds) {
+        await RulesService.recalculateProjectRuleStatusChain(projectId, rule.parentRuleId);
+      }
     }
     // retrieve and return the updated rule
     const newRule = await prisma.rule.findUnique({

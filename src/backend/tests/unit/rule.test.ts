@@ -2340,6 +2340,41 @@ describe('Rule Tests', () => {
       expect(updatedRule.ruleCode).toEqual(leafRule2.ruleCode);
     });
 
+    it('Fails when the rule is set as its own parent', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1 } = await setupRules(car);
+
+      await expect(
+        RulesService.editRule(
+          admin,
+          leafRule1.ruleContent,
+          leafRule1.ruleId,
+          leafRule1.ruleCode,
+          leafRule1.imageFileIds,
+          organization,
+          leafRule1.ruleId
+        )
+      ).rejects.toThrow(new HttpException(400, 'Parent rule cannot be the rule itself or one of its descendants'));
+    });
+
+    it('Fails when the new parent is a descendant of the rule', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule, leafRule1 } = await setupRules(car);
+
+      // leafRule1 is a child of topLevelRule, so making it topLevelRule's parent would create a cycle
+      await expect(
+        RulesService.editRule(
+          admin,
+          topLevelRule.ruleContent,
+          topLevelRule.ruleId,
+          topLevelRule.ruleCode,
+          topLevelRule.imageFileIds,
+          organization,
+          leafRule1.ruleId
+        )
+      ).rejects.toThrow(new HttpException(400, 'Parent rule cannot be the rule itself or one of its descendants'));
+    });
+
     it('Fails when parent rule is in a different ruleset', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset2, leafRule1 } = await setupRules(car);
@@ -2752,6 +2787,41 @@ describe('Rule Tests', () => {
       expect(teamRemovedRule).toBeDefined();
       expect(ruleWithTeams?.teams.length).toBe(0);
       expect(ruleWithTeams?.teams[0]).toBeUndefined();
+    });
+    it('Soft deletes project rules and recalculates ancestor status when a team is removed from a rule', async () => {
+      const car = await createUniqueCar(orgId);
+      const { topLevelRule, leafRule1, leafRule2 } = await setupRules(car);
+      await RulesService.toggleRuleTeam(topLevelRule.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
+      await RulesService.toggleRuleTeam(leafRule2.ruleId, testTeam.teamId, admin, organization);
+      const project = await createTestProject(admin, orgId, testTeam.teamId, car.carId, car.wbsElement.carNumber);
+      const leaf1ProjectRule = await RulesService.createProjectRule(
+        admin,
+        organization,
+        leafRule1.ruleId,
+        project.projectId
+      );
+      await RulesService.createProjectRule(admin, organization, leafRule2.ruleId, project.projectId);
+
+      // a failing child makes the ancestor fail
+      await RulesService.setProjectRuleStatus(admin, organization, leaf1ProjectRule.projectRuleId, RuleStatus.FAIL);
+      const failingTopLevel = await prisma.project_Rule.findUniqueOrThrow({
+        where: { ruleId_projectId: { ruleId: topLevelRule.ruleId, projectId: project.projectId } }
+      });
+      expect(failingTopLevel.status).toBe(RuleStatus.FAIL);
+
+      // removing the team soft deletes the failing child's project rule, so the ancestor no longer fails
+      await RulesService.toggleRuleTeam(leafRule1.ruleId, testTeam.teamId, admin, organization);
+
+      const deletedLeaf = await prisma.project_Rule.findUniqueOrThrow({
+        where: { projectRuleId: leaf1ProjectRule.projectRuleId }
+      });
+      expect(deletedLeaf.dateDeleted).not.toBeNull();
+      expect(deletedLeaf.deletedByUserId).toBe(admin.userId);
+      const recalculatedTopLevel = await prisma.project_Rule.findUniqueOrThrow({
+        where: { ruleId_projectId: { ruleId: topLevelRule.ruleId, projectId: project.projectId } }
+      });
+      expect(recalculatedTopLevel.status).toBe(RuleStatus.PENDING);
     });
   });
 
