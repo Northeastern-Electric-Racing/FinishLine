@@ -414,6 +414,8 @@ export default class SlackServices {
         case 'message_deleted':
           //delete the message using the client_msg_id
           eventMessage = (event as SlackDeletedMessage).previous_message;
+          // bot and API posted messages have no client_msg_id, so they were never stored as announcements
+          if (!eventMessage.client_msg_id) return;
           return AnnouncementService.deleteAnnouncement(eventMessage.client_msg_id, organizationId);
         case 'message_changed':
           eventMessage = (event as SlackUpdatedMessage).message;
