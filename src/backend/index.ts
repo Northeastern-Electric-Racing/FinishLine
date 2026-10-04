@@ -105,8 +105,9 @@ app.use('/ics', icsRouter);
 app.use('/agent', agentRouter);
 
 // The MCP endpoint, authenticated with the same per-user API tokens. JSON-RPC requires POST, so it
-// cannot sit behind the readOnlyGuard the /agent router uses and is mounted separately; registering
-// every tool through registerReadOnlyTool in src/mcp/tools.ts is what keeps it read only instead.
+// cannot sit behind the readOnlyGuard the /agent router uses and is mounted separately. Unlike the
+// /agent routes it has write tools; each checks the token's user may make the change, see
+// registerWriteTool in src/mcp/tools.ts.
 // The handler is async, so its rejections are forwarded to the error handler rather than dropped.
 app.all('/mcp', requireApiToken, attachAuthInfo, (req, res, next) => {
   mcpNodeHandler(req, res, req.body).catch(next);

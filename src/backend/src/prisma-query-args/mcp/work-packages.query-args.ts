@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { userSelect } from './teams.query-args.js';
 
 export type McpWorkPackageQueryArgs = ReturnType<typeof getMcpWorkPackageQueryArgs>;
 
@@ -21,8 +22,8 @@ export const getMcpWorkPackageQueryArgs = () =>
           carNumber: true,
           projectNumber: true,
           workPackageNumber: true,
-          lead: { select: { firstName: true, lastName: true } },
-          manager: { select: { firstName: true, lastName: true } },
+          lead: userSelect,
+          manager: userSelect,
           // grouped by type name in the transformer; deliverables vs expected activities is
           // configurable per organization, so we never hardcode the type names here
           descriptionBullets: {
