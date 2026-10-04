@@ -34,8 +34,14 @@ import agentRouter from './src/routes/agent.routes.js';
 import { mcpNodeHandler } from './src/mcp/handler.js';
 import { attachAuthInfo, requireApiToken } from './src/utils/mcp-auth.utils.js';
 import dashboardsRouter from './src/routes/dashboards.routes.js';
+import { withRequestContext } from './src/utils/request-context.utils.js';
+import { logRequests } from './src/utils/request-logger.utils.js';
 
 const app = express();
+
+// Global request logging and context middleware
+app.use(withRequestContext);
+app.use(logRequests);
 
 const port = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
