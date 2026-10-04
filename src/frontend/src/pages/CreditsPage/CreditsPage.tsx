@@ -8,6 +8,7 @@ import { NERButton } from '../../components/NERButton';
 import { useState } from 'react';
 import PageBlock from '../../layouts/PageBlock'; // ...and from other files
 import PageLayout from '../../components/PageLayout';
+import { fontWeight } from '@mui/system';
 
 const CreditsPage: React.FC = () => {
   // This is the list of names that get displayed, add yours here!
@@ -381,7 +382,11 @@ const CreditsPage: React.FC = () => {
     { name: 'Hamilton LaPides', color: '#55a50a' },
     { name: 'Sara Johnson', color: '#ffff99' },
     { name: 'Abhishek Vijay', color: '#4287f5' },
-    { name: 'Kidus Desalegn', color: '#B027F5' }
+    { name: 'Kidus Desalegn', color: '#B027F5' },
+    {name: 'John', color: '#aaaaaa'},
+    { name: 'Fred', color: '#dd5421', sx: {ml: -1.5, fontWeight: 'bold'}},
+    {name: 'erick', color: '#aaaaaa', sx: {ml: -2}},
+    {name: 'Harrison', color: '#dd5421', sx: {ml: -1.5, fontWeight: 'bold'}}
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
