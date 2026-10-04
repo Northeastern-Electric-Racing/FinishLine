@@ -542,6 +542,7 @@ const dashboardDelete = (dashboardId: string) => `${dashboards()}/${dashboardId}
 /************** Executive Summary Endpoints ***************/
 const executiveSummaries = () => `${API_URL}/executive-summaries`;
 const executiveSummaryById = (id: string) => `${executiveSummaries()}/${id}`;
+const executiveSummaryVehicleDevelopment = (id: string) => `${executiveSummaryById(id)}/vehicle-development`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -948,6 +949,7 @@ export const apiUrls = {
 
   executiveSummaries,
   executiveSummaryById,
+  executiveSummaryVehicleDevelopment,
 
   version
 };

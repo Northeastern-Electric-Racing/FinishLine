@@ -1,7 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args.js';
+import { getTeamPreviewQueryArgs } from './teams.query-args.js';
 
 export type ExecutiveSummaryQueryArgs = ReturnType<typeof getExecutiveSummaryQueryArgs>;
+export type VehicleDevelopmentProjectQueryArgs = ReturnType<typeof getVehicleDevelopmentProjectQueryArgs>;
 export type RecruitmentCycleQueryArgs = ReturnType<typeof getRecruitmentCycleQueryArgs>;
 export type RecruitmentDivisionCountQueryArgs = ReturnType<typeof getRecruitmentDivisionCountQueryArgs>;
 
@@ -28,5 +30,17 @@ export const getRecruitmentDivisionCountQueryArgs = () =>
   Prisma.validator<Prisma.Recruitment_Division_CountDefaultArgs>()({
     include: {
       teamType: true
+    }
+  });
+
+export const getVehicleDevelopmentProjectQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.ProjectDefaultArgs>()({
+    include: {
+      wbsElement: { select: { name: true } },
+      teams: getTeamPreviewQueryArgs(organizationId),
+      workPackages: {
+        where: { wbsElement: { dateDeleted: null } },
+        select: { startDate: true, duration: true }
+      }
     }
   });

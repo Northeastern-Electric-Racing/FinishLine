@@ -15,6 +15,10 @@ import {
   createTestUser,
   createOpsTeamAndMember,
   createTestExecutiveSummary,
+  createTestProject,
+  createTestWorkPackage,
+  createTestTeam,
+  createTestTeamType,
   resetUsers
 } from '../test-utils.js';
 import { batmanAppAdmin, member, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data.js';
@@ -202,6 +206,148 @@ describe('Executive Summary Tests', () => {
       await expect(async () => ExecSummaryServices.getAllExecutiveSummaries(organization, guestUser)).rejects.toThrow(
         new AccessDeniedException('Only members can view executive summaries')
       );
+    });
+  });
+
+  describe('Get vehicle development summary', () => {
+    let teamTypeId: string;
+
+    beforeEach(async () => {
+      teamTypeId = (await createTestTeamType('aTeam', orgId)).teamTypeId;
+    });
+
+    it('fails if the viewer is a guest', async () => {
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+
+      await expect(async () =>
+        ExecSummaryServices.getVehicleDevelopmentSummary(organization, summary.executiveSummaryId, guestUser)
+      ).rejects.toThrow(new AccessDeniedException('Only members can view executive summaries'));
+    });
+
+    it('fails if the executive summary does not exist', async () => {
+      await expect(async () =>
+        ExecSummaryServices.getVehicleDevelopmentSummary(organization, 'badid', superman)
+      ).rejects.toThrow(new NotFoundException('Executive Summary', 'badid'));
+    });
+
+    it('fails if the executive summary was deleted', async () => {
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await prisma.executive_Summary.update({
+        where: { executiveSummaryId: summary.executiveSummaryId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(async () =>
+        ExecSummaryServices.getVehicleDevelopmentSummary(organization, summary.executiveSummaryId, superman)
+      ).rejects.toThrow(new DeletedException('Executive Summary', summary.executiveSummaryId));
+    });
+
+    it('returns projects within the season with their team and dates', async () => {
+      const team = await createTestTeam(superman.userId, teamTypeId, orgId);
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const project = await createTestProject(superman, orgId, team.teamId, car.carId, 0, 1);
+      await createTestWorkPackage(superman, orgId, project.projectId, 0, 1, 1);
+
+      const result = await ExecSummaryServices.getVehicleDevelopmentSummary(
+        organization,
+        summary.executiveSummaryId,
+        superman
+      );
+
+      expect(result.executiveSummaryId).toBe(summary.executiveSummaryId);
+      expect(result.projects).toHaveLength(1);
+      expect(result.projects[0].wbsElementId).toBe(project.wbsElementId);
+      expect(result.projects[0].team.teamId).toBe(team.teamId);
+      expect(result.projects[0].startDate).toEqual(new Date('2024-01-01'));
+      expect(result.projects[0].plannedEndDate).toEqual(new Date('2024-01-29'));
+    });
+
+    it('excludes projects outside the season, deleted projects, and other cars', async () => {
+      const team = await createTestTeam(superman.userId, teamTypeId, orgId);
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await prisma.executive_Summary.update({
+        where: { executiveSummaryId: summary.executiveSummaryId },
+        data: { seasonStartDate: new Date('2025-01-01'), seasonEndDate: new Date('2025-06-01') }
+      });
+
+      // work package from createTestWorkPackage runs Jan 2024, before the 2025 season
+      const outOfSeason = await createTestProject(superman, orgId, team.teamId, car.carId, 0, 1);
+      await createTestWorkPackage(superman, orgId, outOfSeason.projectId, 0, 1, 1);
+
+      const inSeason = await createTestProject(superman, orgId, team.teamId, car.carId, 0, 2);
+      await prisma.work_Package.create({
+        data: {
+          wbsElement: {
+            create: {
+              carNumber: 0,
+              projectNumber: 2,
+              workPackageNumber: 1,
+              name: 'In season WP',
+              leadId: superman.userId,
+              managerId: superman.userId,
+              organizationId: orgId
+            }
+          },
+          project: { connect: { projectId: inSeason.projectId } },
+          startDate: new Date('2025-02-01'),
+          duration: 4,
+          orderInProject: 1
+        }
+      });
+
+      const deletedProject = await createTestProject(superman, orgId, team.teamId, car.carId, 0, 3, new Date());
+      await prisma.work_Package.create({
+        data: {
+          wbsElement: {
+            create: {
+              carNumber: 0,
+              projectNumber: 3,
+              workPackageNumber: 1,
+              name: 'Deleted project WP',
+              leadId: superman.userId,
+              managerId: superman.userId,
+              organizationId: orgId
+            }
+          },
+          project: { connect: { projectId: deletedProject.projectId } },
+          startDate: new Date('2025-02-01'),
+          duration: 4,
+          orderInProject: 1
+        }
+      });
+
+      const result = await ExecSummaryServices.getVehicleDevelopmentSummary(
+        organization,
+        summary.executiveSummaryId,
+        superman
+      );
+
+      expect(result.projects).toHaveLength(1);
+      expect(result.projects[0].wbsElementId).toBe(inSeason.wbsElementId);
+    });
+
+    it('filters by team when a team id is provided', async () => {
+      const team1 = await createTestTeam(superman.userId, teamTypeId, orgId);
+      const team2 = await createTestTeam(superman.userId, teamTypeId, orgId);
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+
+      const project1 = await createTestProject(superman, orgId, team1.teamId, car.carId, 0, 1);
+      await createTestWorkPackage(superman, orgId, project1.projectId, 0, 1, 1);
+      const project2 = await createTestProject(superman, orgId, team2.teamId, car.carId, 0, 2);
+      await createTestWorkPackage(superman, orgId, project2.projectId, 0, 2, 1);
+
+      const all = await ExecSummaryServices.getVehicleDevelopmentSummary(organization, summary.executiveSummaryId, superman);
+      expect(all.projects).toHaveLength(2);
+
+      const filtered = await ExecSummaryServices.getVehicleDevelopmentSummary(
+        organization,
+        summary.executiveSummaryId,
+        superman,
+        team1.teamId
+      );
+      expect(filtered.projects).toHaveLength(1);
+      expect(filtered.projects[0].wbsElementId).toBe(project1.wbsElementId);
+      expect(filtered.projects[0].team.teamId).toBe(team1.teamId);
     });
   });
 });

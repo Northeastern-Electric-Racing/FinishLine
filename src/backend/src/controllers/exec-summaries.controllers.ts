@@ -48,4 +48,21 @@ export default class ExecSummaryController {
       next(error);
     }
   }
+
+  static async getVehicleDevelopmentSummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { execSummaryId } = req.params as Record<string, string>;
+      const { teamId } = req.query as Record<string, string | undefined>;
+
+      const summary = await ExecSummaryServices.getVehicleDevelopmentSummary(
+        req.organization,
+        execSummaryId,
+        req.currentUser,
+        teamId
+      );
+      res.status(200).json(summary);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
