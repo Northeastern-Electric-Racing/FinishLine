@@ -109,7 +109,7 @@ export class SponsorProcess extends SeedProcess<SponsorInput, SponsorOutput> {
 
   async run({ organization, members, leadership, heads, admins }: SponsorInput): Promise<SponsorOutput> {
     const { organizationId } = organization;
-    const now = new Date();
+    const { now } = this;
 
     const assignableUsers: FullUser[] = [...members, ...leadership, ...heads, ...admins];
     if (assignableUsers.length === 0) throw new Error('SponsorProcess requires at least one user for task assignment.');
