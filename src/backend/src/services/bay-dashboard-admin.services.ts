@@ -1,10 +1,17 @@
 import { Organization } from '@prisma/client';
-import { BayDashboardConfig, BayDashboardSlotInput, isHead, User } from 'shared';
+import { BayDashboardConfig, BayDashboardSlotInput, BayDashboardWidgetSize, isHead, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { getBayDashboardConfigQueryArgs } from '../prisma-query-args/bay-dashboard.query-args.js';
 import bayDashboardConfigTransformer from '../transformers/bay-dashboard.transformer.js';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
+
+// the slots the TV can render, keyed by position (0 = left large, 1 = right medium, 2 = right small).
+const DEFAULT_LAYOUT: Record<number, BayDashboardWidgetSize> = {
+  0: 'LARGE',
+  1: 'MEDIUM',
+  2: 'SMALL'
+};
 
 export default class BayDashboardAdminService {
   /**
@@ -23,6 +30,17 @@ export default class BayDashboardAdminService {
   ): Promise<BayDashboardConfig> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedException('Only heads and above can save the bay dashboard config');
+    }
+
+    // every slot must be a position the TV renders, at the size that position is laid out for
+    for (const slot of slots) {
+      const expectedSize = DEFAULT_LAYOUT[slot.position];
+      if (!expectedSize) {
+        throw new HttpException(400, `Slot position ${slot.position} is not part of the bay dashboard layout`);
+      }
+      if (slot.size !== expectedSize) {
+        throw new HttpException(400, `Slot position ${slot.position} must be size ${expectedSize}`);
+      }
     }
 
     // a config can only hold one slot per position

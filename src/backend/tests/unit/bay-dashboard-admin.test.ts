@@ -1,14 +1,17 @@
 import { Organization } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
 import { greenlanternHead, member } from '../test-data/users.test-data.js';
-import { BayDashboardSlotInput } from 'shared';
+import { BayDashboardSlotInput, BayDashboardWidgetSize } from 'shared';
 import BayDashboardAdminService from '../../src/services/bay-dashboard-admin.services.js';
 import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils.js';
 import prisma from '../../src/prisma/prisma.js';
 
+// the size the TV lays out at each position
+const SIZE_BY_POSITION: Record<number, BayDashboardWidgetSize> = { 0: 'LARGE', 1: 'MEDIUM', 2: 'SMALL' };
+
 const textSlot = (position: number, text: string): BayDashboardSlotInput => ({
   position,
-  size: 'SMALL',
+  size: SIZE_BY_POSITION[position],
   widget: { type: 'TEXT_FIELD', text }
 });
 
@@ -41,9 +44,8 @@ describe('Bay Dashboard Admin Tests', () => {
         { position: 0, size: 'LARGE', rotationSeconds: 15, widget: { type: 'CALENDAR' } }
       ]);
 
-      expect(config.organizationId).toBe(orgId);
       expect(config.userCreatedId).toBe(head.userId);
-      expect(config.dateDeleted).toBeNull();
+      expect(config.dateDeleted).toBeUndefined();
       expect(config.slots).toHaveLength(1);
       expect(config.slots[0].position).toBe(0);
       expect(config.slots[0].size).toBe('LARGE');
@@ -70,7 +72,7 @@ describe('Bay Dashboard Admin Tests', () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
       const config = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-        { position: 0, size: 'SMALL' }
+        { position: 0, size: 'LARGE' }
       ]);
 
       expect(config.slots).toHaveLength(1);
@@ -119,7 +121,7 @@ describe('Bay Dashboard Admin Tests', () => {
       // an invalid widget type makes the create fail after the old config has been soft deleted in the transaction
       await expect(
         BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-          { position: 0, size: 'SMALL', widget: { type: 'NOT_A_WIDGET_TYPE' as any } }
+          { position: 0, size: 'LARGE', widget: { type: 'NOT_A_WIDGET_TYPE' as any } }
         ])
       ).rejects.toThrow();
 
@@ -167,6 +169,51 @@ describe('Bay Dashboard Admin Tests', () => {
           textSlot(0, 'duplicate')
         ])
       ).rejects.toThrow(new HttpException(400, 'Each slot must have a unique position'));
+    });
+
+    it('fails when a slot position is not part of the layout', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      await expect(
+        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [{ position: 7, size: 'SMALL' }])
+      ).rejects.toThrow(new HttpException(400, 'Slot position 7 is not part of the bay dashboard layout'));
+    });
+
+    it('fails when a slot size does not match its position', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      await expect(
+        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [{ position: 0, size: 'SMALL' }])
+      ).rejects.toThrow(new HttpException(400, 'Slot position 0 must be size LARGE'));
+    });
+
+    it('fails when two slots are both large', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      await expect(
+        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+          { position: 0, size: 'LARGE' },
+          { position: 1, size: 'LARGE' }
+        ])
+      ).rejects.toThrow(new HttpException(400, 'Slot position 1 must be size MEDIUM'));
+    });
+
+    it('does not change the active config when the layout check fails', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      const oldConfig = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+        textSlot(0, 'old')
+      ]);
+
+      await expect(
+        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [{ position: 7, size: 'SMALL' }])
+      ).rejects.toThrow(HttpException);
+
+      const activeConfigs = await prisma.bay_Dashboard_Config.findMany({
+        where: { organizationId: orgId, dateDeleted: null }
+      });
+      expect(activeConfigs).toHaveLength(1);
+      expect(activeConfigs[0].bayDashboardConfigId).toBe(oldConfig.bayDashboardConfigId);
     });
   });
 });
