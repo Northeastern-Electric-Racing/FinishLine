@@ -10,7 +10,6 @@ import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwo
 import Sidebar from './Sidebar/Sidebar';
 import HiddenContentMargin from '../components/HiddenContentMargin';
 import { useCurrentUser } from '../hooks/users.hooks';
-import { isGuest } from 'shared';
 
 const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const theme = useTheme();
@@ -18,7 +17,6 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
   const user = useCurrentUser();
-  const onGuestHomePage = isGuest(user.role);
 
   return (
     <>
@@ -59,10 +57,7 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       />
       <Box display={'flex'}>
         <HiddenContentMargin open={moveContent} variant="permanent" />
-        <Container
-          maxWidth={false}
-          sx={{ width: onGuestHomePage && moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}
-        >
+        <Container maxWidth={false} sx={{ flex: 1, minWidth: 0, width: 'auto', mx: '15px' }}>
           {children}
         </Container>
       </Box>
