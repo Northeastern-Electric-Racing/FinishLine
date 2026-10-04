@@ -277,11 +277,12 @@ export default class RulesService {
       }
     }
 
-    // Verify referenced rules exist
+    // Verify referenced rules exist in this ruleset
     if (referencedRuleIds.length > 0) {
       const referencedRules = await prisma.rule.findMany({
         where: {
-          ruleId: { in: referencedRuleIds }
+          ruleId: { in: referencedRuleIds },
+          rulesetId
         }
       });
 
@@ -1377,7 +1378,7 @@ export default class RulesService {
     if (!rulesetType) {
       throw new NotFoundException('Ruleset Type', rulesetTypeId);
     }
-    if (rulesetType.dateDeleted !== null) {
+    if (rulesetType.dateDeleted !== null || rulesetType.deletedByUserId) {
       throw new DeletedException('Ruleset Type', rulesetTypeId);
     }
 
@@ -1448,7 +1449,7 @@ export default class RulesService {
     if (!rulesetType) {
       throw new NotFoundException('Ruleset Type', id);
     }
-    if (rulesetType.deletedByUserId) {
+    if (rulesetType.dateDeleted !== null || rulesetType.deletedByUserId) {
       throw new DeletedException('Ruleset Type', id);
     }
 
@@ -1457,14 +1458,14 @@ export default class RulesService {
       for (const ruleset of rulesetType.revisionFiles) {
         await tx.ruleset.update({
           where: { rulesetId: ruleset.rulesetId },
-          data: { deletedByUserId: deleter.userId }
+          data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
         });
       }
 
       // delete the actual ruleset type itself
       await tx.ruleset_Type.update({
         where: { rulesetTypeId: id },
-        data: { deletedByUserId: deleter.userId }
+        data: { dateDeleted: new Date(), deletedByUserId: deleter.userId }
       });
     });
 

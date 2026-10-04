@@ -236,9 +236,38 @@ describe('Create Rules Tests', () => {
         'otherFileId'
       );
 
-      const rule = await RulesService.createRule(superman, 'T.1.1', 'Same code elsewhere', otherRuleset.rulesetId, organization);
+      const rule = await RulesService.createRule(
+        superman,
+        'T.1.1',
+        'Same code elsewhere',
+        otherRuleset.rulesetId,
+        organization
+      );
 
       expect(rule.ruleCode).toEqual('T.1.1');
+    });
+
+    it('fails when a referenced rule is in a different ruleset', async () => {
+      const otherRuleset = await RulesService.createRuleset(
+        superman,
+        organization,
+        'other ruleset',
+        rulesetType.rulesetTypeId,
+        0,
+        false,
+        'otherFileId'
+      );
+      const otherRulesetRule = await RulesService.createRule(
+        batman,
+        'T.9',
+        'Rule in another ruleset',
+        otherRuleset.rulesetId,
+        organization
+      );
+
+      await expect(
+        RulesService.createRule(batman, 'T.1.1', 'Some rule', rulesetId, organization, undefined, [otherRulesetRule.ruleId])
+      ).rejects.toThrow(new NotFoundException('Referenced Rule', 'provided IDs'));
     });
 
     it('fails when rule code is blank', async () => {
@@ -2922,6 +2951,49 @@ describe('Rule Tests', () => {
       await RulesService.deleteRulesetType(admin, fsaeRulesetType2WithRevisionFiles.rulesetTypeId, organization);
       rulesets = await RulesService.getRulesetsByRulesetType(admin, fsaeRulesetType2WithRevisionFiles.rulesetTypeId, orgId);
       expect(rulesets.length).toBe(0);
+    });
+
+    it('Sets dateDeleted and deactivates the rulesets when deleting the ruleset type', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+      const typeWithRuleset = await prisma.ruleset_Type.create({
+        data: {
+          name: 'FSAE2',
+          createdBy: { connect: { userId: admin.userId } },
+          organization: { connect: { organizationId: organization.organizationId } },
+          revisionFiles: { connect: [ruleset1] }
+        }
+      });
+      await prisma.ruleset.update({ where: { rulesetId: ruleset1.rulesetId }, data: { active: true } });
+
+      await RulesService.deleteRulesetType(admin, typeWithRuleset.rulesetTypeId, organization);
+
+      const deletedType = await prisma.ruleset_Type.findUniqueOrThrow({
+        where: { rulesetTypeId: typeWithRuleset.rulesetTypeId }
+      });
+      expect(deletedType.dateDeleted).not.toBeNull();
+      expect(deletedType.deletedByUserId).toBe(admin.userId);
+      const deletedRuleset = await prisma.ruleset.findUniqueOrThrow({ where: { rulesetId: ruleset1.rulesetId } });
+      expect(deletedRuleset.dateDeleted).not.toBeNull();
+      expect(deletedRuleset.deletedByUserId).toBe(admin.userId);
+      expect(deletedRuleset.active).toBe(false);
+    });
+
+    it('Prevents creating a ruleset under a deleted ruleset type', async () => {
+      const car = await createUniqueCar(orgId);
+      await RulesService.deleteRulesetType(admin, fsaeRulesetType.rulesetTypeId, organization);
+
+      await expect(
+        RulesService.createRuleset(
+          admin,
+          organization,
+          'new ruleset',
+          fsaeRulesetType.rulesetTypeId,
+          car.wbsElement.carNumber,
+          false,
+          'fileId'
+        )
+      ).rejects.toThrow(new DeletedException('Ruleset Type', fsaeRulesetType.rulesetTypeId));
     });
   });
 
