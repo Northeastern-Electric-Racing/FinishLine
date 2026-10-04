@@ -257,7 +257,7 @@ describe('Executive Summary Tests', () => {
       expect(result.executiveSummaryId).toBe(summary.executiveSummaryId);
       expect(result.projects).toHaveLength(1);
       expect(result.projects[0].wbsElementId).toBe(project.wbsElementId);
-      expect(result.projects[0].team.teamId).toBe(team.teamId);
+      expect(result.projects[0].teams.map((t) => t.teamId)).toEqual([team.teamId]);
       expect(result.projects[0].startDate).toEqual(new Date('2024-01-01'));
       expect(result.projects[0].plannedEndDate).toEqual(new Date('2024-01-29'));
     });
@@ -326,6 +326,13 @@ describe('Executive Summary Tests', () => {
       expect(result.projects[0].wbsElementId).toBe(inSeason.wbsElementId);
     });
 
+    it('fails if the team does not exist', async () => {
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await expect(async () =>
+        ExecSummaryServices.getVehicleDevelopmentSummary(organization, summary.executiveSummaryId, superman, 'badid')
+      ).rejects.toThrow(new NotFoundException('Team', 'badid'));
+    });
+
     it('filters by team when a team id is provided', async () => {
       const team1 = await createTestTeam(superman.userId, teamTypeId, orgId);
       const team2 = await createTestTeam(superman.userId, teamTypeId, orgId);
@@ -347,7 +354,7 @@ describe('Executive Summary Tests', () => {
       );
       expect(filtered.projects).toHaveLength(1);
       expect(filtered.projects[0].wbsElementId).toBe(project1.wbsElementId);
-      expect(filtered.projects[0].team.teamId).toBe(team1.teamId);
+      expect(filtered.projects[0].teams.map((t) => t.teamId)).toContain(team1.teamId);
     });
   });
 });

@@ -1,6 +1,6 @@
 import { GraphData } from './statistics-types.js';
 import { TeamType } from './calendar-types.js';
-import { TeamPreview } from './team-types.js';
+import { TeamBase } from './team-types.js';
 import { User } from './user-types.js';
 
 export enum Competition {
@@ -148,7 +148,7 @@ export type EditRecruitmentCycleArgs = Omit<CreateRecruitmentCycleArgs, 'executi
 export interface VehicleDevelopmentProjectSummary {
   wbsElementId: string;
   name: string;
-  team: TeamPreview;
+  teams: TeamBase[];
   startDate: Date;
   plannedEndDate: Date;
 }

@@ -163,11 +163,13 @@ export default class ExecSummaryServices {
    * @param executiveSummaryId the id of the executive summary
    * @param viewer the user requesting the data
    * @param teamId optional team id; when provided only that team's projects are returned
-   * @returns the projects overlapping the executive summary's season, with their team and dates
+   * @returns the projects overlapping the executive summary's season, with their teams and dates
    * @throws AccessDeniedException if the viewer is a guest
    * @throws NotFoundException if the executive summary does not exist
    * @throws InvalidOrganizationException if the executive summary belongs to a different organization
    * @throws DeletedException if the executive summary has been deleted
+   * @throws NotFoundException if the team id is provided and the team does not exist
+   * @throws InvalidOrganizationException if the team belongs to a different organization
    */
   static async getVehicleDevelopmentSummary(
     organization: Organization,
@@ -195,6 +197,16 @@ export default class ExecSummaryServices {
       throw new DeletedException('Executive Summary', executiveSummaryId);
     }
 
+    if (teamId) {
+      const team = await prisma.team.findUnique({ where: { teamId } });
+      if (!team) {
+        throw new NotFoundException('Team', teamId);
+      }
+      if (team.organizationId !== organization.organizationId) {
+        throw new InvalidOrganizationException('Team');
+      }
+    }
+
     const { carId, seasonStartDate, seasonEndDate } = executiveSummary;
 
     const projects = await prisma.project.findMany({
@@ -203,7 +215,7 @@ export default class ExecSummaryServices {
         wbsElement: { organizationId: organization.organizationId, dateDeleted: null },
         ...(teamId ? { teams: { some: { teamId } } } : {})
       },
-      ...getVehicleDevelopmentProjectQueryArgs(organization.organizationId)
+      ...getVehicleDevelopmentProjectQueryArgs()
     });
 
     const projectsInSeason = projects.filter((project) => {
@@ -215,6 +227,6 @@ export default class ExecSummaryServices {
       return true;
     });
 
-    return vehicleDevelopmentSummaryTransformer(executiveSummaryId, projectsInSeason, teamId);
+    return vehicleDevelopmentSummaryTransformer(executiveSummaryId, projectsInSeason);
   }
 }

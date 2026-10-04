@@ -19,7 +19,7 @@ import {
   RecruitmentDivisionCountQueryArgs,
   VehicleDevelopmentProjectQueryArgs
 } from '../prisma-query-args/executive-summary.query-args.js';
-import { teamPreviewTransformer } from './teams.transformer.js';
+import { teamBaseTransformer } from './teams.transformer.js';
 import { teamTypeTransformer } from './team-types.transformer.js';
 import { userTransformer } from './user.transformer.js';
 
@@ -111,23 +111,22 @@ export const recruitmentDivisionCountTransformer = (
 
 export const vehicleDevelopmentSummaryTransformer = (
   executiveSummaryId: string,
-  projects: Prisma.ProjectGetPayload<VehicleDevelopmentProjectQueryArgs>[],
-  teamId?: string
+  projects: Prisma.ProjectGetPayload<VehicleDevelopmentProjectQueryArgs>[]
 ): VehicleDevelopmentSummary => {
   const projectSummaries: VehicleDevelopmentProjectSummary[] = projects.flatMap((project) => {
     const startDate = calculateProjectStartDate(project.workPackages);
     const plannedEndDate = calculateProjectEndDate(project.workPackages);
     if (!startDate || !plannedEndDate) return [];
 
-    return project.teams
-      .filter((team) => !teamId || team.teamId === teamId)
-      .map((team) => ({
+    return [
+      {
         wbsElementId: project.wbsElementId,
         name: project.wbsElement.name,
-        team: teamPreviewTransformer(team),
+        teams: project.teams.map(teamBaseTransformer),
         startDate,
         plannedEndDate
-      }));
+      }
+    ];
   });
 
   return { executiveSummaryId, projects: projectSummaries };
