@@ -203,6 +203,44 @@ describe('Create Rules Tests', () => {
       );
     });
 
+    it('fails when duplicate rule code is padded with whitespace', async () => {
+      await RulesService.createRule(batman, 'T.1.1', 'First rule', rulesetId, organization);
+
+      await expect(
+        RulesService.createRule(superman, '  T.1.1  ', 'Duplicate code', rulesetId, organization)
+      ).rejects.toThrow(new HttpException(400, 'Rule with code T.1.1 already exists in this ruleset'));
+    });
+
+    it('succeeds when reusing the code of a soft-deleted rule in the same ruleset', async () => {
+      const first = await RulesService.createRule(batman, 'T.1.1', 'First rule', rulesetId, organization);
+      await prisma.rule.update({
+        where: { ruleId: first.ruleId },
+        data: { dateDeleted: new Date(), deletedByUserId: batman.userId }
+      });
+
+      const second = await RulesService.createRule(superman, 'T.1.1', 'Replacement rule', rulesetId, organization);
+
+      expect(second.ruleCode).toEqual('T.1.1');
+      expect(second.ruleId).not.toEqual(first.ruleId);
+    });
+
+    it('succeeds when the same rule code exists in a different ruleset', async () => {
+      await RulesService.createRule(batman, 'T.1.1', 'First rule', rulesetId, organization);
+      const otherRuleset = await RulesService.createRuleset(
+        superman,
+        organization,
+        'other ruleset',
+        rulesetType.rulesetTypeId,
+        0,
+        false,
+        'otherFileId'
+      );
+
+      const rule = await RulesService.createRule(superman, 'T.1.1', 'Same code elsewhere', otherRuleset.rulesetId, organization);
+
+      expect(rule.ruleCode).toEqual('T.1.1');
+    });
+
     it('fails when rule code is blank', async () => {
       await expect(RulesService.createRule(batman, '', 'Some rule', rulesetId, organization)).rejects.toThrow(
         new HttpException(400, 'Rule code cannot be empty')
@@ -2253,6 +2291,26 @@ describe('Rule Tests', () => {
       ).rejects.toThrow(new HttpException(400, `Rule with code ${leafRule2.ruleCode} already exists in this ruleset`));
     });
 
+    it('Succeeds when new rule code matches a soft-deleted rule in the same ruleset', async () => {
+      const car = await createUniqueCar(orgId);
+      const { leafRule1, leafRule2 } = await setupRules(car);
+      await prisma.rule.update({
+        where: { ruleId: leafRule2.ruleId },
+        data: { dateDeleted: new Date(), deletedByUserId: admin.userId }
+      });
+
+      const updatedRule = await RulesService.editRule(
+        admin,
+        leafRule1.ruleContent,
+        leafRule1.ruleId,
+        leafRule2.ruleCode,
+        leafRule1.imageFileIds,
+        organization
+      );
+
+      expect(updatedRule.ruleCode).toEqual(leafRule2.ruleCode);
+    });
+
     it('Fails when parent rule is in a different ruleset', async () => {
       const car = await createUniqueCar(orgId);
       const { ruleset2, leafRule1 } = await setupRules(car);
@@ -2432,6 +2490,17 @@ describe('Rule Tests', () => {
       await expect(
         async () => await RulesService.deleteRuleset('fake-ruleset-id', admin.userId, organization.organizationId)
       ).rejects.toThrow(new NotFoundException('Ruleset', 'fake-ruleset-id'));
+    });
+  });
+
+  describe('Parse Ruleset', () => {
+    it('Fails when the ruleset already has rules', async () => {
+      const car = await createUniqueCar(orgId);
+      const { ruleset1 } = await setupRules(car);
+
+      await expect(
+        RulesService.parseRuleset(admin, organization.organizationId, 'fake-file-id', ruleset1.rulesetId, 'FSAE')
+      ).rejects.toThrow(new HttpException(400, 'Cannot parse rules into a ruleset that already has rules'));
     });
   });
 

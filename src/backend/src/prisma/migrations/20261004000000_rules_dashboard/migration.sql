@@ -91,7 +91,7 @@ CREATE INDEX "Ruleset_Type_organizationId_idx" ON "Ruleset_Type"("organizationId
 CREATE INDEX "Rule_parentRuleId_rulesetId_ruleCode_idx" ON "Rule"("parentRuleId", "rulesetId", "ruleCode");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Rule_rulesetId_ruleCode_key" ON "Rule"("rulesetId", "ruleCode");
+CREATE INDEX "Rule_rulesetId_ruleCode_idx" ON "Rule"("rulesetId", "ruleCode");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Project_Rule_ruleId_projectId_key" ON "Project_Rule"("ruleId", "projectId");

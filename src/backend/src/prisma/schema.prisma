@@ -1933,7 +1933,7 @@ model Rule {
   deletedByUserId       String?
   deletedBy             User?                 @relation(name: "ruleDeletor", fields: [deletedByUserId], references: [userId])
 
-  @@unique([rulesetId, ruleCode])
+  @@index([rulesetId, ruleCode])
   @@index([parentRuleId, rulesetId, ruleCode])
 }
 

@@ -101,18 +101,14 @@ export default class RulesService {
   }
 
   /**
-   * Throws if a rule with the given code already exists in the given ruleset
+   * Throws if a non-deleted rule with the given code already exists in the given ruleset.
+   * Soft-deleted rules do not count, so their codes can be reused.
    * @param rulesetId The ruleset to check for an existing rule code
    * @param ruleCode The trimmed rule code to check
    */
   private static async assertRuleCodeAvailable(rulesetId: string, ruleCode: string) {
-    const existingRule = await prisma.rule.findUnique({
-      where: {
-        rulesetId_ruleCode: {
-          rulesetId,
-          ruleCode
-        }
-      }
+    const existingRule = await prisma.rule.findFirst({
+      where: { rulesetId, ruleCode, dateDeleted: null }
     });
 
     if (existingRule) {
@@ -2041,6 +2037,12 @@ export default class RulesService {
       throw new AccessDeniedException('Cannot parse rules into a ruleset from another organization');
     }
 
+    // a ruleset can only be parsed into while it is empty
+    const existingRule = await prisma.rule.findFirst({ where: { rulesetId, dateDeleted: null } });
+    if (existingRule) {
+      throw new HttpException(400, 'Cannot parse rules into a ruleset that already has rules');
+    }
+
     // get file from Google Drive
     const { buffer, type } = await downloadFile(fileId);
 
@@ -2077,7 +2079,7 @@ export default class RulesService {
       });
 
       const createdRules = await tx.rule.findMany({
-        where: { rulesetId },
+        where: { rulesetId, dateDeleted: null },
         select: {
           ruleId: true,
           ruleCode: true
