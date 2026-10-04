@@ -9,14 +9,12 @@ import { useState } from 'react';
 import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
 import Sidebar from './Sidebar/Sidebar';
 import HiddenContentMargin from '../components/HiddenContentMargin';
-import { useCurrentUser } from '../hooks/users.hooks';
 
 const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
-  const user = useCurrentUser();
 
   return (
     <>
