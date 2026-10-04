@@ -213,7 +213,7 @@ describe('Executive Summary Tests', () => {
     let teamTypeId: string;
 
     beforeEach(async () => {
-      teamTypeId = (await createTestTeamType('aTeam', orgId)).teamTypeId;
+      ({ teamTypeId } = await createTestTeamType('aTeam', orgId));
     });
 
     it('fails if the viewer is a guest', async () => {
