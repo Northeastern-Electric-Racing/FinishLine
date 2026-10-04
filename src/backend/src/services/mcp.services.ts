@@ -1,6 +1,7 @@
 import { Organization, Prisma, Task_Priority, Task_Status } from '@prisma/client';
 import {
   isHead,
+  McpCurrentUser,
   McpEvent,
   McpProjectDetail,
   McpProjectList,
@@ -27,12 +28,14 @@ import {
 import { getMcpWorkPackageQueryArgs } from '../prisma-query-args/mcp/work-packages.query-args.js';
 import { getMcpTaskQueryArgs } from '../prisma-query-args/mcp/tasks.query-args.js';
 import { getMcpEventQueryArgs } from '../prisma-query-args/mcp/events.query-args.js';
-import { getMcpProjectTeamQueryArgs } from '../prisma-query-args/mcp/teams.query-args.js';
+import { getMcpCurrentUserTeamQueryArgs, getMcpProjectTeamQueryArgs } from '../prisma-query-args/mcp/teams.query-args.js';
 import { mcpProjectDetailTransformer, mcpProjectSummaryTransformer } from '../transformers/mcp/projects.transformer.js';
 import { mcpWorkPackageTransformer } from '../transformers/mcp/work-packages.transformer.js';
 import { mcpTaskTransformer } from '../transformers/mcp/tasks.transformer.js';
 import { mcpEventTransformer } from '../transformers/mcp/events.transformer.js';
-import { mcpProjectTeamTransformer } from '../transformers/mcp/teams.transformer.js';
+import { mcpCurrentUserTeamTransformer, mcpProjectTeamTransformer } from '../transformers/mcp/teams.transformer.js';
+import { mcpUser } from '../transformers/mcp/shared.js';
+import { getRoleInOrganization } from '../utils/mcp-auth.utils.js';
 
 /** The widest event range the MCP API will serve, to keep responses small enough for an LLM. */
 const MAX_EVENT_RANGE_DAYS = 7;
@@ -348,6 +351,38 @@ export default class McpService {
     });
 
     return teams.map(mcpProjectTeamTransformer);
+  }
+
+  /**
+   * Gets the user the agent is acting as, and what the write tools will let them do: heads and
+   * admins can manage any task, and anyone else can create tasks on their teams' projects.
+   * @param user the user the agent is acting as
+   * @param organization the organization the request is scoped to
+   */
+  static async getCurrentUser(user: User, organization: Organization): Promise<McpCurrentUser> {
+    const carNumber = await McpService.getCurrentCarNumber(organization);
+    const { userId } = user;
+
+    const [role, teams] = await Promise.all([
+      getRoleInOrganization(userId, organization.organizationId),
+      prisma.team.findMany({
+        where: {
+          organizationId: organization.organizationId,
+          dateArchived: null,
+          OR: [{ headId: userId }, { leads: { some: { userId } } }, { members: { some: { userId } } }]
+        },
+        orderBy: { teamName: 'asc' },
+        ...getMcpCurrentUserTeamQueryArgs(userId, carNumber)
+      })
+    ]);
+
+    return {
+      ...mcpUser(user),
+      role,
+      canManageAllTasks: isHead(role),
+      carNumber,
+      teams: teams.map((team) => mcpCurrentUserTeamTransformer(team, userId))
+    };
   }
 
   /**

@@ -378,6 +378,53 @@ describe('MCP Endpoint Tests', () => {
     });
   });
 
+  describe('Get Current User', () => {
+    it("reports the user's role, position on each team, and the team's projects", async () => {
+      const { team, aquaman, robin, cyborg } = await makeTeamProject();
+      await prisma.team.update({
+        where: { teamId: team.teamId },
+        data: { leads: { connect: { userId: cyborg.userId } } }
+      });
+      const project = { wbsNum: '1.1.0', name: expect.any(String) };
+
+      const head = await McpService.getCurrentUser(aquaman, organization);
+      expect(head).toEqual({
+        ...idAndName(aquaman),
+        role: 'LEADERSHIP',
+        canManageAllTasks: false,
+        carNumber: 1,
+        teams: [{ teamName: 'aTeamName', position: 'HEAD', projects: [project] }]
+      });
+
+      expect((await McpService.getCurrentUser(cyborg, organization)).teams).toEqual([
+        { teamName: 'aTeamName', position: 'LEAD', projects: [project] }
+      ]);
+      expect((await McpService.getCurrentUser(robin, organization)).teams).toEqual([
+        { teamName: 'aTeamName', position: 'MEMBER', projects: [project] }
+      ]);
+    });
+
+    it('marks heads and admins as able to manage every task, even with no teams', async () => {
+      const current = await McpService.getCurrentUser(user, organization);
+
+      expect(current.role).toBe('APP_ADMIN');
+      expect(current.canManageAllTasks).toBe(true);
+      expect(current.teams).toEqual([]);
+    });
+
+    it('only lists projects on the newest car, and leaves out archived teams', async () => {
+      const { team, robin } = await makeTeamProject();
+      await createTestCar(orgId, user.userId, 2);
+
+      const current = await McpService.getCurrentUser(robin, organization);
+      expect(current.carNumber).toBe(2);
+      expect(current.teams).toEqual([{ teamName: 'aTeamName', position: 'MEMBER', projects: [] }]);
+
+      await prisma.team.update({ where: { teamId: team.teamId }, data: { dateArchived: new Date() } });
+      expect((await McpService.getCurrentUser(robin, organization)).teams).toEqual([]);
+    });
+  });
+
   describe('Create Task', () => {
     const baseInput = { title: 'Machine the uprights', priority: Task_Priority.MEDIUM };
 

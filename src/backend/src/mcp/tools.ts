@@ -21,8 +21,21 @@ const WBS_NUM_DESCRIPTION =
   'project, and will be rejected. Get valid numbers from finishline_list_projects.';
 
 const LIST_PROJECTS_HINT = 'Call finishline_list_projects to see the valid WBS numbers.';
-const PROJECT_MEMBERS_HINT = 'Call finishline_get_project_members to see who is on that project\'s team and can be assigned to tasks.';
+const PROJECT_MEMBERS_HINT =
+  "Call finishline_get_project_members to see who is on that project's team and can be assigned to tasks.";
 const GET_TASKS_HINT = 'Call finishline_get_tasks to find valid task ids.';
+const CURRENT_USER_HINT = 'Call finishline_get_current_user to see which projects you can create tasks on.';
+
+/**
+ * Recovery hints for the write tools. These are appended to every error the tool returns, whatever
+ * went wrong, so each is phrased as conditional: an unconditional "call finishline_list_projects"
+ * after a rejected status sends the model off to fix a WBS number that was fine.
+ */
+const WBS_ERROR_HINT = 'If the WBS number was wrong, call finishline_list_projects to see the valid ones.';
+const TASK_ID_ERROR_HINT = 'If the task id was wrong, call finishline_get_tasks to find valid ones.';
+const ASSIGNEE_ERROR_HINT =
+  "If an assignee was rejected, call finishline_get_project_members to see who is on the project's teams.";
+const ACCESS_ERROR_HINT = 'If access was denied, call finishline_get_current_user to see what you can change.';
 
 /** How people appear in every response, so the model knows where a userId for the write tools comes from. */
 const PEOPLE_DESCRIPTION = 'People are returned as { userId, name }.';
@@ -73,10 +86,10 @@ const assigneeIdsSchema = (description: string) =>
 
 const taskTitleSchema = z.string().trim().min(1).describe('A short title for the task, 15 words or fewer.');
 const taskNotesSchema = z.string().describe('Longer notes on the task, 250 words or fewer.');
-const taskPrioritySchema = z.enum(Task_Priority).describe('How urgent the task is.');
-const taskStatusSchema = z
-  .enum(Task_Status)
-  .describe('Where the task is. A task can only be IN_PROGRESS once it has a deadline and at least one assignee.');
+const taskPrioritySchema = z.enum(Task_Priority);
+const taskStatusSchema = z.enum(Task_Status);
+const IN_PROGRESS_RULE =
+  'A task can only be IN_PROGRESS once it has a deadline and at least one assignee, so give both alongside it.';
 
 /**
  * Registers a read only tool.
@@ -132,6 +145,23 @@ const registerWriteTool = <Shape extends z.ZodRawShape>(
 export const buildMcpServer = (context: AgentContext): McpServer => {
   const server = new McpServer({ name: 'finishline', version: '1.0.0' });
   const { user, organization } = context;
+
+  registerReadOnlyTool(
+    server,
+    'finishline_get_current_user',
+    {
+      title: 'Get current user',
+      description:
+        'Get the user this connection acts as: their userId, name, and role, and the teams they are ' +
+        "on with each team's projects on the newest car. Call this before a write to see whether it " +
+        'will be allowed. canManageAllTasks is true for heads and admins, who can create and update ' +
+        'any task on any project, including projects not listed under their teams. Anyone else can ' +
+        "create tasks only on their teams' projects, and update only tasks " +
+        'they created. Also use it when the user says "me" or "my", such as "assign this to me".',
+      inputSchema: z.object({})
+    },
+    async () => withToolErrors('', async () => McpService.getCurrentUser(user, organization))
+  );
 
   registerReadOnlyTool(
     server,
@@ -259,22 +289,27 @@ export const buildMcpServer = (context: AgentContext): McpServer => {
       title: 'Create task',
       description:
         'Create a task on a project, acting as the user this connection belongs to. Only heads, ' +
-        "admins, and members of the project's teams can create tasks, and every assignee must be on " +
-        'one of those teams; use finishline_get_project_members to find them. Returns the new task. ' +
-        'Confirm the details with the user before calling this.',
+        "admins, and members of the project's teams can create tasks; " +
+        `${CURRENT_USER_HINT} Every assignee must be on one of the project's teams; use ` +
+        'finishline_get_project_members to find them. Returns the new task. Confirm the details with ' +
+        'the user before calling this.',
       inputSchema: z.object({
         wbsNum: wbsNumSchema,
         title: taskTitleSchema,
         notes: taskNotesSchema.optional(),
-        priority: taskPrioritySchema,
-        status: taskStatusSchema.optional().describe('Where the task starts. Omit this to put it in the backlog.'),
+        priority: taskPrioritySchema.describe(
+          'How urgent the task is. Required, with no default; ask the user if they have not said.'
+        ),
+        status: taskStatusSchema
+          .optional()
+          .describe(`Where the task starts. Omit this to put it in the backlog. ${IN_PROGRESS_RULE}`),
         assigneeIds: assigneeIdsSchema('The userIds of the people to assign.'),
         startDate: isoDateSchema('When work on the task starts, as an ISO date.').optional(),
         deadline: isoDateSchema('When the task is due, as an ISO date. Must be on or after startDate.').optional()
       })
     },
     async ({ wbsNum, startDate, deadline, ...fields }) =>
-      withToolErrors(`${LIST_PROJECTS_HINT} ${PROJECT_MEMBERS_HINT}`, async () =>
+      withToolErrors(`${WBS_ERROR_HINT} ${ASSIGNEE_ERROR_HINT} ${ACCESS_ERROR_HINT}`, async () =>
         McpService.createTask(user, organization, wbsNum, {
           ...fields,
           startDate: startDate ? new Date(startDate) : undefined,
@@ -292,21 +327,24 @@ export const buildMcpServer = (context: AgentContext): McpServer => {
         'Update a task, acting as the user this connection belongs to. Only give the fields to ' +
         'change; anything omitted is left as it is. assigneeIds replaces the whole list of assignees, ' +
         "so include anyone who should stay assigned, and every assignee must be on one of the project's " +
-        'teams. Only heads, admins, and whoever created the task can update it. Returns the updated ' +
-        'task. Confirm the change with the user before calling this.',
+        'teams. Only heads, admins, and whoever created the task can update it; check ' +
+        'finishline_get_current_user for canManageAllTasks and the createdBy on the task. Returns the ' +
+        'updated task. Confirm the change with the user before calling this.',
       inputSchema: z.object({
         taskId: z.string().min(1).describe(`The id of the task to update. ${GET_TASKS_HINT}`),
         title: taskTitleSchema.optional(),
         notes: taskNotesSchema.optional(),
-        priority: taskPrioritySchema.optional(),
-        status: taskStatusSchema.optional(),
+        priority: taskPrioritySchema.optional().describe('How urgent the task is.'),
+        status: taskStatusSchema
+          .optional()
+          .describe(`Where the task is. ${IN_PROGRESS_RULE} A deadline or assignee the task already has counts.`),
         assigneeIds: assigneeIdsSchema('The userIds of everyone who should be assigned, replacing the current list.'),
         startDate: isoDateSchema('When work on the task starts, as an ISO date.').optional(),
         deadline: isoDateSchema('When the task is due, as an ISO date. Must be on or after startDate.').optional()
       })
     },
     async ({ taskId, startDate, deadline, ...fields }) =>
-      withToolErrors(`${GET_TASKS_HINT} ${PROJECT_MEMBERS_HINT}`, async () =>
+      withToolErrors(`${TASK_ID_ERROR_HINT} ${ASSIGNEE_ERROR_HINT} ${ACCESS_ERROR_HINT}`, async () =>
         McpService.updateTask(user, organization, taskId, {
           ...fields,
           startDate: startDate ? new Date(startDate) : undefined,

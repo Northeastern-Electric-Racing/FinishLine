@@ -99,6 +99,34 @@ export interface McpTaskList {
   nextOffset?: number;
 }
 
+/** A project named just well enough for the model to pass its wbsNum to another tool. */
+export interface McpProjectRef {
+  wbsNum: string;
+  name: string;
+}
+
+/** A team the current user is on, with the projects that membership lets them create tasks on. */
+export interface McpCurrentUserTeam {
+  teamName: string;
+  /** whether the user heads, leads, or is a member of the team */
+  position: 'HEAD' | 'LEAD' | 'MEMBER';
+  /** the team's projects on the newest car */
+  projects: McpProjectRef[];
+}
+
+/** The user an MCP connection acts as, and what that lets the write tools do. */
+export interface McpCurrentUser {
+  userId: string;
+  name: string;
+  /** the user's role in the organization, such as MEMBER, HEAD, or ADMIN */
+  role?: string;
+  /** heads and admins can create and update any task, not only ones on their teams' projects or that they created */
+  canManageAllTasks: boolean;
+  /** the car the teams' projects are listed for */
+  carNumber: number;
+  teams: McpCurrentUserTeam[];
+}
+
 /** One of a project's teams, with everyone who can be assigned the project's tasks. */
 export interface McpProjectTeam {
   teamName: string;
