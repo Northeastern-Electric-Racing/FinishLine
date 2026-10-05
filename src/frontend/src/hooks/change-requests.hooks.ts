@@ -222,6 +222,7 @@ export const useCreateActivationChangeRequest = () => {
         queryClient.invalidateQueries(['change requests']);
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['work packages']);
+        queryClient.invalidateQueries(['work-packages']);
       }
     }
   );
