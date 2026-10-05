@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { BayDashboardSlotInput } from 'shared';
+import { BayDashboardSlotCreateArgs } from 'shared';
 import BayDashboardAdminService from '../services/bay-dashboard-admin.services.js';
 
 export default class BayDashboardAdminController {
@@ -19,7 +19,7 @@ export default class BayDashboardAdminController {
    */
   static async saveBayDashboardConfig(req: Request, res: Response, next: NextFunction) {
     try {
-      const { slots } = req.body as { slots: BayDashboardSlotInput[] };
+      const { slots } = req.body as { slots: BayDashboardSlotCreateArgs[] };
       const { currentUser, organization } = req;
 
       const config = await BayDashboardAdminService.saveBayDashboardConfig(currentUser, organization, slots);

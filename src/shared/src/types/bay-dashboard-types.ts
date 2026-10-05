@@ -30,6 +30,18 @@ export interface BayDashboardSlot {
   widgets: BayDashboardWidget[];
 }
 
+export interface BayDashboardWidgetCreateArgs {
+  type: BayDashboardWidgetType;
+  text?: string;
+}
+
+export interface BayDashboardSlotCreateArgs {
+  size: BayDashboardWidgetSize;
+  position: number;
+  rotationSeconds?: number;
+  widget?: BayDashboardWidgetCreateArgs;
+}
+
 export interface BayDashboardConfig {
   bayDashboardConfigId: string;
   dateCreated: Date;

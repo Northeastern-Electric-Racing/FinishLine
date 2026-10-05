@@ -1,6 +1,6 @@
-import { Bay_Dashboard_Widget_Size, Bay_Dashboard_Widget_Type } from '@prisma/client';
 import express from 'express';
 import { body } from 'express-validator';
+import { BayDashboardWidgetSize, BayDashboardWidgetType } from 'shared';
 import BayDashboardAdminController from '../controllers/bay-dashboard-admin.controllers.js';
 import { intMinZero, validateInputs } from '../utils/validation.utils.js';
 
@@ -13,13 +13,13 @@ const bayDashboardAdminRouter = express.Router();
 bayDashboardAdminRouter.get('/admin', BayDashboardAdminController.getCurrentBayDashboardConfig);
 
 // every widget type in the schema is accepted
-const SELECTABLE_WIDGET_TYPES = Object.values(Bay_Dashboard_Widget_Type);
+const SELECTABLE_WIDGET_TYPES = Object.values(BayDashboardWidgetType);
 
 bayDashboardAdminRouter.post(
   '/admin/save',
   body('slots').isArray(),
   intMinZero(body('slots.*.position')),
-  body('slots.*.size').isIn(Object.values(Bay_Dashboard_Widget_Size)),
+  body('slots.*.size').isIn(Object.values(BayDashboardWidgetSize)),
   intMinZero(body('slots.*.rotationSeconds').optional()),
   // a slot can be empty, but a slot that does carry a widget must name a type the TV can render
   body('slots.*.widget')
@@ -27,7 +27,7 @@ bayDashboardAdminRouter.post(
     .isObject()
     .bail()
     .custom((widget: { type?: string }) => {
-      if (!widget.type || !SELECTABLE_WIDGET_TYPES.includes(widget.type as Bay_Dashboard_Widget_Type)) {
+      if (!widget.type || !SELECTABLE_WIDGET_TYPES.includes(widget.type as BayDashboardWidgetType)) {
         throw new Error(`Widget type must be one of: ${SELECTABLE_WIDGET_TYPES.join(', ')}`);
       }
       return true;

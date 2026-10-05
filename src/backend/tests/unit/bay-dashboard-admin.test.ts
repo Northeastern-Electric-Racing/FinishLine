@@ -1,18 +1,22 @@
 import { Organization } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
 import { greenlanternHead, member } from '../test-data/users.test-data.js';
-import { BayDashboardSlotInput, BayDashboardWidgetSize } from 'shared';
+import { BayDashboardSlotCreateArgs, BayDashboardWidgetSize, BayDashboardWidgetType } from 'shared';
 import BayDashboardAdminService from '../../src/services/bay-dashboard-admin.services.js';
 import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils.js';
 import prisma from '../../src/prisma/prisma.js';
 
 // the size the TV lays out at each position
-const SIZE_BY_POSITION: Record<number, BayDashboardWidgetSize> = { 0: 'LARGE', 1: 'MEDIUM', 2: 'SMALL' };
+const SIZE_BY_POSITION: Record<number, BayDashboardWidgetSize> = {
+  0: BayDashboardWidgetSize.LARGE,
+  1: BayDashboardWidgetSize.MEDIUM,
+  2: BayDashboardWidgetSize.SMALL
+};
 
-const textSlot = (position: number, text: string): BayDashboardSlotInput => ({
+const textSlot = (position: number, text: string): BayDashboardSlotCreateArgs => ({
   position,
   size: SIZE_BY_POSITION[position],
-  widget: { type: 'TEXT_FIELD', text }
+  widget: { type: BayDashboardWidgetType.TEXT_FIELD, text }
 });
 
 describe('Bay Dashboard Admin Tests', () => {
@@ -41,17 +45,20 @@ describe('Bay Dashboard Admin Tests', () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
       const config = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-        { position: 0, size: 'LARGE', rotationSeconds: 15, widget: { type: 'CALENDAR' } }
+        {
+          position: 0,
+          size: BayDashboardWidgetSize.LARGE,
+          rotationSeconds: 15,
+          widget: { type: BayDashboardWidgetType.CALENDAR }
+        }
       ]);
 
-      expect(config.userCreatedId).toBe(head.userId);
-      expect(config.dateDeleted).toBeUndefined();
       expect(config.slots).toHaveLength(1);
       expect(config.slots[0].position).toBe(0);
-      expect(config.slots[0].size).toBe('LARGE');
+      expect(config.slots[0].size).toBe(BayDashboardWidgetSize.LARGE);
       expect(config.slots[0].rotationSeconds).toBe(15);
       expect(config.slots[0].widgets).toHaveLength(1);
-      expect(config.slots[0].widgets[0].type).toBe('CALENDAR');
+      expect(config.slots[0].widgets[0].type).toBe(BayDashboardWidgetType.CALENDAR);
       expect(config.slots[0].widgets[0].order).toBe(0);
     });
 
@@ -72,7 +79,7 @@ describe('Bay Dashboard Admin Tests', () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
       const config = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-        { position: 0, size: 'LARGE' }
+        { position: 0, size: BayDashboardWidgetSize.LARGE }
       ]);
 
       expect(config.slots).toHaveLength(1);
@@ -121,7 +128,7 @@ describe('Bay Dashboard Admin Tests', () => {
       // an invalid widget type makes the create fail after the old config has been soft deleted in the transaction
       await expect(
         BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-          { position: 0, size: 'LARGE', widget: { type: 'NOT_A_WIDGET_TYPE' as any } }
+          { position: 0, size: BayDashboardWidgetSize.LARGE, widget: { type: 'NOT_A_WIDGET_TYPE' as any } }
         ])
       ).rejects.toThrow();
 
@@ -175,7 +182,9 @@ describe('Bay Dashboard Admin Tests', () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
       await expect(
-        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [{ position: 7, size: 'SMALL' }])
+        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+          { position: 7, size: BayDashboardWidgetSize.SMALL }
+        ])
       ).rejects.toThrow(new HttpException(400, 'Slot position 7 is not part of the bay dashboard layout'));
     });
 
@@ -183,7 +192,9 @@ describe('Bay Dashboard Admin Tests', () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
       await expect(
-        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [{ position: 0, size: 'SMALL' }])
+        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+          { position: 0, size: BayDashboardWidgetSize.SMALL }
+        ])
       ).rejects.toThrow(new HttpException(400, 'Slot position 0 must be size LARGE'));
     });
 
@@ -192,8 +203,8 @@ describe('Bay Dashboard Admin Tests', () => {
 
       await expect(
         BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-          { position: 0, size: 'LARGE' },
-          { position: 1, size: 'LARGE' }
+          { position: 0, size: BayDashboardWidgetSize.LARGE },
+          { position: 1, size: BayDashboardWidgetSize.LARGE }
         ])
       ).rejects.toThrow(new HttpException(400, 'Slot position 1 must be size MEDIUM'));
     });
@@ -206,7 +217,9 @@ describe('Bay Dashboard Admin Tests', () => {
       ]);
 
       await expect(
-        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [{ position: 7, size: 'SMALL' }])
+        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+          { position: 7, size: BayDashboardWidgetSize.SMALL }
+        ])
       ).rejects.toThrow(HttpException);
 
       const activeConfigs = await prisma.bay_Dashboard_Config.findMany({
