@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { Team, TeamBase, TeamJoinRequest, TeamPreview, TeamWithProjects } from 'shared';
+import { Team, TeamBase, TeamJoinRequest, TeamNamePreview, TeamPreview, TeamWithProjects } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateTeamPayload } from '../hooks/teams.hooks';
 import { teamJoinRequestTransformer, teamPreviewTransformer, teamTransformer } from './transformers/teams.transformers';
@@ -42,7 +42,7 @@ export const getSingleTeam = (id: string) => {
 };
 
 export const getUsersTeams = () => {
-  return axios.get<Team[]>(apiUrls.usersTeams());
+  return axios.get<TeamNamePreview[]>(apiUrls.usersTeams());
 };
 
 export const setTeamMembers = (id: string, userIds: string[]) => {

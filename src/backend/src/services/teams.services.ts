@@ -7,6 +7,7 @@ import {
   TeamType,
   TeamJoinRequest,
   TeamWithProjects,
+  TeamNamePreview,
   User,
   WbsElementStatus,
   RoleEnum
@@ -129,8 +130,8 @@ export default class TeamsService {
     return teamTransformer(team);
   }
 
-  static async getUsersTeams(user: User, organization: Organization): Promise<Team[]> {
-    const teams = await prisma.team.findMany({
+  static async getUsersTeams(user: User, organization: Organization): Promise<TeamNamePreview[]> {
+    return prisma.team.findMany({
       where: {
         organizationId: organization.organizationId,
         dateArchived: null,
@@ -140,10 +141,8 @@ export default class TeamsService {
           { members: { some: { userId: user.userId } } }
         ]
       },
-      ...getTeamQueryArgs(organization.organizationId)
+      ...getTeamDropdownQueryArgs()
     });
-
-    return teams.map(teamTransformer);
   }
 
   /**

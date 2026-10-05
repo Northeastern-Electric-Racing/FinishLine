@@ -25,6 +25,8 @@ export interface TeamPreview extends TeamBase {
   userArchived?: User;
 }
 
+export type TeamNamePreview = Pick<TeamBase, 'teamId' | 'teamName'>;
+
 export interface TeamProjectPreview {
   name: string;
   wbsNum: WbsNumber;

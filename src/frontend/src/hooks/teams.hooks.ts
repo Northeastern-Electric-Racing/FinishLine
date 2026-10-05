@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
-import { Team, TeamBase, TeamJoinRequest, TeamPreview, TeamWithProjects } from 'shared';
+import { Team, TeamBase, TeamJoinRequest, TeamNamePreview, TeamPreview, TeamWithProjects } from 'shared';
 import {
   getAllTeams,
   getSingleTeam,
@@ -79,7 +79,7 @@ export const useSingleTeam = (teamId: string) => {
 };
 
 export const useGetUsersTeams = () => {
-  return useQuery<Team[], Error>(['teams', 'mine'], async () => {
+  return useQuery<TeamNamePreview[], Error>(['teams', 'mine'], async () => {
     const { data } = await getUsersTeams();
     return data;
   });
