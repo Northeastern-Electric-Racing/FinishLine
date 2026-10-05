@@ -390,6 +390,11 @@ describe('Executive Summary Tests', () => {
       const team = await createTestTeam(superman.userId, teamTypeId, orgId);
       const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
       const project = await createTestProject(superman, orgId, team.teamId, car.carId, 0, 1);
+      // budget is filtered on wbsElement.dateCreated, so place the project inside the summary's season
+      await prisma.wBS_Element.update({
+        where: { wbsElementId: project.wbsElementId },
+        data: { dateCreated: new Date('03/01/2024') }
+      });
 
       const result = await ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman);
 
