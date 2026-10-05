@@ -43,12 +43,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   onHide,
   onSubmit
 }) => {
-  const startDate = new Date();
-  const today = startDate.getDay();
-  if (today !== 1) {
-    const daysUntilNextMonday = (7 - today + 1) % 7;
-    startDate.setDate(startDate.getDate() + daysUntilNextMonday);
-  }
+  const startDate = useMemo(() => new Date(), []);
 
   const defaultValues: FormInput = {
     startDate,

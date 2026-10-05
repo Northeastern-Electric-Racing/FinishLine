@@ -63,7 +63,6 @@ import {
 } from '../prisma-query-args/change-requests.query-args.js';
 import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils.js';
 import { GuestChangeRequest } from '../../../shared/src/types/change-request-types.js';
-
 export default class ChangeRequestsService {
   /**
    * Gets the change request for the given Id
