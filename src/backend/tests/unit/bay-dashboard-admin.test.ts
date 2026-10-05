@@ -141,12 +141,11 @@ describe('Bay Dashboard Admin Tests', () => {
         textSlot(0, 'old')
       ]);
 
-      // an invalid widget type makes the create fail after the old config has been soft deleted in the transaction
       await expect(
         BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
           { position: 0, size: BayDashboardWidgetSize.LARGE, widget: { type: 'NOT_A_WIDGET_TYPE' as any } }
         ])
-      ).rejects.toThrow();
+      ).rejects.toThrow(new HttpException(400, 'Slot position 0: NOT_A_WIDGET_TYPE is not a valid widget type'));
 
       const activeConfigs = await prisma.bay_Dashboard_Config.findMany({
         where: { organizationId: orgId, dateDeleted: null }

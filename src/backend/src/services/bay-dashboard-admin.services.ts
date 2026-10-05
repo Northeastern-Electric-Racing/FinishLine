@@ -76,8 +76,12 @@ export default class BayDashboardAdminService {
         throw new HttpException(400, `Slot position ${slot.position} must be size ${expectedSize}`);
       }
 
-      // only text field widgets carry text
       if (slot.widget) {
+        if (!Object.values(BayDashboardWidgetType).includes(slot.widget.type)) {
+          throw new HttpException(400, `Slot position ${slot.position}: ${slot.widget.type} is not a valid widget type`);
+        }
+
+        // only text field widgets carry text
         const hasText = !!slot.widget.text?.trim();
         if (slot.widget.type === BayDashboardWidgetType.TEXT_FIELD && !hasText) {
           throw new HttpException(400, `Slot position ${slot.position}: text field widgets must have text`);
