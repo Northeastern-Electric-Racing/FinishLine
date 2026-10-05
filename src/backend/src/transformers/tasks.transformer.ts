@@ -6,7 +6,7 @@ import { userPreviewWithEmailTransformer } from './user.transformer.js';
 import {
   CalendarTaskQueryArgs,
   TaskLabelQueryArgs,
-  TaskQueryArgs,
+  TaskGanttQueryArgs,
   TaskPreviewQueryArgs,
   TaskBlockedByQueryArgs,
   BlockingWorkPackagesQueryArgs
@@ -42,7 +42,8 @@ export const getActiveTaskBlockerNames = (
   ...getBlockingWorkPackagePreviews(wbsElement).map((wp) => wp.name)
 ];
 
-export const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
+// typed against the gantt shape, which is only what's read here; the full TaskQueryArgs payload also fits
+export const taskTransformer = (task: Prisma.TaskGetPayload<TaskGanttQueryArgs>): Task => {
   const wbsNum = wbsNumOf(task.wbsElement);
   return {
     taskId: task.taskId,

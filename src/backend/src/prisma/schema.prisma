@@ -1155,6 +1155,7 @@ model Schedule_Slot {
 
   @@index([endTime])
   @@index([startTime])
+  @@index([eventId])
 }
 
 enum Conflict_Status {

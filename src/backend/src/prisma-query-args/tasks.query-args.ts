@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { getUserPreviewWithEmailQueryArgs, getUserQueryArgs } from './user.query-args.js';
 
 export type TaskQueryArgs = ReturnType<typeof getTaskQueryArgs>;
+export type TaskGanttQueryArgs = ReturnType<typeof getTaskGanttQueryArgs>;
 export type TaskPreviewQueryArgs = ReturnType<typeof getTaskPreviewQueryArgs>;
 export type CalendarTaskQueryArgs = ReturnType<typeof getCalendarTaskQueryArgs>;
 export type TaskLabelQueryArgs = ReturnType<typeof getTaskLabelQueryArgs>;
@@ -54,9 +55,29 @@ export const getTaskQueryArgs = () =>
       wbsElement: getBlockingWorkPackagesArgs(),
       createdBy: getUserPreviewWithEmailQueryArgs(),
       deletedBy: getUserPreviewWithEmailQueryArgs(),
-      assignees: getUserPreviewWithEmailQueryArgs(),
-      labels: getTaskLabelQueryArgs(),
+      assignees: {
+        ...getUserPreviewWithEmailQueryArgs(),
+        orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }, { userId: 'asc' }]
+      },
+      labels: { ...getTaskLabelQueryArgs(), orderBy: [{ name: 'asc' }, { taskLabelId: 'asc' }] },
       blockedBy: getTaskBlockedByQueryArgs()
+    }
+  });
+
+// same output as getTaskQueryArgs through taskTransformer, but only fetches the wbs element fields it reads
+export const getTaskGanttQueryArgs = () =>
+  Prisma.validator<Prisma.TaskDefaultArgs>()({
+    include: {
+      ...getTaskQueryArgs().include,
+      wbsElement: {
+        select: {
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          name: true,
+          workPackage: getBlockingWorkPackagesArgs().include.workPackage
+        }
+      }
     }
   });
 

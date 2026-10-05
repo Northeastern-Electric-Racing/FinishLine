@@ -56,7 +56,7 @@ export default class ProjectsService {
   static async getAllProjectsGantt(organization: Organization, carId?: string): Promise<ProjectGantt[]> {
     const projects = await prisma.project.findMany({
       where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId }, ...(carId && { carId }) },
-      // load relations with one query per level instead of a single deeply nested join query
+      orderBy: [{ wbsElement: { carNumber: 'asc' } }, { wbsElement: { projectNumber: 'asc' } }],
       relationLoadStrategy: 'query',
       ...getProjectGanttQueryArgs(organization.organizationId)
     });

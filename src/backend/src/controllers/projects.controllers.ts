@@ -16,13 +16,8 @@ import BillOfMaterialsService from '../services/boms.services.js';
 export default class ProjectsController {
   static async getAllProjectsGantt(req: Request, res: Response, next: NextFunction) {
     try {
-      const startTime = Date.now();
       const projects: ProjectGantt[] = await ProjectsService.getAllProjectsGantt(req.organization, req.currentCar?.carId);
-      console.log(`Service call (query + transform) took: ${Date.now() - startTime}ms`);
-
-      const beforeSend = Date.now();
       res.status(200).json(projects);
-      console.log(`res.json (serialize + ETag check) took: ${Date.now() - beforeSend}ms`);
     } catch (error: unknown) {
       next(error);
     }
