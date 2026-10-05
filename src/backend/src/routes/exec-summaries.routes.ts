@@ -18,6 +18,7 @@ execSummaryRouter.get(
   validateInputs,
   ExecSummaryController.getVehicleDevelopmentSummary
 );
+execSummaryRouter.get('/:execSummaryId/budget', ExecSummaryController.getBudgetSummary);
 
 execSummaryRouter.post(
   '/:executiveSummaryId/edit',

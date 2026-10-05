@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Organization } from '@prisma/client';
+import { Measure, Organization } from '@prisma/client';
 import { calculateProjectEndDate, calculateProjectStartDate, isAdmin, notGuest, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -14,6 +14,7 @@ import {
   NotFoundException
 } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
+import { getGraphDataForProjectBudgetByDivision } from '../utils/statistics.utils.js';
 import { isUserOnOpsTeam } from '../utils/exec-summaries.utils.js';
 import {
   getExecutiveSummaryQueryArgs,
@@ -21,7 +22,8 @@ import {
 } from '../prisma-query-args/executive-summary.query-args.js';
 import {
   executiveSummaryTransformer,
-  vehicleDevelopmentSummaryTransformer
+  vehicleDevelopmentSummaryTransformer,
+  budgetSummaryTransformer
 } from '../transformers/executive-summary.transformer.js';
 
 export default class ExecSummaryServices {
@@ -228,5 +230,48 @@ export default class ExecSummaryServices {
     });
 
     return vehicleDevelopmentSummaryTransformer(executiveSummaryId, projectsInSeason);
+  }
+
+  /**
+   * Gets the budget by division for an executive summary's season.
+   * @param organization the organization the executive summary belongs to
+   * @param executiveSummaryId the id of the executive summary
+   * @param viewer the user requesting the data
+   * @returns the total project budget per division for the executive summary's car and season
+   * @throws AccessDeniedException if the viewer is a guest
+   * @throws NotFoundException if the executive summary does not exist
+   * @throws InvalidOrganizationException if the executive summary belongs to a different organization
+   * @throws DeletedException if the executive summary has been deleted
+   */
+  static async getBudgetSummary(organization: Organization, executiveSummaryId: string, viewer: User) {
+    const hasPermission = await userHasPermission(viewer.userId, organization.organizationId, notGuest);
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only members can view executive summaries');
+    }
+
+    const executiveSummary = await prisma.executive_Summary.findUnique({
+      where: { executiveSummaryId },
+      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+    });
+
+    if (!executiveSummary) {
+      throw new NotFoundException('Executive Summary', executiveSummaryId);
+    }
+    if (executiveSummary.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Executive Summary');
+    }
+    if (executiveSummary.dateDeleted) {
+      throw new DeletedException('Executive Summary', executiveSummaryId);
+    }
+
+    const budgetByDivision = await getGraphDataForProjectBudgetByDivision(
+      Measure.SUM,
+      organization.organizationId,
+      executiveSummary.seasonStartDate,
+      executiveSummary.seasonEndDate,
+      { carIds: [executiveSummary.carId] }
+    );
+
+    return { executiveSummaryId, budgetByDivision };
   }
 }

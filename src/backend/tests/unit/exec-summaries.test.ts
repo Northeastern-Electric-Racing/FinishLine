@@ -357,4 +357,46 @@ describe('Executive Summary Tests', () => {
       expect(filtered.projects[0].teams.map((t) => t.teamId)).toContain(team1.teamId);
     });
   });
+
+  describe('Get budget summary', () => {
+    it('fails if the viewer is a guest', async () => {
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+
+      await expect(async () =>
+        ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, guestUser)
+      ).rejects.toThrow(new AccessDeniedException('Only members can view executive summaries'));
+    });
+
+    it('fails if the executive summary does not exist', async () => {
+      await expect(async () => ExecSummaryServices.getBudgetSummary(organization, 'badid', superman)).rejects.toThrow(
+        new NotFoundException('Executive Summary', 'badid')
+      );
+    });
+
+    it('fails if the executive summary was deleted', async () => {
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await prisma.executive_Summary.update({
+        where: { executiveSummaryId: summary.executiveSummaryId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(async () =>
+        ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman)
+      ).rejects.toThrow(new DeletedException('Executive Summary', summary.executiveSummaryId));
+    });
+
+    it('returns the budget totaled by division for the car', async () => {
+      const { teamTypeId } = await createTestTeamType('aTeam', orgId);
+      const team = await createTestTeam(superman.userId, teamTypeId, orgId);
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const project = await createTestProject(superman, orgId, team.teamId, car.carId, 0, 1);
+
+      const result = await ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman);
+
+      expect(result.executiveSummaryId).toBe(summary.executiveSummaryId);
+      const division = result.budgetByDivision.values.find((v) => v.label === 'aTeam');
+      expect(division).toBeDefined();
+      expect(division!.value).toBe(project.budget);
+    });
+  });
 });

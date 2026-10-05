@@ -1,7 +1,8 @@
 import { useQuery } from 'react-query';
-import { ExecutiveSummary, VehicleDevelopmentSummary } from 'shared';
+import { BudgetSummary, ExecutiveSummary, VehicleDevelopmentSummary } from 'shared';
 import {
   getAllExecutiveSummaries,
+  getBudgetSummary,
   getSingleExecutiveSummary,
   getVehicleDevelopmentSummary
 } from '../apis/exec-summaries.api';
@@ -41,6 +42,19 @@ export const useSingleExecutiveSummary = (id: string) => {
 export const useVehicleDevelopmentSummary = (id: string, teamId?: string) => {
   return useQuery<VehicleDevelopmentSummary, Error>(['executive-summaries', id, 'vehicle-development', teamId], async () => {
     const { data } = await getVehicleDevelopmentSummary(id, teamId);
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to get the budget summary of an executive summary
+ *
+ * @param id Id of the executive summary
+ * @returns the budget summary
+ */
+export const useBudgetSummary = (id: string) => {
+  return useQuery<BudgetSummary, Error>(['executive-summaries', id, 'budget'], async () => {
+    const { data } = await getBudgetSummary(id);
     return data;
   });
 };
