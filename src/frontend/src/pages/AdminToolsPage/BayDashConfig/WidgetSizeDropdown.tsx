@@ -20,7 +20,7 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title }) => {
   return (
     <Accordion
       expanded={expanded}
-      onChange={() => setExpanded(!expanded)}
+      onChange={(_, isExpanded) => setExpanded(isExpanded)}
       disableGutters
       elevation={0}
       sx={{ backgroundColor: 'transparent', '&:before': { display: 'none' } }}
