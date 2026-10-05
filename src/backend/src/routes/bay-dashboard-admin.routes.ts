@@ -10,7 +10,9 @@ import { intMinZero, validateInputs } from '../utils/validation.utils.js';
  */
 const bayDashboardAdminRouter = express.Router();
 
-// every widget type in the schema is accepted for now
+bayDashboardAdminRouter.get('/admin', BayDashboardAdminController.getCurrentBayDashboardConfig);
+
+// every widget type in the schema is accepted
 const SELECTABLE_WIDGET_TYPES = Object.values(Bay_Dashboard_Widget_Type);
 
 bayDashboardAdminRouter.post(
