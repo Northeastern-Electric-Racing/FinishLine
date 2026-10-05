@@ -21,10 +21,10 @@ const SLOT_SIZE_BY_POSITION: Record<number, BayDashboardWidgetSize> = {
 };
 
 // the widgets the TV shows when nothing has been chosen, keyed by position
-const DEFAULT_WIDGET_TYPES_BY_POSITION: Record<number, BayDashboardWidgetType[]> = {
-  0: [BayDashboardWidgetType.CALENDAR],
-  1: [BayDashboardWidgetType.MBTA_TRACKER, BayDashboardWidgetType.OVERDUE_WORK_PACKAGES],
-  2: [BayDashboardWidgetType.SLACK_APPRECIATIONS, BayDashboardWidgetType.SLACK_MENTIONS]
+const DEFAULT_WIDGET_TYPE_BY_POSITION: Record<number, BayDashboardWidgetType> = {
+  0: BayDashboardWidgetType.CALENDAR,
+  1: BayDashboardWidgetType.OVERDUE_WORK_PACKAGES,
+  2: BayDashboardWidgetType.TEXT_FIELD
 };
 
 export default class BayDashboardAdminService {
@@ -105,10 +105,7 @@ export default class BayDashboardAdminService {
       return {
         position,
         size: SLOT_SIZE_BY_POSITION[position],
-        rotationSeconds: submitted?.rotationSeconds,
-        widgets: submitted?.widget
-          ? [{ type: submitted.widget.type, order: 0, text: submitted.widget.text }]
-          : DEFAULT_WIDGET_TYPES_BY_POSITION[position].map((type, order) => ({ type, order, text: undefined }))
+        widget: submitted?.widget ?? { type: DEFAULT_WIDGET_TYPE_BY_POSITION[position], text: undefined }
       };
     });
 
@@ -127,8 +124,7 @@ export default class BayDashboardAdminService {
             create: slotsToCreate.map((slot) => ({
               position: slot.position,
               size: slot.size,
-              rotationSeconds: slot.rotationSeconds,
-              widgets: { create: slot.widgets }
+              widgets: { create: [{ type: slot.widget.type, order: 0, text: slot.widget.text }] }
             }))
           }
         },

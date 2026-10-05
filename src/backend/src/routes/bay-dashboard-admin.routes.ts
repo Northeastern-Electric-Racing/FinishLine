@@ -17,7 +17,6 @@ bayDashboardAdminRouter.post(
   body('slots').isArray(),
   intMinZero(body('slots.*.position')),
   body('slots.*.size').isIn(Object.values(BayDashboardWidgetSize)),
-  body('slots.*.rotationSeconds').optional().isInt({ min: 1 }).not().isString(),
   body('slots.*.widget').optional().isObject(),
   body('slots.*.widget.text').optional({ nullable: true }).isString(),
   validateInputs,

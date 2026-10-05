@@ -38,7 +38,6 @@ export interface BayDashboardWidgetCreateArgs {
 export interface BayDashboardSlotCreateArgs {
   size: BayDashboardWidgetSize;
   position: number;
-  rotationSeconds?: number;
   widget?: BayDashboardWidgetCreateArgs;
 }
 

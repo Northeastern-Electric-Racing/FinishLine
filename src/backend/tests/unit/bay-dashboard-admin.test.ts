@@ -48,7 +48,6 @@ describe('Bay Dashboard Admin Tests', () => {
         {
           position: 0,
           size: BayDashboardWidgetSize.LARGE,
-          rotationSeconds: 15,
           widget: { type: BayDashboardWidgetType.CALENDAR }
         }
       ]);
@@ -56,7 +55,6 @@ describe('Bay Dashboard Admin Tests', () => {
       expect(config.slots).toHaveLength(3);
       expect(config.slots[0].position).toBe(0);
       expect(config.slots[0].size).toBe(BayDashboardWidgetSize.LARGE);
-      expect(config.slots[0].rotationSeconds).toBe(15);
       expect(config.slots[0].widgets).toHaveLength(1);
       expect(config.slots[0].widgets[0].type).toBe(BayDashboardWidgetType.CALENDAR);
       expect(config.slots[0].widgets[0].order).toBe(0);
@@ -85,8 +83,8 @@ describe('Bay Dashboard Admin Tests', () => {
 
       expect(config.slots.map((slot) => slot.widgets.map((widget) => widget.type))).toEqual([
         [BayDashboardWidgetType.TEXT_FIELD],
-        [BayDashboardWidgetType.MBTA_TRACKER, BayDashboardWidgetType.OVERDUE_WORK_PACKAGES],
-        [BayDashboardWidgetType.SLACK_APPRECIATIONS, BayDashboardWidgetType.SLACK_MENTIONS]
+        [BayDashboardWidgetType.OVERDUE_WORK_PACKAGES],
+        [BayDashboardWidgetType.TEXT_FIELD]
       ]);
     });
 
@@ -97,19 +95,9 @@ describe('Bay Dashboard Admin Tests', () => {
 
       expect(config.slots.map((slot) => slot.widgets.map((widget) => widget.type))).toEqual([
         [BayDashboardWidgetType.CALENDAR],
-        [BayDashboardWidgetType.MBTA_TRACKER, BayDashboardWidgetType.OVERDUE_WORK_PACKAGES],
-        [BayDashboardWidgetType.SLACK_APPRECIATIONS, BayDashboardWidgetType.SLACK_MENTIONS]
+        [BayDashboardWidgetType.OVERDUE_WORK_PACKAGES],
+        [BayDashboardWidgetType.TEXT_FIELD]
       ]);
-    });
-
-    it('falls back to the default rotation when none is given', async () => {
-      const head = await createTestUser(greenlanternHead, orgId);
-
-      const config = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-        textSlot(0, 'Welcome to the Bay')
-      ]);
-
-      expect(config.slots[0].rotationSeconds).toBe(30);
     });
 
     it('soft deletes the previous config so only the newest stays active', async () => {
