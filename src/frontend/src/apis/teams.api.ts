@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { Team, TeamBase, TeamJoinRequest, TeamPreview } from 'shared';
+import { Team, TeamBase, TeamJoinRequest, TeamPreview, TeamWithProjects } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateTeamPayload } from '../hooks/teams.hooks';
 import { teamJoinRequestTransformer, teamPreviewTransformer, teamTransformer } from './transformers/teams.transformers';
@@ -25,6 +25,14 @@ export const getAllArchivedTeams = () => {
   return axios.get<TeamPreview[]>(apiUrls.teams() + '/archive', {
     transformResponse: (data) => JSON.parse(data).map(teamPreviewTransformer)
   });
+};
+
+export const getAllTeamsWithProjects = () => {
+  return axios.get<TeamWithProjects[]>(apiUrls.teamsWithProjects());
+};
+
+export const getAllArchivedTeamsWithProjects = () => {
+  return axios.get<TeamWithProjects[]>(apiUrls.archivedTeamsWithProjects());
 };
 
 export const getSingleTeam = (id: string) => {

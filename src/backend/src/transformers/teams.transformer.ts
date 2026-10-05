@@ -1,14 +1,16 @@
 import { Prisma } from '@prisma/client';
-import { Team, TeamPreview, TeamBase, TeamJoinRequest } from 'shared';
+import { Team, TeamPreview, TeamBase, TeamJoinRequest, TeamWithProjects } from 'shared';
 import {
   getTeamBaseQueryArgs,
   TeamJoinRequestQueryArgs,
   TeamPreviewQueryArgs,
-  TeamQueryArgs
+  TeamQueryArgs,
+  TeamWithProjectsQueryArgs
 } from '../prisma-query-args/teams.query-args.js';
 import { userTransformer } from './user.transformer.js';
 import { projectGanttTransformer } from './projects.transformer.js';
 import { teamTypeTransformer } from './team-types.transformer.js';
+import { wbsNumOf } from '../utils/utils.js';
 
 const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
   return {
@@ -45,6 +47,17 @@ export const teamPreviewTransformer = (team: Prisma.TeamGetPayload<TeamPreviewQu
     head: userTransformer(team.head),
     dateArchived: team.dateArchived ?? undefined,
     teamType: team.teamType ? teamTypeTransformer(team.teamType) : undefined
+  };
+};
+
+export const teamWithProjectsTransformer = (team: Prisma.TeamGetPayload<TeamWithProjectsQueryArgs>): TeamWithProjects => {
+  return {
+    teamId: team.teamId,
+    teamName: team.teamName,
+    head: team.head,
+    memberCount: team._count.members,
+    leadCount: team._count.leads,
+    projects: team.projects.map(({ wbsElement }) => ({ name: wbsElement.name, wbsNum: wbsNumOf(wbsElement) }))
   };
 };
 

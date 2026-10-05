@@ -6,6 +6,7 @@ import {
   TeamPreview,
   TeamType,
   TeamJoinRequest,
+  TeamWithProjects,
   User,
   WbsElementStatus,
   RoleEnum
@@ -18,7 +19,8 @@ import { calculateProjectStatus } from '../utils/projects.utils.js';
 import teamTransformer, {
   teamBaseTransformer,
   teamPreviewTransformer,
-  teamJoinRequestTransformer
+  teamJoinRequestTransformer,
+  teamWithProjectsTransformer
 } from '../transformers/teams.transformer.js';
 import {
   NotFoundException,
@@ -36,7 +38,8 @@ import {
   getTeamBaseQueryArgs,
   getTeamJoinRequestQueryArgs,
   getTeamPreviewQueryArgs,
-  getTeamQueryArgs
+  getTeamQueryArgs,
+  getTeamWithProjectsQueryArgs
 } from '../prisma-query-args/teams.query-args.js';
 import { uploadFile } from '../utils/google-integration.utils.js';
 import { teamTypeTransformer } from '../transformers/team-types.transformer.js';
@@ -89,6 +92,20 @@ export default class TeamsService {
       ...getTeamPreviewQueryArgs(organization.organizationId)
     });
     return teams.map(teamPreviewTransformer);
+  }
+
+  /**
+   * Gets all active or archived teams along with the name and wbs number of each of their projects
+   * @param organization The organization the user is currently in
+   * @param archived whether to get archived teams instead of active teams
+   * @returns a list of teams with their project previews
+   */
+  static async getAllTeamsWithProjects(organization: Organization, archived: boolean): Promise<TeamWithProjects[]> {
+    const teams = await prisma.team.findMany({
+      where: { dateArchived: archived ? { not: null } : null, organizationId: organization.organizationId },
+      ...getTeamWithProjectsQueryArgs()
+    });
+    return teams.map(teamWithProjectsTransformer);
   }
 
   /**
