@@ -22,8 +22,7 @@ import {
 } from '../prisma-query-args/executive-summary.query-args.js';
 import {
   executiveSummaryTransformer,
-  vehicleDevelopmentSummaryTransformer,
-  budgetSummaryTransformer
+  vehicleDevelopmentSummaryTransformer
 } from '../transformers/executive-summary.transformer.js';
 
 export default class ExecSummaryServices {
