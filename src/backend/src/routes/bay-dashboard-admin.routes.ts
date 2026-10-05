@@ -20,7 +20,7 @@ bayDashboardAdminRouter.post(
   body('slots').isArray(),
   intMinZero(body('slots.*.position')),
   body('slots.*.size').isIn(Object.values(BayDashboardWidgetSize)),
-  intMinZero(body('slots.*.rotationSeconds').optional()),
+  body('slots.*.rotationSeconds').optional().isInt({ min: 1 }).not().isString(),
   // a slot can be empty, but a slot that does carry a widget must name a type the TV can render
   body('slots.*.widget')
     .optional()
@@ -32,7 +32,7 @@ bayDashboardAdminRouter.post(
       }
       return true;
     }),
-  body('slots.*.widget.text').optional().isString(),
+  body('slots.*.widget.text').optional({ nullable: true }).isString(),
   validateInputs,
   BayDashboardAdminController.saveBayDashboardConfig
 );

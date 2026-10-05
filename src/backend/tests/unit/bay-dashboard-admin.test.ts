@@ -53,7 +53,7 @@ describe('Bay Dashboard Admin Tests', () => {
         }
       ]);
 
-      expect(config.slots).toHaveLength(1);
+      expect(config.slots).toHaveLength(3);
       expect(config.slots[0].position).toBe(0);
       expect(config.slots[0].size).toBe(BayDashboardWidgetSize.LARGE);
       expect(config.slots[0].rotationSeconds).toBe(15);
@@ -75,15 +75,31 @@ describe('Bay Dashboard Admin Tests', () => {
       expect(config.slots.map((slot) => slot.widgets[0].text)).toEqual(['first', 'second', 'third']);
     });
 
-    it('saves a slot with no widget', async () => {
+    it('fills positions that are left out or have no widget with their defaults', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
       const config = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-        { position: 0, size: BayDashboardWidgetSize.LARGE }
+        textSlot(0, 'has a widget'),
+        { position: 1, size: BayDashboardWidgetSize.MEDIUM }
       ]);
 
-      expect(config.slots).toHaveLength(1);
-      expect(config.slots[0].widgets).toHaveLength(0);
+      expect(config.slots.map((slot) => slot.widgets.map((widget) => widget.type))).toEqual([
+        [BayDashboardWidgetType.TEXT_FIELD],
+        [BayDashboardWidgetType.MBTA_TRACKER, BayDashboardWidgetType.OVERDUE_WORK_PACKAGES],
+        [BayDashboardWidgetType.SLACK_APPRECIATIONS, BayDashboardWidgetType.SLACK_MENTIONS]
+      ]);
+    });
+
+    it('saves the whole default layout when no slots are given', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      const config = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, []);
+
+      expect(config.slots.map((slot) => slot.widgets.map((widget) => widget.type))).toEqual([
+        [BayDashboardWidgetType.CALENDAR],
+        [BayDashboardWidgetType.MBTA_TRACKER, BayDashboardWidgetType.OVERDUE_WORK_PACKAGES],
+        [BayDashboardWidgetType.SLACK_APPRECIATIONS, BayDashboardWidgetType.SLACK_MENTIONS]
+      ]);
     });
 
     it('falls back to the default rotation when none is given', async () => {
