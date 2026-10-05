@@ -61,21 +61,23 @@ export const sendMessage = async (slackId: string, message: string, link?: strin
   const client = getSlackClient();
   if (!client) return;
 
-  const block = generateSlackTextBlock(message, link, linkButtonText);
+  return console.log(message);
 
-  try {
-    const response = await client.chat.postMessage({
-      channel: slackId,
-      text: message,
-      blocks: [block],
-      unfurl_links: false
-    });
+  // const block = generateSlackTextBlock(message, link, linkButtonText);
 
-    return response && response.channel && response.ts && { channelId: response.channel, ts: response.ts };
-  } catch (error) {
-    console.error('Failed to send Slack message:', (error as any)?.data?.error ?? error);
-    return undefined;
-  }
+  // try {
+  //   const response = await client.chat.postMessage({
+  //     channel: slackId,
+  //     text: message,
+  //     blocks: [block],
+  //     unfurl_links: false
+  //   });
+
+  //   return response && response.channel && response.ts && { channelId: response.channel, ts: response.ts };
+  // } catch (error) {
+  //   console.error('Failed to send Slack message:', (error as any)?.data?.error ?? error);
+  //   return undefined;
+  // }
 };
 
 /**
