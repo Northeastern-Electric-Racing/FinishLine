@@ -5,6 +5,7 @@
 
 import { Box, Theme, Typography } from '@mui/material';
 import { SystemStyleObject } from '@mui/system';
+import WidgetSizeDropdown from './WidgetSizeDropdown';
 
 const widgetBoxSx: SystemStyleObject<Theme> = {
   bgcolor: (theme) => (theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[300]),
@@ -42,7 +43,23 @@ const AdminToolsBayDashConfig: React.FC = () => {
           Preview
         </Typography>
       </Box>
-      <Box sx={{ ...widgetBoxSx, gridColumn: { md: 3 }, gridRow: { md: '1 / span 3' }, minHeight: { xs: 320, md: 0 } }} />
+      <Box
+        sx={{
+          ...widgetBoxSx,
+          gridColumn: { md: 3 },
+          gridRow: { md: '1 / span 3' },
+          minHeight: { xs: 320, md: 0 },
+          p: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          overflowY: 'auto'
+        }}
+      >
+        <WidgetSizeDropdown title="Small" />
+        <WidgetSizeDropdown title="Medium" />
+        <WidgetSizeDropdown title="Large" />
+      </Box>
     </Box>
   );
 };
