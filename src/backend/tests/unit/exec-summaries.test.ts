@@ -357,4 +357,117 @@ describe('Executive Summary Tests', () => {
       expect(filtered.projects[0].teams.map((t) => t.teamId)).toContain(team1.teamId);
     });
   });
+
+  describe('Get budget summary', () => {
+    it('fails if the viewer is a guest', async () => {
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+
+      await expect(async () =>
+        ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, guestUser)
+      ).rejects.toThrow(new AccessDeniedException('Only members can view executive summaries'));
+    });
+
+    it('fails if the executive summary does not exist', async () => {
+      await expect(async () => ExecSummaryServices.getBudgetSummary(organization, 'badid', superman)).rejects.toThrow(
+        new NotFoundException('Executive Summary', 'badid')
+      );
+    });
+
+    it('fails if the executive summary was deleted', async () => {
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await prisma.executive_Summary.update({
+        where: { executiveSummaryId: summary.executiveSummaryId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(async () =>
+        ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman)
+      ).rejects.toThrow(new DeletedException('Executive Summary', summary.executiveSummaryId));
+    });
+
+    const getDivisionValue = (result: Awaited<ReturnType<typeof ExecSummaryServices.getBudgetSummary>>, label: string) =>
+      result.budgetByDivision.values.find((v) => v.label === label)?.value;
+
+    it('returns the budget totaled by division for the car', async () => {
+      const { teamTypeId } = await createTestTeamType('aTeam', orgId);
+      const team = await createTestTeam(superman.userId, teamTypeId, orgId);
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const project = await createTestProject(superman, orgId, team.teamId, car.carId, 0, 1);
+      await createTestWorkPackage(superman, orgId, project.projectId, 0, 1, 1);
+
+      const result = await ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman);
+
+      expect(result.executiveSummaryId).toBe(summary.executiveSummaryId);
+      expect(getDivisionValue(result, 'aTeam')).toBe(project.budget);
+      expect(getDivisionValue(result, 'Unassigned')).toBeUndefined();
+    });
+
+    it('excludes projects whose work is outside the season', async () => {
+      const { teamTypeId } = await createTestTeamType('aTeam', orgId);
+      const team = await createTestTeam(superman.userId, teamTypeId, orgId);
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await prisma.executive_Summary.update({
+        where: { executiveSummaryId: summary.executiveSummaryId },
+        data: { seasonStartDate: new Date('2025-01-01'), seasonEndDate: new Date('2025-06-01') }
+      });
+      const project = await createTestProject(superman, orgId, team.teamId, car.carId, 0, 1);
+      await createTestWorkPackage(superman, orgId, project.projectId, 0, 1, 1);
+
+      const result = await ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman);
+
+      expect(getDivisionValue(result, 'aTeam')).toBe(0);
+    });
+
+    it('does not double count a project on multiple teams in the same division', async () => {
+      const { teamTypeId } = await createTestTeamType('aTeam', orgId);
+      const team1 = await createTestTeam(superman.userId, teamTypeId, orgId);
+      const team2 = await createTestTeam(superman.userId, teamTypeId, orgId);
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const project = await createTestProject(superman, orgId, team1.teamId, car.carId, 0, 1);
+      await prisma.project.update({
+        where: { projectId: project.projectId },
+        data: { teams: { connect: { teamId: team2.teamId } } }
+      });
+      await createTestWorkPackage(superman, orgId, project.projectId, 0, 1, 1);
+
+      const result = await ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman);
+
+      expect(getDivisionValue(result, 'aTeam')).toBe(project.budget);
+    });
+
+    it('splits a project budget evenly across the divisions of its teams', async () => {
+      const { teamTypeId: mechId } = await createTestTeamType('Mechanical', orgId);
+      const { teamTypeId: elecId } = await createTestTeamType('Electrical', orgId);
+      const mechTeam = await createTestTeam(superman.userId, mechId, orgId);
+      const elecTeam = await createTestTeam(superman.userId, elecId, orgId);
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const project = await createTestProject(superman, orgId, mechTeam.teamId, car.carId, 0, 1);
+      await prisma.project.update({
+        where: { projectId: project.projectId },
+        data: { teams: { connect: { teamId: elecTeam.teamId } } }
+      });
+      await createTestWorkPackage(superman, orgId, project.projectId, 0, 1, 1);
+
+      const result = await ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman);
+
+      expect(getDivisionValue(result, 'Mechanical')).toBe(project.budget / 2);
+      expect(getDivisionValue(result, 'Electrical')).toBe(project.budget / 2);
+    });
+
+    it('reports projects without an active team as unassigned', async () => {
+      const { teamTypeId } = await createTestTeamType('aTeam', orgId);
+      const archivedTeam = await createTestTeam(superman.userId, teamTypeId, orgId);
+      await prisma.team.update({ where: { teamId: archivedTeam.teamId }, data: { dateArchived: new Date() } });
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const noTeamProject = await createTestProject(superman, orgId, undefined, car.carId, 0, 1);
+      await createTestWorkPackage(superman, orgId, noTeamProject.projectId, 0, 1, 1);
+      const archivedTeamProject = await createTestProject(superman, orgId, archivedTeam.teamId, car.carId, 0, 2);
+      await createTestWorkPackage(superman, orgId, archivedTeamProject.projectId, 0, 2, 1);
+
+      const result = await ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman);
+
+      expect(getDivisionValue(result, 'aTeam')).toBe(0);
+      expect(getDivisionValue(result, 'Unassigned')).toBe(noTeamProject.budget + archivedTeamProject.budget);
+    });
+  });
 });

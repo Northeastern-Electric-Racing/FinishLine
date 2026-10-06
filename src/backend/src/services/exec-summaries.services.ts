@@ -229,4 +229,90 @@ export default class ExecSummaryServices {
 
     return vehicleDevelopmentSummaryTransformer(executiveSummaryId, projectsInSeason);
   }
+
+  /**
+   * Gets the budget by division for an executive summary's season.
+   * @param organization the organization the executive summary belongs to
+   * @param executiveSummaryId the id of the executive summary
+   * @param viewer the user requesting the data
+   * @returns the total project budget per division for the executive summary's car and season
+   * @throws AccessDeniedException if the viewer is a guest
+   * @throws NotFoundException if the executive summary does not exist
+   * @throws InvalidOrganizationException if the executive summary belongs to a different organization
+   * @throws DeletedException if the executive summary has been deleted
+   */
+  static async getBudgetSummary(organization: Organization, executiveSummaryId: string, viewer: User) {
+    const hasPermission = await userHasPermission(viewer.userId, organization.organizationId, notGuest);
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only members can view executive summaries');
+    }
+
+    const executiveSummary = await prisma.executive_Summary.findUnique({
+      where: { executiveSummaryId },
+      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+    });
+
+    if (!executiveSummary) {
+      throw new NotFoundException('Executive Summary', executiveSummaryId);
+    }
+    if (executiveSummary.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Executive Summary');
+    }
+    if (executiveSummary.dateDeleted) {
+      throw new DeletedException('Executive Summary', executiveSummaryId);
+    }
+
+    const { carId, seasonStartDate, seasonEndDate } = executiveSummary;
+
+    const [divisions, projects] = await Promise.all([
+      prisma.team_Type.findMany({ where: { organizationId: organization.organizationId } }),
+      prisma.project.findMany({
+        where: {
+          carId,
+          wbsElement: { organizationId: organization.organizationId, dateDeleted: null }
+        },
+        ...getVehicleDevelopmentProjectQueryArgs()
+      })
+    ]);
+
+    // a project is in the season if its work (first work package start to last work package end) overlaps the season
+    const projectsInSeason = projects.filter((project) => {
+      const start = calculateProjectStartDate(project.workPackages);
+      const end = calculateProjectEndDate(project.workPackages);
+      if (!start || !end) return false;
+      if (seasonStartDate && end < seasonStartDate) return false;
+      if (seasonEndDate && start > seasonEndDate) return false;
+      return true;
+    });
+
+    // each project's budget is split evenly across the distinct divisions of its active teams so that it is
+    // never counted more than once; projects with no active team are reported as unassigned
+    const budgetByDivisionId = new Map<string, number>(divisions.map((division) => [division.teamTypeId, 0]));
+    let unassignedBudget = 0;
+    projectsInSeason.forEach((project) => {
+      const divisionIds = new Set<string>();
+      project.teams.forEach((team) => {
+        if (!team.dateArchived && team.teamTypeId && budgetByDivisionId.has(team.teamTypeId)) {
+          divisionIds.add(team.teamTypeId);
+        }
+      });
+      if (divisionIds.size === 0) {
+        unassignedBudget += project.budget;
+        return;
+      }
+      divisionIds.forEach((id) =>
+        budgetByDivisionId.set(id, (budgetByDivisionId.get(id) ?? 0) + project.budget / divisionIds.size)
+      );
+    });
+
+    const values = divisions.map((division) => ({
+      value: budgetByDivisionId.get(division.teamTypeId) ?? 0,
+      label: division.name
+    }));
+    if (unassignedBudget > 0) values.push({ value: unassignedBudget, label: 'Unassigned' });
+
+    const budgetByDivision = { tipLabel: 'Dollars', values };
+
+    return { executiveSummaryId, budgetByDivision };
+  }
 }

@@ -124,7 +124,7 @@ const getGraphDataForProjectBudgetByTeam = async (
   return data;
 };
 
-const getGraphDataForProjectBudgetByDivision = async (
+export const getGraphDataForProjectBudgetByDivision = async (
   measure: Measure,
   organizationId: string,
   startDate: Date | null,

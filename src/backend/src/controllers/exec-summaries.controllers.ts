@@ -65,4 +65,15 @@ export default class ExecSummaryController {
       next(error);
     }
   }
+
+  static async getBudgetSummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { execSummaryId } = req.params as Record<string, string>;
+
+      const summary = await ExecSummaryServices.getBudgetSummary(req.organization, execSummaryId, req.currentUser);
+      res.status(200).json(summary);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

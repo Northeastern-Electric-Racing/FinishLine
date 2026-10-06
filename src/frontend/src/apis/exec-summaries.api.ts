@@ -1,4 +1,4 @@
-import { ExecutiveSummary, VehicleDevelopmentSummary } from 'shared';
+import { BudgetSummary, ExecutiveSummary, VehicleDevelopmentSummary } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { EditExecSummaryPayload } from '../hooks/exec-summaries.hooks';
@@ -42,6 +42,16 @@ export const getVehicleDevelopmentSummary = (id: string, teamId?: string) => {
     params: teamId ? { teamId } : undefined,
     transformResponse: (data) => vehicleDevelopmentSummaryTransformer(JSON.parse(data))
   });
+};
+
+/**
+ * Gets the budget summary (budget by division) for an executive summary
+ *
+ * @param id the id of the executive summary
+ * @returns the budget summary
+ */
+export const getBudgetSummary = (id: string) => {
+  return axios.get<BudgetSummary>(apiUrls.executiveSummaryBudget(id));
 };
 
 /**
