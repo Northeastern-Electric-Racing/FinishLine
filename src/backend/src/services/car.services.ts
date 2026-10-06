@@ -46,6 +46,15 @@ export default class CarsService {
               }
             }
           }
+        },
+        executiveSummary: {
+          create: {
+            userCreated: {
+              connect: {
+                userId: user.userId
+              }
+            }
+          }
         }
       },
       ...getCarQueryArgs(organization.organizationId)
