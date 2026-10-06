@@ -3,18 +3,20 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import { useState } from 'react';
+import { AvailableBayDashboardWidget } from 'shared';
 
 interface WidgetSizeDropdownProps {
   title: string;
+  widgets: AvailableBayDashboardWidget[];
 }
 
 /**
- * A collapsible dropdown for one widget size.
+ * A collapsible dropdown listing the widgets available for one widget size.
  */
-const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title }) => {
+const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title, widgets }) => {
   const [expanded, setExpanded] = useState(true);
 
   return (
@@ -39,7 +41,17 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title }) => {
           {title}
         </Typography>
       </AccordionSummary>
-      <AccordionDetails />
+      <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 1, px: 0 }}>
+        {widgets.length === 0 ? (
+          <Typography pl={1}>No widgets available</Typography>
+        ) : (
+          widgets.map((widget) => (
+            <Box key={widget.type} sx={{ bgcolor: 'rgba(255, 255, 255, 0.15)', borderRadius: '10px', p: 2 }}>
+              <Typography>{widget.displayName}</Typography>
+            </Box>
+          ))
+        )}
+      </AccordionDetails>
     </Accordion>
   );
 };

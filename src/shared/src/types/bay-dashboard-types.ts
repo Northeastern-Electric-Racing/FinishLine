@@ -35,3 +35,16 @@ export interface BayDashboardConfig {
   dateCreated: Date;
   slots: BayDashboardSlot[];
 }
+
+/**
+ * A widget type that can be placed on a bay dashboard, along with the sizes it supports.
+ */
+export interface AvailableBayDashboardWidget {
+  type: BayDashboardWidgetType;
+  displayName: string;
+  sizes: BayDashboardWidgetSize[];
+}
+
+export interface AvailableBayDashboardWidgets {
+  widgets: AvailableBayDashboardWidget[];
+}
