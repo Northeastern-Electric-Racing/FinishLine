@@ -33,6 +33,7 @@ const renderComponent = (modalShow: boolean) => {
         onSubmit={mockHandleSubmit}
         allUsers={exampleAllUsers}
         wbsNum={exampleWbs1}
+        scheduledStartDate={new Date('2026-09-22')}
       />
     </RouterWrapper>
   );
