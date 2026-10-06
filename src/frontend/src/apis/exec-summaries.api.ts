@@ -1,6 +1,7 @@
 import { BudgetSummary, ExecutiveSummary, VehicleDevelopmentSummary } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+import { EditExecSummaryPayload } from '../hooks/exec-summaries.hooks';
 import {
   executiveSummaryTransformer,
   vehicleDevelopmentSummaryTransformer
@@ -51,4 +52,17 @@ export const getVehicleDevelopmentSummary = (id: string, teamId?: string) => {
  */
 export const getBudgetSummary = (id: string) => {
   return axios.get<BudgetSummary>(apiUrls.executiveSummaryBudget(id));
+};
+
+/**
+ * Edits an executive summary in the database
+ *
+ * @param id id of the executive summary
+ * @param execSummaryData the edited data of the executive summary
+ * @returns the updated executive summary
+ */
+export const editExecutiveSummary = (id: string, execSummaryData: EditExecSummaryPayload) => {
+  return axios.post<ExecutiveSummary>(apiUrls.executiveSummaryEdit(id), execSummaryData, {
+    transformResponse: (data) => executiveSummaryTransformer(JSON.parse(data))
+  });
 };

@@ -1,11 +1,21 @@
-import { useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { BudgetSummary, ExecutiveSummary, VehicleDevelopmentSummary } from 'shared';
 import {
+  editExecutiveSummary,
   getAllExecutiveSummaries,
   getBudgetSummary,
   getSingleExecutiveSummary,
   getVehicleDevelopmentSummary
 } from '../apis/exec-summaries.api';
+
+export interface EditExecSummaryPayload {
+  seasonStartDate?: Date;
+  seasonEndDate?: Date;
+  goals: string;
+  winsAndImprovements: string;
+  budgetNotes: string;
+  recruitmentNotes: string;
+}
 
 /**
  * Custom react hook to get all the executive summaries
@@ -57,4 +67,22 @@ export const useBudgetSummary = (id: string) => {
     const { data } = await getBudgetSummary(id);
     return data;
   });
+};
+
+/**
+ * Custom React Hook to edit an executive summary.
+ *
+ * @param executiveSummaryId The id of the executive summary being edited
+ * @returns the edited executive summary
+ */
+export const useEditExecutiveSummary = (executiveSummaryId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ExecutiveSummary, Error, EditExecSummaryPayload>(
+    ['executive-summaries', 'edit'],
+    async (formData: EditExecSummaryPayload) => {
+      const { data } = await editExecutiveSummary(executiveSummaryId, formData);
+      queryClient.invalidateQueries(['executive-summaries']);
+      return data;
+    }
+  );
 };
