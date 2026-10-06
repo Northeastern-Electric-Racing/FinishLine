@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Measure, Organization } from '@prisma/client';
+import { Organization } from '@prisma/client';
 import { calculateProjectEndDate, calculateProjectStartDate, isAdmin, notGuest, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -14,7 +14,6 @@ import {
   NotFoundException
 } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
-import { getGraphDataForProjectBudgetByDivision } from '../utils/statistics.utils.js';
 import { isUserOnOpsTeam } from '../utils/exec-summaries.utils.js';
 import {
   getExecutiveSummaryQueryArgs,
@@ -263,13 +262,56 @@ export default class ExecSummaryServices {
       throw new DeletedException('Executive Summary', executiveSummaryId);
     }
 
-    const budgetByDivision = await getGraphDataForProjectBudgetByDivision(
-      Measure.SUM,
-      organization.organizationId,
-      executiveSummary.seasonStartDate,
-      executiveSummary.seasonEndDate,
-      { carIds: [executiveSummary.carId] }
-    );
+    const { carId, seasonStartDate, seasonEndDate } = executiveSummary;
+
+    const [divisions, projects] = await Promise.all([
+      prisma.team_Type.findMany({ where: { organizationId: organization.organizationId } }),
+      prisma.project.findMany({
+        where: {
+          carId,
+          wbsElement: { organizationId: organization.organizationId, dateDeleted: null }
+        },
+        ...getVehicleDevelopmentProjectQueryArgs()
+      })
+    ]);
+
+    // a project is in the season if its work (first work package start to last work package end) overlaps the season
+    const projectsInSeason = projects.filter((project) => {
+      const start = calculateProjectStartDate(project.workPackages);
+      const end = calculateProjectEndDate(project.workPackages);
+      if (!start || !end) return false;
+      if (seasonStartDate && end < seasonStartDate) return false;
+      if (seasonEndDate && start > seasonEndDate) return false;
+      return true;
+    });
+
+    // each project's budget is split evenly across the distinct divisions of its active teams so that it is
+    // never counted more than once; projects with no active team are reported as unassigned
+    const budgetByDivisionId = new Map<string, number>(divisions.map((division) => [division.teamTypeId, 0]));
+    let unassignedBudget = 0;
+    projectsInSeason.forEach((project) => {
+      const divisionIds = new Set<string>();
+      project.teams.forEach((team) => {
+        if (!team.dateArchived && team.teamTypeId && budgetByDivisionId.has(team.teamTypeId)) {
+          divisionIds.add(team.teamTypeId);
+        }
+      });
+      if (divisionIds.size === 0) {
+        unassignedBudget += project.budget;
+        return;
+      }
+      divisionIds.forEach((id) =>
+        budgetByDivisionId.set(id, (budgetByDivisionId.get(id) ?? 0) + project.budget / divisionIds.size)
+      );
+    });
+
+    const values = divisions.map((division) => ({
+      value: budgetByDivisionId.get(division.teamTypeId) ?? 0,
+      label: division.name
+    }));
+    if (unassignedBudget > 0) values.push({ value: unassignedBudget, label: 'Unassigned' });
+
+    const budgetByDivision = { tipLabel: 'Dollars', values };
 
     return { executiveSummaryId, budgetByDivision };
   }
