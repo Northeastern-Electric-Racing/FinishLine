@@ -18,6 +18,8 @@ import { Radio } from '@mui/material';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import NERFormModal from '../../../components/NERFormModal';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 interface ActivateWorkPackageModalProps {
   allUsers: User[];
@@ -79,6 +81,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
       })),
     [allUsers]
   );
+  const { data: organization, isLoading: orgIsLoading, isError: orgIsError, error: orgError } = useCurrentOrganization();
 
   /**
    * Wrapper function for onSubmit so that form data is reset after submit
@@ -93,14 +96,13 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     });
     reset(defaultValues);
   };
-
-  const { data: organization } = useCurrentOrganization();
   const selectedStartDate = watch('startDate');
 
+  if (orgIsError) return <ErrorPage message={orgError?.message} />;
+  if (orgIsLoading || !organization) return <LoadingIndicator />;
+
   const outsideBuffer =
-    !!organization &&
-    !!selectedStartDate &&
-    !isWithinBuffer(scheduledStartDate, selectedStartDate, organization.activationBufferDays);
+    !!selectedStartDate && !isWithinBuffer(scheduledStartDate, selectedStartDate, organization.activationBufferDays);
 
   const submitText = outsideBuffer ? 'Submit CR' : 'Submit';
 

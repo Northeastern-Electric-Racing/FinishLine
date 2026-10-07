@@ -67,12 +67,11 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
     }
   };
 
-  if (isLoading || usersIsLoading || !users || wpIsLoading || !workPackage) return <LoadingIndicator />;
-
   if (isError) return <ErrorPage message={error?.message} />;
-
   if (usersIsError) return <ErrorPage message={usersError?.message} />;
   if (wpIsError) return <ErrorPage message={wpError?.message} />;
+
+  if (isLoading || usersIsLoading || !users || wpIsLoading || !workPackage) return <LoadingIndicator />;
 
   return (
     <ActivateWorkPackageModal
