@@ -28,6 +28,9 @@ interface NERAutocompleteProps {
   errorMessage?: FieldError;
   required?: boolean;
   disabled?: boolean;
+  noOptionsText?: React.ReactNode;
+  onInputChange?: (event: React.SyntheticEvent, value: string) => void;
+  disablePortal?: boolean;
 }
 
 const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
@@ -42,7 +45,10 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   filterSelectedOptions,
   errorMessage,
   required = true,
-  disabled = false
+  disabled = false,
+  noOptionsText,
+  onInputChange,
+  disablePortal = true
 }) => {
   const theme = useTheme();
 
@@ -75,9 +81,11 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
         isOptionEqualToValue={(option, value) => option.id === value.id}
         getOptionLabel={(option) => option.label}
         getOptionKey={(option) => option.id}
-        disablePortal
+        disablePortal={disablePortal}
         id={id}
         onChange={onChange}
+        onInputChange={onInputChange}
+        noOptionsText={noOptionsText}
         options={options}
         sx={autocompleteStyle}
         disabled={disabled}

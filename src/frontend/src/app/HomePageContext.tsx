@@ -4,11 +4,12 @@ interface HomePageContextProps {
   onPNMHomePage: boolean;
   onGuestHomePage: boolean;
   onOnboardingHomePage: boolean;
+  onNewMemberHomePage: boolean;
   onMemberHomePage: boolean;
   setCurrentHomePage: (homePage: HomePage) => void;
 }
 
-type HomePage = 'guest' | 'member' | 'pnm' | 'onboarding';
+type HomePage = 'guest' | 'member' | 'pnm' | 'onboarding' | 'new-member';
 
 const HomePageContext = createContext<HomePageContextProps | undefined>(undefined);
 
@@ -16,34 +17,15 @@ export const HomePageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [onGuestHomePage, setOnGuestHomePage] = useState(false);
   const [onPNMHomePage, setOnPNMHomePage] = useState(false);
   const [onOnboardingHomePage, setOnOnboardingHomePage] = useState(false);
+  const [onNewMemberHomePage, setOnNewMemberHomePage] = useState(false);
   const [onMemberHomePage, setOnMemberHomePage] = useState(false);
 
   const setCurrentHomePage = (homePage: HomePage) => {
-    switch (homePage) {
-      case 'guest':
-        setOnPNMHomePage(false);
-        setOnOnboardingHomePage(false);
-        setOnMemberHomePage(false);
-        setOnGuestHomePage(true);
-        break;
-      case 'member':
-        setOnGuestHomePage(false);
-        setOnPNMHomePage(false);
-        setOnOnboardingHomePage(false);
-        setOnMemberHomePage(true);
-        break;
-      case 'onboarding':
-        setOnPNMHomePage(false);
-        setOnGuestHomePage(false);
-        setOnMemberHomePage(false);
-        setOnOnboardingHomePage(true);
-        break;
-      case 'pnm':
-        setOnGuestHomePage(false);
-        setOnMemberHomePage(false);
-        setOnOnboardingHomePage(false);
-        setOnPNMHomePage(true);
-    }
+    setOnGuestHomePage(homePage === 'guest');
+    setOnPNMHomePage(homePage === 'pnm');
+    setOnOnboardingHomePage(homePage === 'onboarding');
+    setOnNewMemberHomePage(homePage === 'new-member');
+    setOnMemberHomePage(homePage === 'member');
   };
 
   return (
@@ -52,6 +34,7 @@ export const HomePageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         onGuestHomePage,
         onPNMHomePage,
         onOnboardingHomePage,
+        onNewMemberHomePage,
         onMemberHomePage,
         setCurrentHomePage
       }}

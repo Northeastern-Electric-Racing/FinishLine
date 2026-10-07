@@ -10,6 +10,7 @@ variable "environment" {
   type        = string
 }
 
+
 variable "github_repository" {
   description = "GitHub repository URL (e.g., https://github.com/username/repo)"
   type        = string
@@ -78,4 +79,10 @@ variable "create_webhook" {
   description = "Create a webhook for the main branch (usually not needed, Amplify auto-creates)"
   type        = bool
   default     = false
+}
+
+variable "wait_for_domain_verification" {
+  description = "Whether Terraform should block until Amplify domain verification completes. Set false for sandbox where the workflow handles the wait."
+  type        = bool
+  default     = true
 }

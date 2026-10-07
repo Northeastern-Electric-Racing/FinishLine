@@ -22,7 +22,7 @@ export const getProjectQueryArgs = (organizationId: string) =>
           lead: getUserQueryArgs(organizationId),
           manager: getUserQueryArgs(organizationId),
           descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) },
-          tasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organizationId) },
+          tasks: { where: { dateDeleted: null }, ...getTaskQueryArgs() },
           links: { where: { dateDeleted: null }, ...getLinkQueryArgs() },
           changes: {
             where: { changeRequest: { dateDeleted: null } },
@@ -55,7 +55,7 @@ export const getProjectGanttQueryArgs = (organizationId: string) =>
             where: {
               dateDeleted: null
             },
-            ...getTaskQueryArgs(organizationId)
+            ...getTaskQueryArgs()
           }
         }
       },
@@ -94,7 +94,14 @@ export const getProjectPreviewQueryArgs = (organizationId: string) =>
           status: true
         }
       },
-      workPackages: getWorkPackagePreviewQueryArgs(),
+      workPackages: {
+        where: {
+          wbsElement: {
+            dateDeleted: null
+          }
+        },
+        ...getWorkPackagePreviewQueryArgs()
+      },
       projectId: true,
       budget: true,
       abbreviation: true,
@@ -138,7 +145,14 @@ export const getProjectOverviewQueryArgs = (organizationId: string) =>
           }
         }
       },
-      workPackages: getWorkPackagePreviewQueryArgs(),
+      workPackages: {
+        where: {
+          wbsElement: {
+            dateDeleted: null
+          }
+        },
+        ...getWorkPackagePreviewQueryArgs()
+      },
       projectId: true,
       budget: true,
       abbreviation: true,

@@ -4,7 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { FrequentlyAskedQuestion } from 'shared';
 import { NERButton } from '../../../components/NERButton';
-import { useAllFaqs, useDeleteFAQ } from '../../../hooks/recruitment.hooks';
+import { useRecruitingFaqs, useDeleteFAQ } from '../../../hooks/recruitment.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useHistoryState } from '../../../hooks/misc.hooks';
 import ErrorPage from '../../ErrorPage';
@@ -20,11 +20,11 @@ const FAQsTable = () => {
   const { mutateAsync: deleteFaq } = useDeleteFAQ();
   const toast = useToast();
 
-  const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useAllFaqs();
-  const handleDelete = (id: string) => {
+  const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useRecruitingFaqs();
+  const handleDelete = async (id: string) => {
     setFaqToDelete(undefined);
     try {
-      deleteFaq(id);
+      await deleteFaq(id);
       toast.success('Faq deleted successfully');
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -33,8 +33,8 @@ const FAQsTable = () => {
     }
   };
 
-  if (!faqs || faqsIsLoading) return <LoadingIndicator />;
   if (faqsIsError) return <ErrorPage message={faqsError.message} />;
+  if (!faqs || faqsIsLoading) return <LoadingIndicator />;
 
   const FAQsRows = faqs.map((faq: FrequentlyAskedQuestion, index: number) => (
     <TableRow key={faq.faqId}>

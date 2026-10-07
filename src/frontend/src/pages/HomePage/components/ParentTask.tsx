@@ -1,9 +1,10 @@
-import { Typography, Box, IconButton, Checkbox, Tooltip } from '@mui/material';
+import { Box, IconButton, Checkbox, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import SubtaskSection from './SubtaskSection';
 import { Checklist } from 'shared';
 import { isChecklistChecked } from '../../../utils/onboarding.utils';
+import NERMarkdown from '../../../components/NERMarkdown';
 
 interface ParentTaskProps {
   parentTask: Checklist;
@@ -53,7 +54,9 @@ const ParentTask: React.FC<ParentTaskProps> = ({ parentTask, checkedChecklists }
               />
             </Box>
           </Tooltip>
-          <Typography sx={{ color: 'black', fontWeight: 'bold' }}>{parentTask.content}</Typography>
+          <Box sx={{ color: 'black', fontWeight: 'bold' }}>
+            <NERMarkdown markdown={parentTask.content} />
+          </Box>
           <IconButton onClick={toggleShowSubtasks} sx={{ marginLeft: 'auto' }}>
             {showSubtasks ? <KeyboardArrowDown sx={{ color: 'black' }} /> : <KeyboardArrowRight sx={{ color: 'black' }} />}
           </IconButton>

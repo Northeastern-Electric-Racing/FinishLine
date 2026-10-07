@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Organization, ProjectPreview, User } from 'shared';
+import { NotificationChannelPreview, Organization, ProjectPreview, User } from 'shared';
 import {
   getFeaturedProjects,
   getCurrentOrganization,
@@ -19,9 +19,8 @@ import {
   setSlackSponsorshipNotificationSlackChannelId,
   getFinanceDelegates,
   setFinanceDelegates,
-  setOrganizationNewMemberImage,
-  getOrganizationNewMemberImage,
-  setOrganizationPlatformLogoImage
+  setOrganizationPlatformLogoImage,
+  getNotificationChannels
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/organizations.api';
 
@@ -216,26 +215,6 @@ export const useOrganizationLogo = () => {
   });
 };
 
-export const useOrganizationNewMemberImage = () => {
-  return useQuery<Blob | undefined, Error>(['organizations', 'new-member-image'], async () => {
-    const { data: fileId } = await getOrganizationNewMemberImage();
-    if (!fileId) {
-      return;
-    }
-    return await downloadGoogleImage(fileId);
-  });
-};
-
-export const useSetOrganizationNewMemberImage = () => {
-  const queryClient = useQueryClient();
-  return useMutation<Organization, Error, File>(['organizations', 'new-member-image'], async (file: File) => {
-    const { data } = await setOrganizationNewMemberImage(file);
-    queryClient.invalidateQueries(['organizations']);
-    queryClient.invalidateQueries(['organizations', 'new-member-image']);
-    return data;
-  });
-};
-
 export const useSetOrganizationPlatformLogoImage = () => {
   const queryClient = useQueryClient();
   return useMutation<Organization, Error, File>(['organizations', 'platform-logo'], async (file: File) => {
@@ -292,6 +271,13 @@ export const useSetSlackSponsorshipNotificationChannelId = () => {
       }
     }
   );
+};
+
+export const useNotificationChannels = () => {
+  return useQuery<NotificationChannelPreview[], Error>(['organizations', 'notification-channels'], async () => {
+    const { data } = await getNotificationChannels();
+    return data;
+  });
 };
 
 export const useGetFinanceDelegates = () => {

@@ -45,18 +45,14 @@ export const ChangeRequestTypeTextPipe: (type: ChangeRequestType) => string = (t
   switch (type) {
     case ChangeRequestType.Activation:
       return 'Activation';
-    case ChangeRequestType.Redefinition:
-      return 'Redefinition';
     case ChangeRequestType.StageGate:
       return 'Stage Gate';
-    case ChangeRequestType.Issue:
-      return 'Issue';
-    case ChangeRequestType.Other:
-      return 'Other';
     case ChangeRequestType.Budget:
       return 'Budget';
     case ChangeRequestType.Leadership:
       return 'Leadership';
+    case ChangeRequestType.Standard:
+      return 'Standard';
   }
 };
 

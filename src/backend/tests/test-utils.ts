@@ -15,10 +15,9 @@ import {
   WBS_Element_Status
 } from '@prisma/client';
 import prisma from '../src/prisma/prisma.js';
-import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed.js';
 import TeamsService from '../src/services/teams.services.js';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services.js';
-import { Permission, RoleEnum, TaskPriority, TaskStatus } from 'shared';
+import { RoleEnum, TaskPriority, TaskStatus } from 'shared';
 import {
   batmanAppAdmin,
   batmanScheduleSettings,
@@ -101,6 +100,7 @@ export const createTestUser = async (
 };
 
 export const resetUsers = async () => {
+  await prisma.user_API_Token.deleteMany();
   await prisma.guest_Definition.deleteMany();
   await prisma.part_Review_Popup.deleteMany();
   await prisma.part_Review_Request.deleteMany();
@@ -116,6 +116,11 @@ export const resetUsers = async () => {
   await prisma.part_Review.deleteMany();
   await prisma.part_Submission.deleteMany();
   await prisma.part.deleteMany();
+  await prisma.rule_Status_History.deleteMany();
+  await prisma.project_Rule.deleteMany();
+  await prisma.rule.deleteMany();
+  await prisma.ruleset.deleteMany();
+  await prisma.ruleset_Type.deleteMany();
   await prisma.project.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.material.deleteMany();
@@ -123,6 +128,7 @@ export const resetUsers = async () => {
   await prisma.material_Type.deleteMany();
   await prisma.assembly.deleteMany();
   await prisma.meeting_Attendance.deleteMany();
+  await prisma.team_Join_Request.deleteMany();
   await prisma.team.deleteMany();
   await prisma.user_Secure_Settings.deleteMany();
   await prisma.receipt.deleteMany();
@@ -130,17 +136,20 @@ export const resetUsers = async () => {
   await prisma.reimbursement_Status.deleteMany();
   await prisma.reimbursement_Request_Comment.deleteMany();
   await prisma.reimbursement_Request.deleteMany();
+  await prisma.reimbursement.deleteMany();
   await prisma.vendor.deleteMany();
   await prisma.account_Code.deleteMany();
+  await prisma.rule.deleteMany();
+  await prisma.ruleset.deleteMany();
+  await prisma.ruleset_Type.deleteMany();
   await prisma.car.deleteMany();
+  await prisma.task_Label.deleteMany();
   await prisma.task.deleteMany();
   await prisma.stage_Gate_CR.deleteMany();
   await prisma.activation_CR.deleteMany();
   await prisma.change.deleteMany();
-  await prisma.proposed_Solution.deleteMany();
-  await prisma.scope_CR_Why.deleteMany();
-  await prisma.scope_CR.deleteMany();
   await prisma.budget_CR.deleteMany();
+  await prisma.leadership_CR.deleteMany();
   await prisma.change_Request.deleteMany();
   await prisma.link.deleteMany();
   await prisma.link_Type.deleteMany();
@@ -180,6 +189,8 @@ export const resetUsers = async () => {
   await prisma.shop.deleteMany();
   await prisma.description_Bullet.deleteMany();
   await prisma.description_Bullet_Type.deleteMany();
+  await prisma.unit.deleteMany();
+  await prisma.dashboard.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -196,20 +207,22 @@ export const createFinanceTeamAndLead = async (organization?: Organization) => {
 
   const lead = await createTestUser(
     {
-      ...dbSeedAllUsers.aang,
+      firstName: 'Aang',
+      lastName: 'Airbender',
+      email: 'aang@avatarBenders.com',
       googleAuthId: 'financeLead',
-      role: RoleEnum.LEADERSHIP,
-      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
+      role: RoleEnum.LEADERSHIP
     },
     organization.organizationId
   );
 
   const financeMember = await createTestUser(
     {
-      ...dbSeedAllUsers.johnBoddy,
+      firstName: 'John',
+      lastName: 'Boddy',
+      email: 'johnboddy@clue.com',
       googleAuthId: 'financeMember',
-      role: RoleEnum.MEMBER,
-      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
+      role: RoleEnum.MEMBER
     },
     organization.organizationId
   );
@@ -241,7 +254,7 @@ export const createTestFAQ = async (orgId: string, faqId: string) => {
           userId: user.userId
         }
       },
-      regularFaqOrg: {
+      organization: {
         connect: {
           organizationId: orgId
         }
@@ -326,7 +339,7 @@ export const createTestFaq = async (user: User, organizationId: string) => {
     data: {
       question: 'Who is Chief Software Engineer of NER?',
       answer: 'Peyton McKee!',
-      regularFaqOrgId: organizationId,
+      organizationId,
       userCreatedId: user.userId
     }
   });
@@ -590,10 +603,11 @@ export const createTestDesignReviewEvent = async () => {
   );
   const lead = await createTestUser(
     {
-      ...dbSeedAllUsers.aang,
+      firstName: 'Aang',
+      lastName: 'Airbender',
+      email: 'aang@avatarBenders.com',
       googleAuthId: 'financeLead',
-      role: RoleEnum.LEADERSHIP,
-      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
+      role: RoleEnum.LEADERSHIP
     },
     organization.organizationId
   );
@@ -653,6 +667,7 @@ export const createTestDesignReviewEvent = async () => {
     [testWorkPackage.workPackageId], // workPackageIds
     [], // scheduleSlots - empty for confirmation events
     new Date('2027-03-25T10:00:00'), // initialDateScheduled - required for requiresConfirmation events
+    [], // notificationChannelIds
     teamType.teamTypeId, // team type id
     'https://docs.google.com/document/d/test-design-review-questions', // questionDocument
     'Campus Center Room 101', // location
@@ -794,8 +809,10 @@ export const createTestTaskWithOrganization = async (user: User, organization?: 
     TaskStatus.IN_PROGRESS,
     [user.userId],
     organization,
-    undefined,
-    new Date()
+    [],
+    [],
+    new Date(),
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
   );
 
   if (!task) throw new Error('Failed to create task');

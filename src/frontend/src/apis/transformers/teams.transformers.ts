@@ -1,4 +1,4 @@
-import { Team, TeamPreview } from 'shared';
+import { Team, TeamJoinRequest, TeamPreview } from 'shared';
 import { projectGanttTransformer } from './projects.transformers';
 
 /**
@@ -19,5 +19,14 @@ export const teamPreviewTransformer = (team: TeamPreview): TeamPreview => {
   return {
     dateArchived: team.dateArchived ? new Date(team.dateArchived) : undefined,
     ...team
+  };
+};
+
+export const teamJoinRequestTransformer = (teamJoinRequest: TeamJoinRequest): TeamJoinRequest => {
+  return {
+    ...teamJoinRequest,
+    team: teamPreviewTransformer(teamJoinRequest.team),
+    dateRequested: new Date(teamJoinRequest.dateRequested),
+    dateReviewed: teamJoinRequest.dateReviewed ? new Date(teamJoinRequest.dateReviewed) : undefined
   };
 };

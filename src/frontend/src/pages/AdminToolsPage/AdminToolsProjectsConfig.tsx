@@ -12,6 +12,8 @@ import ConfluenceLink from './ProjectsConfig/ConfluenceLink';
 import PartReviewSampleImage from './ProjectsConfig/PartReviewSampleImage';
 import CommonMistakesTable from './ProjectsConfig/CommonMistakesTable';
 import PartTagsTable from './ProjectsConfig/PartTagsTable';
+import TaskLabelsTable from './ProjectsConfig/TaskLabelsTable';
+import RulesetTypesTable from './ProjectsConfig/RulesetTypesTable';
 
 const AdminToolsProjectsConfig: React.FC = () => {
   return (
@@ -36,6 +38,10 @@ const AdminToolsProjectsConfig: React.FC = () => {
       </Typography>
       <CarsTable />
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+        Rules Config
+      </Typography>
+      <RulesetTypesTable />
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Links Config
       </Typography>
       <LinkTypeTable />
@@ -51,6 +57,10 @@ const AdminToolsProjectsConfig: React.FC = () => {
         Project Templates
       </Typography>
       <ProjectTemplateTable />
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+        Task Labels
+      </Typography>
+      <TaskLabelsTable />
     </Box>
   );
 };

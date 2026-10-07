@@ -17,6 +17,7 @@ import {
   getCurrentUserSecureSettings,
   getUserSecureSettings,
   getUserScheduleSettings,
+  getUserBusyTimes,
   updateUserScheduleSettings,
   getUserTasks,
   getManyUserTasks,
@@ -24,7 +25,9 @@ import {
   logUserOut,
   getManyUsersWithScheduleSettings,
   getAllOrgUsers,
-  getAllOrgMembers
+  getAllOrgMembers,
+  getCurrentUserApiToken,
+  generateApiToken
 } from '../apis/users.api';
 import {
   User,
@@ -37,7 +40,10 @@ import {
   Task,
   UserWithRole,
   UserWithScheduleSettings,
-  ProjectOverview
+  ProjectOverview,
+  BusySlots,
+  ApiTokenMetadata,
+  GeneratedApiToken
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -178,7 +184,12 @@ export const useUserScheduleSettings = (id: string) => {
       const { data } = await getUserScheduleSettings(id);
       return data;
     } catch (error: unknown) {
-      return { drScheduleSettingsId: '', personalGmail: '', personalZoomLink: '', availabilities: [] };
+      return {
+        drScheduleSettingsId: '',
+        personalGmail: '',
+        personalZoomLink: '',
+        availabilities: []
+      };
     }
   });
 };
@@ -321,4 +332,54 @@ export const useLogUserOut = () => {
     const { data } = await logUserOut();
     return data;
   });
+};
+
+/**
+ * Custom react hook to get a user's busy times, combining their imported ics calendar feed and
+ * Finishline events they're on
+ *
+ * @returns user's busy times per day
+ */
+export const useUserBusyTimes = (id: string, startDate: Date, endDate: Date, enabled: boolean) => {
+  return useQuery<BusySlots[], Error>(
+    ['users', id, 'schedule-settings', 'busy-times', startDate.getTime(), endDate.getTime()],
+    async () => {
+      const { data } = await getUserBusyTimes(id, startDate, endDate);
+      return data;
+    },
+    { enabled: enabled && !!id }
+  );
+};
+
+/**
+ * Custom react hook to get the current user's active API token metadata.
+ *
+ * @returns the token metadata, or null if they have not generated one
+ */
+export const useCurrentUserApiToken = () => {
+  return useQuery<ApiTokenMetadata | null, Error>(['users', 'api-token'], async () => {
+    const { data } = await getCurrentUserApiToken();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to generate a new API token for the current user, revoking any existing one.
+ *
+ * @returns the generated token, including the raw token value
+ */
+export const useGenerateApiToken = () => {
+  const queryClient = useQueryClient();
+  return useMutation<GeneratedApiToken, Error, void>(
+    ['users', 'api-token', 'generate'],
+    async () => {
+      const { data } = await generateApiToken();
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['users', 'api-token']);
+      }
+    }
+  );
 };

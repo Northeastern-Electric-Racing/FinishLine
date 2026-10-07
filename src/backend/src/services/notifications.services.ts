@@ -44,6 +44,9 @@ export default class NotificationsService {
         },
         dateDeleted: null
       },
+      orderBy: {
+        deadline: 'asc' // earliest (most overdue) first
+      },
       include: {
         assignees: {
           include: {
@@ -78,9 +81,10 @@ export default class NotificationsService {
       });
     });
 
-    // send the notifications to each team for their respective tasks
+    // send the notifications to each team for their respective tasks sorted by deadline
     const promises = Array.from(teamTaskMap).map(async ([slackId, tasks]) => {
       const messageBlock = tasks
+        .sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime())
         .map((task) => {
           // prisma call earlier allows the forced unwrap (deadline is guaranteed to be a non-null value)
           const todayMidnightUTC = new Date(new Date().setUTCHours(0, 0, 0, 0));
@@ -181,11 +185,16 @@ export default class NotificationsService {
         });
       });
 
+      const attendees = event.requiredMembers
+        .concat(event.optionalMembers)
+        .concat(event.userCreated)
+        .filter((user, index, arr) => arr.findIndex((other) => other.userId === user.userId) === index);
+
       teamSlackIds.forEach((teamSlackId) => {
         const currentEvents = eventTeamMap.get(teamSlackId);
         const eventWithAttendees = {
           ...event,
-          attendees: event.requiredMembers.concat(event.optionalMembers).concat(event.userCreated),
+          attendees,
           scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer)
         };
 
@@ -236,7 +245,6 @@ export default class NotificationsService {
   static async sendSponsorTaskNotifications() {
     const startOfToday = new Date(new Date().setUTCHours(0, 0, 0, 0));
     const endOfToday = startOfDayTomorrow();
-
     const sponsorTasks = await prisma.sponsor_Task.findMany({
       where: {
         notifyDate: {

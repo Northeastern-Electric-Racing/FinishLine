@@ -125,31 +125,6 @@ export default class OrganizationsController {
     }
   }
 
-  static async setNewMemberImage(req: Request, res: Response, next: NextFunction) {
-    try {
-      if (!req.file) {
-        throw new HttpException(400, 'Invalid or undefined image data');
-      }
-
-      const updatedOrg = await OrganizationsService.setNewMemberImage(req.file, req.currentUser, req.organization);
-
-      res.status(200).json(updatedOrg);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getOrganizationNewMemberImage(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { organization } = req;
-
-      const newMemberImageId = await OrganizationsService.getNewMemberImage(organization.organizationId);
-      res.status(200).json(newMemberImageId);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   static async setOrganizationDescription(req: Request, res: Response, next: NextFunction) {
     try {
       const updatedOrg = await OrganizationsService.setOrganizationDescription(
@@ -235,6 +210,17 @@ export default class OrganizationsController {
         req.organization.organizationId
       );
       res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getNotificationChannels(req: Request, res: Response, next: NextFunction) {
+    try {
+      const notificationChannels = await OrganizationsService.getAvailableNotificationChannelsForUser(
+        req.currentUser.userId
+      );
+      res.status(200).json(notificationChannels);
     } catch (error: unknown) {
       next(error);
     }

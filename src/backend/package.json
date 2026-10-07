@@ -10,6 +10,8 @@
     "prisma:manual": "tsx --import dotenv/config ./src/prisma/manual.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
     "@prisma/client": "^6.2.1",
     "@slack/bolt": "^3.22.0",
     "@types/concat-stream": "^2.0.0",
@@ -31,11 +33,17 @@
     "google-auth-library": "^8.1.1",
     "googleapis": "^118.0.0",
     "ical-generator": "^10.2.0",
+    "ipaddr.js": "^2.4.0",
     "jsonwebtoken": "^8.5.1",
+    "lru-cache": "^11.5.2",
     "multer": "^1.4.5-lts.1",
+    "node-ical": "^0.26.1",
     "nodemailer": "^6.9.1",
+    "pdf-parse-new": "^1.4.1",
     "prisma": "^6.2.1",
-    "shared": "1.0.0"
+    "shared": "1.0.0",
+    "twisters": "^1.1.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/express-jwt": "^6.0.4",

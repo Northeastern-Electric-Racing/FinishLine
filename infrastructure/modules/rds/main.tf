@@ -29,8 +29,9 @@ resource "aws_db_instance" "main" {
   backup_retention_period = var.backup_retention_period
   backup_window          = var.backup_window
   maintenance_window     = var.maintenance_window
-  skip_final_snapshot    = false
-  final_snapshot_identifier = "${var.project_name}-${var.environment}-final-snapshot"
+  skip_final_snapshot       = var.skip_final_snapshot
+  final_snapshot_identifier = var.skip_final_snapshot ? null : "${var.project_name}-${var.environment}-final-snapshot"
+  snapshot_identifier       = var.snapshot_identifier
 
   # Multi-AZ configuration
   multi_az = var.multi_az

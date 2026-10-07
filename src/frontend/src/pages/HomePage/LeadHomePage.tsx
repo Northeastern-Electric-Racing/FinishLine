@@ -9,7 +9,7 @@ import { AuthenticatedUser } from 'shared';
 import ChangeRequestsToReview from './components/ChangeRequestsToReview';
 import MyTeamsOverdueTasks from './components/MyTeamsOverdueTasks';
 import UpcomingDesignReviews from './components/UpcomingDesignReviews';
-import GeneralAnnouncements from './components/GeneralAnnouncements';
+import WorkPackagesSelectionView from './components/WorkPackagesSelectionView';
 
 interface LeadHomePageProps {
   user: AuthenticatedUser;
@@ -52,7 +52,7 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
               overflow: 'hidden'
             }}
           >
-            <GeneralAnnouncements />
+            <WorkPackagesSelectionView />
           </Grid>
           <Grid
             item

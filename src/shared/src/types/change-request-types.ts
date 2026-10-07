@@ -29,9 +29,7 @@ export interface ChangeRequest {
 }
 
 export const ChangeRequestType = {
-  Issue: 'ISSUE',
-  Redefinition: 'DEFINITION_CHANGE',
-  Other: 'OTHER',
+  Standard: 'STANDARD',
   StageGate: 'STAGE_GATE',
   Activation: 'ACTIVATION',
   Budget: 'BUDGET',
@@ -41,27 +39,11 @@ export const ChangeRequestType = {
 export type ChangeRequestType = (typeof ChangeRequestType)[keyof typeof ChangeRequestType];
 
 export interface StandardChangeRequest extends ChangeRequest {
-  what: string;
-  why: ChangeRequestExplanation[];
-  scopeImpact: string;
-  budgetImpact: number;
-  timelineImpact: number;
-  proposedSolutions: ProposedSolution[];
+  why: string;
   projectProposedChanges?: ProjectProposedChanges;
   workPackageProposedChanges?: WorkPackageProposedChanges;
   originalProjectData?: ProjectProposedChanges;
   originalWorkPackageData?: WorkPackageProposedChanges;
-}
-
-export interface ProposedSolution {
-  id: string;
-  description: string;
-  scopeImpact: string;
-  budgetImpact: number;
-  timelineImpact: number;
-  createdBy: User;
-  dateCreated: Date;
-  approved: boolean;
 }
 
 export interface GuestChangeRequest {
@@ -98,24 +80,6 @@ export interface LeadershipChangeRequest extends ChangeRequest {
   manager?: User;
 }
 
-export interface ChangeRequestExplanation {
-  type: ChangeRequestReason;
-  explain: string;
-}
-
-export enum ChangeRequestReason {
-  Estimation = 'ESTIMATION',
-  School = 'SCHOOL',
-  Design = 'DESIGN',
-  Manufacturing = 'MANUFACTURING',
-  Rules = 'RULES',
-  Initialization = 'INITIALIZATION',
-  Competition = 'COMPETITION',
-  Maintenance = 'MAINTENANCE',
-  OtherProject = 'OTHER_PROJECT',
-  Other = 'OTHER'
-}
-
 export enum ChangeRequestStatus {
   Implemented = 'Implemented',
   Accepted = 'Accepted',
@@ -133,17 +97,6 @@ export interface ImplementedChange {
   implementer: User;
   detail: string;
   dateImplemented: Date;
-}
-
-export interface ProposedSolutionCreateArgs {
-  description: string;
-  scopeImpact: string;
-  budgetImpact: number;
-  timelineImpact: number;
-}
-
-export interface ProposedSolutionFormInput extends ProposedSolutionCreateArgs {
-  id: string;
 }
 
 export interface DescriptionBulletPreview {

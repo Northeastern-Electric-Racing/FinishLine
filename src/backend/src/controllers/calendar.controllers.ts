@@ -139,13 +139,14 @@ export default class CalendarController {
 
   static async createCalendar(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, description, colorHexCode } = req.body;
+      const { name, description, colorHexCode, isNewMemberCalendar } = req.body;
 
       const calendar = await CalendarService.createCalendar(
         req.currentUser,
         name,
         description,
         colorHexCode,
+        isNewMemberCalendar,
         req.organization
       );
 
@@ -158,7 +159,7 @@ export default class CalendarController {
   static async editCalendar(req: Request, res: Response, next: NextFunction) {
     try {
       const { calendarId } = req.params as Record<string, string>;
-      const { name, colorHexCode, description } = req.body;
+      const { name, colorHexCode, description, isNewMemberCalendar } = req.body;
 
       const updatedCalendar = await CalendarService.editCalendar(
         req.currentUser,
@@ -166,10 +167,20 @@ export default class CalendarController {
         name,
         description,
         colorHexCode,
+        isNewMemberCalendar,
         req.organization
       );
 
       res.status(200).json(updatedCalendar);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getNewMemberEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const events = await CalendarService.getNewMemberEvents(req.organization);
+      res.status(200).json(events);
     } catch (error: unknown) {
       next(error);
     }
@@ -276,6 +287,7 @@ export default class CalendarController {
         workPackageIds,
         scheduleSlots,
         initialDateScheduled,
+        notificationChannelIds,
         questionDocumentLink,
         location,
         zoomLink,
@@ -283,7 +295,7 @@ export default class CalendarController {
         mention
       } = req.body;
 
-      const parsedScheduleSlots = scheduleSlots.map((slot: any) => ({
+      const parsedScheduleSlots = scheduleSlots.map((slot: { allDay: boolean; startTime?: string; endTime?: string }) => ({
         startTime: slot.startTime ? new Date(slot.startTime) : undefined,
         endTime: slot.endTime ? new Date(slot.endTime) : undefined,
         allDay: slot.allDay
@@ -304,6 +316,7 @@ export default class CalendarController {
         workPackageIds,
         parsedScheduleSlots,
         parsedInitialDateScheduled,
+        notificationChannelIds,
         teamTypeId,
         questionDocumentLink,
         location,
@@ -332,6 +345,7 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         documents,
+        notificationChannelIds,
         questionDocumentLink,
         location,
         zoomLink,
@@ -351,6 +365,7 @@ export default class CalendarController {
         machineryIds,
         workPackageIds,
         documents,
+        notificationChannelIds,
         teamTypeId,
         questionDocumentLink,
         location,
@@ -637,6 +652,17 @@ export default class CalendarController {
       res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
       res.setHeader('Content-Disposition', 'attachment; filename="finishline.ics"');
       res.send(icsContent);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async remindUnconfirmed(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { eventId } = req.params as Record<string, string>;
+
+      await CalendarService.remindUnconfirmed(eventId, req.currentUser, req.organization);
+      res.status(200).json({ message: 'Reminders sent to unconfirmed members' });
     } catch (error: unknown) {
       next(error);
     }

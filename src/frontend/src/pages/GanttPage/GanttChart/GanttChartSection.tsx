@@ -12,10 +12,12 @@ import {
   RequestEventChange
 } from '../../../utils/gantt.utils';
 import { Box } from '@mui/material';
-import { MutableRefObject, useCallback, useRef, useState } from 'react';
+import { MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
 import { ArcherContainer, ArcherContainerRef } from 'react-archer';
+import { toDateString } from 'shared';
+import { getMonday } from '../../../utils/datetime.utils';
 
 interface GanttChartSectionProps<T> {
   start: Date;
@@ -27,6 +29,8 @@ interface GanttChartSectionProps<T> {
   onAddTaskPressed: (parentTask: GanttTask<T>) => void;
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
+  toggleExpanded: (id: string) => void;
+  expanded: Set<string>;
 }
 
 interface GanttTooltipLayerProps {
@@ -66,12 +70,53 @@ const GanttChartSection = <T,>({
   highlightedChange,
   onAddTaskPressed,
   highlightSubtaskComparator,
-  highlightTaskComparator
+  highlightTaskComparator,
+  toggleExpanded,
+  expanded
 }: GanttChartSectionProps<T>) => {
-  const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
+  const days = useMemo(() => eachDayOfInterval({ start, end }).filter((day) => isMonday(day)), [start, end]);
 
-  const archerRef = useRef<ArcherContainerRef>(null);
-  const handleToggle = useCallback(() => archerRef.current?.refreshScreen(), []);
+  const dayColIndex = useMemo(() => {
+    const m = new Map<string, number>();
+    days.forEach((day, i) => m.set(toDateString(day), i));
+    return m;
+  }, [days]);
+
+  const getStartCol = useCallback(
+    (start: Date) => (dayColIndex.get(toDateString(getMonday(start))) ?? -1) + 1,
+    [dayColIndex]
+  );
+
+  const getEndCol = useCallback(
+    (end: Date) => {
+      const idx = dayColIndex.get(toDateString(getMonday(end)));
+      return idx === undefined ? days.length + 1 : idx + 2;
+    },
+    [dayColIndex, days.length]
+  );
+  const treeContainerRef = useRef<HTMLDivElement>(null);
+  const archerContainerRef = useRef<ArcherContainerRef>(null);
+
+  const onToggle = useCallback(() => {
+    archerContainerRef.current?.refreshScreen();
+  }, []);
+
+  useEffect(() => {
+    const node = treeContainerRef.current;
+    if (!node) return;
+
+    let timeout: ReturnType<typeof setTimeout>;
+    const observer = new ResizeObserver(() => {
+      clearTimeout(timeout);
+      timeout = setTimeout(onToggle, 250);
+    });
+
+    observer.observe(node);
+    return () => {
+      clearTimeout(timeout);
+      observer.disconnect();
+    };
+  }, [onToggle]);
 
   const updateTooltip = useRef<(options: OnMouseOverOptions | undefined, y?: number) => void>(() => {});
 
@@ -95,9 +140,9 @@ const GanttChartSection = <T,>({
   );
 
   return (
-    <ArcherContainer strokeColor="#ef4545">
+    <ArcherContainer strokeColor="#ef4545" ref={archerContainerRef}>
       <Box sx={{ width: 'fit-content' }}>
-        <Box sx={{ mt: '1rem', width: 'fit-content' }}>
+        <Box ref={treeContainerRef} sx={{ mt: '1rem', width: 'fit-content' }}>
           {tasks.map((task) => {
             return (
               <Box key={task.id} display="flex" alignItems="center">
@@ -112,7 +157,12 @@ const GanttChartSection = <T,>({
                   highlightedChange={highlightedChange}
                   highlightSubtaskComparator={highlightSubtaskComparator}
                   highlightTaskComparator={highlightTaskComparator}
-                  onToggle={handleToggle}
+                  onToggle={onToggle}
+                  toggleExpanded={toggleExpanded}
+                  isExpanded={expanded.has(task.id)}
+                  expanded={expanded}
+                  getStartCol={getStartCol}
+                  getEndCol={getEndCol}
                 />
               </Box>
             );

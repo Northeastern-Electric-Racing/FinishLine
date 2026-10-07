@@ -53,7 +53,9 @@ const WorkPackagesSelectionView: React.FC = () => {
     }
   }
 
-  const [currentDisplayedWPs, setCurrentDisplayedWPs] = useState<number>(defaultFirstDisplay);
+  // undefined until the user picks one, so the default can be based on loaded data
+  const [selectedOption, setSelectedOption] = useState<number>();
+  const currentDisplayedWPs = selectedOption ?? defaultFirstDisplay;
 
   if (isLoading || !relevantWPs) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
@@ -65,14 +67,14 @@ const WorkPackagesSelectionView: React.FC = () => {
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        overflow: 'auto',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))',
+        flexShrink: 0,
         width: '100%',
         gap: 2
       }}
     >
       {workPackages.map((wp) => (
-        <WorkPackageCard wp={wp} />
+        <WorkPackageCard key={wp.id} wp={wp} />
       ))}
     </Box>
   );
@@ -95,7 +97,7 @@ const WorkPackagesSelectionView: React.FC = () => {
       >
         <WorkPackageSelect
           options={workPackageOptions.map((wp) => wp[0])}
-          onSelect={setCurrentDisplayedWPs}
+          onSelect={setSelectedOption}
           selected={currentDisplayedWPs}
         />
         <Box

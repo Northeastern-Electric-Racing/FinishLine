@@ -1,0 +1,141 @@
+import express from 'express';
+import RulesController from '../controllers/rules.controllers.js';
+import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
+import { body, query } from 'express-validator';
+import { MAX_FILE_SIZE, RuleStatus } from 'shared';
+import multer, { memoryStorage } from 'multer';
+
+const rulesRouter = express.Router();
+
+rulesRouter.get(
+  '/rulesetType/:rulesetTypeId/active',
+  query('carNumber').optional().isInt(),
+  validateInputs,
+  RulesController.getActiveRuleset
+);
+rulesRouter.post(
+  '/rule/create',
+  nonEmptyString(body('ruleCode')),
+  body('ruleContent').isString(),
+  nonEmptyString(body('rulesetId')),
+  body('parentRuleId').optional().isString(),
+  body('referencedRules').optional().isArray(),
+  body('referencedRules.*').optional().isString(),
+  body('imageFileIds').optional().isArray(),
+  body('imageFileIds.*').optional().isString(),
+  validateInputs,
+  RulesController.createRule
+);
+rulesRouter.post(
+  '/rule/:ruleId/edit',
+  body('ruleContent').isString(),
+  nonEmptyString(body('ruleCode').optional()),
+  body('imageFileIds').optional().isArray(),
+  body('imageFileIds.*').optional().isString(),
+  body('parentRuleId').optional().isString(),
+  validateInputs,
+  RulesController.editRule
+);
+rulesRouter.post('/rule/:ruleId/delete', RulesController.deleteRule);
+
+rulesRouter.post(
+  '/rule/:ruleId/references/add',
+  nonEmptyString(body('referencedRuleId')),
+  validateInputs,
+  RulesController.addRuleReferences
+);
+rulesRouter.post(
+  '/rule/:ruleId/references/delete',
+  nonEmptyString(body('referencedRuleId')),
+  validateInputs,
+  RulesController.removeRuleReferences
+);
+
+rulesRouter.post('/rulesetType/create', nonEmptyString(body('name')), validateInputs, RulesController.createRulesetType);
+
+rulesRouter.post(
+  '/projectRule/create',
+  nonEmptyString(body('ruleId')),
+  nonEmptyString(body('projectId')),
+  validateInputs,
+  RulesController.createProjectRule
+);
+
+rulesRouter.get('/rulesetTypes', RulesController.getAllRulesetTypes);
+rulesRouter.post('/ruleset/:rulesetId/delete', RulesController.deleteRuleset);
+rulesRouter.post('/projectRule/:projectRuleId/delete', RulesController.deleteProjectRule);
+
+rulesRouter.get('/rulesets/:rulesetTypeId', RulesController.getRulesetsByRulesetType);
+rulesRouter.post(
+  '/rule/:ruleId/setStatus',
+  body('status').isIn(Object.values(RuleStatus)),
+  validateInputs,
+  RulesController.setRuleStatus
+);
+rulesRouter.post(
+  '/projectRule/:projectRuleId/setStatus',
+  body('status').isIn(Object.values(RuleStatus)),
+  validateInputs,
+  RulesController.setProjectRuleStatus
+);
+rulesRouter.get(
+  '/rule/:ruleId/status-history',
+  query('projectRuleId').optional().isString(),
+  validateInputs,
+  RulesController.getRuleStatusHistory
+);
+rulesRouter.post('/ruleset/:rulesetId/resetStatuses', RulesController.resetRulesetStatuses);
+rulesRouter.post('/ruleset/:rulesetId/project/:projectId/resetStatuses', RulesController.resetProjectRuleStatuses);
+
+rulesRouter.post(
+  '/rule/:ruleId/toggle-team',
+  nonEmptyString(body('teamId')),
+  validateInputs,
+  RulesController.toggleRuleTeam
+);
+
+rulesRouter.post(
+  '/ruleset/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('rulesetTypeId')),
+  body('carNumber').isInt(),
+  body('active').isBoolean(),
+  nonEmptyString(body('fileId')),
+  validateInputs,
+  RulesController.createRuleset
+);
+rulesRouter.post('/rulesetType/:rulesetTypeId/delete', RulesController.deleteRulesetType);
+
+rulesRouter.post(
+  '/ruleset/:rulesetId/update',
+  body('isActive').isBoolean(),
+  nonEmptyString(body('name')),
+  validateInputs,
+  RulesController.updateRuleset
+);
+rulesRouter.get(
+  '/ruleset/:rulesetId/project/:projectId/rules/unassigned',
+  RulesController.getUnassignedRulesForProjectRuleset
+);
+
+rulesRouter.get('/ruleset/:rulesetId/project/:projectId/rules', RulesController.getProjectRules);
+
+rulesRouter.get('/:ruleId/subrules', RulesController.getChildRules);
+rulesRouter.get('/:rulesetId/parentRules', RulesController.getTopLevelRules);
+rulesRouter.get('/:rulesetId/allRules', RulesController.getAllRulesForRuleset);
+rulesRouter.get('/ruleset/:rulesetId', RulesController.getSingleRuleset);
+rulesRouter.get('/:rulesetTypeId', RulesController.getRulesetType);
+
+rulesRouter.post(
+  '/ruleset/:rulesetId/parse',
+  nonEmptyString(body('fileId')),
+  nonEmptyString(body('parserType')), // 'FSAE' or 'FHE'
+  body('firstRulePage').optional().isInt({ min: 1 }),
+  validateInputs,
+  RulesController.parseRuleset
+);
+
+const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
+rulesRouter.post('/upload/file', upload.single('file'), RulesController.uploadRulesetFile);
+
+export default rulesRouter;

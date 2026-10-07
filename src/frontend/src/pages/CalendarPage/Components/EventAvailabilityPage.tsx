@@ -12,18 +12,20 @@ import {
   User,
   UserWithScheduleSettings,
   EventWithMembers,
+  EventStatus,
   isAdmin,
-  EventStatus
+  dbDateToLocalDate
 } from 'shared';
 import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentUser, useUserScheduleSettings, useManyUsersWithScheduleSettings } from '../../../hooks/users.hooks';
-import { useMarkUserConfirmed, useSingleEventWithMembers } from '../../../hooks/calendar.hooks';
+import { useMarkUserConfirmed, useRemindUnconfirmed, useSingleEventWithMembers } from '../../../hooks/calendar.hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { eventNamePipe, fullNamePipe } from '../../../utils/pipes';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
+import NERModal from '../../../components/NERModal';
 import { routes } from '../../../utils/routes';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { deeplyCopy } from 'shared/src/utils';
@@ -32,6 +34,7 @@ import SingleAvailabilityModal from '../../SettingsPage/UserScheduleSettings/Ava
 import AvailabilityEditModal from '../../SettingsPage/UserScheduleSettings/Availability/AvailabilityEditModal';
 import AvailabilityScheduleView from '../AvailabilityScheduleView';
 import ScheduleEventModal from './ScheduleEventModal';
+import { formatHourInCurrentTimeZone, offsetDate, yourTimeZoneInitials } from '../../../utils/design-review.utils';
 
 const isUserOnEvent = (user: User, event: EventWithMembers): boolean => {
   const isDirectMember =
@@ -84,6 +87,7 @@ export const EventAvailabilityPage: React.FC = () => {
   );
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ day: Date; startHour: number; endHour: number } | null>(null);
+  const [confirmRemindOpen, setConfirmRemindOpen] = useState(false);
 
   const {
     data: event,
@@ -123,12 +127,13 @@ export const EventAvailabilityPage: React.FC = () => {
   } = useManyUsersWithScheduleSettings(allRelevantUserIds);
 
   const { mutateAsync: markUserConfirmed } = useMarkUserConfirmed(eventId);
+  const { mutateAsync: remindUnconfirmed, isLoading: isReminding } = useRemindUnconfirmed(eventId);
 
   const displayDate = useMemo(() => {
     if (dateParam) {
-      return new Date(dateParam);
+      return dbDateToLocalDate(new Date(dateParam));
     }
-    return event?.initialDateScheduled ?? new Date();
+    return event?.initialDateScheduled ? dbDateToLocalDate(event.initialDateScheduled) : new Date();
   }, [dateParam, event]);
 
   const isUserMember = useMemo(() => {
@@ -207,6 +212,18 @@ export const EventAvailabilityPage: React.FC = () => {
 
   const handleClose = () => {
     history.push(routes.CALENDAR);
+  };
+
+  const handleRemindConfirm = async () => {
+    try {
+      await remindUnconfirmed();
+      toast.success('Reminders sent to unconfirmed members!');
+      setConfirmRemindOpen(false);
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
   };
 
   const availableUsers = new Map<number, User[]>();
@@ -302,14 +319,27 @@ export const EventAvailabilityPage: React.FC = () => {
           {/* Date/Time display */}
           {(() => {
             const displaySlot = currentHoveredSlot || selectedSlot;
+            const specificTime = () => {
+              const specificDate = new Date(displaySlot!.day);
+              specificDate.setHours(displaySlot!.startHour);
+              return specificDate;
+            };
             if (displaySlot) {
               return (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="h6">
-                    {displaySlot.day.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                    {offsetDate(specificTime()).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                    All times are in local timezone, {yourTimeZoneInitials()}.
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    {formatHour(displaySlot.startHour)} - {formatHour(displaySlot.endHour)}
+                    {formatHourInCurrentTimeZone(formatHour(displaySlot.startHour))} -{' '}
+                    {formatHourInCurrentTimeZone(formatHour(displaySlot.endHour))}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                     {currentAvailableUsers.length}/{relevantUsers.length} available
@@ -323,7 +353,6 @@ export const EventAvailabilityPage: React.FC = () => {
               </Typography>
             );
           })()}
-
           {/* Available/Unavailable columns */}
           <Grid container spacing={2}>
             <Grid item xs={6}>
@@ -390,7 +419,6 @@ export const EventAvailabilityPage: React.FC = () => {
               </Box>
             </Grid>
           </Grid>
-
           {(currentAvailableUsers.length > 0 || currentUnavailableUsers.length > 0) && (
             <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
               <span style={{ color: '#ef4345' }}>Red</span> means that member has not confirmed availability
@@ -400,11 +428,20 @@ export const EventAvailabilityPage: React.FC = () => {
             </Typography>
           )}
 
+          {/* Button to renotify unconfirmed members */}
+          {(isCreator || isAdmin(currentUser.role)) && (
+            <Box sx={{ mt: 3 }}>
+              <NERFailButton fullWidth disabled={isReminding} onClick={() => setConfirmRemindOpen(true)}>
+                {isReminding ? 'Sending Reminders...' : 'Remind Unconfirmed'}
+              </NERFailButton>
+            </Box>
+          )}
+
           {/* Schedule button for creators - only show if event is not already scheduled */}
-          {(isCreator || isAdmin(currentUser.role)) && selectedSlot && event.status !== EventStatus.SCHEDULED && (
+          {(isCreator || isAdmin(currentUser.role)) && selectedSlot && (
             <Box sx={{ mt: 3 }}>
               <NERSuccessButton variant="contained" onClick={handleScheduleClick} fullWidth>
-                Schedule Event
+                {event.status === EventStatus.SCHEDULED ? 'Reschedule Event' : 'Schedule Event'}
               </NERSuccessButton>
             </Box>
           )}
@@ -440,8 +477,22 @@ export const EventAvailabilityPage: React.FC = () => {
           selectedDay={selectedSlot.day}
           startHour={selectedSlot.startHour}
           endHour={selectedSlot.endHour}
+          beingRescheduled={event.status === EventStatus.SCHEDULED}
         />
       )}
+      <NERModal
+        open={confirmRemindOpen}
+        onHide={() => setConfirmRemindOpen(false)}
+        title="Remind Unconfirmed Members"
+        onSubmit={handleRemindConfirm}
+        submitText="Send"
+        cancelText="Cancel"
+        disabled={isReminding}
+      >
+        <Typography>
+          Are you sure you want to send a Slack reminder to all members who have not yet confirmed their availability?
+        </Typography>
+      </NERModal>
     </PageLayout>
   );
 };

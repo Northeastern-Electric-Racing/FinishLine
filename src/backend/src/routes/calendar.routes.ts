@@ -41,6 +41,7 @@ calendarRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('description')),
   nonEmptyString(body('colorHexCode')),
+  body('isNewMemberCalendar').isBoolean(),
   validateInputs,
   CalendarController.createCalendar
 );
@@ -112,6 +113,8 @@ calendarRouter.post(
   body('machineryIds.*').isString(),
   body('workPackageIds').isArray(),
   body('workPackageIds.*').isString(),
+  body('notificationChannelIds').isArray(),
+  body('notificationChannelIds.*').isString(),
   body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),
   isDate(body('initialDateScheduled')),
@@ -146,6 +149,8 @@ calendarRouter.post(
   body('documents').isArray(),
   nonEmptyString(body('documents.*.name')),
   nonEmptyString(body('documents.*.googleFileId')),
+  body('notificationChannelIds').isArray(),
+  body('notificationChannelIds.*').isString(),
   body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),
   validateInputs,
@@ -215,6 +220,8 @@ calendarRouter.get('/event/:eventId', CalendarController.getSingleEvent);
 
 calendarRouter.get('/event-members/:eventId', CalendarController.getSingleEventWithMembers);
 
+calendarRouter.get('/events/new-member', CalendarController.getNewMemberEvents);
+
 calendarRouter.get('/events', CalendarController.getAllEvents);
 
 calendarRouter.get('/event-types', CalendarController.getAllEventTypes);
@@ -244,6 +251,7 @@ calendarRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('description')),
   nonEmptyString(body('colorHexCode')),
+  body('isNewMemberCalendar').isBoolean(),
   validateInputs,
   CalendarController.editCalendar
 );
@@ -300,5 +308,7 @@ calendarRouter.post(
 calendarRouter.get('/calendars', CalendarController.getAllCalendars);
 calendarRouter.post('/events-paginated', CalendarController.getAllEventsPaginated);
 calendarRouter.get('/ics/token', CalendarController.getOrCreateIcsToken);
+
+calendarRouter.post('/event/:eventId/remind-unconfirmed', CalendarController.remindUnconfirmed);
 
 export default calendarRouter;

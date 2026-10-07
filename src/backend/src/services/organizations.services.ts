@@ -1,5 +1,14 @@
 import { Organization } from '@prisma/client';
-import { Link, LinkCreateArgs, ProjectPreview, RoleEnum, isAdmin, isAtLeastRank, User } from 'shared';
+import {
+  Link,
+  LinkCreateArgs,
+  NotificationChannelPreview,
+  ProjectPreview,
+  RoleEnum,
+  isAdmin,
+  isAtLeastRank,
+  User
+} from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
@@ -8,7 +17,7 @@ import {
   HttpException,
   NotFoundException
 } from '../utils/errors.utils.js';
-import { userHasPermission } from '../utils/users.utils.js';
+import { getUserSlackId, userHasPermission } from '../utils/users.utils.js';
 import { createUsefulLinks } from '../utils/organizations.utils.js';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
 import { uploadFile } from '../utils/google-integration.utils.js';
@@ -18,6 +27,8 @@ import { projectPreviewTransformer } from '../transformers/projects.transformer.
 import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { userTransformer } from '../transformers/user.transformer.js';
 import { organizationTransformer } from '../transformers/organizationTransformer.js';
+import { getBotChannels } from '../integrations/slack.js';
+import { isSlackChannelMember } from '../utils/slack.utils.js';
 
 export default class OrganizationsService {
   /**
@@ -302,57 +313,6 @@ export default class OrganizationsService {
   }
 
   /**
-   * Sets the new member image for an organization, User must be admin
-   * @param newMemberImage the image which will be uploaded and have its id stored in the org
-   * @param submitter the user submitting the image
-   * @param organization the organization whose new member image is being set
-   * @returns the updated organization
-   * @throws if the user is not an admin
-   */
-  static async setNewMemberImage(
-    newMemberImage: Express.Multer.File,
-    submitter: User,
-    organization: Organization
-  ): Promise<Organization> {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('update new member image');
-    }
-
-    const newMemberImageData = await uploadFile(newMemberImage);
-
-    // Ensure name exists for frontend display purposes
-    if (!newMemberImageData?.name) {
-      throw new HttpException(500, 'Image Name not found');
-    }
-
-    const updatedOrg = await prisma.organization.update({
-      where: { organizationId: organization.organizationId },
-      data: {
-        newMemberImageId: newMemberImageData.id
-      }
-    });
-
-    return updatedOrg;
-  }
-
-  /**
-   * Gets the new member image of the organization
-   * @param organizationId the id of the organization
-   * @returns the id of the image
-   */
-  static async getNewMemberImage(organizationId: string): Promise<string | null> {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    return organization.newMemberImageId;
-  }
-
-  /**
    * Sets the description of a given organization.
    * @param description the new description
    * @param submitter the user making the change (must be admin)
@@ -494,6 +454,29 @@ export default class OrganizationsService {
     });
 
     return updatedOrg;
+  }
+
+  /**
+   * Gets every Slack channel the bot is currently a member of, each annotated with whether the
+   * given user is also a member of it (public or private). Both are resolved live from Slack,
+   * so channel names and membership always reflect the current state (e.g. a rename or the bot
+   * leaving a channel shows up immediately) rather than a stored snapshot. Channels the user
+   * can't access are still included (with hasAccess: false) so callers can display channels
+   * that are already selected on an event without dropping them.
+   * @param userId the user requesting the available channels
+   * @returns every channel the bot can see, each with its Slack channel id, current name, and the user's access
+   */
+  static async getAvailableNotificationChannelsForUser(userId: string): Promise<NotificationChannelPreview[]> {
+    const slackId = await getUserSlackId(userId);
+    const botChannels = await getBotChannels();
+
+    return Promise.all(
+      botChannels.map(async (channel) => ({
+        slackChannelId: channel.id,
+        name: channel.name,
+        hasAccess: await isSlackChannelMember(slackId, channel.id)
+      }))
+    );
   }
 
   /**

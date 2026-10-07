@@ -20,6 +20,7 @@ import CreateCalendarModal from './Calendar/CreateCalendarModal';
 import EditCalendarModal from './Calendar/EditCalendarModal';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckIcon from '@mui/icons-material/Check';
 import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
 import CreateEventTypeModal from './EventType/CreateEventTypeModal';
@@ -127,11 +128,11 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [openEditCalendar, setOpenEditCalendar] = useState(false);
   const [editingCalendar, setEditingCalendar] = useState<Calendar | undefined>(undefined);
 
-  if (shopsLoading || machinesLoading || eventTypesLoading || calendarsLoading) return <LoadingIndicator />;
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
   if (machinesError) return <ErrorPage message={(machinesErrorMsg as Error).message} />;
   if (eventTypesError) return <ErrorPage message={(eventTypesErrorMsg as Error).message} />;
   if (calendarsError) return <ErrorPage message={(calendarsErrorMsg as Error).message} />;
+  if (shopsLoading || machinesLoading || eventTypesLoading || calendarsLoading) return <LoadingIndicator />;
 
   return (
     <Box padding="5px">
@@ -161,13 +162,16 @@ const AdminToolsScheduleConfig: React.FC = () => {
                   <TableCell sx={{ fontWeight: 600 }} align="center">
                     Color
                   </TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="center">
+                    New Member
+                  </TableCell>
                   <TableCell sx={{ width: 100 }} />
                 </TableRow>
               </TableHead>
               <TableBody>
                 {!calendars || !Array.isArray(calendars) || calendars.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} align="center">
+                    <TableCell colSpan={5} align="center">
                       No calendars yet.
                     </TableCell>
                   </TableRow>
@@ -187,6 +191,9 @@ const AdminToolsScheduleConfig: React.FC = () => {
                             backgroundColor: calendar.color ?? '#EF4345'
                           }}
                         />
+                      </TableCell>
+                      <TableCell align="center">
+                        {calendar.isNewMemberCalendar && <CheckIcon fontSize="small" color="success" />}
                       </TableCell>
                       <TableCell align="center">
                         <Box display="flex" gap={1} justifyContent="center">

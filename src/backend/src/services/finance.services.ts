@@ -536,7 +536,6 @@ export default class FinanceServices {
     const team = await prisma.team.findUnique({
       where: {
         organizationId,
-        dateArchived: null,
         teamId
       },
       include: {
@@ -741,7 +740,6 @@ export default class FinanceServices {
     const team = await prisma.team.findUnique({
       where: {
         organizationId,
-        dateArchived: null,
         teamId
       },
       include: {
@@ -788,7 +786,6 @@ export default class FinanceServices {
       include: {
         teams: {
           where: {
-            dateArchived: null,
             teamTypeId
           },
           include: {

@@ -15,6 +15,8 @@ export interface User {
 
 export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName'>;
 
+export type UserPreviewWithEmail = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email'>;
+
 export type UserWithRole = User & { role: Role };
 
 export type Role = 'APP_ADMIN' | 'ADMIN' | 'HEAD' | 'LEADERSHIP' | 'MEMBER' | 'GUEST';
@@ -48,7 +50,6 @@ export type OrganizationPreview = Pick<
   | 'dateDeleted'
   | 'description'
   | 'applicationLink'
-  | 'newMemberImageId'
   | 'platformDescription'
   | 'platformLogoImageId'
 >;
@@ -63,7 +64,6 @@ export interface Organization {
   treasurer?: User;
   advisor?: User;
   description: string;
-  newMemberImageId?: string;
   applicationLink?: string;
   onboardingText?: string;
   contacts: Contact[];
@@ -117,6 +117,7 @@ export interface UserScheduleSettings {
   personalGmail: string;
   personalZoomLink: string;
   availabilities: Availability[];
+  importedIcsCalendarUrl?: string;
 }
 
 export interface Availability {
@@ -132,6 +133,7 @@ export interface SetUserScheduleSettingsArgs {
   personalGmail?: string;
   personalZoomLink?: string;
   availability: AvailabilityCreateArgs[];
+  importedIcsCalendarUrl?: string;
 }
 
 export interface SetUserScheduleSettingsPayload extends SetUserScheduleSettingsArgs {

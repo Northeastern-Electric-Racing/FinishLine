@@ -13,7 +13,8 @@ import {
   WorkPackagePreview,
   WorkPackageStage,
   User,
-  WorkPackageSelection
+  WorkPackageSelection,
+  WorkPackageDropdownItem
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -25,8 +26,10 @@ import {
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
 import { getWorkPackageQueryArgs, getWorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+import { getWorkPackageDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
 import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer.js';
-import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import { workPackageDropdownTransformer } from '../transformers/dropdown.transformer.js';
+import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils.js';
 import { getWorkPackageChanges } from '../utils/changes.utils.js';
 import {
@@ -106,6 +109,20 @@ export default class WorkPackagesService {
     });
 
     return workPackages.map(workPackagePreviewTransformer);
+  }
+
+  /**
+   * Gets a minimal list of work packages for use in dropdowns (id + name + wbsNum + projectName only).
+   * @param organization the organization the user is in
+   * @returns the work packages for a dropdown
+   */
+  static async getAllWorkPackagesDropdown(organization: Organization): Promise<WorkPackageDropdownItem[]> {
+    const workPackages = await prisma.work_Package.findMany({
+      where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
+      ...getWorkPackageDropdownQueryArgs()
+    });
+
+    return workPackages.map(workPackageDropdownTransformer);
   }
 
   /**
@@ -468,13 +485,7 @@ export default class WorkPackagesService {
       ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
-    // Transform Milliseconds to weeks
-    const timelineImpact =
-      (updatedWorkPackage.startDate.getTime() - originalWorkPackage.startDate.getTime()) / 1000 / 60 / 60 / 24 / 7 +
-      updatedWorkPackage.duration -
-      originalWorkPackage.duration;
-
-    await updateBlocking(updatedWorkPackage, timelineImpact, crId, user);
+    // await updateBlocking(updatedWorkPackage, timelineImpact, crId, user);
 
     // Update any deleted description bullets to have their date deleted as right now
     if (changes.deletedDescriptionBullets.length > 0) {

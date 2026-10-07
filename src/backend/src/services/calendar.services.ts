@@ -15,7 +15,7 @@ import {
   Machinery,
   ScheduleSlot,
   notGuest,
-  isSameDay,
+  isSameDayUTC,
   EventInstance,
   SlackMentionType
 } from 'shared';
@@ -41,7 +41,8 @@ import {
   removeDeletedEventDocuments,
   isUserOnEvent,
   buildScheduledTimesOverlap,
-  findMatchingTimeOfDaySlots
+  findMatchingTimeOfDaySlots,
+  validateNotificationChannelIds
 } from '../utils/calendar.utils.js';
 import {
   AccessDeniedAdminOnlyException,
@@ -267,6 +268,7 @@ export default class CalendarService {
     workPackageIds: string[],
     scheduleSlots: ScheduleSlotCreateArgs[],
     initialDateScheduled: Date | undefined,
+    notificationChannelIds: string[],
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
@@ -353,6 +355,9 @@ export default class CalendarService {
         throw new NotFoundException('Team', missingIds.join(', '));
       }
     }
+
+    // Validate notificationChannelIds
+    await validateNotificationChannelIds(submitter, notificationChannelIds);
 
     // Validate shopIds
     if (shopIds.length > 0) {
@@ -444,6 +449,7 @@ export default class CalendarService {
         teams: {
           connect: teamIds.map((teamId) => ({ teamId }))
         },
+        notificationChannelIds,
         teamTypeId,
         shops: {
           connect: shopIds.map((shopId) => ({ shopId }))
@@ -503,11 +509,7 @@ export default class CalendarService {
 
     if (foundEventType.sendSlackNotifications) {
       const members = await prisma.user.findMany({
-        where: {
-          userId: {
-            in: optionalMemberIds.concat(allRequiredMembers)
-          }
-        }
+        where: { userId: { in: optionalMemberIds.concat(allRequiredMembers) } }
       });
 
       // get the user settings for all the members invited, who are leaderingship
@@ -553,7 +555,8 @@ export default class CalendarService {
         submitter,
         workPackageNames,
         organization.name,
-        { memberSlackIds: memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id), mention }
+        { memberSlackIds: memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id), mention },
+        newEvent.notificationChannelIds
       );
     }
 
@@ -599,6 +602,7 @@ export default class CalendarService {
     machineryIds: string[],
     workPackageIds: string[],
     documents: EventDocumentCreateArgs[],
+    notificationChannelIds: string[],
     teamTypeId?: string,
     questionDocumentLink?: string,
     location?: string,
@@ -684,6 +688,14 @@ export default class CalendarService {
         throw new NotFoundException('Team', missingIds.join(', '));
       }
     }
+
+    // Validate notificationChannelIds - only newly-added channels need to be validated, since a user
+    // without access to a channel already on the event should still be able to save other changes
+    // without being forced to remove it
+    const addedNotificationChannelIds = notificationChannelIds.filter(
+      (id) => !foundEvent.notificationChannelIds.includes(id)
+    );
+    await validateNotificationChannelIds(submitter, addedNotificationChannelIds);
 
     // Validate shopIds
     if (shopIds.length > 0) {
@@ -776,6 +788,7 @@ export default class CalendarService {
         teams: {
           set: teamIds.map((teamId) => ({ teamId }))
         },
+        notificationChannelIds,
         ...(teamTypeId !== undefined && { teamTypeId }),
         status,
         shops: {
@@ -800,15 +813,27 @@ export default class CalendarService {
 
     const edittedEvent = eventTransformer(updatedEvent);
 
-    if (status === Event_Status.SCHEDULED && foundEventType.sendSlackNotifications) {
-      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, edittedEvent);
-    }
-
     if (status === Event_Status.CONFIRMED && foundEventType.sendSlackNotifications) {
       await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
     }
-
     return edittedEvent;
+  }
+
+  static hasScheduleChanged(before: ScheduleSlot[], after: ScheduleSlot[]): boolean {
+    if (before.length !== after.length) return true;
+    for (const scheduleSlot of before) {
+      const afterSlot = after.find((s) => s.scheduleSlotId === scheduleSlot.scheduleSlotId);
+      if (
+        !afterSlot ||
+        scheduleSlot.startTime.getTime() !== afterSlot.startTime.getTime() ||
+        scheduleSlot.endTime.getTime() !== afterSlot.endTime.getTime() ||
+        scheduleSlot.allDay !== afterSlot.allDay
+      ) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -943,7 +968,11 @@ export default class CalendarService {
         userCreatedId: true,
         location: true,
         dateDeleted: true,
-        approved: true
+        approved: true,
+        status: true,
+        title: true,
+        workPackages: true,
+        scheduledTimes: true
       }
     });
 
@@ -1075,8 +1104,22 @@ export default class CalendarService {
     });
 
     if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
+    const updatedEventTransform = eventTransformer(updatedEvent);
 
-    return eventTransformer(updatedEvent);
+    const foundEventType = await prisma.event_Type.findUnique({
+      where: { eventTypeId: updatedEventTransform.eventTypeId }
+    });
+
+    if (
+      updatedEventTransform.status === Event_Status.SCHEDULED &&
+      foundEventType &&
+      foundEventType.sendSlackNotifications &&
+      this.hasScheduleChanged(event.scheduledTimes, updatedEvent.scheduledTimes)
+    ) {
+      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, updatedEventTransform, true);
+    }
+
+    return updatedEventTransform;
   }
 
   /**
@@ -1424,10 +1467,48 @@ export default class CalendarService {
 
     if (!event) throw new NotFoundException('Event', eventId);
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
-
-    // Cannot schedule an already scheduled event
     if (event.status === Event_Status.SCHEDULED) {
-      throw new HttpException(400, 'Event is already scheduled');
+      const timeSlots = await prisma.schedule_Slot.findMany({
+        where: { eventId: event.eventId }
+      });
+
+      // Restore the old scheduled time from confirmed members' availabilities
+      // so they get their time back from the old scheduled event
+      for (const slot of timeSlots) {
+        if (!slot.startTime || !slot.endTime) continue;
+        const startHour = new Date(slot.startTime).getHours();
+        const endHour = new Date(slot.endTime).getHours();
+
+        for (const member of event.confirmedMembers) {
+          if (!member.drScheduleSettings) continue;
+          const existingAvailability = member.drScheduleSettings.availabilities.find((a) =>
+            isSameDayUTC(a.dateSet, slot.startTime)
+          );
+          if (!existingAvailability) continue;
+          // Availability index i represents local hour (10 + i); remove indices that fall within [startHour, endHour)
+          const returnedAvailability = Array.from({ length: endHour - startHour }, (_, i) => startHour + i - 10).filter(
+            (i) => i >= 0
+          );
+
+          const updatedAvailability = [...new Set([...existingAvailability.availability, ...returnedAvailability])].sort(
+            (a, b) => a - b
+          );
+
+          await prisma.availability.update({
+            where: { availabilityId: existingAvailability.availabilityId },
+            data: { availability: updatedAvailability }
+          });
+        }
+      }
+
+      await prisma.event.update({
+        where: { eventId: event.eventId },
+        data: { status: Event_Status.SCHEDULED }
+      });
+
+      await prisma.schedule_Slot.deleteMany({
+        where: { eventId: event.eventId }
+      });
     }
 
     // Only the event creator can schedule the event
@@ -1464,9 +1545,12 @@ export default class CalendarService {
             allDay: false
           }
         },
+
+        initialDateScheduled: event.initialDateScheduled ?? null,
         approved: hasConflict ? Conflict_Status.PENDING : event.approved,
         approvalRequiredFromUserId: hasConflict ? conflictingEvent?.userCreated.userId : event.approvalRequiredFromUserId
       },
+
       ...getEventQueryArgs(organization.organizationId)
     });
 
@@ -1476,7 +1560,7 @@ export default class CalendarService {
     const endHour = endTime.getHours();
     for (const member of event.confirmedMembers) {
       if (!member.drScheduleSettings) continue;
-      const existingAvailability = member.drScheduleSettings.availabilities.find((a) => isSameDay(a.dateSet, startTime));
+      const existingAvailability = member.drScheduleSettings.availabilities.find((a) => isSameDayUTC(a.dateSet, startTime));
       if (!existingAvailability) continue;
       // Availability index i represents local hour (10 + i); remove indices that fall within [startHour, endHour)
       const updatedAvailability = existingAvailability.availability.filter(
@@ -1487,17 +1571,20 @@ export default class CalendarService {
         data: { availability: updatedAvailability }
       });
     }
-
     const { eventTypeId } = updatedEvent;
     const foundEventType = await prisma.event_Type.findUnique({
       where: { eventTypeId }
     });
-
+    const edittedEvent = eventTransformer(updatedEvent);
     if (foundEventType?.sendSlackNotifications) {
-      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, eventTransformer(updatedEvent));
+      await sendEventScheduledSlackNotif(
+        updatedEvent.notificationSlackThreads,
+        eventTransformer(updatedEvent),
+        event.status === Event_Status.SCHEDULED
+      );
     }
 
-    return eventTransformer(updatedEvent);
+    return edittedEvent;
   }
 
   /**
@@ -2061,6 +2148,7 @@ export default class CalendarService {
    * @param name The name of the calendar
    * @param description A summary of what the calendar is used for
    * @param colorHexCode The color of the calendar
+   * @param isNewMemberCalendar Whether this calendar is the org's designated new member calendar
    * @param organization The organization for which the calendar is being created
    *
    * @returns The created calendar
@@ -2072,6 +2160,7 @@ export default class CalendarService {
     name: string,
     description: string,
     colorHexCode: string,
+    isNewMemberCalendar: boolean,
     organization: Organization
   ): Promise<Calendar> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
@@ -2089,15 +2178,30 @@ export default class CalendarService {
       throw new HttpException(409, "Can't have two calendars with the same name");
     }
 
-    const newCalendar = await prisma.calendar.create({
-      data: {
-        name,
-        description,
-        colorHexCode,
-        userCreatedId: submitter.userId,
-        organizationId: organization.organizationId
-      },
-      ...getCalendarQueryArgs(organization.organizationId)
+    const newCalendar = await prisma.$transaction(async (tx) => {
+      if (isNewMemberCalendar) {
+        // Serialize concurrent new-member-calendar toggles for this org: without this, two
+        // near-simultaneous creates could both find zero existing flagged calendars to clear
+        // and both commit with isNewMemberCalendar: true.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`new-member-calendar:${organization.organizationId}`}))`;
+
+        await tx.calendar.updateMany({
+          where: { organizationId: organization.organizationId, isNewMemberCalendar: true },
+          data: { isNewMemberCalendar: false }
+        });
+      }
+
+      return tx.calendar.create({
+        data: {
+          name,
+          description,
+          colorHexCode,
+          isNewMemberCalendar,
+          userCreatedId: submitter.userId,
+          organizationId: organization.organizationId
+        },
+        ...getCalendarQueryArgs(organization.organizationId)
+      });
     });
 
     return calendarTransformer(newCalendar);
@@ -2109,6 +2213,7 @@ export default class CalendarService {
    * @param name The name of the calendar.
    * @param description The summary of what the calendar is used for.
    * @param colorHexCode The color of the calendar.
+   * @param isNewMemberCalendar Whether this calendar is the org's designated new member calendar
    * @param organization The organization for which the calendar is being edited.
    *
    * @returns The edited calendar.
@@ -2124,6 +2229,7 @@ export default class CalendarService {
     name: string,
     description: string,
     colorHexCode: string,
+    isNewMemberCalendar: boolean,
     organization: Organization
   ): Promise<Calendar> {
     const calendar = await prisma.calendar.findUnique({
@@ -2153,14 +2259,27 @@ export default class CalendarService {
       throw new HttpException(409, "Can't have two calendars with the same name");
     }
 
-    const newCalendar = await prisma.calendar.update({
-      where: { calendarId },
-      data: {
-        name,
-        description,
-        colorHexCode
-      },
-      ...getCalendarQueryArgs(organization.organizationId)
+    const newCalendar = await prisma.$transaction(async (tx) => {
+      if (isNewMemberCalendar) {
+        // Same advisory lock as createCalendar — see comment there.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`new-member-calendar:${organization.organizationId}`}))`;
+
+        await tx.calendar.updateMany({
+          where: { organizationId: organization.organizationId, isNewMemberCalendar: true, NOT: { calendarId } },
+          data: { isNewMemberCalendar: false }
+        });
+      }
+
+      return tx.calendar.update({
+        where: { calendarId },
+        data: {
+          name,
+          description,
+          colorHexCode,
+          isNewMemberCalendar
+        },
+        ...getCalendarQueryArgs(organization.organizationId)
+      });
     });
 
     return calendarTransformer(newCalendar);
@@ -2564,6 +2683,34 @@ export default class CalendarService {
     return events.map(eventTransformer);
   }
 
+  /**
+   * Gets all upcoming events on the organization's designated new member calendar.
+   *
+   * @param organization The organization to get new member events for.
+   *
+   * @returns The upcoming events on the org's new member calendar, or an empty array if no calendar is designated.
+   */
+  static async getNewMemberEvents(organization: Organization): Promise<Event[]> {
+    const newMemberCalendar = await prisma.calendar.findFirst({
+      where: {
+        organizationId: organization.organizationId,
+        isNewMemberCalendar: true,
+        dateDeleted: null
+      }
+    });
+
+    if (!newMemberCalendar) return [];
+
+    return CalendarService.getFilteredEvents(
+      {
+        calendarIds: [newMemberCalendar.calendarId],
+        startPeriod: new Date(),
+        endPeriod: new Date(2099, 11, 31)
+      },
+      organization
+    );
+  }
+
   static async getAllShops(organization: Organization): Promise<Shop[]> {
     const shops = await prisma.shop.findMany({
       where: {
@@ -2893,5 +3040,44 @@ export default class CalendarService {
     });
 
     return events.map(eventTransformer);
+  }
+
+  static async remindUnconfirmed(eventId: string, submitter: User, organization: Organization): Promise<void> {
+    const event = await prisma.event.findUnique({
+      where: { eventId },
+      ...getEventWithMembersQueryArgs(organization.organizationId)
+    });
+
+    const hasPermission =
+      (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
+      (!!event && submitter.userId === event.userCreatedId);
+
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only the creator or an admin can send reminders for unconfirmed events');
+    }
+
+    if (!event) throw new NotFoundException('Event', eventId);
+    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    const confirmedMemberIds = new Set(event.confirmedMembers.map((u: { userId: string }) => u.userId));
+
+    const allMembers = [...event.requiredMembers, ...event.optionalMembers];
+    const unconfirmedMembers = allMembers.filter((u: { userId: string }) => !confirmedMemberIds.has(u.userId));
+    const uniqueUnconfirmedIds = [...new Set(unconfirmedMembers.map((u: { userId: string }) => u.userId))];
+
+    if (uniqueUnconfirmedIds.length === 0) return;
+
+    const memberUserSettings = await prisma.user_Settings.findMany({
+      where: { userId: { in: uniqueUnconfirmedIds } }
+    });
+
+    const projects = event.workPackages.map((wp: { project: { wbsElement: { name: string } } }) => wp.project);
+    const projectName = projects.map((p: { wbsElement: { name: string } }) => p.wbsElement.name).join(', ');
+
+    for (const userSetting of memberUserSettings) {
+      if (userSetting.slackId) {
+        await sendSlackEventConfirmNotification(userSetting.slackId, eventId, event.title, projectName, true);
+      }
+    }
   }
 }

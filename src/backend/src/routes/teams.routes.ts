@@ -10,9 +10,11 @@ const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStor
 
 teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/previews/', TeamsController.getAllTeamPreviews);
+teamsRouter.get('/dropdown', TeamsController.getAllTeamsDropdown);
 teamsRouter.get('/archive', TeamsController.getAllArchivedTeams);
 teamsRouter.get('/users-teams', TeamsController.getUsersTeams);
 teamsRouter.get('/my-team-as-head', TeamsController.getMyTeamAsHead);
+teamsRouter.get('/join-requests/mine', TeamsController.getMyTeamJoinRequests);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 
 teamsRouter.post(
@@ -28,6 +30,15 @@ teamsRouter.post(
   nonEmptyString(body('userIds.*')),
   validateInputs,
   TeamsController.setTeamLeads
+);
+teamsRouter.get('/:teamId/join-requests', TeamsController.getPendingTeamJoinRequests);
+teamsRouter.post('/:teamId/join-request', TeamsController.createTeamJoinRequest);
+teamsRouter.post(
+  '/join-request/:teamJoinRequestId/review',
+  body('approved').isBoolean(),
+  body('denialReason').optional().isString(),
+  validateInputs,
+  TeamsController.reviewTeamJoinRequest
 );
 teamsRouter.post(
   '/:teamId/edit-description',

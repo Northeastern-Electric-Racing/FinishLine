@@ -10,6 +10,8 @@ import timezone from 'dayjs/plugin/timezone.js';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+export const EASTERN_TIMEZONE = 'America/New_York';
+
 /**
  * Format a date-only value (deadlines, start dates stored as @db.Date).
  * Uses UTC because @db.Date columns return midnight UTC, and we want the UTC date (which IS the stored date).
@@ -37,17 +39,17 @@ export const formatEventDate = (date: Date, tz?: string): string =>
 /**
  * Format a full timestamp for Slack messages — always Eastern time.
  */
-export const formatForSlack = (date: Date): string => dayjs(date).tz('America/New_York').format('M/D/YYYY [at] h:mm A');
+export const formatForSlack = (date: Date): string => dayjs(date).tz(EASTERN_TIMEZONE).format('M/D/YYYY [at] h:mm A');
 
 /**
  * Format a date for Slack messages — always Eastern time.
  */
-export const formatDateForSlack = (date: Date): string => dayjs(date).tz('America/New_York').format('M/D/YYYY');
+export const formatDateForSlack = (date: Date): string => dayjs(date).tz(EASTERN_TIMEZONE).format('M/D/YYYY');
 
 /**
  * Format a time for Slack messages — always Eastern time.
  */
-export const formatTimeForSlack = (date: Date): string => dayjs(date).tz('America/New_York').format('h:mm A');
+export const formatTimeForSlack = (date: Date): string => dayjs(date).tz(EASTERN_TIMEZONE).format('h:mm A');
 
 /**
  * Convert a Date to YYYY-MM-DD string for sending date-only values to the backend.

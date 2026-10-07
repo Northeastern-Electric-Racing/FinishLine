@@ -23,7 +23,7 @@ const Checklist: React.FC<{
     <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 5, p: 2 }}>
       <Grid container spacing={2}>
         <Grid item xs={12} container justifyContent="space-between" alignItems="center" sx={{ flexGrow: 1 }}>
-          <Typography fontSize="2em" fontWeight="bold" sx={{ marginRight: 2 }}>
+          <Typography variant="h5" sx={{ marginRight: 2 }}>
             {checklistName ?? 'General'} Checklist
           </Typography>
           <Box sx={{ flexGrow: 1, mx: 2 }}>

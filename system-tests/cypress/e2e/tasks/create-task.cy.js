@@ -40,7 +40,7 @@ describe('Create Task', () => {
 
     // Select a project
     cy.get('[role="dialog"]').find('input[placeholder="Select a project"]').click({ force: true });
-    cy.get('[role="listbox"]').contains('Impact Attenuator').first().click();
+    cy.get('[role="listbox"]').find('li').first().click();
 
     // Fill in the title - the title textbox has no placeholder, find it via the Title label
     cy.get('[role="dialog"]').contains('Title').siblings().find('input').first().type(taskTitle, { force: true });
@@ -61,7 +61,7 @@ describe('Create Task', () => {
 
     // Select a project
     cy.get('[role="dialog"]').find('input[placeholder="Select a project"]').click({ force: true });
-    cy.get('[role="listbox"]').contains('Impact Attenuator').first().click();
+    cy.get('[role="listbox"]').find('li').first().click();
 
     // Fill in the title
     cy.get('[role="dialog"]').contains('Title').siblings().find('input').first().type(taskTitle, { force: true });

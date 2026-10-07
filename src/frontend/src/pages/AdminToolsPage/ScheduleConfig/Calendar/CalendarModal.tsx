@@ -1,9 +1,10 @@
-import React from 'react';
-import { Box, FormControl, FormHelperText, Typography, Stack } from '@mui/material';
+import React, { useEffect, useRef } from 'react';
+import { Box, Checkbox, FormControl, FormControlLabel, FormHelperText, Typography } from '@mui/material';
 import NERFormModal from '../../../../components/NERFormModal';
 import ReactHookTextField from '../../../../components/ReactHookTextField';
+import ColorPickerInput from '../../../../components/ColorPickerInput';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import type { Calendar } from 'shared';
@@ -12,29 +13,22 @@ export interface CalendarFormValues {
   name: string;
   description: string;
   colorHexCode: string;
+  isNewMemberCalendar: boolean;
 }
 
 const schema = yup.object({
   name: yup.string().required('Calendar Name is required'),
   description: yup.string().required('Description is required'),
-  colorHexCode: yup.string().required('Color is required')
+  colorHexCode: yup.string().required('Color is required'),
+  isNewMemberCalendar: yup.boolean().required()
 });
 
 export interface BaseCalendarModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: CalendarFormValues) => Promise<Calendar | unknown> | Calendar | unknown;
+  onSubmit: (data: CalendarFormValues) => Promise<Calendar> | Calendar;
   initialValues?: Partial<CalendarFormValues>;
 }
-
-const COLOR_OPTIONS: { label: string; value: string }[] = [
-  { label: 'Red', value: '#EF4444' },
-  { label: 'Orange', value: '#F97316' },
-  { label: 'Green', value: '#22C55E' },
-  { label: 'Blue', value: '#3B82F6' },
-  { label: 'Purple', value: '#A855F7' },
-  { label: 'Navy', value: '#1E3A8A' }
-];
 
 const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubmit, initialValues }) => {
   const toast = useToast();
@@ -48,21 +42,27 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
     formState: { errors }
   } = useForm<CalendarFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: { name: '', description: '', colorHexCode: '' }
+    defaultValues: { name: '', description: '', colorHexCode: '', isNewMemberCalendar: false }
   });
 
-  const frozenValuesRef = React.useRef<CalendarFormValues>({ name: '', description: '', colorHexCode: '' });
+  const frozenValuesRef = useRef<CalendarFormValues>({
+    name: '',
+    description: '',
+    colorHexCode: '',
+    isNewMemberCalendar: false
+  });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       frozenValuesRef.current = {
         name: initialValues?.name ?? '',
         description: initialValues?.description ?? '',
-        colorHexCode: initialValues?.colorHexCode ?? ''
+        colorHexCode: initialValues?.colorHexCode ?? '',
+        isNewMemberCalendar: initialValues?.isNewMemberCalendar ?? false
       };
       reset(frozenValuesRef.current);
     } else {
-      frozenValuesRef.current = { name: '', description: '', colorHexCode: '' };
+      frozenValuesRef.current = { name: '', description: '', colorHexCode: '', isNewMemberCalendar: false };
       reset(frozenValuesRef.current);
     }
   }, [open, initialValues, reset]);
@@ -73,7 +73,7 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
     try {
       await onSubmit(data);
       onClose();
-      reset({ name: '', description: '', colorHexCode: '' });
+      reset({ name: '', description: '', colorHexCode: '', isNewMemberCalendar: false });
     } catch (e: unknown) {
       if (e instanceof Error) toast.error(e.message);
     }
@@ -90,10 +90,10 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
       open={open}
       onHide={() => {
         onClose();
-        reset({ name: '', description: '', colorHexCode: '' });
+        reset({ name: '', description: '', colorHexCode: '', isNewMemberCalendar: false });
       }}
       title={computedTitle}
-      reset={() => reset({ name: '', description: '', colorHexCode: '' })}
+      reset={() => reset({ name: '', description: '', colorHexCode: '', isNewMemberCalendar: false })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId="calendar-form"
@@ -127,31 +127,18 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
           <Typography color="#ef4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
             Color:*
           </Typography>
-          <Stack direction="row" spacing={1.2} flexWrap="wrap">
-            {COLOR_OPTIONS.map((c) => {
-              const isSelected = c.value === selectedColor;
-              return (
-                <Box
-                  key={c.value}
-                  onClick={() => handleColorClick(c.value)}
-                  sx={{
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    px: 1.5,
-                    height: 28,
-                    borderRadius: '999px',
-                    backgroundColor: c.value,
-                    border: isSelected ? '2px solid #ef4345' : '2px solid transparent',
-                    boxSizing: 'border-box',
-                    minWidth: 32
-                  }}
-                />
-              );
-            })}
-          </Stack>
+          <ColorPickerInput selectedColor={selectedColor} onColorClick={handleColorClick} />
           <FormHelperText error>{errors.colorHexCode?.message}</FormHelperText>
+        </FormControl>
+
+        <FormControl fullWidth>
+          <Controller
+            control={control}
+            name="isNewMemberCalendar"
+            render={({ field: { onChange, value } }) => (
+              <FormControlLabel control={<Checkbox checked={value} onChange={onChange} />} label="New member calendar" />
+            )}
+          />
         </FormControl>
       </Box>
     </NERFormModal>

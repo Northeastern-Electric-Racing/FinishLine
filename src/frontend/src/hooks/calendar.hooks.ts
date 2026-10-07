@@ -35,6 +35,7 @@ import {
   markUserConfirmed,
   getSingleEvent,
   getAllEvents,
+  getNewMemberEvents,
   deleteEvent,
   setEventStatus,
   getAllEventTypes,
@@ -52,7 +53,8 @@ import {
   postDeleteScheduleSlot,
   scheduleEvent,
   getAllEventsPaginated,
-  getIcsToken
+  getIcsToken,
+  remindUnconfirmed
 } from '../apis/calendar.api';
 import { useCurrentUser } from './users.hooks';
 import { PDFDocument } from 'pdf-lib';
@@ -65,7 +67,6 @@ const SHOP_KEY = ['shops'] as const;
 const CALENDAR_KEY = ['calendars'] as const;
 export const EVENT_TYPE_KEY = ['event-types'] as const;
 export const EVENT_KEY = ['events'] as const;
-
 export interface EventCreateArgs {
   title: string;
   eventTypeId: string;
@@ -81,6 +82,7 @@ export interface EventCreateArgs {
   documentIds: string[];
   questionDocument?: string;
   description?: string;
+  notificationChannelIds: string[];
   initialDateScheduled: Date;
   scheduleSlots: ScheduleSlotCreateArgs[];
   mention?: SlackMentionType;
@@ -101,6 +103,7 @@ export interface EditEventArgs {
   documents: Array<{ name: string; googleFileId: string }>;
   questionDocumentLink?: string;
   description?: string;
+  notificationChannelIds: string[];
 }
 
 export interface EditScheduleSlotArgs {
@@ -125,7 +128,11 @@ export const useAllCalendars = () =>
 
 export const useCreateCalendar = () => {
   const qc = useQueryClient();
-  return useMutation<Calendar, Error, { name: string; description: string; colorHexCode: string }>(
+  return useMutation<
+    Calendar,
+    Error,
+    { name: string; description: string; colorHexCode: string; isNewMemberCalendar: boolean }
+  >(
     async (payload) => {
       const { data } = await postCreateCalendar(payload);
       return data;
@@ -140,7 +147,11 @@ export const useCreateCalendar = () => {
 
 export const useEditCalendar = (calendarId: string) => {
   const qc = useQueryClient();
-  return useMutation<Calendar, Error, { name: string; description: string; colorHexCode: string }>(
+  return useMutation<
+    Calendar,
+    Error,
+    { name: string; description: string; colorHexCode: string; isNewMemberCalendar: boolean }
+  >(
     async (payload) => {
       const { data } = await postEditCalendar(calendarId, payload);
       return data;
@@ -337,6 +348,21 @@ export const useMarkUserConfirmed = (id: string) => {
   );
 };
 
+export const useRemindUnconfirmed = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error>(
+    ['events', 'remind-unconfirmed'],
+    async () => {
+      await remindUnconfirmed(id);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(EVENT_KEY);
+      }
+    }
+  );
+};
+
 export const useDeleteCalendar = () => {
   const qc = useQueryClient();
   return useMutation<{ calendarId: string }, Error, string>(
@@ -389,6 +415,13 @@ export const useConflictingEvents = (ids: string[]) => {
 export const useAllEvents = () => {
   return useQuery<Event[], Error>(EVENT_KEY, async () => {
     const { data } = await getAllEvents();
+    return data;
+  });
+};
+
+export const useNewMemberEvents = () => {
+  return useQuery<Event[], Error>(['events', 'new-member'], async () => {
+    const { data } = await getNewMemberEvents();
     return data;
   });
 };

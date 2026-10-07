@@ -14,21 +14,27 @@ const exampleConfluenceLinkType: LinkType = {
   name: 'Confluence',
   iconName: 'confluence',
   required: true,
-  isOnGuestHomePage: false
+  isOnGuestHomePage: false,
+  isOnNewMemberDashboard: false,
+  isOnOnboardingDashboard: false
 };
 
 const exampleBomLinkType: LinkType = {
   name: 'BOM',
   iconName: 'bom',
   required: true,
-  isOnGuestHomePage: false
+  isOnGuestHomePage: false,
+  isOnNewMemberDashboard: false,
+  isOnOnboardingDashboard: false
 };
 
 const exampleGDriveLinkType: LinkType = {
   name: 'Google Drive',
   iconName: 'google-drive',
   required: true,
-  isOnGuestHomePage: false
+  isOnGuestHomePage: false,
+  isOnNewMemberDashboard: false,
+  isOnOnboardingDashboard: false
 };
 
 const exampleLinks: Link[] = [

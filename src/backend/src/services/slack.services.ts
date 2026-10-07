@@ -1,10 +1,23 @@
-import { getChannelName, getUserName } from '../integrations/slack.js';
+import { Organization } from '@prisma/client';
+import { getChannelInfo, getChannelName, getUserName, getWorkspaceId, postMessageToChannel } from '../integrations/slack.js';
 import AnnouncementService from './announcement.services.js';
 import { Announcement, ReimbursementStatusType } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { blockToMentionedUsers, blockToString } from '../utils/slack.utils.js';
-import { InvalidOrganizationException, NotFoundException } from '../utils/errors.utils.js';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  HttpException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../utils/errors.utils.js';
 import ReimbursementRequestService from './reimbursement-requests.services.js';
+import ChangeRequestsService from './change-requests.services.js';
+import TeamsService from './teams.services.js';
+import { userTransformer } from '../transformers/user.transformer.js';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { isAdmin, User } from 'shared';
+import { userHasPermission } from '../utils/users.utils.js';
 
 /**
  * Represents a slack event for a message in a channel.
@@ -125,6 +138,20 @@ export interface SaboSubmissionActionValue {
   reimbursementRequestId: string;
 }
 
+/**
+ * Represents the parsed value from a CR approval action
+ */
+export interface CrApprovalActionValue {
+  crId: string;
+}
+
+/**
+ * Represents the parsed value from a team join request approval action
+ */
+export interface TeamJoinRequestApprovalActionValue {
+  teamJoinRequestId: string;
+}
+
 export default class SlackServices {
   /**
    * Handles the Slack button click for marking a reimbursement request as SABO submitted.
@@ -200,6 +227,174 @@ export default class SlackServices {
   }
 
   /**
+   * Approves a change request from a Slack interactive button click.
+   * Auth (admin/head/requested-reviewer) is enforced inside reviewChangeRequest.
+   *
+   * @param userSlackId Slack id of the user who clicked the button
+   * @param crId the change request to approve
+   * @param respond Bolt response callback bound to this interaction's response_url
+   */
+  static async handleApproveCRAction(
+    userSlackId: string,
+    crId: string,
+    respond: (msg: {
+      response_type?: 'ephemeral';
+      text?: string;
+      replace_original?: boolean;
+      delete_original?: boolean;
+    }) => Promise<unknown>
+  ): Promise<void> {
+    const cr = await prisma.change_Request.findUnique({
+      where: {
+        crId
+      }
+    });
+
+    if (!cr) {
+      throw new NotFoundException('Change Request', crId);
+    }
+
+    const reviewer = await prisma.user.findFirst({
+      where: {
+        userSettings: {
+          slackId: userSlackId
+        }
+      },
+      ...getUserQueryArgs(cr.organizationId)
+    });
+
+    if (!reviewer) {
+      console.error('User not found for slack ID:', userSlackId);
+      throw new NotFoundException('User', userSlackId);
+    }
+
+    const org = await prisma.organization.findUnique({
+      where: {
+        organizationId: cr.organizationId
+      }
+    });
+
+    if (!org) {
+      throw new NotFoundException('Organization', cr.organizationId);
+    }
+
+    const reviewerShared: User = userTransformer(reviewer);
+
+    try {
+      await ChangeRequestsService.reviewChangeRequest(reviewerShared, crId, true, org);
+      await respond({
+        replace_original: true,
+        text: `✅ CR #${cr.identifier} approved by ${reviewer.firstName} ${reviewer.lastName}.`
+      });
+    } catch (error) {
+      if (error instanceof AccessDeniedException) {
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ You're not authorized to approve this CR. Only admins, team heads, or requested reviewers can approve.`
+        });
+      } else if (error instanceof NotFoundException) {
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ ${error.message}`
+        });
+      } else if (error instanceof HttpException) {
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ ${error.message}`
+        });
+      } else {
+        const msg = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error approving CR via Slack:', error);
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ An unexpected error occurred while approving this CR.\n\n*Error:* ${msg}`
+        });
+      }
+    }
+  }
+
+  /**
+   * Approves a team join request from a Slack interactive button click.
+   * Auth (admin/head/lead) is enforced inside reviewTeamJoinRequest. Unlike handleApproveCRAction,
+   * this catches lookup failures too (not just the review call itself) since there's no message
+   * thread to fall back on for error reporting -- respond() is the only channel available.
+   *
+   * @param userSlackId Slack id of the user who clicked the button
+   * @param teamJoinRequestId the team join request to approve
+   * @param respond Bolt response callback bound to this interaction's response_url
+   */
+  static async handleApproveTeamJoinRequestAction(
+    userSlackId: string,
+    teamJoinRequestId: string,
+    respond: (msg: {
+      response_type?: 'ephemeral';
+      text?: string;
+      replace_original?: boolean;
+      delete_original?: boolean;
+    }) => Promise<unknown>
+  ): Promise<void> {
+    try {
+      const teamJoinRequest = await prisma.team_Join_Request.findUnique({
+        where: { teamJoinRequestId },
+        include: { team: true }
+      });
+      if (!teamJoinRequest) {
+        throw new NotFoundException('Team Join Request', teamJoinRequestId);
+      }
+
+      const reviewer = await prisma.user.findFirst({
+        where: {
+          userSettings: {
+            slackId: userSlackId
+          },
+          roles: { some: { organizationId: teamJoinRequest.team.organizationId } }
+        },
+        ...getUserQueryArgs(teamJoinRequest.team.organizationId)
+      });
+
+      if (!reviewer) {
+        console.error('User not found for slack ID:', userSlackId);
+        throw new NotFoundException('User', userSlackId);
+      }
+
+      const org = await prisma.organization.findUnique({
+        where: { organizationId: teamJoinRequest.team.organizationId }
+      });
+
+      if (!org) {
+        throw new NotFoundException('Organization', teamJoinRequest.team.organizationId);
+      }
+
+      const reviewerShared: User = userTransformer(reviewer);
+      const approved = await TeamsService.reviewTeamJoinRequest(reviewerShared, teamJoinRequestId, true, undefined, org);
+
+      await respond({
+        replace_original: true,
+        text: `✅ ${approved.user.firstName} ${approved.user.lastName}'s request to join ${teamJoinRequest.team.teamName} was approved by ${reviewer.firstName} ${reviewer.lastName}.`
+      });
+    } catch (error) {
+      if (error instanceof AccessDeniedException) {
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ You're not authorized to approve this request. Only admins or the team head can approve.`
+        });
+      } else if (error instanceof NotFoundException || error instanceof HttpException) {
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ ${error.message}`
+        });
+      } else {
+        const msg = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error approving team join request via Slack:', error);
+        await respond({
+          response_type: 'ephemeral',
+          text: `❌ An unexpected error occurred while approving this request.\n\n*Error:* ${msg}`
+        });
+      }
+    }
+  }
+
+  /**
    * Given a slack event representing a message in a channel,
    * make the appropriate announcement change in prisma.
    * @param event the slack event that will be processed
@@ -219,6 +414,8 @@ export default class SlackServices {
         case 'message_deleted':
           //delete the message using the client_msg_id
           eventMessage = (event as SlackDeletedMessage).previous_message;
+          // bot and API posted messages have no client_msg_id, so they were never stored as announcements
+          if (!eventMessage.client_msg_id) return;
           return AnnouncementService.deleteAnnouncement(eventMessage.client_msg_id, organizationId);
         case 'message_changed':
           eventMessage = (event as SlackUpdatedMessage).message;
@@ -297,5 +494,48 @@ export default class SlackServices {
       slackChannelName,
       organizationId
     );
+  }
+
+  /**
+   * Sends a plain text message from the bot to a slack channel on behalf of an admin.
+   * Slack's control characters are escaped so the message is posted as written, meaning it
+   * cannot ping @channel/@here, mention users, or embed formatted links.
+   *
+   * @param userId the id of the user sending the message
+   * @param organization the organization the user is sending the message from
+   * @param channelId the id of the slack channel to send the message to
+   * @param message the text of the message
+   * @returns the id and name of the channel and the timestamp of the sent message
+   * @throws if the user is not an admin, the organization is not linked to the bot's workspace, or the channel is missing, archived, or does not contain the bot
+   */
+  static async sendMessageToChannel(
+    userId: string,
+    organization: Organization,
+    channelId: string,
+    message: string
+  ): Promise<{ channelId: string; channelName: string; ts: string }> {
+    if (!(await userHasPermission(userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('send slack messages');
+    }
+
+    // the bot lives in a single workspace, so only the organization linked to it may post there
+    if (!organization.slackWorkspaceId || organization.slackWorkspaceId !== (await getWorkspaceId())) {
+      throw new AccessDeniedException("this organization is not linked to the bot's slack workspace");
+    }
+
+    const channel = await getChannelInfo(channelId);
+    if (!channel) throw new NotFoundException('Slack Channel', channelId);
+    if (channel.isArchived) throw new HttpException(400, `Slack channel #${channel.name} is archived`);
+    if (!channel.isMember) {
+      throw new HttpException(
+        400,
+        `The FinishLine bot is not a member of #${channel.name}, add it to the channel before sending messages there`
+      );
+    }
+
+    const escapedMessage = message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const { ts } = await postMessageToChannel(channelId, escapedMessage);
+
+    return { channelId, channelName: channel.name, ts };
   }
 }

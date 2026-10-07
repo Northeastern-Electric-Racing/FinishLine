@@ -36,5 +36,15 @@ output "webhook_url" {
   sensitive   = true
 }
 
+output "certificate_verification_dns_record" {
+  description = "DNS record string Amplify needs added to Route53 for certificate verification"
+  value       = var.domain_name != "" ? aws_amplify_domain_association.main[0].certificate_verification_dns_record : null
+}
+
+output "subdomain_dns_record" {
+  description = "DNS record string Amplify needs added to Route53 to route the custom domain"
+  value       = var.domain_name != "" ? tolist(aws_amplify_domain_association.main[0].sub_domain)[0].dns_record : null
+}
+
 # Data source to get current region
 data "aws_region" "current" {}

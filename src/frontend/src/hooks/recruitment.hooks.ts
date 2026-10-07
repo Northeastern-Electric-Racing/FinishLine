@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Milestone, FrequentlyAskedQuestion, GuestDefinition, GuestDefinitionType } from 'shared';
 import {
-  createFaq,
+  createRecruitingFaq,
+  createNewMemberFaq,
   createGuestDefinition,
   createMilestone,
   deleteFaq,
@@ -11,14 +12,23 @@ import {
   editGuestDefinition,
   editMilestone,
   getAllFaqs,
+  getRecruitingFaqs,
+  getNewMemberFaqs,
   getAllGuestDefinitions,
-  getAllMilestones
+  getAllMilestones,
+  getNewMemberMilestones,
+  getRecruitingMilestones
 } from '../apis/recruitment.api';
 
 export interface MilestonePayload {
   name: string;
   description: string;
   dateOfEvent: Date;
+}
+
+export interface MilestoneCreatePayload extends MilestonePayload {
+  isOnNewMemberDashboard: boolean;
+  isOnRecruitingDashboard: boolean;
 }
 
 export interface FaqPayload {
@@ -43,9 +53,23 @@ export const useAllMilestones = () => {
   });
 };
 
+export const useNewMemberMilestones = () => {
+  return useQuery<Milestone[], Error>(['milestones', 'new-member'], async () => {
+    const { data } = await getNewMemberMilestones();
+    return data;
+  });
+};
+
+export const useRecruitingMilestones = () => {
+  return useQuery<Milestone[], Error>(['milestones', 'recruiting'], async () => {
+    const { data } = await getRecruitingMilestones();
+    return data;
+  });
+};
+
 export const useCreateMilestone = () => {
   const queryClient = useQueryClient();
-  return useMutation<Milestone, Error, MilestonePayload>(
+  return useMutation<Milestone, Error, MilestoneCreatePayload>(
     ['milestones', 'create'],
     async (payload) => {
       const { data } = await createMilestone(payload);
@@ -77,7 +101,7 @@ export const useEditMilestone = (id: string) => {
 
 export const useDeleteMilestone = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, string>(
     ['milestones', 'delete'],
     async (milestoneId: string) => {
       const { data } = await deleteMilestone(milestoneId);
@@ -98,12 +122,42 @@ export const useAllFaqs = () => {
   });
 };
 
-export const useCreateFaq = () => {
+export const useRecruitingFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['faqs', 'recruiting'], async () => {
+    const { data } = await getRecruitingFaqs();
+    return data;
+  });
+};
+
+export const useNewMemberFaqs = () => {
+  return useQuery<FrequentlyAskedQuestion[], Error>(['faqs', 'new-member'], async () => {
+    const { data } = await getNewMemberFaqs();
+    return data;
+  });
+};
+
+export const useCreateRecruitingFaq = () => {
   const queryClient = useQueryClient();
   return useMutation<FrequentlyAskedQuestion, Error, FaqPayload>(
-    ['faqs', 'create'],
+    ['faqs', 'recruiting', 'create'],
     async (payload) => {
-      const { data } = await createFaq(payload);
+      const { data } = await createRecruitingFaq(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['faqs']);
+      }
+    }
+  );
+};
+
+export const useCreateNewMemberFaq = () => {
+  const queryClient = useQueryClient();
+  return useMutation<FrequentlyAskedQuestion, Error, FaqPayload>(
+    ['faqs', 'new-member', 'create'],
+    async (payload) => {
+      const { data } = await createNewMemberFaq(payload);
       return data;
     },
     {
@@ -132,7 +186,7 @@ export const useEditFaq = (id: string) => {
 
 export const useDeleteFAQ = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, string>(
     ['faqs', 'delete'],
     async (faqId: string) => {
       const { data } = await deleteFaq(faqId);
@@ -155,7 +209,7 @@ export const useAllGuestDefinitions = () => {
 
 export const useDeleteGuestDefinition = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, string>(
     ['guestdefinitions', 'delete'],
     async (definitionId: string) => {
       const { data } = await deleteGuestDefinition(definitionId);

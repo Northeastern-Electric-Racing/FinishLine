@@ -4,6 +4,8 @@ import type { EventInstance, EventType, EventDocumentUploadArgs } from 'shared';
 import { convertEventToFormValues } from '../../../utils/calendar.utils';
 import { useEditEvent, useEditScheduleSlot, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
+import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 export interface EditEventModalProps {
   open: boolean;
@@ -14,9 +16,23 @@ export interface EditEventModalProps {
 
 const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, eventTypes }) => {
   const toast = useToast();
-  const { mutateAsync: editEvent } = useEditEvent(event.eventId);
-  const { mutateAsync: editScheduleSlot } = useEditScheduleSlot(event.eventId, event.scheduleSlotId);
+  const {
+    isLoading: editEventIsLoading,
+    isError: editEventIsError,
+    error: editEventError,
+    mutateAsync: editEvent
+  } = useEditEvent(event.eventId);
   const { mutateAsync: uploadDocuments } = useUploadManyDocuments();
+  const {
+    isLoading: editScheduleSlotIsLoading,
+    isError: editScheduleSlotIsError,
+    error: editScheduleSlotError,
+    mutateAsync: editScheduleSlot
+  } = useEditScheduleSlot(event.eventId, event.scheduleSlotId);
+
+  if (editEventIsError) return <ErrorPage message={editEventError?.message} />;
+  if (editScheduleSlotIsError) return <ErrorPage message={editScheduleSlotError?.message} />;
+  if (editEventIsLoading || editScheduleSlotIsLoading) return <LoadingIndicator />;
 
   const initialValues = convertEventToFormValues(event);
 
@@ -34,8 +50,6 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
         }))
       };
 
-      const editedEvent = await editEvent(editArgs);
-
       // If there are schedule slot changes, update the schedule slot separately
       if (editScheduleSlotArgs) {
         await editScheduleSlot({
@@ -45,6 +59,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
           editAllInSeries: editScheduleSlotArgs.editAllInSeries
         });
       }
+
+      const editedEvent = await editEvent(editArgs);
 
       // Handle document uploads
       const filesToUpload = documentFiles

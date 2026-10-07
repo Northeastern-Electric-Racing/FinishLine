@@ -2,6 +2,8 @@ import { Prisma } from '@prisma/client';
 
 export type UserQueryArgs = ReturnType<typeof getUserQueryArgs>;
 
+export type UserPreviewWithEmailQueryArgs = ReturnType<typeof getUserPreviewWithEmailQueryArgs>;
+
 export type UserWithSettingsQueryArgs = ReturnType<typeof getUserWithSettingsQueryArgs>;
 
 export type UserScheduleSettingsQueryArgs = ReturnType<typeof getUserScheduleSettingsQueryArgs>;
@@ -24,6 +26,16 @@ export const getUserPreviewQueryArgs = () =>
       userId: true,
       firstName: true,
       lastName: true
+    }
+  });
+
+export const getUserPreviewWithEmailQueryArgs = () =>
+  Prisma.validator<Prisma.UserDefaultArgs>()({
+    select: {
+      userId: true,
+      firstName: true,
+      lastName: true,
+      email: true
     }
   });
 

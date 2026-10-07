@@ -42,6 +42,25 @@ variable "log_retention_days" {
 }
 
 variable "sns_topic_arn" {
-  description = "ARN of the SNS topic for alarm notifications"
+  description = "ARN of the SNS topic for alarm notifications. Leave empty to create alarms without notifications (e.g. for a temporary environment nobody should get paged for)."
   type        = string
+  default     = ""
+}
+
+variable "alb_target_group_arn_suffix" {
+  description = "ALB target group ARN suffix (targetgroup/name/id) for healthy host metrics. Leave empty to skip the app health widget."
+  type        = string
+  default     = ""
+}
+
+variable "rds_vcpu_count" {
+  description = "vCPU count of the RDS instance class, drawn as the saturation line on the DB Load graph (db.t4g.medium = 2)"
+  type        = number
+  default     = 2
+}
+
+variable "extra_alarm_arns" {
+  description = "ARNs of alarms defined outside this module (e.g. in the RDS module) to show in the dashboard alarm status widget"
+  type        = list(string)
+  default     = []
 }

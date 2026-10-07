@@ -9,9 +9,18 @@ interface CreateLinkTypeModalProps {
   handleClose: () => void;
   linkTypes: LinkType[];
   isOnGuestHomePage?: boolean;
+  isOnNewMemberDashboard?: boolean;
+  isOnOnboardingDashboard?: boolean;
 }
 
-const CreateLinkTypeModal = ({ open, handleClose, linkTypes, isOnGuestHomePage }: CreateLinkTypeModalProps) => {
+const CreateLinkTypeModal = ({
+  open,
+  handleClose,
+  linkTypes,
+  isOnGuestHomePage,
+  isOnNewMemberDashboard,
+  isOnOnboardingDashboard
+}: CreateLinkTypeModalProps) => {
   const { isLoading, isError, error, mutateAsync } = useCreateLinkType();
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -24,6 +33,8 @@ const CreateLinkTypeModal = ({ open, handleClose, linkTypes, isOnGuestHomePage }
       onSubmit={mutateAsync}
       linkTypes={linkTypes}
       isOnGuestHomePage={isOnGuestHomePage}
+      isOnNewMemberDashboard={isOnNewMemberDashboard}
+      isOnOnboardingDashboard={isOnOnboardingDashboard}
     />
   );
 };

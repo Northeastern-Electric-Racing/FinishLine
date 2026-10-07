@@ -22,10 +22,13 @@ const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
 const currentUserSecureSettings = () => `${users()}/secure-settings/current-user`;
 const userSecureSettingsSet = () => `${users()}/secure-settings/set`;
+const currentUserApiToken = () => `${users()}/api-token/current-user`;
+const generateApiToken = () => `${users()}/api-token/generate`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
+const userScheduleSettingsBusyTimes = (id: string) => `${usersById(id)}/schedule-settings/busy-times`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
 const manyUserTasks = () => `${users()}/tasks/get-many`;
@@ -97,7 +100,10 @@ const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assigne
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
-const tasksByWbsNum = (wbsNum: string) => `${tasks()}/by-wbs/${wbsNum}`;
+const taskLabels = () => `${tasks()}/task-labels`;
+const taskLabelCreate = () => `${taskLabels()}/create`;
+const taskLabelEdit = (taskLabelId: string) => `${taskLabels()}/${taskLabelId}/edit`;
+const taskLabelDelete = (taskLabelId: string) => `${taskLabels()}/${taskLabelId}/delete`;
 
 /**************** Work Packages Endpoints ****************/
 const workPackages = (queryParams?: { [field: string]: string }) => {
@@ -162,6 +168,10 @@ const teamTypesCreate = () => `${teamTypes()}/create`;
 const teamTypeEdit = (id: string) => `${teamTypes()}/${id}/edit`;
 const teamTypeSetImage = (id: string) => `${teamTypes()}/${id}/set-image`;
 const myTeamAsHead = () => `${teams()}/my-team-as-head`;
+const myTeamJoinRequests = () => `${teams()}/join-requests/mine`;
+const teamsPendingJoinRequests = (id: string) => `${teamsById(id)}/join-requests`;
+const teamsCreateJoinRequest = (id: string) => `${teamsById(id)}/join-request`;
+const teamsReviewJoinRequest = (teamJoinRequestId: string) => `${teams()}/join-request/${teamJoinRequestId}/review`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -372,8 +382,6 @@ const organizationsSetPlatformDescription = () => `${organizations()}/platform-d
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
-const organizationsNewMemberImage = () => `${organizations()}/new-member-image`;
-const organizationsSetNewMemberImage = () => `${organizations()}/new-member-image/update`;
 const organizationsPlatformLogoImage = () => `${organizations()}/platform-logo`;
 const organizationsSetPlatformLogoImage = () => `${organizationsPlatformLogoImage()}/update`;
 const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
@@ -383,19 +391,32 @@ const organizationsSetPartReviewGuideLink = () => `${organizations()}/part-revie
 const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizations()}/sponsorshipChannelId/set`;
 const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
 const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
+const organizationsNotificationChannels = () => `${organizations()}/notification-channels`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
+const carEdit = (id: string) => `${cars()}/${id}/edit`;
+
+// dropdown endpoints — minimal payloads for populating select menus
+const projectsDropdown = () => `${projects()}/dropdown`;
+const workPackagesDropdown = () => `${workPackages()}/dropdown`;
+const membersDropdown = () => `${users()}/members/dropdown`;
+const teamsDropdown = () => `${teams()}/dropdown`;
 
 /************** Recruitment Endpoints ***************/
 const recruitment = () => `${API_URL}/recruitment`;
 const allMilestones = () => `${recruitment()}/milestones`;
+const newMemberMilestones = () => `${recruitment()}/milestones/new-member`;
+const recruitingMilestones = () => `${recruitment()}/milestones/recruiting`;
 const milestoneCreate = () => `${recruitment()}/milestone/create`;
 const milestoneEdit = (id: string) => `${recruitment()}/milestone/${id}/edit`;
 const milestoneDelete = (id: string) => `${recruitment()}/milestone/${id}/delete`;
 const allFaqs = () => `${recruitment()}/faqs`;
-const faqCreate = () => `${recruitment()}/faq/create`;
+const recruitingFaqs = () => `${recruitment()}/faqs/recruiting`;
+const newMemberFaqs = () => `${recruitment()}/faqs/new-member`;
+const recruitingFaqCreate = () => `${recruitment()}/faq/recruiting/create`;
+const newMemberFaqCreate = () => `${recruitment()}/faq/new-member/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 const allGuestDefinitions = () => `${recruitment()}/guestdefinitions`;
@@ -447,10 +468,48 @@ const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
   (endDate ? `end=${encodeURIComponent(new Date(endDate).toISOString())}` : '');
 const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 
+/**************** Rules Endpoints ****************/
+const rules = () => `${API_URL}/rules`;
+const rulesTopLevel = (rulesetId: string) => `${rules()}/${rulesetId}/parentRules`;
+const rulesAllRules = (rulesetId: string) => `${rules()}/${rulesetId}/allRules`;
+const rulesToggleTeam = (ruleId: string) => `${rules()}/rule/${ruleId}/toggle-team`;
+const rulesChildRules = (ruleId: string) => `${rules()}/${ruleId}/subrules`;
+const rulesetTypes = () => `${rules()}/rulesetTypes`;
+const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
+const ruleset = () => `${rules()}/ruleset`;
+const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
+const rulesetsCreate = () => `${ruleset()}/create`;
+const rulesetById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
+const ruleCreate = () => `${rules()}/rule/create`;
+const parseRuleset = (rulesetId: string) => `${rulesetById(rulesetId)}/parse`;
+const uploadRulesetFile = () => `${rules()}/upload/file`;
+const rulesGetActiveRuleset = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/active`;
+const rulesGetProjectRules = (rulesetId: string, projectId: string) =>
+  `${rules()}/ruleset/${rulesetId}/project/${projectId}/rules`;
+const rulesGetUnassignedRulesForRuleset = (rulesetId: string, projectId: string) =>
+  `${rules()}/ruleset/${rulesetId}/project/${projectId}/rules/unassigned`;
+const rulesCreateProjectRule = () => `${rules()}/projectRule/create`;
+const rulesDeleteProjectRule = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/delete`;
+const rulesSetRuleStatus = (ruleId: string) => `${rules()}/rule/${ruleId}/setStatus`;
+const rulesSetProjectRuleStatus = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/setStatus`;
+const rulesGetStatusHistory = (ruleId: string) => `${rules()}/rule/${ruleId}/status-history`;
+const rulesResetRulesetStatuses = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}/resetStatuses`;
+const rulesResetProjectRuleStatuses = (rulesetId: string, projectId: string) =>
+  `${rules()}/ruleset/${rulesetId}/project/${projectId}/resetStatuses`;
+const rulesEdit = (ruleId: string) => `${rules()}/rule/${ruleId}/edit`;
+const rulesDelete = (ruleId: string) => `${rules()}/rule/${ruleId}/delete`;
+const rulesAddReferences = (ruleId: string) => `${rules()}/rule/${ruleId}/references/add`;
+const rulesRemoveReferences = (ruleId: string) => `${rules()}/rule/${ruleId}/references/delete`;
+const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
+const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
+const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
+const rulesetType = (rulesetTypeId: string) => `${rules()}/${rulesetTypeId}`;
+const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
 /**************** Calendar Endpoints ****************/
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
 const calendarEvents = () => `${calendar()}/events`;
+const calendarNewMemberEvents = () => `${calendar()}/events/new-member`;
 const calendarEventsPaginated = () => `${calendar()}/events-paginated`;
 const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
@@ -470,6 +529,7 @@ const calendarCreateEventType = () => `${calendar()}/event-type/create`;
 const calendarEditEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/edit`;
 const calendarDeleteEventType = (eventTypeId: string) => `${calendar()}/event-type/${eventTypeId}/delete`;
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
+const calendarEventRemindUnconfirmed = (id: string) => `${calendar()}/event/${id}/remind-unconfirmed`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
 const calendarGetSingleEventWithMembers = (id: string) => `${calendar()}/event-members/${id}`;
 const calendarGetConflictingEvent = (id: string) => `${calendar()}/event/${id}/conflict`;
@@ -509,6 +569,13 @@ const attendanceGetOngoing = (teamId: string) => `${attendance()}/ongoing/${team
 const attendanceCloseOngoing = (teamId: string) => `${attendance()}/close/${teamId}`;
 const attendanceGetById = (meetingAttendanceId: string) => `${attendance()}/${meetingAttendanceId}`;
 
+/**************** Dashboard Endpoints ****************/
+const dashboards = () => `${API_URL}/dashboards`;
+const dashboardsGet = () => `${dashboards()}/`;
+const dashboardsCreate = () => `${dashboards()}/create`;
+const dashboardEdit = (dashboardId: string) => `${dashboards()}/${dashboardId}/edit`;
+const dashboardDelete = (dashboardId: string) => `${dashboards()}/${dashboardId}/delete`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -516,16 +583,23 @@ export const apiUrls = {
   users,
   orgUsers,
   orgMembers,
+  projectsDropdown,
+  workPackagesDropdown,
+  membersDropdown,
+  teamsDropdown,
   usersById,
   usersLogin,
   usersLoginDev,
   userSettingsByUserId,
   userSecureSettingsSet,
   currentUserSecureSettings,
+  currentUserApiToken,
+  generateApiToken,
   userRoleByUserId,
   userFavoriteProjects,
   userSecureSettings,
   userScheduleSettings,
+  userScheduleSettingsBusyTimes,
   userScheduleSettingsSet,
   userTasks,
   manyUserTasks,
@@ -594,7 +668,10 @@ export const apiUrls = {
   editTaskAssignees,
   deleteTask,
   overdueTasksByTeamLeadership,
-  tasksByWbsNum,
+  taskLabels,
+  taskLabelCreate,
+  taskLabelEdit,
+  taskLabelDelete,
 
   workPackages,
   workPackagesByWbsNum,
@@ -645,6 +722,10 @@ export const apiUrls = {
   teamTypeEdit,
   teamTypeSetImage,
   myTeamAsHead,
+  myTeamJoinRequests,
+  teamsPendingJoinRequests,
+  teamsCreateJoinRequest,
+  teamsReviewJoinRequest,
 
   descriptionBulletsCheck,
   descriptionBulletTypes,
@@ -776,8 +857,6 @@ export const apiUrls = {
   organizationsSetPlatformDescription,
   organizationsLogoImage,
   organizationsSetLogoImage,
-  organizationsNewMemberImage,
-  organizationsSetNewMemberImage,
   organizationsPlatformLogoImage,
   organizationsSetPlatformLogoImage,
   organizationsSetFeaturedProjects,
@@ -787,17 +866,24 @@ export const apiUrls = {
   organizationsSetSlackSponsorshipNotificationChannelId,
   organizationsFinanceDelegates,
   organizationsSetFinanceDelegates,
+  organizationsNotificationChannels,
 
   cars,
   carsCreate,
+  carEdit,
 
   recruitment,
   allMilestones,
+  newMemberMilestones,
+  recruitingMilestones,
   milestoneCreate,
   milestoneEdit,
   milestoneDelete,
   allFaqs,
-  faqCreate,
+  recruitingFaqs,
+  newMemberFaqs,
+  recruitingFaqCreate,
+  newMemberFaqCreate,
   faqEdit,
   faqDelete,
   imageById,
@@ -840,6 +926,38 @@ export const apiUrls = {
   retrospectiveTimelines,
   retrospectiveBudgets,
 
+  rules,
+  rulesTopLevel,
+  rulesAllRules,
+  rulesToggleTeam,
+  rulesChildRules,
+  ruleset,
+  rulesetTypes,
+  rulesetsByType,
+  rulesetTypeCreate,
+  rulesetsCreate,
+  ruleCreate,
+  rulesGetActiveRuleset,
+  rulesGetProjectRules,
+  rulesGetUnassignedRulesForRuleset,
+  rulesCreateProjectRule,
+  rulesDeleteProjectRule,
+  rulesSetRuleStatus,
+  rulesSetProjectRuleStatus,
+  rulesGetStatusHistory,
+  rulesResetRulesetStatuses,
+  rulesResetProjectRuleStatuses,
+  rulesEdit,
+  rulesDelete,
+  rulesAddReferences,
+  rulesRemoveReferences,
+  rulesetUpdate,
+  rulesetDelete,
+  rulesetTypeDelete,
+  rulesetType,
+  parseRuleset,
+  uploadRulesetFile,
+  singleRuleset,
   calendarShops,
   calendarCreateShop,
   calendarFilterEvents,
@@ -850,10 +968,12 @@ export const apiUrls = {
   calendarAddMachineryToShop,
   calendarEditShop,
   calendarEventMarkUserConfirmed,
+  calendarEventRemindUnconfirmed,
   calendarGetSingleEvent,
   calendarGetSingleEventWithMembers,
   calendarGetConflictingEvent,
   calendarEvents,
+  calendarNewMemberEvents,
   calendarEventsPaginated,
   calendarEventTypes,
   calendarDeleteEvent,
@@ -885,6 +1005,11 @@ export const apiUrls = {
   attendanceGetOngoing,
   attendanceCloseOngoing,
   attendanceGetById,
+
+  dashboardsGet,
+  dashboardsCreate,
+  dashboardEdit,
+  dashboardDelete,
 
   version
 };

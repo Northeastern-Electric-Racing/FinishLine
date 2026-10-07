@@ -12,9 +12,11 @@ import { useCurrentUser } from '../../../../hooks/users.hooks';
 
 interface LinkTypeTableProps {
   isOnGuestHomePage?: boolean;
+  isOnNewMemberDashboard?: boolean;
+  isOnOnboardingDashboard?: boolean;
 }
 
-const LinkTypeTable = ({ isOnGuestHomePage }: LinkTypeTableProps) => {
+const LinkTypeTable = ({ isOnGuestHomePage, isOnNewMemberDashboard, isOnOnboardingDashboard }: LinkTypeTableProps) => {
   const currentUser = useCurrentUser();
   const { data: links, isLoading: linkTypeIsLoading, isError: linkTypeIsError, error: linkTypeError } = useAllLinkTypes();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
@@ -23,9 +25,12 @@ const LinkTypeTable = ({ isOnGuestHomePage }: LinkTypeTableProps) => {
 
   if (!links || linkTypeIsLoading) return <LoadingIndicator />;
   if (linkTypeIsError) return <ErrorPage message={linkTypeError.message} />;
-  const linkTypes = links.filter((linkType) =>
-    isOnGuestHomePage ? linkType.isOnGuestHomePage : !linkType.isOnGuestHomePage
-  );
+  const linkTypes = links.filter((linkType) => {
+    if (isOnNewMemberDashboard) return linkType.isOnNewMemberDashboard;
+    if (isOnOnboardingDashboard) return linkType.isOnOnboardingDashboard;
+    if (isOnGuestHomePage) return linkType.isOnGuestHomePage;
+    return !linkType.isOnGuestHomePage && !linkType.isOnNewMemberDashboard && !linkType.isOnOnboardingDashboard;
+  });
 
   const linkTypeTableRows = linkTypes.map((linkType, index) => (
     <TableRow
@@ -59,6 +64,8 @@ const LinkTypeTable = ({ isOnGuestHomePage }: LinkTypeTableProps) => {
         handleClose={() => setCreateModalShow(false)}
         linkTypes={linkTypes}
         isOnGuestHomePage={isOnGuestHomePage}
+        isOnNewMemberDashboard={isOnNewMemberDashboard}
+        isOnOnboardingDashboard={isOnOnboardingDashboard}
       />
       {clickedLinkType && (
         <EditLinkTypeModal

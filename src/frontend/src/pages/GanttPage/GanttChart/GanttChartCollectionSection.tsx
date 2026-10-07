@@ -5,18 +5,26 @@ import { GanttCollection } from '../../../utils/gantt.utils';
 import { useState } from 'react';
 import { GanttEditability } from './GanttChart';
 
+const ignore = () => {};
+
+const ignoreBool = () => false;
+
 interface GanttChartCollectionSectionProps<E, T> {
   startDate: Date;
   endDate: Date;
   collection: GanttCollection<E, T>;
   editability?: GanttEditability<E, T>;
+  toggleExpanded: (id: string) => void;
+  expanded: Set<string>;
 }
 
 const GanttChartCollectionSection = <E, T>({
   startDate,
   endDate,
   collection,
-  editability
+  editability,
+  toggleExpanded,
+  expanded
 }: GanttChartCollectionSectionProps<E, T>) => {
   const theme = useTheme();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -57,10 +65,6 @@ const GanttChartCollectionSection = <E, T>({
     setIsEditMode(true);
   };
 
-  const ignore = () => {};
-
-  const ignoreBool = () => false;
-
   return collection.tasks.length > 0 ? (
     <Box sx={collectionSectionBackgroundStyle}>
       <Box sx={collectionDescriptionContainerStyle}>
@@ -94,6 +98,8 @@ const GanttChartCollectionSection = <E, T>({
           onAddTaskPressed={editability?.onNewSubTaskPressed ?? ignore}
           highlightSubtaskComparator={editability?.highlightSubtaskComparator ?? ignoreBool}
           highlightTaskComparator={editability?.highlightTaskComparator ?? ignoreBool}
+          toggleExpanded={toggleExpanded}
+          expanded={expanded}
         />
       </Box>
     </Box>

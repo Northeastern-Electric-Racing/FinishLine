@@ -12,10 +12,18 @@ import {
   AvailabilityCreateArgs,
   UserWithScheduleSettings,
   ProjectOverview,
-  isAtLeastRank
+  isAtLeastRank,
+  BusySlots,
+  IcsBusyInterval,
+  MemberDropdownItem,
+  isValidSlackUserIdFormat
 } from 'shared';
 import prisma from '../prisma/prisma.js';
+import { getMemberDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
+import { memberDropdownTransformer } from '../transformers/dropdown.transformer.js';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
+import { busyIntervalsToSlots, fetchIcsBusyTimes, validateIcsUrl } from '../utils/ics.utils.js';
+import CalendarService from './calendar.services.js';
 import { generateAccessToken } from '../utils/auth.utils.js';
 import { projectOverviewTransformer } from '../transformers/projects.transformer.js';
 import { getProjectOverviewQueryArgs } from '../prisma-query-args/projects.query-args.js';
@@ -29,6 +37,7 @@ import authenticatedUserTransformer from '../transformers/auth-user.transformer.
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
 import taskTransformer from '../transformers/tasks.transformer.js';
 import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
+import { encrypt, decrypt } from '../utils/encryption.utils.js';
 
 export default class UsersService {
   /**
@@ -42,6 +51,22 @@ export default class UsersService {
     });
 
     return users.map(userTransformer);
+  }
+
+  /**
+   * Gets a minimal list of the current organization's members for use in dropdowns (id + name + email).
+   * Only users with a non-guest role in the organization are returned, so guests are excluded.
+   * @param organizationId the organization to get the members from
+   * @returns the members for a dropdown
+   */
+  static async getAllMembersDropdown(organizationId: string): Promise<MemberDropdownItem[]> {
+    const users = await prisma.user.findMany({
+      where: { roles: { some: { organizationId, roleType: { not: Role_Type.GUEST } } } },
+      orderBy: { firstName: 'asc' },
+      ...getMemberDropdownQueryArgs()
+    });
+
+    return users.map(memberDropdownTransformer);
   }
 
   /**
@@ -197,6 +222,9 @@ export default class UsersService {
    * @throws if the user does not exist
    */
   static async updateUserSettings(user: User, defaultTheme: ThemeName, slackId: string): Promise<User_Settings> {
+    if (slackId && !isValidSlackUserIdFormat(slackId)) {
+      throw new HttpException(400, 'Invalid Slack ID');
+    }
     const { userId } = user;
 
     const updatedSettings = await prisma.user_Settings.upsert({
@@ -241,7 +269,7 @@ export default class UsersService {
     // if not in database, create user in database
     if (!user) {
       const emailId = payload['email']!.includes('@husky.neu.edu') ? payload['email']!.split('@')[0] : null;
-      const organization = await prisma.organization.findFirst();
+      const organization = await prisma.organization.findFirst({ where: { dateDeleted: null } });
 
       const firstName = payload['given_name'] ?? payload['email']!.split('@')[0]; // Defaults to id of email
       const lastName = payload['family_name'] ?? ''; // Defaults to no last name
@@ -250,41 +278,39 @@ export default class UsersService {
         ? payload['email'].replace(/@husky\.neu\.edu/i, '@northeastern.edu')
         : payload['email'];
 
-      const createdUser = await prisma.user.create({
-        data: {
-          firstName,
-          lastName,
-          googleAuthId: userId,
-          email: nonHuskyEmail,
-          emailId,
-          userSettings: { create: {} }
-        },
-        include: {
-          organizations: true,
-          userSettings: true
-        }
-      });
-      user = createdUser;
+      // the organization is connected as part of the create rather than in a follow up update, so
+      // that the user we return already lists it. Connecting afterwards leaves this object stale
+      // with an empty organizations array, and the client then has no organization to send back to
+      // us on its next request
+      user = await prisma.$transaction(async (tx) => {
+        const createdUser = await tx.user.create({
+          data: {
+            firstName,
+            lastName,
+            googleAuthId: userId,
+            email: nonHuskyEmail,
+            emailId,
+            userSettings: { create: {} },
+            ...(organization && { organizations: { connect: { organizationId: organization.organizationId } } })
+          },
+          include: {
+            organizations: true,
+            userSettings: true
+          }
+        });
 
-      if (organization) {
-        await prisma.organization.update({
-          where: { organizationId: organization.organizationId },
-          data: {
-            users: {
-              connect: {
-                userId: createdUser.userId
-              }
+        if (organization) {
+          await tx.role.create({
+            data: {
+              userId: createdUser.userId,
+              organizationId: organization.organizationId,
+              roleType: RoleEnum.GUEST
             }
-          }
-        });
-        await prisma.role.create({
-          data: {
-            userId: createdUser.userId,
-            organizationId: organization!.organizationId,
-            roleType: RoleEnum.GUEST
-          }
-        });
-      }
+          });
+        }
+
+        return createdUser;
+      });
     }
 
     // register a login
@@ -525,7 +551,8 @@ export default class UsersService {
     user: User,
     personalGmail: string,
     personalZoomLink: string,
-    availabilities: AvailabilityCreateArgs[]
+    availabilities: AvailabilityCreateArgs[],
+    importedIcsCalendarUrl?: string
   ): Promise<UserScheduleSettings> {
     if (personalGmail !== '') {
       const existingUser = await prisma.schedule_Settings.findFirst({
@@ -537,16 +564,24 @@ export default class UsersService {
       }
     }
 
+    const normalizedIcsUrl = importedIcsCalendarUrl?.trim() || undefined;
+
+    if (normalizedIcsUrl) await validateIcsUrl(normalizedIcsUrl);
+
+    const encryptedIcsUrl = normalizedIcsUrl ? encrypt(normalizedIcsUrl) : null;
+
     const newUserScheduleSettings = await prisma.schedule_Settings.upsert({
       where: { userId: user.userId },
       update: {
         personalGmail,
-        personalZoomLink
+        personalZoomLink,
+        importedIcsCalendarUrl: encryptedIcsUrl
       },
       create: {
         userId: user.userId,
         personalGmail,
-        personalZoomLink
+        personalZoomLink,
+        importedIcsCalendarUrl: encryptedIcsUrl
       },
       ...getUserScheduleSettingsQueryArgs()
     });
@@ -566,7 +601,7 @@ export default class UsersService {
     const requestedUser = await prisma.user.findUnique({
       where: { userId },
       include: {
-        assignedTasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organization.organizationId) },
+        assignedTasks: { where: { dateDeleted: null }, ...getTaskQueryArgs() },
         organizations: true
       }
     });
@@ -621,5 +656,71 @@ export default class UsersService {
     }
 
     return users.map(userWithScheduleSettingsTransformer);
+  }
+
+  /**
+   * Read-only busy-times for a user over [startDate, endDate), combining their imported ICS calendar
+   * feed with Finishline events they're on (required/optional member, creator, or on one of the event's
+   * teams), mapped onto the 0-11 availability slots per day.
+   *
+   * @param userId the user whose schedule is being read
+   * @param submitter the requesting user
+   * @param startDate the first day of the range (inclusive)
+   * @param endDate the day after the last day of the range (exclusive)
+   * @param organization the organization the requesting user is in
+   * @returns the busy slots per day, only including days that have at least one busy slot
+   */
+  static async getUserBusyTimes(
+    userId: string,
+    submitter: User,
+    startDate: Date,
+    endDate: Date,
+    organization: Organization
+  ): Promise<BusySlots[]> {
+    if (submitter.userId !== userId) throw new AccessDeniedException('You can only access your own schedule settings');
+    const user = await prisma.user.findUnique({
+      where: { userId },
+      include: {
+        organizations: true,
+        teamsAsMember: { select: { teamId: true } },
+        teamsAsLead: { select: { teamId: true } },
+        teamsAsHead: { select: { teamId: true } }
+      }
+    });
+    if (!user) throw new NotFoundException('User', userId);
+    if (!user.organizations.map((org) => org.organizationId).includes(organization.organizationId))
+      throw new HttpException(400, `User ${userId} is not apart of the current organization`);
+
+    const scheduleSettings = await prisma.schedule_Settings.findUnique({ where: { userId } });
+
+    let icsBusy: IcsBusyInterval[] = [];
+    if (scheduleSettings?.importedIcsCalendarUrl) {
+      icsBusy = await fetchIcsBusyTimes(decrypt(scheduleSettings.importedIcsCalendarUrl), startDate, endDate);
+    }
+
+    const userTeamIds = [
+      ...user.teamsAsMember.map((team) => team.teamId),
+      ...user.teamsAsLead.map((team) => team.teamId),
+      ...user.teamsAsHead.map((team) => team.teamId)
+    ];
+
+    const finishlineEvents = await CalendarService.getFilteredEvents(
+      { memberIds: [userId], teamIds: userTeamIds, startPeriod: startDate, endPeriod: endDate },
+      organization
+    );
+    const eventBusy: IcsBusyInterval[] = finishlineEvents.flatMap((event) =>
+      event.scheduledTimes.map((slot) => ({ start: slot.startTime, end: slot.endTime }))
+    );
+
+    const busy = [...icsBusy, ...eventBusy];
+    if (busy.length === 0) return [];
+
+    const busyDays: BusySlots[] = [];
+    for (let day = new Date(startDate); day < endDate; day.setUTCDate(day.getUTCDate() + 1)) {
+      const busySlots = busyIntervalsToSlots(busy, day);
+      if (busySlots.size > 0) busyDays.push({ dateSet: new Date(day), busySlots: Array.from(busySlots) });
+    }
+
+    return busyDays;
   }
 }

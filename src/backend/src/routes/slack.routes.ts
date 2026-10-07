@@ -1,6 +1,8 @@
+import type { AllMiddlewareArgs, BlockAction, SlackActionMiddlewareArgs } from '@slack/bolt';
 import { getSlackApp } from '../integrations/slack.js';
 import SlackController from '../controllers/slack.controllers.js';
 import AttendanceService from '../services/attendance.services.js';
+import { SlackBlockActionBody } from '../services/slack.services.js';
 
 // Register Slack event listeners only if the Slack app is configured
 const slackApp = getSlackApp();
@@ -128,6 +130,41 @@ if (slackApp) {
       logger.error('Error handling sabo_submitted_confirmation action:', error);
     }
   });
+
+  // Register interactive action handler for CR approval
+  slackApp.action('approve_cr', async ({ ack, body, logger, respond }: any) => {
+    await ack();
+
+    try {
+      if (!validateSlackActionBody(body)) {
+        logger.error('Invalid Slack action body structure');
+        return;
+      }
+
+      await SlackController.handleApproveCRAction(body, respond);
+    } catch (error) {
+      logger.error('Error handling approve_cr action:', error);
+    }
+  });
+
+  // Register interactive action handler for team join request approval
+  slackApp.action(
+    'approve_team_join_request',
+    async ({ ack, body, logger, respond }: SlackActionMiddlewareArgs<BlockAction> & AllMiddlewareArgs) => {
+      await ack();
+
+      try {
+        if (!validateSlackActionBody(body)) {
+          logger.error('Invalid Slack action body structure');
+          return;
+        }
+
+        await SlackController.handleApproveTeamJoinRequestAction(body as unknown as SlackBlockActionBody, respond);
+      } catch (error) {
+        logger.error('Error handling approve_team_join_request action:', error);
+      }
+    }
+  );
 
   // Error handler
   slackApp.error(async (error: Error) => {

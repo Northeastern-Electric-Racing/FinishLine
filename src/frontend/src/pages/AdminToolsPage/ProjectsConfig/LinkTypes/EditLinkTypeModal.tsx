@@ -25,6 +25,8 @@ const EditLinkTypeModal = ({ open, handleClose, linkType, linkTypes }: EditLinkT
       defaultValues={linkType}
       linkTypes={linkTypes}
       isOnGuestHomePage={linkType.isOnGuestHomePage}
+      isOnNewMemberDashboard={linkType.isOnNewMemberDashboard}
+      isOnOnboardingDashboard={linkType.isOnOnboardingDashboard}
     />
   );
 };

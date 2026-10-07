@@ -10,11 +10,14 @@ import {
   ProjectOverview,
   ProjectGantt,
   ProjectPreview,
+  ProjectDropdownItem,
   WbsNumber,
   wbsPipe,
   User
 } from 'shared';
 import prisma from '../prisma/prisma.js';
+import { getProjectDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
+import { projectDropdownTransformer } from '../transformers/dropdown.transformer.js';
 import projectTransformer, {
   projectOverviewTransformer,
   projectGanttTransformer,
@@ -73,6 +76,21 @@ export default class ProjectsService {
     });
 
     return projects.map(projectPreviewTransformer);
+  }
+
+  /**
+   * Gets a minimal list of projects for use in dropdowns (id + name + wbsNum + carNumber only).
+   * @param organization the organization the user is in
+   * @returns the projects for a dropdown
+   */
+  static async getAllProjectsDropdown(organization: Organization): Promise<ProjectDropdownItem[]> {
+    const projects = await prisma.project.findMany({
+      where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
+      orderBy: { wbsElement: { carNumber: 'desc' } },
+      ...getProjectDropdownQueryArgs()
+    });
+
+    return projects.map(projectDropdownTransformer);
   }
 
   /**
@@ -583,6 +601,9 @@ export default class ProjectsService {
    * @param required is the new LinkType required
    * @param user the user who is creating the new LinkType
    * @param orgainzationId the organization the link type is being created for
+   * @param isOnGuestHomePage whether the LinkType shows on the guest home page
+   * @param isOnNewMemberDashboard whether the LinkType shows on the new member dashboard
+   * @param isOnOnboardingDashboard whether the LinkType shows on the onboarding checklist page
    * @throws AccessDeniedException if the submitter of the request is not an admin
    * @throws HttpException if a LinkType of the given name already exists
    * @returns the created LinkType
@@ -593,7 +614,9 @@ export default class ProjectsService {
     iconName: string,
     required: boolean,
     organization: Organization,
-    isOnGuestHomePage: boolean
+    isOnGuestHomePage: boolean,
+    isOnNewMemberDashboard: boolean,
+    isOnOnboardingDashboard: boolean
   ): Promise<LinkType> {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('Only admins can create link types');
@@ -611,7 +634,9 @@ export default class ProjectsService {
         iconName,
         required,
         organizationId: organization.organizationId,
-        isOnGuestHomePage
+        isOnGuestHomePage,
+        isOnNewMemberDashboard,
+        isOnOnboardingDashboard
       }
     });
 
@@ -625,6 +650,10 @@ export default class ProjectsService {
    * @param required the new required status
    * @param submitter user requesting the edit
    * @param organizationId the organization the user is currently in
+   * @param isOnGuestHomePage whether the LinkType shows on the guest home page
+   * @param isOnNewMemberDashboard whether the LinkType shows on the new member dashboard
+   * @param isOnOnboardingDashboard whether the LinkType shows on the onboarding checklist page
+   * @param newName the new name of the linkType, if being renamed
    * @returns the updated linkType
    */
   static async editLinkType(
@@ -634,6 +663,8 @@ export default class ProjectsService {
     submitter: User,
     organization: Organization,
     isOnGuestHomePage: boolean,
+    isOnNewMemberDashboard: boolean,
+    isOnOnboardingDashboard: boolean,
     newName?: string
   ): Promise<LinkType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
@@ -672,7 +703,9 @@ export default class ProjectsService {
         name: newName && newName ? newName : linkName,
         iconName,
         required,
-        isOnGuestHomePage
+        isOnGuestHomePage,
+        isOnNewMemberDashboard,
+        isOnOnboardingDashboard
       }
     });
     return linkTypeUpdated;

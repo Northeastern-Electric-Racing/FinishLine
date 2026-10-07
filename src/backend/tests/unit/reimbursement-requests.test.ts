@@ -359,14 +359,14 @@ describe('Reimbursement Requests', () => {
       const editedVendor = await ReimbursementRequestService.editVendor(
         'Google',
         createdVendor.vendorId,
+        false,
+        [],
+        createdUser,
+        org,
         'ner@gmail.com',
         'racecar',
         'DISCOUNT',
-        false,
-        [],
-        'no notes',
-        createdUser,
-        org
+        'no notes'
       );
       expect(editedVendor.name).toEqual('Google');
       expect(editedVendor.username).toEqual('ner@gmail.com');

@@ -35,7 +35,8 @@ import {
   setAbbreviation,
   deleteAbbreviation,
   getTeamsProjects,
-  getAllProjects
+  getAllProjects,
+  getAllProjectsCopyBOM
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
@@ -63,6 +64,18 @@ export const useAllProjects = () => {
       return data;
     }
   );
+};
+
+/**
+ * Custom React Hook to supply all projects, bypassing the global car filter.
+ * Used by Copy BOM, which lets the user pick any past car regardless of the
+ * globally selected car and does its own frontend filtering by car.
+ */
+export const useAllProjectsCopyBOM = () => {
+  return useQuery<ProjectPreview[], Error>(['projects', 'previews', 'all-cars'], async () => {
+    const { data } = await getAllProjectsCopyBOM();
+    return data;
+  });
 };
 
 /**
@@ -275,6 +288,27 @@ export const useEditLinkType = (linkTypeName: string) => {
     async (formData: LinkTypeCreatePayload) => {
       const { data } = await editLinkType(linkTypeName, formData);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['linkTypes']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit a LinkType, given the name of the LinkType at call time rather than
+ * hook-mount time. Used when the LinkType being edited isn't known until a form is submitted,
+ * e.g. flipping a dashboard placement flag on whichever LinkType was picked from a dropdown.
+ */
+export const useEditLinkTypeByName = () => {
+  const queryClient = useQueryClient();
+  return useMutation<LinkType, Error, { name: string; data: LinkTypeCreatePayload }>(
+    ['linkTypes', 'edit'],
+    async ({ name, data }) => {
+      const { data: updatedLinkType } = await editLinkType(name, data);
+      return updatedLinkType;
     },
     {
       onSuccess: () => {

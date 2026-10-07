@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Typography } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { useState } from 'react';
@@ -21,6 +21,7 @@ const columns: GridColDef[] = [
 
 const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({ selectedProject, onSelectionChange }) => {
   const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([]);
+  const [isInitialized, setInitialization] = useState<boolean>(false);
   const {
     data: materials,
     isLoading: isLoadingMaterials,
@@ -35,13 +36,12 @@ const CopyBOMProjectSection: React.FC<CopyBOMProjectSectionProps> = ({ selectedP
     error: assembliesError
   } = useGetAssembliesForWbsElement(selectedProject.wbsNum);
 
-  useEffect(() => {
-    if (materials) {
-      const allIds = materials.map((m) => m.materialId);
-      setSelectedMaterialIds(allIds);
-      onSelectionChange(allIds);
-    }
-  }, [materials, onSelectionChange]);
+  if (materials && !isInitialized) {
+    setInitialization(true);
+    const allIds = materials.map((m) => m.materialId);
+    setSelectedMaterialIds(allIds);
+    onSelectionChange(allIds);
+  }
 
   if (isErrorMaterials) return <ErrorPage message={materialsError?.message} />;
   if (isErrorAssemblies) return <ErrorPage message={assembliesError?.message} />;

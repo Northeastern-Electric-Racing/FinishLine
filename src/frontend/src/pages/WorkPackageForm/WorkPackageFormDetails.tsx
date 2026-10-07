@@ -8,7 +8,6 @@ import { FormControl, FormLabel, Grid, MenuItem, TextField, Typography } from '@
 import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Box } from '@mui/system';
-import ChangeRequestDropdown from '../../components/ChangeRequestDropdown';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { fullNamePipe } from '../../utils/pipes';
@@ -83,9 +82,6 @@ const WorkPackageFormDetails: React.FC<Props> = ({
         </Grid>
         <Grid item xs={12} md={4}>
           <StageSelect />
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <ChangeRequestDropdown control={control} name="crId" />
         </Grid>
         <Grid item xs={12} md={4}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>

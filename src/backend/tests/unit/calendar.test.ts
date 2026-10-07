@@ -109,6 +109,7 @@ describe('Calendar Tests', () => {
           'Updated Name',
           'Updated Description',
           '#FF0000',
+          false,
           organization
         )
       ).rejects.toThrow(new AccessDeniedException('Only admins can edit calendars'));
@@ -131,6 +132,7 @@ describe('Calendar Tests', () => {
         'Updated Calendar',
         'Updated Description',
         '#0000FF',
+        false,
         organization
       );
 
@@ -148,6 +150,7 @@ describe('Calendar Tests', () => {
           'Updated Name',
           'Updated Description',
           '#FF0000',
+          false,
           organization
         )
       ).rejects.toThrow(new NotFoundException('Calendar', 'non-existent-id'));
@@ -172,6 +175,7 @@ describe('Calendar Tests', () => {
           'Updated Name',
           'Updated Description',
           '#FF0000',
+          false,
           organization
         )
       ).rejects.toThrow(new DeletedException('Calendar', calendar.calendarId));
@@ -600,6 +604,7 @@ describe('Calendar Tests', () => {
             'Non-Admin Calendar',
             'desc',
             '#3498DB',
+            false,
             organization
           )
         ).rejects.toThrow(new AccessDeniedAdminOnlyException('create calendar'));
@@ -610,6 +615,7 @@ describe('Calendar Tests', () => {
           'Cool Calendar',
           'A very cool calendar',
           '#3498DB',
+          false,
           organization
         );
         expect(result.name).toBe('Cool Calendar');
@@ -618,13 +624,21 @@ describe('Calendar Tests', () => {
         expect(result.userCreated.userId).toBe(adminUser.userId);
       });
       it('fails on duplicate name', async () => {
-        await CalendarService.createCalendar(adminUser, 'Cool Calendar', 'A very cool calendar', '#3498DB', organization);
+        await CalendarService.createCalendar(
+          adminUser,
+          'Cool Calendar',
+          'A very cool calendar',
+          '#3498DB',
+          false,
+          organization
+        );
         await expect(
           CalendarService.createCalendar(
             adminUser,
             'Cool Calendar',
             'A very cool calendar, but not quite as cool',
             '#0062a3ff',
+            false,
             organization
           )
         ).rejects.toBeTruthy();
@@ -892,6 +906,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -943,6 +958,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined // teamTypeId
         )
       ).rejects.toThrow(new NotFoundException('Event Type', 'non-existent-event-type-id'));
@@ -971,6 +987,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined // teamTypeId
         )
       ).rejects.toThrow(new InvalidOrganizationException('Event Type'));
@@ -998,6 +1015,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1047,6 +1065,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1079,6 +1098,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1111,6 +1131,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1143,6 +1164,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1175,6 +1197,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1213,6 +1236,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1258,6 +1282,7 @@ describe('Calendar Tests', () => {
           [],
           scheduleSlots,
           undefined, // initialDateScheduled
+          [], // notificationChannelIds
           undefined, // teamTypeId
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1293,6 +1318,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1313,6 +1339,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1356,6 +1383,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1376,6 +1404,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1405,6 +1434,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots2,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1449,6 +1479,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1469,6 +1500,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1498,6 +1530,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots2,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1679,6 +1712,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -1697,6 +1731,7 @@ describe('Calendar Tests', () => {
           [adminUser.userId],
           [member.userId],
           Event_Status.UNCONFIRMED,
+          [],
           [],
           [],
           [],
@@ -1725,6 +1760,7 @@ describe('Calendar Tests', () => {
           [],
           [],
           [],
+          [],
           []
         )
       ).rejects.toThrow(new DeletedException('Event', event.eventId));
@@ -1745,6 +1781,7 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
+          [], // notificationChannelIds
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1769,6 +1806,7 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
+          [], // notificationChannelIds
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1799,6 +1837,7 @@ describe('Calendar Tests', () => {
           [machinery.machineryId],
           [],
           [],
+          [], // notificationChannelIds
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1823,6 +1862,7 @@ describe('Calendar Tests', () => {
           ['non-existent-machinery-id'],
           [],
           [],
+          [], // notificationChannelIds
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1853,6 +1893,7 @@ describe('Calendar Tests', () => {
           [deletedMachinery.machineryId],
           [],
           [],
+          [], // notificationChannelIds
           undefined,
           'https://example.com/questions.pdf',
           'Conference Room A',
@@ -1878,6 +1919,7 @@ describe('Calendar Tests', () => {
         [machinery.machineryId],
         [],
         [],
+        [], // notificationChannelIds
         undefined,
         'https://updated.com/questions.pdf',
         'Updated Location',
@@ -1928,6 +1970,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined, // initialDateScheduled
+        [], // notificationChannelIds
         undefined, // teamTypeId
         'https://updated.com/questions.pdf',
         'Updated Location',
@@ -2110,6 +2153,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined,
+        [],
         undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -2162,6 +2206,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined,
+        [],
         undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -2368,6 +2413,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined,
+        [],
         undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -2486,6 +2532,7 @@ describe('Calendar Tests', () => {
         [],
         scheduleSlots,
         undefined,
+        [],
         undefined,
         'https://example.com/questions.pdf',
         'Conference Room A',
@@ -2577,6 +2624,70 @@ describe('Calendar Tests', () => {
 
       // The current slot should NOT be in the results
       expect(result.find((s) => s.scheduleSlotId === slotId)).toBeUndefined();
+    });
+  });
+
+  describe('remindUnconfirmed', () => {
+    let member: User;
+    let event: Event;
+
+    beforeEach(async () => {
+      member = await createTestUser(wonderwomanGuest, orgId);
+      const scheduleSlots: ScheduleSlotCreateArgs[] = [
+        { startTime: new Date('2025-10-13T09:00:00Z'), endTime: new Date('2025-10-13T10:00:00Z'), allDay: false }
+      ];
+      event = await CalendarService.createEvent(
+        adminUser,
+        'Test Event',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [],
+        [],
+        [],
+        [],
+        scheduleSlots,
+        undefined, // initialDateScheduled
+        [], // notificationChannelIds
+        undefined, // teamTypeId
+        undefined, // questionDocumentLink
+        'Conference Room A', // location
+        undefined, // zoomLink
+        undefined // description
+      );
+    });
+
+    it('fails if event does not exist', async () => {
+      await expect(CalendarService.remindUnconfirmed('non-existent-id', adminUser, organization)).rejects.toThrow(
+        new NotFoundException('Event', 'non-existent-id')
+      );
+    });
+
+    it('fails if event is already deleted', async () => {
+      await prisma.event.update({ where: { eventId: event.eventId }, data: { dateDeleted: new Date() } });
+      await expect(CalendarService.remindUnconfirmed(event.eventId, adminUser, organization)).rejects.toThrow(
+        new DeletedException('Event', event.eventId)
+      );
+    });
+
+    it('fails if submitter is not the creator', async () => {
+      await expect(CalendarService.remindUnconfirmed(event.eventId, member, organization)).rejects.toThrow(
+        new AccessDeniedException('Only the creator or an admin can send reminders for unconfirmed events')
+      );
+    });
+
+    it('succeeds and sends reminders to unconfirmed members', async () => {
+      await expect(CalendarService.remindUnconfirmed(event.eventId, adminUser, organization)).resolves.toBeUndefined();
+    });
+
+    it('succeeds when all members have already confirmed', async () => {
+      // pre-confirm the member so there are no unconfirmed recipients
+      await prisma.event.update({
+        where: { eventId: event.eventId },
+        data: { confirmedMembers: { connect: { userId: member.userId } } }
+      });
+      await expect(CalendarService.remindUnconfirmed(event.eventId, adminUser, organization)).resolves.toBeUndefined();
     });
   });
 });

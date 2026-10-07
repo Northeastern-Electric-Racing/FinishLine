@@ -1,12 +1,12 @@
 import { Box } from '@mui/system';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useAllFaqs } from '../../../hooks/recruitment.hooks';
+import { useRecruitingFaqs } from '../../../hooks/recruitment.hooks';
 import ErrorPage from '../../ErrorPage';
 import Dropdown from './Dropdown';
 import React from 'react';
 
 const FAQsSection = () => {
-  const { isLoading, isError, error, data: faqs } = useAllFaqs();
+  const { isLoading, isError, error, data: faqs } = useRecruitingFaqs();
   if (isLoading || !faqs) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error.message} />;

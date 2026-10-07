@@ -9,15 +9,16 @@ const LOGIN = `/login`;
 const INFO = `/info`;
 const GUEST_INFO = `/guestinfo`;
 const GANTT = `/gantt`;
+const TASKS = `/tasks`;
 const CREDITS = `/credits`;
 
 /**************** Home Section ****************/
 const HOME = `/home`;
 const HOME_PNM = HOME + `/pnm`;
 const HOME_SELECT_SUBTEAM = HOME + `/select-subteam`;
-const HOME_ACCEPT = HOME + `/accept`;
 const HOME_MEMBER = HOME + `/member`;
 const HOME_ONBOARDING = HOME + `/onboarding`;
+const HOME_NEW_MEMBER = HOME + `/new-member`;
 
 /**************** Finance Section ****************/
 const FINANCE = `/finance`;
@@ -82,6 +83,12 @@ const GRAPH_COLLECTION_BY_ID = '/statistics/graph-collections/:graphCollectionId
 /**************** Retrospective ****************/
 const RETROSPECTIVE = `/retrospective`;
 
+/**************** Rules ****************/
+const RULES = `/rules`;
+const RULESET_BY_ID = RULES + `/:rulesetTypeId`;
+const RULESET_VIEW = RULES + `/ruleset/:rulesetId/view`;
+const RULESET_EDIT = RULES + `/ruleset/:rulesetId/edit`;
+
 export const routes = {
   BASE,
   LOGIN,
@@ -93,13 +100,14 @@ export const routes = {
   HOME_PNM,
   HOME_SELECT_SUBTEAM,
   HOME_ONBOARDING,
-  HOME_ACCEPT,
+  HOME_NEW_MEMBER,
   HOME_MEMBER,
 
   TEAMS,
   TEAMS_BY_ID,
 
   GANTT,
+  TASKS,
 
   PROJECTS,
   PROJECT_MANAGEMENT,
@@ -150,5 +158,10 @@ export const routes = {
 
   SPONSORS,
 
-  RETROSPECTIVE
+  RETROSPECTIVE,
+
+  RULES,
+  RULESET_BY_ID,
+  RULESET_VIEW,
+  RULESET_EDIT
 };

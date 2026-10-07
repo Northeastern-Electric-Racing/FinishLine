@@ -26,12 +26,23 @@ import statisticsRouter from './src/routes/statistics.routes.js';
 import retrospectiveRouter from './src/routes/retrospective.routes.js';
 import partsRouter from './src/routes/parts.routes.js';
 import financeRouter from './src/routes/finance.routes.js';
+import rulesRouter from './src/routes/rules.routes.js';
 import calendarRouter from './src/routes/calendar.routes.js';
 import prospectiveSponsorRouter from './src/routes/prospective-sponsor.routes.js';
 import attendanceRouter from './src/routes/attendance.routes.js';
 import icsRouter from './src/routes/ics.routes.js';
+import agentRouter from './src/routes/agent.routes.js';
+import { mcpNodeHandler } from './src/mcp/handler.js';
+import { attachAuthInfo, requireApiToken } from './src/utils/mcp-auth.utils.js';
+import dashboardsRouter from './src/routes/dashboards.routes.js';
+import { withRequestContext } from './src/utils/request-context.utils.js';
+import { logRequests } from './src/utils/request-logger.utils.js';
 
 const app = express();
+
+// Global request logging and context middleware
+app.use(withRequestContext);
+app.use(logRequests);
 
 const port = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
@@ -89,6 +100,19 @@ app.use(cors(options));
 // Public ICS feed routes — mounted before JWT middleware so calendar apps can subscribe without auth
 app.use('/ics', icsRouter);
 
+// API token routes — mounted before the JWT middleware so that per-user API tokens authenticate here
+// and ONLY here. Keeping this above the cookie middleware is what stops a token from reaching the
+// rest of the API.
+app.use('/agent', agentRouter);
+
+// The MCP endpoint, authenticated with the same per-user API tokens. JSON-RPC requires POST, so it
+// cannot sit behind the readOnlyGuard the /agent router uses and is mounted separately; registering
+// every tool through registerReadOnlyTool in src/mcp/tools.ts is what keeps it read only instead.
+// The handler is async, so its rejections are forwarded to the error handler rather than dropped.
+app.all('/mcp', requireApiToken, attachAuthInfo, (req, res, next) => {
+  mcpNodeHandler(req, res, req.body).catch(next);
+});
+
 // ensure each request is authorized using JWT
 app.use(isProd ? requireJwtProd : requireJwtDev);
 
@@ -119,9 +143,11 @@ app.use('/statistics', statisticsRouter);
 app.use('/retrospective', retrospectiveRouter);
 app.use('/parts', partsRouter);
 app.use('/finance', financeRouter);
+app.use('/rules', rulesRouter);
 app.use('/calendar', calendarRouter);
 app.use('/prospective-sponsors', prospectiveSponsorRouter);
 app.use('/attendance', attendanceRouter);
+app.use('/dashboards', dashboardsRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });
@@ -137,8 +163,8 @@ app.listen(port, () => {
   console.log(`\n
   ███████╗██╗███╗   ██╗██╗███████╗██╗  ██╗██╗     ██╗███╗   ██╗███████╗
   ██╔════╝██║████╗  ██║██║██╔════╝██║  ██║██║     ██║████╗  ██║██╔════╝
-  █████╗  ██║██╔██╗ ██║██║███████╗███████║██║     ██║██╔██╗ ██║█████╗  
-  ██╔══╝  ██║██║╚██╗██║██║╚════██║██╔══██║██║     ██║██║╚██╗██║██╔══╝  
+  █████╗  ██║██╔██╗ ██║██║███████╗███████║██║     ██║██╔██╗ ██║█████╗
+  ██╔══╝  ██║██║╚██╗██║██║╚════██║██╔══██║██║     ██║██║╚██╗██║██╔══╝
   ██║     ██║██║ ╚████║██║███████║██║  ██║███████╗██║██║ ╚████║███████╗
   ╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝`);
 });

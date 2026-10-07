@@ -57,7 +57,6 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
     ? {
         ...workPackage,
         workPackageId: workPackage.id,
-        crId,
         stage: workPackage.stage ?? 'NONE',
         blockedBy: workPackage.blockedBy.map(wbsPipe),
         descriptionBullets: bulletsToObject(workPackage.descriptionBullets)

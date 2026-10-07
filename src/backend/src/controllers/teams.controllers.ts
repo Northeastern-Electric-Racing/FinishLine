@@ -23,6 +23,16 @@ export default class TeamsController {
     }
   }
 
+  static async getAllTeamsDropdown(req: Request, res: Response, next: NextFunction) {
+    try {
+      const teams = await TeamsService.getAllTeamsDropdown(req.organization);
+
+      res.status(200).json(teams);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllArchivedTeams(req: Request, res: Response, next: NextFunction) {
     try {
       const teams = await TeamsService.getAllArchivedTeams(req.organization);
@@ -134,6 +144,55 @@ export default class TeamsController {
 
       const team = await TeamsService.setTeamLeads(req.currentUser, teamId, userIds, req.organization);
       res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createTeamJoinRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params as Record<string, string>;
+
+      const request = await TeamsService.createTeamJoinRequest(req.currentUser, teamId, req.organization);
+      res.status(200).json(request);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getMyTeamJoinRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const requests = await TeamsService.getMyTeamJoinRequests(req.currentUser, req.organization);
+      res.status(200).json(requests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getPendingTeamJoinRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params as Record<string, string>;
+
+      const requests = await TeamsService.getPendingTeamJoinRequests(teamId, req.currentUser, req.organization);
+      res.status(200).json(requests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async reviewTeamJoinRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamJoinRequestId } = req.params as Record<string, string>;
+      const { approved, denialReason } = req.body;
+
+      const request = await TeamsService.reviewTeamJoinRequest(
+        req.currentUser,
+        teamJoinRequestId,
+        approved,
+        denialReason,
+        req.organization
+      );
+      res.status(200).json(request);
     } catch (error: unknown) {
       next(error);
     }

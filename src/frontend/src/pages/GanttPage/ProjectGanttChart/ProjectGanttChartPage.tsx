@@ -32,6 +32,7 @@ import GanttChart from '../GanttChart/GanttChart';
 import {
   ProjectGantt,
   Task,
+  TaskLabel,
   TaskPriority,
   TaskStatus,
   TeamPreview,
@@ -95,7 +96,6 @@ const ProjectGanttChartPage: FC = () => {
   const [allProjects, setAllProjects] = useState<ProjectGantt[]>([]);
   const [editedProjects, setEditedProjects] = useState<ProjectGantt[]>([]);
   const user = useCurrentUser();
-
   /******************** Filters ***************************/
   const { filters, setFilters } = useGanttFilters('project-gantt');
 
@@ -189,6 +189,11 @@ const ProjectGanttChartPage: FC = () => {
           : { ...filters, showTeams: filters.showTeams.filter((t) => t !== team.teamName) }
       );
     };
+  };
+
+  // Checked = show tasks, so hideTasks is the inverse of the checkbox state
+  const showTasksHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    handleSetGanttFilters({ ...filters, hideTasks: !event.target.checked });
   };
 
   const teamTypeHandlers: {
@@ -323,6 +328,7 @@ const ProjectGanttChartPage: FC = () => {
       priority: TaskPriority;
       status: TaskStatus;
       assignees: string[];
+      labels: TaskLabel[];
       notes: string;
       startDate: Date | null;
       deadline: Date | null;
@@ -350,10 +356,12 @@ const ProjectGanttChartPage: FC = () => {
         userId: user.userId,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email,
-        role: user.role
+        email: user.email
       },
       assignees: [],
+      labels: taskInfo.labels,
+      blockedBy: [],
+      blockedByWorkPackages: [],
       deadline,
       startDate,
       priority: taskInfo.priority,
@@ -628,6 +636,8 @@ const ProjectGanttChartPage: FC = () => {
         carHandlers={carHandlers}
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
+        showTasks={!(filters.hideTasks ?? false)}
+        showTasksHandler={showTasksHandler}
         resetHandler={resetHandler}
       />
     </Box>

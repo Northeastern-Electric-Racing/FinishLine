@@ -1,0 +1,9 @@
+#!/bin/sh
+commit_msg=$(cat "$1")
+
+branch=$(git symbolic-ref --short HEAD)
+ticket=$(echo "$branch" | grep -oE '#[0-9]+')
+
+if [ -n "$ticket" ] && ! echo "$commit_msg" | grep -qE "^#[0-9]+"; then
+  echo "$ticket $commit_msg" > "$1"
+fi

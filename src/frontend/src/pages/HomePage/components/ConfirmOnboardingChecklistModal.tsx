@@ -30,12 +30,8 @@ const ConfirmOnboardingChecklistModal: React.FC<ConfirmOnboardingChecklistModalP
           Looks like you completed everything on the onboarding checklist!
         </Typography>
 
-        <Typography sx={{ marginBottom: '1rem', fontSize: '1.2rem', fontWeight: 'bold' }}>
-          You sure you want to submit?
-        </Typography>
-
         <Typography sx={{ marginBottom: '1.5rem', fontSize: '0.9rem', color: 'darkgray', fontStyle: 'italic' }}>
-          (After you submit, you will be officially onboarded into NER!)
+          (After you submit, you will be a new member!)
         </Typography>
       </Box>
     </NERModal>

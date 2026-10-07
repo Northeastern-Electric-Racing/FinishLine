@@ -1,7 +1,7 @@
 import { WbsNumber, wbsPipe } from 'shared';
 import CopyBOMView from './CopyBOMView';
 import { useGetAllCars } from '../../../../../hooks/cars.hooks';
-import { useAllProjects } from '../../../../../hooks/projects.hooks';
+import { useAllProjectsCopyBOM } from '../../../../../hooks/projects.hooks';
 import React, { useState } from 'react';
 import ErrorPage from '../../../../ErrorPage';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
@@ -16,7 +16,12 @@ export interface CopyBOMModalProps {
 
 const CopyBOMModal: React.FC<CopyBOMModalProps> = ({ open, onHide, destinationWbsNum, currentProjectName }) => {
   const { data: cars, isLoading: isLoadingCars, isError: carsIsError, error: carsError } = useGetAllCars();
-  const { data: projects, isLoading: isLoadingProjects, isError: projectsIsError, error: projectsError } = useAllProjects();
+  const {
+    data: projects,
+    isLoading: isLoadingProjects,
+    isError: projectsIsError,
+    error: projectsError
+  } = useAllProjectsCopyBOM();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmedMaterialIds, setConfirmedMaterialIds] = useState<string[]>([]);
   const [confirmedSourceProjectName, setConfirmedSourceProjectName] = useState('');

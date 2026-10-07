@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import PartReviewService from '../services/part-review.services.js';
+import RecruitmentServices from '../services/recruitment.services.js';
 import { WbsNumber, validateWBS } from 'shared';
 import { HttpException } from '../utils/errors.utils.js';
 
@@ -255,7 +256,15 @@ export default class PartReviewController {
   static async createFaq(req: Request, res: Response, next: NextFunction) {
     try {
       const { question, answer } = req.body;
-      const faq = await PartReviewService.createFaq(question, answer, req.currentUser, req.organization.organizationId);
+      const faq = await RecruitmentServices.createOrganizationFaq(
+        req.currentUser,
+        question,
+        answer,
+        req.organization,
+        false,
+        false,
+        true
+      );
       res.status(200).json(faq);
     } catch (error: unknown) {
       next(error);

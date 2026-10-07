@@ -1,6 +1,5 @@
 import prisma from '../prisma/prisma.js';
 import {
-  Scope_CR_Why_Type,
   Prisma,
   Change_Request,
   Change,
@@ -12,120 +11,30 @@ import {
   Organization
 } from '@prisma/client';
 import {
-  addWeeksToDate,
-  ChangeRequestReason,
   DescriptionBulletPreview,
+  formatDateOnly,
   LinkCreateArgs,
+  ProjectProposedChangesCreateArgs,
   WbsNumber,
   wbsPipe,
   WorkPackageProposedChangesCreateArgs,
   WorkPackageStage,
-  User,
-  formatDateOnly
+  User
 } from 'shared';
 import { DeletedException, HttpException, NotFoundException } from './errors.utils.js';
 import { ChangeRequestStatus } from 'shared';
-import { buildChangeDetail, createChange } from './changes.utils.js';
-import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 import {
   ChangeRequestManyQueryArgs,
   ChangeRequestQueryArgs,
-  ChangeRequestWithProjectAndWorkPackageQueryArgs
-} from '../prisma-query-args/change-requests.query-args.js';
-import {
   ProjectProposedChangesQueryArgs,
   WbsProposedChangeQueryArgs,
   WorkPackageProposedChangesQueryArgs
-} from '../prisma-query-args/scope-change-requests.query-args.js';
+} from '../prisma-query-args/change-requests.query-args.js';
 import ProjectsService from '../services/projects.services.js';
 import WorkPackagesService from '../services/work-packages.services.js';
 import { descriptionBulletToDescriptionBulletPreview } from './description-bullets.utils.js';
 import { sendSlackCRReviewedNotification } from './slack.utils.js';
 import { validateBlockedBys } from './work-packages.utils.js';
-
-export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
-  ({
-    ESTIMATION: ChangeRequestReason.Estimation,
-    SCHOOL: ChangeRequestReason.School,
-    DESIGN: ChangeRequestReason.Design,
-    MANUFACTURING: ChangeRequestReason.Manufacturing,
-    RULES: ChangeRequestReason.Rules,
-    INITIALIZATION: ChangeRequestReason.Initialization,
-    COMPETITION: ChangeRequestReason.Competition,
-    MAINTENANCE: ChangeRequestReason.Maintenance,
-    OTHER_PROJECT: ChangeRequestReason.OtherProject,
-    OTHER: ChangeRequestReason.Other
-  })[whyType];
-
-/**
- * This function updates the start date of all the blockings (and nested blockings) of the initial given work package.
- * It uses a depth first search algorithm for efficiency and to avoid cycles.
- *
- * @param initialWorkPackage the initial work package
- * @param timelineImpact the timeline impact of the proposed solution
- * @param crId the change request id
- * @param reviewer the reviewer of the change request
- */
-export const updateBlocking = async (
-  initialWorkPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>,
-  timelineImpact: number,
-  crId: string,
-  reviewer: User
-) => {
-  // track the wbs element ids we've seen so far so we don't update the same one multiple times
-  const seenWbsElementIds: Set<string> = new Set<string>([initialWorkPackage.wbsElement.wbsElementId]);
-
-  // blocking ids that still need to be updated
-  const blockingUpdateQueue: string[] = initialWorkPackage.wbsElement.blocking.map((blocking) => blocking.wbsElementId);
-
-  while (blockingUpdateQueue.length > 0) {
-    const currWbsId = blockingUpdateQueue.pop(); // get the next blocking and remove it from the queue
-
-    if (!currWbsId) break; // this is more of a type check for pop becuase the while loop prevents this from not existing
-    if (seenWbsElementIds.has(currWbsId)) continue; // if we've already seen it we skip it
-
-    seenWbsElementIds.add(currWbsId);
-
-    // get the current wbs object from prisma
-    const currWbs = await prisma.wBS_Element.findUnique({
-      where: { wbsElementId: currWbsId },
-      include: {
-        blocking: true,
-        workPackage: true
-      }
-    });
-
-    if (!currWbs) throw new NotFoundException('WBS Element', currWbsId);
-    if (currWbs.dateDeleted) continue; // this wbs element has been deleted so skip it
-    if (!currWbs.workPackage) continue; // this wbs element is a project so skip it
-
-    const newStartDate: Date = addWeeksToDate(currWbs.workPackage.startDate, timelineImpact);
-
-    const change = {
-      changeRequestId: crId,
-      implementerId: reviewer.userId,
-      detail: buildChangeDetail('Start Date', formatDateOnly(currWbs.workPackage.startDate), formatDateOnly(newStartDate))
-    };
-
-    await prisma.work_Package.update({
-      where: { workPackageId: currWbs.workPackage.workPackageId },
-      data: {
-        startDate: newStartDate,
-        wbsElement: {
-          update: {
-            changes: {
-              create: change
-            }
-          }
-        }
-      }
-    });
-
-    // get all the blockings of the current wbs and add them to the queue to update
-    const newBlocking: string[] = currWbs.blocking.map((blocking) => blocking.wbsElementId);
-    blockingUpdateQueue.push(...newBlocking);
-  }
-};
 
 /** Makes sure that a change request has been accepted already (and not deleted)
  * @param crId - the id of the change request to check
@@ -392,6 +301,18 @@ export const applyProjectProposedChanges = async (
 
       projectWbsNum = proj.wbsNum;
     } else if (associatedProject) {
+      // Map proposed links back to the current project's real linkIds so that
+      // editProject's linkId-based comparator correctly detects unchanged links.
+      const currentProject = await prisma.project.findUnique({
+        where: { projectId: associatedProject.projectId },
+        include: { wbsElement: { include: { links: { where: { dateDeleted: null }, include: { linkType: true } } } } }
+      });
+      const existingLinkIdByType = new Map(currentProject?.wbsElement.links.map((l) => [l.linkType.name, l.linkId]) ?? []);
+      const linksWithRealIds = links.map((link) => ({
+        ...link,
+        linkId: existingLinkIdByType.get(link.linkTypeName) ?? '-1'
+      }));
+
       const proj = await ProjectsService.editProject(
         reviewer,
         associatedProject.projectId,
@@ -400,7 +321,7 @@ export const applyProjectProposedChanges = async (
         projectProposedChanges.budget,
         projectProposedChanges.summary,
         descriptionBullets,
-        links,
+        linksWithRealIds,
         wbsProposedChanges.leadId,
         wbsProposedChanges.managerId,
         organization
@@ -475,124 +396,123 @@ export const applyWorkPackageProposedChanges = async (
   }
 };
 
+export const isWorkPackageProposedChanges = (
+  cr: ProjectProposedChangesCreateArgs | WorkPackageProposedChangesCreateArgs
+): cr is WorkPackageProposedChangesCreateArgs => 'startDate' in cr;
+
+export const isProjectProposedChanges = (
+  cr: ProjectProposedChangesCreateArgs | WorkPackageProposedChangesCreateArgs
+): cr is ProjectProposedChangesCreateArgs => !('startDate' in cr);
+
 /**
- * Reviews a proposed solution and automates the changes
- * @param psId the proposed solution id
- * @param foundCR the change request being reviewed
- * @param crId the change request id
- * @param reviewer  the user reviewing the change request
+ * Builds a human-readable diff string comparing current WBS state to proposed changes.
+ * Each changed field is shown as two lines: "− Field: old" and "+ Field: new".
  */
-export const reviewProposedSolution = async (
-  psId: string,
-  foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
-  reviewer: User,
-  organizationId: string
-) => {
-  const foundPs = await prisma.proposed_Solution.findUnique({
-    where: { proposedSolutionId: psId }
-  });
-  if (!foundPs || foundPs.scopeChangeRequestId !== foundCR.scopeChangeRequest?.scopeCrId)
-    throw new NotFoundException('Proposed Solution', psId);
+export const buildCRDiff = (
+  currentWbs: {
+    name: string;
+    leadId: string | null;
+    managerId: string | null;
+    links: { url: string; linkType: { name: string } }[];
+    project?: { budget: number; summary: string } | null;
+    workPackage?: { startDate: Date; duration: number; stage: string | null } | null;
+    descriptionBullets?: { detail: string; descriptionBulletType: { name: string } }[];
+  },
+  proposed: ProjectProposedChangesCreateArgs | WorkPackageProposedChangesCreateArgs | undefined
+): string => {
+  if (!proposed) return '';
 
-  // automate the changes for the proposed solution
-  // if cr is for a project: update the budget based off of the proposed solution
-  // else if cr is for a wp: update the budget and duration based off of the proposed solution
-  if (!foundCR.wbsElement?.workPackage && foundCR.wbsElement?.project) {
-    const newBudget = foundCR.wbsElement.project.budget + foundPs.budgetImpact;
-    const change = createChange(
-      'Budget',
-      foundCR.wbsElement.project.budget,
-      newBudget,
-      foundCR.crId,
-      reviewer.userId,
-      foundCR.wbsElementId,
-      foundCR.categoryId,
-      foundCR.accountCodeId
-    );
-    await prisma.project.update({
-      where: { projectId: foundCR.wbsElement.project.projectId },
-      data: {
-        budget: newBudget
-      }
-    });
+  const isWpChange = isWorkPackageProposedChanges(proposed);
+  const lines: string[] = [];
 
-    //Make the associated budget change if there was a change
-    if (change) await prisma.change.create({ data: change });
-  } else if (foundCR.wbsElement?.workPackage) {
-    // get the project for the work package
-    const wpProj = await prisma.project.findUnique({
-      where: { projectId: foundCR.wbsElement.workPackage.projectId },
-      include: { workPackages: getWorkPackageQueryArgs(organizationId) }
-    });
-    if (!wpProj) throw new NotFoundException('Project', foundCR.wbsElement.workPackage.projectId);
-
-    // calculate the new budget and new duration
-    const newBudget = wpProj.budget + foundPs.budgetImpact;
-    const updatedDuration = foundCR.wbsElement.workPackage.duration + foundPs.timelineImpact;
-
-    // create changes that reflect the new budget and duration
-    const changes = [
-      createChange(
-        'Budget',
-        wpProj.budget,
-        newBudget,
-        foundCR.crId,
-        reviewer.userId,
-        foundCR.wbsElementId,
-        foundCR.categoryId,
-        foundCR.accountCodeId
-      ),
-      createChange(
-        'Duration',
-        foundCR.wbsElement.workPackage.duration,
-        updatedDuration,
-        foundCR.crId,
-        reviewer.userId,
-        foundCR.wbsElementId,
-        foundCR.categoryId,
-        foundCR.accountCodeId
-      )
-    ];
-
-    // update all the wps this wp is blocking (and nested blockings) of this work package so that their start dates reflect the new duration
-    if (foundPs.timelineImpact > 0) {
-      await updateBlocking(foundCR.wbsElement.workPackage, foundPs.timelineImpact, foundCR.crId, reviewer);
+  const addDiff = (label: string, before: string | number | null | undefined, after: string | number | null | undefined) => {
+    const b = before != null ? String(before) : null;
+    const a = after != null ? String(after) : null;
+    if ((b ?? '(none)') !== (a ?? '(none)')) {
+      if (b != null) lines.push(`− ${label}: ${b}`);
+      lines.push(`+ ${label}: ${a ?? '(none)'}`);
     }
+  };
 
-    // update the project and work package
-    await prisma.project.update({
-      where: { projectId: foundCR.wbsElement.workPackage.projectId },
-      data: {
-        budget: newBudget,
-        workPackages: {
-          update: {
-            where: { workPackageId: foundCR.wbsElement.workPackage.workPackageId },
-            data: {
-              duration: updatedDuration
-            }
-          }
-        }
+  const addLinkDiffs = (currentLinks: { url: string; linkType: { name: string } }[], proposedLinks: LinkCreateArgs[]) => {
+    const currentMap = new Map(currentLinks.map((l) => [l.linkType.name, l.url]));
+    const proposedMap = new Map(proposedLinks.map((l) => [l.linkTypeName, l.url]));
+    for (const [name, url] of currentMap) {
+      if (!proposedMap.has(name)) lines.push(`− ${name}: ${url}`);
+    }
+    for (const [name, url] of proposedMap) {
+      if (!currentMap.has(name)) {
+        lines.push(`+ ${name}: ${url}`);
+      } else if (currentMap.get(name) !== url) {
+        lines.push(`− ${name}: ${currentMap.get(name)}`);
+        lines.push(`+ ${name}: ${url}`);
       }
-    });
+    }
+  };
 
-    //Making associated changes
-    const changePromises = changes.map(async (change) => {
-      //Checking if change is not zero so we dont make changes for zero budget or timeline impact
-      if (change) {
-        await prisma.change.create({ data: change });
+  const addBulletDiffs = (
+    currentBullets: { detail: string; descriptionBulletType: { name: string } }[],
+    proposedBullets: DescriptionBulletPreview[]
+  ) => {
+    const allBulletTypeNames = new Set([
+      ...currentBullets.map((b) => b.descriptionBulletType.name),
+      ...proposedBullets.map((b) => b.type)
+    ]);
+    for (const bulletTypeName of allBulletTypeNames) {
+      const currentDetails = new Set(
+        currentBullets.filter((b) => b.descriptionBulletType.name === bulletTypeName).map((b) => b.detail)
+      );
+      const proposedDetails = new Set(proposedBullets.filter((b) => b.type === bulletTypeName).map((b) => b.detail));
+      // add "- Type: detail" for each detail of this type that is in current but not proposed
+      for (const detail of currentDetails) {
+        if (!proposedDetails.has(detail)) lines.push(`− ${bulletTypeName}: ${detail}`);
       }
-    });
+      // add "+ Type: detail" for each detail of this type that is in proposed but not current
+      for (const detail of proposedDetails) {
+        if (!currentDetails.has(detail)) lines.push(`+ ${bulletTypeName}: ${detail}`);
+      }
+    }
+  };
 
-    await Promise.all(changePromises);
+  if (isWpChange) {
+    if (!currentWbs.workPackage) {
+      addDiff('Name', null, proposed.name);
+      addDiff('Lead', null, proposed.leadId);
+      addDiff('Manager', null, proposed.managerId);
+      addDiff('Start date', null, proposed.startDate);
+      addDiff('Duration', null, proposed.duration);
+      addDiff('Stage', null, proposed.stage);
+      proposed.links.forEach((l) => addDiff(l.linkTypeName, null, l.url));
+      proposed.descriptionBullets.forEach((b) => addDiff(b.type, null, b.detail));
+    } else {
+      addDiff('Name', currentWbs.name, proposed.name);
+      addDiff('Lead', currentWbs.leadId, proposed.leadId);
+      addDiff('Manager', currentWbs.managerId, proposed.managerId);
+      addDiff('Start date', formatDateOnly(currentWbs.workPackage.startDate, 'YYYY-MM-DD'), proposed.startDate);
+      addDiff('Duration', currentWbs.workPackage.duration, proposed.duration);
+      addDiff('Stage', currentWbs.workPackage.stage, proposed.stage);
+      addLinkDiffs(currentWbs.links, proposed.links);
+      addBulletDiffs(currentWbs.descriptionBullets ?? [], proposed.descriptionBullets);
+    }
+  } else if (!currentWbs.project) {
+    addDiff('Name', null, proposed.name);
+    addDiff('Lead', null, proposed.leadId);
+    addDiff('Manager', null, proposed.managerId);
+    addDiff('Budget', null, proposed.budget);
+    addDiff('Summary', null, proposed.summary);
+    proposed.links.forEach((l) => addDiff(l.linkTypeName, null, l.url));
+    proposed.descriptionBullets.forEach((b) => addDiff(b.type, null, b.detail));
+  } else {
+    addDiff('Name', currentWbs.name, proposed.name);
+    addDiff('Lead', currentWbs.leadId, proposed.leadId);
+    addDiff('Manager', currentWbs.managerId, proposed.managerId);
+    addDiff('Budget', currentWbs.project.budget, proposed.budget);
+    addDiff('Summary', currentWbs.project.summary, proposed.summary);
+    addLinkDiffs(currentWbs.links, proposed.links);
+    addBulletDiffs(currentWbs.descriptionBullets ?? [], proposed.descriptionBullets);
   }
 
-  // finally update the proposed solution
-  await prisma.proposed_Solution.update({
-    where: { proposedSolutionId: psId },
-    data: {
-      approved: true
-    }
-  });
+  return lines.join('\n');
 };
 
 /**

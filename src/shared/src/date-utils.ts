@@ -68,6 +68,17 @@ const isSameDay = (date1: Date, date2: Date): boolean => {
   );
 };
 
+// similar to isSameDay, but created to counter a one day forward off error
+const isSameDayUTC = (date1: Date, date2: Date): boolean => {
+  date1 = new Date(date1);
+  date2 = new Date(date2);
+  return (
+    date1.getUTCFullYear() === date2.getUTCFullYear() &&
+    date1.getUTCMonth() === date2.getUTCMonth() &&
+    date1.getUTCDate() === date2.getUTCDate()
+  );
+};
+
 const isWithinSameWeek = (date1: Date, date2: Date): boolean => {
   // Function to find the Saturday of the week for a given date
 
@@ -98,7 +109,9 @@ const getUniqueAvailabilities = (availabilities: Availability[]) => {
 
 const getMostRecentAvailabilities = (availabilities: Availability[], startDate: Date): Availability[] => {
   availabilities = getUniqueAvailabilities(availabilities);
-  const startDateObj = new Date(startDate);
+  // Availability is date-only; strip the time-of-day so downstream UTC/local conversions
+  // (e.g. a second pass through availabilityTransformer) can't roll the date to a different day.
+  const startDateObj = startOfDay(new Date(startDate));
 
   const getClosestDate = (availabilities: Availability[], targetDate: Date): Availability => {
     if (availabilities.length < 1)
@@ -158,6 +171,7 @@ export {
   getSaturday,
   getMostRecentAvailabilities,
   isSameDay,
+  isSameDayUTC,
   getDayOfWeek,
   getNextSevenDays,
   getUniqueAvailabilities

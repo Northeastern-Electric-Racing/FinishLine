@@ -119,4 +119,21 @@ describe('User Tests', () => {
       ).rejects.toThrow(new AccessDeniedException('Guests and members cannot update user roles!'));
     });
   });
+
+  describe('Update User Settings', () => {
+    it('throws when the slack id has an invalid format', async () => {
+      const testUser = await createTestUser(batmanAppAdmin, orgId);
+
+      await expect(async () => await UsersService.updateUserSettings(testUser, 'DARK', 'la la la')).rejects.toThrow(
+        'Invalid Slack ID'
+      );
+    });
+
+    it('saves successfully when the slack id has a valid format', async () => {
+      const testUser = await createTestUser(batmanAppAdmin, orgId);
+      const result = await UsersService.updateUserSettings(testUser, 'DARK', 'U1234ABCD');
+
+      expect(result.slackId).toBe('U1234ABCD');
+    });
+  });
 });

@@ -13,13 +13,11 @@ generator client {
 }
 
 enum CR_Type {
-  ISSUE
-  DEFINITION_CHANGE
   LEADERSHIP
-  OTHER
   STAGE_GATE
   ACTIVATION
   BUDGET
+  STANDARD
 }
 
 enum Task_Priority {
@@ -32,6 +30,12 @@ enum Task_Status {
   IN_BACKLOG
   IN_PROGRESS
   DONE
+}
+
+enum Rule_Status {
+  PENDING
+  PASS
+  FAIL
 }
 
 enum WBS_Element_Status {
@@ -52,19 +56,6 @@ enum Role_Type {
 enum Theme {
   LIGHT
   DARK
-}
-
-enum Scope_CR_Why_Type {
-  ESTIMATION
-  SCHOOL
-  DESIGN
-  MANUFACTURING
-  RULES
-  INITIALIZATION
-  COMPETITION
-  MAINTENANCE
-  OTHER_PROJECT
-  OTHER
 }
 
 enum Work_Package_Stage {
@@ -116,6 +107,9 @@ enum Graph_Type {
 
   CHANGE_REQUESTS_BY_STATUS
   PROJECT_BUDGET_VS_REIMBURSED_AMOUNT
+
+  ATTENDANCE_BY_TEAM
+  ATTENDANCE_BY_DIVISION
 }
 
 enum Graph_Display_Type {
@@ -180,6 +174,27 @@ enum Sponsor_Value_Type {
   DISCOUNT
 }
 
+enum Team_Join_Request_Status {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+enum Term {
+  FALL
+  SPRING
+}
+
+enum Data_Source {
+  AUTO
+  MANUAL
+}
+
+enum Competition {
+  FSAE
+  FHE
+}
+
 model User {
   userId                String                @id @default(uuid())
   firstName             String
@@ -192,6 +207,7 @@ model User {
   userSettings          User_Settings?
   userSecureSettings    User_Secure_Settings?
   icsToken              String?               @unique
+  apiTokens             User_API_Token[]
 
   // Relation references
   submittedChangeRequests                 Change_Request[]                     @relation(name: "submittedChangeRequests")
@@ -207,9 +223,10 @@ model User {
   teamsAsMember                           Team[]                               @relation(name: "teamsAsMember")
   teamsAsHead                             Team[]                               @relation(name: "teamsAsHead")
   teamsAsLead                             Team[]                               @relation(name: "teamsAsLead")
+  teamJoinRequests                        Team_Join_Request[]                  @relation(name: "teamJoinRequests")
+  reviewedTeamJoinRequests                Team_Join_Request[]                  @relation(name: "teamJoinRequestReviewer")
   deletedWBSElements                      WBS_Element[]                        @relation(name: "deletedWbsElements")
   checkedDescriptionBullets               Description_Bullet[]                 @relation(name: "checkDescriptionBullets")
-  createdProposedSolutions                Proposed_Solution[]
   createdTasks                            Task[]                               @relation(name: "createdBy")
   deletedTasks                            Task[]                               @relation(name: "deletedBy")
   assignedTasks                           Task[]                               @relation(name: "assignedTo")
@@ -293,6 +310,18 @@ model User {
   deletedSponsorTiers                     Sponsor_Tier[]
   financeDelegateForOrganizations         Organization[]                       @relation(name: "financeDelegates")
   assignedReimbursementRequests           Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
+  ruleStatusUpdates                       Rule[]                               @relation(name: "ruleStatusUpdater")
+  createdRulesetTypes                     Ruleset_Type[]                       @relation(name: "rulesetTypeCreator")
+  deletedRulesetTypes                     Ruleset_Type[]                       @relation(name: "rulesetTypeDeleter")
+  createdRulesets                         Ruleset[]                            @relation(name: "rulesetCreator")
+  deletedRulesets                         Ruleset[]                            @relation(name: "rulesetDeleter")
+  createdRules                            Rule[]                               @relation(name: "ruleCreator")
+  updatedRules                            Rule[]                               @relation(name: "ruleUpdater")
+  deletedRules                            Rule[]                               @relation(name: "ruleDeletor")
+  createdProjectRules                     Project_Rule[]                       @relation(name: "projectRuleCreator")
+  deletedProjectRules                     Project_Rule[]                       @relation(name: "projectRuleDeletor")
+  projectRuleStatusUpdates                Project_Rule[]                       @relation(name: "projectRuleStatusUpdater")
+  ruleStatusHistoryUpdates                Rule_Status_History[]                @relation(name: "ruleStatusHistoryUpdater")
   deletedGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionDeleter")
   createdGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionCreator")
   requiredEvents                          Event[]                              @relation(name: "requiredEventAttendee")
@@ -306,6 +335,11 @@ model User {
   prospectiveSponsorsContacted            Prospective_Sponsor[]                @relation(name: "prospectiveSponsorContactor")
   createdMeetingAttendances               Meeting_Attendance[]                 @relation(name: "meetingAttendanceCreated")
   attendedMeetingAttendances              Meeting_Attendance[]                 @relation(name: "meetingAttendees")
+  createdTaskLabels                       Task_Label[]                         @relation(name: "taskLabelCreator")
+  deletedTaskLabels                       Task_Label[]                         @relation(name: "taskLabelDeleter")
+  dashboards                              Dashboard[]                          @relation(name: "userDashboards")
+  createdExecutiveSummaries               Executive_Summary[]                  @relation(name: "executiveSummaryCreator")
+  deletedExecutiveSummaries               Executive_Summary[]                  @relation(name: "executiveSummaryDeleter")
 }
 
 model Role {
@@ -326,6 +360,7 @@ model Team {
   slackId                String
   description            String                     @default("")
   financeTeam            Boolean                    @default(false)
+  operationsTeam         Boolean                    @default(false)
   projects               Project[]                  @relation(name: "assignedBy")
   members                User[]                     @relation(name: "teamsAsMember")
   leads                  User[]                     @relation(name: "teamsAsLead")
@@ -343,9 +378,28 @@ model Team {
   checklists             Checklist[]
   projectTemplates       Project_Template[]
   meetingAttendances     Meeting_Attendance[]
+  joinRequests           Team_Join_Request[]        @relation(name: "teamJoinRequests")
+  rules                  Rule[]                     @relation(name: "teamRules")
 
   @@index([headId])
   @@index([organizationId])
+}
+
+model Team_Join_Request {
+  teamJoinRequestId String                   @id @default(uuid())
+  userId            String
+  user              User                     @relation(fields: [userId], references: [userId], name: "teamJoinRequests")
+  teamId            String
+  team              Team                     @relation(fields: [teamId], references: [teamId], name: "teamJoinRequests")
+  status            Team_Join_Request_Status @default(PENDING)
+  dateRequested     DateTime                 @default(now())
+  denialReason      String?
+  reviewedByUserId  String?
+  reviewedBy        User?                    @relation(fields: [reviewedByUserId], references: [userId], name: "teamJoinRequestReviewer")
+  dateReviewed      DateTime?
+
+  @@index([userId])
+  @@index([teamId])
 }
 
 model Session {
@@ -383,6 +437,7 @@ model Change_Request {
   accountCodeId            String?
   accountCode              Account_Code?                       @relation(fields: [accountCodeId], references: [accountCodeId])
   type                     CR_Type
+  why                      String?
   reviewerId               String?
   reviewer                 User?                               @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
   requestedReviewers       User[]                              @relation(name: "requestedChangeRequestReviewers")
@@ -392,12 +447,16 @@ model Change_Request {
   accepted                 Boolean?
   reviewNotes              String?
   changes                  Change[]
-  scopeChangeRequest       Scope_CR?
   stageGateChangeRequest   Stage_Gate_CR?
   activationChangeRequest  Activation_CR?
   budgetChangeRequest      Budget_CR?
   leadershipChangeRequest  Leadership_CR?
   notificationSlackThreads Message_Info[]
+  wbsProposedChangesId     String?                             @unique
+  wbsProposedChanges       Wbs_Proposed_Changes?               @relation("wbsProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  snapshotBlockingCount    Int?
+  snapshotStartDate        DateTime?                           @db.Date
+  snapshotDuration         Int?
 
   @@unique([identifier, organizationId], name: "uniqueChangeRequest")
   @@index([reviewerId])
@@ -419,46 +478,6 @@ model Message_Info {
   @@index([reimbursementRequestId])
   @@index([eventId])
   @@index([changeRequestId])
-}
-
-model Scope_CR {
-  scopeCrId          String                @id @default(uuid())
-  changeRequestId    String                @unique
-  changeRequest      Change_Request        @relation(fields: [changeRequestId], references: [crId])
-  what               String
-  why                Scope_CR_Why[]
-  scopeImpact        String
-  timelineImpact     Int
-  budgetImpact       Int
-  proposedSolutions  Proposed_Solution[]
-  wbsProposedChanges Wbs_Proposed_Changes? @relation(name: "wbsProposedChanges")
-  wbsOriginalData    Wbs_Proposed_Changes? @relation(name: "wbsOriginalData")
-}
-
-model Proposed_Solution {
-  proposedSolutionId   String   @id @default(uuid())
-  description          String
-  timelineImpact       Int
-  budgetImpact         Int
-  scopeImpact          String
-  scopeChangeRequest   Scope_CR @relation(fields: [scopeChangeRequestId], references: [scopeCrId])
-  scopeChangeRequestId String
-  createdByUserId      String
-  createdBy            User     @relation(fields: [createdByUserId], references: [userId])
-  dateCreated          DateTime @default(now())
-  approved             Boolean  @default(false)
-
-  @@index([scopeChangeRequestId])
-}
-
-model Scope_CR_Why {
-  scopeCrWhyId String            @id @default(uuid())
-  scopeCrId    String
-  scopeCr      Scope_CR          @relation(fields: [scopeCrId], references: [scopeCrId])
-  type         Scope_CR_Why_Type
-  explain      String
-
-  @@index([scopeCrId])
 }
 
 model Stage_Gate_CR {
@@ -582,6 +601,7 @@ model Project {
   featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
   abbreviation             String?
   parts                    Part[]
+  rules                    Project_Rule[] @relation(name: "projectsForRule")
 
   @@index([carId])
 }
@@ -603,17 +623,19 @@ model Work_Package {
 }
 
 model Link_Type {
-  id                String       @id @default(uuid())
-  name              String
-  dateCreated       DateTime     @default(now())
-  iconName          String
-  required          Boolean
-  creatorId         String
-  creator           User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links             Link[]       @relation(name: "linkTypes")
-  organizationId    String
-  organization      Organization @relation(fields: [organizationId], references: [organizationId])
-  isOnGuestHomePage Boolean      @default(false)
+  id                      String       @id @default(uuid())
+  name                    String
+  dateCreated             DateTime     @default(now())
+  iconName                String
+  required                Boolean
+  creatorId               String
+  creator                 User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links                   Link[]       @relation(name: "linkTypes")
+  organizationId          String
+  organization            Organization @relation(fields: [organizationId], references: [organizationId])
+  isOnGuestHomePage       Boolean      @default(false)
+  isOnNewMemberDashboard  Boolean      @default(false)
+  isOnOnboardingDashboard Boolean      @default(false)
 
   @@unique([name, organizationId], name: "uniqueLinkType")
   @@index([organizationId])
@@ -705,8 +727,28 @@ model Task {
   dateCreated     DateTime      @default(now())
   wbsElement      WBS_Element   @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId    String
+  labels          Task_Label[]
+  blockedBy       Task[]        @relation(name: "taskBlocking")
+  blocking        Task[]        @relation(name: "taskBlocking")
 
   @@index([wbsElementId])
+}
+
+model Task_Label {
+  taskLabelId    String       @id @default(uuid())
+  name           String
+  colorHexCode   String
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "taskLabelCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "taskLabelDeleter")
+  userDeletedId  String?
+  tasks          Task[]
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@index([organizationId])
 }
 
 model Reimbursement_Status {
@@ -962,6 +1004,20 @@ model User_Secure_Settings {
   phoneNumber          String @unique
 }
 
+model User_API_Token {
+  apiTokenId  String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [userId])
+  name        String    @default("Default")
+  tokenHash   String    @unique
+  preview     String
+  dateCreated DateTime  @default(now())
+  lastUsedAt  DateTime?
+  dateRevoked DateTime?
+
+  @@index([userId])
+}
+
 model Unit {
   id             String       @id @default(uuid())
   name           String
@@ -1181,22 +1237,24 @@ model Event {
   description                String?
   notificationSlackThreads   Message_Info[]
   calendarEventIds           String[]
+  notificationChannelIds     String[]        @default([])
 }
 
 model Calendar {
-  calendarId     String       @id @default(uuid())
-  name           String
-  dateCreated    DateTime     @default(now())
-  dateDeleted    DateTime?
-  userCreatedId  String
-  userCreated    User         @relation(name: "calendarCreator", fields: [userCreatedId], references: [userId])
-  userDeletedId  String?
-  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "calendarDeleter")
-  description    String
-  colorHexCode   String
-  eventTypes     Event_Type[]
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  calendarId          String       @id @default(uuid())
+  name                String
+  dateCreated         DateTime     @default(now())
+  dateDeleted         DateTime?
+  userCreatedId       String
+  userCreated         User         @relation(name: "calendarCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId       String?
+  userDeleted         User?        @relation(fields: [userDeletedId], references: [userId], name: "calendarDeleter")
+  description         String
+  colorHexCode        String
+  eventTypes          Event_Type[]
+  organizationId      String
+  organization        Organization @relation(fields: [organizationId], references: [organizationId])
+  isNewMemberCalendar Boolean      @default(false)
 }
 
 model Event_Type {
@@ -1243,10 +1301,11 @@ model Team_Type {
   usersOnboarding User[]       @relation(name: "onboardingTeamTypes")
   usersOnboarded  User[]       @relation(name: "onboardedTeamTypes")
 
-  dateDeleted DateTime?
-  deletedById String?
-  deletedBy   User?     @relation(name: "teamTypeDeleter", fields: [deletedById], references: [userId])
-  events      Event[]
+  dateDeleted               DateTime?
+  deletedById               String?
+  deletedBy                 User?                        @relation(name: "teamTypeDeleter", fields: [deletedById], references: [userId])
+  events                    Event[]
+  recruitmentDivisionCounts Recruitment_Division_Count[]
 
   @@unique([name, organizationId], name: "uniqueTeamType")
   @@index([organizationId])
@@ -1265,12 +1324,13 @@ model Availability {
 }
 
 model Schedule_Settings {
-  drScheduleSettingsId String         @id @default(uuid())
-  personalGmail        String
-  personalZoomLink     String
-  User                 User           @relation(fields: [userId], references: [userId])
-  userId               String         @unique
-  availabilities       Availability[]
+  drScheduleSettingsId   String         @id @default(uuid())
+  personalGmail          String
+  personalZoomLink       String
+  User                   User           @relation(fields: [userId], references: [userId])
+  userId                 String         @unique
+  availabilities         Availability[]
+  importedIcsCalendarUrl String?
 }
 
 model Wbs_Proposed_Changes {
@@ -1287,14 +1347,7 @@ model Wbs_Proposed_Changes {
   proposedDescriptionBulletChanges Description_Bullet[]           @relation(name: "proposedDescriptionBulletChanges")
   dateDeleted                      DateTime?
 
-  // A Wbs Proposed Change can either be original data or a proposed change, not a combination and not none
-  scopeChangeRequestAsOriginalData   Scope_CR? @relation(name: "wbsOriginalData", fields: [scopeChangeRequestAsOriginalDataId], references: [scopeCrId])
-  scopeChangeRequestAsOriginalDataId String?   @unique
-  scopeChangeRequest                 Scope_CR? @relation(name: "wbsProposedChanges", fields: [scopeChangeRequestId], references: [scopeCrId])
-  scopeChangeRequestId               String?   @unique
-
-  @@index([scopeChangeRequestAsOriginalDataId])
-  @@index([scopeChangeRequestId])
+  changeRequest Change_Request? @relation("wbsProposedChanges")
 }
 
 model Project_Proposed_Changes {
@@ -1314,15 +1367,16 @@ model Project_Proposed_Changes {
 }
 
 model Work_Package_Proposed_Changes {
-  workPackageProposedChangesId String                    @id @default(uuid())
-  startDate                    DateTime                  @db.Date
-  duration                     Int
-  blockedBy                    WBS_Element[]             @relation(name: "proposedBlockedBy")
-  stage                        Work_Package_Stage?
-  wbsProposedChanges           Wbs_Proposed_Changes      @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
-  wbsProposedChangesId         String                    @unique
-  projectProposedChanges       Project_Proposed_Changes? @relation(fields: [projectProposedChangesId], references: [projectProposedChangesId])
-  projectProposedChangesId     String?
+  workPackageProposedChangesId      String                    @id @default(uuid())
+  startDate                         DateTime                  @db.Date
+  duration                          Int
+  blockedBy                         WBS_Element[]             @relation(name: "proposedBlockedBy")
+  stage                             Work_Package_Stage?
+  wbsProposedChanges                Wbs_Proposed_Changes      @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  wbsProposedChangesId              String                    @unique
+  projectProposedChanges            Project_Proposed_Changes? @relation(fields: [projectProposedChangesId], references: [projectProposedChangesId])
+  projectProposedChangesId          String?
+  timelineChangeFromUnmarkedBlocker Boolean                   @default(false)
 
   @@index([wbsProposedChangesId])
   @@index([projectProposedChangesId])
@@ -1380,6 +1434,8 @@ model Car {
   wbsElementId           String                     @unique
   wbsElement             WBS_Element                @relation(fields: [wbsElementId], references: [wbsElementId])
   linkedGraphs           Graph[]                    @relation(name: "graphCars")
+  executiveSummary       Executive_Summary?
+  rulesets               Ruleset[]                  @relation(name: "rulesetCar")
 
   @@index([wbsElementId])
 }
@@ -1398,7 +1454,6 @@ model Organization {
   advisor                                User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
   advisorId                              String?
   description                            String    @default("")
-  newMemberImageId                       String?
   logoImageId                            String?
   slackWorkspaceId                       String?
   applicationLink                        String?
@@ -1408,6 +1463,7 @@ model Organization {
   sponsorshipNotificationsSlackChannelId String?
   platformDescription                    String    @default("")
   platformLogoImageId                    String?
+  activationBufferDays                   Int       @default(7)
 
   // Relation references
   wbsElements              WBS_Element[]
@@ -1426,8 +1482,7 @@ model Organization {
   changeRequests           Change_Request[]
   reimbursementReqeusts    Reimbursement_Request[]
   usefulLinks              Link[]
-  frequentlyAskedQuestions FrequentlyAskedQuestion[]    @relation(name: "organizationFAQ")
-  partReviewFAQ            FrequentlyAskedQuestion[]    @relation(name: "partReviewFAQ")
+  frequentlyAskedQuestions FrequentlyAskedQuestion[]
   milestones               Milestone[]
   graphCollections         Graph_Collection[]
   graphs                   Graph[]
@@ -1444,43 +1499,64 @@ model Organization {
   prospectiveSponsors      Prospective_Sponsor[]
   indexCodes               Index_Code[]
   financeDelegates         User[]                       @relation(name: "financeDelegates")
+  rulesetTypes             Ruleset_Type[]
   guestDefinitions         Guest_Definition[]
   shops                    Shop[]
   machineries              Machinery[]
   calendars                Calendar[]
   eventTypes               Event_Type[]
   meetingAttendances       Meeting_Attendance[]
+  taskLabels               Task_Label[]
+  dashboards               Dashboard[]
+}
+
+model Dashboard {
+  dashboardId    String       @id @default(uuid())
+  name           String
+  link           String
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  user           User         @relation(fields: [userId], references: [userId], name: "userDashboards")
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  organizationId String
+
+  @@index([organizationId])
+  @@index([userId])
 }
 
 model FrequentlyAskedQuestion {
-  faqId              String        @id @default(uuid())
-  question           String
-  answer             String
-  userCreated        User          @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
-  userCreatedId      String
-  userDeleted        User?         @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
-  userDeletedId      String?
-  dateCreated        DateTime      @default(now())
-  dateDeleted        DateTime?
-  regularFaqOrgId    String?
-  regularFaqOrg      Organization? @relation(fields: [regularFaqOrgId], references: [organizationId], name: "organizationFAQ")
-  partReviewFaqOrgId String?
-  partReviewFaqOrg   Organization? @relation(fields: [partReviewFaqOrgId], references: [organizationId], name: "partReviewFAQ")
+  faqId                   String       @id @default(uuid())
+  question                String
+  answer                  String
+  userCreated             User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
+  userCreatedId           String
+  userDeleted             User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
+  userDeletedId           String?
+  dateCreated             DateTime     @default(now())
+  dateDeleted             DateTime?
+  organizationId          String
+  organization            Organization @relation(fields: [organizationId], references: [organizationId])
+  isOnRecruitingDashboard Boolean      @default(false)
+  isOnNewMemberDashboard  Boolean      @default(false)
+  isOnPartReviewPage      Boolean      @default(false)
 }
 
 model Milestone {
-  milestoneId    String       @id @default(uuid())
-  name           String
-  dateOfEvent    DateTime
-  description    String
-  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "milestoneCreator")
-  userCreatedId  String
-  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "milestoneDeleter")
-  userDeletedId  String?
-  dateCreated    DateTime     @default(now())
-  dateDeleted    DateTime?
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  milestoneId             String       @id @default(uuid())
+  name                    String
+  dateOfEvent             DateTime
+  description             String
+  userCreated             User         @relation(fields: [userCreatedId], references: [userId], name: "milestoneCreator")
+  userCreatedId           String
+  userDeleted             User?        @relation(fields: [userDeletedId], references: [userId], name: "milestoneDeleter")
+  userDeletedId           String?
+  dateCreated             DateTime     @default(now())
+  dateDeleted             DateTime?
+  organizationId          String
+  organization            Organization @relation(fields: [organizationId], references: [organizationId])
+  isOnRecruitingDashboard Boolean      @default(false)
+  isOnNewMemberDashboard  Boolean      @default(false)
 
   @@index([organizationId])
 }
@@ -1793,6 +1869,110 @@ enum Guest_Definition_Type {
   INFO_PAGE
 }
 
+model Ruleset_Type {
+  rulesetTypeId   String       @id @default(uuid())
+  name            String
+  lastUpdated     DateTime     @updatedAt
+  revisionFiles   Ruleset[]    @relation(name: "rulesetFileType")
+  dateCreated     DateTime     @default(now())
+  createdByUserId String
+  createdBy       User         @relation(name: "rulesetTypeCreator", fields: [createdByUserId], references: [userId])
+  dateDeleted     DateTime?
+  deletedByUserId String?
+  deletedBy       User?        @relation(name: "rulesetTypeDeleter", fields: [deletedByUserId], references: [userId])
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [organizationId])
+
+  @@index([organizationId])
+}
+
+model Ruleset {
+  rulesetId       String       @id @default(uuid())
+  fileId          String
+  name            String
+  active          Boolean
+  rules           Rule[]
+  rulesetTypeId   String
+  rulesetType     Ruleset_Type @relation(name: "rulesetFileType", fields: [rulesetTypeId], references: [rulesetTypeId])
+  carId           String
+  car             Car          @relation(name: "rulesetCar", fields: [carId], references: [carId])
+  dateCreated     DateTime     @default(now())
+  createdByUserId String
+  createdBy       User         @relation(name: "rulesetCreator", fields: [createdByUserId], references: [userId])
+  dateDeleted     DateTime?
+  deletedByUserId String?
+  deletedBy       User?        @relation(name: "rulesetDeleter", fields: [deletedByUserId], references: [userId])
+}
+
+model Rule {
+  ruleId                String                @id @default(uuid())
+  ruleCode              String
+  ruleContent           String
+  imageFileIds          String[]
+  rulesetId             String
+  ruleset               Ruleset               @relation(fields: [rulesetId], references: [rulesetId])
+  parentRuleId          String?
+  parentRule            Rule?                 @relation(name: "subRules", fields: [parentRuleId], references: [ruleId])
+  subRules              Rule[]                @relation(name: "subRules")
+  referencedRule        Rule[]                @relation(name: "ruleReferences")
+  referencedBy          Rule[]                @relation(name: "ruleReferences")
+  projects              Project_Rule[]        @relation(name: "rulesInProject")
+  teams                 Team[]                @relation(name: "teamRules")
+  status                Rule_Status           @default(PENDING)
+  statusUpdatedByUserId String?
+  statusUpdatedBy       User?                 @relation(name: "ruleStatusUpdater", fields: [statusUpdatedByUserId], references: [userId])
+  statusUpdatedAt       DateTime?
+  statusHistory         Rule_Status_History[]
+  dateCreated           DateTime              @default(now())
+  dateUpdated           DateTime?             @updatedAt
+  dateDeleted           DateTime?
+  createdByUserId       String
+  createdBy             User                  @relation(name: "ruleCreator", fields: [createdByUserId], references: [userId])
+  updatedByUserId       String?
+  updatedBy             User?                 @relation(name: "ruleUpdater", fields: [updatedByUserId], references: [userId])
+  deletedByUserId       String?
+  deletedBy             User?                 @relation(name: "ruleDeletor", fields: [deletedByUserId], references: [userId])
+
+  @@index([rulesetId, ruleCode])
+  @@index([parentRuleId, rulesetId, ruleCode])
+}
+
+model Project_Rule {
+  projectRuleId         String                @id @default(uuid())
+  ruleId                String
+  rule                  Rule                  @relation(name: "rulesInProject", fields: [ruleId], references: [ruleId])
+  projectId             String
+  project               Project               @relation(name: "projectsForRule", fields: [projectId], references: [projectId])
+  status                Rule_Status           @default(PENDING)
+  statusUpdatedByUserId String?
+  statusUpdatedBy       User?                 @relation(name: "projectRuleStatusUpdater", fields: [statusUpdatedByUserId], references: [userId])
+  statusUpdatedAt       DateTime?
+  statusHistory         Rule_Status_History[]
+  dateCreated           DateTime              @default(now())
+  createdByUserId       String
+  createdBy             User                  @relation(name: "projectRuleCreator", fields: [createdByUserId], references: [userId])
+  dateDeleted           DateTime?
+  deletedByUserId       String?
+  deletedBy             User?                 @relation(name: "projectRuleDeletor", fields: [deletedByUserId], references: [userId])
+
+  @@unique([ruleId, projectId])
+}
+
+model Rule_Status_History {
+  ruleStatusHistoryId String        @id @default(uuid())
+  ruleId              String
+  rule                Rule          @relation(fields: [ruleId], references: [ruleId])
+  projectRuleId       String?
+  projectRule         Project_Rule? @relation(fields: [projectRuleId], references: [projectRuleId])
+  status              Rule_Status
+  updatedByUserId     String
+  updatedBy           User          @relation(name: "ruleStatusHistoryUpdater", fields: [updatedByUserId], references: [userId])
+  dateCreated         DateTime      @default(now())
+
+  @@index([ruleId])
+  @@index([projectRuleId])
+}
+
 model Guest_Definition {
   definitionId   String                @id @default(uuid())
   term           String
@@ -1830,4 +2010,88 @@ model Meeting_Attendance {
 
   @@index([organizationId])
   @@index([teamId])
+}
+
+model Executive_Summary {
+  executiveSummaryId String    @id @default(uuid())
+  carId              String    @unique
+  car                Car       @relation(fields: [carId], references: [carId])
+  seasonStartDate    DateTime?
+  seasonEndDate      DateTime?
+
+  goals               String @default("")
+  winsAndImprovements String @default("")
+  budgetNotes         String @default("")
+  recruitmentNotes    String @default("")
+
+  dateCreated     DateTime  @default(now())
+  userCreatedId   String
+  userCreated     User      @relation(fields: [userCreatedId], references: [userId], name: "executiveSummaryCreator")
+  dateDeleted     DateTime?
+  deletedByUserId String?
+  deletedBy       User?     @relation(fields: [deletedByUserId], references: [userId], name: "executiveSummaryDeleter")
+
+  competitionPerformances     Competition_Performance[]
+  competitionDocumentsSummary Competition_Documents_Summary?
+  recruitmentCycles           Recruitment_Cycle[]
+}
+
+model Competition_Performance {
+  competitionPerformanceId String            @id @default(uuid())
+  executiveSummaryId       String
+  executiveSummary         Executive_Summary @relation(fields: [executiveSummaryId], references: [executiveSummaryId])
+  competition              Competition
+
+  finalPlace                 Int?
+  totalPointsEarned          Int?
+  bestStaticEvent            String?
+  worstStaticEvent           String?
+  bestDynamicEvent           String?
+  worstDynamicEvent          String?
+  accelerationTopTimeSeconds Int?
+  autocrossTopTimeSeconds    Int?
+  enduranceLapsCompleted     Int?
+  enduranceAvgLapTimeSeconds Int?
+
+  @@unique([executiveSummaryId, competition], name: "uniqueExecSummaryCompetition")
+  @@index([executiveSummaryId])
+}
+
+model Competition_Documents_Summary {
+  competitionDocumentsSummaryId String            @id @default(uuid())
+  executiveSummaryId            String            @unique
+  executiveSummary              Executive_Summary @relation(fields: [executiveSummaryId], references: [executiveSummaryId])
+  submittedOnTimeCount          Int?
+  firstSubmissionRejectedCount  Int?
+  source                        Data_Source       @default(MANUAL)
+  dateSynced                    DateTime?
+}
+
+model Recruitment_Cycle {
+  recruitmentCycleId String                       @id @default(uuid())
+  executiveSummaryId String
+  executiveSummary   Executive_Summary            @relation(fields: [executiveSummaryId], references: [executiveSummaryId])
+  term               Term
+  eventsHeld         Int?
+  signUps            Int?
+  onboarded          Int?
+  activeMembers      Int?
+  divisionCounts     Recruitment_Division_Count[]
+
+  @@unique([executiveSummaryId, term], name: "uniqueRecruitmentCycleTerm")
+  @@index([executiveSummaryId])
+}
+
+model Recruitment_Division_Count {
+  recruitmentDivisionCountId String            @id @default(uuid())
+  recruitmentCycleId         String
+  recruitmentCycle           Recruitment_Cycle @relation(fields: [recruitmentCycleId], references: [recruitmentCycleId])
+  teamTypeId                 String
+  teamType                   Team_Type         @relation(fields: [teamTypeId], references: [teamTypeId])
+  newMembers                 Int?
+  returningMembers           Int?
+
+  @@unique([recruitmentCycleId, teamTypeId], name: "uniqueDivisionCountPerCycle")
+  @@index([recruitmentCycleId])
+  @@index([teamTypeId])
 }
