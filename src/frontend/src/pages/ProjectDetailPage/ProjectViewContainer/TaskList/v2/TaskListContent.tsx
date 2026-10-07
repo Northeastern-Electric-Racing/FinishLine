@@ -2,7 +2,7 @@ import { DragDropContext, OnDragEndResponder, OnDragStartResponder } from '@hell
 import { Badge, Box, Button, TextField, Typography } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { FilterTaskArgs, Task, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
+import { FilterTaskArgs, Task, TaskFilterFields, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
 import { useQueryClient } from 'react-query';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
 import { useEditTask, useEditTaskAssignees, useFilterTasks, useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
@@ -14,7 +14,7 @@ import ErrorPage from '../../../../ErrorPage';
 import NERModal from '../../../../../components/NERModal';
 import TaskFormModal, { EditTaskFormInput } from '../TaskFormModal';
 import TaskFilterBar, { TaskFilterContext } from '../../../../../components/TaskFilterBar';
-import { TaskFilterFields, useTaskFilters } from '../../../../../hooks/task-filters.hooks';
+import { useTaskFilters } from '../../../../../hooks/task-filters.hooks';
 
 interface TaskListContentProps {
   /** which task board this is; drives which filters appear and how tasks are scoped */

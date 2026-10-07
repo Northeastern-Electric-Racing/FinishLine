@@ -4,8 +4,7 @@
  */
 
 import { Box } from '@mui/material';
-import { WbsNumber } from 'shared';
-import { TaskFilterFields } from '../hooks/task-filters.hooks';
+import { TaskFilterFields, WbsNumber } from 'shared';
 import CarDropdown from './dropdowns/CarDropdown';
 import ProjectDropdown from './dropdowns/ProjectDropdown';
 import WorkPackageDropdown from './dropdowns/WorkPackageDropdown';

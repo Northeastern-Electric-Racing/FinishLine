@@ -16,6 +16,8 @@ import { addWeeksToDate } from 'shared';
 import { HttpException } from '../utils/errors.utils.js';
 import { Reimbursement_Status_Type } from '@prisma/client';
 import { scheduleTimesTransformer } from '../transformers/calendar.transformer.js';
+import { globalTasksUrl } from '../utils/urls.utils.js';
+import { wbsNumOf } from '../utils/utils.js';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
@@ -96,11 +98,18 @@ export default class NotificationsService {
         })
         .join('\n\n');
 
+      // link to the global task board filtered to the distinct projects of the tasks in this message
+      const projectWbsNums = Array.from(
+        new Map(tasks.map((task) => [wbsPipe(task.wbsElement), wbsNumOf(task.wbsElement)])).values()
+      );
+
       // messageBlock will be empty if there are tasks with no assignees
       if (messageBlock !== '')
         await sendMessage(
           slackId,
-          ':sparkles: :pepe-coop: UPCOMING TASK DEADLINES :pepe-coop: :sparkles: \n\n\n' + messageBlock
+          ':sparkles: :pepe-coop: UPCOMING TASK DEADLINES :pepe-coop: :sparkles: \n\n\n' + messageBlock,
+          globalTasksUrl({ projectWbsNums }),
+          'View Tasks on Task Board'
         );
     });
 

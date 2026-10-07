@@ -38,3 +38,4 @@ export * from './src/types/bom-types.js';
 export * from './src/types/statistics-types.js';
 
 export * from './src/utils.js';
+export * from './src/utils/task-filters.utils.js';
