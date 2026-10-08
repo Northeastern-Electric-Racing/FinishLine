@@ -11,7 +11,7 @@ const requireEnv = (key: string): string => {
 };
 
 const BACKEND_URL = requireEnv('BACKEND_URL').replace(/\/$/, '');
-const SECRET = requireEnv('CRON_SECRET');
+const SECRET = requireEnv('NOTIFICATION_ENDPOINT_SECRET');
 
 const log = (msg: string) => console.log(`[${new Date().toISOString()}] ${msg}`);
 
