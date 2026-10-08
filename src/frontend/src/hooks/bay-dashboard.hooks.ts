@@ -4,8 +4,32 @@
  */
 
 import { useEffect } from 'react';
-import { useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
+import { AvailableBayDashboardWidgets, BayDashboardConfig } from 'shared';
 import { apiUrls } from '../utils/urls';
+import { getAvailableBayDashboardWidgets, getCurrentBayDashboardConfig } from '../apis/bay-dashboard.api';
+
+/**
+ * Custom React Hook to get the bay dashboard config currently displayed on the TV, for the Admin Tools preview.
+ * Resolves to null if the organization has never saved a config.
+ */
+export const useGetCurrentBayDashboardConfig = () => {
+  return useQuery<BayDashboardConfig | null, Error>(['bay-dashboard', 'admin', 'config'], async () => {
+    const { data } = await getCurrentBayDashboardConfig();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get every widget type that can be placed on the bay dashboard
+ * @param slug the organization's slug
+ */
+export const useAvailableBayDashboardWidgets = (slug: string) => {
+  return useQuery<AvailableBayDashboardWidgets, Error>(['bay-dashboard', slug, 'widgets'], async () => {
+    const { data } = await getAvailableBayDashboardWidgets(slug);
+    return data;
+  });
+};
 
 /**
  * Subscribes the public bay dashboard to config changes for one organization. Server sends an empty
