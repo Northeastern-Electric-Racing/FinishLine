@@ -52,7 +52,7 @@ export class WorkPackageProcess extends SeedProcess<WorkPackageInput, WorkPackag
   async run({ organization, projects, leadership, heads, admins, appAdmins }: WorkPackageInput): Promise<WorkPackageOutput> {
     const { organizationId } = organization;
     const projectOwners = [...leadership, ...heads, ...admins, ...appAdmins];
-    const now = new Date();
+    const { now } = this;
 
     // Phase 1: plan every project's work packages synchronously - every faker draw for the entire
     // process happens here, in the same project order every run, with no DB access and no

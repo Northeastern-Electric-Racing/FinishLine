@@ -61,23 +61,20 @@ export const sendMessage = async (slackId: string, message: string, link?: strin
   const client = getSlackClient();
   if (!client) return;
 
-  return console.log(message);
+  const block = generateSlackTextBlock(message, link, linkButtonText);
+  try {
+    const response = await client.chat.postMessage({
+      channel: slackId,
+      text: message,
+      blocks: [block],
+      unfurl_links: false
+    });
 
-  // const block = generateSlackTextBlock(message, link, linkButtonText);
-
-  // try {
-  //   const response = await client.chat.postMessage({
-  //     channel: slackId,
-  //     text: message,
-  //     blocks: [block],
-  //     unfurl_links: false
-  //   });
-
-  //   return response && response.channel && response.ts && { channelId: response.channel, ts: response.ts };
-  // } catch (error) {
-  //   console.error('Failed to send Slack message:', (error as any)?.data?.error ?? error);
-  //   return undefined;
-  // }
+    return response && response.channel && response.ts && { channelId: response.channel, ts: response.ts };
+  } catch (error) {
+    console.error('Failed to send Slack message:', (error as any)?.data?.error ?? error);
+    return undefined;
+  }
 };
 
 /**
@@ -395,6 +392,50 @@ export const checkBotInChannel = async (channelId: string): Promise<boolean> => 
     return channelRes.channel?.is_member ?? false;
   } catch (error) {
     return false;
+  }
+};
+
+/**
+ * Looks up a channel directly from Slack, bypassing the name cache so the result reflects the
+ * channel's current state.
+ * @param channelId the id of the slack channel
+ * @returns the channel's name, archived status, and whether the bot is a member, or undefined if slack has no such channel
+ * @throws if slack is not configured or the lookup fails for any reason other than the channel not existing
+ */
+export const getChannelInfo = async (
+  channelId: string
+): Promise<{ name: string; isArchived: boolean; isMember: boolean } | undefined> => {
+  const client = getSlackClient();
+  if (!client) throw new HttpException(500, 'Slack client not configured');
+
+  try {
+    const { channel } = await client.conversations.info({ channel: channelId });
+    return { name: channel?.name ?? channelId, isArchived: !!channel?.is_archived, isMember: !!channel?.is_member };
+  } catch (error) {
+    const slackError = (error as { data?: { error?: string } }).data?.error;
+    if (slackError === 'channel_not_found') return undefined;
+    throw new HttpException(502, 'Error looking up slack channel: ' + (slackError ?? (error as Error).message));
+  }
+};
+
+/**
+ * Posts a plain text message to a channel. Unlike sendMessage, failures are thrown rather than
+ * swallowed so the caller can report them.
+ * @param channelId the id of the slack channel
+ * @param text the text content of the message
+ * @returns the channel id and timestamp of the created slack message
+ * @throws if slack is not configured or rejects the message
+ */
+export const postMessageToChannel = async (channelId: string, text: string): Promise<{ channelId: string; ts: string }> => {
+  const client = getSlackClient();
+  if (!client) throw new HttpException(500, 'Slack client not configured');
+
+  try {
+    const response = await client.chat.postMessage({ channel: channelId, text, unfurl_links: false });
+    return { channelId: response.channel, ts: response.ts };
+  } catch (error) {
+    const slackError = (error as { data?: { error?: string } }).data?.error;
+    throw new HttpException(502, 'Error sending slack message: ' + (slackError ?? (error as Error).message));
   }
 };
 

@@ -208,6 +208,13 @@ export type ExceptionObjectNames =
   | 'Reimbursement Product Other Reason'
   | 'Encryption Key'
   | 'Reimbursement Request Comment'
+  | 'Ruleset'
+  | 'Parent Rule'
+  | 'Referenced Rule'
+  | 'Rule'
+  | 'Project Rule'
+  | 'Ruleset Type'
+  | 'Active Ruleset for given Ruleset Type'
   | 'Calendar'
   | 'Event Type'
   | 'Event'
@@ -220,4 +227,5 @@ export type ExceptionObjectNames =
   | 'Task Label'
   | 'Notification Channel'
   | 'Dashboard'
-  | 'Team Join Request';
+  | 'Team Join Request'
+  | 'Slack Channel';
