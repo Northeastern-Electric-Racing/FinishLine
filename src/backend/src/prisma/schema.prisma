@@ -1174,16 +1174,25 @@ enum DayOfWeek {
   SUNDAY
 }
 
+enum Event_Reminder_Status {
+  PENDING
+  SENT
+}
+
 model Event_Reminder {
-  eventReminderId String              @id @default(uuid())
+  eventReminderId String                @id @default(uuid())
   scheduleSlotId  String
-  scheduleSlot    Schedule_Slot       @relation(fields: [scheduleSlotId], references: [scheduleSlotId], onDelete: Cascade)
+  scheduleSlot    Schedule_Slot         @relation(fields: [scheduleSlotId], references: [scheduleSlotId], onDelete: Cascade)
   tier            Event_Reminder_Tier
   slotStartTime   DateTime
   slackChannelId  String
-  dateSent        DateTime            @default(now())
+  status          Event_Reminder_Status @default(PENDING)
+  claimToken      String                @default(uuid())
+  claimedAt       DateTime              @default(now())
+  sentAt          DateTime?
 
   @@unique([scheduleSlotId, tier, slotStartTime, slackChannelId])
+  @@index([status, claimedAt])
 }
 
 model Schedule_Slot {

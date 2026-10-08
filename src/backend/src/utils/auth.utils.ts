@@ -93,7 +93,6 @@ const notificationEndpointAuth = (req: Request, res: Response, next: NextFunctio
 
   if (!authorization) return res.status(401).json({ message: 'Authentication Failed: Secret not found!' });
 
-  console.log(authorization, CRON_SECRET);
   if (authorization !== CRON_SECRET) return res.status(401).json({ message: 'Authentication Failed: Invalid secret!' });
 
   return next();

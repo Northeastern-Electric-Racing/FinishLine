@@ -17,6 +17,9 @@ import { HttpException } from '../utils/errors.utils.js';
 import { Reimbursement_Status_Type } from '@prisma/client';
 import { eventReminderInclude } from '../transformers/notifications.transformer.js';
 import { HOUR_MS } from '../utils/time.utils.js';
+import { randomUUID } from 'crypto';
+
+const CLAIM_LEASE_MS = 10 * 60 * 1000;
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
     await NotificationsService.sendTaskDeadlineSlackNotifications();
@@ -127,10 +130,12 @@ export default class NotificationsService {
     }
   }
 
-  static async sendEventReminderSlackNotifications() {
+  /**
+   * Sends notifications for any upcoming events 48h, 24h and 1h before the event.
+   */
+  static async sendEventReminderSlackNotifications(now: Date = new Date()) {
     if (process.env.NODE_ENV !== 'production' && process.env.SEND_SLACK_MESSAGES_IN_DEV !== 'true') return;
 
-    const now = new Date();
     const horizon = new Date(now.getTime() + 48 * HOUR_MS);
 
     const slots = await prisma.schedule_Slot.findMany({
@@ -154,16 +159,29 @@ export default class NotificationsService {
 
     if (candidates.length === 0) return;
 
-    const claimed = await prisma.event_Reminder.createManyAndReturn({
-      data: candidates.map(({ slot, startTime, tier, slackChannelId }) => ({
-        scheduleSlotId: slot.scheduleSlotId,
-        tier: tier.tier,
-        slotStartTime: startTime,
-        slackChannelId
-      })),
+    const runToken = randomUUID();
+    const staleBefore = new Date(now.getTime() - CLAIM_LEASE_MS);
+
+    const keys = candidates.map(({ slot, startTime, tier, slackChannelId }) => ({
+      scheduleSlotId: slot.scheduleSlotId,
+      tier: tier.tier,
+      slotStartTime: startTime,
+      slackChannelId
+    }));
+
+    await prisma.event_Reminder.createMany({
+      data: keys.map((key) => ({ ...key, claimToken: runToken, claimedAt: now })),
       skipDuplicates: true
     });
 
+    await prisma.event_Reminder.updateMany({
+      where: { status: 'PENDING', claimedAt: { lt: staleBefore }, OR: keys },
+      data: { claimToken: runToken, claimedAt: now }
+    });
+
+    const claimed = await prisma.event_Reminder.findMany({ where: { claimToken: runToken } });
+
+    // a slot is only due for one tier per run, so slot + channel identifies the claim
     const claimKey = (scheduleSlotId: string, slackChannelId: string) => `${scheduleSlotId}:${slackChannelId}`;
     const claimedIdByKey = new Map(claimed.map((r) => [claimKey(r.scheduleSlotId, r.slackChannelId), r.eventReminderId]));
 
@@ -171,7 +189,7 @@ export default class NotificationsService {
 
     candidates.forEach(({ slot, startTime, tier, slackChannelId }) => {
       const reminderId = claimedIdByKey.get(claimKey(slot.scheduleSlotId, slackChannelId));
-      if (!reminderId) return;
+      if (!reminderId) return; // sent, or being sent, by another run
 
       const entry = byChannel.get(slackChannelId) ?? { lines: [], reminderIds: [] };
       entry.lines.push(buildReminderLine(slot.event, startTime, tier.label));
@@ -179,24 +197,37 @@ export default class NotificationsService {
       byChannel.set(slackChannelId, entry);
     });
 
-    const failedReminderIds = (
-      await Promise.all(
-        [...byChannel].map(async ([channelId, { lines, reminderIds }]) => {
-          try {
-            const sent = await sendMessage(
-              channelId,
-              ':calendar: :clock9: Upcoming Events! :clock9: :calendar:\n\n\n' + lines.join('\n\n')
-            );
-            return sent ? [] : reminderIds;
-          } catch {
-            return reminderIds;
-          }
-        })
-      )
-    ).flat();
+    // sendMessage swallows Slack errors and returns undefined, so check the return value as well as catching
+    const results = await Promise.all(
+      [...byChannel].map(async ([channelId, { lines, reminderIds }]) => {
+        try {
+          const sent = await sendMessage(
+            channelId,
+            ':calendar: :clock9: Upcoming Events! :clock9: :calendar:\n\n\n' + lines.join('\n\n')
+          );
+          return { reminderIds, ok: !!sent };
+        } catch {
+          return { reminderIds, ok: false };
+        }
+      })
+    );
 
-    if (failedReminderIds.length > 0) {
-      await prisma.event_Reminder.deleteMany({ where: { eventReminderId: { in: failedReminderIds } } });
+    const sentIds = results.filter((r) => r.ok).flatMap((r) => r.reminderIds);
+    const failedIds = results.filter((r) => !r.ok).flatMap((r) => r.reminderIds);
+
+    // only touch rows this run still owns, in case a slow run's claims were taken over
+    if (sentIds.length > 0) {
+      await prisma.event_Reminder.updateMany({
+        where: { eventReminderId: { in: sentIds }, claimToken: runToken },
+        data: { status: 'SENT', sentAt: new Date() }
+      });
+    }
+
+    // release failed sends so the next trigger retries them right away instead of waiting out the lease
+    if (failedIds.length > 0) {
+      await prisma.event_Reminder.deleteMany({
+        where: { eventReminderId: { in: failedIds }, claimToken: runToken }
+      });
     }
   }
 
