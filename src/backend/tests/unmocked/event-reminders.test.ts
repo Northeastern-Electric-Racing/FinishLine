@@ -296,7 +296,7 @@ describe('sendEventReminderSlackNotifications', () => {
       expect(mockedSend).toHaveBeenCalledTimes(3);
     });
   });
-  
+
   describe('lease', () => {
     it('takes over and retries a stale PENDING claim left by an interrupted run', async () => {
       const { slot } = await createReminderFixture();
