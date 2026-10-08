@@ -4,31 +4,32 @@
  */
 
 import { Grid } from '@mui/material';
+import { useMemo } from 'react';
+import { TeamWithProjects } from 'shared';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { useAllArchivedTeamsWithProjects, useAllTeamsWithProjects } from '../../hooks/teams.hooks';
+import { useAllTeamsWithProjects } from '../../hooks/teams.hooks';
 import ErrorPage from '../ErrorPage';
 import TeamSummary from './TeamSummary';
 import PageLayout from '../../components/PageLayout';
 
 const TeamsPage: React.FC = () => {
-  const { isLoading: teamsLoading, isError: isTeamsError, data: teams, error: teamsError } = useAllTeamsWithProjects();
+  const { data: teams, isLoading, isError, error } = useAllTeamsWithProjects();
 
-  const {
-    isLoading: archivedTeamsLoading,
-    isError: isArchivedTeamsError,
-    data: archivedTeams,
-    error: archivedTeamsError
-  } = useAllArchivedTeamsWithProjects();
+  const [activeTeams, archivedTeams] = useMemo(() => {
+    const active: TeamWithProjects[] = [];
+    const archived: TeamWithProjects[] = [];
+    (teams ?? []).forEach((team) => (team.dateArchived ? archived : active).push(team));
+    return [active, archived];
+  }, [teams]);
 
-  if (isTeamsError) return <ErrorPage message={teamsError?.message} />;
-  if (isArchivedTeamsError) return <ErrorPage message={archivedTeamsError?.message} />;
-  if (teamsLoading || archivedTeamsLoading || !teams || !archivedTeams) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (isLoading || !teams) return <LoadingIndicator />;
 
   return (
     <>
       <PageLayout title="Teams">
         <Grid container spacing={2}>
-          {teams.map((team) => (
+          {activeTeams.map((team) => (
             <Grid item key={team.teamId}>
               <TeamSummary team={team} />
             </Grid>

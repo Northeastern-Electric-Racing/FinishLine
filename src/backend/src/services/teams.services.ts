@@ -101,9 +101,9 @@ export default class TeamsService {
    * @param archived whether to get archived teams instead of active teams
    * @returns a list of teams with their project previews
    */
-  static async getAllTeamsWithProjects(organization: Organization, archived: boolean): Promise<TeamWithProjects[]> {
+  static async getAllTeamsWithProjects(organization: Organization): Promise<TeamWithProjects[]> {
     const teams = await prisma.team.findMany({
-      where: { dateArchived: archived ? { not: null } : null, organizationId: organization.organizationId },
+      where: { organizationId: organization.organizationId },
       ...getTeamWithProjectsQueryArgs()
     });
     return teams.map(teamWithProjectsTransformer);

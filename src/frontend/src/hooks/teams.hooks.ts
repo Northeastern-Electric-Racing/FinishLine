@@ -17,7 +17,6 @@ import {
   archiveTeam,
   getAllArchivedTeams,
   getAllTeamsWithProjects,
-  getAllArchivedTeamsWithProjects,
   getUsersTeams,
   setTeamSlackId,
   getMyTeamAsHead,
@@ -60,13 +59,6 @@ export const useAllArchivedTeams = () => {
 export const useAllTeamsWithProjects = () => {
   return useQuery<TeamWithProjects[], Error>(['teams', 'summaries'], async () => {
     const { data } = await getAllTeamsWithProjects();
-    return data;
-  });
-};
-
-export const useAllArchivedTeamsWithProjects = () => {
-  return useQuery<TeamWithProjects[], Error>(['teams', 'summaries', 'archived'], async () => {
-    const { data } = await getAllArchivedTeamsWithProjects();
     return data;
   });
 };

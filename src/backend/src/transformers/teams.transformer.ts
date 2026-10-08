@@ -54,6 +54,7 @@ export const teamWithProjectsTransformer = (team: Prisma.TeamGetPayload<TeamWith
   return {
     teamId: team.teamId,
     teamName: team.teamName,
+    dateArchived: team.dateArchived ?? undefined,
     head: team.head,
     memberCount: team._count.members,
     leadCount: team._count.leads,

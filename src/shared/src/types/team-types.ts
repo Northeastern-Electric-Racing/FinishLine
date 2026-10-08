@@ -35,6 +35,7 @@ export interface TeamProjectPreview {
 export interface TeamWithProjects {
   teamId: string;
   teamName: string;
+  dateArchived?: Date;
   head: UserPreview;
   memberCount: number;
   leadCount: number;

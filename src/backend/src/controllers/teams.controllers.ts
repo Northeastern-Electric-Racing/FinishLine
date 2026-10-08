@@ -45,17 +45,7 @@ export default class TeamsController {
 
   static async getAllTeamsWithProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const teams = await TeamsService.getAllTeamsWithProjects(req.organization, false);
-
-      res.status(200).json(teams);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getAllArchivedTeamsWithProjects(req: Request, res: Response, next: NextFunction) {
-    try {
-      const teams = await TeamsService.getAllTeamsWithProjects(req.organization, true);
+      const teams = await TeamsService.getAllTeamsWithProjects(req.organization);
 
       res.status(200).json(teams);
     } catch (error: unknown) {

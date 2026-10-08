@@ -50,6 +50,7 @@ export const getTeamWithProjectsQueryArgs = () =>
     select: {
       teamId: true,
       teamName: true,
+      dateArchived: true,
       head: { select: { userId: true, firstName: true, lastName: true } },
       _count: { select: { members: true, leads: true } },
       projects: {
