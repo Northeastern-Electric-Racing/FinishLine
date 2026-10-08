@@ -5,8 +5,13 @@ import { HOUR_MS } from '../../src/utils/time.utils';
 
 type ReminderEvent = Parameters<typeof getEventChannelIds>[0];
 
-const makeEvent = (eventTeamIds: (string | null)[], wpTeamIds: (string | null)[][]): ReminderEvent =>
+const makeEvent = (
+  eventTeamIds: (string | null)[],
+  wpTeamIds: (string | null)[][],
+  notificationChannelIds: string[] = []
+): ReminderEvent =>
   ({
+    notificationChannelIds,
     teams: eventTeamIds.map((slackId) => ({ slackId })),
     workPackages: wpTeamIds.map((ids) => ({ project: { teams: ids.map((slackId) => ({ slackId })) } }))
   }) as unknown as ReminderEvent;
@@ -28,6 +33,15 @@ describe('getEventChannelIds', () => {
 
   it('returns nothing for an event with no teams or work packages', () => {
     expect(getEventChannelIds(makeEvent([], [])).size).toBe(0);
+  });
+  it('includes standalone notification channels', () => {
+    const ids = getEventChannelIds(makeEvent([], [], ['C_NOTIFY']));
+    expect([...ids]).toEqual(['C_NOTIFY']);
+  });
+
+  it('dedupes a notification channel that is also a team channel', () => {
+    const ids = getEventChannelIds(makeEvent(['C1'], [], ['C1', 'C2']));
+    expect([...ids].sort()).toEqual(['C1', 'C2']);
   });
 });
 

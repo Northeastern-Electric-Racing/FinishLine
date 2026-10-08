@@ -28,7 +28,7 @@ export type EventWithAttendees = Event & {
 
 const GRACE_MS = 2 * HOUR_MS;
 
-const REMINDER_TIERS = [
+export const REMINDER_TIERS = [
   { tier: Event_Reminder_Tier.HOURS_48, hoursBefore: 48, label: 'in 2 days' },
   { tier: Event_Reminder_Tier.HOURS_24, hoursBefore: 24, label: 'in 1 day' },
   { tier: Event_Reminder_Tier.HOURS_1, hoursBefore: 1, label: 'within the hour' }
@@ -36,8 +36,17 @@ const REMINDER_TIERS = [
 
 export const getEventChannelIds = (event: EventForReminder): Set<string> => {
   const ids = new Set<string>();
-  event.teams.forEach((t) => t.slackId && ids.add(t.slackId));
-  event.workPackages.forEach((wp) => wp.project.teams.forEach((t) => t.slackId && ids.add(t.slackId)));
+  event.notificationChannelIds.forEach((id) => {
+    if (id) ids.add(id);
+  });
+  event.teams.forEach((team) => {
+    if (team.slackId) ids.add(team.slackId);
+  });
+  event.workPackages.forEach((wp) => {
+    wp.project.teams.forEach((team) => {
+      if (team.slackId) ids.add(team.slackId);
+    });
+  });
   return ids;
 };
 
@@ -62,8 +71,10 @@ export const buildReminderLine = (event: EventForReminder, startTime: Date, labe
   const zoom = event.zoomLink ? `\n<${event.zoomLink}|Zoom Link>` : '';
   const doc = event.questionDocumentLink ? `\n<${event.questionDocumentLink}|Question Doc Link>` : '';
 
+  const attendeesWithSlack = getEventAttendees(event).filter((user) => user.userSettings?.slackId);
+
   return (
-    `${usersToSlackPings(getEventAttendees(event))} *${event.eventType.name}*: ${event.title}` +
+    `${usersToSlackPings(attendeesWithSlack)} *${event.eventType.name}*: ${event.title}` +
     `${wpNames ? ` (${wpNames})` : ''} is ${label}: ${when}${zoom}${doc}`
   );
 };
