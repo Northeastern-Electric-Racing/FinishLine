@@ -23,7 +23,7 @@ import {
   sendEphemeralMessage,
   sendMessage
 } from '../integrations/slack.js';
-import { getUserSlackId, getUserSlackMentionOrName } from './users.utils.js';
+import { getUserSlackId, getUserSlackMentionOrName, getUsersWithSettings } from './users.utils.js';
 import prisma from '../prisma/prisma.js';
 import { HttpException } from './errors.utils.js';
 import { Change_Request, Team, WBS_Element } from '@prisma/client';
@@ -984,3 +984,88 @@ export const notifySponsorTaskAssignee = async (
   const linkButtonText = `View Tasks for ${sponsor}`;
   await sendMessage(assignee.userSettings?.slackId, msg, link, linkButtonText);
 };
+
+type Teams =
+  | ({
+      teamType: {
+        name: string;
+        dateDeleted: Date | null;
+        organizationId: string;
+        teamTypeId: string;
+        iconName: string;
+        description: string;
+        imageFileId: string | null;
+        calendarId: string | null;
+        deletedById: string | null;
+      } | null;
+    } & {
+      slackId: string;
+      organizationId: string;
+      teamTypeId: string | null;
+      description: string;
+      teamId: string;
+      teamName: string;
+      financeTeam: boolean;
+      operationsTeam: boolean;
+      headId: string;
+      dateArchived: Date | null;
+      userArchivedId: string | null;
+    })[]
+  | undefined;
+
+/**
+ * Sends to team channels as well as leads and manager about
+ * a work package that is scheduled to start at a later date than anticipated
+ *
+ * @param teams The teams to notify
+ * @param leadId The work package's lead
+ * @param managerId The work package's manager
+ * @param startDate The planned starting date for the work package
+ * @param activationDate The actual starting date for the work package
+ * @param bufferDays The threshold that triggers this message
+ */
+export const sendActivationStartDateChangedNotification = async (
+  teams: Teams,
+  leadId: string = '',
+  managerId: string = '',
+  startDate: Date,
+  activationDate: Date,
+  bufferDays: number,
+  workPackageLink: string
+) => {
+  const leadIdPing = (await pingBasedOnId(leadId)) || '';
+  const managerIdPing = (await pingBasedOnId(managerId)) || '';
+
+  const activationDateString = activationDate.toDateString();
+  const startDateString = startDate.toDateString();
+
+  const message =
+    leadIdPing +
+    ' ' +
+    managerIdPing +
+    ' The activation date ' +
+    activationDateString +
+    ' is more than ' +
+    bufferDays +
+    ' days apart from the scheduled starting date ' +
+    startDateString +
+    '.\n';
+  const link = 'https://finishlinebyner.com/cr/' + workPackageLink;
+  const linkButtonText = 'Change Work Package';
+
+  teams?.map((team) => {
+    sendMessage(team.slackId, message, link, linkButtonText);
+  });
+};
+
+async function pingBasedOnId(id: string) {
+  if (id) {
+    const userArray = getUsersWithSettings([id]);
+    const user = (await userArray).findLast(() => true);
+    if (user) {
+      const ping = userToSlackPing(user);
+      if (ping) return ping;
+    }
+    return '';
+  }
+}

@@ -13,7 +13,8 @@ import {
   wbsPipe,
   WorkPackageProposedChangesCreateArgs,
   User,
-  isHead
+  isHead,
+  isWithinBuffer
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -48,6 +49,7 @@ import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets
 import { buildChangeDetail } from '../utils/changes.utils.js';
 import {
   addSlackThreadsToChangeRequest,
+  sendActivationStartDateChangedNotification,
   sendAndGetSlackCRNotifications,
   sendSlackCRStatusToThread,
   sendSlackRequestedReviewNotification,
@@ -632,6 +634,25 @@ export default class ChangeRequestsService {
         createdCR.wbsElement?.workPackage?.project.wbsElement.name || ''
       );
       await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
+    }
+
+    if (createdCR.wbsElement?.workPackage) {
+      const inBuffer = isWithinBuffer(
+        createdCR.wbsElement?.workPackage?.startDate,
+        new Date(startDate),
+        organization.activationBufferDays
+      );
+      if (!inBuffer) {
+        sendActivationStartDateChangedNotification(
+          teams,
+          leadId,
+          managerId,
+          new Date(startDate),
+          createdCR.wbsElement?.workPackage?.startDate,
+          organization.activationBufferDays,
+          createdCR.crId
+        );
+      }
     }
 
     await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter);
