@@ -43,6 +43,16 @@ export default class TeamsController {
     }
   }
 
+  static async getAllTeamsWithProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const teams = await TeamsService.getAllTeamsWithProjects(req.organization);
+
+      res.status(200).json(teams);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getSingleTeam(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamId } = req.params as Record<string, string>;

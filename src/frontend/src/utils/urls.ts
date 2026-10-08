@@ -150,6 +150,7 @@ const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/
 const teams = () => `${API_URL}/teams`;
 const teamPreviews = () => `${API_URL}/teams/previews/`;
 const teamsById = (id: string) => `${teams()}/${id}`;
+const teamsWithProjects = () => `${teams()}/summaries`;
 const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
@@ -705,6 +706,7 @@ export const apiUrls = {
   teams,
   teamPreviews,
   teamsById,
+  teamsWithProjects,
   teamsDelete,
   teamsSetMembers,
   teamsArchive,
