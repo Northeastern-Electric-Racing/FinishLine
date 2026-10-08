@@ -20,6 +20,8 @@ import { HOUR_MS } from '../utils/time.utils.js';
 import { randomUUID } from 'crypto';
 
 const CLAIM_LEASE_MS = 10 * 60 * 1000;
+const SEND_ATTEMPTS = 3;
+
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
     await NotificationsService.sendTaskDeadlineSlackNotifications();
@@ -131,9 +133,15 @@ export default class NotificationsService {
   }
 
   /**
-   * Sends notifications for any upcoming events 48h, 24h and 1h before the event.
+   * Sends 48h/24h/1h event reminders. Delivery is at-least-once: each reminder is claimed under a
+   * heartbeat-renewed lease and marked SENT after Slack accepts it. Slack has no idempotency key, so
+   * a crash between Slack accepting a message and the SENT write can cause one duplicate. Every other
+   * failure (Slack errors, timeouts, a crash before sending) is retried without duplicating.
    */
-  static async sendEventReminderSlackNotifications(now: Date = new Date()) {
+  static async sendEventReminderSlackNotifications(
+    now: Date = new Date(),
+    { retryDelayMs = 2000, heartbeatMs = 60_000 }: { retryDelayMs?: number; heartbeatMs?: number } = {}
+  ) {
     if (process.env.NODE_ENV !== 'production' && process.env.SEND_SLACK_MESSAGES_IN_DEV !== 'true') return;
 
     const horizon = new Date(now.getTime() + 48 * HOUR_MS);
@@ -197,20 +205,40 @@ export default class NotificationsService {
       byChannel.set(slackChannelId, entry);
     });
 
-    // sendMessage swallows Slack errors and returns undefined, so check the return value as well as catching
-    const results = await Promise.all(
-      [...byChannel].map(async ([channelId, { lines, reminderIds }]) => {
+    const sendWithRetry = async (channelId: string, text: string): Promise<boolean> => {
+      for (let attempt = 1; attempt <= SEND_ATTEMPTS; attempt++) {
         try {
-          const sent = await sendMessage(
+          if (await sendMessage(channelId, text)) return true;
+        } catch {
+          // treated the same as a falsy result: retried below
+        }
+        if (attempt < SEND_ATTEMPTS) await new Promise((resolve) => setTimeout(resolve, retryDelayMs * attempt));
+      }
+      return false;
+    };
+
+    // keep this run's claims fresh while it's still working, so a slow send (for example, Slack's own
+    // retries) can never outlive the lease and be taken over by an overlapping run
+    const heartbeat = setInterval(() => {
+      prisma.event_Reminder
+        .updateMany({ where: { claimToken: runToken, status: 'PENDING' }, data: { claimedAt: new Date() } })
+        .catch(() => {});
+    }, heartbeatMs);
+
+    let results: { reminderIds: string[]; ok: boolean }[];
+    try {
+      results = await Promise.all(
+        [...byChannel].map(async ([channelId, { lines, reminderIds }]) => ({
+          reminderIds,
+          ok: await sendWithRetry(
             channelId,
             ':calendar: :clock9: Upcoming Events! :clock9: :calendar:\n\n\n' + lines.join('\n\n')
-          );
-          return { reminderIds, ok: !!sent };
-        } catch {
-          return { reminderIds, ok: false };
-        }
-      })
-    );
+          )
+        }))
+      );
+    } finally {
+      clearInterval(heartbeat);
+    }
 
     const sentIds = results.filter((r) => r.ok).flatMap((r) => r.reminderIds);
     const failedIds = results.filter((r) => !r.ok).flatMap((r) => r.reminderIds);

@@ -17,7 +17,8 @@ vi.mock('../../src/integrations/slack', async (importOriginal) => ({
 
 const mockedSend = vi.mocked(sendMessage);
 const succeed = async (channelId: string) => ({ channelId, ts: '1700000000.000100' });
-const run = (now: Date) => NotificationsService.sendEventReminderSlackNotifications(now);
+const run = (now: Date) => NotificationsService.sendEventReminderSlackNotifications(now, { retryDelayMs: 0 });
+const alwaysFail = async () => undefined;
 const sentChannels = () => mockedSend.mock.calls.map(([channelId]) => channelId).sort();
 
 const MIN_MS = 60 * 1000;
@@ -333,6 +334,30 @@ describe('sendEventReminderSlackNotifications', () => {
       await run(runAt);
 
       expect(mockedSend).not.toHaveBeenCalled();
+    });
+    it('keeps an in-progress claim from being taken over while a slow send is running', async () => {
+      await createReminderFixture();
+      let release!: () => void;
+      const blocked = new Promise<void>((resolve) => (release = resolve));
+      mockedSend.mockImplementationOnce(async (channelId: string) => {
+        await blocked;
+        return succeed(channelId);
+      });
+
+      const runAt = before(23.5 * HOUR_MS);
+      const slowRun = NotificationsService.sendEventReminderSlackNotifications(runAt, {
+        retryDelayMs: 0,
+        heartbeatMs: 10
+      });
+      await new Promise((resolve) => setTimeout(resolve, 200)); // let the claim land and the heartbeat fire
+
+      // a trigger past the original lease would take the claim over if the heartbeat weren't refreshing it
+      await run(new Date(runAt.getTime() + 11 * MIN_MS));
+      expect(mockedSend).toHaveBeenCalledTimes(1);
+
+      release();
+      await slowRun;
+      expect((await prisma.event_Reminder.findFirstOrThrow()).status).toBe('SENT');
     });
   });
 
