@@ -37,14 +37,14 @@ describe('Bay Dashboard Admin Tests', () => {
       const regularMember = await createTestUser(member, orgId);
 
       await expect(
-        BayDashboardAdminService.saveBayDashboardConfig(regularMember as any, organization, [textSlot(0, 'Nope')])
+        BayDashboardAdminService.saveBayDashboardConfig(regularMember, organization, [textSlot(0, 'Nope')])
       ).rejects.toThrow(new AccessDeniedException('Only heads and above can save the bay dashboard config'));
     });
 
     it('saves a config with a widget for a head', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
-      const config = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+      const config = await BayDashboardAdminService.saveBayDashboardConfig(head, organization, [
         {
           position: 0,
           size: BayDashboardWidgetSize.LARGE,
@@ -63,7 +63,7 @@ describe('Bay Dashboard Admin Tests', () => {
     it('returns slots ordered by position', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
-      const config = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+      const config = await BayDashboardAdminService.saveBayDashboardConfig(head, organization, [
         textSlot(2, 'third'),
         textSlot(0, 'first'),
         textSlot(1, 'second')
@@ -76,7 +76,7 @@ describe('Bay Dashboard Admin Tests', () => {
     it('fills positions that are left out or have no widget with their defaults', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
-      const config = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+      const config = await BayDashboardAdminService.saveBayDashboardConfig(head, organization, [
         textSlot(0, 'has a widget'),
         { position: 1, size: BayDashboardWidgetSize.MEDIUM }
       ]);
@@ -91,7 +91,7 @@ describe('Bay Dashboard Admin Tests', () => {
     it('saves the whole default layout when no slots are given', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
-      const config = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, []);
+      const config = await BayDashboardAdminService.saveBayDashboardConfig(head, organization, []);
 
       expect(config.slots.map((slot) => slot.widgets.map((widget) => widget.type))).toEqual([
         [BayDashboardWidgetType.CALENDAR],
@@ -103,12 +103,8 @@ describe('Bay Dashboard Admin Tests', () => {
     it('soft deletes the previous config so only the newest stays active', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
-      const oldConfig = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-        textSlot(0, 'old')
-      ]);
-      const newConfig = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-        textSlot(0, 'new')
-      ]);
+      const oldConfig = await BayDashboardAdminService.saveBayDashboardConfig(head, organization, [textSlot(0, 'old')]);
+      const newConfig = await BayDashboardAdminService.saveBayDashboardConfig(head, organization, [textSlot(0, 'new')]);
 
       const oldConfigAfterSave = await prisma.bay_Dashboard_Config.findUnique({
         where: { bayDashboardConfigId: oldConfig.bayDashboardConfigId }
@@ -125,12 +121,10 @@ describe('Bay Dashboard Admin Tests', () => {
     it('keeps the previous config active when the new config fails to save', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
-      const oldConfig = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-        textSlot(0, 'old')
-      ]);
+      const oldConfig = await BayDashboardAdminService.saveBayDashboardConfig(head, organization, [textSlot(0, 'old')]);
 
       await expect(
-        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+        BayDashboardAdminService.saveBayDashboardConfig(head, organization, [
           { position: 0, size: BayDashboardWidgetSize.LARGE, widget: { type: 'NOT_A_WIDGET_TYPE' as any } }
         ])
       ).rejects.toThrow(new HttpException(400, 'Slot position 0: NOT_A_WIDGET_TYPE is not a valid widget type'));
@@ -159,10 +153,10 @@ describe('Bay Dashboard Admin Tests', () => {
         otherOrganization.organizationId
       );
 
-      const otherConfig = await BayDashboardAdminService.saveBayDashboardConfig(otherHead as any, otherOrganization, [
+      const otherConfig = await BayDashboardAdminService.saveBayDashboardConfig(otherHead, otherOrganization, [
         textSlot(0, 'other org')
       ]);
-      await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [textSlot(0, 'this org')]);
+      await BayDashboardAdminService.saveBayDashboardConfig(head, organization, [textSlot(0, 'this org')]);
 
       const otherConfigAfterSave = await prisma.bay_Dashboard_Config.findUnique({
         where: { bayDashboardConfigId: otherConfig.bayDashboardConfigId }
@@ -174,10 +168,7 @@ describe('Bay Dashboard Admin Tests', () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
       await expect(
-        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-          textSlot(0, 'first'),
-          textSlot(0, 'duplicate')
-        ])
+        BayDashboardAdminService.saveBayDashboardConfig(head, organization, [textSlot(0, 'first'), textSlot(0, 'duplicate')])
       ).rejects.toThrow(new HttpException(400, 'Each slot must have a unique position'));
     });
 
@@ -185,7 +176,7 @@ describe('Bay Dashboard Admin Tests', () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
       await expect(
-        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+        BayDashboardAdminService.saveBayDashboardConfig(head, organization, [
           { position: 7, size: BayDashboardWidgetSize.SMALL }
         ])
       ).rejects.toThrow(new HttpException(400, 'Slot position 7 is not part of the bay dashboard layout'));
@@ -195,7 +186,7 @@ describe('Bay Dashboard Admin Tests', () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
       await expect(
-        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+        BayDashboardAdminService.saveBayDashboardConfig(head, organization, [
           { position: 0, size: BayDashboardWidgetSize.SMALL }
         ])
       ).rejects.toThrow(new HttpException(400, 'Slot position 0 must be size LARGE'));
@@ -205,7 +196,7 @@ describe('Bay Dashboard Admin Tests', () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
       await expect(
-        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+        BayDashboardAdminService.saveBayDashboardConfig(head, organization, [
           { position: 0, size: BayDashboardWidgetSize.LARGE },
           { position: 1, size: BayDashboardWidgetSize.LARGE }
         ])
@@ -215,12 +206,10 @@ describe('Bay Dashboard Admin Tests', () => {
     it('does not change the active config when the layout check fails', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
-      const oldConfig = await BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
-        textSlot(0, 'old')
-      ]);
+      const oldConfig = await BayDashboardAdminService.saveBayDashboardConfig(head, organization, [textSlot(0, 'old')]);
 
       await expect(
-        BayDashboardAdminService.saveBayDashboardConfig(head as any, organization, [
+        BayDashboardAdminService.saveBayDashboardConfig(head, organization, [
           { position: 7, size: BayDashboardWidgetSize.SMALL }
         ])
       ).rejects.toThrow(HttpException);
