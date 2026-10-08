@@ -12,4 +12,19 @@ export default class BayDashboardAdminController {
       next(error);
     }
   }
+
+  /**
+   * Saves a new bay dashboard config for the current user's organization, replacing the one the TV is showing.
+   */
+  static async saveBayDashboardConfig(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { slots } = req.body;
+      const { currentUser, organization } = req;
+
+      const config = await BayDashboardAdminService.saveBayDashboardConfig(currentUser, organization, slots);
+      res.status(201).json(config);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
