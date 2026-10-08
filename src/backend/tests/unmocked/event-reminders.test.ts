@@ -238,27 +238,37 @@ describe('sendEventReminderSlackNotifications', () => {
   });
 
   describe('failed sends stay retryable', () => {
-    it('releases the claim when sendMessage returns undefined, then retries', async () => {
+    it('retries a transient failure within the same run', async () => {
       await createReminderFixture();
       mockedSend.mockResolvedValueOnce(undefined);
 
       await run(before(23.5 * HOUR_MS));
-      expect(await prisma.event_Reminder.count()).toBe(0);
 
-      await run(before(23.25 * HOUR_MS));
       expect(mockedSend).toHaveBeenCalledTimes(2);
       expect((await prisma.event_Reminder.findFirstOrThrow()).status).toBe('SENT');
     });
 
-    it('releases the claim when sendMessage throws', async () => {
+    it('releases the claim after every attempt fails, then retries on the next trigger', async () => {
       await createReminderFixture();
-      mockedSend.mockRejectedValueOnce(new Error('slack down'));
+      mockedSend.mockImplementation(alwaysFail);
 
       await run(before(23.5 * HOUR_MS));
+      expect(mockedSend).toHaveBeenCalledTimes(3);
       expect(await prisma.event_Reminder.count()).toBe(0);
 
+      mockedSend.mockImplementation(succeed);
       await run(before(23.25 * HOUR_MS));
-      expect(mockedSend).toHaveBeenCalledTimes(2);
+      expect(mockedSend).toHaveBeenCalledTimes(4);
+      expect((await prisma.event_Reminder.findFirstOrThrow()).status).toBe('SENT');
+    });
+
+    it('treats a thrown error like a failed send', async () => {
+      await createReminderFixture();
+      mockedSend.mockRejectedValue(new Error('slack down'));
+
+      await run(before(23.5 * HOUR_MS));
+      expect(mockedSend).toHaveBeenCalledTimes(3);
+      expect(await prisma.event_Reminder.count()).toBe(0);
     });
 
     it('only retries the channel that failed', async () => {
@@ -277,15 +287,16 @@ describe('sendEventReminderSlackNotifications', () => {
 
     it('does not retry once the window has passed', async () => {
       await createReminderFixture();
-      mockedSend.mockResolvedValueOnce(undefined);
+      mockedSend.mockImplementation(alwaysFail);
 
       await run(before(22.5 * HOUR_MS));
+      mockedSend.mockImplementation(succeed);
       await run(before(21.5 * HOUR_MS));
 
-      expect(mockedSend).toHaveBeenCalledTimes(1);
+      expect(mockedSend).toHaveBeenCalledTimes(3);
     });
   });
-
+  
   describe('lease', () => {
     it('takes over and retries a stale PENDING claim left by an interrupted run', async () => {
       const { slot } = await createReminderFixture();
