@@ -1046,7 +1046,11 @@ export const sendActivationStartDateChangedNotification = async (
 async function pingBasedOnId(id: string) {
   if (id) {
     const userArray = getUsersWithSettings([id]);
-    const user = (await userArray).findLast((x) => true);
-    if (user) return userToSlackPing(user);
+    const user = (await userArray).findLast(() => true);
+    if (user) {
+      const ping = userToSlackPing(user);
+      if (ping) return ping;
+    }
+    return '';
   }
 }
