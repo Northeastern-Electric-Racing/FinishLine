@@ -23,7 +23,7 @@ import {
   sendEphemeralMessage,
   sendMessage
 } from '../integrations/slack.js';
-import { getUserSlackId, getUserSlackMentionOrName } from './users.utils.js';
+import { getUserSlackId, getUserSlackMentionOrName, getUsersWithSettings } from './users.utils.js';
 import prisma from '../prisma/prisma.js';
 import { HttpException } from './errors.utils.js';
 import { Change_Request, Team, WBS_Element } from '@prisma/client';
@@ -1015,34 +1015,38 @@ export const sendActivationStartDateChangedNotification = async (
   managerId: string = '',
   startDate: Date,
   activationDate: Date,
-  bufferDays: number
+  bufferDays: number,
+  workPackageLink: string
 ) => {
-  // logic to make card, then make it helper and then its used for relevant groups + people
+  const leadIdPing = (await pingBasedOnId(leadId)) || '';
+  const managerIdPing = (await pingBasedOnId(managerId)) || '';
+
+  const activationDateString = activationDate.toDateString();
+  const startDateString = startDate.toDateString();
 
   const message =
-    'The activation date ' +
-    activationDate.toDateString() +
+    leadIdPing +
+    ' ' +
+    managerIdPing +
+    ' The activation date ' +
+    activationDateString +
     ' is more than ' +
     bufferDays +
     ' days apart from the scheduled starting date ' +
-    startDate +
+    startDateString +
     '.\n';
-  const link = 'https://finishlinebyner.com/projects/';
+  const link = 'https://finishlinebyner.com/cr/' + workPackageLink;
   const linkButtonText = 'Change Work Package';
-
-  if (leadId) {
-    const leadUser = await prisma.user.findUnique({
-      where: { id: leadId },
-      include: {
-        settings: true
-      }
-    });
-    userToSlackPing(leadUser);
-  }
-
-  if (managerId) userToSlackPing(managerId);
 
   teams?.map((team) => {
     sendMessage(team.slackId, message, link, linkButtonText);
   });
 };
+
+async function pingBasedOnId(id: string) {
+  if (id) {
+    const userArray = getUsersWithSettings([id]);
+    const user = (await userArray).findLast((x) => true);
+    if (user) return userToSlackPing(user);
+  }
+}

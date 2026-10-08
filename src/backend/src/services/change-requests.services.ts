@@ -49,11 +49,11 @@ import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets
 import { buildChangeDetail } from '../utils/changes.utils.js';
 import {
   addSlackThreadsToChangeRequest,
+  sendActivationStartDateChangedNotification,
   sendAndGetSlackCRNotifications,
   sendSlackCRStatusToThread,
   sendSlackRequestedReviewNotification,
-  sendStandardCRCreatedNotification,
-  sendActivationStartDateChangedNotification
+  sendStandardCRCreatedNotification
 } from '../utils/slack.utils.js';
 import {
   ChangeRequestWithProjectAndWorkPackageQueryArgs,
@@ -64,6 +64,7 @@ import {
 } from '../prisma-query-args/change-requests.query-args.js';
 import { sendCrRequestReviewPopUp, sendCrReviewedPopUp } from '../utils/pop-up.utils.js';
 import { GuestChangeRequest } from '../../../shared/src/types/change-request-types.js';
+import { link } from 'fs';
 
 export default class ChangeRequestsService {
   /**
@@ -638,18 +639,19 @@ export default class ChangeRequestsService {
 
     if (createdCR.wbsElement?.workPackage) {
       const inBuffer = isWithinBuffer(
-        startDate,
         createdCR.wbsElement?.workPackage?.startDate,
+        new Date(startDate),
         organization.activationBufferDays
       );
-      if (inBuffer) {
+      if (!inBuffer) {
         sendActivationStartDateChangedNotification(
           teams,
           leadId,
           managerId,
-          startDate,
+          new Date(startDate),
           createdCR.wbsElement?.workPackage?.startDate,
-          organization.activationBufferDays
+          organization.activationBufferDays,
+          createdCR.crId
         );
       }
     }
