@@ -57,7 +57,6 @@ export default class ProjectsService {
     const projects = await prisma.project.findMany({
       where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId }, ...(carId && { carId }) },
       orderBy: [{ wbsElement: { carNumber: 'asc' } }, { wbsElement: { projectNumber: 'asc' } }],
-      relationLoadStrategy: 'query',
       ...getProjectGanttQueryArgs(organization.organizationId)
     });
 
