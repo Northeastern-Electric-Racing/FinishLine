@@ -73,8 +73,7 @@ export const getProjectGanttQueryArgs = (organizationId: string) =>
         select: {
           teamId: true,
           teamName: true
-        },
-        orderBy: [{ teamName: 'asc' }, { teamId: 'asc' }]
+        }
       },
       workPackages: {
         where: {

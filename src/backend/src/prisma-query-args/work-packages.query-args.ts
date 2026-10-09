@@ -17,8 +17,7 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
           teams: {
             include: {
               teamType: true
-            },
-            orderBy: [{ teamName: 'asc' }, { teamId: 'asc' }]
+            }
           }
         }
       },
@@ -29,28 +28,13 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
           changes: {
             where: { changeRequest: { dateDeleted: null } },
             include: { implementer: getUserQueryArgs(organizationId), changeRequest: true },
-            orderBy: [{ dateImplemented: 'asc' }, { changeId: 'asc' }]
+            orderBy: { dateImplemented: 'asc' }
           },
-          blocking: {
-            where: { wbsElement: { dateDeleted: null } },
-            include: { wbsElement: true },
-            orderBy: [
-              { wbsElement: { carNumber: 'asc' } },
-              { wbsElement: { projectNumber: 'asc' } },
-              { wbsElement: { workPackageNumber: 'asc' } }
-            ]
-          },
-          descriptionBullets: {
-            where: { dateDeleted: null },
-            orderBy: [{ dateAdded: 'asc' }, { descriptionId: 'asc' }],
-            ...getDescriptionBulletQueryArgs(organizationId)
-          }
+          blocking: { where: { wbsElement: { dateDeleted: null } }, include: { wbsElement: true } },
+          descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) }
         }
       },
-      blockedBy: {
-        where: { dateDeleted: null },
-        orderBy: [{ carNumber: 'asc' }, { projectNumber: 'asc' }, { workPackageNumber: 'asc' }]
-      },
+      blockedBy: { where: { dateDeleted: null } },
       events: { where: { dateDeleted: null }, ...getEventQueryArgs(organizationId) }
     }
   });
@@ -62,10 +46,7 @@ export const getWorkPackageGanttQueryArgs = (organizationId: string) =>
       project: {
         select: {
           wbsElement: { select: { name: true } },
-          teams: {
-            select: { teamType: true },
-            orderBy: [{ teamName: 'asc' }, { teamId: 'asc' }]
-          }
+          teams: { select: { teamType: true } }
         }
       },
       wbsElement: {
@@ -75,28 +56,21 @@ export const getWorkPackageGanttQueryArgs = (organizationId: string) =>
           changes: {
             where: { changeRequest: { dateDeleted: null } },
             include: { implementer: getUserQueryArgs(organizationId), changeRequest: { select: { identifier: true } } },
-            orderBy: [{ dateImplemented: 'asc' }, { changeId: 'asc' }]
+            orderBy: { dateImplemented: 'asc' }
           },
           blocking: {
             where: { wbsElement: { dateDeleted: null } },
-            select: { wbsElement: { select: { carNumber: true, projectNumber: true, workPackageNumber: true } } },
-            orderBy: [
-              { wbsElement: { carNumber: 'asc' } },
-              { wbsElement: { projectNumber: 'asc' } },
-              { wbsElement: { workPackageNumber: 'asc' } }
-            ]
+            select: { wbsElement: { select: { carNumber: true, projectNumber: true, workPackageNumber: true } } }
           },
           descriptionBullets: {
             where: { dateDeleted: null },
-            orderBy: [{ dateAdded: 'asc' }, { descriptionId: 'asc' }],
             select: { ...getDescriptionBulletQueryArgs(organizationId).select, userChecked: getUserPreviewQueryArgs() }
           }
         }
       },
       blockedBy: {
         where: { dateDeleted: null },
-        select: { carNumber: true, projectNumber: true, workPackageNumber: true },
-        orderBy: [{ carNumber: 'asc' }, { projectNumber: 'asc' }, { workPackageNumber: 'asc' }]
+        select: { carNumber: true, projectNumber: true, workPackageNumber: true }
       },
       events: { where: { dateDeleted: null }, ...getEventPreviewQueryArgs(organizationId) }
     }

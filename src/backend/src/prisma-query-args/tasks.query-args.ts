@@ -55,11 +55,8 @@ export const getTaskQueryArgs = () =>
       wbsElement: getBlockingWorkPackagesArgs(),
       createdBy: getUserPreviewWithEmailQueryArgs(),
       deletedBy: getUserPreviewWithEmailQueryArgs(),
-      assignees: {
-        ...getUserPreviewWithEmailQueryArgs(),
-        orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }, { userId: 'asc' }]
-      },
-      labels: { ...getTaskLabelQueryArgs(), orderBy: [{ name: 'asc' }, { taskLabelId: 'asc' }] },
+      assignees: getUserPreviewWithEmailQueryArgs(),
+      labels: getTaskLabelQueryArgs(),
       blockedBy: getTaskBlockedByQueryArgs()
     }
   });
