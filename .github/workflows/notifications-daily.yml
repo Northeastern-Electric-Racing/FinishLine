@@ -1,8 +1,7 @@
 name: Send Daily Slack Notifications
 
 on:
-  schedule:
-    - cron: '0 14 * * *'
+  workflow_dispatch:
 
 jobs:
   send_notifications:
