@@ -16,10 +16,11 @@ import { addWeeksToDate } from 'shared';
 import { HttpException } from '../utils/errors.utils.js';
 import { Reimbursement_Status_Type } from '@prisma/client';
 import { eventReminderInclude } from '../transformers/notifications.transformer.js';
-import { HOUR_MS } from '../utils/time.utils.js';
+import { HOUR_MS, MINUTE_MS } from '../utils/time.utils.js';
 import { randomUUID } from 'crypto';
 
-const CLAIM_LEASE_MS = 10 * 60 * 1000;
+// service
+const CLAIM_LEASE_MS = 10 * MINUTE_MS;
 const SEND_ATTEMPTS = 3;
 
 export default class NotificationsService {

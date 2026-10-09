@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Send daily notifications
         run: |
-          curl -H "Authorization: ${{ secrets.NOTIFICATION_ENDPOINT_SECRET }}" -X POST "${{ secrets.BACKEND_URL}}/notifications/daily"
+          curl --fail-with-body -H "Authorization: ${{ secrets.NOTIFICATION_ENDPOINT_SECRET }}" -X POST "${{ secrets.BACKEND_URL }}/notifications/daily"

@@ -4,7 +4,7 @@ import { Event_Reminder_Tier } from '@prisma/client';
 import prisma from '../../src/prisma/prisma';
 import NotificationsService from '../../src/services/notifications.services';
 import { sendMessage } from '../../src/integrations/slack';
-import { HOUR_MS } from '../../src/utils/time.utils';
+import { HOUR_MS, MINUTE_MS } from '../../src/utils/time.utils';
 import { REMINDER_TIERS } from '../../src/utils/notifications.utils';
 
 const labelFor = (tier: Event_Reminder_Tier) => REMINDER_TIERS.find((t) => t.tier === tier)!.label;
@@ -21,7 +21,6 @@ const run = (now: Date) => NotificationsService.sendEventReminderSlackNotificati
 const alwaysFail = async () => undefined;
 const sentChannels = () => mockedSend.mock.calls.map(([channelId]) => channelId).sort();
 
-const MIN_MS = 60 * 1000;
 const T = new Date('2026-01-15T18:00:00Z'); // slot start time
 const before = (ms: number) => new Date(T.getTime() - ms);
 
@@ -213,7 +212,7 @@ describe('sendEventReminderSlackNotifications', () => {
 
     it('sends each tier exactly once across a full lifecycle of 15-minute triggers', async () => {
       await createReminderFixture();
-      for (let ms = 50 * HOUR_MS; ms > 0; ms -= 15 * MIN_MS) await run(before(ms));
+      for (let ms = 50 * HOUR_MS; ms > 0; ms -= 15 * MINUTE_MS) await run(before(ms));
 
       const texts = mockedSend.mock.calls.map(([, text]) => text);
       expect(texts).toHaveLength(3);
@@ -305,7 +304,7 @@ describe('sendEventReminderSlackNotifications', () => {
         data: {
           ...keyFor(slot.scheduleSlotId),
           status: 'PENDING',
-          claimedAt: new Date(runAt.getTime() - 11 * MIN_MS)
+          claimedAt: new Date(runAt.getTime() - 11 * MINUTE_MS)
         }
       });
 
@@ -322,7 +321,7 @@ describe('sendEventReminderSlackNotifications', () => {
         data: {
           ...keyFor(slot.scheduleSlotId),
           status: 'PENDING',
-          claimedAt: new Date(runAt.getTime() - MIN_MS)
+          claimedAt: new Date(runAt.getTime() - MINUTE_MS)
         }
       });
 
@@ -363,7 +362,7 @@ describe('sendEventReminderSlackNotifications', () => {
       await new Promise((resolve) => setTimeout(resolve, 200)); // let the claim land and the heartbeat fire
 
       // a trigger past the original lease would take the claim over if the heartbeat weren't refreshing it
-      await run(new Date(runAt.getTime() + 11 * MIN_MS));
+      await run(new Date(runAt.getTime() + 11 * MINUTE_MS));
       expect(mockedSend).toHaveBeenCalledTimes(1);
 
       release();

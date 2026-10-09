@@ -5,8 +5,8 @@ import dayjs from 'dayjs';
   https://fakerjs.dev/api/date.html
 */
 
-export function generateRandomDate(faker: Faker, from?: Date, to?: Date) {
-  return faker.date.between({ from: from ?? '2000-01-01', to: to ?? Date.now() });
+export function generateRandomDate(faker: Faker, from: Date, to: Date) {
+  return faker.date.between({ from, to });
 }
 
 export function generateRandomDateAround(faker: Faker, date: Date, days: number) {
