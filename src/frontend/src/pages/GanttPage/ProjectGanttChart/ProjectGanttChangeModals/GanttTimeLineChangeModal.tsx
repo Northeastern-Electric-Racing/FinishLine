@@ -81,7 +81,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
         existingTask.startDate?.getTime() !== task.startDate?.getTime() ||
         existingTask.deadline?.getTime() !== task.deadline?.getTime() ||
         existingTask.assignees.length !== task.assignees.length ||
-        existingTask.assignees.some((assignee, index) => assignee.userId !== task.assignees[index]?.userId);
+        existingTask.assignees.some((assignee) => !task.assignees.some((a) => a.userId === assignee.userId));
 
       if (hasChanges) {
         editedTasks.push(task);
