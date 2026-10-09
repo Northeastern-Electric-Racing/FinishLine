@@ -3,27 +3,36 @@ import {
   TaskWithAssignees,
   endOfDayTomorrow,
   startOfDayTomorrow,
-  startOfTodayEST,
-  startOfTomorrowEST,
   usersToSlackPings,
-  EventWithAttendees
+  getDueTier,
+  getEventChannelIds,
+  buildReminderLine
 } from '../utils/notifications.utils.js';
 import { sendMessage } from '../integrations/slack.js';
-import { daysBetween, wbsPipe, formatTimeForSlack } from 'shared';
+import { daysBetween, wbsPipe } from 'shared';
 import { buildDueString, sendThreadResponse } from '../utils/slack.utils.js';
 import WorkPackagesService from './work-packages.services.js';
 import { addWeeksToDate } from 'shared';
 import { HttpException } from '../utils/errors.utils.js';
 import { Reimbursement_Status_Type } from '@prisma/client';
-import { scheduleTimesTransformer } from '../transformers/calendar.transformer.js';
+import { eventReminderInclude } from '../transformers/notifications.transformer.js';
+import { HOUR_MS, MINUTE_MS } from '../utils/time.utils.js';
+import { randomUUID } from 'crypto';
+
+// service
+const CLAIM_LEASE_MS = 10 * MINUTE_MS;
+const SEND_ATTEMPTS = 3;
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
     await NotificationsService.sendTaskDeadlineSlackNotifications();
-    await NotificationsService.sendEventSlackNotifications();
     await NotificationsService.sendWorkPackageDeadlineSlackNotifications();
     await NotificationsService.sendSponsorTaskNotifications();
     await NotificationsService.sendPendingSaboSubmissionNotifications();
+  }
+
+  static async sendHourlySlackNotifications() {
+    await NotificationsService.sendEventReminderSlackNotifications();
   }
 
   /**
@@ -125,118 +134,130 @@ export default class NotificationsService {
   }
 
   /**
-   * Sends Slack notifications for all events scheduled for today whose event type has sendSlackNotifications enabled
+   * Sends 48h/24h/1h event reminders. Delivery is at-least-once: each reminder is claimed under a
+   * heartbeat-renewed lease and marked SENT after Slack accepts it. Slack has no idempotency key, so
+   * a crash between Slack accepting a message and the SENT write can cause one duplicate. Every other
+   * failure (Slack errors, timeouts, a crash before sending) is retried without duplicating.
    */
-  static async sendEventSlackNotifications() {
-    const endOfToday = startOfTomorrowEST();
-    const startOfToday = startOfTodayEST();
+  static async sendEventReminderSlackNotifications(
+    now: Date = new Date(),
+    { retryDelayMs = 2000, heartbeatMs = 60_000 }: { retryDelayMs?: number; heartbeatMs?: number } = {}
+  ) {
+    if (process.env.NODE_ENV !== 'production' && process.env.SEND_SLACK_MESSAGES_IN_DEV !== 'true') return;
 
-    const events = await prisma.event.findMany({
+    const horizon = new Date(now.getTime() + 48 * HOUR_MS);
+
+    const slots = await prisma.schedule_Slot.findMany({
       where: {
-        status: 'SCHEDULED',
-        dateDeleted: null,
-        scheduledTimes: {
-          some: {
-            AND: [{ endTime: { gte: startOfToday } }, { startTime: { lte: endOfToday } }]
-          }
-        },
-        eventType: {
-          sendSlackNotifications: true
-        }
+        startTime: { gt: now, lte: horizon },
+        event: { status: 'SCHEDULED', dateDeleted: null, eventType: { sendSlackNotifications: true } }
       },
-      include: {
-        requiredMembers: { include: { userSettings: true } },
-        optionalMembers: { include: { userSettings: true } },
-        userCreated: { include: { userSettings: true } },
-        scheduledTimes: true,
-        teams: true,
-        eventType: true,
-        workPackages: {
-          include: {
-            wbsElement: true,
-            project: {
-              include: {
-                teams: true,
-                wbsElement: true
-              }
-            }
-          }
+      orderBy: { startTime: 'asc' },
+      include: { event: { include: eventReminderInclude } }
+    });
+
+    const due = slots.flatMap((slot) => {
+      if (!slot.startTime) return [];
+      const tier = getDueTier(slot.startTime, now);
+      return tier ? [{ slot, startTime: slot.startTime, tier }] : [];
+    });
+
+    const candidates = due.flatMap(({ slot, startTime, tier }) =>
+      [...getEventChannelIds(slot.event)].map((slackChannelId) => ({ slot, startTime, tier, slackChannelId }))
+    );
+
+    if (candidates.length === 0) return;
+
+    const runToken = randomUUID();
+    const staleBefore = new Date(now.getTime() - CLAIM_LEASE_MS);
+
+    const keys = candidates.map(({ slot, startTime, tier, slackChannelId }) => ({
+      scheduleSlotId: slot.scheduleSlotId,
+      tier: tier.tier,
+      slotStartTime: startTime,
+      slackChannelId
+    }));
+
+    await prisma.event_Reminder.createMany({
+      data: keys.map((key) => ({ ...key, claimToken: runToken, claimedAt: now })),
+      skipDuplicates: true
+    });
+
+    await prisma.event_Reminder.updateMany({
+      where: { status: 'PENDING', claimedAt: { lt: staleBefore }, OR: keys },
+      data: { claimToken: runToken, claimedAt: now }
+    });
+
+    const claimed = await prisma.event_Reminder.findMany({ where: { claimToken: runToken } });
+
+    // a slot is only due for one tier per run, so slot + channel identifies the claim
+    const claimKey = (scheduleSlotId: string, slackChannelId: string) => `${scheduleSlotId}:${slackChannelId}`;
+    const claimedIdByKey = new Map(claimed.map((r) => [claimKey(r.scheduleSlotId, r.slackChannelId), r.eventReminderId]));
+
+    const byChannel = new Map<string, { lines: string[]; reminderIds: string[] }>();
+
+    candidates.forEach(({ slot, startTime, tier, slackChannelId }) => {
+      const reminderId = claimedIdByKey.get(claimKey(slot.scheduleSlotId, slackChannelId));
+      if (!reminderId) return; // sent, or being sent, by another run
+
+      const entry = byChannel.get(slackChannelId) ?? { lines: [], reminderIds: [] };
+      entry.lines.push(buildReminderLine(slot.event, startTime, tier.label));
+      entry.reminderIds.push(reminderId);
+      byChannel.set(slackChannelId, entry);
+    });
+
+    const sendWithRetry = async (channelId: string, text: string): Promise<boolean> => {
+      for (let attempt = 1; attempt <= SEND_ATTEMPTS; attempt++) {
+        try {
+          if (await sendMessage(channelId, text)) return true;
+        } catch {
+          // treated the same as a falsy result: retried below
         }
+        if (attempt < SEND_ATTEMPTS) await new Promise((resolve) => setTimeout(resolve, retryDelayMs * attempt));
       }
-    });
+      return false;
+    };
 
-    const eventTeamMap = new Map<string, EventWithAttendees[]>();
+    // keep this run's claims fresh while it's still working, so a slow send (for example, Slack's own
+    // retries) can never outlive the lease and be taken over by an overlapping run
+    const heartbeat = setInterval(() => {
+      prisma.event_Reminder
+        .updateMany({ where: { claimToken: runToken, status: 'PENDING' }, data: { claimedAt: new Date() } })
+        .catch(() => {});
+    }, heartbeatMs);
 
-    events.forEach((event) => {
-      // Collect unique team Slack IDs: first from teams directly on the event, then from work packages
-      const teamSlackIds = new Set<string>();
+    let results: { reminderIds: string[]; ok: boolean }[];
+    try {
+      results = await Promise.all(
+        [...byChannel].map(async ([channelId, { lines, reminderIds }]) => ({
+          reminderIds,
+          ok: await sendWithRetry(
+            channelId,
+            ':calendar: :clock9: Upcoming Events! :clock9: :calendar:\n\n\n' + lines.join('\n\n')
+          )
+        }))
+      );
+    } finally {
+      clearInterval(heartbeat);
+    }
 
-      event.teams.forEach((team) => {
-        if (team.slackId) {
-          teamSlackIds.add(team.slackId);
-        }
+    const sentIds = results.filter((r) => r.ok).flatMap((r) => r.reminderIds);
+    const failedIds = results.filter((r) => !r.ok).flatMap((r) => r.reminderIds);
+
+    // only touch rows this run still owns, in case a slow run's claims were taken over
+    if (sentIds.length > 0) {
+      await prisma.event_Reminder.updateMany({
+        where: { eventReminderId: { in: sentIds }, claimToken: runToken },
+        data: { status: 'SENT', sentAt: new Date() }
       });
+    }
 
-      event.workPackages.forEach((workPackage) => {
-        workPackage.project.teams.forEach((team) => {
-          if (team.slackId) {
-            teamSlackIds.add(team.slackId);
-          }
-        });
+    // release failed sends so the next trigger retries them right away instead of waiting out the lease
+    if (failedIds.length > 0) {
+      await prisma.event_Reminder.deleteMany({
+        where: { eventReminderId: { in: failedIds }, claimToken: runToken }
       });
-
-      const attendees = event.requiredMembers
-        .concat(event.optionalMembers)
-        .concat(event.userCreated)
-        .filter((user, index, arr) => arr.findIndex((other) => other.userId === user.userId) === index);
-
-      teamSlackIds.forEach((teamSlackId) => {
-        const currentEvents = eventTeamMap.get(teamSlackId);
-        const eventWithAttendees = {
-          ...event,
-          attendees,
-          scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer)
-        };
-
-        if (currentEvents) {
-          currentEvents.push(eventWithAttendees);
-        } else {
-          eventTeamMap.set(teamSlackId, [eventWithAttendees]);
-        }
-      });
-    });
-
-    // Send the notifications to each team for their respective events
-    const promises = Array.from(eventTeamMap).map(async ([slackId, events]) => {
-      const messageBlock = events
-        .map((event) => {
-          const zoomLink = event.zoomLink ? `<${event.zoomLink}|Zoom Link>\n` : '';
-          const questionDocLink = event.questionDocumentLink ? `<${event.questionDocumentLink}|Question Doc Link>\n` : '';
-
-          const workPackageNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
-          const workPackagesPart = workPackageNames ? ` (${workPackageNames})` : '';
-
-          // Get the earliest scheduled start time for display
-          const [earliestSlot] = event.scheduledTimes
-            .filter((slot) => slot.startTime)
-            .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime());
-          const timeDisplay = earliestSlot ? formatTimeForSlack(new Date(earliestSlot.startTime!)) : 'TBD';
-
-          return (
-            `${usersToSlackPings(event.attendees ?? [])} *${event.eventType.name}*: ${event.title}${workPackagesPart} ` +
-            `will be having an event today at ${timeDisplay} ET! ` +
-            zoomLink +
-            questionDocLink
-          );
-        })
-        .join('\n\n');
-
-      // messageBlock will be empty if there are events with no attendees
-      if (messageBlock !== '')
-        await sendMessage(slackId, ':calendar: :clock9: Upcoming Events! :clock9: :calendar: \n\n\n' + messageBlock);
-    });
-
-    await Promise.all(promises);
+    }
   }
 
   /**

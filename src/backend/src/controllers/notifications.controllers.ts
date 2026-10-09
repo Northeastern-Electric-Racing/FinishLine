@@ -6,7 +6,16 @@ export default class NotificationsController {
     try {
       await NotificationsService.sendDailySlackNotifications();
 
-      res.status(200).json({ message: 'Successfully sent task deadline notifications!' });
+      res.status(200).json({ message: 'Successfully sent daily notifications!' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+  static async sendHourlySlackNotifications(_req: Request, res: Response, next: NextFunction) {
+    try {
+      await NotificationsService.sendHourlySlackNotifications();
+
+      res.status(200).json({ message: 'Successfully sent hourly notifications!' });
     } catch (error: unknown) {
       next(error);
     }

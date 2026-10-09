@@ -1,7 +1,16 @@
-import { Task as Prisma_Task, WBS_Element, Event, Work_Package, Team, Event_Type } from '@prisma/client';
+import {
+  Task as Prisma_Task,
+  WBS_Element,
+  Event,
+  Work_Package,
+  Team,
+  Event_Type,
+  Event_Reminder_Tier
+} from '@prisma/client';
 import { UserWithSettings } from './auth.utils.js';
-import { ScheduleSlot } from 'shared';
-
+import { formatTimeForSlack, ScheduleSlot } from 'shared';
+import { EventForReminder } from '../transformers/notifications.transformer.js';
+import { HOUR_MS } from './time.utils.js';
 export type TaskWithAssignees = Prisma_Task & {
   assignees: UserWithSettings[] | null;
   wbsElement: WBS_Element;
@@ -15,6 +24,59 @@ export type EventWithAttendees = Event & {
   workPackages: (Work_Package & {
     wbsElement: WBS_Element;
   })[];
+};
+
+const GRACE_MS = 2 * HOUR_MS;
+
+export const REMINDER_TIERS = [
+  { tier: Event_Reminder_Tier.HOURS_48, hoursBefore: 48, label: 'in 2 days' },
+  { tier: Event_Reminder_Tier.HOURS_24, hoursBefore: 24, label: 'in 1 day' },
+  { tier: Event_Reminder_Tier.HOURS_1, hoursBefore: 1, label: 'within the hour' }
+] as const;
+
+export const getEventChannelIds = (event: EventForReminder): Set<string> => {
+  const ids = new Set<string>();
+  event.notificationChannelIds.forEach((id) => {
+    if (id) ids.add(id);
+  });
+  event.teams.forEach((team) => {
+    if (team.slackId) ids.add(team.slackId);
+  });
+  event.workPackages.forEach((wp) => {
+    wp.project.teams.forEach((team) => {
+      if (team.slackId) ids.add(team.slackId);
+    });
+  });
+  return ids;
+};
+
+export const getEventAttendees = (event: EventForReminder) =>
+  [...event.requiredMembers, ...event.optionalMembers, event.userCreated].filter(
+    (user, i, arr) => arr.findIndex((u) => u.userId === user.userId) === i
+  );
+
+export const getDueTier = (startTime: Date, now: Date) => {
+  const msUntil = startTime.getTime() - now.getTime();
+  return REMINDER_TIERS.find(({ hoursBefore }) => {
+    const upper = hoursBefore * HOUR_MS;
+    const lower = Math.max(0, upper - GRACE_MS);
+    return msUntil <= upper && msUntil > lower;
+  });
+};
+
+export const buildReminderLine = (event: EventForReminder, startTime: Date, label: string): string => {
+  const wpNames = event.workPackages.map((wp) => wp.wbsElement.name).join(', ');
+  const unix = Math.floor(startTime.getTime() / 1000);
+  const when = `<!date^${unix}^{date_short_pretty} at {time}|${formatTimeForSlack(startTime)} ET>`;
+  const zoom = event.zoomLink ? `\n<${event.zoomLink}|Zoom Link>` : '';
+  const doc = event.questionDocumentLink ? `\n<${event.questionDocumentLink}|Question Doc Link>` : '';
+
+  const attendeesWithSlack = getEventAttendees(event).filter((user) => user.userSettings?.slackId);
+
+  return (
+    `${usersToSlackPings(attendeesWithSlack)} *${event.eventType.name}*: ${event.title}` +
+    `${wpNames ? ` (${wpNames})` : ''} is ${label}: ${when}${zoom}${doc}`
+  );
 };
 
 export const usersToSlackPings = (users: UserWithSettings[]) => {

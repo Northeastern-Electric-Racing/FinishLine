@@ -1,0 +1,13 @@
+name: Send Daily Slack Notifications
+
+on:
+  workflow_dispatch:
+
+jobs:
+  send_notifications:
+    runs-on: ubuntu-latest
+    environment: notifications
+    steps:
+      - name: Send daily notifications
+        run: |
+          curl --fail-with-body -H "Authorization: ${{ secrets.NOTIFICATION_ENDPOINT_SECRET }}" -X POST "${{ secrets.BACKEND_URL }}/notifications/daily"
