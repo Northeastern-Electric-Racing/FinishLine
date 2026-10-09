@@ -1,10 +1,11 @@
 import { Prisma } from '@prisma/client';
 import { DescriptionBullet } from 'shared';
 import { DescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
+import { UserPreviewQueryArgs } from '../prisma-query-args/user.query-args.js';
 
 // only the preview fields of userChecked are read, so callers may fetch a lighter user shape
 type DescriptionBulletInput = Omit<Prisma.Description_BulletGetPayload<DescriptionBulletQueryArgs>, 'userChecked'> & {
-  userChecked: { userId: string; firstName: string; lastName: string } | null;
+  userChecked: Prisma.UserGetPayload<UserPreviewQueryArgs> | null;
 };
 
 const descriptionBulletTransformer = (descBullet: DescriptionBulletInput): DescriptionBullet => {

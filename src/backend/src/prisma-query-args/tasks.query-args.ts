@@ -61,11 +61,15 @@ export const getTaskQueryArgs = () =>
     }
   });
 
-// same output as getTaskQueryArgs through taskTransformer, but only fetches the wbs element fields it reads
+// same output as getTaskQueryArgs through taskTransformer for non-deleted tasks (the gantt only loads those, so
+// deletedBy is skipped), and only fetches the wbs element fields taskTransformer reads
 export const getTaskGanttQueryArgs = () =>
   Prisma.validator<Prisma.TaskDefaultArgs>()({
     include: {
-      ...getTaskQueryArgs().include,
+      createdBy: getUserPreviewWithEmailQueryArgs(),
+      assignees: getUserPreviewWithEmailQueryArgs(),
+      labels: getTaskLabelQueryArgs(),
+      blockedBy: getTaskBlockedByQueryArgs(),
       wbsElement: {
         select: {
           carNumber: true,
