@@ -1,3 +1,5 @@
+import { emptyTaskFilters, serializeTaskFilters, TaskFilterFields } from 'shared';
+
 /**
  * Builds links back into the FinishLine client from the backend.
  *
@@ -30,4 +32,13 @@ export const projectTasksUrl = (projectWbsNum: string): string => {
  */
 export const eventUrl = (eventId: string): string => {
   return `${getFrontendBaseUrl()}/calendar/event/${eventId}`;
+};
+
+/**
+ * Links to the global task board with the given filters applied
+ * @param filters the filters to apply, any omitted filters are left empty
+ */
+export const globalTasksUrl = (filters: Partial<TaskFilterFields>): string => {
+  const query = serializeTaskFilters({ ...emptyTaskFilters, ...filters });
+  return `${getFrontendBaseUrl()}/tasks${query ? `?${query}` : ''}`;
 };
