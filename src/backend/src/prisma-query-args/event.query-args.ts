@@ -15,7 +15,7 @@ export const getEventPreviewQueryArgs = (organizationId: string) =>
       title: true,
       status: true,
       initialDateScheduled: true,
-      scheduledTimes: true,
+      scheduledTimes: { select: { startTime: true }, orderBy: { startTime: 'asc' }, take: 1 }, // preview shows one date, so fetch earliest slot
       userCreated: getUserQueryArgs(organizationId)
     }
   });
