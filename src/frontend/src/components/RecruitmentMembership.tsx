@@ -10,15 +10,7 @@ import CardContent from '@mui/material/CardContent';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { RecruitmentCycle, Term } from 'shared';
 
 interface RecruitmentMembershipProps {
@@ -133,7 +125,12 @@ const RecruitmentMembership: React.FC<RecruitmentMembershipProps> = ({ recruitme
                     }}
                     itemStyle={{ color: '#fff' }}
                   />
-                  <Bar dataKey="returningMembers" stackId="division" fill={RETURNING_MEMBERS_COLOR} name="Returning Members" />
+                  <Bar
+                    dataKey="returningMembers"
+                    stackId="division"
+                    fill={RETURNING_MEMBERS_COLOR}
+                    name="Returning Members"
+                  />
                   <Bar dataKey="newMembers" stackId="division" fill={NEW_MEMBERS_COLOR} name="New Members" />
                 </BarChart>
               </ResponsiveContainer>
