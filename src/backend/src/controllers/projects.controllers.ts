@@ -3,7 +3,7 @@ import {
   MaterialType,
   Project,
   ProjectOverview,
-  ProjectGantt,
+  GanttChartProject,
   ProjectPreview,
   validateWBS,
   WbsNumber,
@@ -16,7 +16,10 @@ import BillOfMaterialsService from '../services/boms.services.js';
 export default class ProjectsController {
   static async getAllProjectsGantt(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectGantt[] = await ProjectsService.getAllProjectsGantt(req.organization, req.currentCar?.carId);
+      const projects: GanttChartProject[] = await ProjectsService.getAllProjectsGantt(
+        req.organization,
+        req.currentCar?.carId
+      );
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);

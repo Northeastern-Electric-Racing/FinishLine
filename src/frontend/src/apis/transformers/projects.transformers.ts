@@ -6,6 +6,7 @@
 import {
   dbDateToLocalDate,
   DescriptionBullet,
+  GanttChartProject,
   Project,
   ProjectOverview,
   ProjectGantt,
@@ -14,7 +15,11 @@ import {
 } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
 import { taskTransformer } from './tasks.transformers';
-import { retrospectiveWorkPackageTransformer, workPackageTransformer } from './work-packages.transformers';
+import {
+  ganttChartWorkPackageTransformer,
+  retrospectiveWorkPackageTransformer,
+  workPackageTransformer
+} from './work-packages.transformers';
 
 /**
  * Transforms a description bullet to ensure deep field transformation of date objects.
@@ -58,6 +63,24 @@ export const retrospectiveProjectPreviewTransformer = (
     originalEndDate: project.originalEndDate ? new Date(project.originalEndDate) : undefined,
     originalStartDate: project.originalStartDate ? new Date(project.originalStartDate) : undefined,
     workPackages: project.workPackages.map(retrospectiveWorkPackageTransformer)
+  };
+};
+
+/**
+ * Transforms a gantt chart project to ensure deep field transformation of date objects.
+ * Generic so re-parsing a richer project (e.g. one created locally on the gantt) keeps its other fields.
+ *
+ * @param project Incoming gantt chart project object supplied by the HTTP response.
+ * @returns Properly transformed gantt chart project object.
+ */
+export const ganttChartProjectTransformer = <T extends GanttChartProject>(project: T): T => {
+  return {
+    ...project,
+    dateCreated: new Date(project.dateCreated),
+    startDate: project.startDate ? new Date(project.startDate) : undefined,
+    endDate: project.endDate ? new Date(project.endDate) : undefined,
+    workPackages: project.workPackages.map(ganttChartWorkPackageTransformer),
+    tasks: project.tasks.map(taskTransformer)
   };
 };
 

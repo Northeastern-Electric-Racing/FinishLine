@@ -21,7 +21,7 @@ export const taskBlockedByTransformer = (task: Prisma.TaskGetPayload<TaskBlocked
 
 // only surfaces a blocking work package if it still has at least one non-done task
 export const getBlockingWorkPackagePreviews = (
-  wbsElement: Pick<Prisma.WBS_ElementGetPayload<BlockingWorkPackagesQueryArgs>, 'workPackage'>
+  wbsElement: Partial<Pick<Prisma.WBS_ElementGetPayload<BlockingWorkPackagesQueryArgs>, 'workPackage'>>
 ): BlockingWorkPackagePreview[] =>
   (wbsElement.workPackage?.blockedBy ?? [])
     .filter((blocker) => blocker.tasks.some((t) => t.status !== 'DONE'))
@@ -43,9 +43,13 @@ export const getActiveTaskBlockerNames = (
   ...getBlockingWorkPackagePreviews(wbsElement).map((wp) => wp.name)
 ];
 
-// typed against the gantt shape plus an optional deletedBy (the gantt doesn't fetch it); the full TaskQueryArgs payload also fits
+// typed against the gantt shape plus the optional deletedBy and wbsElement.workPackage the gantt doesn't fetch;
+// the full TaskQueryArgs payload also fits
 export const taskTransformer = (
-  task: Prisma.TaskGetPayload<TaskGanttQueryArgs> & Partial<Pick<Prisma.TaskGetPayload<TaskQueryArgs>, 'deletedBy'>>
+  task: Prisma.TaskGetPayload<TaskGanttQueryArgs> &
+    Partial<Pick<Prisma.TaskGetPayload<TaskQueryArgs>, 'deletedBy'>> & {
+      wbsElement: Partial<Pick<Prisma.WBS_ElementGetPayload<BlockingWorkPackagesQueryArgs>, 'workPackage'>>;
+    }
 ): Task => {
   const wbsNum = wbsNumOf(task.wbsElement);
   return {
