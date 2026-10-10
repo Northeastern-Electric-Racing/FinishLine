@@ -11,7 +11,7 @@ import {
   LinkTypeCreatePayload,
   Project,
   ProjectOverview,
-  ProjectGantt,
+  GanttChartProject,
   ProjectPreview,
   WbsNumber,
   WorkPackageTemplate
@@ -46,7 +46,7 @@ import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
  * Custom React Hook to supply all projects with Gantt querry args
  */
 export const useAllProjectsGantt = () => {
-  return useQuery<ProjectGantt[], Error>(['projects', 'gantt-all'], async () => {
+  return useQuery<GanttChartProject[], Error>(['projects', 'gantt-all'], async () => {
     const { data } = await getAllProjectsGantt();
     return data;
   });

@@ -21,7 +21,7 @@ import {
 } from 'shared';
 import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
-import { EventQueryArgs, EventWithMembersQueryArgs } from '../prisma-query-args/event.query-args.js';
+import { EventPreviewQueryArgs, EventQueryArgs, EventWithMembersQueryArgs } from '../prisma-query-args/event.query-args.js';
 import { ShopMachineryQueryArgs, MachineryQueryArgs } from '../prisma-query-args/machinery.query-args.js';
 import { ShopQueryArgs } from '../prisma-query-args/shop.query-args.js';
 import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer.js';
@@ -185,7 +185,10 @@ export const eventWithMembersTransformer = (event: Prisma.EventGetPayload<EventW
   };
 };
 
-export const eventPreviewTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>, wbsName: string): EventPreview => {
+export const eventPreviewTransformer = (
+  event: Prisma.EventGetPayload<EventPreviewQueryArgs>,
+  wbsName: string
+): EventPreview => {
   // Use first scheduled time's startTime, or fall back to initialDateScheduled (for confirmation events), or current date
   const dateScheduled =
     (event.scheduledTimes.length > 0 && event.scheduledTimes[0].startTime ? event.scheduledTimes[0].startTime : null) ??

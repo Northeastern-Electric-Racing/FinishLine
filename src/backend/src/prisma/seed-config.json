@@ -47,6 +47,13 @@
       { "weight": 5, "value": 8 }
     ]
   },
+  "event": {
+    "workPackageLinkWeights": [
+      { "weight": 40, "value": 0 },
+      { "weight": 45, "value": 1 },
+      { "weight": 15, "value": 2 }
+    ]
+  },
   "changeRequest": {
     "projectCountWeights": [
       { "weight": 15, "value": 0 },

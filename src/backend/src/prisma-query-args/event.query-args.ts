@@ -5,6 +5,21 @@ export type EventQueryArgs = ReturnType<typeof getEventQueryArgs>;
 
 export type EventWithMembersQueryArgs = ReturnType<typeof getEventWithMembersQueryArgs>;
 
+export type EventPreviewQueryArgs = ReturnType<typeof getEventPreviewQueryArgs>;
+
+// only the fields eventPreviewTransformer reads
+export const getEventPreviewQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.EventDefaultArgs>()({
+    select: {
+      eventId: true,
+      title: true,
+      status: true,
+      initialDateScheduled: true,
+      scheduledTimes: { select: { startTime: true }, orderBy: { startTime: 'asc' }, take: 1 }, // preview shows one date, so fetch earliest slot
+      userCreated: getUserQueryArgs(organizationId)
+    }
+  });
+
 export const getEventQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.EventDefaultArgs>()({
     include: {

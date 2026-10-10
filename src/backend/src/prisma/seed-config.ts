@@ -64,6 +64,10 @@ export interface SeedConfig {
   task: {
     countForProject: WeightedCount[];
   };
+  event: {
+    // how many of its project's work packages each event is linked to (capped at how many the project has)
+    workPackageLinkWeights: WeightedValue<number>[];
+  };
 }
 
 export const seedConfig: SeedConfig = JSON.parse(

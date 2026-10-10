@@ -1,5 +1,5 @@
-import { Box, FormControl, InputLabel, TextField, Typography } from '@mui/material';
-import { dateToMidnightUTC, Link, LinkCreateArgs, ProjectGantt, Task, WbsElementPreview, WorkPackage } from 'shared';
+import { Box, TextField, Typography } from '@mui/material';
+import { dateToMidnightUTC, GanttChartProject, GanttChartWorkPackage, Task, WbsElementPreview } from 'shared';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
@@ -47,18 +47,10 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`;
   };
 
-  const transformLinkToLinkCreateArgs = (link: Link): LinkCreateArgs => {
-    return {
-      linkId: link.linkId,
-      linkTypeName: link.linkType.name,
-      url: link.url
-    };
-  };
+  const project = change.element as GanttChartProject;
 
-  const project = change.element as ProjectGantt;
-
-  const editedWorkPackages: WorkPackage[] = [];
-  const createdWorkPackages: WorkPackage[] = [];
+  const editedWorkPackages: GanttChartWorkPackage[] = [];
+  const createdWorkPackages: GanttChartWorkPackage[] = [];
   project.workPackages.forEach((workPackage) => {
     if (workPackage.wbsElementId === '-1') {
       createdWorkPackages.push(workPackage);
@@ -89,7 +81,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
         existingTask.startDate?.getTime() !== task.startDate?.getTime() ||
         existingTask.deadline?.getTime() !== task.deadline?.getTime() ||
         existingTask.assignees.length !== task.assignees.length ||
-        existingTask.assignees.some((assignee, index) => assignee.userId !== task.assignees[index]?.userId);
+        existingTask.assignees.some((assignee) => !task.assignees.some((a) => a.userId === assignee.userId));
 
       if (hasChanges) {
         editedTasks.push(task);
@@ -98,45 +90,45 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
   });
 
   const handleSubmit = async () => {
-    if (editedWorkPackages.length > 0) {
+    if (editedWorkPackages.length > 0 && !explanationForChange) {
       return;
     }
 
     try {
-      if (editedWorkPackages.length > 0) {
+      // one change request per edited work package, scoped to that work package (like the work package edit form),
+      // so approving it edits the existing work package rather than creating a new one under the project.
+      // only the timeline comes from the gantt; everything else comes from the full project fetched above
+      let createdChangeRequests = 0;
+      for (const workPackage of editedWorkPackages) {
+        const existingWorkPackage = originalProject.workPackages.find((wp) => wp.id === workPackage.id);
+        if (!existingWorkPackage) continue;
+
         const payload: CreateStandardChangeRequestPayload = {
-          wbsNum: change.element.wbsNum,
+          wbsNum: existingWorkPackage.wbsNum,
           why: explanationForChange,
-          projectProposedChanges: {
-            workPackageProposedChanges: editedWorkPackages.map((workPackage) => {
-              const duration = dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week');
-              return {
-                name: workPackage.name,
-                stage: workPackage.stage,
-                duration,
-                startDate: dateToMidnightUTC(change.newStart).toISOString(),
-                blockedBy: workPackage.blockedBy,
-                descriptionBullets: workPackage.descriptionBullets,
-                leadId: workPackage.lead ? workPackage.lead.userId : undefined,
-                managerId: workPackage.manager ? workPackage.manager.userId : undefined,
-                links: workPackage.links.map(transformLinkToLinkCreateArgs)
-              };
-            }),
-            budget: originalProject.budget,
-            summary: originalProject.summary,
-            teamIds: originalProject.teams.map((team) => team.teamId),
-            name: originalProject.name,
-            descriptionBullets: originalProject.descriptionBullets,
-            links: originalProject.links.map(transformLinkToLinkCreateArgs),
-            leadId: originalProject.lead?.userId,
-            managerId: originalProject.manager?.userId,
-            carNumber: originalProject.wbsNum.carNumber
+          workPackageProposedChanges: {
+            name: existingWorkPackage.name,
+            stage: existingWorkPackage.stage,
+            duration: dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week'),
+            startDate: dateToMidnightUTC(workPackage.startDate).toISOString(),
+            blockedBy: existingWorkPackage.blockedBy,
+            descriptionBullets: existingWorkPackage.descriptionBullets.map(({ id, detail, type }) => ({ id, detail, type })),
+            leadId: existingWorkPackage.lead?.userId,
+            managerId: existingWorkPackage.manager?.userId,
+            links: []
           }
         };
 
-        await createStandardChangeRequest(payload);
-        toast.success('Change Request Created Successfully!');
+        try {
+          await createStandardChangeRequest(payload);
+          createdChangeRequests++;
+        } catch (error) {
+          toast.error(
+            `Failed to create a change request for ${existingWorkPackage.name}: ${error instanceof Error ? error.message : error}`
+          );
+        }
       }
+      if (createdChangeRequests > 0) toast.success(`Created ${createdChangeRequests} change request(s)`);
 
       createdWorkPackages.forEach(async (workPackage) => {
         const duration = dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week');
@@ -227,13 +219,9 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
         <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline(change.newStart, change.newEnd)}`}</Typography>
         {editedWorkPackages.length > 0 && (
           <Box sx={{ mt: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel>Reason for Change</InputLabel>
-            </FormControl>
             <TextField
               fullWidth
               label="Explanation for Change"
-              sx={{ mt: 2 }}
               value={explanationForChange}
               onChange={handleExplanationChange}
               multiline

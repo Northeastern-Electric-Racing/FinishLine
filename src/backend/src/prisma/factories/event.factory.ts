@@ -3,6 +3,7 @@ import { Conflict_Status, Event_Status, Prisma } from '@prisma/client';
 import { arrayOrNull } from '../utils/arrays.js';
 import { DAY_MS, MINUTE_MS } from '../dates.js';
 import { addDaysToDate } from 'shared';
+import { seedConfig } from '../seed-config.js';
 
 type ConflictResult = {
   approved: Conflict_Status;
@@ -55,6 +56,9 @@ export const DAYS_AFTER_NO_EVENT = 20;
 const CONFIRMED_WINDOW = 14;
 
 export const generateEventCount = (faker: Faker): number => faker.number.int({ min: 1, max: EVENTS_PER_PROJECT });
+
+export const generateEventWorkPackageLinkCount = (faker: Faker): number =>
+  faker.helpers.weightedArrayElement(seedConfig.event.workPackageLinkWeights);
 
 export const generateScheduleSlotCount = (faker: Faker, title: string): number => {
   const isRecurring =
@@ -210,7 +214,8 @@ export const eventCreateInput = (
   confirmedMemberIds: string[],
   deniedMemberIds: string[],
   dateCreated: Date,
-  approvalRequiredFromUserId?: string
+  approvalRequiredFromUserId?: string,
+  workPackageIds: string[] = []
 ): Prisma.EventCreateInput => ({
   title,
   status,
@@ -237,6 +242,9 @@ export const eventCreateInput = (
   ...(eventType.questionDocument && questionDocumentLink ? { questionDocumentLink } : {}),
   ...(approved !== Conflict_Status.NO_CONFLICT && approvalRequiredFromUserId
     ? { approvalRequiredBy: { connect: { userId: approvalRequiredFromUserId } } }
+    : {}),
+  ...(workPackageIds.length > 0
+    ? { workPackages: { connect: workPackageIds.map((workPackageId) => ({ workPackageId })) } }
     : {})
 });
 

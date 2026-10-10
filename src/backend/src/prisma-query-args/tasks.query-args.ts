@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { getUserPreviewWithEmailQueryArgs, getUserQueryArgs } from './user.query-args.js';
 
 export type TaskQueryArgs = ReturnType<typeof getTaskQueryArgs>;
+export type TaskGanttQueryArgs = ReturnType<typeof getTaskGanttQueryArgs>;
 export type TaskPreviewQueryArgs = ReturnType<typeof getTaskPreviewQueryArgs>;
 export type CalendarTaskQueryArgs = ReturnType<typeof getCalendarTaskQueryArgs>;
 export type TaskLabelQueryArgs = ReturnType<typeof getTaskLabelQueryArgs>;
@@ -57,6 +58,26 @@ export const getTaskQueryArgs = () =>
       assignees: getUserPreviewWithEmailQueryArgs(),
       labels: getTaskLabelQueryArgs(),
       blockedBy: getTaskBlockedByQueryArgs()
+    }
+  });
+
+// same output as getTaskQueryArgs through taskTransformer for the gantt's tasks, which are non-deleted (so deletedBy is
+// skipped) and project-level (a project's wbs element has no work package, so its blocking work packages are skipped)
+export const getTaskGanttQueryArgs = () =>
+  Prisma.validator<Prisma.TaskDefaultArgs>()({
+    include: {
+      createdBy: getUserPreviewWithEmailQueryArgs(),
+      assignees: getUserPreviewWithEmailQueryArgs(),
+      labels: getTaskLabelQueryArgs(),
+      blockedBy: getTaskBlockedByQueryArgs(),
+      wbsElement: {
+        select: {
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          name: true
+        }
+      }
     }
   });
 
