@@ -31,6 +31,7 @@ const CreditsPage: React.FC = () => {
       }
     },
     { name: 'Kevin Chen', color: '#00A36C' },
+    { name: 'Konstantinos Zeimbekis', color: '#a364b1' },
     { name: 'Ji-min Kim', color: '#7ae0c1' },
     { name: 'Zack Roth', color: '#4a6741', sx: { px: 1, backgroundColor: '#E8D8CC', borderRadius: 2 } },
     { name: 'Megan Liu', color: '#3d609e' },
