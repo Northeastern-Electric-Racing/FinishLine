@@ -74,6 +74,30 @@ export interface ProjectGantt extends WbsElementPreview {
   manager?: User;
 }
 
+/**
+ * The base gantt chart shapes: only what the gantt chart reads. Full ProjectGantt / WorkPackage /
+ * RetrospectiveProjectPreview objects also satisfy them, so the gantt helpers serve every gantt view,
+ * and views that need more (e.g. retrospective) extend them.
+ */
+export type GanttChartEvent = Pick<EventPreview, 'eventId' | 'dateScheduled' | 'status' | 'wbsName'>;
+
+export interface GanttChartWorkPackage extends WbsElementPreview {
+  projectId: string;
+  startDate: Date;
+  endDate: Date;
+  stage?: WorkPackageStage;
+  blocking: WbsNumber[];
+  events: GanttChartEvent[];
+}
+
+export interface GanttChartProject extends WbsElementPreview {
+  startDate?: Date;
+  endDate?: Date;
+  teams: { teamId: string }[];
+  workPackages: GanttChartWorkPackage[];
+  tasks: Task[];
+}
+
 export interface ProjectPreview extends WbsElementPreview {
   startDate?: Date;
   endDate?: Date;

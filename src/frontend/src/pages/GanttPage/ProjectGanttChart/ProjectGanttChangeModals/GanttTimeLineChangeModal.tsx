@@ -1,5 +1,5 @@
 import { Box, TextField, Typography } from '@mui/material';
-import { dateToMidnightUTC, ProjectGantt, Task, WbsElementPreview, WorkPackage } from 'shared';
+import { dateToMidnightUTC, GanttChartProject, GanttChartWorkPackage, Task, WbsElementPreview } from 'shared';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
@@ -47,10 +47,10 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`;
   };
 
-  const project = change.element as ProjectGantt;
+  const project = change.element as GanttChartProject;
 
-  const editedWorkPackages: WorkPackage[] = [];
-  const createdWorkPackages: WorkPackage[] = [];
+  const editedWorkPackages: GanttChartWorkPackage[] = [];
+  const createdWorkPackages: GanttChartWorkPackage[] = [];
   project.workPackages.forEach((workPackage) => {
     if (workPackage.wbsElementId === '-1') {
       createdWorkPackages.push(workPackage);

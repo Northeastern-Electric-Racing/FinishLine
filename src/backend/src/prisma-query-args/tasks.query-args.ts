@@ -61,8 +61,8 @@ export const getTaskQueryArgs = () =>
     }
   });
 
-// same output as getTaskQueryArgs through taskTransformer for non-deleted tasks (the gantt only loads those, so
-// deletedBy is skipped), and only fetches the wbs element fields taskTransformer reads
+// same output as getTaskQueryArgs through taskTransformer for the gantt's tasks, which are non-deleted (so deletedBy is
+// skipped) and project-level (a project's wbs element has no work package, so its blocking work packages are skipped)
 export const getTaskGanttQueryArgs = () =>
   Prisma.validator<Prisma.TaskDefaultArgs>()({
     include: {
@@ -75,8 +75,7 @@ export const getTaskGanttQueryArgs = () =>
           carNumber: true,
           projectNumber: true,
           workPackageNumber: true,
-          name: true,
-          workPackage: getBlockingWorkPackagesArgs().include.workPackage
+          name: true
         }
       }
     }

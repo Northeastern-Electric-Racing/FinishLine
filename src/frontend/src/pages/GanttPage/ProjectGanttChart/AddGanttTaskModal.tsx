@@ -2,7 +2,7 @@ import React from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, Box, Chip, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isUnderWordCount, TaskLabel, TaskPriority, TaskStatus, WorkPackage, WbsNumber } from 'shared';
+import { countWords, isUnderWordCount, GanttChartWorkPackage, TaskLabel, TaskPriority, TaskStatus, WbsNumber } from 'shared';
 import * as yup from 'yup';
 import NERFormModal from '../../../components/NERFormModal';
 import { useAllMembers } from '../../../hooks/users.hooks';
@@ -47,7 +47,7 @@ interface AddGanttTaskModalProps {
   showModal: boolean;
   handleClose: () => void;
   addTask: (task: CreateTaskFormData) => void;
-  workPackages: WorkPackage[];
+  workPackages: GanttChartWorkPackage[];
 }
 
 const AddGanttTaskModal: React.FC<AddGanttTaskModalProps> = ({ showModal, handleClose, addTask, workPackages }) => {
