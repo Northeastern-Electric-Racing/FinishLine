@@ -5,7 +5,8 @@
 
 import { Box, Theme, Typography } from '@mui/material';
 import { SystemStyleObject } from '@mui/system';
-import WidgetSizeDropdown from './WidgetSizeDropdown';
+import PreviewDashboard from './PreviewDashboard';
+import WidgetSelection from './WidgetSelection';
 
 const widgetBoxSx: SystemStyleObject<Theme> = {
   bgcolor: (theme) => (theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[300]),
@@ -42,6 +43,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
         <Typography variant="h5" gutterBottom pl={1}>
           Preview
         </Typography>
+        <PreviewDashboard />
       </Box>
       <Box
         sx={{
@@ -56,9 +58,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
           overflowY: 'auto'
         }}
       >
-        <WidgetSizeDropdown title="Small" />
-        <WidgetSizeDropdown title="Medium" />
-        <WidgetSizeDropdown title="Large" />
+        <WidgetSelection />
       </Box>
     </Box>
   );
