@@ -12,6 +12,7 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { RecruitmentCycle, Term } from 'shared';
+import { displayEnum } from '../utils/pipes';
 
 interface RecruitmentMembershipProps {
   recruitmentCycles: RecruitmentCycle[];
@@ -21,6 +22,10 @@ const TERMS: Term[] = [Term.FALL, Term.SPRING];
 
 const NEW_MEMBERS_COLOR = '#8e3c2d';
 const RETURNING_MEMBERS_COLOR = '#ef4345';
+
+// Distinguishes "not filled out yet" (undefined) from an actual 0, matching the N/A
+// convention already used in CompetitionPerformanceSection.
+const formatStat = (value?: number): string => (value === undefined ? 'N/A' : `${value}`);
 
 interface StatBlockProps {
   value: string;
@@ -82,13 +87,13 @@ const RecruitmentMembership: React.FC<RecruitmentMembershipProps> = ({ recruitme
             }}
           >
             {TERMS.map((term, idx) => (
-              <Tab label={term.charAt(0) + term.slice(1).toLowerCase()} value={idx} key={term} />
+              <Tab label={displayEnum(term)} value={idx} key={term} />
             ))}
           </Tabs>
         </Box>
 
         {!cycle ? (
-          <Typography textAlign="center">No recruitment data available for {selectedTerm}.</Typography>
+          <Typography textAlign="center">No recruitment data available for {displayEnum(selectedTerm)}.</Typography>
         ) : (
           <Box display="flex" flexWrap="wrap" gap={4}>
             <Box flex="0 0 220px">
@@ -96,10 +101,10 @@ const RecruitmentMembership: React.FC<RecruitmentMembershipProps> = ({ recruitme
                 Recruitment Stats
               </Typography>
               <Box display="grid" gridTemplateColumns="1fr 1fr" rowGap={3} columnGap={2} justifyItems="center">
-                <StatBlock value={`${cycle.eventsHeld ?? 0}`} label="Events" />
-                <StatBlock value={`${cycle.signUps ?? 0}`} label="Sign-Ups" />
-                <StatBlock value={`${cycle.onboarded ?? 0}`} label="Onboarded" />
-                <StatBlock value={`${cycle.activeMembers ?? 0}`} label="Active" />
+                <StatBlock value={formatStat(cycle.eventsHeld)} label="Events" />
+                <StatBlock value={formatStat(cycle.signUps)} label="Sign-Ups" />
+                <StatBlock value={formatStat(cycle.onboarded)} label="Onboarded" />
+                <StatBlock value={formatStat(cycle.activeMembers)} label="Active" />
               </Box>
             </Box>
 
