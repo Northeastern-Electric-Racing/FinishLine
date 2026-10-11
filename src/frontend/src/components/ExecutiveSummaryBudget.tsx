@@ -65,9 +65,8 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
     if (!isEditingNotes) setNotesDraft(executiveSummary.budgetNotes);
   }, [executiveSummary.budgetNotes, isEditingNotes]);
 
-  if (isLoading) return <LoadingIndicator />;
-  // a failed refetch shouldn't hide data we already have
-  if (!budgetSummary) return <ErrorPage message={error?.message ?? 'Failed to load the budget summary'} />;
+  if (isLoading || !budgetSummary) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const { budgetByDivision, totalBudget, totalSpent } = budgetSummary;
   const overage = totalSpent - totalBudget;
