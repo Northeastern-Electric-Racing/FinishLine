@@ -1,9 +1,10 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args.js';
 import { getTeamBaseQueryArgs } from './teams.query-args.js';
 
 export type ExecutiveSummaryQueryArgs = ReturnType<typeof getExecutiveSummaryQueryArgs>;
 export type VehicleDevelopmentProjectQueryArgs = ReturnType<typeof getVehicleDevelopmentProjectQueryArgs>;
+export type BudgetProjectQueryArgs = ReturnType<typeof getBudgetProjectQueryArgs>;
 export type RecruitmentCycleQueryArgs = ReturnType<typeof getRecruitmentCycleQueryArgs>;
 export type RecruitmentDivisionCountQueryArgs = ReturnType<typeof getRecruitmentDivisionCountQueryArgs>;
 
@@ -41,6 +42,47 @@ export const getVehicleDevelopmentProjectQueryArgs = () =>
       workPackages: {
         where: { wbsElement: { dateDeleted: null } },
         select: { startDate: true, duration: true }
+      }
+    }
+  });
+
+const reimbursedProductReasonsSelect = Prisma.validator<Prisma.WBS_ElementSelect>()({
+  reimbursementProductReasons: {
+    select: {
+      reimbursementProduct: {
+        where: {
+          dateDeleted: null,
+          reimbursementRequest: {
+            dateDeleted: null,
+            reimbursementStatuses: { some: { type: Reimbursement_Status_Type.REIMBURSED } }
+          }
+        },
+        select: { cost: true }
+      }
+    }
+  }
+});
+
+export const getBudgetProjectQueryArgs = () =>
+  Prisma.validator<Prisma.ProjectDefaultArgs>()({
+    include: {
+      wbsElement: {
+        select: {
+          name: true,
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          ...reimbursedProductReasonsSelect
+        }
+      },
+      teams: getTeamBaseQueryArgs(),
+      workPackages: {
+        where: { wbsElement: { dateDeleted: null } },
+        select: {
+          startDate: true,
+          duration: true,
+          wbsElement: { select: reimbursedProductReasonsSelect }
+        }
       }
     }
   });
