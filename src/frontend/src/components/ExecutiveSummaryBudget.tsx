@@ -208,7 +208,13 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
               >
                 Cancel
               </Button>
-              <Button color="success" variant="contained" size="small" onClick={saveNotes} disabled={isSaving || !latestSummary}>
+              <Button
+                color="success"
+                variant="contained"
+                size="small"
+                onClick={saveNotes}
+                disabled={isSaving || !latestSummary}
+              >
                 Save
               </Button>
             </>
