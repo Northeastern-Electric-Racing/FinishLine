@@ -10,7 +10,7 @@ import CardContent from '@mui/material/CardContent';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { RecruitmentCycle, Term } from 'shared';
 import { displayEnum } from '../utils/pipes';
 
@@ -40,18 +40,6 @@ const StatBlock: React.FC<StatBlockProps> = ({ value, label }) => (
     <Typography variant="body2" fontWeight="bold">
       {label}
     </Typography>
-  </Box>
-);
-
-interface LegendSwatchProps {
-  color: string;
-  label: string;
-}
-
-const LegendSwatch: React.FC<LegendSwatchProps> = ({ color, label }) => (
-  <Box display="flex" alignItems="center" gap={0.5}>
-    <Box sx={{ width: 10, height: 10, backgroundColor: color }} />
-    <Typography variant="caption">{label}</Typography>
   </Box>
 );
 
@@ -112,11 +100,7 @@ const RecruitmentMembership: React.FC<RecruitmentMembershipProps> = ({ recruitme
               <Typography variant="h5" fontWeight="bold" textAlign="center" sx={{ textDecoration: 'underline', mb: 1 }}>
                 Total Active Members By Division
               </Typography>
-              <Box display="flex" justifyContent="center" gap={2} mb={1}>
-                <LegendSwatch color={NEW_MEMBERS_COLOR} label="New Members" />
-                <LegendSwatch color={RETURNING_MEMBERS_COLOR} label="Returning Members" />
-              </Box>
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={270}>
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#3a3a3a" vertical={false} />
                   <XAxis dataKey="name" stroke="white" tick={{ fill: 'white', fontSize: 12 }} />
@@ -130,6 +114,7 @@ const RecruitmentMembership: React.FC<RecruitmentMembershipProps> = ({ recruitme
                     }}
                     itemStyle={{ color: '#fff' }}
                   />
+                  <Legend wrapperStyle={{ color: 'white' }} />
                   <Bar
                     dataKey="returningMembers"
                     stackId="division"
