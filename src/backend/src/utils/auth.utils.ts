@@ -87,13 +87,14 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
 
 const notificationEndpointAuth = (req: Request, res: Response, next: NextFunction) => {
   const { authorization } = req.headers;
-  const secret = process.env.NOTIFICATION_ENDPOINT_SECRET;
+  const { NOTIFICATION_ENDPOINT_SECRET } = process.env;
 
-  if (!secret) throw new HttpException(500, 'Notification endpoint secret not found!');
+  if (!NOTIFICATION_ENDPOINT_SECRET) throw new HttpException(500, 'Notification endpoint secret not found!');
 
   if (!authorization) return res.status(401).json({ message: 'Authentication Failed: Secret not found!' });
 
-  if (authorization !== secret) return res.status(401).json({ message: 'Authentication Failed: Invalid secret!' });
+  if (authorization !== NOTIFICATION_ENDPOINT_SECRET)
+    return res.status(401).json({ message: 'Authentication Failed: Invalid secret!' });
 
   return next();
 };
