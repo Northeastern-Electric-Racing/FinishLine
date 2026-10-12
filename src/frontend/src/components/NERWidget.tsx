@@ -22,18 +22,19 @@ const NERWidget: React.FC<NERWidgetProps> = ({ title, children }) => {
       sx={{
         width: '100%',
         height: '100%',
-        borderRadius: '1.5cqw',
+        borderRadius: '2cqw',
         bgcolor: 'rgba(255, 255, 255, 0.2)', //bg color and opacity
-        padding: '1.5cqw',
+        padding: '2cqw',
         border: '1.5px solid rgba(255,255,255,0.15)',
         overflow: 'hidden'
       }}
     >
       {title && (
         <Typography
+          variant="h6"
           sx={{
-            fontSize: '1.5cqw',
-            fontWeight: 'bold',
+            fontSize: '2cqw',
+            fontWeight: '100',
             color: 'white'
           }}
         >
