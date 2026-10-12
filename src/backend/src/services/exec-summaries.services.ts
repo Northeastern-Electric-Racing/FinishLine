@@ -4,7 +4,15 @@
  */
 
 import { Organization } from '@prisma/client';
-import { calculateProjectEndDate, calculateProjectStartDate, isAdmin, notGuest, User } from 'shared';
+import {
+  BudgetHighlight,
+  calculateProjectEndDate,
+  calculateProjectStartDate,
+  isAdmin,
+  notGuest,
+  User,
+  wbsPipe
+} from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedException,
@@ -16,6 +24,7 @@ import {
 import { userHasPermission } from '../utils/users.utils.js';
 import { isUserOnOpsTeam } from '../utils/exec-summaries.utils.js';
 import {
+  getBudgetProjectQueryArgs,
   getExecutiveSummaryQueryArgs,
   getVehicleDevelopmentProjectQueryArgs
 } from '../prisma-query-args/executive-summary.query-args.js';
@@ -23,6 +32,9 @@ import {
   executiveSummaryTransformer,
   vehicleDevelopmentSummaryTransformer
 } from '../transformers/executive-summary.transformer.js';
+
+// rounds a dollar amount to the nearest cent so that splitting across divisions doesn't leave floating point noise
+const roundToCents = (amount: number): number => Math.round(amount * 100) / 100;
 
 export default class ExecSummaryServices {
   /**
@@ -265,13 +277,14 @@ export default class ExecSummaryServices {
     const { carId, seasonStartDate, seasonEndDate } = executiveSummary;
 
     const [divisions, projects] = await Promise.all([
-      prisma.team_Type.findMany({ where: { organizationId: organization.organizationId } }),
+      prisma.team_Type.findMany({ where: { organizationId: organization.organizationId }, orderBy: { name: 'asc' } }),
       prisma.project.findMany({
         where: {
           carId,
           wbsElement: { organizationId: organization.organizationId, dateDeleted: null }
         },
-        ...getVehicleDevelopmentProjectQueryArgs()
+        orderBy: { wbsElement: { name: 'asc' } },
+        ...getBudgetProjectQueryArgs()
       })
     ]);
 
@@ -285,34 +298,77 @@ export default class ExecSummaryServices {
       return true;
     });
 
-    // each project's budget is split evenly across the distinct divisions of its active teams so that it is
-    // never counted more than once; projects with no active team are reported as unassigned
-    const budgetByDivisionId = new Map<string, number>(divisions.map((division) => [division.teamTypeId, 0]));
-    let unassignedBudget = 0;
+    // each project's budget (and reimbursed spending) is split evenly across the distinct divisions of its active
+    // teams so that it is never counted more than once; projects with no active team are reported as unassigned
+    const UNASSIGNED_LABEL = 'Unassigned';
+    const buckets = new Map<string, { label: string; budget: number; spent: number }>(
+      divisions.map((division) => [division.teamTypeId, { label: division.name, budget: 0, spent: 0 }])
+    );
+    const unassigned = { label: UNASSIGNED_LABEL, budget: 0, spent: 0 };
+    let mostOverbudgetProject: BudgetHighlight | undefined;
     projectsInSeason.forEach((project) => {
+      // spending is charged to the project itself or to any of its work packages
+      // reimbursement product costs are stored in cents
+      const reasons = [
+        ...project.wbsElement.reimbursementProductReasons,
+        ...project.workPackages.flatMap((wp) => wp.wbsElement.reimbursementProductReasons)
+      ];
+      const spent = reasons.reduce((sum, reason) => sum + (reason.reimbursementProduct?.cost ?? 0), 0) / 100;
+
+      const projectOverage = roundToCents(spent - project.budget);
+      if (projectOverage > (mostOverbudgetProject?.amount ?? 0)) {
+        mostOverbudgetProject = {
+          label: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`,
+          amount: projectOverage
+        };
+      }
+
       const divisionIds = new Set<string>();
       project.teams.forEach((team) => {
-        if (!team.dateArchived && team.teamTypeId && budgetByDivisionId.has(team.teamTypeId)) {
+        if (!team.dateArchived && team.teamTypeId && buckets.has(team.teamTypeId)) {
           divisionIds.add(team.teamTypeId);
         }
       });
-      if (divisionIds.size === 0) {
-        unassignedBudget += project.budget;
-        return;
-      }
-      divisionIds.forEach((id) =>
-        budgetByDivisionId.set(id, (budgetByDivisionId.get(id) ?? 0) + project.budget / divisionIds.size)
-      );
+      const targets = divisionIds.size === 0 ? [unassigned] : [...divisionIds].map((id) => buckets.get(id)!);
+      targets.forEach((bucket) => {
+        bucket.budget += project.budget / targets.length;
+        bucket.spent += spent / targets.length;
+      });
     });
 
-    const values = divisions.map((division) => ({
-      value: budgetByDivisionId.get(division.teamTypeId) ?? 0,
-      label: division.name
-    }));
-    if (unassignedBudget > 0) values.push({ value: unassignedBudget, label: 'Unassigned' });
+    const allBuckets = [...buckets.values()];
+    if (unassigned.budget > 0 || unassigned.spent > 0) allBuckets.push(unassigned);
 
-    const budgetByDivision = { tipLabel: 'Dollars', values };
+    const budgetByDivision = {
+      tipLabel: 'Dollars',
+      values: allBuckets.map(({ label, budget }) => ({ label, value: roundToCents(budget) }))
+    };
 
-    return { executiveSummaryId, budgetByDivision };
+    // strict comparisons so that ties go to the first bucket (divisions are ordered by name)
+    let mostExpensiveDivision: BudgetHighlight | undefined;
+    let mostOverbudgetDivision: BudgetHighlight | undefined;
+    allBuckets.forEach(({ label, budget, spent }) => {
+      const roundedSpent = roundToCents(spent);
+      const overage = roundToCents(spent - budget);
+      if (roundedSpent > (mostExpensiveDivision?.amount ?? 0)) {
+        mostExpensiveDivision = { label, amount: roundedSpent };
+      }
+      if (overage > (mostOverbudgetDivision?.amount ?? 0)) {
+        mostOverbudgetDivision = { label, amount: overage };
+      }
+    });
+
+    const totalBudget = roundToCents(allBuckets.reduce((sum, { budget }) => sum + budget, 0));
+    const totalSpent = roundToCents(allBuckets.reduce((sum, { spent }) => sum + spent, 0));
+
+    return {
+      executiveSummaryId,
+      budgetByDivision,
+      totalBudget,
+      totalSpent,
+      mostExpensiveDivision,
+      mostOverbudgetDivision,
+      mostOverbudgetProject
+    };
   }
 }

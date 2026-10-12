@@ -469,5 +469,111 @@ describe('Executive Summary Tests', () => {
       expect(getDivisionValue(result, 'aTeam')).toBe(0);
       expect(getDivisionValue(result, 'Unassigned')).toBe(noTeamProject.budget + archivedTeamProject.budget);
     });
+
+    // records a reimbursed product (cost in cents) charged to the given wbs element
+    const addReimbursedSpend = async (wbsElementId: string, costInCents: number) => {
+      const [vendor, indexCode, accountCode] = await Promise.all([
+        prisma.vendor.create({
+          data: { name: `vendor-${Math.random()}`, organizationId: orgId, addedByUserId: superman.userId }
+        }),
+        prisma.index_Code.create({
+          data: { name: 'idx', code: '1', userCreatedId: superman.userId, organizationId: orgId }
+        }),
+        prisma.account_Code.create({
+          data: { name: `acct-${Math.random()}`, code: 1, allowed: true, organizationId: orgId }
+        })
+      ]);
+      const request = await prisma.reimbursement_Request.create({
+        data: {
+          identifier: Math.floor(Math.random() * 1_000_000),
+          recipientId: superman.userId,
+          vendorId: vendor.vendorId,
+          indexCodeId: indexCode.indexCodeId,
+          accountCodeId: accountCode.accountCodeId,
+          organizationId: orgId,
+          totalCost: costInCents,
+          reimbursementStatuses: { create: { type: 'REIMBURSED', userId: superman.userId } }
+        }
+      });
+      const reason = await prisma.reimbursement_Product_Reason.create({ data: { wbsElementId } });
+      await prisma.reimbursement_Product.create({
+        data: {
+          cost: costInCents,
+          reimbursementProductReasonId: reason.reimbursementProductReasonId,
+          reimbursementRequestId: request.reimbursementRequestId
+        }
+      });
+    };
+
+    it('counts spending charged to a work package toward its project and division', async () => {
+      const { teamTypeId } = await createTestTeamType('aTeam', orgId);
+      const team = await createTestTeam(superman.userId, teamTypeId, orgId);
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const project = await createTestProject(superman, orgId, team.teamId, car.carId, 0, 1);
+      const workPackage = await createTestWorkPackage(superman, orgId, project.projectId, 0, 1, 1);
+      await addReimbursedSpend(project.wbsElementId, 10000);
+      await addReimbursedSpend(workPackage.wbsElementId, 25000);
+
+      const result = await ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman);
+
+      expect(result.totalSpent).toBe(350);
+      expect(result.mostExpensiveDivision).toEqual({ label: 'aTeam', amount: 350 });
+    });
+
+    it('includes unassigned spending in the totals and highlights', async () => {
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const project = await createTestProject(superman, orgId, undefined, car.carId, 0, 1);
+      await prisma.project.update({ where: { projectId: project.projectId }, data: { budget: 0 } });
+      await createTestWorkPackage(superman, orgId, project.projectId, 0, 1, 1);
+      await addReimbursedSpend(project.wbsElementId, 50000);
+
+      const result = await ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman);
+
+      expect(getDivisionValue(result, 'Unassigned')).toBe(0);
+      expect(result.totalSpent).toBe(500);
+      expect(result.totalBudget).toBe(0);
+      expect(result.mostExpensiveDivision).toEqual({ label: 'Unassigned', amount: 500 });
+      expect(result.mostOverbudgetDivision).toEqual({ label: 'Unassigned', amount: 500 });
+      expect(result.mostOverbudgetProject?.amount).toBe(500);
+    });
+
+    it('does not flag a division as overbudget because of rounding when a project is split three ways', async () => {
+      const teams = await Promise.all(
+        ['A', 'B', 'C'].map(async (name) => {
+          const { teamTypeId } = await createTestTeamType(name, orgId);
+          return createTestTeam(superman.userId, teamTypeId, orgId);
+        })
+      );
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const project = await createTestProject(superman, orgId, teams[0].teamId, car.carId, 0, 1);
+      await prisma.project.update({
+        where: { projectId: project.projectId },
+        data: { budget: 100, teams: { connect: teams.slice(1).map((t) => ({ teamId: t.teamId })) } }
+      });
+      await createTestWorkPackage(superman, orgId, project.projectId, 0, 1, 1);
+      await addReimbursedSpend(project.wbsElementId, 10000);
+
+      const result = await ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman);
+
+      expect(result.mostOverbudgetDivision).toBeUndefined();
+      expect(result.mostOverbudgetProject).toBeUndefined();
+      expect(result.totalSpent).toBe(100);
+    });
+
+    it('returns totals and no highlights when nothing has been spent', async () => {
+      const { teamTypeId } = await createTestTeamType('aTeam', orgId);
+      const team = await createTestTeam(superman.userId, teamTypeId, orgId);
+      const summary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const project = await createTestProject(superman, orgId, team.teamId, car.carId, 0, 1);
+      await createTestWorkPackage(superman, orgId, project.projectId, 0, 1, 1);
+
+      const result = await ExecSummaryServices.getBudgetSummary(organization, summary.executiveSummaryId, superman);
+
+      expect(result.totalBudget).toBe(project.budget);
+      expect(result.totalSpent).toBe(0);
+      expect(result.mostExpensiveDivision).toBeUndefined();
+      expect(result.mostOverbudgetDivision).toBeUndefined();
+      expect(result.mostOverbudgetProject).toBeUndefined();
+    });
   });
 });

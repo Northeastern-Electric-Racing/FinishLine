@@ -158,7 +158,17 @@ export interface VehicleDevelopmentSummary {
   projects: VehicleDevelopmentProjectSummary[];
 }
 
+export interface BudgetHighlight {
+  label: string;
+  amount: number;
+}
+
 export interface BudgetSummary {
   executiveSummaryId: string;
   budgetByDivision: GraphData;
+  totalBudget: number;
+  totalSpent: number;
+  mostExpensiveDivision?: BudgetHighlight;
+  mostOverbudgetDivision?: BudgetHighlight;
+  mostOverbudgetProject?: BudgetHighlight;
 }

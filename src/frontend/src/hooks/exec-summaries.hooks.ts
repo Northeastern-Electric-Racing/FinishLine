@@ -81,6 +81,7 @@ export const useEditExecutiveSummary = (executiveSummaryId: string) => {
     ['executive-summaries', 'edit'],
     async (formData: EditExecSummaryPayload) => {
       const { data } = await editExecutiveSummary(executiveSummaryId, formData);
+      queryClient.setQueryData(['executive-summaries', executiveSummaryId], data);
       queryClient.invalidateQueries(['executive-summaries']);
       return data;
     }
