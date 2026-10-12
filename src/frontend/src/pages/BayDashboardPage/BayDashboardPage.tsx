@@ -3,9 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useBayDashboardEvents } from '../../hooks/bay-dashboard.hooks';
+import { defaultBayDashboardSlots } from '../../utils/bay-dashboard.utils';
+import BayDashboardGrid from './components/BayDashboardGrid';
 
 interface ParamTypes {
   slug: string;
@@ -20,8 +22,8 @@ const BayDashboardPage: React.FC = () => {
   useBayDashboardEvents(slug);
 
   return (
-    <Box>
-      <Typography variant="body2">Bay Dashboard</Typography>
+    <Box sx={{ position: 'fixed', inset: 0, overflow: 'hidden', bgcolor: 'black' }}>
+      <BayDashboardGrid slots={defaultBayDashboardSlots} />
     </Box>
   );
 };

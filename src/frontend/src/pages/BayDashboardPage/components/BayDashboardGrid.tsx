@@ -3,8 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { BayDashboardSlot, BayDashboardWidgetSize } from 'shared';
+import NERWidget from '../../../components/NERWidget';
 import { bayDashboardWidgetDisplayNames } from '../../../utils/bay-dashboard.utils';
 
 interface BayDashboardGridProps {
@@ -13,43 +14,34 @@ interface BayDashboardGridProps {
 
 interface SlotCardProps {
   slot?: BayDashboardSlot;
+  size: BayDashboardWidgetSize;
   gridArea: string;
 }
 
-// stands in for the slot's widget until the widget components exist
-const SlotCard: React.FC<SlotCardProps> = ({ slot, gridArea }) => {
+// titled frame for the slot's widget until the widget components exist
+const SlotCard: React.FC<SlotCardProps> = ({ slot, size, gridArea }) => {
   const widget = slot?.widgets[0];
 
   return (
-    <Box
-      sx={{
-        gridArea,
-        borderRadius: '3cqw',
-        bgcolor: 'rgba(255, 255, 255, 0.2)',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
-        p: '1.5cqw',
-        overflow: 'hidden'
-      }}
-    >
-      {widget && (
-        <Typography sx={{ color: 'white', fontSize: '2.5cqw' }}>{bayDashboardWidgetDisplayNames[widget.type]}</Typography>
-      )}
+    <Box sx={{ gridArea, minWidth: 0, minHeight: 0 }}>
+      <NERWidget size={size} title={widget && bayDashboardWidgetDisplayNames[widget.type]} />
     </Box>
   );
 };
 
 /**
- * The Big/Medium/Small widget grid the TV renders. Fills the width of its parent at 16:9 and sizes
- * everything off that width, so the Admin Tools preview is a scaled down copy of the TV.
+ * The Big/Medium/Small widget grid the TV renders. Fills the width and height of its parent and
+ * sizes text and spacing off its own width, so the parent decides the shape (the TV page uses the
+ * whole screen, the Admin Tools preview keeps 16:9) and the preview is a scaled down copy of the TV.
  */
 const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots }) => {
   const slotOfSize = (size: BayDashboardWidgetSize) => slots.find((slot) => slot.size === size);
 
   return (
-    <Box sx={{ containerType: 'inline-size', width: '100%' }}>
+    <Box sx={{ containerType: 'inline-size', width: '100%', height: '100%' }}>
       <Box
         sx={{
-          aspectRatio: '16 / 9',
+          height: '100%',
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gridTemplateRows: '6fr 42fr 28fr 18fr',
@@ -60,9 +52,9 @@ const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots }) => {
         }}
       >
         {/* weather and date/time go in "header", the countdown widget goes in "countdown" */}
-        <SlotCard slot={slotOfSize(BayDashboardWidgetSize.LARGE)} gridArea="large" />
-        <SlotCard slot={slotOfSize(BayDashboardWidgetSize.MEDIUM)} gridArea="medium" />
-        <SlotCard slot={slotOfSize(BayDashboardWidgetSize.SMALL)} gridArea="small" />
+        <SlotCard slot={slotOfSize(BayDashboardWidgetSize.LARGE)} size={BayDashboardWidgetSize.LARGE} gridArea="large" />
+        <SlotCard slot={slotOfSize(BayDashboardWidgetSize.MEDIUM)} size={BayDashboardWidgetSize.MEDIUM} gridArea="medium" />
+        <SlotCard slot={slotOfSize(BayDashboardWidgetSize.SMALL)} size={BayDashboardWidgetSize.SMALL} gridArea="small" />
       </Box>
     </Box>
   );
