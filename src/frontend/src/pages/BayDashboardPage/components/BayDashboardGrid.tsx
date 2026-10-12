@@ -14,17 +14,16 @@ interface BayDashboardGridProps {
 
 interface SlotCardProps {
   slot?: BayDashboardSlot;
-  size: BayDashboardWidgetSize;
   gridArea: string;
 }
 
 // titled frame for the slot's widget until the widget components exist
-const SlotCard: React.FC<SlotCardProps> = ({ slot, size, gridArea }) => {
+const SlotCard: React.FC<SlotCardProps> = ({ slot, gridArea }) => {
   const widget = slot?.widgets[0];
 
   return (
     <Box sx={{ gridArea, minWidth: 0, minHeight: 0 }}>
-      <NERWidget size={size} title={widget && bayDashboardWidgetDisplayNames[widget.type]} />
+      <NERWidget title={widget && bayDashboardWidgetDisplayNames[widget.type]} />
     </Box>
   );
 };
@@ -52,9 +51,9 @@ const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots }) => {
         }}
       >
         {/* weather and date/time go in "header", the countdown widget goes in "countdown" */}
-        <SlotCard slot={slotOfSize(BayDashboardWidgetSize.LARGE)} size={BayDashboardWidgetSize.LARGE} gridArea="large" />
-        <SlotCard slot={slotOfSize(BayDashboardWidgetSize.MEDIUM)} size={BayDashboardWidgetSize.MEDIUM} gridArea="medium" />
-        <SlotCard slot={slotOfSize(BayDashboardWidgetSize.SMALL)} size={BayDashboardWidgetSize.SMALL} gridArea="small" />
+        <SlotCard slot={slotOfSize(BayDashboardWidgetSize.LARGE)} gridArea="large" />
+        <SlotCard slot={slotOfSize(BayDashboardWidgetSize.MEDIUM)} gridArea="medium" />
+        <SlotCard slot={slotOfSize(BayDashboardWidgetSize.SMALL)} gridArea="small" />
       </Box>
     </Box>
   );

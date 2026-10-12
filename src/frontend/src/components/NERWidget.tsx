@@ -4,10 +4,8 @@
  */
 
 import { Box, Typography } from '@mui/material';
-import { BayDashboardWidgetSize } from 'shared';
 
 interface NERWidgetProps {
-  size: BayDashboardWidgetSize;
   title?: string;
   children?: React.ReactNode;
 }
@@ -23,7 +21,7 @@ const NERWidget: React.FC<NERWidgetProps> = ({ title, children }) => {
         width: '100%',
         height: '100%',
         borderRadius: '2cqw',
-        bgcolor: 'rgba(255, 255, 255, 0.2)', //bg color and opacity
+        bgcolor: 'rgba(255, 255, 255, 0.2)',
         padding: '2cqw',
         border: '1.5px solid rgba(255,255,255,0.15)',
         overflow: 'hidden'
