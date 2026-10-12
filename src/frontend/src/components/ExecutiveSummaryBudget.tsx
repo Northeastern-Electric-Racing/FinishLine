@@ -51,9 +51,19 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
   const { executiveSummaryId } = initialSummary;
   const theme = useTheme();
   const accent = theme.palette.primary.main;
-  const { data: budgetSummary, isLoading, isError, error } = useBudgetSummary(executiveSummaryId);
+  const {
+    data: budgetSummary,
+    isLoading: budgetIsLoading,
+    isError: budgetIsError,
+    error: budgetError
+  } = useBudgetSummary(executiveSummaryId);
   // prefer the live copy of the summary so that notes and the edit payload never go stale
-  const { data: latestSummary } = useSingleExecutiveSummary(executiveSummaryId);
+  const {
+    data: latestSummary,
+    isLoading: summaryIsLoading,
+    isError: summaryIsError,
+    error: summaryError
+  } = useSingleExecutiveSummary(executiveSummaryId);
   const executiveSummary = latestSummary ?? initialSummary;
   const { mutateAsync: editExecutiveSummary, isLoading: isSaving } = useEditExecutiveSummary(executiveSummaryId);
   const toast = useToast();
@@ -65,8 +75,9 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
     if (!isEditingNotes) setNotesDraft(executiveSummary.budgetNotes);
   }, [executiveSummary.budgetNotes, isEditingNotes]);
 
-  if (isLoading || !budgetSummary) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (budgetIsError) return <ErrorPage message={budgetError?.message} />;
+  if (summaryIsError) return <ErrorPage message={summaryError?.message} />;
+  if (budgetIsLoading || summaryIsLoading || !budgetSummary) return <LoadingIndicator />;
 
   const { budgetByDivision, totalBudget, totalSpent } = budgetSummary;
   const overage = totalSpent - totalBudget;
@@ -197,7 +208,7 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
               >
                 Cancel
               </Button>
-              <Button color="success" variant="contained" size="small" onClick={saveNotes} disabled={isSaving}>
+              <Button color="success" variant="contained" size="small" onClick={saveNotes} disabled={isSaving || !latestSummary}>
                 Save
               </Button>
             </>

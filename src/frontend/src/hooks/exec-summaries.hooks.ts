@@ -81,10 +81,8 @@ export const useEditExecutiveSummary = (executiveSummaryId: string) => {
     ['executive-summaries', 'edit'],
     async (formData: EditExecSummaryPayload) => {
       const { data } = await editExecutiveSummary(executiveSummaryId, formData);
-      // only the list and this summary change on an edit; the budget and vehicle development summaries are computed
-      // from other data, so leave them cached rather than recomputing them
       queryClient.setQueryData(['executive-summaries', executiveSummaryId], data);
-      queryClient.invalidateQueries(['executive-summaries'], { exact: true });
+      queryClient.invalidateQueries(['executive-summaries']);
       return data;
     }
   );

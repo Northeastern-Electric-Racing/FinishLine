@@ -54,7 +54,10 @@ const reimbursedProductReasonsSelect = Prisma.validator<Prisma.WBS_ElementSelect
           dateDeleted: null,
           reimbursementRequest: {
             dateDeleted: null,
-            reimbursementStatuses: { some: { type: Reimbursement_Status_Type.REIMBURSED } }
+            reimbursementStatuses: {
+              some: { type: Reimbursement_Status_Type.REIMBURSED },
+              none: { type: Reimbursement_Status_Type.DENIED }
+            }
           }
         },
         select: { cost: true }

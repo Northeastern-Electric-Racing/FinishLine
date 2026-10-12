@@ -283,6 +283,7 @@ export default class ExecSummaryServices {
           carId,
           wbsElement: { organizationId: organization.organizationId, dateDeleted: null }
         },
+        orderBy: { wbsElement: { name: 'asc' } },
         ...getBudgetProjectQueryArgs()
       })
     ]);
