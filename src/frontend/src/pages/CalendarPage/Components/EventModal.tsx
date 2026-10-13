@@ -18,6 +18,7 @@ import {
   ToggleButton,
   useTheme
 } from '@mui/material';
+import { yellow } from '@mui/material/colors';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import * as yup from 'yup';
@@ -106,6 +107,7 @@ export interface EventPayload {
   description?: string;
   notificationChannelIds: string[];
   mention: SlackMentionType;
+  sendSlackNotifications: boolean;
   // If the event type requires confirmation, only intialDateScheduled will be populated. If not,
   // scheduleSlots will be populated based on if the event is being editted or created
   initialDateScheduled?: Date;
@@ -352,6 +354,14 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     [allowedEventTypes, selectedEventTypeId]
   );
 
+  const [preferSlackNotification, setPreferSlackNotification] = useState<boolean>(
+    selectedEventType?.sendSlackNotifications ?? false
+  );
+
+  useEffect(() => {
+    setPreferSlackNotification(selectedEventType?.sendSlackNotifications ?? false);
+  }, [selectedEventType]);
+
   // Filter machinery based on selected shops
   const filteredMachineryOptions = useMemo(() => {
     if (!machinery || !shops) {
@@ -560,6 +570,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       questionDocumentLink: data.questionDocumentLink,
       description: data.description,
       notificationChannelIds: selectedNotificationChannels.map((c) => c.id),
+      sendSlackNotifications: preferSlackNotification,
       mention: data.mention
     };
 
@@ -1232,46 +1243,56 @@ const EventModal: React.FC<BaseEventModalProps> = ({
           {/* Notification Section */}
           {selectedEventType && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <NotificationsIcon sx={{ color: 'text.secondary', flexShrink: 0 }} />
               <Tooltip
                 arrow
                 placement="right"
                 title={
                   !selectedEventType.sendSlackNotifications
                     ? 'Slack notifications are disabled for this event type.'
-                    : selectedTeams.length || workPackageIds.length || selectedNotificationChannels.length
+                    : preferSlackNotification &&
+                        (selectedTeams.length || workPackageIds.length || selectedNotificationChannels.length)
                       ? 'Slack notifications will be sent for this event.'
-                      : ''
+                      : 'Slack notifications will not be sent for this event.'
                 }
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'default', minWidth: 0 }}>
-                  <Typography
-                    variant="body2"
-                    color={'text.disabled'}
-                    fontWeight={500}
-                    sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
+                {/* Span wrapper so the tooltip still shows when the button is disabled */}
+                <span style={{ display: 'inline-flex', flexShrink: 0 }}>
+                  <Button
+                    onClick={() => setPreferSlackNotification((prev) => !prev)}
+                    disabled={!selectedEventType.sendSlackNotifications}
+                    disableRipple
+                    sx={{
+                      minWidth: 0,
+                      p: 0,
+                      gap: 1,
+                      textTransform: 'none',
+                      '&:hover': { backgroundColor: 'transparent' }
+                    }}
                   >
-                    {selectedEventType.sendSlackNotifications ? 'On' : 'Off'}
-                  </Typography>
-                  {selectedEventType.sendSlackNotifications &&
-                    !selectedTeams.length &&
-                    !workPackageIds.length &&
-                    !selectedNotificationChannels.length && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
-                        <WarningAmberIcon sx={{ color: 'error.main', fontSize: 18, flexShrink: 0 }} />
-                        <Typography variant="body2" color="error.main">
-                          Add{' '}
-                          {selectedEventType.teams && selectedEventType.workPackage
-                            ? 'a team, work package,'
-                            : selectedEventType.teams
-                              ? 'a team'
-                              : 'a work package'}{' '}
-                          or notification channel to send notifications
-                        </Typography>
-                      </Box>
-                    )}
-                </Box>
+                    <NotificationsIcon sx={{ color: preferSlackNotification ? yellow[700] : 'text.secondary' }} />
+                    <Typography variant="body2" color={'text.disabled'} fontWeight={500} sx={{ whiteSpace: 'nowrap' }}>
+                      {preferSlackNotification ? 'On' : 'Off'}
+                    </Typography>
+                  </Button>
+                </span>
               </Tooltip>
+              {preferSlackNotification &&
+                !selectedTeams.length &&
+                !workPackageIds.length &&
+                !selectedNotificationChannels.length && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+                    <WarningAmberIcon sx={{ color: 'error.main', fontSize: 18, flexShrink: 0 }} />
+                    <Typography variant="body2" color="error.main">
+                      Add{' '}
+                      {selectedEventType.teams && selectedEventType.workPackage
+                        ? 'a team, work package,'
+                        : selectedEventType.teams
+                          ? 'a team'
+                          : 'a work package'}{' '}
+                      or notification channel to send notifications
+                    </Typography>
+                  </Box>
+                )}
 
               {/* Slack Mention Type Toggle */}
               {selectedEventType.sendSlackNotifications && !initialValues && (

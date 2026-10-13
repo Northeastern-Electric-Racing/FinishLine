@@ -140,6 +140,7 @@ export default class NotificationsService {
             AND: [{ endTime: { gte: startOfToday } }, { startTime: { lte: endOfToday } }]
           }
         },
+        sendSlackNotifications: true,
         eventType: {
           sendSlackNotifications: true
         }

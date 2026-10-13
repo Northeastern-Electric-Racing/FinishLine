@@ -1238,6 +1238,7 @@ model Event {
   notificationSlackThreads   Message_Info[]
   calendarEventIds           String[]
   notificationChannelIds     String[]        @default([])
+  sendSlackNotifications     Boolean         @default(true)
 }
 
 model Calendar {

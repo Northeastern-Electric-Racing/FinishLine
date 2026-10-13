@@ -249,6 +249,7 @@ export default class CalendarService {
    * @param location Location of the event.
    * @param zoomLink Zoom Link if the event is online.
    * @param description Describes the event.
+   * @param sendSlackNotifications Whether slack notifications should be sent for this event. Defaults to true.
    *
    * @returns The created event.
    *
@@ -274,7 +275,8 @@ export default class CalendarService {
     location?: string,
     zoomLink?: string,
     description?: string,
-    mention?: SlackMentionType
+    mention?: SlackMentionType,
+    sendSlackNotifications?: boolean
   ): Promise<Event> {
     if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
     // Validate eventTypeId
@@ -450,6 +452,7 @@ export default class CalendarService {
           connect: teamIds.map((teamId) => ({ teamId }))
         },
         notificationChannelIds,
+        sendSlackNotifications,
         teamTypeId,
         shops: {
           connect: shopIds.map((shopId) => ({ shopId }))
@@ -583,6 +586,7 @@ export default class CalendarService {
    * @param location Location of the event.
    * @param zoomLink Zoom Link if the event is online.
    * @param description Describes the event.
+   * @param sendSlackNotifications Whether slack notifications should be sent for this event.
    *
    * @returns The edited event.
    *
@@ -607,7 +611,8 @@ export default class CalendarService {
     questionDocumentLink?: string,
     location?: string,
     zoomLink?: string,
-    description?: string
+    description?: string,
+    sendSlackNotifications?: boolean
   ): Promise<Event> {
     if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
     // validate eventId
@@ -789,6 +794,7 @@ export default class CalendarService {
           set: teamIds.map((teamId) => ({ teamId }))
         },
         notificationChannelIds,
+        sendSlackNotifications,
         ...(teamTypeId !== undefined && { teamTypeId }),
         status,
         shops: {
