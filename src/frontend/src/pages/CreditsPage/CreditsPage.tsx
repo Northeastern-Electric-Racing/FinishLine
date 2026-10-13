@@ -391,7 +391,8 @@ const CreditsPage: React.FC = () => {
         borderRadius: '14px',
         padding: '0 8px'
       }
-    }
+    },
+    { name: 'Arya Baviskar', color: '#92b5ed' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
