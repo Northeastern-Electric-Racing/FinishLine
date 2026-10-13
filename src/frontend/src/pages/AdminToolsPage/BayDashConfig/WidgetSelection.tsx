@@ -3,6 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { useState } from 'react';
+import { BayDashboardWidgetSize, BayDashboardWidgetType } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAvailableBayDashboardWidgets } from '../../../hooks/bay-dashboard.hooks';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
@@ -16,6 +18,8 @@ interface WidgetSelectionViewProps {
 
 const WidgetSelectionView: React.FC<WidgetSelectionViewProps> = ({ slug }) => {
   const { data: availableWidgets, isLoading, isError, error } = useAvailableBayDashboardWidgets(slug);
+  // highlighted widget per size, only one per size (until phase 3 widget rotations)
+  const [selected, setSelected] = useState<Partial<Record<BayDashboardWidgetSize, BayDashboardWidgetType>>>({});
 
   if (isError) return <ErrorPage message={error.message} />;
   if (isLoading || !availableWidgets) return <LoadingIndicator />;
@@ -27,6 +31,8 @@ const WidgetSelectionView: React.FC<WidgetSelectionViewProps> = ({ slug }) => {
           key={size}
           title={size.charAt(0) + size.slice(1).toLowerCase()}
           widgets={availableWidgets.widgets.filter((widget) => widget.sizes.includes(size))}
+          selectedType={selected[size]}
+          onSelect={(type) => setSelected((prev) => ({ ...prev, [size]: type }))}
         />
       ))}
     </>
@@ -34,7 +40,8 @@ const WidgetSelectionView: React.FC<WidgetSelectionViewProps> = ({ slug }) => {
 };
 
 /**
- * Dropdowns listing the widgets available for each slot size. Display only for now.
+ * Dropdowns listing the widgets available for each slot size. 
+ * Clicking a widget highlights it, one per size. 
  */
 const WidgetSelection: React.FC = () => {
   const { data: organization, isLoading, isError, error } = useCurrentOrganization();
