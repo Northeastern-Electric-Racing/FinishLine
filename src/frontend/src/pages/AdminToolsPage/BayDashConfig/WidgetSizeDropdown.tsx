@@ -28,11 +28,13 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title, widgets,
       onChange={(_, isExpanded) => setExpanded(isExpanded)}
       disableGutters
       elevation={0}
-      sx={{ backgroundColor: 'transparent', '&:before': { display: 'none' } }}
+      sx={{ backgroundColor: 'transparent', '&:before': { display: 'none' }, mx: -2 }}
     >
       <AccordionSummary
         expandIcon={<ExpandMore />}
         sx={{
+          ml: 2,
+          width: 'calc(100% - 32px)',
           backgroundColor: 'primary.main',
           color: 'white',
           borderRadius: '12px 12px 0 0',
@@ -44,7 +46,7 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title, widgets,
           {title}
         </Typography>
       </AccordionSummary>
-      <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2, px: 0 }}>
+      <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2, px: 2 }}>
         {widgets.length === 0 ? (
           <Typography pl={1}>No widgets available</Typography>
         ) : (

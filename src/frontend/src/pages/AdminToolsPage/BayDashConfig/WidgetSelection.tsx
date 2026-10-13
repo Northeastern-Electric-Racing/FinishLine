@@ -32,7 +32,7 @@ const WidgetSelectionView: React.FC<WidgetSelectionViewProps> = ({ slug }) => {
           title={size.charAt(0) + size.slice(1).toLowerCase()}
           widgets={availableWidgets.widgets.filter((widget) => widget.sizes.includes(size))}
           selectedType={selected[size]}
-          onSelect={(type) => setSelected((prev) => ({ ...prev, [size]: type }))}
+          onSelect={(type) => setSelected((prev) => ({ ...prev, [size]: prev[size] === type ? undefined : type }))}
         />
       ))}
     </>
@@ -41,7 +41,7 @@ const WidgetSelectionView: React.FC<WidgetSelectionViewProps> = ({ slug }) => {
 
 /**
  * Dropdowns listing the widgets available for each slot size. 
- * Clicking a widget highlights it, one per size. 
+ * Clicking a widget highlights it, one per size, and clicking it again unselects it.
  */
 const WidgetSelection: React.FC = () => {
   const { data: organization, isLoading, isError, error } = useCurrentOrganization();
