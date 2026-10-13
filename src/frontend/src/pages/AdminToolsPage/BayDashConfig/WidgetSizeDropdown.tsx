@@ -16,7 +16,7 @@ interface WidgetSizeDropdownProps {
 }
 
 /**
- * A collapsible dropdown listing the widgets available for one widget size. 
+ * A collapsible dropdown listing the widgets available for one widget size.
  * Clicking a widget selects it, and only one widget is highlighted at a time (until phase 3 widget rotations)
  */
 const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title, widgets, selectedType, onSelect }) => {

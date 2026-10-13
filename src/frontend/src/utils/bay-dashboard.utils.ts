@@ -17,24 +17,58 @@ export const bayDashboardWidgetDisplayNames: Record<BayDashboardWidgetType, stri
 
 // order the size dropdowns appear in the Admin Tools widget selection
 export const bayDashboardWidgetSizes = [
-  BayDashboardWidgetSize.SMALL,
+  BayDashboardWidgetSize.LARGE,
   BayDashboardWidgetSize.MEDIUM,
-  BayDashboardWidgetSize.LARGE
+  BayDashboardWidgetSize.SMALL
 ];
 
-const defaultSlot = (size: BayDashboardWidgetSize, position: number, type: BayDashboardWidgetType): BayDashboardSlot => ({
-  bayDashboardSlotId: `default-${position}`,
+const slotPositions: Record<BayDashboardWidgetSize, number> = {
+  [BayDashboardWidgetSize.LARGE]: 0,
+  [BayDashboardWidgetSize.MEDIUM]: 1,
+  [BayDashboardWidgetSize.SMALL]: 2
+};
+
+const defaultSlot = (size: BayDashboardWidgetSize, type: BayDashboardWidgetType): BayDashboardSlot => ({
+  bayDashboardSlotId: `default-${slotPositions[size]}`,
   size,
-  position,
+  position: slotPositions[size],
   rotationSeconds: 30,
-  widgets: [{ bayDashboardWidgetId: `default-${position}-0`, type, order: 0 }]
+  widgets: [{ bayDashboardWidgetId: `default-${slotPositions[size]}-0`, type, order: 0 }]
 });
+
+// the widget picked for each size in the Admin Tools
+export type BayDashboardWidgetSelection = Partial<Record<BayDashboardWidgetSize, BayDashboardWidgetType>>;
+
+/**
+ * Puts the widget picked for each size into that size's slot
+ */
+export const applyWidgetSelection = (
+  slots: BayDashboardSlot[],
+  selection: BayDashboardWidgetSelection
+): BayDashboardSlot[] => {
+  // unselecting leaves the size in the selection as undefined, so only count sizes with a widget
+  const sizes = (Object.keys(selection) as BayDashboardWidgetSize[]).filter((size) => selection[size]);
+  const untouchedSlots = slots.filter((slot) => !sizes.includes(slot.size));
+
+  const selectedSlots = sizes.map((size): BayDashboardSlot => {
+    const existingSlot = slots.find((slot) => slot.size === size);
+    return {
+      bayDashboardSlotId: existingSlot?.bayDashboardSlotId ?? `preview-${size}`,
+      size,
+      position: slotPositions[size],
+      rotationSeconds: existingSlot?.rotationSeconds ?? 30,
+      widgets: [{ bayDashboardWidgetId: `preview-${size}-0`, type: selection[size] as BayDashboardWidgetType, order: 0 }]
+    };
+  });
+
+  return [...untouchedSlots, ...selectedSlots].sort((a, b) => a.position - b.position);
+};
 
 /**
  * The layout the bay dashboard falls back to when the organization has never saved a config.
  */
 export const defaultBayDashboardSlots: BayDashboardSlot[] = [
-  defaultSlot(BayDashboardWidgetSize.LARGE, 0, BayDashboardWidgetType.CALENDAR),
-  defaultSlot(BayDashboardWidgetSize.MEDIUM, 1, BayDashboardWidgetType.OVERDUE_WORK_PACKAGES),
-  defaultSlot(BayDashboardWidgetSize.SMALL, 2, BayDashboardWidgetType.TEXT_FIELD)
+  defaultSlot(BayDashboardWidgetSize.LARGE, BayDashboardWidgetType.CALENDAR),
+  defaultSlot(BayDashboardWidgetSize.MEDIUM, BayDashboardWidgetType.OVERDUE_WORK_PACKAGES),
+  defaultSlot(BayDashboardWidgetSize.SMALL, BayDashboardWidgetType.TEXT_FIELD)
 ];

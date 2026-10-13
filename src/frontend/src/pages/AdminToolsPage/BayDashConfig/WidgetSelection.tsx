@@ -42,7 +42,7 @@ const WidgetSelectionView: React.FC<WidgetSelectionViewProps> = ({ slug, selecti
 };
 
 /**
- * Dropdowns listing the widgets available for each slot size. 
+ * Dropdowns listing the widgets available for each slot size.
  * Clicking a widget highlights it, one per size, and clicking it again unselects it.
  */
 const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectionChange }) => {

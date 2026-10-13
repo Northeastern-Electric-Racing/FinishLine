@@ -6,6 +6,7 @@
 import { Box, Theme, Typography } from '@mui/material';
 import { SystemStyleObject } from '@mui/system';
 import { useState } from 'react';
+import { NERButton } from '../../../components/NERButton';
 import { BayDashboardWidgetSelection } from '../../../utils/bay-dashboard.utils';
 import PreviewDashboard from './PreviewDashboard';
 import WidgetSelection from './WidgetSelection';
@@ -21,14 +22,16 @@ const widgetBoxSx: SystemStyleObject<Theme> = {
  */
 const AdminToolsBayDashConfig: React.FC = () => {
   const [selection, setSelection] = useState<BayDashboardWidgetSelection>({});
+  const hasSelection = Object.values(selection).some((type) => type);
 
   return (
     <Box
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-        gridTemplateRows: { md: 'repeat(3, 1fr)' },
+        gridTemplateRows: { md: 'auto auto 1fr' },
         gap: 4,
+        rowGap: 2,
         p: 2,
         boxSizing: 'border-box',
         width: '100%',
@@ -39,7 +42,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
         sx={{
           ...widgetBoxSx,
           gridColumn: { md: 'span 2' },
-          gridRow: { md: 'span 2' },
+          gridRow: { md: 1 },
           minHeight: { xs: 240, md: 0 },
           p: 2
         }}
@@ -48,6 +51,11 @@ const AdminToolsBayDashConfig: React.FC = () => {
           Preview
         </Typography>
         <PreviewDashboard selection={selection} />
+      </Box>
+      <Box sx={{ gridColumn: { md: 'span 2' }, gridRow: { md: 2 }, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+        <NERButton variant="contained" disabled={!hasSelection} onClick={() => setSelection({})}>
+          CLEAR
+        </NERButton>
       </Box>
       <Box
         sx={{
