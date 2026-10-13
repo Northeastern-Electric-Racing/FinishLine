@@ -73,31 +73,114 @@ describe('computeTriageScore', () => {
     });
   });
 
-  describe('budget magnitude', () => {
+  describe('budget change magnitude', () => {
     it('adds nothing when no budget is given', () => {
       expect(computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP })).toBe(0);
     });
 
-    it('adds nothing for a zero budget', () => {
-      expect(computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP, proposedBudget: 0 })).toBe(0);
+    it('adds nothing when the budget is unchanged', () => {
+      expect(
+        computeTriageScore({
+          ...baseInput,
+          type: CR_Type.LEADERSHIP,
+          proposedBudget: 5000000,
+          currentBudget: 5000000
+        })
+      ).toBe(0);
     });
 
-    it('scales logarithmically so each 10x increase adds the same amount', () => {
-      // budgets are in cents, so these are $1k, $10k and $100k
-      const thousand = computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP, proposedBudget: 100000 });
-      const tenThousand = computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP, proposedBudget: 1000000 });
-      const hundredThousand = computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP, proposedBudget: 10000000 });
+    it('scores the size of the change, not the new total', () => {
+      // a $1k change on a $50k budget vs the same $1k change on a $2k budget
+      const changeOnLargeBudget = computeTriageScore({
+        ...baseInput,
+        type: CR_Type.LEADERSHIP,
+        proposedBudget: 5100000,
+        currentBudget: 5000000
+      });
+      const changeOnSmallBudget = computeTriageScore({
+        ...baseInput,
+        type: CR_Type.LEADERSHIP,
+        proposedBudget: 300000,
+        currentBudget: 200000
+      });
+
+      expect(changeOnLargeBudget).toBeCloseTo(changeOnSmallBudget);
+    });
+
+    it('scores a large budget change above a small one', () => {
+      const smallChange = computeTriageScore({
+        ...baseInput,
+        type: CR_Type.LEADERSHIP,
+        proposedBudget: 1100000,
+        currentBudget: 1000000
+      });
+      const largeChange = computeTriageScore({
+        ...baseInput,
+        type: CR_Type.LEADERSHIP,
+        proposedBudget: 3000000,
+        currentBudget: 1000000
+      });
+
+      expect(largeChange).toBeGreaterThan(smallChange);
+    });
+
+    it('scores a budget decrease the same as an equal increase', () => {
+      const increase = computeTriageScore({
+        ...baseInput,
+        type: CR_Type.LEADERSHIP,
+        proposedBudget: 2000000,
+        currentBudget: 1000000
+      });
+      const decrease = computeTriageScore({
+        ...baseInput,
+        type: CR_Type.LEADERSHIP,
+        proposedBudget: 1000000,
+        currentBudget: 2000000
+      });
+
+      expect(increase).toBeCloseTo(decrease);
+    });
+
+    it('scales logarithmically so each 10x increase in the change adds the same amount', () => {
+      // budgets are in cents, so these are changes of $1k, $10k and $100k from a zero budget
+      const thousand = computeTriageScore({
+        ...baseInput,
+        type: CR_Type.LEADERSHIP,
+        proposedBudget: 100000,
+        currentBudget: 0
+      });
+      const tenThousand = computeTriageScore({
+        ...baseInput,
+        type: CR_Type.LEADERSHIP,
+        proposedBudget: 1000000,
+        currentBudget: 0
+      });
+      const hundredThousand = computeTriageScore({
+        ...baseInput,
+        type: CR_Type.LEADERSHIP,
+        proposedBudget: 10000000,
+        currentBudget: 0
+      });
 
       expect(thousand).toBeCloseTo(6);
       expect(tenThousand).toBeCloseTo(8);
       expect(hundredThousand).toBeCloseTo(10);
     });
 
-    it('does not let a large budget dominate the other factors', () => {
-      const hugeBudget = computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP, proposedBudget: 10000000 });
-      const blocksSixWorkPackages = computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP, blockingCount: 6 });
+    it('does not let a large budget change dominate the other factors', () => {
+      const hugeChange = computeTriageScore({
+        ...baseInput,
+        type: CR_Type.LEADERSHIP,
+        proposedBudget: 10000000,
+        currentBudget: 0
+      });
+      const blocksSixWorkPackages = computeTriageScore({
+        ...baseInput,
+        type: CR_Type.LEADERSHIP,
+        blockingCount: 6
+      });
 
-      expect(hugeBudget).toBeLessThan(blocksSixWorkPackages * 2);
+      expect(hugeChange).toBeLessThan(blocksSixWorkPackages * 2);
     });
   });
 

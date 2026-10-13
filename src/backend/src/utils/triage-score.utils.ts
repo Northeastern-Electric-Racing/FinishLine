@@ -24,8 +24,9 @@ const TIMELINE_PUSHED_LATER_WEIGHT = 1.5;
 const TIMELINE_PULLED_EARLIER_WEIGHT = 0.5;
 
 /**
- * Flat bump by change request type. Standard and Budget change requests wait for an
- * independent reviewer, so they are more time critical than the self-approving types.
+ * Flat bump by change request type. Standard and Budget change requests go through
+ * independent review, so they represent more deliberate, higher-impact changes than
+ * the self-approving types.
  */
 const CR_TYPE_WEIGHTS: Record<CR_Type, number> = {
   STANDARD: 10,
@@ -36,33 +37,32 @@ const CR_TYPE_WEIGHTS: Record<CR_Type, number> = {
 };
 
 /**
- * Multiplier on the log of the proposed budget in dollars. Budgets range from tens to
- * tens of thousands of dollars, so a linear weight would let a large budget drown out
+ * Multiplier on the log of the budget change in dollars. Budget changes range from tens
+ * to tens of thousands of dollars, so a linear weight would let a large change drown out
  * every other factor. Log scaling means each 10x increase adds a fixed amount:
- * $1k adds 6, $10k adds 8, $100k adds 10.
+ * a $1k change adds 6, $10k adds 8, $100k adds 10.
  */
 const BUDGET_MAGNITUDE_WEIGHT = 2;
 
 export interface TriageScoreInput {
-  /** the type of the change request */
   type: CR_Type;
-  /** the proposed budget in cents, only set on budget change requests */
+  /** the proposed new budget in cents, only set on budget change requests */
   proposedBudget?: number;
-  /** how many work packages the change request's work package blocks */
+  /** the current budget in cents, only set on budget change requests */
+  currentBudget?: number;
   blockingCount: number;
-  /** how many days the timeline is moving; positive is later, negative is earlier */
   timelineChangeInDays: number;
 }
 
 /**
- * Computes how urgent a change request is to review. Higher is more urgent.
- * Pure math with no database access so it can be tested in isolation.
+ * Computes how significant a change request's impact is. Higher means a larger,
+ * less anticipated change.
  *
  * @param input the change request's scoring inputs
  * @returns the triage score
  */
 export const computeTriageScore = (input: TriageScoreInput): number => {
-  const { type, proposedBudget, blockingCount, timelineChangeInDays } = input;
+  const { type, proposedBudget, currentBudget, blockingCount, timelineChangeInDays } = input;
 
   const typeScore = CR_TYPE_WEIGHTS[type];
 
@@ -73,9 +73,9 @@ export const computeTriageScore = (input: TriageScoreInput): number => {
       ? timelineChangeInDays * TIMELINE_PUSHED_LATER_WEIGHT
       : Math.abs(timelineChangeInDays) * TIMELINE_PULLED_EARLIER_WEIGHT;
 
-  // budget is stored in cents, and log10 of zero or less is not a number
-  const budgetInDollars = (proposedBudget ?? 0) / 100;
-  const budgetScore = budgetInDollars > 1 ? BUDGET_MAGNITUDE_WEIGHT * Math.log10(budgetInDollars) : 0;
+  // budget is stored in cents, and the size of the change matters rather than the new total
+  const budgetChangeInDollars = Math.abs((proposedBudget ?? 0) - (currentBudget ?? 0)) / 100;
+  const budgetScore = budgetChangeInDollars > 1 ? BUDGET_MAGNITUDE_WEIGHT * Math.log10(budgetChangeInDollars) : 0;
 
   return typeScore + blockingScore + timelineScore + budgetScore;
 };
