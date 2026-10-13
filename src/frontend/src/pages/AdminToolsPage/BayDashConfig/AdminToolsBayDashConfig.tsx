@@ -5,6 +5,8 @@
 
 import { Box, Theme, Typography } from '@mui/material';
 import { SystemStyleObject } from '@mui/system';
+import { useState } from 'react';
+import { BayDashboardWidgetSelection } from '../../../utils/bay-dashboard.utils';
 import PreviewDashboard from './PreviewDashboard';
 import WidgetSelection from './WidgetSelection';
 
@@ -18,6 +20,8 @@ const widgetBoxSx: SystemStyleObject<Theme> = {
  * The Bay Dashboard tab in Admin Tools
  */
 const AdminToolsBayDashConfig: React.FC = () => {
+  const [selection, setSelection] = useState<BayDashboardWidgetSelection>({});
+
   return (
     <Box
       sx={{
@@ -43,7 +47,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
         <Typography variant="h5" gutterBottom pl={1}>
           Preview
         </Typography>
-        <PreviewDashboard />
+        <PreviewDashboard selection={selection} />
       </Box>
       <Box
         sx={{
@@ -58,7 +62,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
           overflowY: 'auto'
         }}
       >
-        <WidgetSelection />
+        <WidgetSelection selection={selection} onSelectionChange={setSelection} />
       </Box>
     </Box>
   );
