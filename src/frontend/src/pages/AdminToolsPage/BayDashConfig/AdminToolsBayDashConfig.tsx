@@ -7,7 +7,12 @@ import { Box, Theme, Typography } from '@mui/material';
 import { SystemStyleObject } from '@mui/system';
 import { useState } from 'react';
 import { NERButton } from '../../../components/NERButton';
-import { BayDashboardWidgetSelection } from '../../../utils/bay-dashboard.utils';
+import { useGetCurrentBayDashboardConfig, useSaveBayDashboardConfig } from '../../../hooks/bay-dashboard.hooks';
+import {
+  applyWidgetSelection,
+  BayDashboardWidgetSelection,
+  toSlotCreateArgs
+} from '../../../utils/bay-dashboard.utils';
 import PreviewDashboard from './PreviewDashboard';
 import WidgetSelection from './WidgetSelection';
 
@@ -23,6 +28,12 @@ const widgetBoxSx: SystemStyleObject<Theme> = {
 const AdminToolsBayDashConfig: React.FC = () => {
   const [selection, setSelection] = useState<BayDashboardWidgetSelection>({});
   const hasSelection = Object.values(selection).some((type) => type);
+  const { data: config } = useGetCurrentBayDashboardConfig();
+  const { mutate: save, isLoading: isSaving } = useSaveBayDashboardConfig();
+
+  const handleSave = () => {
+    save(toSlotCreateArgs(applyWidgetSelection(config?.slots ?? [], selection)), { onSuccess: () => setSelection({}) });
+  };
 
   return (
     <Box
@@ -55,6 +66,9 @@ const AdminToolsBayDashConfig: React.FC = () => {
       <Box sx={{ gridColumn: { md: 'span 2' }, gridRow: { md: 2 }, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
         <NERButton variant="contained" disabled={!hasSelection} onClick={() => setSelection({})}>
           CLEAR
+        </NERButton>
+        <NERButton variant="contained" disabled={!hasSelection || config === undefined || isSaving} onClick={handleSave}>
+          SAVE
         </NERButton>
       </Box>
       <Box

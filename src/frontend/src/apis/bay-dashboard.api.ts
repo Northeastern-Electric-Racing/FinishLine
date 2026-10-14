@@ -5,7 +5,7 @@
 
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { AvailableBayDashboardWidgets, BayDashboardConfig } from 'shared';
+import { AvailableBayDashboardWidgets, BayDashboardConfig, BayDashboardSlotCreateArgs } from 'shared';
 import { bayDashboardConfigTransformer } from './transformers/bay-dashboard.transformers';
 
 /**
@@ -28,4 +28,16 @@ export const getAvailableBayDashboardWidgets = (slug: string) => {
   return axios.get<AvailableBayDashboardWidgets>(apiUrls.bayDashboardWidgets(slug), {
     transformResponse: (data) => JSON.parse(data)
   });
+};
+
+/**
+ * Saves a new bay dashboard config for the current organization, replacing the one the TV is showing
+ * @param slots the slots to display, any position left out is saved with its default widget
+ */
+export const saveBayDashboardConfig = (slots: BayDashboardSlotCreateArgs[]) => {
+  return axios.post<BayDashboardConfig>(
+    apiUrls.bayDashboardAdminSave(),
+    { slots },
+    { transformResponse: (data) => bayDashboardConfigTransformer(JSON.parse(data)) }
+  );
 };

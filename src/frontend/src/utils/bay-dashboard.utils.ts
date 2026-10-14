@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { BayDashboardSlot, BayDashboardWidgetSize, BayDashboardWidgetType } from 'shared';
+import { BayDashboardSlot, BayDashboardSlotCreateArgs, BayDashboardWidgetSize, BayDashboardWidgetType } from 'shared';
 
 export const bayDashboardWidgetDisplayNames: Record<BayDashboardWidgetType, string> = {
   [BayDashboardWidgetType.CALENDAR]: 'Calendar',
@@ -72,3 +72,13 @@ export const defaultBayDashboardSlots: BayDashboardSlot[] = [
   defaultSlot(BayDashboardWidgetSize.MEDIUM, BayDashboardWidgetType.OVERDUE_WORK_PACKAGES),
   defaultSlot(BayDashboardWidgetSize.SMALL, BayDashboardWidgetType.TEXT_FIELD)
 ];
+
+/**
+ * Converts slots into what the save endpoint takes, each slot with at most one widget.
+ */
+export const toSlotCreateArgs = (slots: BayDashboardSlot[]): BayDashboardSlotCreateArgs[] =>
+  slots.map(({ size, position, widgets }) => ({
+    size,
+    position,
+    widget: widgets[0] && { type: widgets[0].type, text: widgets[0].text }
+  }));
