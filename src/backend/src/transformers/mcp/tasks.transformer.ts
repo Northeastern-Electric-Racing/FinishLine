@@ -3,7 +3,7 @@ import { McpTask, wbsPipe } from 'shared';
 import { McpTaskQueryArgs } from '../../prisma-query-args/mcp/tasks.query-args.js';
 import { wbsNumOf } from '../../utils/utils.js';
 import { projectTasksUrl } from '../../utils/urls.utils.js';
-import { fullName } from './shared.js';
+import { mcpUser } from './shared.js';
 
 /**
  * @param task the task to transform
@@ -19,9 +19,9 @@ export const mcpTaskTransformer = (task: Prisma.TaskGetPayload<McpTaskQueryArgs>
     priority: task.priority,
     startDate: task.startDate ?? undefined,
     deadline: task.deadline ?? undefined,
-    assignees: task.assignees.map((assignee) => `${assignee.firstName} ${assignee.lastName}`),
+    assignees: task.assignees.map(mcpUser),
     labels: task.labels.map((label) => label.name),
-    createdBy: fullName(task.createdBy) ?? 'no one',
+    createdBy: mcpUser(task.createdBy),
     // the parent is either the project itself or one of its work packages
     parentWbsNum: wbsPipe(wbsNumOf(task.wbsElement)),
     parentName: task.wbsElement.name,
