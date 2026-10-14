@@ -12,7 +12,7 @@ import {
   Team as SharedTeam,
   TeamJoinRequest
 } from 'shared';
-import { Account_Code, Organization, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
+import { Account_Code, Organization, Reimbursement_Product_Other_Reason, Sponsor_Task, Team_Type } from '@prisma/client';
 import {
   editMessage,
   getChannelName,
@@ -970,34 +970,6 @@ export const notifySponsorTaskAssignee = async (
   await sendMessage(assignee.userSettings?.slackId, msg, link, linkButtonText);
 };
 
-type Teams =
-  | ({
-      teamType: {
-        name: string;
-        dateDeleted: Date | null;
-        organizationId: string;
-        teamTypeId: string;
-        iconName: string;
-        description: string;
-        imageFileId: string | null;
-        calendarId: string | null;
-        deletedById: string | null;
-      } | null;
-    } & {
-      slackId: string;
-      organizationId: string;
-      teamTypeId: string | null;
-      description: string;
-      teamId: string;
-      teamName: string;
-      financeTeam: boolean;
-      operationsTeam: boolean;
-      headId: string;
-      dateArchived: Date | null;
-      userArchivedId: string | null;
-    })[]
-  | undefined;
-
 /**
  * Sends to team channels as well as leads and manager about
  * a work package that is scheduled to start at a later date than anticipated
@@ -1010,7 +982,7 @@ type Teams =
  * @param bufferDays The threshold that triggers this message
  */
 export const sendActivationStartDateChangedNotification = async (
-  teams: Teams,
+  teams: (Team & { teamType: Team_Type | null })[] | undefined,
   leadId: string = '',
   managerId: string = '',
   startDate: Date,
@@ -1038,7 +1010,7 @@ export const sendActivationStartDateChangedNotification = async (
   const link = 'https://finishlinebyner.com/cr/' + workPackageLink;
   const linkButtonText = 'Change Work Package';
 
-  teams?.map((team) => {
+  await teams?.map((team) => {
     sendMessage(team.slackId, message, link, linkButtonText);
   });
 };
@@ -1051,6 +1023,6 @@ async function pingBasedOnId(id: string) {
       const ping = userToSlackPing(user);
       if (ping) return ping;
     }
-    return '';
   }
+  return '';
 }

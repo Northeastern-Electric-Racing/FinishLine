@@ -642,7 +642,7 @@ export default class ChangeRequestsService {
         new Date(startDate),
         organization.activationBufferDays
       );
-      if (!inBuffer) {
+      if (await !inBuffer) {
         sendActivationStartDateChangedNotification(
           teams,
           leadId,
