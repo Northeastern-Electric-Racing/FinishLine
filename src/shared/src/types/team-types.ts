@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ProjectGantt } from './project-types.js';
-import { User } from './user-types.js';
+import { ProjectGantt, WbsNumber } from './project-types.js';
+import { User, UserPreview } from './user-types.js';
 
 export interface TeamBase {
   teamId: string;
@@ -23,6 +23,23 @@ export interface TeamPreview extends TeamBase {
   head: User;
   leads: User[];
   userArchived?: User;
+}
+
+export type TeamNamePreview = Pick<TeamBase, 'teamId' | 'teamName'>;
+
+export interface TeamProjectPreview {
+  name: string;
+  wbsNum: WbsNumber;
+}
+
+export interface TeamWithProjects {
+  teamId: string;
+  teamName: string;
+  dateArchived?: Date;
+  head: UserPreview;
+  memberCount: number;
+  leadCount: number;
+  projects: TeamProjectPreview[];
 }
 
 export interface Team extends TeamPreview {
