@@ -20,8 +20,8 @@ import { scheduleTimesTransformer } from '../transformers/calendar.transformer.j
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
-    await NotificationsService.sendTaskDeadlineSlackNotifications();
     await NotificationsService.sendEventSlackNotifications();
+    await NotificationsService.sendTaskDeadlineSlackNotifications();
     await NotificationsService.sendWorkPackageDeadlineSlackNotifications();
     await NotificationsService.sendSponsorTaskNotifications();
     await NotificationsService.sendPendingSaboSubmissionNotifications();
