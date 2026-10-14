@@ -46,10 +46,8 @@ const BUDGET_MAGNITUDE_WEIGHT = 2;
 
 export interface TriageScoreInput {
   type: CR_Type;
-  /** the proposed new budget in cents, only set on budget change requests */
-  proposedBudget?: number;
-  /** the current budget in cents, only set on budget change requests */
-  currentBudget?: number;
+  /** the budget change in cents, only set on budget change requests */
+  budgetChange?: { proposed: number; current: number };
   blockingCount: number;
   timelineChangeInDays: number;
 }
@@ -62,7 +60,7 @@ export interface TriageScoreInput {
  * @returns the triage score
  */
 export const computeTriageScore = (input: TriageScoreInput): number => {
-  const { type, proposedBudget, currentBudget, blockingCount, timelineChangeInDays } = input;
+  const { type, budgetChange, blockingCount, timelineChangeInDays } = input;
 
   const typeScore = CR_TYPE_WEIGHTS[type];
 
@@ -74,7 +72,7 @@ export const computeTriageScore = (input: TriageScoreInput): number => {
       : Math.abs(timelineChangeInDays) * TIMELINE_PULLED_EARLIER_WEIGHT;
 
   // budget is stored in cents, and the size of the change matters rather than the new total
-  const budgetChangeInDollars = Math.abs((proposedBudget ?? 0) - (currentBudget ?? 0)) / 100;
+  const budgetChangeInDollars = budgetChange ? Math.abs(budgetChange.proposed - budgetChange.current) / 100 : 0;
   const budgetScore = budgetChangeInDollars > 1 ? BUDGET_MAGNITUDE_WEIGHT * Math.log10(budgetChangeInDollars) : 0;
 
   return typeScore + blockingScore + timelineScore + budgetScore;

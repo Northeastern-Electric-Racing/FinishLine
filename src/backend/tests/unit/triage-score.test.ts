@@ -74,7 +74,7 @@ describe('computeTriageScore', () => {
   });
 
   describe('budget change magnitude', () => {
-    it('adds nothing when no budget is given', () => {
+    it('adds nothing when no budget change is given', () => {
       expect(computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP })).toBe(0);
     });
 
@@ -83,8 +83,7 @@ describe('computeTriageScore', () => {
         computeTriageScore({
           ...baseInput,
           type: CR_Type.LEADERSHIP,
-          proposedBudget: 5000000,
-          currentBudget: 5000000
+          budgetChange: { proposed: 5000000, current: 5000000 }
         })
       ).toBe(0);
     });
@@ -94,14 +93,12 @@ describe('computeTriageScore', () => {
       const changeOnLargeBudget = computeTriageScore({
         ...baseInput,
         type: CR_Type.LEADERSHIP,
-        proposedBudget: 5100000,
-        currentBudget: 5000000
+        budgetChange: { proposed: 5100000, current: 5000000 }
       });
       const changeOnSmallBudget = computeTriageScore({
         ...baseInput,
         type: CR_Type.LEADERSHIP,
-        proposedBudget: 300000,
-        currentBudget: 200000
+        budgetChange: { proposed: 300000, current: 200000 }
       });
 
       expect(changeOnLargeBudget).toBeCloseTo(changeOnSmallBudget);
@@ -111,14 +108,12 @@ describe('computeTriageScore', () => {
       const smallChange = computeTriageScore({
         ...baseInput,
         type: CR_Type.LEADERSHIP,
-        proposedBudget: 1100000,
-        currentBudget: 1000000
+        budgetChange: { proposed: 1100000, current: 1000000 }
       });
       const largeChange = computeTriageScore({
         ...baseInput,
         type: CR_Type.LEADERSHIP,
-        proposedBudget: 3000000,
-        currentBudget: 1000000
+        budgetChange: { proposed: 3000000, current: 1000000 }
       });
 
       expect(largeChange).toBeGreaterThan(smallChange);
@@ -128,14 +123,12 @@ describe('computeTriageScore', () => {
       const increase = computeTriageScore({
         ...baseInput,
         type: CR_Type.LEADERSHIP,
-        proposedBudget: 2000000,
-        currentBudget: 1000000
+        budgetChange: { proposed: 2000000, current: 1000000 }
       });
       const decrease = computeTriageScore({
         ...baseInput,
         type: CR_Type.LEADERSHIP,
-        proposedBudget: 1000000,
-        currentBudget: 2000000
+        budgetChange: { proposed: 1000000, current: 2000000 }
       });
 
       expect(increase).toBeCloseTo(decrease);
@@ -146,20 +139,17 @@ describe('computeTriageScore', () => {
       const thousand = computeTriageScore({
         ...baseInput,
         type: CR_Type.LEADERSHIP,
-        proposedBudget: 100000,
-        currentBudget: 0
+        budgetChange: { proposed: 100000, current: 0 }
       });
       const tenThousand = computeTriageScore({
         ...baseInput,
         type: CR_Type.LEADERSHIP,
-        proposedBudget: 1000000,
-        currentBudget: 0
+        budgetChange: { proposed: 1000000, current: 0 }
       });
       const hundredThousand = computeTriageScore({
         ...baseInput,
         type: CR_Type.LEADERSHIP,
-        proposedBudget: 10000000,
-        currentBudget: 0
+        budgetChange: { proposed: 10000000, current: 0 }
       });
 
       expect(thousand).toBeCloseTo(6);
@@ -171,8 +161,7 @@ describe('computeTriageScore', () => {
       const hugeChange = computeTriageScore({
         ...baseInput,
         type: CR_Type.LEADERSHIP,
-        proposedBudget: 10000000,
-        currentBudget: 0
+        budgetChange: { proposed: 10000000, current: 0 }
       });
       const blocksSixWorkPackages = computeTriageScore({
         ...baseInput,
