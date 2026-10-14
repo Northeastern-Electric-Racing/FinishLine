@@ -392,7 +392,8 @@ const CreditsPage: React.FC = () => {
         borderRadius: '14px',
         padding: '0 8px'
       }
-    }
+    },
+    { name: 'Udhaya Bhuvanesh', color: '#B57EDC' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
