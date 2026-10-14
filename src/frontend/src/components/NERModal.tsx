@@ -48,7 +48,12 @@ const NERModal = ({
     <Dialog
       hideBackdrop={hideBackDrop}
       open={open}
-      onClose={onHide}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          return;
+        }
+        onHide();
+      }}
       PaperProps={{
         style: paperProps
           ? { borderRadius: '10px', maxWidth: '700px', ...paperProps }
