@@ -980,6 +980,8 @@ export const notifySponsorTaskAssignee = async (
  * @param startDate The planned starting date for the work package
  * @param activationDate The actual starting date for the work package
  * @param bufferDays The threshold that triggers this message
+ * @param wbsString The wbs number as a string type
+ * @param name Name of the work package
  */
 export const sendActivationStartDateChangedNotification = async (
   teams: (Team & { teamType: Team_Type | null })[] | undefined,

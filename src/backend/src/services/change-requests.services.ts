@@ -650,7 +650,7 @@ export default class ChangeRequestsService {
           new Date(startDate),
           createdCR.wbsElement?.workPackage?.startDate,
           wbsPipe(createdCR.wbsElement),
-          createdCR.wbsElement?.workPackage?.project.wbsElement.name
+          createdCR.wbsElement?.name
         );
       }
     }
