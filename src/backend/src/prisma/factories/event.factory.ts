@@ -113,7 +113,7 @@ export const generateEventStatus = (
   faker: Faker,
   requiresConfirmation: boolean,
   initialDateScheduled: Date,
-  now: Date = new Date()
+  now: Date
 ): Event_Status => {
   const daysUntilDue = Math.floor((initialDateScheduled.getTime() - now.getTime()) / DAY_MS);
 

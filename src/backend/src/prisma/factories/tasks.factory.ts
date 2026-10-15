@@ -142,7 +142,7 @@ const DUE_BUFFER_DAYS = 7;
  * When `canBeDone` is false, DONE is redistributed to IN_PROGRESS so the seed never persists a task
  * that createTask/editTask would have rejected.
  */
-const taskStatusForDueDate = (faker: Faker, dueDate: Date, now: Date = new Date(), canBeDone = true): Task_Status => {
+const taskStatusForDueDate = (faker: Faker, dueDate: Date, now: Date, canBeDone = true): Task_Status => {
   const daysUntilDue = Math.floor((dueDate.getTime() - now.getTime()) / DAY_MS);
 
   let status: Task_Status;
@@ -219,6 +219,7 @@ export const createSeedTask = (
   parent: SeedTaskParent,
   creatorId: string,
   assigneeIds: string[],
+  now: Date,
   labelIds: string[] = [],
   canBeDone = true,
   overrides: SeedTaskOverrides = {}
@@ -242,7 +243,7 @@ export const createSeedTask = (
     title: taskTitle(faker),
     notes: faker.helpers.arrayElement(TASK_NOTES),
     priority: randomPriority(faker),
-    status: taskStatusForDueDate(faker, deadline, new Date(), canBeDone),
+    status: taskStatusForDueDate(faker, deadline, now, canBeDone),
     startDate,
     deadline,
     dateCreated,

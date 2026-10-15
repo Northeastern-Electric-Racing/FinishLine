@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { SeedProcess, GLOBAL_SEED } from './seed-process.js';
+import { resolveSeedNow } from '../seed-time.js';
 import { Twisters } from 'twisters';
 
 type AnyProcess = SeedProcess<any, any>;
@@ -18,6 +19,7 @@ export class SeedRunner {
   private instances: AnyProcess[] = [];
   private prisma!: PrismaClient;
   private baseSeed = GLOBAL_SEED;
+  private now = resolveSeedNow();
   private maxConcurrency = DEFAULT_MAX_CONCURRENCY;
 
   withPrisma(prisma: PrismaClient) {
@@ -27,6 +29,11 @@ export class SeedRunner {
 
   withSeed(seed: number) {
     this.baseSeed = seed;
+    return this;
+  }
+
+  withNow(now: Date) {
+    this.now = now;
     return this;
   }
 
@@ -102,6 +109,7 @@ export class SeedRunner {
       startTimes.set(name, Date.now());
 
       instance.prisma = this.prisma;
+      instance.now = new Date(this.now);
       instance.reseed(deriveSeed(this.baseSeed, name));
 
       const depOutputs = (dependencyNames.get(name) ?? []).reduce<Record<string, any>>((acc, depName) => {
