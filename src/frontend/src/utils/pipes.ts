@@ -50,7 +50,7 @@ export const projectWbsPipe = (wbsNum: WbsNumber) => {
 };
 
 /** Display user by their name "Joe Shmoe" */
-export const fullNamePipe = (user?: UserPreview) => {
+export const fullNamePipe = (user?: Pick<UserPreview, 'firstName' | 'lastName'>) => {
   return user ? `${user.firstName} ${user.lastName}` : emDashPipe('');
 };
 

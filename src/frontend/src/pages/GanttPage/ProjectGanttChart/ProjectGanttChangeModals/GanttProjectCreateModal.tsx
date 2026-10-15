@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { NERDraggableFormModal } from '../../../../components/NERDraggableFormModal';
-import { getProjectStartDate, getProjectEndDate } from '../../../../utils/gantt.utils';
+import { getProjectStartDate, getProjectEndDate, isCreatableTask } from '../../../../utils/gantt.utils';
 import { useCreateSingleProject } from '../../../../hooks/projects.hooks';
 import { CreateSingleProjectPayload } from '../../../../utils/types';
 import { WorkPackageApiInputs } from '../../../../apis/work-packages.api';
@@ -66,6 +66,10 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
 
       if (project.tasks && project.tasks.length > 0) {
         for (const task of project.tasks) {
+          if (!isCreatableTask(task)) {
+            toast.error(`Failed to create task: ${task.title}`);
+            continue;
+          }
           try {
             await createSingleTask({
               wbsNum: task.wbsNum,

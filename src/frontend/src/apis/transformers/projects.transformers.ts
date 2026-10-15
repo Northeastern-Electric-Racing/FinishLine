@@ -14,7 +14,7 @@ import {
   RetrospectiveProjectPreview
 } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
-import { taskTransformer } from './tasks.transformers';
+import { ganttChartTaskTransformer, taskTransformer } from './tasks.transformers';
 import {
   ganttChartWorkPackageTransformer,
   retrospectiveWorkPackageTransformer,
@@ -80,7 +80,7 @@ export const ganttChartProjectTransformer = <T extends GanttChartProject>(projec
     startDate: project.startDate ? new Date(project.startDate) : undefined,
     endDate: project.endDate ? new Date(project.endDate) : undefined,
     workPackages: project.workPackages.map(ganttChartWorkPackageTransformer),
-    tasks: project.tasks.map(taskTransformer)
+    tasks: project.tasks.map(ganttChartTaskTransformer)
   };
 };
 

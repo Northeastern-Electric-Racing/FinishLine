@@ -1,15 +1,31 @@
 import { Prisma } from '@prisma/client';
 import { getUserPreviewQueryArgs } from './user.query-args.js';
-import { getTaskGanttQueryArgs } from './tasks.query-args.js';
 
 // Base gantt chart query: only what the gantt chart reads (see the GanttChart* types in shared).
 // Other gantt views (e.g. retrospective) can extend these instead of starting from the full project query.
 
+export type GanttChartTaskQueryArgs = ReturnType<typeof getGanttChartTaskQueryArgs>;
 export type GanttChartEventQueryArgs = ReturnType<typeof getGanttChartEventQueryArgs>;
 export type GanttChartWorkPackageQueryArgs = ReturnType<typeof getGanttChartWorkPackageQueryArgs>;
 export type GanttChartProjectQueryArgs = ReturnType<typeof getGanttChartProjectQueryArgs>;
 
 const wbsNumberSelect = { carNumber: true, projectNumber: true, workPackageNumber: true } as const;
+const userNameSelect = { select: { firstName: true, lastName: true } } as const;
+
+// a task bar and its tooltip; saving an edited task reads its other fields from the full project
+export const getGanttChartTaskQueryArgs = () =>
+  Prisma.validator<Prisma.TaskDefaultArgs>()({
+    select: {
+      taskId: true,
+      title: true,
+      status: true,
+      startDate: true,
+      deadline: true,
+      wbsElement: { select: wbsNumberSelect },
+      createdBy: userNameSelect,
+      assignees: userNameSelect
+    }
+  });
 
 export const getGanttChartEventQueryArgs = () =>
   Prisma.validator<Prisma.EventDefaultArgs>()({
@@ -63,7 +79,7 @@ export const getGanttChartProjectQueryArgs = () =>
           tasks: {
             where: { dateDeleted: null },
             orderBy: [{ dateCreated: 'asc' }, { taskId: 'asc' }],
-            ...getTaskGanttQueryArgs()
+            ...getGanttChartTaskQueryArgs()
           }
         }
       },

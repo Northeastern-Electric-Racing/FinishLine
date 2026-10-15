@@ -1,5 +1,13 @@
 import { Box, TextField, Typography } from '@mui/material';
-import { dateToMidnightUTC, GanttChartProject, GanttChartWorkPackage, Task, WbsElementPreview } from 'shared';
+import {
+  dateToMidnightUTC,
+  GanttChartProject,
+  GanttChartTask,
+  GanttChartWorkPackage,
+  Task,
+  WbsElementPreview
+} from 'shared';
+import { isCreatableTask } from '../../../../utils/gantt.utils';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
@@ -66,26 +74,19 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     }
   });
 
-  const editedTasks: Task[] = [];
-  const createdTasks: Task[] = [];
+  // the gantt can only move or resize an existing task, so only its dates can differ. Saving sends the rest of the task
+  // from the freshly fetched project, so an edit made elsewhere since the gantt loaded isn't overwritten
+  const editedTasks: { task: GanttChartTask; existingTask: Task }[] = [];
+  const createdTasks: GanttChartTask[] = [];
   project.tasks?.forEach((task) => {
     const existingTask = originalProject.tasks.find((t) => t.taskId === task.taskId);
     if (!existingTask) {
       createdTasks.push(task);
-    } else {
-      const hasChanges =
-        existingTask.title !== task.title ||
-        existingTask.notes !== task.notes ||
-        existingTask.priority !== task.priority ||
-        existingTask.status !== task.status ||
-        existingTask.startDate?.getTime() !== task.startDate?.getTime() ||
-        existingTask.deadline?.getTime() !== task.deadline?.getTime() ||
-        existingTask.assignees.length !== task.assignees.length ||
-        existingTask.assignees.some((assignee) => !task.assignees.some((a) => a.userId === assignee.userId));
-
-      if (hasChanges) {
-        editedTasks.push(task);
-      }
+    } else if (
+      existingTask.startDate?.getTime() !== task.startDate?.getTime() ||
+      existingTask.deadline?.getTime() !== task.deadline?.getTime()
+    ) {
+      editedTasks.push({ task, existingTask });
     }
   });
 
@@ -146,6 +147,10 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
 
       if (createdTasks.length > 0) {
         for (const task of createdTasks) {
+          if (!isCreatableTask(task)) {
+            toast.error(`Failed to create task: ${task.title}`);
+            continue;
+          }
           const taskPayload: CreateTaskPayload = {
             wbsNum: task.wbsNum,
             title: task.title,
@@ -170,15 +175,15 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
       }
 
       if (editedTasks.length > 0) {
-        for (const task of editedTasks) {
+        for (const { task, existingTask } of editedTasks) {
           const taskPayload: TaskPayload = {
-            wbsNum: task.wbsNum,
-            taskId: task.taskId,
-            title: task.title,
-            priority: task.priority,
-            notes: task.notes || '',
-            labelIds: task.labels.map((l) => l.taskLabelId),
-            blockedByIds: task.blockedBy.map((b) => b.taskId),
+            wbsNum: existingTask.wbsNum,
+            taskId: existingTask.taskId,
+            title: existingTask.title,
+            priority: existingTask.priority,
+            notes: existingTask.notes || '',
+            labelIds: existingTask.labels.map((l) => l.taskLabelId),
+            blockedByIds: existingTask.blockedBy.map((b) => b.taskId),
             deadline: task.deadline,
             startDate: task.startDate
           };

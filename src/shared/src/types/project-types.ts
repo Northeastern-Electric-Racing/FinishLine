@@ -5,7 +5,7 @@
 
 import { EventPreview, TeamType } from './calendar-types.js';
 import { ImplementedChange } from './change-request-types.js';
-import { Task } from './task-types.js';
+import { Task, TaskStatus } from './task-types.js';
 import { TeamPreview } from './team-types.js';
 import { User, UserPreview } from './user-types.js';
 import { WorkPackageStage } from './work-package-types.js';
@@ -90,12 +90,24 @@ export interface GanttChartWorkPackage extends WbsElementPreview {
   events: GanttChartEvent[];
 }
 
+// a task bar and its tooltip; saving edits reads everything else from the full project
+export interface GanttChartTask {
+  taskId: string;
+  wbsNum: WbsNumber;
+  title: string;
+  status: TaskStatus;
+  startDate?: Date;
+  deadline?: Date;
+  createdBy: Pick<UserPreview, 'firstName' | 'lastName'>;
+  assignees: Pick<UserPreview, 'firstName' | 'lastName'>[];
+}
+
 export interface GanttChartProject extends WbsElementPreview {
   startDate?: Date;
   endDate?: Date;
   teams: { teamId: string }[];
   workPackages: GanttChartWorkPackage[];
-  tasks: Task[];
+  tasks: GanttChartTask[];
 }
 
 export interface ProjectPreview extends WbsElementPreview {

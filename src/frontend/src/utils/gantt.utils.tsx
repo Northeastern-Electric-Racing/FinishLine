@@ -8,6 +8,7 @@ import {
   EventStatus,
   GanttChartEvent,
   GanttChartProject,
+  GanttChartTask,
   GanttChartWorkPackage,
   isWorkPackage,
   RetrospectiveProjectPreview,
@@ -169,7 +170,7 @@ export const transformDesignReviewEventToGanttEvent = (event: GanttChartEvent): 
 const applyChangesToBlockedBy = (
   initialWorkPackage: GanttChartWorkPackage,
   totalWorkPackages: GanttChartWorkPackage[],
-  changeToApply: GanttChange<WbsElementPreview | Task>
+  changeToApply: GanttChange<WbsElementPreview | GanttChartTask>
 ) => {
   const updatedBlockingWbsNums: Set<String> = new Set();
 
@@ -212,18 +213,18 @@ const applyChangesToBlockedBy = (
  * @param parentProject The parent project of the wbs element, itself if it is a project
  */
 export const applyChangesToWBSElement = (
-  ganttChanges: GanttChange<WbsElementPreview | Task>[],
-  wbsElement: WbsElementPreview | Task,
+  ganttChanges: GanttChange<WbsElementPreview | GanttChartTask>[],
+  wbsElement: WbsElementPreview | GanttChartTask,
   parentProject: GanttChartProject
-): { updatedProject: GanttChartProject; updatedElement: WbsElementPreview | Task } => {
+): { updatedProject: GanttChartProject; updatedElement: WbsElementPreview | GanttChartTask } => {
   const updatedElement = { ...wbsElement };
   const copiedProject: GanttChartProject = ganttChartProjectTransformer(JSON.parse(JSON.stringify(parentProject)));
 
   // Check if it's a Task
-  if ((updatedElement as Task).taskId !== undefined) {
-    const task = updatedElement as Task;
+  if ((updatedElement as GanttChartTask).taskId !== undefined) {
+    const task = updatedElement as GanttChartTask;
     for (const change of ganttChanges) {
-      if ((change.element as Task).taskId === task.taskId) {
+      if ((change.element as GanttChartTask).taskId === task.taskId) {
         // Apply changes to the task
         if (change.type === 'shift-by-days') {
           // For tasks, we shift the deadline by the specified number of days
@@ -402,7 +403,7 @@ const getBlockingGanttTasks = <T extends GanttChartWorkPackage>(
     .filter((wp) => !!wp);
 };
 
-export const transformTaskToGanttTask = <T extends Task>(task: T, end: Date): GanttTask<T> => {
+export const transformTaskToGanttTask = <T extends GanttChartTask>(task: T, end: Date): GanttTask<T> => {
   return {
     id: task.taskId,
     element: task,
@@ -462,7 +463,7 @@ export const transformWorkPackageToGanttTask = <T extends GanttChartWorkPackage>
 export const transformProjectToGanttTask = (
   project: GanttChartProject,
   hideTasks: boolean = false
-): GanttTask<WbsElementPreview | Task> => {
+): GanttTask<WbsElementPreview | GanttChartTask> => {
   const startDate = getProjectStartDate(project);
 
   const endDate = getProjectEndDate(project);
@@ -498,7 +499,7 @@ export const transformProjectToGanttTask = (
 export const transformRetrospectiveProjectToGanttTask = (
   project: RetrospectiveProjectPreview,
   showTasks: boolean = true
-): GanttTask<WbsElementPreview | Task> => {
+): GanttTask<WbsElementPreview | GanttChartTask> => {
   return {
     ...transformProjectToGanttTask(project, showTasks),
     children: project.workPackages
@@ -530,9 +531,9 @@ export const constructCollectionsFromTeamPreviewAndProjects = <T extends GanttCh
   projects: T[],
   filters: GanttFilters,
   searchText: string,
-  projectTransformation: (project: T, hideTasks?: boolean) => GanttTaskData<WbsElementPreview | Task>,
+  projectTransformation: (project: T, hideTasks?: boolean) => GanttTaskData<WbsElementPreview | GanttChartTask>,
   reparser: (project: T) => T
-): GanttCollection<TeamPreview, WbsElementPreview | Task>[] => {
+): GanttCollection<TeamPreview, WbsElementPreview | GanttChartTask>[] => {
   const projectMap = new Map<string, GanttChartProject[]>();
   projects.forEach((project) => {
     project.teams.forEach((team) => {
@@ -547,7 +548,7 @@ export const constructCollectionsFromTeamPreviewAndProjects = <T extends GanttCh
   const hideTasks = filters.hideTasks ?? false;
 
   return teams.map((team) => ({
-    id: uuidv4(),
+    id: team.teamId, // TEMP click-through only (#4477) — revert before committing
     element: team,
     tasks: filterGanttProjects((projectMap.get(team.teamId) ?? []) as T[], filters, searchText, team, reparser).map(
       (project) => projectTransformation(project as T, hideTasks)
@@ -661,7 +662,7 @@ export const isHighlightedChangeOnGanttTask = <T,>(
 export const constructFinalizedChanges = (
   originalProjects: GanttChartProject[],
   updatedProjects: GanttChartProject[],
-  changes: GanttChange<WbsElementPreview | Task>[]
+  changes: GanttChange<WbsElementPreview | GanttChartTask>[]
 ) => {
   const aggregatedSet: Set<string> = new Set();
 
@@ -701,7 +702,14 @@ export const constructFinalizedChanges = (
   return eventChanges;
 };
 
-export const isProjectPreview = (wbsPreview: WbsElementPreview | Task): wbsPreview is GanttChartProject => {
+/**
+ * Tasks created on the gantt are full Tasks (built in the page's handleAddTaskInfo), while tasks loaded for the gantt
+ * only carry what the chart shows. Creating a task needs its full fields, so this checks they're actually there.
+ */
+export const isCreatableTask = (task: GanttChartTask | Task): task is Task =>
+  'notes' in task && 'labels' in task && 'blockedBy' in task && 'priority' in task;
+
+export const isProjectPreview = (wbsPreview: WbsElementPreview | GanttChartTask): wbsPreview is GanttChartProject => {
   return 'workPackages' in wbsPreview;
 };
 

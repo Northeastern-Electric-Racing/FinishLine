@@ -5,17 +5,30 @@ import {
   EventStatus,
   GanttChartEvent,
   GanttChartProject,
+  GanttChartTask,
   GanttChartWorkPackage,
   WorkPackageStage
 } from 'shared';
 import {
   GanttChartEventQueryArgs,
   GanttChartProjectQueryArgs,
+  GanttChartTaskQueryArgs,
   GanttChartWorkPackageQueryArgs
 } from '../prisma-query-args/gantt-chart.query-args.js';
 import { convertStatus, wbsNumOf } from '../utils/utils.js';
 import { calculateProjectStatus } from '../utils/projects.utils.js';
-import taskTransformer from './tasks.transformer.js';
+import { convertTaskStatus } from '../utils/tasks.utils.js';
+
+export const ganttChartTaskTransformer = (task: Prisma.TaskGetPayload<GanttChartTaskQueryArgs>): GanttChartTask => ({
+  taskId: task.taskId,
+  wbsNum: wbsNumOf(task.wbsElement),
+  title: task.title,
+  status: convertTaskStatus(task.status),
+  startDate: task.startDate ?? undefined,
+  deadline: task.deadline ?? undefined,
+  createdBy: task.createdBy,
+  assignees: task.assignees
+});
 
 export const ganttChartEventTransformer = (
   event: Prisma.EventGetPayload<GanttChartEventQueryArgs>,
@@ -68,7 +81,7 @@ export const ganttChartProjectTransformer = (
     manager: wbsElement.manager ?? undefined,
     startDate: calculateProjectStartDate(project.workPackages),
     teams: project.teams,
-    tasks: wbsElement.tasks.map(taskTransformer),
+    tasks: wbsElement.tasks.map(ganttChartTaskTransformer),
     workPackages: project.workPackages.map((workPackage) => ganttChartWorkPackageTransformer(workPackage, wbsElement.name))
   };
 };
