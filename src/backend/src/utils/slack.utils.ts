@@ -34,7 +34,6 @@ import { Prisma } from '@prisma/client';
 import { userTransformer } from '../transformers/user.transformer.js';
 import { SlackRichTextBlock } from '../services/slack.services.js';
 import UsersService from '../services/users.services.js';
-import { PROJECT_CR_TYPES } from '../prisma/factories/change-request.factory.js';
 
 interface SlackMessageThread {
   messageInfoId: string;
