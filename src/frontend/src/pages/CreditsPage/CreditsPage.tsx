@@ -384,6 +384,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Lucas Nussbaum', color: '#135DF0' },
     { name: 'Abhishek Vijay', color: '#4287f5' },
     { name: 'Kidus Desalegn', color: '#B027F5' },
+    { name: 'Naman Patel', color: '#27f5a9ff' },
     {
       name: 'Ethan Chen',
       color: '#ffffff',
