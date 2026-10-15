@@ -34,6 +34,7 @@ import { Prisma } from '@prisma/client';
 import { userTransformer } from '../transformers/user.transformer.js';
 import { SlackRichTextBlock } from '../services/slack.services.js';
 import UsersService from '../services/users.services.js';
+import { PROJECT_CR_TYPES } from '../prisma/factories/change-request.factory.js';
 
 interface SlackMessageThread {
   messageInfoId: string;
@@ -987,8 +988,8 @@ export const sendActivationStartDateChangedNotification = async (
   managerId: string = '',
   startDate: Date,
   activationDate: Date,
-  bufferDays: number,
-  workPackageLink: string
+  wbsString: string,
+  name: string
 ) => {
   const leadIdPing = (await pingBasedOnId(leadId)) || '';
   const managerIdPing = (await pingBasedOnId(managerId)) || '';
@@ -1000,25 +1001,24 @@ export const sendActivationStartDateChangedNotification = async (
     leadIdPing +
     ' ' +
     managerIdPing +
-    ' The activation date ' +
-    activationDateString +
-    ' is more than ' +
-    bufferDays +
-    ' days apart from the scheduled starting date ' +
+    ' The start date for ' +
+    name +
+    ' has been changed from ' +
     startDateString +
+    ' to ' +
+    activationDateString +
     '.\n';
-  const link = 'https://finishlinebyner.com/cr/' + workPackageLink;
+  const link = `https://finishlinebyner.com/projects/${wbsString}`;
   const linkButtonText = 'Change Work Package';
 
-  await teams?.map((team) => {
-    sendMessage(team.slackId, message, link, linkButtonText);
-  });
+  await Promise.all(teams?.map((team) => sendMessage(team.slackId, message, link, linkButtonText)) ?? []);
 };
 
 async function pingBasedOnId(id: string) {
   if (id) {
-    const userArray = getUsersWithSettings([id]);
-    const user = (await userArray).findLast(() => true);
+    const userArray = await getUsersWithSettings([id]);
+    const zeroIndex = 0;
+    const user = userArray[zeroIndex];
     if (user) {
       const ping = userToSlackPing(user);
       if (ping) return ping;

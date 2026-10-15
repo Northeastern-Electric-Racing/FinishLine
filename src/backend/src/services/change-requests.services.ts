@@ -642,15 +642,15 @@ export default class ChangeRequestsService {
         new Date(startDate),
         organization.activationBufferDays
       );
-      if (await !inBuffer) {
-        sendActivationStartDateChangedNotification(
+      if (!inBuffer) {
+        await sendActivationStartDateChangedNotification(
           teams,
           leadId,
           managerId,
           new Date(startDate),
           createdCR.wbsElement?.workPackage?.startDate,
-          organization.activationBufferDays,
-          createdCR.crId
+          wbsPipe(createdCR.wbsElement),
+          createdCR.wbsElement?.workPackage?.project.wbsElement.name
         );
       }
     }
