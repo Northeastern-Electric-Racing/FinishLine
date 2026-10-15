@@ -548,7 +548,7 @@ export const constructCollectionsFromTeamPreviewAndProjects = <T extends GanttCh
   const hideTasks = filters.hideTasks ?? false;
 
   return teams.map((team) => ({
-    id: team.teamId, // TEMP click-through only (#4477) — revert before committing
+    id: uuidv4(),
     element: team,
     tasks: filterGanttProjects((projectMap.get(team.teamId) ?? []) as T[], filters, searchText, team, reparser).map(
       (project) => projectTransformation(project as T, hideTasks)
