@@ -3,11 +3,16 @@ import { calculateEndDate, RetrospectiveWorkPackage, WorkPackage, WorkPackagePre
 import descriptionBulletTransformer from '../transformers/description-bullets.transformer.js';
 import { convertStatus, wbsNumOf } from '../utils/utils.js';
 import { userTransformer } from './user.transformer.js';
-import { WorkPackageQueryArgs, WorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+import {
+  WorkPackageQueryArgs,
+  WorkPackageGanttQueryArgs,
+  WorkPackagePreviewQueryArgs
+} from '../prisma-query-args/work-packages.query-args.js';
 import { teamTypeTransformer } from './team-types.transformer.js';
 import { eventPreviewTransformer } from './calendar.transformer.js';
 
-const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
+// typed against the gantt shape, which is only what's read here; the full WorkPackageQueryArgs payload also fits
+const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageGanttQueryArgs>): WorkPackage => {
   const wbsNum = wbsNumOf(wpInput.wbsElement);
   return {
     wbsElementId: wpInput.wbsElementId,

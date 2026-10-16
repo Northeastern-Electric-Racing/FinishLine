@@ -12,7 +12,7 @@ import {
   Project,
   WbsNumber,
   WorkPackageTemplate,
-  ProjectGantt,
+  GanttChartProject,
   ProjectPreview,
   ProjectOverview
 } from 'shared';
@@ -22,7 +22,8 @@ import {
   projectPreviewTransformer,
   projectTransformer,
   projectOverviewTransformer,
-  projectGanttTransformer
+  projectGanttTransformer,
+  ganttChartProjectTransformer
 } from './transformers/projects.transformers';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 
@@ -32,8 +33,8 @@ import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/t
  * so we bypass the global car filter using overrideCarId: 'all-cars'
  */
 export const getAllProjectsGantt = () => {
-  return axios.get<ProjectGantt[]>(apiUrls.allProjectsGantt(), {
-    transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer),
+  return axios.get<GanttChartProject[]>(apiUrls.allProjectsGantt(), {
+    transformResponse: (data) => JSON.parse(data).map(ganttChartProjectTransformer),
     overrideCarId: 'all-cars'
   });
 };

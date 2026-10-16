@@ -2,6 +2,8 @@ import { Prisma } from '@prisma/client';
 
 export type UserQueryArgs = ReturnType<typeof getUserQueryArgs>;
 
+export type UserPreviewQueryArgs = ReturnType<typeof getUserPreviewQueryArgs>;
+
 export type UserPreviewWithEmailQueryArgs = ReturnType<typeof getUserPreviewWithEmailQueryArgs>;
 
 export type UserWithSettingsQueryArgs = ReturnType<typeof getUserWithSettingsQueryArgs>;

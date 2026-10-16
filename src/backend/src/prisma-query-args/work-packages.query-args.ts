@@ -2,9 +2,10 @@ import { Prisma } from '@prisma/client';
 import { getUserPreviewQueryArgs, getUserQueryArgs } from './user.query-args.js';
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.js';
 import { getLinkQueryArgs } from './links.query-args.js';
-import { getEventQueryArgs } from './event.query-args.js';
+import { getEventPreviewQueryArgs, getEventQueryArgs } from './event.query-args.js';
 
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
+export type WorkPackageGanttQueryArgs = ReturnType<typeof getWorkPackageGanttQueryArgs>;
 export type WorkPackagePreviewQueryArgs = ReturnType<typeof getWorkPackagePreviewQueryArgs>;
 
 export const getWorkPackageQueryArgs = (organizationId: string) =>
@@ -35,6 +36,43 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
       },
       blockedBy: { where: { dateDeleted: null } },
       events: { where: { dateDeleted: null }, ...getEventQueryArgs(organizationId) }
+    }
+  });
+
+// same output as getWorkPackageQueryArgs through workPackageTransformer, but only fetches what the gantt reads
+export const getWorkPackageGanttQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
+    include: {
+      project: {
+        select: {
+          wbsElement: { select: { name: true } },
+          teams: { select: { teamType: true } }
+        }
+      },
+      wbsElement: {
+        include: {
+          lead: getUserQueryArgs(organizationId),
+          manager: getUserQueryArgs(organizationId),
+          changes: {
+            where: { changeRequest: { dateDeleted: null } },
+            include: { implementer: getUserQueryArgs(organizationId), changeRequest: { select: { identifier: true } } },
+            orderBy: { dateImplemented: 'asc' }
+          },
+          blocking: {
+            where: { wbsElement: { dateDeleted: null } },
+            select: { wbsElement: { select: { carNumber: true, projectNumber: true, workPackageNumber: true } } }
+          },
+          descriptionBullets: {
+            where: { dateDeleted: null },
+            select: { ...getDescriptionBulletQueryArgs(organizationId).select, userChecked: getUserPreviewQueryArgs() }
+          }
+        }
+      },
+      blockedBy: {
+        where: { dateDeleted: null },
+        select: { carNumber: true, projectNumber: true, workPackageNumber: true }
+      },
+      events: { where: { dateDeleted: null }, ...getEventPreviewQueryArgs(organizationId) }
     }
   });
 
