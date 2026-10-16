@@ -98,8 +98,8 @@ export interface GanttChartTask {
   status: TaskStatus;
   startDate?: Date;
   deadline?: Date;
-  createdBy: Pick<UserPreview, 'firstName' | 'lastName'>;
-  assignees: Pick<UserPreview, 'firstName' | 'lastName'>[];
+  createdBy: UserPreview;
+  assignees: UserPreview[];
 }
 
 export interface GanttChartProject extends WbsElementPreview {

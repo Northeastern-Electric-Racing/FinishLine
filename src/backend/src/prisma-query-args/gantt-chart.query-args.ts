@@ -10,7 +10,6 @@ export type GanttChartWorkPackageQueryArgs = ReturnType<typeof getGanttChartWork
 export type GanttChartProjectQueryArgs = ReturnType<typeof getGanttChartProjectQueryArgs>;
 
 const wbsNumberSelect = { carNumber: true, projectNumber: true, workPackageNumber: true } as const;
-const userNameSelect = { select: { firstName: true, lastName: true } } as const;
 
 // a task bar and its tooltip; saving an edited task reads its other fields from the full project
 export const getGanttChartTaskQueryArgs = () =>
@@ -22,8 +21,8 @@ export const getGanttChartTaskQueryArgs = () =>
       startDate: true,
       deadline: true,
       wbsElement: { select: wbsNumberSelect },
-      createdBy: userNameSelect,
-      assignees: userNameSelect
+      createdBy: getUserPreviewQueryArgs(),
+      assignees: getUserPreviewQueryArgs()
     }
   });
 
