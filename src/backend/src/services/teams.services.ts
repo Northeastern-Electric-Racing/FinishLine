@@ -6,6 +6,8 @@ import {
   TeamPreview,
   TeamType,
   TeamJoinRequest,
+  TeamWithProjects,
+  TeamNamePreview,
   User,
   WbsElementStatus,
   RoleEnum
@@ -18,7 +20,8 @@ import { calculateProjectStatus } from '../utils/projects.utils.js';
 import teamTransformer, {
   teamBaseTransformer,
   teamPreviewTransformer,
-  teamJoinRequestTransformer
+  teamJoinRequestTransformer,
+  teamWithProjectsTransformer
 } from '../transformers/teams.transformer.js';
 import {
   NotFoundException,
@@ -36,7 +39,8 @@ import {
   getTeamBaseQueryArgs,
   getTeamJoinRequestQueryArgs,
   getTeamPreviewQueryArgs,
-  getTeamQueryArgs
+  getTeamQueryArgs,
+  getTeamWithProjectsQueryArgs
 } from '../prisma-query-args/teams.query-args.js';
 import { uploadFile } from '../utils/google-integration.utils.js';
 import { teamTypeTransformer } from '../transformers/team-types.transformer.js';
@@ -92,6 +96,20 @@ export default class TeamsService {
   }
 
   /**
+   * Gets all active or archived teams along with the name and wbs number of each of their projects
+   * @param organization The organization the user is currently in
+   * @param archived whether to get archived teams instead of active teams
+   * @returns a list of teams with their project previews
+   */
+  static async getAllTeamsWithProjects(organization: Organization): Promise<TeamWithProjects[]> {
+    const teams = await prisma.team.findMany({
+      where: { organizationId: organization.organizationId },
+      ...getTeamWithProjectsQueryArgs()
+    });
+    return teams.map(teamWithProjectsTransformer);
+  }
+
+  /**
    * Gets a team with the given id
    * @param teamId - id of team to retrieve
    * @param organizationId The organization the user is currently in
@@ -112,8 +130,8 @@ export default class TeamsService {
     return teamTransformer(team);
   }
 
-  static async getUsersTeams(user: User, organization: Organization): Promise<Team[]> {
-    const teams = await prisma.team.findMany({
+  static async getUsersTeams(user: User, organization: Organization): Promise<TeamNamePreview[]> {
+    return prisma.team.findMany({
       where: {
         organizationId: organization.organizationId,
         dateArchived: null,
@@ -123,10 +141,8 @@ export default class TeamsService {
           { members: { some: { userId: user.userId } } }
         ]
       },
-      ...getTeamQueryArgs(organization.organizationId)
+      ...getTeamDropdownQueryArgs()
     });
-
-    return teams.map(teamTransformer);
   }
 
   /**
