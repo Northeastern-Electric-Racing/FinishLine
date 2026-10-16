@@ -457,9 +457,9 @@ const outcomesForOrderedCrs = (faker: Faker, types: CR_Type[]): ReviewOutcome[] 
   });
 };
 
-const cappedWindow = (timeline: DateRange): DateRange => ({
+const cappedWindow = (timeline: DateRange, now: Date): DateRange => ({
   start: timeline.start,
-  end: new Date(Math.min(timeline.end.getTime(), Date.now()))
+  end: new Date(Math.min(timeline.end.getTime(), now.getTime()))
 });
 
 const orderedSubmissionDates = (faker: Faker, window: DateRange, count: number): Date[] =>
@@ -477,11 +477,12 @@ export const buildWbsChangeRequests = (
   organizationId: string,
   submitters: SeedCrActor[],
   reviewers: SeedCrActor[],
-  headOrAdminUserIds: Set<string>
+  headOrAdminUserIds: Set<string>,
+  now: Date
 ): Prisma.Change_RequestCreateInput[] => {
   if (identifiers.length === 0) return [];
 
-  const window = cappedWindow(parent.timeline);
+  const window = cappedWindow(parent.timeline, now);
   const dates = orderedSubmissionDates(faker, window, identifiers.length);
   const types = identifiers.map(() => crTypeForParent(faker, isWorkPackage));
   const outcomes = outcomesForOrderedCrs(faker, types);
@@ -518,11 +519,12 @@ export const buildAccountCodeChangeRequests = (
   organizationId: string,
   submitters: SeedCrActor[],
   reviewers: SeedCrActor[],
-  headOrAdminUserIds: Set<string>
+  headOrAdminUserIds: Set<string>,
+  now: Date
 ): Prisma.Change_RequestCreateInput[] => {
   if (identifiers.length === 0) return [];
 
-  const window = cappedWindow(timeline);
+  const window = cappedWindow(timeline, now);
   const dates = orderedSubmissionDates(faker, window, identifiers.length);
   const types = identifiers.map(() => CR_Type.BUDGET);
   const outcomes = outcomesForOrderedCrs(faker, types);

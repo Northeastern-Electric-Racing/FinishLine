@@ -26,7 +26,7 @@ export class TeamJoinRequestProcess extends SeedProcess<TeamJoinRequestInput, Te
     if (guests.length === 0) throw new Error('TeamJoinRequestProcess requires at least one guest user.');
     if (teams.length === 0) throw new Error('TeamJoinRequestProcess requires at least one team.');
 
-    const now = new Date();
+    const { now } = this;
     // Each requester is used at most once, so no guest ends up with two pending requests for the same team.
     const requesters = this.faker.helpers.arrayElements(guests, Math.min(TEAM_JOIN_REQUEST_COUNT, guests.length));
 

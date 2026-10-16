@@ -1,5 +1,6 @@
 import { WbsNumber } from './types/project-types.js';
 import { wbsPipe } from './validate-wbs.js';
+import { GraphType } from './types/statistics-types.js';
 
 export const deeplyCopy = <T>(obj: T | T[], transformer: (obj: T) => T = (obj) => obj): T | T[] => {
   if (Array.isArray(obj)) {
@@ -32,3 +33,11 @@ export const meetingStartTimePipeNumbers = (hours: number[]) => {
 };
 
 export const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
+
+/**
+ * Attendance graphs are always averaged per session and aren't segmented by car,
+ * so the measure and car options don't apply to them.
+ */
+export const isAttendanceGraphType = (graphType?: string): boolean => {
+  return graphType === GraphType.ATTENDANCE_BY_TEAM || graphType === GraphType.ATTENDANCE_BY_DIVISION;
+};

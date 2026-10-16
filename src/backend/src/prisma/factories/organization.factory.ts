@@ -25,6 +25,7 @@ export const organizationCreateInput = (userCreatedId: string): Prisma.Organizat
   platformLogoImageId: '1auQO3GYydZOo1-vCn0D2iyCfaxaVFssx',
   onboardingText:
     'Thank you for applying to Northeastern Electric Racing! After reviewing your application, we are very excited to officially welcome you to our team.',
+  slackWorkspaceId: 'T7MHAQ5TL',
   userCreated: {
     connect: { userId: userCreatedId }
   }

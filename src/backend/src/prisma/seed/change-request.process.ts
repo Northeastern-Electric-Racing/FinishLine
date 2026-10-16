@@ -11,6 +11,7 @@ import { TeamJoinRequestProcess } from './team-join-request.process.js';
 import { CarProcess } from './car.process.js';
 import { CarOutput, DateRange } from '../context.js';
 import { WEEK_MS } from '../dates.js';
+import { realNow } from '../seed-time.js';
 import {
   buildAccountCodeChangeRequests,
   buildWbsChangeRequests,
@@ -348,7 +349,7 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     }
 
     const wbsChangeRequestInputs: Prisma.Change_RequestCreateInput[] = [];
-    const now = new Date();
+    const { now } = this;
 
     const [allBullets, allLinks, allWorkPackages] = await Promise.all([
       this.prisma.description_Bullet.findMany({ where: { dateDeleted: null, wbsElementId: { not: null } } }),
@@ -404,7 +405,8 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
           organizationId,
           submitterPool,
           reviewerPool,
-          headOrAdminUserIds
+          headOrAdminUserIds,
+          now
         )
       );
 
@@ -438,7 +440,8 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
           organizationId,
           submitterPool,
           reviewerPool,
-          headOrAdminUserIds
+          headOrAdminUserIds,
+          now
         );
 
         const acceptedStageGate = workPackageChangeRequestInputs.find(
@@ -485,7 +488,8 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
         organizationId,
         financeSubmitters,
         financeReviewers,
-        headOrAdminUserIds
+        headOrAdminUserIds,
+        now
       )
     );
 
@@ -547,6 +551,11 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
         approvableByCarId.set(carId, list);
       }
 
+      // Anchored to the real clock, not the seed's reference date: getApprovedChangeRequests only
+      // returns change requests reviewed within the last five days, so a review dated relative to
+      // SEED_REFERENCE_DATE drops straight out of the window and the section renders empty.
+      const reviewedAnchor = realNow();
+
       await Promise.all(
         Array.from(approvableByCarId.values()).flatMap((carCrs) => {
           const toApprove = this.faker.helpers.arrayElements(carCrs, Math.min(3, carCrs.length));
@@ -555,7 +564,7 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
               where: { crId: cr.crId },
               data: {
                 submitterId: bootstrapAdmin.userId,
-                dateReviewed: new Date(now.getTime() - (index + 1) * 24 * 60 * 60 * 1000)
+                dateReviewed: new Date(reviewedAnchor.getTime() - (index + 1) * 24 * 60 * 60 * 1000)
               }
             })
           );
@@ -567,22 +576,54 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
       // and "My Team's Projects" (via Team.leads). Both views are filtered by selected car and
       // exclude COMPLETE projects (unless favorited), and CR-driven status changes (just applied
       // above) are only final at this point, so this can't be guaranteed any earlier.
-      const leadCandidates = await this.prisma.project.findMany({
-        where: { wbsElement: { status: { not: WBS_Element_Status.COMPLETE }, dateDeleted: null } },
-        select: { wbsElementId: true, carId: true, teams: { select: { teamId: true } } },
-        distinct: ['carId']
+      //
+      // A project's status as those views see it is *derived* from its work packages by
+      // calculateProjectStatus, not read off WBS_Element.status -- so filtering on the stored
+      // column picks projects the API still reports as COMPLETE, and the section renders empty.
+      // Filter on the derived value instead. The explicit `orderBy` matters too: without it the
+      // row order (and so which project per car gets picked) is arbitrary, which made the pick
+      // differ run to run. It orders by WBS number rather than wbsElementId because the latter is
+      // a database-generated uuid -- stable within a run, but meaningless across seeds.
+      const projectsForGuarantee = await this.prisma.project.findMany({
+        where: { wbsElement: { dateDeleted: null } },
+        select: {
+          wbsElementId: true,
+          carId: true,
+          teams: { select: { teamId: true } },
+          workPackages: { select: { wbsElement: { select: { wbsElementId: true, status: true } } } }
+        },
+        orderBy: [{ wbsElement: { carNumber: 'asc' } }, { wbsElement: { projectNumber: 'asc' } }]
       });
 
-      // If every project on LOGIN_CAR_NAME ended up COMPLETE via the CR processing above, the
-      // query above has no entry for it at all and this guarantee silently no-ops for the one car
-      // system tests actually log in against -- force one of its projects back to ACTIVE instead.
-      if (loginCarId && !leadCandidates.some((project) => project.carId === loginCarId)) {
-        const fallbackProject = await this.prisma.project.findFirst({
-          where: { carId: loginCarId, wbsElement: { dateDeleted: null } },
-          select: { wbsElementId: true, carId: true, teams: { select: { teamId: true } } }
-        });
+      // Mirrors calculateProjectStatus: COMPLETE only when there is at least one work package and
+      // every one of them is COMPLETE. No work packages at all reads as INACTIVE, which renders.
+      const rendersAsComplete = (project: (typeof projectsForGuarantee)[number]) =>
+        project.workPackages.length > 0 &&
+        project.workPackages.every(({ wbsElement }) => wbsElement.status === WBS_Element_Status.COMPLETE);
 
-        if (fallbackProject) {
+      const leadCandidates: typeof projectsForGuarantee = [];
+      const carIdsCovered = new Set<string>();
+
+      for (const project of projectsForGuarantee) {
+        if (carIdsCovered.has(project.carId) || rendersAsComplete(project)) continue;
+        carIdsCovered.add(project.carId);
+        leadCandidates.push(project);
+      }
+
+      // If every project on LOGIN_CAR_NAME derives as COMPLETE, the loop above skipped that car
+      // entirely and the guarantee would silently no-op for the one car the system tests log in
+      // against -- reopen a work package on one of its projects so the project derives as ACTIVE.
+      if (loginCarId && !carIdsCovered.has(loginCarId)) {
+        const fallbackProject = projectsForGuarantee.find((project) => project.carId === loginCarId);
+        // Always present when we get here: a project with no work packages doesn't derive as
+        // COMPLETE, so it would have been picked by the loop above rather than reaching this.
+        const fallbackWorkPackage = fallbackProject?.workPackages[0];
+
+        if (fallbackProject && fallbackWorkPackage) {
+          await this.prisma.wBS_Element.update({
+            where: { wbsElementId: fallbackWorkPackage.wbsElement.wbsElementId },
+            data: { status: WBS_Element_Status.ACTIVE }
+          });
           await this.prisma.wBS_Element.update({
             where: { wbsElementId: fallbackProject.wbsElementId },
             data: { status: WBS_Element_Status.ACTIVE }

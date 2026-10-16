@@ -3,8 +3,6 @@ import { OrganizationOutput, OrganizationProcess } from './organization.process.
 import { carCreateInput, getCarConfigs } from '../factories/car.factory.js';
 import { CarContext, CarOutput } from '../context.js';
 
-const CURRENT_YEAR = new Date().getFullYear();
-
 export class CarProcess extends SeedProcess<OrganizationOutput, CarOutput> {
   dependencies() {
     return [OrganizationProcess];
@@ -12,7 +10,7 @@ export class CarProcess extends SeedProcess<OrganizationOutput, CarOutput> {
 
   async run({ organization }: OrganizationOutput): Promise<CarOutput> {
     const { organizationId } = organization;
-    const carConfigs = getCarConfigs(this.faker);
+    const carConfigs = getCarConfigs(this.faker, this.now);
 
     const cars: CarContext[] = await Promise.all(
       carConfigs.map(async ({ name, carNumber, year, dateRange }) => {
@@ -25,7 +23,7 @@ export class CarProcess extends SeedProcess<OrganizationOutput, CarOutput> {
       })
     );
 
-    const currentYearCar = cars.find((car) => car.year === CURRENT_YEAR)!;
+    const currentYearCar = cars.find((car) => car.year === this.now.getUTCFullYear())!;
 
     return { cars, currentYearCar };
   }
