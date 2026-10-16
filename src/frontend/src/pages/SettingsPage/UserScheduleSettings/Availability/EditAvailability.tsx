@@ -9,7 +9,7 @@ import {
   Typography,
   useMediaQuery
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   HeatmapColors,
   enumToArray,
@@ -69,7 +69,9 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     return availabilities;
   });
 
-  const [isDragging, setIsDragging] = useState(false);
+  // 'add' fills every slot the drag passes over, 'remove' clears them - decided by the first slot pressed.
+  // A ref rather than state because pointermove fires faster than re-renders.
+  const dragModeRef = useRef<'add' | 'remove' | null>(null);
   const [isInverted, setIsInverted] = useState(false);
 
   const weekStart = currentlyDisplayedAvailabilities[0]?.dateSet ?? initialDate;
@@ -85,13 +87,6 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
   );
 
   const busyByDay = busySlotsByDay(busyTimes ?? []);
-
-  // pointerdown rather than mousedown so a tap registers on touch without relying on emulated mouse events
-  const handlePointerDown = (event: React.PointerEvent, availability: Availability, selectedTime: number) => {
-    event.preventDefault();
-    toggleTimeSlot(availability, selectedTime);
-    setIsDragging(event.pointerType === 'mouse');
-  };
 
   const increaseDateRange = () => {
     const lastDate = currentlyDisplayedAvailabilities[currentlyDisplayedAvailabilities.length - 1].dateSet;
@@ -123,21 +118,15 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     setCurrentlyDisplayedAvailabilities(getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), newDate));
   };
 
-  const handleMouseEnter = (_event: any, availability: Availability, selectedTime: number) => {
-    if (!isDragging) return;
-    toggleTimeSlot(availability, selectedTime);
-  };
-
-  const handlePointerUp = () => {
-    setIsDragging(false);
-  };
-
   useEffect(() => {
-    window.addEventListener('pointerup', handlePointerUp);
-    window.addEventListener('pointercancel', handlePointerUp);
+    const endDrag = () => {
+      dragModeRef.current = null;
+    };
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
     return () => {
-      window.removeEventListener('pointerup', handlePointerUp);
-      window.removeEventListener('pointercancel', handlePointerUp);
+      window.removeEventListener('pointerup', endDrag);
+      window.removeEventListener('pointercancel', endDrag);
     };
   }, []);
 
@@ -183,6 +172,43 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
 
     editedAvailabilities.set(availability.dateSet.getTime(), availability);
     commitAvailabilities();
+  };
+
+  // Sets a slot to a specific state rather than flipping it, so dragging back over a slot doesn't re-toggle it
+  const setSlot = (availability: Availability, selectedTime: number, available: boolean) => {
+    const isAvailable = availability.availability.includes(selectedTime);
+    if (isAvailable === available) return;
+
+    if (available) {
+      availability.availability.push(selectedTime);
+    } else {
+      availability.availability.splice(availability.availability.indexOf(selectedTime), 1);
+    }
+
+    editedAvailabilities.set(availability.dateSet.getTime(), availability);
+    commitAvailabilities();
+  };
+
+  // Slots have touch-action: none, so a touch on the grid is always an edit and never the start of a scroll -
+  // toggling on press is intentional, and moving the finger paints from there.
+  const handlePointerDown = (event: React.PointerEvent, availability: Availability, selectedTime: number) => {
+    event.preventDefault();
+    const makeAvailable = !availability.availability.includes(selectedTime);
+    dragModeRef.current = makeAvailable ? 'add' : 'remove';
+    setSlot(availability, selectedTime, makeAvailable);
+  };
+
+  // Touch pointers stay implicitly captured by the slot first pressed, so enter events never fire on the others.
+  // Find the slot under the pointer by position instead - this works the same for mouse.
+  const handlePointerMove = (event: React.PointerEvent) => {
+    const mode = dragModeRef.current;
+    if (!mode) return;
+
+    const cell = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-slot]');
+    if (!cell) return;
+
+    const availability = currentlyDisplayedAvailabilities[Number(cell.dataset.day)];
+    if (availability) setSlot(availability, Number(cell.dataset.time), mode === 'add');
   };
 
   // Tapping a day header fills or clears that whole column - the touch replacement for click-and-drag
@@ -239,7 +265,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
           </Typography>
           <Typography variant="caption" color="text.secondary">
             {isMobile
-              ? 'Tap a slot to toggle it, or tap a day or time label to fill that whole row or column. Hatched slots are busy on your calendar.'
+              ? 'Tap or drag across slots to toggle them, or tap a day or time label to fill that whole row or column. Hatched slots are busy on your calendar.'
               : 'Hatched slots are busy on your imported calendar or Finishline events. Use "Fill from busy times" to pre-fill, then adjust any slots manually.'}
           </Typography>
         </Box>
@@ -324,7 +350,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
               ))}
             </TableRow>
           </TableHead>
-          <TableBody>
+          <TableBody onPointerMove={handlePointerMove}>
             {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
               <TableRow key={time}>
                 <TableCell
@@ -350,14 +376,19 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
                 {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
                   const isAvailable = availability.availability.includes(timeIndex);
                   return (
-                    <TableCell key={dayIndex} sx={{ ...timeSlotCellSx, scrollSnapAlign: 'start' }}>
+                    <TableCell
+                      key={dayIndex}
+                      data-slot
+                      data-day={dayIndex}
+                      data-time={timeIndex}
+                      // Stops the browser claiming a touch on a slot for scrolling, which would cancel the drag
+                      sx={{ ...timeSlotCellSx, scrollSnapAlign: 'start', touchAction: 'none' }}
+                    >
                       <EventTimeSlot
                         backgroundColor={isAvailable ? HeatmapColors[3] : HeatmapColors[0]}
                         selected={false}
                         busy={isSlotBusy(busyByDay, availability.dateSet, timeIndex)}
                         onPointerDown={(e) => handlePointerDown(e, availability, timeIndex)}
-                        onMouseEnter={(e) => handleMouseEnter(e, availability, timeIndex)}
-                        onPointerUp={handlePointerUp}
                       />
                     </TableCell>
                   );
