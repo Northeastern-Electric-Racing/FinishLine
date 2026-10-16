@@ -12,7 +12,7 @@ import {
   Team as SharedTeam,
   TeamJoinRequest
 } from 'shared';
-import { Account_Code, Organization, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
+import { Account_Code, Organization, Reimbursement_Product_Other_Reason, Sponsor_Task, Team_Type } from '@prisma/client';
 import {
   editMessage,
   getChannelName,
@@ -23,7 +23,7 @@ import {
   sendEphemeralMessage,
   sendMessage
 } from '../integrations/slack.js';
-import { getUserSlackId, getUserSlackMentionOrName } from './users.utils.js';
+import { getUserSlackId, getUserSlackMentionOrName, getUsersWithSettings } from './users.utils.js';
 import prisma from '../prisma/prisma.js';
 import { HttpException } from './errors.utils.js';
 import { Change_Request, Team, WBS_Element } from '@prisma/client';
@@ -984,3 +984,59 @@ export const notifySponsorTaskAssignee = async (
   const linkButtonText = `View Tasks for ${sponsor}`;
   await sendMessage(assignee.userSettings?.slackId, msg, link, linkButtonText);
 };
+
+/**
+ * Sends to team channels as well as leads and manager about
+ * a work package that is scheduled to start at a later date than anticipated
+ *
+ * @param teams The teams to notify
+ * @param leadId The work package's lead
+ * @param managerId The work package's manager
+ * @param startDate The planned starting date for the work package
+ * @param activationDate The actual starting date for the work package
+ * @param bufferDays The threshold that triggers this message
+ * @param wbsString The wbs number as a string type
+ * @param name Name of the work package
+ */
+export const sendActivationStartDateChangedNotification = async (
+  teams: (Team & { teamType: Team_Type | null })[] | undefined,
+  leadId: string = '',
+  managerId: string = '',
+  startDate: Date,
+  activationDate: Date,
+  wbsString: string,
+  name: string
+) => {
+  const leadIdPing = (await pingBasedOnId(leadId)) || '';
+  const managerIdPing = (await pingBasedOnId(managerId)) || '';
+
+  const activationDateString = activationDate.toDateString();
+  const startDateString = startDate.toDateString();
+
+  const message =
+    leadIdPing +
+    ' ' +
+    managerIdPing +
+    ' The start date for ' +
+    name +
+    ' has been changed from ' +
+    startDateString +
+    ' to ' +
+    activationDateString +
+    '.\n';
+  const link = `https://finishlinebyner.com/projects/${wbsString}`;
+  const linkButtonText = 'Change Work Package';
+
+  await Promise.all(teams?.map((team) => sendMessage(team.slackId, message, link, linkButtonText)) ?? []);
+};
+
+async function pingBasedOnId(id: string) {
+  if (id) {
+    const [user] = await getUsersWithSettings([id]);
+    if (user) {
+      const ping = userToSlackPing(user);
+      if (ping) return ping;
+    }
+  }
+  return '';
+}
