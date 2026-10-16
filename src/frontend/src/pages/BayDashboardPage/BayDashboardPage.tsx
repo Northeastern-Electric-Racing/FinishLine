@@ -22,8 +22,20 @@ const BayDashboardPage: React.FC = () => {
   useBayDashboardEvents(slug);
 
   return (
-    <Box sx={{ position: 'fixed', inset: 0, overflow: 'hidden', bgcolor: 'black' }}>
-      <BayDashboardGrid slots={defaultBayDashboardSlots} />
+    <Box
+      sx={{
+        position: 'fixed',
+        inset: 0,
+        overflow: 'hidden',
+        bgcolor: 'black',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <Box sx={{ width: 'min(100vw, calc(100vh * 16 / 9))' }}>
+        <BayDashboardGrid slots={defaultBayDashboardSlots} />
+      </Box>
     </Box>
   );
 };
