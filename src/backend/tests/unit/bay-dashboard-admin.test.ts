@@ -221,4 +221,45 @@ describe('Bay Dashboard Admin Tests', () => {
       expect(activeConfigs[0].bayDashboardConfigId).toBe(oldConfig.bayDashboardConfigId);
     });
   });
+
+  describe('Create Bay Dashboard Countdown', () => {
+    it('fails if user is not a head', async () => {
+      const regularMember = await createTestUser(member, orgId);
+
+      await expect(
+        BayDashboardAdminService.createBayDashboardCountdown(regularMember, organization, 'FHE', new Date('2025-04-26'))
+      ).rejects.toThrow(new AccessDeniedException('Only heads and above can create bay dashboard countdowns'));
+    });
+
+    it('creates a countdown without an end date', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'Days Since Last Bay Clean Up',
+        new Date('2026-03-07')
+      );
+
+      expect(countdown.name).toBe('Days Since Last Bay Clean Up');
+      expect(countdown.startDate).toEqual(new Date('2026-03-07'));
+      expect(countdown.endDate).toBeUndefined();
+    });
+
+    it('creates a countdown with an end date', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26'),
+        new Date('2026-04-26')
+      );
+
+      expect(countdown.name).toBe('FHE');
+      expect(countdown.startDate).toEqual(new Date('2025-04-26'));
+      expect(countdown.endDate).toEqual(new Date('2026-04-26'));
+    });
+  });
 });

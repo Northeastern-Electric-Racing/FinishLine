@@ -1,6 +1,7 @@
 import { Organization } from '@prisma/client';
 import {
   BayDashboardConfig,
+  BayDashboardCountdown,
   BayDashboardSlotCreateArgs,
   BayDashboardWidgetSize,
   BayDashboardWidgetType,
@@ -8,8 +9,14 @@ import {
   User
 } from 'shared';
 import prisma from '../prisma/prisma.js';
-import { getBayDashboardConfigQueryArgs } from '../prisma-query-args/bay-dashboard.query-args.js';
-import { bayDashboardConfigTransformer } from '../transformers/bay-dashboard.transformer.js';
+import {
+  getBayDashboardConfigQueryArgs,
+  getBayDashboardCountdownQueryArgs
+} from '../prisma-query-args/bay-dashboard.query-args.js';
+import {
+  bayDashboardConfigTransformer,
+  bayDashboardCountdownTransformer
+} from '../transformers/bay-dashboard.transformer.js';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
 
@@ -133,5 +140,39 @@ export default class BayDashboardAdminService {
     });
 
     return bayDashboardConfigTransformer(config);
+  }
+
+  /**
+   * Creates a countdown to display on the bay dashboard.
+   * @param submitter the user creating the countdown, must be a head or above
+   * @param organization the organization the countdown belongs to
+   * @param name the name of the countdown
+   * @param startDate the date the countdown starts from
+   * @param endDate the date the countdown ends, if it has one
+   * @returns the created countdown
+   */
+  static async createBayDashboardCountdown(
+    submitter: User,
+    organization: Organization,
+    name: string,
+    startDate: Date,
+    endDate?: Date
+  ): Promise<BayDashboardCountdown> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads and above can create bay dashboard countdowns');
+    }
+
+    const countdown = await prisma.bay_Dashboard_Countdown.create({
+      data: {
+        name,
+        startDate,
+        endDate,
+        organizationId: organization.organizationId,
+        userCreatedId: submitter.userId
+      },
+      ...getBayDashboardCountdownQueryArgs()
+    });
+
+    return bayDashboardCountdownTransformer(countdown);
   }
 }
