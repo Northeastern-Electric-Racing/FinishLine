@@ -971,20 +971,22 @@ export const notifySponsorTaskAssignee = async (
 };
 
 /**
- * Sends to team channels as well as leads and manager about
- * a work package that is scheduled to start at a later date than anticipated
+ *
+ * Sends a message to team channels that are associated with the work package
+ * and notifies leads and manager in that message. This message is only sent
+ * if the work package is scheduled to start more days apart than the
+ * accepted threshold.
  *
  * @param teams The teams to notify
  * @param leadId The work package's lead
  * @param managerId The work package's manager
  * @param startDate The planned starting date for the work package
  * @param activationDate The actual starting date for the work package
- * @param bufferDays The threshold that triggers this message
  * @param wbsString The wbs number as a string type
  * @param name Name of the work package
  */
 export const sendActivationStartDateChangedNotification = async (
-  teams: (Team & { teamType: Team_Type | null })[] | undefined,
+  teams: Team[],
   leadId: string = '',
   managerId: string = '',
   startDate: Date,
@@ -992,8 +994,8 @@ export const sendActivationStartDateChangedNotification = async (
   wbsString: string,
   name: string
 ) => {
-  const leadIdPing = (await pingBasedOnId(leadId)) || '';
-  const managerIdPing = (await pingBasedOnId(managerId)) || '';
+  const leadIdPing = (await getUserSlackMentionOrName(leadId)) || '';
+  const managerIdPing = (await getUserSlackMentionOrName(managerId)) || '';
 
   const activationDateString = activationDate.toDateString();
   const startDateString = startDate.toDateString();
@@ -1005,23 +1007,12 @@ export const sendActivationStartDateChangedNotification = async (
     ' The start date for ' +
     name +
     ' has been changed from ' +
-    startDateString +
-    ' to ' +
     activationDateString +
+    ' to ' +
+    startDateString +
     '.\n';
   const link = `https://finishlinebyner.com/projects/${wbsString}`;
   const linkButtonText = 'Change Work Package';
 
   await Promise.all(teams?.map((team) => sendMessage(team.slackId, message, link, linkButtonText)) ?? []);
 };
-
-async function pingBasedOnId(id: string) {
-  if (id) {
-    const [user] = await getUsersWithSettings([id]);
-    if (user) {
-      const ping = userToSlackPing(user);
-      if (ping) return ping;
-    }
-  }
-  return '';
-}
