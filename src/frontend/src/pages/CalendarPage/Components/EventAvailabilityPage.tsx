@@ -280,7 +280,15 @@ export const EventAvailabilityPage: React.FC = () => {
     <PageLayout
       title={workPackageNames}
       headerRight={
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: { xs: 'stretch', sm: 'flex-end' },
+            mb: { xs: 2, md: 0 }
+          }}
+        >
           <NERSuccessButton variant="contained" onClick={() => setEditAvailabilityOpen(true)} disabled={!isUserMember}>
             Edit My Availability
           </NERSuccessButton>
@@ -288,9 +296,18 @@ export const EventAvailabilityPage: React.FC = () => {
         </Box>
       }
     >
-      <Box sx={{ display: 'flex', gap: 2, overflow: 'hidden', width: '100%', height: 'calc(100vh - 200px)' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 2,
+          overflow: 'hidden',
+          width: '100%',
+          height: { xs: 'auto', md: 'calc(100vh - 200px)' }
+        }}
+      >
         {/* Left side - Availability Grid */}
-        <Box sx={{ flex: '1 1 0', minWidth: 0, height: '100%', overflow: 'hidden' }}>
+        <Box sx={{ flex: '1 1 0', minWidth: 0, height: { xs: 420, md: '100%' }, overflow: 'hidden' }}>
           <AvailabilityScheduleView
             availableUsers={availableUsers}
             unavailableUsers={unavailableUsers}
@@ -308,12 +325,12 @@ export const EventAvailabilityPage: React.FC = () => {
         <Box
           sx={{
             flex: '0 0 auto',
-            width: { xs: 180, sm: 220, md: 280 },
+            width: { xs: '100%', md: 280 },
             backgroundColor: theme.palette.background.paper,
             borderRadius: 2,
             p: { xs: 1.5, sm: 2, md: 3 },
             overflowY: 'auto',
-            height: '100%'
+            height: { xs: 'auto', md: '100%' }
           }}
         >
           {/* Date/Time display */}
@@ -349,7 +366,7 @@ export const EventAvailabilityPage: React.FC = () => {
             }
             return (
               <Typography variant="body1" color="text.secondary" mb={3}>
-                Hover over a time slot to see availability
+                {isMobile ? 'Tap a time slot to see availability' : 'Hover over a time slot to see availability'}
               </Typography>
             );
           })()}
