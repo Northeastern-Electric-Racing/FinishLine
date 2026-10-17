@@ -13,8 +13,10 @@ export const WEEK_MS = DAY_MS * 7;
 
 export const DAYS_PER_WEEK = 7;
 
-export function generateRandomDate(faker: Faker, from?: Date, to?: Date) {
-  return faker.date.between({ from: from ?? '2000-01-01', to: to ?? Date.now() });
+// `from`/`to` are required so a caller can't silently fall back to the real clock -- the seed is
+// generated relative to a pinned instant, see seed-time.ts.
+export function generateRandomDate(faker: Faker, from: Date, to: Date) {
+  return faker.date.between({ from, to });
 }
 
 export function generateRandomDateAround(faker: Faker, date: Date, days: number) {

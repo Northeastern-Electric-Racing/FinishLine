@@ -21,7 +21,7 @@ export class ExecutiveSummaryProcess extends SeedProcess<ExecutiveSummaryInput, 
   }
 
   async run({ admins, heads, leadership, cars }: ExecutiveSummaryInput): Promise<ExecutiveSummaryOutput> {
-    const now = new Date();
+    const { now } = this;
 
     const leadershipPool: FullUser[] = [...admins, ...heads, ...leadership];
     if (leadershipPool.length === 0) {

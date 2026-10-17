@@ -12,8 +12,6 @@ import {
   OnMouseOverOptions,
   RequestEventChange
 } from '../../../../../utils/gantt.utils';
-import { getMonday } from '../../../../../utils/datetime.utils';
-import { toDateString } from 'shared';
 
 interface GanttTaskBarProps<T> {
   days: Date[];
@@ -27,6 +25,11 @@ interface GanttTaskBarProps<T> {
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
   onToggle?: () => void;
+  toggleExpanded: (id: string) => void;
+  isExpanded: boolean;
+  expanded: Set<string>;
+  getStartCol: (start: Date) => number;
+  getEndCol: (end: Date) => number;
 }
 
 const GanttTaskBar = <T,>({
@@ -40,21 +43,13 @@ const GanttTaskBar = <T,>({
   onAddTaskPressed,
   highlightSubtaskComparator,
   highlightTaskComparator,
-  onToggle
+  onToggle,
+  toggleExpanded,
+  isExpanded,
+  expanded,
+  getStartCol,
+  getEndCol
 }: GanttTaskBarProps<T>) => {
-  const getStartCol = (start: Date) => {
-    const startCol = days.findIndex((day) => toDateString(day) === toDateString(getMonday(start))) + 1;
-    return startCol;
-  };
-
-  const getEndCol = (end: Date) => {
-    const endCol =
-      days.findIndex((day) => toDateString(day) === toDateString(getMonday(end))) === -1
-        ? days.length + 1
-        : days.findIndex((day) => toDateString(day) === toDateString(getMonday(end))) + 2;
-    return endCol;
-  };
-
   return (
     <div id={`gantt-task-${task.id}`}>
       {isEditMode ? (
@@ -79,6 +74,9 @@ const GanttTaskBar = <T,>({
           highlightSubtaskComparator={highlightSubtaskComparator}
           highlightTaskComparator={highlightTaskComparator}
           onToggle={onToggle}
+          toggleExpanded={toggleExpanded}
+          isExpanded={isExpanded}
+          expanded={expanded}
         />
       )}
     </div>
