@@ -23,7 +23,7 @@ import {
   sendEphemeralMessage,
   sendMessage
 } from '../integrations/slack.js';
-import { getUserSlackId, getUserSlackMentionOrName, getUsersWithSettings } from './users.utils.js';
+import { getUserSlackId, getUserSlackMentionOrName } from './users.utils.js';
 import prisma from '../prisma/prisma.js';
 import { HttpException } from './errors.utils.js';
 import { Change_Request, Team, WBS_Element } from '@prisma/client';
