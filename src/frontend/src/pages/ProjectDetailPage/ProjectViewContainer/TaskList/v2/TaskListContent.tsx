@@ -2,10 +2,16 @@ import { DragDropContext, OnDragEndResponder, OnDragStartResponder } from '@hell
 import { Badge, Box, Button, TextField, Typography } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { FilterTaskArgs, Task, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
+import { FilterTaskArgs, TaskBoardItem, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
 import { useQueryClient } from 'react-query';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
-import { useEditTask, useEditTaskAssignees, useFilterTasks, useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
+import {
+  useEditTask,
+  useEditTaskAssignees,
+  useFilterTasks,
+  useFilterTasksPages,
+  useSetTaskStatus
+} from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { TaskColumn } from './TaskColumn';
 import confetti from 'canvas-confetti';
@@ -38,9 +44,12 @@ interface TaskListContentProps {
 
 const nonEmpty = <T,>(arr: T[]): T[] | undefined => (arr.length > 0 ? arr : undefined);
 
-// how many tasks each column renders initially, and how many more it reveals each time the user scrolls
-// to the bottom — keeps a large global board from mounting hundreds of cards at once
+// project/work package boards: how many tasks each column renders initially, and how many more it reveals each
+// time the user scrolls to the bottom — keeps a large board from mounting hundreds of cards at once
 const TASK_PAGE_SIZE = 20;
+
+// global board: how long to wait after the last keystroke before searching on the server
+const SEARCH_DEBOUNCE_MS = 300;
 
 export const TaskListContent = ({
   context,
@@ -61,9 +70,21 @@ export const TaskListContent = ({
   const filters = externalFilters ?? internal.filters;
   const patch = externalPatch ?? internal.patch;
 
+  // the global board can span every task in the organization, so each of its columns loads from the server a page
+  // at a time. Project and work package boards are small enough to load whole
+  const paginated = context === 'global';
+
+  const search = filters.search.trim();
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedSearch(search), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timeout);
+  }, [search]);
+
   const carNumbers = forcedCarNumbers ?? nonEmpty(filters.carNumbers);
-  // NB: search is intentionally excluded — it's applied client-side over the loaded tasks (below) so
-  // typing doesn't refetch the whole board on every keystroke
+  // NB: search is applied client-side over the loaded tasks (below) so it reacts instantly without refetching on
+  // every keystroke. The paginated board can't see the tasks it hasn't loaded yet, so it also searches on the server
+  // once typing pauses
   const filterArgs: FilterTaskArgs = {
     ...(wbsNum ? { wbsNum } : {}),
     ...(carNumbers ? { carNumbers } : {}),
@@ -72,22 +93,47 @@ export const TaskListContent = ({
     ...(nonEmpty(filters.memberIds) ? { memberIds: filters.memberIds } : {}),
     ...(nonEmpty(filters.teamIds) ? { teamIds: filters.teamIds } : {}),
     ...(nonEmpty(filters.labelIds) ? { labelIds: filters.labelIds } : {}),
+    ...(paginated && debouncedSearch ? { search: debouncedSearch } : {}),
     andMemberTeam: true
   };
 
-  const { data: tasks, isLoading, isError, error } = useFilterTasks(filterArgs);
+  const { data: tasks, isLoading, isError, error } = useFilterTasks(paginated ? null : filterArgs);
+  const backlogPages = useFilterTasksPages(filterArgs, TaskStatus.IN_BACKLOG, paginated);
+  const inProgressPages = useFilterTasksPages(filterArgs, TaskStatus.IN_PROGRESS, paginated);
+  const donePages = useFilterTasksPages(filterArgs, TaskStatus.DONE, paginated);
+  const pagesByStatus: Record<TaskStatus, typeof backlogPages> = {
+    [TaskStatus.IN_BACKLOG]: backlogPages,
+    [TaskStatus.IN_PROGRESS]: inProgressPages,
+    [TaskStatus.DONE]: donePages
+  };
+
+  // every page loaded so far of every column, once each column has its first page
+  const pagedTasks = useMemo(() => {
+    if (!backlogPages.data || !inProgressPages.data || !donePages.data) return undefined;
+    const seen = new Set<string>();
+    return [backlogPages.data, inProgressPages.data, donePages.data]
+      .flatMap((data) => data.pages.flatMap((page) => page.tasks))
+      .filter((task) => {
+        // a task can shift across a page boundary between two page fetches; keep only its first copy
+        if (seen.has(task.taskId)) return false;
+        seen.add(task.taskId);
+        return true;
+      });
+  }, [backlogPages.data, inProgressPages.data, donePages.data]);
+
+  const loadedTasks = paginated ? pagedTasks : tasks;
 
   // fuzzy search runs over the tasks already loaded on the page (title + notes), so it's instant
-  const searchLower = filters.search.trim().toLowerCase();
+  const searchLower = search.toLowerCase();
   const filteredTasks = useMemo(
     () =>
-      (tasks ?? []).filter(
+      (loadedTasks ?? []).filter(
         (task) =>
           !searchLower ||
           task.title.toLowerCase().includes(searchLower) ||
           (task.notes ?? '').toLowerCase().includes(searchLower)
       ),
-    [tasks, searchLower]
+    [loadedTasks, searchLower]
   );
 
   // number of active dropdown filters (each populated category counts once), shown on the filters button
@@ -101,6 +147,9 @@ export const TaskListContent = ({
   ].filter((selection) => selection.length > 0).length;
 
   const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus | undefined>(undefined); // can't use getTasksByStatus since tasks are async
+  // paginated board: which columns still have pages on the server. Captured alongside tasksByStatus (rather than read
+  // live from the queries) so a column's spinner doesn't disappear a render before its last page's tasks show up
+  const [hasMoreByStatus, setHasMoreByStatus] = useState<Partial<Record<TaskStatus, boolean>>>({});
   const { mutateAsync: setTaskStatus } = useSetTaskStatus();
   const { mutateAsync: editTask } = useEditTask();
   const { mutateAsync: editTaskAssignees } = useEditTaskAssignees();
@@ -118,8 +167,8 @@ export const TaskListContent = ({
   const [columnHeights, setColumnHeights] = useState<Partial<Record<TaskStatus, number>>>({});
   const equalizedHeight = Math.max(...(Object.values(columnHeights) as number[]));
 
-  // incremental rendering: only the first `visibleCount` tasks of each column are mounted; the sentinel
-  // rendered below the board grows this as it scrolls into view (see setSentinel)
+  // project/work package boards' incremental rendering: only the first `visibleCount` tasks of each column are
+  // mounted; the sentinel rendered below the board grows this as it scrolls into view (see setSentinel)
   const [visibleCount, setVisibleCount] = useState(TASK_PAGE_SIZE);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const setSentinel = useCallback((node: HTMLDivElement | null) => {
@@ -136,19 +185,34 @@ export const TaskListContent = ({
 
   // (re)build the board whenever the loaded tasks or the client-side search change
   useEffect(() => {
-    if (tasks) {
+    if (loadedTasks) {
       setTasksByStatus(getTasksByStatus(filteredTasks));
+      setHasMoreByStatus({
+        [TaskStatus.IN_BACKLOG]: !!backlogPages.hasNextPage,
+        [TaskStatus.IN_PROGRESS]: !!inProgressPages.hasNextPage,
+        [TaskStatus.DONE]: !!donePages.hasNextPage
+      });
       // start fresh when the tasks/filters/search change so a new view doesn't render everything at once
       setVisibleCount(TASK_PAGE_SIZE);
     }
-  }, [tasks, filteredTasks]);
+  }, [loadedTasks, filteredTasks, backlogPages.hasNextPage, inProgressPages.hasNextPage, donePages.hasNextPage]);
 
   const onHeightChange = useCallback((status: TaskStatus, height: number) => {
     setColumnHeights((prev) => ({ ...prev, [status]: height }));
   }, []);
 
+  const pageQueries = statuses.map((status) => pagesByStatus[status]);
+  const failedPageQuery = pageQueries.find((query) => query.isError);
+
   if (isError) return <ErrorPage error={error} />;
-  if (isLoading || !tasksByStatus) return <LoadingIndicator />;
+  if (failedPageQuery) return <ErrorPage error={failedPageQuery.error ?? undefined} />;
+  if (isLoading || pageQueries.some((query) => query.isLoading) || !tasksByStatus) return <LoadingIndicator />;
+
+  // the sentinel at the bottom of a paginated column can fire again while a page is still loading; ask for each once
+  const loadMore = (status: TaskStatus) => {
+    const pages = pagesByStatus[status];
+    if (pages.hasNextPage && !pages.isFetchingNextPage) pages.fetchNextPage();
+  };
 
   const onDeleteTask = (taskId: string) => {
     setTasksByStatus((prev) => {
@@ -165,7 +229,7 @@ export const TaskListContent = ({
     });
   };
 
-  const onEditTask = (task: Task) => {
+  const onEditTask = (task: TaskBoardItem) => {
     setTasksByStatus((prev) => {
       if (!prev) return prev;
       const newTasksByStatus = { ...prev };
@@ -180,7 +244,7 @@ export const TaskListContent = ({
     });
   };
 
-  const onAddTask = (task: Task) => {
+  const onAddTask = (task: TaskBoardItem) => {
     setTasksByStatus((prev) => {
       if (!prev) return prev;
       return {
@@ -236,8 +300,8 @@ export const TaskListContent = ({
       return;
     }
 
-    const sourceStatus = source.droppableId as Task['status'];
-    const destinationStatus = destination.droppableId as Task['status'];
+    const sourceStatus = source.droppableId as TaskStatus;
+    const destinationStatus = destination.droppableId as TaskStatus;
     const sourcePost = tasksByStatus[sourceStatus][source.index]!;
 
     const move: PendingMove = {
@@ -374,7 +438,9 @@ export const TaskListContent = ({
               onEditTask={onEditTask}
               onHeightChange={onHeightChange}
               status={status}
-              tasks={tasksByStatus[status].slice(0, visibleCount)}
+              tasks={paginated ? tasksByStatus[status] : tasksByStatus[status].slice(0, visibleCount)}
+              hasMore={paginated ? !!hasMoreByStatus[status] : tasksByStatus[status].length > visibleCount}
+              onLoadMore={paginated ? () => loadMore(status) : undefined}
               key={status}
               wbsNum={wbsNum}
               context={context}
@@ -384,9 +450,9 @@ export const TaskListContent = ({
             />
           ))}
         </Box>
-        {/* when any column still has tasks beyond what's rendered, this sentinel reveals another page as
-            it scrolls near the viewport */}
-        {visibleCount < Math.max(0, ...statuses.map((status) => tasksByStatus[status].length)) && (
+        {/* project/work package boards: when any column still has tasks beyond what's rendered, this sentinel
+            reveals another page as it scrolls near the viewport (the global board's columns each load their own) */}
+        {!paginated && visibleCount < Math.max(0, ...statuses.map((status) => tasksByStatus[status].length)) && (
           <div ref={setSentinel} style={{ height: 1 }} />
         )}
       </DragDropContext>
@@ -396,22 +462,22 @@ export const TaskListContent = ({
 
 interface PendingMove {
   task: TaskWithIndex;
-  source: { status: Task['status']; index: number };
-  destination: { status: Task['status']; index: number };
+  source: { status: TaskStatus; index: number };
+  destination: { status: TaskStatus; index: number };
 }
 
 // The names of everything currently blocking a task from being completed: any incomplete blocking task
 // plus any work package that still blocks this task's work package. Mirrors the backend's block check.
-const getIncompleteBlockerNames = (task: Task): string[] => [
+const getIncompleteBlockerNames = (task: Pick<TaskBoardItem, 'blockedBy' | 'blockedByWorkPackages'>): string[] => [
   ...task.blockedBy.filter((blocker) => blocker.status !== TaskStatus.DONE).map((blocker) => blocker.title),
   ...task.blockedByWorkPackages.map((workPackage) => workPackage.name)
 ];
 
 const updateTaskStatusLocal = (
   sourceTask: TaskWithIndex,
-  source: { status: Task['status']; index: number },
+  source: { status: TaskStatus; index: number },
   destination: {
-    status: Task['status'];
+    status: TaskStatus;
     index?: number; // undefined if dropped after the last item
   },
   tasksByStatus: TasksByStatus

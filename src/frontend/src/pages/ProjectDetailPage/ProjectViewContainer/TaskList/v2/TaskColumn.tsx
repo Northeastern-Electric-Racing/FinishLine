@@ -1,7 +1,7 @@
 import { Droppable } from '@hello-pangea/dnd';
-import { Box, Typography, useTheme } from '@mui/material';
+import { Box, CircularProgress, Typography, useTheme } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-import { Task, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
+import { TaskBoardItem, TaskStatus, TaskWithIndex, WbsNumber } from 'shared';
 import { statusNames, TaskCard } from '.';
 import { NERButton } from '../../../../../components/NERButton';
 import { useCreateTask } from '../../../../../hooks/tasks.hooks';
@@ -20,7 +20,9 @@ export const TaskColumn = ({
   onEditTask,
   onDeleteTask,
   onAddTask,
-  onHeightChange
+  onHeightChange,
+  hasMore = false,
+  onLoadMore
 }: {
   status: TaskStatus;
   tasks: TaskWithIndex[];
@@ -29,10 +31,14 @@ export const TaskColumn = ({
   projectCarNumbers?: number[];
   equalizedHeight: number;
   isDragging: boolean;
-  onEditTask: (task: Task) => void;
+  onEditTask: (task: TaskBoardItem) => void;
   onDeleteTask: (taskId: string) => void;
-  onAddTask: (task: Task) => void;
+  onAddTask: (task: TaskBoardItem) => void;
   onHeightChange: (status: TaskStatus, height: number) => void;
+  /** whether this column has more tasks still to load (from the server, or not yet rendered); shows a spinner below it */
+  hasMore?: boolean;
+  /** paginated (global) board: loads the column's next page. Other boards reveal more with one sentinel below the board */
+  onLoadMore?: () => void;
 }) => {
   const { mutateAsync: createTask, isLoading } = useCreateTask();
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
@@ -170,7 +176,34 @@ export const TaskColumn = ({
             </Box>
           )}
         </Droppable>
+        {hasMore && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', paddingTop: '8px' }}>
+            <CircularProgress size={24} />
+          </Box>
+        )}
+        {hasMore && onLoadMore && <LoadMoreSentinel onVisible={onLoadMore} />}
       </Box>
     </>
   );
+};
+
+// Sits at the bottom of a paginated column and loads more whenever it's near the viewport. It re-observes on every
+// render, so a column that's still short after a page arrives keeps asking until it fills the screen or runs out
+const LoadMoreSentinel = ({ onVisible }: { onVisible: () => void }) => {
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) onVisible();
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [onVisible]);
+
+  return <div ref={sentinelRef} style={{ height: 1 }} />;
 };

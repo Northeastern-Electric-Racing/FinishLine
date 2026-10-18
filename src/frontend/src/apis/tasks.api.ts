@@ -4,12 +4,12 @@
  */
 
 import {
-  CalendarTask,
   dateToMidnightUTC,
   FilterTaskArgs,
-  Task,
-  TaskCardPreview,
+  TaskBoardItem,
+  TaskBoardItemPage,
   TaskLabel,
+  TaskHomeCard,
   TaskPriority,
   TaskStatus,
   WbsNumber,
@@ -17,7 +17,7 @@ import {
 } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { taskLabelTransformer, taskTransformer } from './transformers/tasks.transformers';
+import { baseTaskTransformer, taskBoardItemTransformer, taskLabelTransformer } from './transformers/tasks.transformers';
 
 /**
  * Api call to create a task.
@@ -45,7 +45,7 @@ export const createSingleTask = (
   deadline?: string,
   startDate?: string
 ) => {
-  return axios.post<Task>(
+  return axios.post<TaskBoardItem>(
     apiUrls.tasksCreate(wbsPipe(wbsNum)),
     {
       title,
@@ -60,13 +60,13 @@ export const createSingleTask = (
     },
     {
       // axios runs transformResponse on error bodies too (e.g. { message: string } from a rejected
-      // request), so taskTransformer would otherwise crash reading a field that only exists on success
+      // request), so taskBoardItemTransformer would otherwise crash reading a field that only exists on success
       // responses. Falling back to the raw parsed body lets the interceptor in axios.ts read
       // error.response.data.message instead of a confusing TypeError.
       transformResponse: (data) => {
         const parsed = JSON.parse(data);
         try {
-          return taskTransformer(parsed);
+          return taskBoardItemTransformer(parsed);
         } catch {
           return parsed;
         }
@@ -86,7 +86,6 @@ export const createSingleTask = (
  * @param deadline the new deadline
  * @param startDate the new start date
  * @param wbsNum the new wbs element
- * @returns the edited task
  */
 export const editTask = (
   taskId: string,
@@ -99,7 +98,7 @@ export const editTask = (
   startDate?: Date,
   wbsNum?: WbsNumber
 ) => {
-  return axios.post<{ message: string }>(apiUrls.editTaskById(taskId), {
+  return axios.post(apiUrls.editTaskById(taskId), {
     title,
     notes,
     priority,
@@ -118,17 +117,17 @@ export const editTask = (
  * @returns the edited task
  */
 export const editTaskAssignees = (taskId: string, assignees: string[]) => {
-  return axios.post<Task>(
+  return axios.post<TaskBoardItem>(
     apiUrls.editTaskAssignees(taskId),
     {
       assignees
     },
     {
-      // same fallback as createSingleTask above: avoid crashing taskTransformer on an error body
+      // same fallback as createSingleTask above: avoid crashing taskBoardItemTransformer on an error body
       transformResponse: (data) => {
         const parsed = JSON.parse(data);
         try {
-          return taskTransformer(parsed);
+          return taskBoardItemTransformer(parsed);
         } catch {
           return parsed;
         }
@@ -144,7 +143,7 @@ export const editTaskAssignees = (taskId: string, assignees: string[]) => {
  * @returns
  */
 export const editSingleTaskStatus = (id: string, status: TaskStatus) => {
-  return axios.post<{ message: string }>(apiUrls.taskEditStatus(id), {
+  return axios.post(apiUrls.taskEditStatus(id), {
     status
   });
 };
@@ -155,7 +154,7 @@ export const editSingleTaskStatus = (id: string, status: TaskStatus) => {
  * @returns
  */
 export const deleteSingleTask = (taskId: string) => {
-  return axios.post<{ message: string }>(apiUrls.deleteTask(taskId), {});
+  return axios.post(apiUrls.deleteTask(taskId), {});
 };
 
 /**
@@ -164,14 +163,34 @@ export const deleteSingleTask = (taskId: string) => {
  * @returns an array of tasks that match the filter criteria
  */
 export const getFilterTasks = (payload: FilterTaskArgs) => {
-  return axios.post<CalendarTask[]>(apiUrls.tasksFilter(), payload, {
-    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  return axios.post<TaskBoardItem[]>(apiUrls.tasksFilter(), payload, {
+    transformResponse: (data) => JSON.parse(data).map(taskBoardItemTransformer)
   });
 };
 
+/**
+ * Gets one page of a single status column of the tasks that match the filter criteria.
+ * @param payload the filter criteria
+ * @param status the status column to get a page of
+ * @param offset how many of the column's tasks come before this page
+ * @returns the page's tasks, and where the next page starts if there is one
+ */
+export const getFilterTasksPage = (payload: FilterTaskArgs, status: TaskStatus, offset: number) => {
+  return axios.post<TaskBoardItemPage>(
+    apiUrls.tasksFilterPaginated(),
+    { ...payload, status, offset },
+    {
+      transformResponse: (data) => {
+        const page: TaskBoardItemPage = JSON.parse(data);
+        return { ...page, tasks: page.tasks.map(taskBoardItemTransformer) };
+      }
+    }
+  );
+};
+
 export const getOverdueTasksByTeamLeader = (userId: string) => {
-  return axios.get<TaskCardPreview[]>(apiUrls.overdueTasksByTeamLeadership(userId), {
-    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  return axios.get<TaskHomeCard[]>(apiUrls.overdueTasksByTeamLeadership(userId), {
+    transformResponse: (data) => JSON.parse(data).map(baseTaskTransformer)
   });
 };
 
@@ -206,23 +225,15 @@ export const createTaskLabel = (name: string, colorHexCode: string) => {
  * @param id the id of the task label
  * @param name the name of the task label
  * @param colorHexCode the hex code for the task label color
- * @returns the edited task label
  */
 export const editTaskLabel = (taskLabelId: string, name: string, colorHexCode: string) => {
-  return axios.post<TaskLabel>(
-    apiUrls.taskLabelEdit(taskLabelId),
-    { name, colorHexCode },
-    {
-      transformResponse: (data) => taskLabelTransformer(JSON.parse(data))
-    }
-  );
+  return axios.post(apiUrls.taskLabelEdit(taskLabelId), { name, colorHexCode });
 };
 
 /**
  * Soft deletes a task label.
  * @param taskLabelId
- * @returns the deleted taskLabelId
  */
 export const deleteTaskLabel = (taskLabelId: string) => {
-  return axios.post<string>(apiUrls.taskLabelDelete(taskLabelId), {});
+  return axios.post(apiUrls.taskLabelDelete(taskLabelId), {});
 };

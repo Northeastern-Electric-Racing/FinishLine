@@ -2,7 +2,7 @@ import { Box, Card, CardContent, Chip, Link, Stack, Typography } from '@mui/mate
 import { Link as RouterLink } from 'react-router-dom';
 import { useTheme } from '@mui/system';
 import React from 'react';
-import { Task, TaskCardPreview, wbsPipe } from 'shared';
+import { TaskHomeCard, wbsPipe } from 'shared';
 import { routes } from '../../../utils/routes';
 import { fullNamePipe } from '../../../utils/pipes';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
@@ -11,7 +11,7 @@ import { taskPriorityColor } from '../../../utils/task.utils';
 import { formatDateOnly } from 'shared';
 
 interface TeamTaskCardProps {
-  task: TaskCardPreview;
+  task: TaskHomeCard;
   taskNumber: number;
 }
 
@@ -54,7 +54,7 @@ const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ task, taskNumber }) => {
           <Stack spacing={1}>
             <Chip
               sx={{
-                background: taskPriorityColor({ priority: task.priority } as Task)
+                background: taskPriorityColor(task)
               }}
               label={task.priority}
               size="medium"
