@@ -99,13 +99,18 @@ export const EditBudgetModalForReason: React.FC<EditBudgetModalForReasonProps> =
     const payload: CreateBudgetChangeRequestPayload = {
       submitterId: user.userId,
       otherReasonId: currentCategoryId,
-      proposedBudget: data.updatedBudget,
+      proposedBudget: Math.round(data.updatedBudget * 100),
       type: ChangeRequestType.Budget
     };
 
-    await createBudgetChangeRequest(payload.submitterId, payload.proposedBudget, payload.otherReasonId, undefined);
-
-    handleClose();
+    try {
+      await createBudgetChangeRequest(payload.submitterId, payload.proposedBudget, payload.otherReasonId, undefined);
+      handleClose();
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
   };
 
   return (

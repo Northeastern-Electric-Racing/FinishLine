@@ -31,6 +31,7 @@ const CreditsPage: React.FC = () => {
       }
     },
     { name: 'Kevin Chen', color: '#00A36C' },
+    { name: 'Konstantinos Zeimbekis', color: '#a364b1' },
     { name: 'Ji-min Kim', color: '#7ae0c1' },
     { name: 'Zack Roth', color: '#4a6741', sx: { px: 1, backgroundColor: '#E8D8CC', borderRadius: 2 } },
     { name: 'Megan Liu', color: '#3d609e' },
@@ -380,7 +381,19 @@ const CreditsPage: React.FC = () => {
     { name: 'Jasper Pinkus', color: '#276221' },
     { name: 'Hamilton LaPides', color: '#55a50a' },
     { name: 'Sara Johnson', color: '#ffff99' },
+    { name: 'Lucas Nussbaum', color: '#135DF0' },
     { name: 'Abhishek Vijay', color: '#4287f5' },
+    { name: 'Kidus Desalegn', color: '#B027F5' },
+    { name: 'Naman Patel', color: '#27f5a9ff' },
+    {
+      name: 'Ethan Chen',
+      color: '#ffffff',
+      sx: {
+        background: 'linear-gradient(90deg, #9966CC, #8A2BE2, #BA55D3)',
+        borderRadius: '14px',
+        padding: '0 8px'
+      }
+    },
     { name: 'Kidus Desalegn', color: '#B027F5' },
     { name: 'John Frederick Harrison', color: 'transparent', 
       sx: {
