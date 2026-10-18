@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { userSelect } from './teams.query-args.js';
 
 /**
  * Minimal, select-based query args backing the MCP project endpoints.
@@ -43,8 +44,8 @@ export const getMcpProjectDetailQueryArgs = () =>
           carNumber: true,
           projectNumber: true,
           workPackageNumber: true,
-          lead: { select: { firstName: true, lastName: true } },
-          manager: { select: { firstName: true, lastName: true } },
+          lead: userSelect,
+          manager: userSelect,
           links: {
             where: { dateDeleted: null },
             select: { url: true, linkType: { select: { name: true } } }
