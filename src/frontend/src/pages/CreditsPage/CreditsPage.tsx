@@ -395,9 +395,12 @@ const CreditsPage: React.FC = () => {
       }
     },
     { name: 'Kidus Desalegn', color: '#B027F5' },
-    { name: 'John Frederick Harrison', color: 'transparent', 
+    {
+      name: 'John Frederick Harrison',
+      color: 'transparent',
       sx: {
-        background: 'linear-gradient(to right, #aaaaaa 20%, #dd5421 20%, #dd5421 41%, #aaaaaa 40%, #aaaaaa 62%, #dd5421 62%)',
+        background:
+          'linear-gradient(to right, #aaaaaa 20%, #dd5421 20%, #dd5421 41%, #aaaaaa 40%, #aaaaaa 62%, #dd5421 62%)',
         '-webkit-background-clip': 'text'
       }
     }
