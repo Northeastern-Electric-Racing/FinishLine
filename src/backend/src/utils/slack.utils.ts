@@ -12,7 +12,7 @@ import {
   Team as SharedTeam,
   TeamJoinRequest
 } from 'shared';
-import { Account_Code, Organization, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
+import { Account_Code, Organization, Reimbursement_Product_Other_Reason, Sponsor_Task, Team_Type } from '@prisma/client';
 import {
   editMessage,
   getChannelName,
@@ -983,4 +983,51 @@ export const notifySponsorTaskAssignee = async (
   const link = `https://finishlinebyner.com/finance/companies/sponsors`;
   const linkButtonText = `View Tasks for ${sponsor}`;
   await sendMessage(assignee.userSettings?.slackId, msg, link, linkButtonText);
+};
+
+/**
+ *
+ * Sends a message to team channels that are associated with the work package
+ * and notifies leads and manager in that message. This message is only sent
+ * if the work package is scheduled to start more days apart than the
+ * accepted threshold.
+ *
+ * @param teams The teams to notify
+ * @param leadId The work package's lead
+ * @param managerId The work package's manager
+ * @param startDate The planned starting date for the work package
+ * @param activationDate The actual starting date for the work package
+ * @param wbsString The wbs number as a string type
+ * @param name Name of the work package
+ */
+export const sendActivationStartDateChangedNotification = async (
+  teams: (Team & { teamType: Team_Type | null })[],
+  leadId: string = '',
+  managerId: string = '',
+  startDate: Date,
+  activationDate: Date,
+  wbsString: string,
+  name: string
+) => {
+  const leadIdPing = (await getUserSlackMentionOrName(leadId)) || '';
+  const managerIdPing = (await getUserSlackMentionOrName(managerId)) || '';
+
+  const activationDateString = activationDate.toDateString();
+  const startDateString = startDate.toDateString();
+
+  const message =
+    leadIdPing +
+    ' ' +
+    managerIdPing +
+    ' The start date for ' +
+    name +
+    ' has been changed from ' +
+    activationDateString +
+    ' to ' +
+    startDateString +
+    '.\n';
+  const link = `https://finishlinebyner.com/projects/${wbsString}`;
+  const linkButtonText = 'Change Work Package';
+
+  await Promise.all(teams?.map((team) => sendMessage(team.slackId, message, link, linkButtonText)) ?? []);
 };

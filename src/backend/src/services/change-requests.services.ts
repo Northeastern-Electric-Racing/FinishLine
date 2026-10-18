@@ -49,6 +49,7 @@ import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets
 import { buildChangeDetail } from '../utils/changes.utils.js';
 import {
   addSlackThreadsToChangeRequest,
+  sendActivationStartDateChangedNotification,
   sendAndGetSlackCRNotifications,
   sendSlackCRStatusToThread,
   sendSlackRequestedReviewNotification,
@@ -640,7 +641,16 @@ export default class ChangeRequestsService {
         new Date(startDate),
         organization.activationBufferDays
       );
-      if (inBuffer) {
+      if (!inBuffer && teams) {
+        await sendActivationStartDateChangedNotification(
+          teams,
+          leadId,
+          managerId,
+          new Date(startDate),
+          createdCR.wbsElement?.workPackage?.startDate,
+          wbsPipe(createdCR.wbsElement),
+          createdCR.wbsElement?.name
+        );
       }
     }
 
