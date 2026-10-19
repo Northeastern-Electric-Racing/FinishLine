@@ -10,9 +10,9 @@ import {
 import prisma from '../prisma/prisma.js';
 import { getBayDashboardConfigQueryArgs } from '../prisma-query-args/bay-dashboard.query-args.js';
 import { bayDashboardConfigTransformer } from '../transformers/bay-dashboard.transformer.js';
+import { widgetDetails } from '../utils/bay-dashboard.utils.js';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
-import { widgetDetails } from './bay-dashboard.services.js';
 
 // the slots the TV can render, keyed by position (0 = left large, 1 = right medium, 2 = right small).
 const SLOT_SIZE_BY_POSITION: Record<number, BayDashboardWidgetSize> = {

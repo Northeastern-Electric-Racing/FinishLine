@@ -8,7 +8,7 @@ import { BayDashboardWidgetProps, bayDashboardWidgetDisplayNames } from '../../.
 import { BayDashboardWidgetType } from 'shared';
 
 /**
- * Placeholder frame until the TextField widget is built, the real widget lays itself out by size.
+ * Placeholder frame until the TextField widget is built
  */
 const TextFieldWidget: React.FC<BayDashboardWidgetProps> = ({ size }) => {
   return <NERWidget size={size} title={bayDashboardWidgetDisplayNames[BayDashboardWidgetType.TEXT_FIELD]} />;

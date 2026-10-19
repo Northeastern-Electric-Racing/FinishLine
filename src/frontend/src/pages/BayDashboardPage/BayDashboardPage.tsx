@@ -34,6 +34,7 @@ const BayDashboardPage: React.FC = () => {
       }}
     >
       <Box sx={{ width: 'min(100vw, calc(100vh * 16 / 9))' }}>
+        {/* TODO: display the most recent saved config so the TV matches the Admin Tools preview, instead of the defaults */}
         <BayDashboardGrid slots={defaultBayDashboardSlots} />
       </Box>
     </Box>

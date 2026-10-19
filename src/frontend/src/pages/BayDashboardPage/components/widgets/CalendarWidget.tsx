@@ -8,7 +8,7 @@ import { BayDashboardWidgetProps, bayDashboardWidgetDisplayNames } from '../../.
 import { BayDashboardWidgetType } from 'shared';
 
 /**
- * Placeholder frame until the Calendar widget is built, the real widget lays itself out by size.
+ * Placeholder frame until the Calendar widget is built
  */
 const CalendarWidget: React.FC<BayDashboardWidgetProps> = ({ size }) => {
   return <NERWidget size={size} title={bayDashboardWidgetDisplayNames[BayDashboardWidgetType.CALENDAR]} />;

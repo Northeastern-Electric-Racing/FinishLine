@@ -8,7 +8,7 @@ import { BayDashboardWidgetProps, bayDashboardWidgetDisplayNames } from '../../.
 import { BayDashboardWidgetType } from 'shared';
 
 /**
- * Placeholder frame until the OverdueWorkPackages widget is built, the real widget lays itself out by size.
+ * Placeholder frame until the OverdueWorkPackages widget is built
  */
 const OverdueWorkPackagesWidget: React.FC<BayDashboardWidgetProps> = ({ size }) => {
   return <NERWidget size={size} title={bayDashboardWidgetDisplayNames[BayDashboardWidgetType.OVERDUE_WORK_PACKAGES]} />;

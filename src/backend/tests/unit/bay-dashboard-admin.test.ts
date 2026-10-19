@@ -118,6 +118,21 @@ describe('Bay Dashboard Admin Tests', () => {
       expect(activeConfigs[0].bayDashboardConfigId).toBe(newConfig.bayDashboardConfigId);
     });
 
+    it('fails when a widget is placed in a size it does not support', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      await expect(
+        BayDashboardAdminService.saveBayDashboardConfig(head, organization, [
+          { position: 2, size: BayDashboardWidgetSize.SMALL, widget: { type: BayDashboardWidgetType.CALENDAR } }
+        ])
+      ).rejects.toThrow(
+        new HttpException(
+          400,
+          `Slot position 2: ${BayDashboardWidgetType.CALENDAR} widgets can't be ${BayDashboardWidgetSize.SMALL}`
+        )
+      );
+    });
+
     it('keeps the previous config active when the new config fails to save', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
