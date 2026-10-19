@@ -8,11 +8,7 @@ import { SystemStyleObject } from '@mui/system';
 import { useState } from 'react';
 import { NERButton } from '../../../components/NERButton';
 import { useGetCurrentBayDashboardConfig, useSaveBayDashboardConfig } from '../../../hooks/bay-dashboard.hooks';
-import {
-  applyWidgetSelection,
-  BayDashboardWidgetSelection,
-  toSlotCreateArgs
-} from '../../../utils/bay-dashboard.utils';
+import { applyWidgetSelection, BayDashboardWidgetSelection, toSlotCreateArgs } from '../../../utils/bay-dashboard.utils';
 import PreviewDashboard from './PreviewDashboard';
 import WidgetSelection from './WidgetSelection';
 

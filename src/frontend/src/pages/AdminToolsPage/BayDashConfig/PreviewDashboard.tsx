@@ -29,7 +29,7 @@ const PreviewDashboard: React.FC<PreviewDashboardProps> = ({ selection }) => {
   if (isLoading || config === undefined) return <LoadingIndicator />;
 
   return (
-    <Box sx={{ border: '3px solid white' }}>
+    <Box sx={{ border: '2px solid white', borderRadius: '4px' }}>
       <BayDashboardGrid slots={applyWidgetSelection(config?.slots ?? defaultBayDashboardSlots, selection)} />
     </Box>
   );
