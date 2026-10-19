@@ -3,7 +3,7 @@ import { createTestOrganization, createTestUser, resetUsers } from '../test-util
 import { greenlanternHead, member } from '../test-data/users.test-data.js';
 import { BayDashboardSlotCreateArgs, BayDashboardWidgetSize, BayDashboardWidgetType } from 'shared';
 import BayDashboardAdminService from '../../src/services/bay-dashboard-admin.services.js';
-import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils.js';
+import { AccessDeniedException, DeletedException, HttpException } from '../../src/utils/errors.utils.js';
 import prisma from '../../src/prisma/prisma.js';
 
 // the size the TV lays out at each position
@@ -260,6 +260,57 @@ describe('Bay Dashboard Admin Tests', () => {
       expect(countdown.name).toBe('FHE');
       expect(countdown.startDate).toEqual(new Date('2025-04-26'));
       expect(countdown.endDate).toEqual(new Date('2026-04-26'));
+    });
+  });
+
+  describe('Delete Bay Dashboard Countdown', () => {
+    it('fails if user is not a head', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+      const regularMember = await createTestUser(member, orgId);
+
+      await expect(
+        BayDashboardAdminService.deleteBayDashboardCountdown(regularMember, countdown.bayDashboardCountdownId, organization)
+      ).rejects.toThrow(new AccessDeniedException('Only heads and above are allowed to delete bay dashboard countdowns'));
+    });
+
+    it('soft deletes a countdown for a head', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+
+      await BayDashboardAdminService.deleteBayDashboardCountdown(head, countdown.bayDashboardCountdownId, organization);
+
+      const deleted = await prisma.bay_Dashboard_Countdown.findUnique({
+        where: { bayDashboardCountdownId: countdown.bayDashboardCountdownId }
+      });
+      expect(deleted?.dateDeleted).not.toBeNull();
+      expect(deleted?.userDeletedId).toBe(head.userId);
+    });
+
+    it('fails if the countdown is already deleted', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+
+      await BayDashboardAdminService.deleteBayDashboardCountdown(head, countdown.bayDashboardCountdownId, organization);
+
+      await expect(
+        BayDashboardAdminService.deleteBayDashboardCountdown(head, countdown.bayDashboardCountdownId, organization)
+      ).rejects.toThrow(new DeletedException('Bay Dashboard Countdown', countdown.bayDashboardCountdownId));
     });
   });
 });
