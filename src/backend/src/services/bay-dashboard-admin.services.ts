@@ -162,6 +162,10 @@ export default class BayDashboardAdminService {
       throw new AccessDeniedException('Only heads and above can create bay dashboard countdowns');
     }
 
+    if (endDate && endDate <= startDate) {
+      throw new HttpException(400, 'End date must be after start date');
+    }
+
     const countdown = await prisma.bay_Dashboard_Countdown.create({
       data: {
         name,

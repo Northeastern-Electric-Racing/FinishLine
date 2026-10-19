@@ -261,5 +261,19 @@ describe('Bay Dashboard Admin Tests', () => {
       expect(countdown.startDate).toEqual(new Date('2025-04-26'));
       expect(countdown.endDate).toEqual(new Date('2026-04-26'));
     });
+
+    it('fails if end date is not after start date', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      await expect(
+        BayDashboardAdminService.createBayDashboardCountdown(
+          head,
+          organization,
+          'FHE',
+          new Date('2026-04-26'),
+          new Date('2025-04-26')
+        )
+      ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
+    });
   });
 });
