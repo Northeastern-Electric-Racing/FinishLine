@@ -4,7 +4,7 @@
  */
 
 import { fullNamePipe, datePipe, wbsPipe } from '../../../../utils/pipes';
-import { Task, TaskStatus, WbsNumber } from 'shared';
+import { TaskBoardItem, TaskStatus, WbsNumber } from 'shared';
 import { Box, Button, Chip, Grid, IconButton, Link, Tooltip, Typography } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Link as RouterLink } from 'react-router-dom';
@@ -15,7 +15,7 @@ import NERModal from '../../../../components/NERModal';
 import { useToast } from '../../../../hooks/toasts.hooks';
 
 interface TaskModalProps {
-  task: Task;
+  task: TaskBoardItem;
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;

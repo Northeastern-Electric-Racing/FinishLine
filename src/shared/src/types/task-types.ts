@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { UserPreviewWithEmail } from './user-types.js';
+import { BaseUser, UserPreviewWithEmail } from './user-types.js';
 import { WbsNumber } from './project-types.js';
 
 export enum TaskPriority {
@@ -18,6 +18,46 @@ export enum TaskStatus {
   DONE = 'DONE'
 }
 
+/** The minimum every consumer of a task needs; slim enough to appear in any list. Extend it, don't grow it. */
+export interface BaseTask {
+  taskId: string;
+  wbsNum: WbsNumber;
+  title: string;
+  notes: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  deadline?: Date;
+  // a task only ever has a handful of each, so these stay cheap even in long lists
+  assignees: BaseUser[];
+  labels: TaskLabel[];
+}
+
+/** Kanban boards (project, work package, and global tasks pages) and the calendar. Also what the board gets back from create and assignee edits */
+export interface TaskBoardItem extends BaseTask {
+  startDate?: Date;
+  wbsName: string;
+  // the calendar's delete permission check reads createdBy.userId
+  createdBy: BaseUser;
+  blockedBy: TaskBlockerPreview[];
+  blockedByWorkPackages: BlockingWorkPackagePreview[];
+  // the lead and manager of the task's own wbs element, for the calendar's delete permission check
+  projectLeadId?: string;
+  projectManagerId?: string;
+}
+
+/** One page of a single status column on the global tasks board */
+export interface TaskBoardItemPage {
+  tasks: TaskBoardItem[];
+  // where the next page starts, or undefined when this is the last page
+  nextOffset?: number;
+}
+
+/** My Tasks and My Team's Overdue Tasks on the home page */
+export interface TaskHomeCard extends BaseTask {
+  projectName: string;
+}
+
+/** @deprecated Use BaseTask or a per-endpoint model. Still used by project-types.ts (Project.tasks, ProjectGantt.tasks) until projects is refactored */
 export interface Task {
   taskId: string;
   wbsNum: WbsNumber;
@@ -38,27 +78,17 @@ export interface Task {
   blockedByWorkPackages: BlockingWorkPackagePreview[];
 }
 
-export type TaskBlockerPreview = {
-  taskId: string;
-  title: string;
-  status: TaskStatus;
-};
+// never give this a wbsNum: TaskCard tells blocking tasks from blocking work packages with `'wbsNum' in blocker`
+export type TaskBlockerPreview = Pick<BaseTask, 'taskId' | 'title' | 'status'>;
 
 export type BlockingWorkPackagePreview = {
   wbsNum: WbsNumber;
   name: string;
 };
 
-export type TaskCardPreview = Pick<Task, 'taskId' | 'title' | 'deadline' | 'priority' | 'wbsNum'> & {
-  assignees: { userId: string; firstName: string; lastName: string }[];
-  projectName: string;
-};
-
-export interface TaskWithIndex extends Task {
+export interface TaskWithIndex extends TaskBoardItem {
   index: number;
 }
-
-export type TaskPreview = Pick<Task, 'taskId' | 'title' | 'notes' | 'dateCreated' | 'deadline' | 'priority' | 'status'>;
 
 export interface FilterTaskArgs {
   memberIds?: string[];
@@ -78,12 +108,6 @@ export interface FilterTaskArgs {
   // tasks page sets this. When false/undefined the legacy calendar behavior is kept: memberIds/teamIds
   // are OR'd together and memberIds also matches the task creator.
   andMemberTeam?: boolean;
-}
-
-// Need lead and manager in order to determine permissions for editing and deleting tasks in the calendar view
-export interface CalendarTask extends Task {
-  projectLeadId?: string;
-  projectManagerId?: string;
 }
 
 export interface TaskLabel {

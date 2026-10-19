@@ -16,7 +16,8 @@ import {
   BusySlots,
   IcsBusyInterval,
   MemberDropdownItem,
-  isValidSlackUserIdFormat
+  isValidSlackUserIdFormat,
+  TaskHomeCard
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { getMemberDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
@@ -34,8 +35,8 @@ import { getUserRole, updateUserAvailability } from '../utils/users.utils.js';
 import { getUserQueryArgs, getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args.js';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer.js';
-import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
-import taskTransformer from '../transformers/tasks.transformer.js';
+import { getTaskHomeCardQueryArgs } from '../prisma-query-args/tasks.query-args.js';
+import { taskHomeCardTransformer } from '../transformers/tasks.transformer.js';
 import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
 import { encrypt, decrypt } from '../utils/encryption.utils.js';
 
@@ -597,34 +598,22 @@ export default class UsersService {
    * @param organization the user's organization
    * @returns a list of the user's assigned tasks
    */
-  static async getUserTasks(userId: string, organization: Organization) {
+  static async getUserTasks(userId: string, organization: Organization): Promise<TaskHomeCard[]> {
     const requestedUser = await prisma.user.findUnique({
       where: { userId },
-      include: {
-        assignedTasks: { where: { dateDeleted: null }, ...getTaskQueryArgs() },
-        organizations: true
+      select: {
+        assignedTasks: {
+          where: { dateDeleted: null, wbsElement: { organizationId: organization.organizationId, dateDeleted: null } },
+          ...getTaskHomeCardQueryArgs()
+        },
+        organizations: { select: { organizationId: true } }
       }
     });
     if (!requestedUser) throw new NotFoundException('User', userId);
     if (!requestedUser.organizations.map((org) => org.organizationId).includes(organization.organizationId))
       throw new HttpException(400, `User ${userId} is not apart of the current organization`);
 
-    return requestedUser.assignedTasks.map(taskTransformer);
-  }
-
-  /**
-   * Get all tasks from a list of userIds
-   * @param userIds list of users to get the tasks from
-   * @param organization the users' organization
-   * @returns a list of tasks of the given users
-   */
-  static async getManyUserTasks(userIds: string[], organization: Organization) {
-    const tasksPromises = userIds.map(async (userId) => {
-      return UsersService.getUserTasks(userId, organization);
-    });
-
-    const resolvedTasks = await Promise.all(tasksPromises);
-    return resolvedTasks.flat();
+    return requestedUser.assignedTasks.map(taskHomeCardTransformer);
   }
 
   /**

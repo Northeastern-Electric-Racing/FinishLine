@@ -2,7 +2,7 @@ import { Draggable } from '@hello-pangea/dnd';
 import { Construction, Folder, Delete, Schedule } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Grid, Typography, IconButton } from '@mui/material';
 import { useState } from 'react';
-import { notGuest, Task, TaskStatus, WbsNumber } from 'shared';
+import { notGuest, TaskBoardItem, TaskStatus, WbsNumber } from 'shared';
 import { useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
@@ -35,7 +35,7 @@ export const TaskCard = ({
   onDeleteTask,
   onEditTask
 }: {
-  task: Task;
+  task: TaskBoardItem;
   index: number;
   wbsNum?: WbsNumber;
   // the board this card lives on, forwarded to the modal so the edit form knows whether it's WP-scoped
@@ -43,7 +43,7 @@ export const TaskCard = ({
   // shows the owning project's name on the card (used only on the global board, where tasks span projects)
   showProjectName?: boolean;
   onDeleteTask: (taskId: string) => void;
-  onEditTask: (task: Task) => void;
+  onEditTask: (task: TaskBoardItem) => void;
 }) => {
   const { mutateAsync: deleteTask } = useDeleteTask();
   const { mutateAsync: editTask } = useEditTask();

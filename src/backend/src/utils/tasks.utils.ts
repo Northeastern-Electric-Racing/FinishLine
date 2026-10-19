@@ -1,5 +1,5 @@
 import { Task_Priority, Task_Status } from '@prisma/client';
-import { Task, TaskPriority, TaskStatus } from 'shared';
+import { BaseTask, TaskPriority, TaskStatus } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { sendSlackTaskAssignedNotification } from './slack.utils.js';
 import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
@@ -27,7 +27,10 @@ export const convertTaskStatus = (status: Task_Status): TaskStatus =>
 export const validateTaskLabels = async (labelIds: string[], organizationId: string): Promise<void> => {
   if (labelIds.length === 0) return;
 
-  const labels = await prisma.task_Label.findMany({ where: { taskLabelId: { in: labelIds } } });
+  const labels = await prisma.task_Label.findMany({
+    where: { taskLabelId: { in: labelIds } },
+    select: { taskLabelId: true, dateDeleted: true, organizationId: true }
+  });
 
   const foundIds = labels.map((l) => l.taskLabelId);
   const missingIds = labelIds.filter((id) => !foundIds.includes(id));
@@ -84,7 +87,13 @@ export const validateTaskBlockedBys = async (blockedByIds: string[], organizatio
 
   const blockedByTasks = await prisma.task.findMany({
     where: { taskId: { in: blockedByIds } },
-    include: { wbsElement: true }
+    select: {
+      taskId: true,
+      title: true,
+      status: true,
+      dateDeleted: true,
+      wbsElement: { select: { organizationId: true } }
+    }
   });
 
   const foundIds = blockedByTasks.map((t) => t.taskId);
@@ -111,7 +120,7 @@ export const validateTaskBlockedBys = async (blockedByIds: string[], organizatio
  * @param orgainzationId the organization id of the current user
  */
 export const sendSlackTaskAssignedNotificationToUsers = async (
-  task: Task,
+  task: Pick<BaseTask, 'wbsNum' | 'title'>,
   assigneeIds: string[],
   orgainzationId: string
 ) => {
