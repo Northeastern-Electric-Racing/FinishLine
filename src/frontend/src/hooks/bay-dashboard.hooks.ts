@@ -51,7 +51,7 @@ export const useSaveBayDashboardConfig = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['bay-dashboard']);
-        toast.success('Bay dashboard saved!');
+        toast.success('Successfully saved widget selections. The TV display has been updated.');
       },
       onError: (error) => {
         toast.error(error.message);

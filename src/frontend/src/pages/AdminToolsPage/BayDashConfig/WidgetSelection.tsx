@@ -3,10 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { BayDashboardWidgetSize, BayDashboardWidgetType } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAvailableBayDashboardWidgets } from '../../../hooks/bay-dashboard.hooks';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
-import { BayDashboardWidgetSelection, bayDashboardWidgetSizes } from '../../../utils/bay-dashboard.utils';
+import { useToast } from '../../../hooks/toasts.hooks';
+import {
+  BayDashboardWidgetSelection,
+  bayDashboardWidgetDisplayNames,
+  bayDashboardWidgetSizes
+} from '../../../utils/bay-dashboard.utils';
 import ErrorPage from '../../ErrorPage';
 import WidgetSizeDropdown from './WidgetSizeDropdown';
 
@@ -22,6 +28,19 @@ interface WidgetSelectionViewProps extends WidgetSelectionProps {
 
 const WidgetSelectionView: React.FC<WidgetSelectionViewProps> = ({ slug, selection, onSelectionChange }) => {
   const { data: availableWidgets, isLoading, isError, error } = useAvailableBayDashboardWidgets(slug);
+  const toast = useToast();
+
+  const handleSelect = (size: BayDashboardWidgetSize, type: BayDashboardWidgetType) => {
+    const widgetName = bayDashboardWidgetDisplayNames[type];
+    const sizeName = size.toLowerCase();
+    if (selection[size] === type) {
+      onSelectionChange({ ...selection, [size]: undefined });
+      toast.success(`Removed ${sizeName} ${widgetName} widget`);
+    } else {
+      onSelectionChange({ ...selection, [size]: type });
+      toast.success(`Added ${sizeName} ${widgetName} widget`);
+    }
+  };
 
   if (isError) return <ErrorPage message={error.message} />;
   if (isLoading || !availableWidgets) return <LoadingIndicator />;
@@ -34,7 +53,7 @@ const WidgetSelectionView: React.FC<WidgetSelectionViewProps> = ({ slug, selecti
           title={size.charAt(0) + size.slice(1).toLowerCase()}
           widgets={availableWidgets.widgets.filter((widget) => widget.sizes.includes(size))}
           selectedType={selection[size]}
-          onSelect={(type) => onSelectionChange({ ...selection, [size]: selection[size] === type ? undefined : type })}
+          onSelect={(type) => handleSelect(size, type)}
         />
       ))}
     </>
