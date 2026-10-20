@@ -38,5 +38,6 @@ export const sharedChangeRequest: SharedChangeRequest = {
   type: ChangeRequestType.Leadership,
   status: ChangeRequestStatus.Open,
   requestedReviewers: [],
-  identifier: 1
+  identifier: 1,
+  triageScore: 0
 };
