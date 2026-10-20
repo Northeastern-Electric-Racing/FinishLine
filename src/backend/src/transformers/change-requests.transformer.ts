@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { CR_Type, Prisma } from '@prisma/client';
 import {
   ChangeRequest,
   StandardChangeRequest,
@@ -29,6 +29,7 @@ import {
 } from '../prisma-query-args/change-requests.query-args.js';
 import { accountCodeTransformer, otherProductReasonTransformer } from './reimbursement-requests.transformer.js';
 import { GuestChangeRequest } from '../../../shared/src/types/change-request-types.js';
+import { computeTriageScore, TriageScoreInput } from '../utils/triage-score.utils.js';
 
 const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>
@@ -69,6 +70,36 @@ const workPackageProposedChangesTransformer = (
     blockedBy: workPackageProposedChanges.blockedBy.map(wbsNumOf),
     descriptionBullets: wbsProposedChanges.proposedDescriptionBulletChanges.map(descBulletConverter),
     stage: (workPackageProposedChanges.stage as WorkPackageStage) || undefined
+  };
+};
+
+const triageScoreInputOf = (changeRequest: {
+  type: CR_Type;
+  snapshotBlockingCount: number | null;
+  snapshotStartDate: Date | null;
+  budgetChangeRequest: { proposedBudget: number } | null;
+  accountCode: { amount: number | null } | null;
+  category: { budget: number } | null;
+  activationChangeRequest: { startDate: Date } | null;
+}): TriageScoreInput => {
+  const currentBudget = changeRequest.accountCode?.amount ?? changeRequest.category?.budget ?? undefined;
+  const proposedBudget = changeRequest.budgetChangeRequest?.proposedBudget;
+
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const timelineChangeInDays =
+    changeRequest.activationChangeRequest && changeRequest.snapshotStartDate
+      ? Math.round(
+          (changeRequest.activationChangeRequest.startDate.getTime() - changeRequest.snapshotStartDate.getTime()) / msPerDay
+        )
+      : 0;
+
+  return {
+    type: changeRequest.type,
+    blockingCount: changeRequest.snapshotBlockingCount ?? 0,
+    timelineChangeInDays,
+    ...(proposedBudget !== undefined && currentBudget !== undefined
+      ? { budgetChange: { proposed: proposedBudget, current: currentBudget } }
+      : {})
   };
 };
 
@@ -124,7 +155,8 @@ export const changeRequestManyTransformer = (
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
     requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? [],
     // budget cr fields
-    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined
+    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined,
+    triageScore: computeTriageScore(triageScoreInputOf(changeRequest))
   };
 };
 
@@ -200,7 +232,8 @@ const changeRequestTransformer = (
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
     requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? [],
     // budget cr fields
-    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined
+    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined,
+    triageScore: computeTriageScore(triageScoreInputOf(changeRequest))
   };
 };
 
