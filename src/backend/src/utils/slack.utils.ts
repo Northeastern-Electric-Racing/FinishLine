@@ -12,7 +12,7 @@ import {
   Team as SharedTeam,
   TeamJoinRequest
 } from 'shared';
-import { Account_Code, Organization, Reimbursement_Product_Other_Reason, Sponsor_Task, Team_Type } from '@prisma/client';
+import { Account_Code, Organization, Reimbursement_Product_Other_Reason, Sponsor_Task } from '@prisma/client';
 import {
   editMessage,
   getChannelName,
@@ -1028,7 +1028,6 @@ export const sendActivationStartDateChangedNotification = async (
     '.\n';
   const link = `https://finishlinebyner.com/projects/${wbsString}`;
   const linkButtonText = 'Change Work Package';
-  console.log({ oldStartDateString, newStartDateString, message });
 
   await Promise.all(teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText)));
 };
