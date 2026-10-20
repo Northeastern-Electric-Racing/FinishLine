@@ -1,7 +1,14 @@
 import express from 'express';
 import { body } from 'express-validator';
 import BayDashboardAdminController from '../controllers/bay-dashboard-admin.controllers.js';
-import { intMinZero, isBayDashboardWidgetSize, validateInputs } from '../utils/validation.utils.js';
+import {
+  intMinZero,
+  isBayDashboardWidgetSize,
+  isDate,
+  isOptionalDate,
+  nonEmptyString,
+  validateInputs
+} from '../utils/validation.utils.js';
 
 /**
  * Authenticated bay dashboard routes, used by the Admin Tools to read and edit what the TV displays.
@@ -20,6 +27,15 @@ bayDashboardAdminRouter.post(
   body('slots.*.widget.text').optional({ nullable: true }).isString(),
   validateInputs,
   BayDashboardAdminController.saveBayDashboardConfig
+);
+
+bayDashboardAdminRouter.post(
+  '/admin/countdown/create',
+  nonEmptyString(body('name')),
+  isDate(body('startDate')),
+  isOptionalDate(body('endDate')),
+  validateInputs,
+  BayDashboardAdminController.createBayDashboardCountdown
 );
 
 export default bayDashboardAdminRouter;

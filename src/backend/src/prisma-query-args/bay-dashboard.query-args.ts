@@ -6,6 +6,8 @@ export type BayDashboardSlotQueryArgs = ReturnType<typeof getBayDashboardSlotQue
 
 export type BayDashboardConfigQueryArgs = ReturnType<typeof getBayDashboardConfigQueryArgs>;
 
+export type BayDashboardCountdownQueryArgs = ReturnType<typeof getBayDashboardCountdownQueryArgs>;
+
 export const getBayDashboardWidgetQueryArgs = () =>
   Prisma.validator<Prisma.Bay_Dashboard_WidgetDefaultArgs>()({
     select: {
@@ -33,5 +35,15 @@ export const getBayDashboardConfigQueryArgs = () =>
       bayDashboardConfigId: true,
       dateCreated: true,
       slots: { orderBy: { position: 'asc' }, ...getBayDashboardSlotQueryArgs() }
+    }
+  });
+
+export const getBayDashboardCountdownQueryArgs = () =>
+  Prisma.validator<Prisma.Bay_Dashboard_CountdownDefaultArgs>()({
+    select: {
+      bayDashboardCountdownId: true,
+      name: true,
+      startDate: true,
+      endDate: true
     }
   });

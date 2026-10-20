@@ -47,6 +47,13 @@ export interface BayDashboardConfig {
   slots: BayDashboardSlot[];
 }
 
+export interface BayDashboardCountdown {
+  bayDashboardCountdownId: string;
+  name: string;
+  startDate: Date;
+  endDate?: Date;
+}
+
 /**
  * A widget type that can be placed on a bay dashboard, along with the sizes it supports.
  */
