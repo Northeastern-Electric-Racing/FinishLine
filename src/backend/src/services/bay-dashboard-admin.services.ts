@@ -10,6 +10,7 @@ import {
 import prisma from '../prisma/prisma.js';
 import { getBayDashboardConfigQueryArgs } from '../prisma-query-args/bay-dashboard.query-args.js';
 import { bayDashboardConfigTransformer } from '../transformers/bay-dashboard.transformer.js';
+import { widgetDetails } from '../utils/bay-dashboard.utils.js';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
 
@@ -79,6 +80,10 @@ export default class BayDashboardAdminService {
       if (slot.widget) {
         if (!Object.values(BayDashboardWidgetType).includes(slot.widget.type)) {
           throw new HttpException(400, `Slot position ${slot.position}: ${slot.widget.type} is not a valid widget type`);
+        }
+
+        if (!widgetDetails[slot.widget.type].sizes.includes(slot.size)) {
+          throw new HttpException(400, `Slot position ${slot.position}: ${slot.widget.type} widgets can't be ${slot.size}`);
         }
 
         // only text field widgets carry text
