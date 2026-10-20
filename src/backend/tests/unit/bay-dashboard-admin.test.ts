@@ -118,6 +118,21 @@ describe('Bay Dashboard Admin Tests', () => {
       expect(activeConfigs[0].bayDashboardConfigId).toBe(newConfig.bayDashboardConfigId);
     });
 
+    it('fails when a widget is placed in a size it does not support', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      await expect(
+        BayDashboardAdminService.saveBayDashboardConfig(head, organization, [
+          { position: 2, size: BayDashboardWidgetSize.SMALL, widget: { type: BayDashboardWidgetType.CALENDAR } }
+        ])
+      ).rejects.toThrow(
+        new HttpException(
+          400,
+          `Slot position 2: ${BayDashboardWidgetType.CALENDAR} widgets can't be ${BayDashboardWidgetSize.SMALL}`
+        )
+      );
+    });
+
     it('keeps the previous config active when the new config fails to save', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
 
@@ -219,6 +234,61 @@ describe('Bay Dashboard Admin Tests', () => {
       });
       expect(activeConfigs).toHaveLength(1);
       expect(activeConfigs[0].bayDashboardConfigId).toBe(oldConfig.bayDashboardConfigId);
+    });
+  });
+
+  describe('Create Bay Dashboard Countdown', () => {
+    it('fails if user is not a head', async () => {
+      const regularMember = await createTestUser(member, orgId);
+
+      await expect(
+        BayDashboardAdminService.createBayDashboardCountdown(regularMember, organization, 'FHE', new Date('2025-04-26'))
+      ).rejects.toThrow(new AccessDeniedException('Only heads and above can create bay dashboard countdowns'));
+    });
+
+    it('creates a countdown without an end date', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'Days Since Last Bay Clean Up',
+        new Date('2026-03-07')
+      );
+
+      expect(countdown.name).toBe('Days Since Last Bay Clean Up');
+      expect(countdown.startDate).toEqual(new Date('2026-03-07'));
+      expect(countdown.endDate).toBeUndefined();
+    });
+
+    it('creates a countdown with an end date', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26'),
+        new Date('2026-04-26')
+      );
+
+      expect(countdown.name).toBe('FHE');
+      expect(countdown.startDate).toEqual(new Date('2025-04-26'));
+      expect(countdown.endDate).toEqual(new Date('2026-04-26'));
+    });
+
+    it('fails if end date is not after start date', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      await expect(
+        BayDashboardAdminService.createBayDashboardCountdown(
+          head,
+          organization,
+          'FHE',
+          new Date('2026-04-26'),
+          new Date('2025-04-26')
+        )
+      ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
     });
   });
 });

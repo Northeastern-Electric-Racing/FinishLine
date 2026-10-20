@@ -27,4 +27,22 @@ export default class BayDashboardAdminController {
       next(error);
     }
   }
+
+  static async createBayDashboardCountdown(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, startDate, endDate } = req.body;
+      const { currentUser, organization } = req;
+
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        currentUser,
+        organization,
+        name,
+        new Date(startDate),
+        endDate ? new Date(endDate) : undefined
+      );
+      res.status(201).json(countdown);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

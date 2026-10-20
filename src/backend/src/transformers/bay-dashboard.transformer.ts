@@ -5,6 +5,7 @@ import {
 } from '@prisma/client';
 import {
   BayDashboardConfig,
+  BayDashboardCountdown,
   BayDashboardSlot,
   BayDashboardWidget,
   BayDashboardWidgetSize,
@@ -12,6 +13,7 @@ import {
 } from 'shared';
 import {
   BayDashboardConfigQueryArgs,
+  BayDashboardCountdownQueryArgs,
   BayDashboardSlotQueryArgs,
   BayDashboardWidgetQueryArgs
 } from '../prisma-query-args/bay-dashboard.query-args.js';
@@ -68,5 +70,16 @@ export const bayDashboardConfigTransformer = (
     bayDashboardConfigId: config.bayDashboardConfigId,
     dateCreated: config.dateCreated,
     slots: config.slots.map(bayDashboardSlotTransformer)
+  };
+};
+
+export const bayDashboardCountdownTransformer = (
+  countdown: Prisma.Bay_Dashboard_CountdownGetPayload<BayDashboardCountdownQueryArgs>
+): BayDashboardCountdown => {
+  return {
+    bayDashboardCountdownId: countdown.bayDashboardCountdownId,
+    name: countdown.name,
+    startDate: countdown.startDate,
+    endDate: countdown.endDate ?? undefined
   };
 };

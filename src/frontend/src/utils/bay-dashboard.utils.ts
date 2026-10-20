@@ -3,7 +3,18 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { BayDashboardSlot, BayDashboardSlotCreateArgs, BayDashboardWidgetSize, BayDashboardWidgetType } from 'shared';
+import {
+  BayDashboardSlot,
+  BayDashboardSlotCreateArgs,
+  BayDashboardWidget,
+  BayDashboardWidgetSize,
+  BayDashboardWidgetType
+} from 'shared';
+
+export interface BayDashboardWidgetProps {
+  size: BayDashboardWidgetSize;
+  widget: BayDashboardWidget;
+}
 
 export const bayDashboardWidgetDisplayNames: Record<BayDashboardWidgetType, string> = {
   [BayDashboardWidgetType.CALENDAR]: 'Calendar',
@@ -19,13 +30,20 @@ export const bayDashboardWidgetDisplayNames: Record<BayDashboardWidgetType, stri
 export const bayDashboardWidgetSizes = [
   BayDashboardWidgetSize.LARGE,
   BayDashboardWidgetSize.MEDIUM,
-  BayDashboardWidgetSize.SMALL
+  BayDashboardWidgetSize.LARGE
 ];
 
 const slotPositions: Record<BayDashboardWidgetSize, number> = {
   [BayDashboardWidgetSize.LARGE]: 0,
   [BayDashboardWidgetSize.MEDIUM]: 1,
   [BayDashboardWidgetSize.SMALL]: 2
+};
+
+export const WIDGET_WIDTH = 900;
+export const widgetHeights: Record<BayDashboardWidgetSize, number> = {
+  [BayDashboardWidgetSize.LARGE]: 900,
+  [BayDashboardWidgetSize.MEDIUM]: 270,
+  [BayDashboardWidgetSize.SMALL]: 170
 };
 
 const defaultSlot = (size: BayDashboardWidgetSize, type: BayDashboardWidgetType): BayDashboardSlot => ({

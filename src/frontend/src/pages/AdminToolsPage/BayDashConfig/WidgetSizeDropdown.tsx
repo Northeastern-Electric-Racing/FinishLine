@@ -3,13 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Accordion, AccordionDetails, AccordionSummary, ButtonBase, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, ButtonBase, Typography } from '@mui/material';
 import { AddCircle, ExpandMore, RemoveCircle } from '@mui/icons-material';
 import { useState } from 'react';
-import { AvailableBayDashboardWidget, BayDashboardWidgetType } from 'shared';
+import { AvailableBayDashboardWidget, BayDashboardWidgetSize, BayDashboardWidgetType } from 'shared';
+import BayDashboardWidgetView from '../../BayDashboardPage/components/widgets/BayDashboardWidgetView';
 
 interface WidgetSizeDropdownProps {
-  title: string;
+  size: BayDashboardWidgetSize;
   widgets: AvailableBayDashboardWidget[];
   selectedType?: BayDashboardWidgetType;
   onSelect: (type: BayDashboardWidgetType) => void;
@@ -19,7 +20,7 @@ interface WidgetSizeDropdownProps {
  * A collapsible dropdown listing the widgets available for one widget size.
  * Clicking a widget selects it, and only one widget is highlighted at a time (until phase 3 widget rotations)
  */
-const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title, widgets, selectedType, onSelect }) => {
+const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ size, widgets, selectedType, onSelect }) => {
   const [expanded, setExpanded] = useState(true);
 
   return (
@@ -43,7 +44,7 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title, widgets,
         }}
       >
         <Typography variant="h6" pl={1}>
-          {title}
+          {size.charAt(0) + size.slice(1).toLowerCase()}
         </Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2, px: 2 }}>
@@ -72,7 +73,12 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title, widgets,
               ) : (
                 <AddCircle fontSize="small" sx={{ position: 'absolute', top: -11, left: -11, color: 'white' }} />
               )}
-              <Typography>{widget.displayName}</Typography>
+              <Box>
+                <BayDashboardWidgetView
+                  size={size}
+                  widget={{ bayDashboardWidgetId: `sample-${size}-${widget.type}`, type: widget.type, order: 0 }}
+                />
+              </Box>
             </ButtonBase>
           ))
         )}
