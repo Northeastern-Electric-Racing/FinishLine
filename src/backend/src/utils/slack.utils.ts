@@ -995,8 +995,8 @@ export const notifySponsorTaskAssignee = async (
  * @param teams The teams to notify
  * @param leadId The work package's lead
  * @param managerId The work package's manager
- * @param startDate The planned starting date for the work package
- * @param activationDate The actual starting date for the work package
+ * @param newStartDate The new planned starting date for the work package
+ * @param oldStartDate The previous planned starting date for the work package
  * @param wbsString The wbs number as a string type
  * @param name Name of the work package
  */
@@ -1004,16 +1004,16 @@ export const sendActivationStartDateChangedNotification = async (
   teams: Pick<Team, 'slackId'>[],
   leadId: string = '',
   managerId: string = '',
-  startDate: Date,
-  activationDate: Date,
+  newStartDate: Date,
+  oldStartDate: Date,
   wbsString: string,
   name: string
 ) => {
   const leadIdPing = (await getUserSlackMentionOrName(leadId)) || '';
   const managerIdPing = (await getUserSlackMentionOrName(managerId)) || '';
 
-  const activationDateString = activationDate.toDateString();
-  const startDateString = startDate.toDateString();
+  const newStartDateString = newStartDate.toDateString();
+  const oldStartDateString = oldStartDate.toDateString();
 
   const message =
     leadIdPing +
@@ -1022,12 +1022,13 @@ export const sendActivationStartDateChangedNotification = async (
     ' The start date for ' +
     name +
     ' has been changed from ' +
-    activationDateString +
+    oldStartDateString +
     ' to ' +
-    startDateString +
+    newStartDateString +
     '.\n';
   const link = `https://finishlinebyner.com/projects/${wbsString}`;
   const linkButtonText = 'Change Work Package';
+  console.log({ oldStartDateString, newStartDateString, message });
 
-  await Promise.all(teams?.map((team) => sendMessage(team.slackId, message, link, linkButtonText)) ?? []);
+  await Promise.all(teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText)));
 };
