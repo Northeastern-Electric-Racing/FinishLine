@@ -1001,7 +1001,7 @@ export const notifySponsorTaskAssignee = async (
  * @param name Name of the work package
  */
 export const sendActivationStartDateChangedNotification = async (
-  teams: (Team & { teamType: Team_Type | null })[],
+  teams: Pick<Team, 'slackId'>[],
   leadId: string = '',
   managerId: string = '',
   startDate: Date,
