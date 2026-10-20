@@ -183,12 +183,11 @@ export default class BayDashboardAdminService {
   }
 
   /**
-   * Deletes Bay dashboard countdowns
+   * Soft deletes Bay dashboard countdowns
    * @param user the user is require to be a head to delete a countdown
    * @param countdownId takes the id for the thing being deleted
    * @param organization takes the organization it belongs to
-   * @returns Promise<BayDashboardCountdown> essentially returns what it get through
-   * BayDashboardContdownTransformer.
+   * @returns it returns the deleted countdown
    */
   static async deleteBayDashboardCountdown(
     user: User,

@@ -46,10 +46,6 @@ export default class BayDashboardAdminController {
     }
   }
 
-  /**
-   * takes in incoming http requests and takes
-   * important parts out and returns results back of operation
-   */
   static async deleteBayDashboardCountdown(req: Request, res: Response, next: NextFunction) {
     try {
       const { countdownId } = req.params as Record<string, string>;
