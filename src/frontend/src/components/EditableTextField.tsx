@@ -40,7 +40,7 @@ const EditableTextField: React.FC<EditableTextFieldProps> = ({
       <Box>
         <Box display="flex" alignItems="center">
           <Typography variant="h5">{label}</Typography>
-          <IconButton onClick={onEditStart}>
+          <IconButton onClick={onEditStart} aria-label={`Edit ${label}`}>
             <EditOutlinedIcon />
           </IconButton>
         </Box>
@@ -61,6 +61,7 @@ const EditableTextField: React.FC<EditableTextFieldProps> = ({
         </NERSuccessButton>
       </Box>
       <TextField
+        slotProps={{ htmlInput: { 'aria-label': label } }}
         multiline
         fullWidth
         minRows={3}
@@ -70,7 +71,7 @@ const EditableTextField: React.FC<EditableTextFieldProps> = ({
         onChange={(e) => setDraft(e.target.value)}
         sx={{ mt: 1 }}
         onKeyDown={(e) => {
-          if (e.key === 'Escape') {
+          if (e.key === 'Escape' && !isSaving) {
             onCancel();
           }
         }}
