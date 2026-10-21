@@ -25,7 +25,7 @@ const WidgetSelectionView: React.FC<WidgetSelectionViewProps> = ({ slug }) => {
       {bayDashboardWidgetSizes.map((size) => (
         <WidgetSizeDropdown
           key={size}
-          title={size.charAt(0) + size.slice(1).toLowerCase()}
+          size={size}
           widgets={availableWidgets.widgets.filter((widget) => widget.sizes.includes(size))}
         />
       ))}

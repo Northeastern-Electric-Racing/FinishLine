@@ -6,17 +6,18 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import { useState } from 'react';
-import { AvailableBayDashboardWidget } from 'shared';
+import { AvailableBayDashboardWidget, BayDashboardWidgetSize } from 'shared';
+import BayDashboardWidgetView from '../../BayDashboardPage/components/widgets/BayDashboardWidgetView';
 
 interface WidgetSizeDropdownProps {
-  title: string;
+  size: BayDashboardWidgetSize;
   widgets: AvailableBayDashboardWidget[];
 }
 
 /**
  * A collapsible dropdown listing the widgets available for one widget size.
  */
-const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title, widgets }) => {
+const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ size, widgets }) => {
   const [expanded, setExpanded] = useState(true);
 
   return (
@@ -38,7 +39,7 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title, widgets 
         }}
       >
         <Typography variant="h6" pl={1}>
-          {title}
+          {size.charAt(0) + size.slice(1).toLowerCase()}
         </Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 1, px: 0 }}>
@@ -46,8 +47,11 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ title, widgets 
           <Typography pl={1}>No widgets available</Typography>
         ) : (
           widgets.map((widget) => (
-            <Box key={widget.type} sx={{ bgcolor: 'rgba(255, 255, 255, 0.15)', borderRadius: '10px', p: 2 }}>
-              <Typography>{widget.displayName}</Typography>
+            <Box key={widget.type}>
+              <BayDashboardWidgetView
+                size={size}
+                widget={{ bayDashboardWidgetId: `sample-${size}-${widget.type}`, type: widget.type, order: 0 }}
+              />
             </Box>
           ))
         )}

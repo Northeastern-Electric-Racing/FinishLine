@@ -17,6 +17,7 @@ import {
   bayDashboardConfigTransformer,
   bayDashboardCountdownTransformer
 } from '../transformers/bay-dashboard.transformer.js';
+import { widgetDetails } from '../utils/bay-dashboard.utils.js';
 import {
   AccessDeniedException,
   DeletedException,
@@ -94,6 +95,10 @@ export default class BayDashboardAdminService {
           throw new HttpException(400, `Slot position ${slot.position}: ${slot.widget.type} is not a valid widget type`);
         }
 
+        if (!widgetDetails[slot.widget.type].sizes.includes(slot.size)) {
+          throw new HttpException(400, `Slot position ${slot.position}: ${slot.widget.type} widgets can't be ${slot.size}`);
+        }
+
         // only text field widgets carry text
         const hasText = !!slot.widget.text?.trim();
         if (slot.widget.type === BayDashboardWidgetType.TEXT_FIELD && !hasText) {
@@ -168,6 +173,10 @@ export default class BayDashboardAdminService {
       throw new AccessDeniedException('Only heads and above can create bay dashboard countdowns');
     }
 
+    if (endDate && endDate <= startDate) {
+      throw new HttpException(400, 'End date must be after start date');
+    }
+
     const countdown = await prisma.bay_Dashboard_Countdown.create({
       data: {
         name,
@@ -183,11 +192,11 @@ export default class BayDashboardAdminService {
   }
 
   /**
-   * Soft deletes Bay dashboard countdowns
-   * @param user the user is require to be a head to delete a countdown
-   * @param countdownId takes the id for the thing being deleted
+   * Soft deletes a bay dashboard countdown
+   * @param user the user deleting the countdown, required to be a head or above
+   * @param countdownId takes the id for the countdown being deleted
    * @param organization takes the organization it belongs to
-   * @returns it returns the deleted countdown
+   * @returns the deleted countdown
    */
   static async deleteBayDashboardCountdown(
     user: User,

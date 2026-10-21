@@ -20,7 +20,7 @@ const PreviewDashboard: React.FC = () => {
   if (isLoading || config === undefined) return <LoadingIndicator />;
 
   return (
-    <Box sx={{ border: '3px solid white' }}>
+    <Box sx={{ border: '3px solid white', width: '100%', aspectRatio: '16 / 9' }}>
       <BayDashboardGrid slots={config?.slots ?? defaultBayDashboardSlots} />
     </Box>
   );
