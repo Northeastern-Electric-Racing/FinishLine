@@ -81,10 +81,7 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ size, widgets, 
                 <AddCircle fontSize="small" sx={{ position: 'absolute', top: -6, left: -6, zIndex: 1, color: 'white' }} />
               )}
               <Box>
-                <BayDashboardWidgetView
-                  size={size}
-                  widget={{ bayDashboardWidgetId: `sample-${size}-${widget.type}`, type: widget.type, order: 0 }}
-                />
+                <BayDashboardWidgetView size={size} widget={{ type: widget.type, order: 0 }} />
               </Box>
               <Box
                 sx={{

@@ -67,20 +67,23 @@ export const applyWidgetSelection = (
   slots: BayDashboardSlot[],
   selection: BayDashboardWidgetSelection
 ): BayDashboardSlot[] => {
-  // unselecting leaves the size in the selection as undefined, so only count sizes with a widget
-  const sizes = (Object.keys(selection) as BayDashboardWidgetSize[]).filter((size) => selection[size]);
-  const untouchedSlots = slots.filter((slot) => !sizes.includes(slot.size));
+  // unselecting leaves the size in the selection as undefined, so a size only counts if it has a widget
+  const untouchedSlots = slots.filter((slot) => !selection[slot.size]);
 
-  const selectedSlots = sizes.map((size): BayDashboardSlot => {
+  const selectedSlots: BayDashboardSlot[] = [];
+  for (const size of bayDashboardWidgetSizes) {
+    const type = selection[size];
+    if (!type) continue;
+
     const existingSlot = slots.find((slot) => slot.size === size);
-    return {
+    selectedSlots.push({
       bayDashboardSlotId: existingSlot?.bayDashboardSlotId ?? `preview-${size}`,
       size,
       position: slotPositions[size],
       rotationSeconds: existingSlot?.rotationSeconds ?? 30,
-      widgets: [{ bayDashboardWidgetId: `preview-${size}-0`, type: selection[size] as BayDashboardWidgetType, order: 0 }]
-    };
-  });
+      widgets: [{ bayDashboardWidgetId: `preview-${size}-0`, type, order: 0 }]
+    });
+  }
 
   return [...untouchedSlots, ...selectedSlots].sort((a, b) => a.position - b.position);
 };
