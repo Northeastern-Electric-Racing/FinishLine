@@ -1,13 +1,8 @@
-import { Bay_Dashboard_Widget_Type, Organization } from '@prisma/client';
-import { AvailableBayDashboardWidgets, BayDashboardConfig } from 'shared';
+import { Organization } from '@prisma/client';
+import { BayDashboardConfig } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { getBayDashboardConfigQueryArgs } from '../prisma-query-args/bay-dashboard.query-args.js';
-import {
-  bayDashboardConfigTransformer,
-  bayDashboardWidgetSizeTransformer,
-  bayDashboardWidgetTypeTransformer
-} from '../transformers/bay-dashboard.transformer.js';
-import { widgetDetails } from '../utils/bay-dashboard.utils.js';
+import { bayDashboardConfigTransformer } from '../transformers/bay-dashboard.transformer.js';
 import { DeletedException, NotFoundException } from '../utils/errors.utils.js';
 
 export default class BayDashboardService {
@@ -41,24 +36,5 @@ export default class BayDashboardService {
     });
 
     return config ? bayDashboardConfigTransformer(config) : null;
-  }
-
-  /**
-   * Lists the widget types that can be placed on a bay dashboard and the sizes each supports.
-   * @param slug the organization slug from the /bay-dashboard/:slug URL
-   * @returns the available widgets
-   */
-  static async getAvailableWidgets(slug: string): Promise<AvailableBayDashboardWidgets> {
-    await BayDashboardService.getOrganizationBySlug(slug);
-
-    return {
-      widgets: Object.values(Bay_Dashboard_Widget_Type)
-        .filter((type) => widgetDetails[type].sizes.length > 0)
-        .map((type) => ({
-          type: bayDashboardWidgetTypeTransformer(type),
-          displayName: widgetDetails[type].displayName,
-          sizes: widgetDetails[type].sizes.map(bayDashboardWidgetSizeTransformer)
-        }))
-    };
   }
 }

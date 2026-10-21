@@ -41,11 +41,10 @@ export const useGetBayDashboardConfig = (slug: string) => {
 
 /**
  * Custom React Hook to get every widget type that can be placed on the bay dashboard
- * @param slug the organization's slug
  */
-export const useAvailableBayDashboardWidgets = (slug: string) => {
-  return useQuery<AvailableBayDashboardWidgets, Error>(['bay-dashboard', slug, 'widgets'], async () => {
-    const { data } = await getAvailableBayDashboardWidgets(slug);
+export const useAvailableBayDashboardWidgets = () => {
+  return useQuery<AvailableBayDashboardWidgets, Error>(['bay-dashboard', 'admin', 'widgets'], async () => {
+    const { data } = await getAvailableBayDashboardWidgets();
     return data;
   });
 };

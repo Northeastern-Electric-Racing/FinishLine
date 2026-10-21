@@ -18,6 +18,8 @@ const bayDashboardAdminRouter = express.Router();
 
 bayDashboardAdminRouter.get('/admin', BayDashboardAdminController.getCurrentBayDashboardConfig);
 
+bayDashboardAdminRouter.get('/admin/widgets', BayDashboardAdminController.getAvailableWidgets);
+
 bayDashboardAdminRouter.post(
   '/admin/save',
   body('slots').isArray(),

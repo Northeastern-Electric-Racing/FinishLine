@@ -1,5 +1,6 @@
-import { Organization } from '@prisma/client';
+import { Bay_Dashboard_Widget_Type, Organization } from '@prisma/client';
 import {
+  AvailableBayDashboardWidgets,
   BayDashboardConfig,
   BayDashboardCountdown,
   BayDashboardSlotCreateArgs,
@@ -15,7 +16,9 @@ import {
 } from '../prisma-query-args/bay-dashboard.query-args.js';
 import {
   bayDashboardConfigTransformer,
-  bayDashboardCountdownTransformer
+  bayDashboardCountdownTransformer,
+  bayDashboardWidgetSizeTransformer,
+  bayDashboardWidgetTypeTransformer
 } from '../transformers/bay-dashboard.transformer.js';
 import { widgetDetails } from '../utils/bay-dashboard.utils.js';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils.js';
@@ -54,6 +57,27 @@ export default class BayDashboardAdminService {
     });
 
     return config ? bayDashboardConfigTransformer(config) : null;
+  }
+
+  /**
+   * Lists the widget types that can be placed on a bay dashboard and the sizes each supports.
+   * @param user the user requesting the widgets, must be a head or above
+   * @param organization the organization the bay dashboard belongs to
+   * @returns the available widgets
+   */
+  static async getAvailableWidgets(user: User, organization: Organization): Promise<AvailableBayDashboardWidgets> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, isHead)))
+      throw new AccessDeniedException('Only heads and above can view the available bay dashboard widgets');
+
+    return {
+      widgets: Object.values(Bay_Dashboard_Widget_Type)
+        .filter((type) => widgetDetails[type].sizes.length > 0)
+        .map((type) => ({
+          type: bayDashboardWidgetTypeTransformer(type),
+          displayName: widgetDetails[type].displayName,
+          sizes: widgetDetails[type].sizes.map(bayDashboardWidgetSizeTransformer)
+        }))
+    };
   }
 
   /**

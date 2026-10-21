@@ -6,7 +6,6 @@
 import { BayDashboardWidgetSize, BayDashboardWidgetType } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAvailableBayDashboardWidgets } from '../../../hooks/bay-dashboard.hooks';
-import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import {
   BayDashboardWidgetSelection,
@@ -22,12 +21,12 @@ interface WidgetSelectionProps {
   onSelectionChange: (selection: BayDashboardWidgetSelection) => void;
 }
 
-interface WidgetSelectionViewProps extends WidgetSelectionProps {
-  slug: string;
-}
-
-const WidgetSelectionView: React.FC<WidgetSelectionViewProps> = ({ slug, selection, onSelectionChange }) => {
-  const { data: availableWidgets, isLoading, isError, error } = useAvailableBayDashboardWidgets(slug);
+/**
+ * Dropdowns listing the widgets available for each slot size.
+ * Clicking a widget highlights it, one per size, and clicking it again unselects it.
+ */
+const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectionChange }) => {
+  const { data: availableWidgets, isLoading, isError, error } = useAvailableBayDashboardWidgets();
   const toast = useToast();
 
   const handleSelect = (size: BayDashboardWidgetSize, type: BayDashboardWidgetType) => {
@@ -58,19 +57,6 @@ const WidgetSelectionView: React.FC<WidgetSelectionViewProps> = ({ slug, selecti
       ))}
     </>
   );
-};
-
-/**
- * Dropdowns listing the widgets available for each slot size.
- * Clicking a widget highlights it, one per size, and clicking it again unselects it.
- */
-const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectionChange }) => {
-  const { data: organization, isLoading, isError, error } = useCurrentOrganization();
-
-  if (isError) return <ErrorPage message={error.message} />;
-  if (isLoading || !organization) return <LoadingIndicator />;
-
-  return <WidgetSelectionView slug={organization.slug} selection={selection} onSelectionChange={onSelectionChange} />;
 };
 
 export default WidgetSelection;

@@ -35,10 +35,9 @@ export const getBayDashboardConfig = (slug: string) => {
 
 /**
  * Gets every widget type that can be placed on the bay dashboard, along with the sizes each supports
- * @param slug the organization's slug
  */
-export const getAvailableBayDashboardWidgets = (slug: string) => {
-  return axios.get<AvailableBayDashboardWidgets>(apiUrls.bayDashboardWidgets(slug), {
+export const getAvailableBayDashboardWidgets = () => {
+  return axios.get<AvailableBayDashboardWidgets>(apiUrls.bayDashboardAdminWidgets(), {
     transformResponse: (data) => JSON.parse(data)
   });
 };

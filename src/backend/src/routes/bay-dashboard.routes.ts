@@ -9,6 +9,5 @@ const bayDashboardRouter = express.Router();
 
 bayDashboardRouter.get('/:slug/events', BayDashboardController.streamBayDashboardEvents);
 bayDashboardRouter.get('/:slug/config', BayDashboardController.getBayDashboardConfig);
-bayDashboardRouter.get('/:slug/widgets', BayDashboardController.getAvailableWidgets);
 
 export default bayDashboardRouter;
