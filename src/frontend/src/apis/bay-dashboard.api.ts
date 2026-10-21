@@ -21,6 +21,19 @@ export const getCurrentBayDashboardConfig = () => {
 };
 
 /**
+ * Gets the bay dashboard config the TV is displaying for an organization
+ * @param slug the organization's slug
+ */
+export const getBayDashboardConfig = (slug: string) => {
+  return axios.get<BayDashboardConfig | null>(apiUrls.bayDashboardConfig(slug), {
+    transformResponse: (data) => {
+      const config: BayDashboardConfig | null = JSON.parse(data);
+      return config ? bayDashboardConfigTransformer(config) : null;
+    }
+  });
+};
+
+/**
  * Gets every widget type that can be placed on the bay dashboard, along with the sizes each supports
  * @param slug the organization's slug
  */

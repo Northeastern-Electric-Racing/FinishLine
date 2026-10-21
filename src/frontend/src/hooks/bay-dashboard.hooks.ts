@@ -9,6 +9,7 @@ import { AvailableBayDashboardWidgets, BayDashboardConfig, BayDashboardSlotCreat
 import { apiUrls } from '../utils/urls';
 import {
   getAvailableBayDashboardWidgets,
+  getBayDashboardConfig,
   getCurrentBayDashboardConfig,
   saveBayDashboardConfig
 } from '../apis/bay-dashboard.api';
@@ -21,6 +22,19 @@ import { useToast } from './toasts.hooks';
 export const useGetCurrentBayDashboardConfig = () => {
   return useQuery<BayDashboardConfig | null, Error>(['bay-dashboard', 'admin', 'config'], async () => {
     const { data } = await getCurrentBayDashboardConfig();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get the bay dashboard config the public TV display shows.
+ * Null if the organization has never saved a config.
+ * The key sits under ['bay-dashboard', slug] so the server's update events refetch it.
+ * @param slug the organization slug from the /bay-dashboard/:slug route
+ */
+export const useGetBayDashboardConfig = (slug: string) => {
+  return useQuery<BayDashboardConfig | null, Error>(['bay-dashboard', slug, 'config'], async () => {
+    const { data } = await getBayDashboardConfig(slug);
     return data;
   });
 };

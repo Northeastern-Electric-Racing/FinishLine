@@ -4,6 +4,21 @@ import { addBayDashboardClient, removeBayDashboardClient } from '../utils/bay-da
 
 export default class BayDashboardController {
   /**
+   * Returns the config the TV in the bay should be displaying, or null if the organization has never saved one.
+   */
+  static async getBayDashboardConfig(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { slug } = req.params as Record<string, string>;
+
+      const config = await BayDashboardService.getBayDashboardConfig(slug);
+
+      res.status(200).json(config);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  /**
    * Returns every widget type available for a bay dashboard along with its display name and supported sizes.
    */
   static async getAvailableWidgets(req: Request, res: Response, next: NextFunction) {
