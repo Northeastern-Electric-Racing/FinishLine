@@ -3,12 +3,19 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Car, Organization, User } from '@prisma/client';
+import { Car, Organization, Prisma, User } from '@prisma/client';
 import ExecSummaryServices from '../../src/services/exec-summaries.services.js';
 import { executiveSummaryTransformer } from '../../src/transformers/executive-summary.transformer.js';
-import { getExecutiveSummaryQueryArgs } from '../../src/prisma-query-args/executive-summary.query-args.js';
 import { AccessDeniedException, DeletedException, NotFoundException } from '../../src/utils/errors.utils.js';
 import prisma from '../../src/prisma/prisma.js';
+import {
+  getBaseCompetitionDocumentsSummaryQueryArgs,
+  getBaseCompetitionPerformanceQueryArgs,
+  getBaseExecutiveSummaryQueryArgs,
+  getBaseRecruitmentCycleQueryArgs,
+  getBaseRecruitmentDivisionCountQueryArgs
+} from '../../src/prisma-query-args/executive-summary.query-args.js';
+import { getUserQueryArgs } from '../../src/prisma-query-args/user.query-args.js';
 import {
   createTestCar,
   createTestOrganization,
@@ -22,6 +29,29 @@ import {
   resetUsers
 } from '../test-utils.js';
 import { batmanAppAdmin, member, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data.js';
+
+// the same fields the service selects when returning a full executive summary
+const getExecutiveSummaryDetailQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Executive_SummaryDefaultArgs>()({
+    select: {
+      ...getBaseExecutiveSummaryQueryArgs().select,
+      goals: true,
+      winsAndImprovements: true,
+      budgetNotes: true,
+      recruitmentNotes: true,
+      userCreated: getUserQueryArgs(organizationId),
+      deletedBy: getUserQueryArgs(organizationId),
+      competitionPerformances: getBaseCompetitionPerformanceQueryArgs(),
+      competitionDocumentsSummary: getBaseCompetitionDocumentsSummaryQueryArgs(),
+      recruitmentCycles: {
+        orderBy: { term: 'asc' },
+        select: {
+          ...getBaseRecruitmentCycleQueryArgs().select,
+          divisionCounts: getBaseRecruitmentDivisionCountQueryArgs()
+        }
+      }
+    }
+  });
 
 describe('Executive Summary Tests', () => {
   let orgId: string;
@@ -158,7 +188,7 @@ describe('Executive Summary Tests', () => {
           carId: car.carId,
           userCreatedId: superman.userId
         },
-        ...getExecutiveSummaryQueryArgs(organization.organizationId)
+        ...getExecutiveSummaryDetailQueryArgs(organization.organizationId)
       });
 
       const summary = await ExecSummaryServices.getSingleExecutiveSummary(
@@ -183,7 +213,7 @@ describe('Executive Summary Tests', () => {
           carId: car.carId,
           userCreatedId: superman.userId
         },
-        ...getExecutiveSummaryQueryArgs(organization.organizationId)
+        ...getExecutiveSummaryDetailQueryArgs(organization.organizationId)
       });
 
       const car2 = await createTestCar(organization.organizationId, superman.userId, 1);
@@ -193,7 +223,7 @@ describe('Executive Summary Tests', () => {
           carId: car2.carId,
           userCreatedId: superman.userId
         },
-        ...getExecutiveSummaryQueryArgs(organization.organizationId)
+        ...getExecutiveSummaryDetailQueryArgs(organization.organizationId)
       });
 
       const summaries = await ExecSummaryServices.getAllExecutiveSummaries(organization, superman);
