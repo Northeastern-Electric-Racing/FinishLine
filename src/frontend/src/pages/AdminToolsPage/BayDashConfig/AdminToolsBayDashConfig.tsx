@@ -25,7 +25,7 @@ const widgetBoxSx: SystemStyleObject<Theme> = {
 const AdminToolsBayDashConfig: React.FC = () => {
   const [selection, setSelection] = useState<BayDashboardWidgetSelection>({});
   const hasSelection = Object.values(selection).some((type) => type);
-  const { data: config } = useGetCurrentBayDashboardConfig();
+  const { data: config, isLoading, isError } = useGetCurrentBayDashboardConfig();
   const { mutate: save, isLoading: isSaving } = useSaveBayDashboardConfig();
 
   const toast = useToast();
@@ -71,7 +71,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
         <NERButton variant="contained" disabled={!hasSelection} onClick={handleClear}>
           CLEAR
         </NERButton>
-        <NERButton variant="contained" disabled={!hasSelection || config === undefined || isSaving} onClick={handleSave}>
+        <NERButton variant="contained" disabled={!hasSelection || isLoading || isError || isSaving} onClick={handleSave}>
           SAVE
         </NERButton>
       </Box>

@@ -26,6 +26,9 @@ export const bayDashboardWidgetDisplayNames: Record<BayDashboardWidgetType, stri
   [BayDashboardWidgetType.SLACK_MENTIONS]: '@bay-dashboard'
 };
 
+// the TV's background, also used in the Admin Tools preview while loading
+export const BAY_DASHBOARD_BACKGROUND = 'linear-gradient(to bottom, #000000 55%, #ef4244 140%)';
+
 // order the size dropdowns appear in the Admin Tools widget selection
 export const bayDashboardWidgetSizes = [
   BayDashboardWidgetSize.LARGE,
