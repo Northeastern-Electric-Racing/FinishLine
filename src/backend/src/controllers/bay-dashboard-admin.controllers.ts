@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import BayDashboardAdminService from '../services/bay-dashboard-admin.services.js';
+import { broadcastBayDashboardUpdate } from '../utils/bay-dashboard-events.utils.js';
 
 export default class BayDashboardAdminController {
   static async getCurrentBayDashboardConfig(req: Request, res: Response, next: NextFunction) {
@@ -36,6 +37,7 @@ export default class BayDashboardAdminController {
       const { currentUser, organization } = req;
 
       const config = await BayDashboardAdminService.saveBayDashboardConfig(currentUser, organization, slots);
+      broadcastBayDashboardUpdate(organization.slug);
       res.status(201).json(config);
     } catch (error: unknown) {
       next(error);

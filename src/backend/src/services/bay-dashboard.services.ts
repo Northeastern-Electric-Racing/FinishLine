@@ -21,7 +21,7 @@ export default class BayDashboardService {
   }
 
   /**
-   * Gets the config the TV in the bay should be displaying. 
+   * Gets the config the TV in the bay should be displaying.
    * Public, so the TV can load it without logging in.
    * @param slug the organization slug from the /bay-dashboard/:slug URL
    * @returns the current config, or null if the organization has never saved one
