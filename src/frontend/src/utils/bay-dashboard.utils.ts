@@ -30,7 +30,7 @@ export const bayDashboardWidgetDisplayNames: Record<BayDashboardWidgetType, stri
 export const bayDashboardWidgetSizes = [
   BayDashboardWidgetSize.LARGE,
   BayDashboardWidgetSize.MEDIUM,
-  BayDashboardWidgetSize.LARGE
+  BayDashboardWidgetSize.SMALL
 ];
 
 const slotPositions: Record<BayDashboardWidgetSize, number> = {

@@ -60,18 +60,25 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ size, widgets, 
                 display: 'block',
                 width: '100%',
                 textAlign: 'left',
-                bgcolor: 'rgba(255, 255, 255, 0.15)',
-                borderRadius: '10px',
-                p: 2,
                 position: 'relative',
-                border: '2px solid',
-                borderColor: widget.type === selectedType ? 'primary.main' : 'transparent'
+                containerType: 'inline-size'
               }}
             >
               {widget.type === selectedType ? (
-                <RemoveCircle fontSize="small" sx={{ position: 'absolute', top: -11, left: -11, color: 'primary.main' }} />
+                <RemoveCircle
+                  fontSize="small"
+                  sx={{
+                    position: 'absolute',
+                    top: -6,
+                    left: -6,
+                    zIndex: 1,
+                    color: 'primary.main',
+                    bgcolor: 'white',
+                    borderRadius: '50%'
+                  }}
+                />
               ) : (
-                <AddCircle fontSize="small" sx={{ position: 'absolute', top: -11, left: -11, color: 'white' }} />
+                <AddCircle fontSize="small" sx={{ position: 'absolute', top: -6, left: -6, zIndex: 1, color: 'white' }} />
               )}
               <Box>
                 <BayDashboardWidgetView
@@ -79,6 +86,16 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ size, widgets, 
                   widget={{ bayDashboardWidgetId: `sample-${size}-${widget.type}`, type: widget.type, order: 0 }}
                 />
               </Box>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  inset: -2,
+                  borderRadius: 'calc(4cqw + 2px)',
+                  border: '2px solid',
+                  borderColor: widget.type === selectedType ? 'primary.main' : 'transparent',
+                  pointerEvents: 'none'
+                }}
+              />
             </ButtonBase>
           ))
         )}
