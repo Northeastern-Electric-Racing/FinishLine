@@ -6,6 +6,8 @@ export type BayDashboardSlotQueryArgs = ReturnType<typeof getBayDashboardSlotQue
 
 export type BayDashboardConfigQueryArgs = ReturnType<typeof getBayDashboardConfigQueryArgs>;
 
+export type PublicBayDashboardConfigQueryArgs = ReturnType<typeof getPublicBayDashboardConfigQueryArgs>;
+
 export type BayDashboardCountdownQueryArgs = ReturnType<typeof getBayDashboardCountdownQueryArgs>;
 
 export const getBayDashboardWidgetQueryArgs = () =>
@@ -35,6 +37,24 @@ export const getBayDashboardConfigQueryArgs = () =>
       bayDashboardConfigId: true,
       dateCreated: true,
       slots: { orderBy: { position: 'asc' }, ...getBayDashboardSlotQueryArgs() }
+    }
+  });
+
+/**
+ * Selects only what the unauthenticated TV needs to render
+ */
+export const getPublicBayDashboardConfigQueryArgs = () =>
+  Prisma.validator<Prisma.Bay_Dashboard_ConfigDefaultArgs>()({
+    select: {
+      slots: {
+        orderBy: { position: 'asc' },
+        select: {
+          size: true,
+          position: true,
+          rotationSeconds: true,
+          widgets: { orderBy: { order: 'asc' }, select: { type: true, order: true, text: true } }
+        }
+      }
     }
   });
 

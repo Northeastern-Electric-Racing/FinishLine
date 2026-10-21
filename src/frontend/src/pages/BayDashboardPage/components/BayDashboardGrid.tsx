@@ -4,12 +4,12 @@
  */
 
 import { Box } from '@mui/material';
-import { BayDashboardSlot, BayDashboardWidgetSize } from 'shared';
+import { BayDashboardWidgetSize, PublicBayDashboardSlot } from 'shared';
 import { widgetHeights } from '../../../utils/bay-dashboard.utils';
 import BayDashboardWidgetView from './widgets/BayDashboardWidgetView';
 
 interface BayDashboardGridProps {
-  slots: BayDashboardSlot[];
+  slots: PublicBayDashboardSlot[];
 }
 
 const gridAreas: Record<BayDashboardWidgetSize, string> = {
@@ -44,7 +44,7 @@ const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots }) => {
       >
         {/* weather and date/time go in "header", the countdown widget goes in "countdown" */}
         {slots.map((slot) => (
-          <Box key={slot.bayDashboardSlotId} sx={{ gridArea: gridAreas[slot.size], minWidth: 0, minHeight: 0 }}>
+          <Box key={slot.position} sx={{ gridArea: gridAreas[slot.size], minWidth: 0, minHeight: 0 }}>
             {slot.widgets[0] && <BayDashboardWidgetView widget={slot.widgets[0]} size={slot.size} />}
           </Box>
         ))}

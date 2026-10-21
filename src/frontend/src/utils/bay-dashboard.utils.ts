@@ -6,14 +6,14 @@
 import {
   BayDashboardSlot,
   BayDashboardSlotCreateArgs,
-  BayDashboardWidget,
   BayDashboardWidgetSize,
-  BayDashboardWidgetType
+  BayDashboardWidgetType,
+  PublicBayDashboardWidget
 } from 'shared';
 
 export interface BayDashboardWidgetProps {
   size: BayDashboardWidgetSize;
-  widget: BayDashboardWidget;
+  widget: PublicBayDashboardWidget;
 }
 
 export const bayDashboardWidgetDisplayNames: Record<BayDashboardWidgetType, string> = {

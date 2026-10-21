@@ -5,7 +5,12 @@
 
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { AvailableBayDashboardWidgets, BayDashboardConfig, BayDashboardSlotCreateArgs } from 'shared';
+import {
+  AvailableBayDashboardWidgets,
+  BayDashboardConfig,
+  BayDashboardSlotCreateArgs,
+  PublicBayDashboardConfig
+} from 'shared';
 import { bayDashboardConfigTransformer } from './transformers/bay-dashboard.transformers';
 
 /**
@@ -25,11 +30,8 @@ export const getCurrentBayDashboardConfig = () => {
  * @param slug the organization's slug
  */
 export const getBayDashboardConfig = (slug: string) => {
-  return axios.get<BayDashboardConfig | null>(apiUrls.bayDashboardConfig(slug), {
-    transformResponse: (data) => {
-      const config: BayDashboardConfig | null = JSON.parse(data);
-      return config ? bayDashboardConfigTransformer(config) : null;
-    }
+  return axios.get<PublicBayDashboardConfig | null>(apiUrls.bayDashboardConfig(slug), {
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 

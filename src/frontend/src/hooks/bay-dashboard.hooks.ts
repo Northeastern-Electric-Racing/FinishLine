@@ -5,7 +5,12 @@
 
 import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { AvailableBayDashboardWidgets, BayDashboardConfig, BayDashboardSlotCreateArgs } from 'shared';
+import {
+  AvailableBayDashboardWidgets,
+  BayDashboardConfig,
+  BayDashboardSlotCreateArgs,
+  PublicBayDashboardConfig
+} from 'shared';
 import { apiUrls } from '../utils/urls';
 import {
   getAvailableBayDashboardWidgets,
@@ -33,7 +38,7 @@ export const useGetCurrentBayDashboardConfig = () => {
  * @param slug the organization slug from the /bay-dashboard/:slug route
  */
 export const useGetBayDashboardConfig = (slug: string) => {
-  return useQuery<BayDashboardConfig | null, Error>(['bay-dashboard', slug, 'config'], async () => {
+  return useQuery<PublicBayDashboardConfig | null, Error>(['bay-dashboard', slug, 'config'], async () => {
     const { data } = await getBayDashboardConfig(slug);
     return data;
   });
@@ -63,7 +68,7 @@ export const useSaveBayDashboardConfig = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['bay-dashboard']);
+        queryClient.invalidateQueries(['bay-dashboard', 'admin', 'config']);
         toast.success('Successfully saved widget selections. The TV display has been updated.');
       },
       onError: (error) => {

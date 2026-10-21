@@ -14,19 +14,29 @@ export enum BayDashboardWidgetType {
   SLACK_MENTIONS = 'SLACK_MENTIONS'
 }
 
-export interface BayDashboardWidget {
-  bayDashboardWidgetId: string;
+/**
+ * Only what the TV needs to render a widget
+ */
+export interface PublicBayDashboardWidget {
   type: BayDashboardWidgetType;
   order: number;
   text?: string;
 }
 
-export interface BayDashboardSlot {
-  bayDashboardSlotId: string;
+export interface BayDashboardWidget extends PublicBayDashboardWidget {
+  bayDashboardWidgetId: string;
+}
+
+export interface PublicBayDashboardSlot {
   size: BayDashboardWidgetSize;
   // 0 = left large, 1 = right medium, 2 = right small
   position: number;
   rotationSeconds: number;
+  widgets: PublicBayDashboardWidget[];
+}
+
+export interface BayDashboardSlot extends PublicBayDashboardSlot {
+  bayDashboardSlotId: string;
   widgets: BayDashboardWidget[];
 }
 
@@ -45,6 +55,13 @@ export interface BayDashboardConfig {
   bayDashboardConfigId: string;
   dateCreated: Date;
   slots: BayDashboardSlot[];
+}
+
+/**
+ * The config the unauthenticated TV loads
+ */
+export interface PublicBayDashboardConfig {
+  slots: PublicBayDashboardSlot[];
 }
 
 export interface BayDashboardCountdown {
