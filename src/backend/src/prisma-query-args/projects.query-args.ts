@@ -2,17 +2,11 @@ import { Prisma, Task_Status } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args.js';
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.js';
 import { getTeamPreviewQueryArgs } from './teams.query-args.js';
-import { getTaskGanttQueryArgs, getTaskQueryArgs } from './tasks.query-args.js';
+import { getTaskQueryArgs } from './tasks.query-args.js';
 import { getLinkQueryArgs } from './links.query-args.js';
-import {
-  getWorkPackageQueryArgs,
-  getWorkPackageGanttQueryArgs,
-  getWorkPackagePreviewQueryArgs
-} from './work-packages.query-args.js';
+import { getWorkPackageQueryArgs, getWorkPackagePreviewQueryArgs } from './work-packages.query-args.js';
 
 export type ProjectQueryArgs = ReturnType<typeof getProjectQueryArgs>;
-
-export type ProjectGanttQueryArgs = ReturnType<typeof getProjectGanttQueryArgs>;
 
 export type ProjectPreviewQueryArgs = ReturnType<typeof getProjectPreviewQueryArgs>;
 
@@ -45,46 +39,6 @@ export const getProjectQueryArgs = (organizationId: string) =>
         ...getWorkPackageQueryArgs(organizationId)
       },
       favoritedBy: getUserQueryArgs(organizationId)
-    }
-  });
-
-export const getProjectGanttQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.ProjectDefaultArgs>()({
-    // select rather than include so unused project columns (summary, carId, ...) aren't fetched
-    select: {
-      projectId: true,
-      wbsElementId: true,
-      budget: true,
-      abbreviation: true,
-      wbsElement: {
-        include: {
-          lead: getUserQueryArgs(organizationId),
-          manager: getUserQueryArgs(organizationId),
-          tasks: {
-            where: {
-              dateDeleted: null
-            },
-            orderBy: [{ dateCreated: 'asc' }, { taskId: 'asc' }],
-            ...getTaskGanttQueryArgs()
-          }
-        }
-      },
-      teams: {
-        select: {
-          teamId: true,
-          teamName: true
-        }
-      },
-      workPackages: {
-        where: {
-          wbsElement: {
-            dateDeleted: null
-          }
-        },
-        // orderInProject can repeat after a work package is deleted, so tie-break on the (unique per project) wp number
-        orderBy: [{ orderInProject: 'asc' }, { wbsElement: { workPackageNumber: 'asc' } }],
-        ...getWorkPackageGanttQueryArgs(organizationId)
-      }
     }
   });
 

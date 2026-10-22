@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args.js';
-import { getProjectGanttQueryArgs } from './projects.query-args.js';
+import { getGanttChartProjectQueryArgs } from './gantt-chart.query-args.js';
 
 export type TeamQueryArgs = ReturnType<typeof getTeamQueryArgs>;
 export type TeamBaseQueryArgs = ReturnType<typeof getTeamBaseQueryArgs>;
@@ -16,13 +16,14 @@ export const getTeamQueryArgs = (organizationId: string) =>
       leads: getUserQueryArgs(organizationId),
       userArchived: getUserQueryArgs(organizationId),
       teamType: { select: { teamTypeId: true, name: true } },
+      // the gantt chart's project shape covers everything team pages read, plus the budget they total
       projects: {
         where: {
           wbsElement: {
             dateDeleted: null
           }
         },
-        ...getProjectGanttQueryArgs(organizationId)
+        select: { ...getGanttChartProjectQueryArgs().select, budget: true }
       }
     }
   });

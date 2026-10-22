@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ProjectGantt, WbsNumber } from './project-types.js';
+import { GanttChartProject, WbsNumber } from './project-types.js';
 import { User, UserPreview } from './user-types.js';
 
 export interface TeamBase {
@@ -42,8 +42,11 @@ export interface TeamWithProjects {
   projects: TeamProjectPreview[];
 }
 
+// a team's projects use the gantt chart project shape, plus the budget team pages total
+export type TeamProject = GanttChartProject & { budget: number };
+
 export interface Team extends TeamPreview {
-  projects: ProjectGantt[];
+  projects: TeamProject[];
 }
 
 export type TeamJoinRequestStatus = 'PENDING' | 'APPROVED' | 'DENIED';
