@@ -22,10 +22,15 @@ import {
   NotFoundException
 } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { isUserOnOpsTeam } from '../utils/exec-summaries.utils.js';
 import {
+  getBaseCompetitionDocumentsSummaryQueryArgs,
+  getBaseCompetitionPerformanceQueryArgs,
+  getBaseExecutiveSummaryQueryArgs,
+  getBaseRecruitmentCycleQueryArgs,
+  getBaseRecruitmentDivisionCountQueryArgs,
   getBudgetProjectQueryArgs,
-  getExecutiveSummaryQueryArgs,
   getVehicleDevelopmentProjectQueryArgs
 } from '../prisma-query-args/executive-summary.query-args.js';
 import {
@@ -80,7 +85,7 @@ export default class ExecSummaryServices {
 
     const currentExecutiveSummary = await prisma.executive_Summary.findUnique({
       where: { executiveSummaryId },
-      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      ...getBaseExecutiveSummaryQueryArgs()
     });
 
     if (!currentExecutiveSummary) {
@@ -114,7 +119,24 @@ export default class ExecSummaryServices {
         seasonStartDate,
         seasonEndDate
       },
-      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      select: {
+        ...getBaseExecutiveSummaryQueryArgs().select,
+        goals: true,
+        winsAndImprovements: true,
+        budgetNotes: true,
+        recruitmentNotes: true,
+        userCreated: getUserQueryArgs(organization.organizationId),
+        deletedBy: getUserQueryArgs(organization.organizationId),
+        competitionPerformances: getBaseCompetitionPerformanceQueryArgs(),
+        competitionDocumentsSummary: getBaseCompetitionDocumentsSummaryQueryArgs(),
+        recruitmentCycles: {
+          orderBy: { term: 'asc' },
+          select: {
+            ...getBaseRecruitmentCycleQueryArgs().select,
+            divisionCounts: getBaseRecruitmentDivisionCountQueryArgs()
+          }
+        }
+      }
     });
 
     return executiveSummaryTransformer(updatedExecutiveSummary);
@@ -139,7 +161,24 @@ export default class ExecSummaryServices {
 
     const executiveSummary = await prisma.executive_Summary.findUnique({
       where: { executiveSummaryId },
-      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      select: {
+        ...getBaseExecutiveSummaryQueryArgs().select,
+        goals: true,
+        winsAndImprovements: true,
+        budgetNotes: true,
+        recruitmentNotes: true,
+        userCreated: getUserQueryArgs(organization.organizationId),
+        deletedBy: getUserQueryArgs(organization.organizationId),
+        competitionPerformances: getBaseCompetitionPerformanceQueryArgs(),
+        competitionDocumentsSummary: getBaseCompetitionDocumentsSummaryQueryArgs(),
+        recruitmentCycles: {
+          orderBy: { term: 'asc' },
+          select: {
+            ...getBaseRecruitmentCycleQueryArgs().select,
+            divisionCounts: getBaseRecruitmentDivisionCountQueryArgs()
+          }
+        }
+      }
     });
 
     if (!executiveSummary) {
@@ -163,7 +202,24 @@ export default class ExecSummaryServices {
 
     const executiveSummaries = await prisma.executive_Summary.findMany({
       where: { car: { wbsElement: { organizationId: organization.organizationId } }, dateDeleted: null },
-      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      select: {
+        ...getBaseExecutiveSummaryQueryArgs().select,
+        goals: true,
+        winsAndImprovements: true,
+        budgetNotes: true,
+        recruitmentNotes: true,
+        userCreated: getUserQueryArgs(organization.organizationId),
+        deletedBy: getUserQueryArgs(organization.organizationId),
+        competitionPerformances: getBaseCompetitionPerformanceQueryArgs(),
+        competitionDocumentsSummary: getBaseCompetitionDocumentsSummaryQueryArgs(),
+        recruitmentCycles: {
+          orderBy: { term: 'asc' },
+          select: {
+            ...getBaseRecruitmentCycleQueryArgs().select,
+            divisionCounts: getBaseRecruitmentDivisionCountQueryArgs()
+          }
+        }
+      }
     });
 
     return executiveSummaries.map(executiveSummaryTransformer);
@@ -196,7 +252,7 @@ export default class ExecSummaryServices {
 
     const executiveSummary = await prisma.executive_Summary.findUnique({
       where: { executiveSummaryId },
-      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      ...getBaseExecutiveSummaryQueryArgs()
     });
 
     if (!executiveSummary) {
@@ -261,7 +317,7 @@ export default class ExecSummaryServices {
 
     const executiveSummary = await prisma.executive_Summary.findUnique({
       where: { executiveSummaryId },
-      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      ...getBaseExecutiveSummaryQueryArgs()
     });
 
     if (!executiveSummary) {
