@@ -103,7 +103,7 @@ const GuestTeamSpecificPage: React.FC = () => {
           }}
         >
           {activeProjects.map((project) => (
-            <GuestProjectsCard key={project.id} project={{ ...project, teamTypes: [] }} />
+            <GuestProjectsCard key={project.id} project={project} />
           ))}
         </Box>
       </Box>

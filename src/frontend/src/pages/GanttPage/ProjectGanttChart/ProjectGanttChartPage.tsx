@@ -30,7 +30,9 @@ import GanttChartColorLegend from './GanttChartColorLegend';
 import GanttChartFiltersButton from './GanttChartFiltersButton';
 import GanttChart from '../GanttChart/GanttChart';
 import {
-  ProjectGantt,
+  GanttChartTask,
+  GanttChartProject,
+  GanttChartWorkPackage,
   Task,
   TaskLabel,
   TaskPriority,
@@ -40,7 +42,6 @@ import {
   WbsElementPreview,
   WbsElementStatus,
   wbsPipe,
-  WorkPackage,
   WorkPackageStage,
   WbsNumber
 } from 'shared';
@@ -55,11 +56,12 @@ import { GanttRequestChangeModal } from './ProjectGanttChangeModals/GanttRequest
 import { useToast } from '../../../hooks/toasts.hooks';
 import { v4 as uuidv4 } from 'uuid';
 import { projectWbsPipe } from '../../../utils/pipes';
-import { projectGanttTransformer } from '../../../apis/transformers/projects.transformers';
+import { ganttChartProjectTransformer } from '../../../apis/transformers/projects.transformers';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useDebounce } from '../../../hooks/utils.hooks';
 
-const getElementId = (element: WbsElementPreview | Task) => {
-  return (element as WbsElementPreview).id ?? (element as Task).taskId;
+const getElementId = (element: WbsElementPreview | GanttChartTask) => {
+  return (element as WbsElementPreview).id ?? (element as GanttChartTask).taskId;
 };
 
 const ProjectGanttChartPage: FC = () => {
@@ -83,18 +85,21 @@ const ProjectGanttChartPage: FC = () => {
   const { selectedCar, allCars, isLoading: carFilterLoading } = useGlobalCarFilter();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
-  const [addedProjects, setAddedProjects] = useState<ProjectGantt[]>([]);
+  const debouncedSearchText = useDebounce(searchText);
+  const [addedProjects, setAddedProjects] = useState<GanttChartProject[]>([]);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [showSelectionModal, setShowSelectionModal] = useState(false);
-  const [ganttChanges, setGanttChanges] = useState<GanttChange<WbsElementPreview | Task>[]>([]);
-  const [requestEventChanges, setRequestEventChanges] = useState<RequestEventChange<WbsElementPreview | Task>[]>([]);
-  const [selectedProject, setSelectedProject] = useState<ProjectGantt | undefined>(undefined);
+  const [ganttChanges, setGanttChanges] = useState<GanttChange<WbsElementPreview | GanttChartTask>[]>([]);
+  const [requestEventChanges, setRequestEventChanges] = useState<RequestEventChange<WbsElementPreview | GanttChartTask>[]>(
+    []
+  );
+  const [selectedProject, setSelectedProject] = useState<GanttChartProject | undefined>(undefined);
   const [selectedTeam, setSelectedTeam] = useState<TeamPreview | undefined>(undefined);
-  const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | Task>[]>([]);
-  const [allProjects, setAllProjects] = useState<ProjectGantt[]>([]);
-  const [editedProjects, setEditedProjects] = useState<ProjectGantt[]>([]);
+  const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | GanttChartTask>[]>([]);
+  const [allProjects, setAllProjects] = useState<GanttChartProject[]>([]);
+  const [editedProjects, setEditedProjects] = useState<GanttChartProject[]>([]);
   const user = useCurrentUser();
   /******************** Filters ***************************/
   const { filters, setFilters } = useGanttFilters('project-gantt');
@@ -108,15 +113,15 @@ const ProjectGanttChartPage: FC = () => {
 
   useEffect(() => {
     const requestRefresh = (
-      projects: ProjectGantt[],
+      projects: GanttChartProject[],
       teams: TeamPreview[],
-      editedProjects: ProjectGantt[],
-      addedProjects: ProjectGantt[],
+      editedProjects: GanttChartProject[],
+      addedProjects: GanttChartProject[],
       filters: GanttFilters,
       searchText: string
     ) => {
-      let allProjects: ProjectGantt[] = JSON.parse(JSON.stringify(projects.concat(addedProjects))).map(
-        projectGanttTransformer
+      let allProjects: GanttChartProject[] = JSON.parse(JSON.stringify(projects.concat(addedProjects))).map(
+        ganttChartProjectTransformer
       );
 
       allProjects = allProjects.map((project) => {
@@ -131,13 +136,13 @@ const ProjectGanttChartPage: FC = () => {
           filters,
           searchText,
           transformProjectToGanttTask,
-          projectGanttTransformer
+          ganttChartProjectTransformer
         )
       );
     };
 
     if (projects && teams) {
-      requestRefresh(projects, teams, editedProjects, addedProjects, { ...filters, showCars }, searchText);
+      requestRefresh(projects, teams, editedProjects, addedProjects, { ...filters, showCars }, debouncedSearchText);
     }
   }, [
     teams,
@@ -148,7 +153,7 @@ const ProjectGanttChartPage: FC = () => {
     editedProjects,
     filters,
     showCars,
-    searchText,
+    debouncedSearchText,
     history
   ]);
 
@@ -244,7 +249,7 @@ const ProjectGanttChartPage: FC = () => {
   /* **************************************************** */
   /* ****************** Editability ********************* */
 
-  const handleCancel = (_collection?: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
+  const handleCancel = (_collection?: GanttCollection<TeamPreview, WbsElementPreview | GanttChartTask>) => {
     //TODO Filter by gantt collection
     setAddedProjects([]);
     setEditedProjects([]);
@@ -252,48 +257,40 @@ const ProjectGanttChartPage: FC = () => {
     setSelectedProject(undefined);
   };
 
-  const onAddNewSubtask = (parent: GanttTask<WbsElementPreview | Task>) => {
+  const onAddNewSubtask = (parent: GanttTask<WbsElementPreview | GanttChartTask>) => {
     if (isProjectPreview(parent.element)) {
       setSelectedProject(parent.element);
       setShowSelectionModal(true);
     }
   };
 
-  const onAddNewTask = (collection: GanttCollection<TeamPreview, WbsElementPreview | Task>) => {
+  const onAddNewTask = (collection: GanttCollection<TeamPreview, WbsElementPreview | GanttChartTask>) => {
     setSelectedTeam(collection.element);
     setShowAddProjectModal(true);
   };
 
   const handleAddWorkPackageInfo = (
     workPackageInfo: { name: string; stage?: WorkPackageStage },
-    parentProject: ProjectGantt
+    parentProject: GanttChartProject
   ) => {
     const newWorkPackageNumber = parentProject.workPackages.length + 1;
     const id = uuidv4();
-    const workPackage: WorkPackage = {
+    const workPackage: GanttChartWorkPackage = {
       id,
       projectId: parentProject.id,
       name: workPackageInfo.name,
       startDate: new Date(),
       endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-      blockedBy: [],
       wbsNum: {
         carNumber: parentProject.wbsNum.carNumber,
         projectNumber: parentProject.wbsNum.projectNumber,
         workPackageNumber: newWorkPackageNumber
       },
       stage: workPackageInfo.stage,
-      projectName: parentProject.name,
       status: WbsElementStatus.Inactive,
-      orderInProject: newWorkPackageNumber,
-      duration: 1,
       blocking: [],
-      descriptionBullets: [],
-      links: [],
       wbsElementId: '-1',
       dateCreated: new Date(),
-      teamTypes: [],
-      changes: [],
       events: [],
       deleted: false
     };
@@ -334,7 +331,7 @@ const ProjectGanttChartPage: FC = () => {
       deadline: Date | null;
       wpWbsNum?: WbsNumber;
     },
-    parentProject: ProjectGantt
+    parentProject: GanttChartProject
   ) => {
     const taskId = uuidv4();
 
@@ -382,7 +379,7 @@ const ProjectGanttChartPage: FC = () => {
     projectInfo: { name: string; carNumber: number },
     selectedTeam: { teamId: string; teamName: string }
   ) => {
-    const mockProject: ProjectGantt = {
+    const mockProject: GanttChartProject = {
       id: uuidv4(),
       name: projectInfo.name,
       wbsNum: {
@@ -394,9 +391,7 @@ const ProjectGanttChartPage: FC = () => {
       workPackages: [],
       deleted: false,
       tasks: [],
-      budget: 0,
       teams: [selectedTeam],
-      duration: 1,
       wbsElementId: '-1',
       dateCreated: new Date()
     };
@@ -405,7 +400,7 @@ const ProjectGanttChartPage: FC = () => {
     addNewProjectHandler(mockProject);
 
     // Create a RequestEventChange for the modal system
-    const requestChange: RequestEventChange<ProjectGantt> = {
+    const requestChange: RequestEventChange<GanttChartProject> = {
       changeId: uuidv4(),
       element: mockProject,
       newStart: new Date(),
@@ -417,11 +412,11 @@ const ProjectGanttChartPage: FC = () => {
     setSelectedTeam(undefined);
   };
 
-  const createChange = (change: GanttChange<WbsElementPreview | Task>) => {
+  const createChange = (change: GanttChange<WbsElementPreview | GanttChartTask>) => {
     setGanttChanges([...ganttChanges, change]);
   };
 
-  const createChangeHandler = (change: GanttChange<WbsElementPreview | Task>) => {
+  const createChangeHandler = (change: GanttChange<WbsElementPreview | GanttChartTask>) => {
     const parentProject = allProjects.find((project) => wbsPipe(project.wbsNum) === projectWbsPipe(change.element.wbsNum)); // Find the project that either the change is on, or the changes work package is a part of
     if (!parentProject) return;
 
@@ -514,7 +509,7 @@ const ProjectGanttChartPage: FC = () => {
     );
   };
 
-  const reverseEventChange = (change: RequestEventChange<WbsElementPreview | Task>) => {
+  const reverseEventChange = (change: RequestEventChange<WbsElementPreview | GanttChartTask>) => {
     const { element } = change;
     switch (change.type) {
       case 'create-task':
@@ -525,7 +520,7 @@ const ProjectGanttChartPage: FC = () => {
     }
   };
 
-  const removeActiveModal = (change: RequestEventChange<WbsElementPreview | Task>, cancelled: boolean) => {
+  const removeActiveModal = (change: RequestEventChange<WbsElementPreview | GanttChartTask>, cancelled: boolean) => {
     const newChanges = requestEventChanges.filter((newChange) => newChange.changeId !== change.changeId);
     setRequestEventChanges(newChanges);
     if (newChanges.length === 0) {
@@ -537,11 +532,11 @@ const ProjectGanttChartPage: FC = () => {
     }
   };
 
-  const addNewProjectHandler = (project: ProjectGantt) => {
+  const addNewProjectHandler = (project: GanttChartProject) => {
     setAddedProjects((prev) => [...prev, project]);
   };
 
-  const addNewWorkPackageHandler = (workPackage: WorkPackage) => {
+  const addNewWorkPackageHandler = (workPackage: GanttChartWorkPackage) => {
     const editedParentProject = editedProjects.find((project) => project.id === workPackage.projectId); // check for an already edited project
     if (editedParentProject) {
       editedParentProject.workPackages.push(workPackage);
@@ -555,7 +550,7 @@ const ProjectGanttChartPage: FC = () => {
         const originalProject = projects.find((project) => project.id === workPackage.projectId); // Check for an unedited original project
 
         if (originalProject) {
-          const copy = projectGanttTransformer(JSON.parse(JSON.stringify(originalProject))); // Need to maintain integrity of original projects
+          const copy = ganttChartProjectTransformer(JSON.parse(JSON.stringify(originalProject))); // Need to maintain integrity of original projects
           copy.workPackages.push(workPackage);
           setEditedProjects((prev) => [...prev, copy]);
         }
@@ -577,7 +572,7 @@ const ProjectGanttChartPage: FC = () => {
         const originalProject = projects.find((project) => project.id === projectId); // Check for an unedited original project
 
         if (originalProject) {
-          const copy = projectGanttTransformer(JSON.parse(JSON.stringify(originalProject))); // Need to maintain integrity of original projects
+          const copy = ganttChartProjectTransformer(JSON.parse(JSON.stringify(originalProject))); // Need to maintain integrity of original projects
           copy.tasks.push(task);
           setEditedProjects((prev) => [...prev, copy]);
         }
@@ -586,15 +581,15 @@ const ProjectGanttChartPage: FC = () => {
   };
 
   const highlightProjectComparator = (
-    highlightedElement: WbsElementPreview | Task,
-    wbsElement: WbsElementPreview | Task
+    highlightedElement: WbsElementPreview | GanttChartTask,
+    wbsElement: WbsElementPreview | GanttChartTask
   ) => {
     return projectWbsPipe(highlightedElement.wbsNum) === projectWbsPipe(wbsElement.wbsNum);
   };
 
   const highlightWorkPackageComparator = (
-    highlightedElement: WbsElementPreview | Task,
-    wbsElement: WbsElementPreview | Task
+    highlightedElement: WbsElementPreview | GanttChartTask,
+    wbsElement: WbsElementPreview | GanttChartTask
   ) => {
     return wbsPipe(highlightedElement.wbsNum) === wbsPipe(wbsElement.wbsNum);
   };

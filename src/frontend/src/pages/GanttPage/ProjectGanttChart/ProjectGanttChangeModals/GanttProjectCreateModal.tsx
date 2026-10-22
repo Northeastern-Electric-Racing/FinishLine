@@ -1,10 +1,10 @@
 import { Box, Typography } from '@mui/material';
-import { dateToMidnightUTC, ProjectGantt } from 'shared';
+import { dateToMidnightUTC, GanttChartProject } from 'shared';
 import dayjs from 'dayjs';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { NERDraggableFormModal } from '../../../../components/NERDraggableFormModal';
-import { getProjectStartDate, getProjectEndDate } from '../../../../utils/gantt.utils';
+import { getProjectStartDate, getProjectEndDate, isCreatableTask } from '../../../../utils/gantt.utils';
 import { useCreateSingleProject } from '../../../../hooks/projects.hooks';
 import { CreateSingleProjectPayload } from '../../../../utils/types';
 import { WorkPackageApiInputs } from '../../../../apis/work-packages.api';
@@ -19,7 +19,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
   const { isLoading, mutateAsync: createProject } = useCreateSingleProject();
   const { isLoading: workPackageIsLoading, mutateAsync: createWorkPackage } = useCreateSingleWorkPackage();
   const { isLoading: isLoadingTaskCreate, mutateAsync: createSingleTask } = useCreateTask();
-  const project = change.element as ProjectGantt;
+  const project = change.element as GanttChartProject;
   const startDate = getProjectStartDate(project);
   const latestEndDate = getProjectEndDate(project);
 
@@ -49,8 +49,9 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
       startDate: dateToMidnightUTC(workPackage.startDate).toISOString(),
       duration: dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week'),
       crId: undefined,
-      blockedBy: workPackage.blockedBy,
-      descriptionBullets: workPackage.descriptionBullets,
+      // this project and its work packages were all just created on the gantt, so they have no blockers or bullets yet
+      blockedBy: [],
+      descriptionBullets: [],
       stage: workPackage.stage ?? 'NONE'
     }));
 
@@ -65,6 +66,10 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
 
       if (project.tasks && project.tasks.length > 0) {
         for (const task of project.tasks) {
+          if (!isCreatableTask(task)) {
+            toast.error(`Failed to create task: ${task.title}`);
+            continue;
+          }
           try {
             await createSingleTask({
               wbsNum: task.wbsNum,

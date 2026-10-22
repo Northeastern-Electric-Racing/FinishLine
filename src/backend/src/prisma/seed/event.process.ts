@@ -5,7 +5,8 @@ import { ConfigDataOutput, ConfigDataProcess } from './config-data.process.js';
 import { TeamOutput, TeamProcess } from './team.process.js';
 import { TeamJoinRequestProcess } from './team-join-request.process.js';
 import { ProjectOutput, ProjectProcess } from './project.process.js';
-import { CarOutput } from '../context.js';
+import { WorkPackageOutput, WorkPackageProcess } from './work-package.process.js';
+import { CarOutput, WorkPackageContext } from '../context.js';
 import { CarProcess } from './car.process.js';
 import {
   DAYS_AFTER_NO_EVENT,
@@ -17,6 +18,7 @@ import {
   generateEventDescription,
   generateEventStatus,
   generateEventTitle,
+  generateEventWorkPackageLinkCount,
   generateInitialDateOffset,
   generateLocation,
   generateQuestionDocumentLink,
@@ -33,7 +35,13 @@ import { addDaysToDate } from 'shared';
 import { clampDate, DAY_MS, daysBetween } from '../dates.js';
 import { Event_Status } from '@prisma/client';
 
-type EventInput = OrganizationOutput & UsersOutput & ConfigDataOutput & TeamOutput & CarOutput & ProjectOutput;
+type EventInput = OrganizationOutput &
+  UsersOutput &
+  ConfigDataOutput &
+  TeamOutput &
+  CarOutput &
+  ProjectOutput &
+  WorkPackageOutput;
 
 export class EventProcess extends SeedProcess<EventInput, Record<string, never>> {
   dependencies() {
@@ -46,7 +54,8 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
       // process picks event attendees from the `members` pool.
       TeamJoinRequestProcess,
       CarProcess,
-      ProjectProcess
+      ProjectProcess,
+      WorkPackageProcess
     ];
   }
 
@@ -59,7 +68,8 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
     appAdmins,
     members,
     teams,
-    eventTypes
+    eventTypes,
+    workPackagesByProjectId
   }: EventInput): Promise<Record<string, never>> {
     const { organizationId } = organization;
     const creators = [...leadership, ...heads, ...admins, ...appAdmins];
@@ -88,6 +98,7 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
           return this.generateEventsForProject(
             organizationId,
             project.wbsElement.name,
+            workPackagesByProjectId[project.projectId] ?? [],
             timeline,
             creators,
             allUsers,
@@ -106,6 +117,7 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
   private async generateEventsForProject(
     organizationId: string,
     projectName: string,
+    projectWorkPackages: WorkPackageContext[],
     timeline: { start: Date; end: Date },
     creators: UsersOutput['leadership'],
     allUsers: UsersOutput['members'],
@@ -162,6 +174,13 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
       // Unused. For reference if later reused.
       const deniedMemberIds: string[] = [];
 
+      const workPackageIds = this.faker.helpers
+        .arrayElements(
+          projectWorkPackages,
+          Math.min(generateEventWorkPackageLinkCount(this.faker), projectWorkPackages.length)
+        )
+        .map(({ workPackage }) => workPackage.workPackageId);
+
       const event = await this.prisma.event.create({
         data: eventCreateInput(
           eventType,
@@ -180,7 +199,8 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
           confirmedMemberIds,
           deniedMemberIds,
           dateCreated,
-          approvalRequiredFromUserId
+          approvalRequiredFromUserId,
+          workPackageIds
         )
       });
 
