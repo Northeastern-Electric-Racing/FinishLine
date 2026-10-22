@@ -9,8 +9,6 @@ export type GanttChartEventQueryArgs = ReturnType<typeof getGanttChartEventQuery
 export type GanttChartWorkPackageQueryArgs = ReturnType<typeof getGanttChartWorkPackageQueryArgs>;
 export type GanttChartProjectQueryArgs = ReturnType<typeof getGanttChartProjectQueryArgs>;
 
-const wbsNumberSelect = { carNumber: true, projectNumber: true, workPackageNumber: true } as const;
-
 // a task bar and its tooltip; saving an edited task reads its other fields from the full project
 export const getGanttChartTaskQueryArgs = () =>
   Prisma.validator<Prisma.TaskDefaultArgs>()({
@@ -20,7 +18,7 @@ export const getGanttChartTaskQueryArgs = () =>
       status: true,
       startDate: true,
       deadline: true,
-      wbsElement: { select: wbsNumberSelect },
+      wbsElement: { select: { carNumber: true, projectNumber: true, workPackageNumber: true } },
       createdBy: getUserPreviewQueryArgs(),
       assignees: getUserPreviewQueryArgs()
     }
@@ -48,14 +46,19 @@ export const getGanttChartWorkPackageQueryArgs = () =>
       stage: true,
       wbsElement: {
         select: {
-          ...wbsNumberSelect,
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
           name: true,
           status: true,
           dateCreated: true,
           dateDeleted: true,
           lead: getUserPreviewQueryArgs(),
           manager: getUserPreviewQueryArgs(),
-          blocking: { where: { wbsElement: { dateDeleted: null } }, select: { wbsElement: { select: wbsNumberSelect } } }
+          blocking: {
+            where: { wbsElement: { dateDeleted: null } },
+            select: { wbsElement: { select: { carNumber: true, projectNumber: true, workPackageNumber: true } } }
+          }
         }
       },
       events: { where: { dateDeleted: null }, ...getGanttChartEventQueryArgs() }
@@ -69,7 +72,9 @@ export const getGanttChartProjectQueryArgs = () =>
       wbsElementId: true,
       wbsElement: {
         select: {
-          ...wbsNumberSelect,
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
           name: true,
           dateCreated: true,
           dateDeleted: true,
