@@ -58,6 +58,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { projectWbsPipe } from '../../../utils/pipes';
 import { ganttChartProjectTransformer } from '../../../apis/transformers/projects.transformers';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useDebounce } from '../../../hooks/utils.hooks';
 
 const getElementId = (element: WbsElementPreview | GanttChartTask) => {
   return (element as WbsElementPreview).id ?? (element as GanttChartTask).taskId;
@@ -84,6 +85,7 @@ const ProjectGanttChartPage: FC = () => {
   const { selectedCar, allCars, isLoading: carFilterLoading } = useGlobalCarFilter();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
+  const debouncedSearchText = useDebounce(searchText);
   const [addedProjects, setAddedProjects] = useState<GanttChartProject[]>([]);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
@@ -140,7 +142,7 @@ const ProjectGanttChartPage: FC = () => {
     };
 
     if (projects && teams) {
-      requestRefresh(projects, teams, editedProjects, addedProjects, { ...filters, showCars }, searchText);
+      requestRefresh(projects, teams, editedProjects, addedProjects, { ...filters, showCars }, debouncedSearchText);
     }
   }, [
     teams,
@@ -151,7 +153,7 @@ const ProjectGanttChartPage: FC = () => {
     editedProjects,
     filters,
     showCars,
-    searchText,
+    debouncedSearchText,
     history
   ]);
 
