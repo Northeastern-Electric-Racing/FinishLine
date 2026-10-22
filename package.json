@@ -7,8 +7,7 @@
     "src/backend",
     "src/frontend",
     "src/shared",
-    "src/docs-site",
-    "src/cron"
+    "src/docs-site"
   ],
   "scripts": {
     "setup:hooks": "git config core.hooksPath .githooks",
