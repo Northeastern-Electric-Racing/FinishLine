@@ -103,7 +103,7 @@ export class TeamProcess extends SeedProcess<TeamInput, TeamOutput> {
         })
       );
 
-      return teamCreateInput(this.faker, organization.organizationId, head, leads, teamMembers, teamTypesByName, config);
+      return teamCreateInput(organization.organizationId, head, leads, teamMembers, teamTypesByName, config);
     });
 
     const teams = await Promise.all(teamCreateInputs.map((data) => this.prisma.team.create({ data })));

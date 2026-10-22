@@ -384,6 +384,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Lucas Nussbaum', color: '#135DF0' },
     { name: 'Abhishek Vijay', color: '#4287f5' },
     { name: 'Kidus Desalegn', color: '#B027F5' },
+    { name: 'Naman Patel', color: '#27f5a9ff' },
     {
       name: 'Ethan Chen',
       color: '#ffffff',
@@ -392,7 +393,18 @@ const CreditsPage: React.FC = () => {
         borderRadius: '14px',
         padding: '0 8px'
       }
-    }
+    },
+    { name: 'Kidus Desalegn', color: '#B027F5' },
+    {
+      name: 'John Frederick Harrison',
+      color: 'transparent',
+      sx: {
+        background:
+          'linear-gradient(to right, #aaaaaa 20%, #dd5421 20%, #dd5421 41%, #aaaaaa 40%, #aaaaaa 62%, #dd5421 62%)',
+        '-webkit-background-clip': 'text'
+      }
+    },
+    { name: 'Arya Baviskar', color: '#92b5ed' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];

@@ -11,7 +11,7 @@ export const bootstrapUserCreateInput = (): Prisma.UserCreateInput => ({
   email: 'admin@bootstrap.com',
   emailId: 'admin',
   userSettings: {
-    create: { defaultTheme: Theme.DARK, slackId: 'admin' }
+    create: { defaultTheme: Theme.DARK, slackId: process.env.SLACK_ID ?? 'admin' }
   }
 });
 
