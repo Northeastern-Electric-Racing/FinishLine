@@ -38,4 +38,9 @@ bayDashboardAdminRouter.post(
   BayDashboardAdminController.createBayDashboardCountdown
 );
 
+bayDashboardAdminRouter.post(
+  '/admin/countdown/:countdownId/delete',
+  BayDashboardAdminController.deleteBayDashboardCountdown
+);
+
 export default bayDashboardAdminRouter;

@@ -18,7 +18,13 @@ import {
   bayDashboardCountdownTransformer
 } from '../transformers/bay-dashboard.transformer.js';
 import { widgetDetails } from '../utils/bay-dashboard.utils.js';
-import { AccessDeniedException, HttpException } from '../utils/errors.utils.js';
+import {
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
 
 // the slots the TV can render, keyed by position (0 = left large, 1 = right medium, 2 = right small).
@@ -183,5 +189,42 @@ export default class BayDashboardAdminService {
     });
 
     return bayDashboardCountdownTransformer(countdown);
+  }
+
+  /**
+   * Soft deletes a bay dashboard countdown
+   * @param user the user deleting the countdown, required to be a head or above
+   * @param countdownId takes the id for the countdown being deleted
+   * @param organization takes the organization it belongs to
+   * @returns the deleted countdown
+   */
+  static async deleteBayDashboardCountdown(
+    user: User,
+    countdownId: string,
+    organization: Organization
+  ): Promise<BayDashboardCountdown> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads and above are allowed to delete bay dashboard countdowns');
+    }
+    const countdown = await prisma.bay_Dashboard_Countdown.findUnique({
+      where: { bayDashboardCountdownId: countdownId }
+    });
+    if (!countdown) {
+      throw new NotFoundException('Bay Dashboard Countdown', countdownId);
+    }
+    if (countdown.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Bay Dashboard Countdown');
+    }
+    if (countdown.dateDeleted) {
+      throw new DeletedException('Bay Dashboard Countdown', countdownId);
+    }
+
+    const deletedCountdown = await prisma.bay_Dashboard_Countdown.update({
+      where: { bayDashboardCountdownId: countdownId },
+      data: { dateDeleted: new Date(), userDeletedId: user.userId },
+      ...getBayDashboardCountdownQueryArgs()
+    });
+
+    return bayDashboardCountdownTransformer(deletedCountdown);
   }
 }

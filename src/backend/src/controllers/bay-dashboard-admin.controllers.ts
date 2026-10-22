@@ -45,4 +45,16 @@ export default class BayDashboardAdminController {
       next(error);
     }
   }
+
+  static async deleteBayDashboardCountdown(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { countdownId } = req.params as Record<string, string>;
+      const { currentUser, organization } = req;
+
+      const countdown = await BayDashboardAdminService.deleteBayDashboardCountdown(currentUser, countdownId, organization);
+      res.status(200).json(countdown);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

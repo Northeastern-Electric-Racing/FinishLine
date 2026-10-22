@@ -3,7 +3,13 @@ import { createTestOrganization, createTestUser, resetUsers } from '../test-util
 import { greenlanternHead, member } from '../test-data/users.test-data.js';
 import { BayDashboardSlotCreateArgs, BayDashboardWidgetSize, BayDashboardWidgetType } from 'shared';
 import BayDashboardAdminService from '../../src/services/bay-dashboard-admin.services.js';
-import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils.js';
+import {
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../../src/utils/errors.utils.js';
 import prisma from '../../src/prisma/prisma.js';
 
 // the size the TV lays out at each position
@@ -289,6 +295,92 @@ describe('Bay Dashboard Admin Tests', () => {
           new Date('2025-04-26')
         )
       ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
+    });
+  });
+  describe('Delete Bay Dashboard Countdown', () => {
+    it('fails if user is not a head', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+      const regularMember = await createTestUser(member, orgId);
+
+      await expect(
+        BayDashboardAdminService.deleteBayDashboardCountdown(regularMember, countdown.bayDashboardCountdownId, organization)
+      ).rejects.toThrow(new AccessDeniedException('Only heads and above are allowed to delete bay dashboard countdowns'));
+    });
+
+    it('soft deletes a countdown for a head', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+
+      await BayDashboardAdminService.deleteBayDashboardCountdown(head, countdown.bayDashboardCountdownId, organization);
+
+      const deleted = await prisma.bay_Dashboard_Countdown.findUnique({
+        where: { bayDashboardCountdownId: countdown.bayDashboardCountdownId }
+      });
+      expect(deleted?.dateDeleted).not.toBeNull();
+      expect(deleted?.userDeletedId).toBe(head.userId);
+    });
+
+    it('fails if the countdown is already deleted', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+
+      await BayDashboardAdminService.deleteBayDashboardCountdown(head, countdown.bayDashboardCountdownId, organization);
+
+      await expect(
+        BayDashboardAdminService.deleteBayDashboardCountdown(head, countdown.bayDashboardCountdownId, organization)
+      ).rejects.toThrow(new DeletedException('Bay Dashboard Countdown', countdown.bayDashboardCountdownId));
+    });
+
+    it('fails if the countdown does not exist', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      await expect(
+        BayDashboardAdminService.deleteBayDashboardCountdown(head, 'fake-countdown-id', organization)
+      ).rejects.toThrow(new NotFoundException('Bay Dashboard Countdown', 'fake-countdown-id'));
+    });
+
+    it('fails if the countdown belongs to another organization', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+      // created inline rather than with createTestOrganization, which always uses the same unique slug
+      const otherOrganization = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          slug: 'other-org',
+          description: 'A second organization',
+          applicationLink: '',
+          userCreated: { connect: { userId: head.userId } }
+        }
+      });
+      const otherHead = await createTestUser(
+        { ...greenlanternHead, googleAuthId: 'otherOrgHead', email: 'other.head@test.com', emailId: 'other.head' },
+        otherOrganization.organizationId
+      );
+
+      await expect(
+        BayDashboardAdminService.deleteBayDashboardCountdown(otherHead, countdown.bayDashboardCountdownId, otherOrganization)
+      ).rejects.toThrow(new InvalidOrganizationException('Bay Dashboard Countdown'));
     });
   });
 });
