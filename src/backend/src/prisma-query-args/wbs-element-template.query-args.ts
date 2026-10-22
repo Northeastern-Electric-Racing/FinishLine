@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.js';
 import { getUserQueryArgs } from './user.query-args.js';
-import { getTeamQueryArgs } from './teams.query-args.js';
+import { getTeamPreviewQueryArgs } from './teams.query-args.js';
 
 export type WorkPackageTemplateQueryArgs = ReturnType<typeof getWorkPackageTemplateQueryArgs>;
 export type ProjectTemplateQueryArgs = ReturnType<typeof getProjectTemplateQueryArgs>;
@@ -42,7 +42,7 @@ export const getProjectTemplateQueryArgs = (organizationId: string) =>
         ...getWorkPackageTemplateQueryArgs(organizationId)
       },
       teams: {
-        ...getTeamQueryArgs(organizationId)
+        ...getTeamPreviewQueryArgs(organizationId)
       }
     }
   });
