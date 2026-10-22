@@ -30,8 +30,9 @@ import {
   shouldCreateMeetingAttendance
 } from '../factories/event.factory.js';
 import { addDaysToDate } from 'shared';
-import { clampDate, DAY_MS, daysBetween } from '../dates.js';
+import { clampDate, daysBetween } from '../dates.js';
 import { Event_Status } from '@prisma/client';
+import { DAY_MS } from '../../utils/time.utils.js';
 
 type EventInput = OrganizationOutput & UsersOutput & ConfigDataOutput & TeamOutput & CarOutput & ProjectOutput;
 
