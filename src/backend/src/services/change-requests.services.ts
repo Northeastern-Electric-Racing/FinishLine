@@ -591,6 +591,10 @@ export default class ChangeRequestsService {
 
     await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
 
+    const workPackage = await prisma.work_Package.findFirst({
+      where: { wbsElementId: wbsElement.wbsElementId }
+    });
+
     const { changeRequests } = wbsElement;
     if (!allChangeRequestsReviewed(changeRequests)) {
       throw new HttpException(
@@ -617,7 +621,10 @@ export default class ChangeRequestsService {
           }
         },
         organization: { connect: { organizationId: organization.organizationId } },
-        identifier: numChanges + 1
+        identifier: numChanges + 1,
+        snapshotBlockingCount: 0,
+        snapshotStartDate: workPackage!.startDate,
+        snapshotDuration: workPackage!.duration
       },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
@@ -682,6 +689,10 @@ export default class ChangeRequestsService {
       throwIfUncheckedDescriptionBullets(wbsElement.descriptionBullets);
     }
 
+    const workPackage = await prisma.work_Package.findFirst({
+      where: { wbsElementId: wbsElement.wbsElementId }
+    });
+
     const { changeRequests } = wbsElement;
     if (!allChangeRequestsReviewed(changeRequests)) {
       throw new HttpException(
@@ -703,7 +714,10 @@ export default class ChangeRequestsService {
           create: { leftoverBudget: 0, confirmDone }
         },
         organization: { connect: { organizationId: organization.organizationId } },
-        identifier: numChangeRequests + 1
+        identifier: numChangeRequests + 1,
+        snapshotBlockingCount: 0,
+        snapshotStartDate: workPackage!.startDate,
+        snapshotDuration: workPackage!.duration
       },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
@@ -896,6 +910,10 @@ export default class ChangeRequestsService {
 
     await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
 
+    const workPackage = await prisma.work_Package.findFirst({
+      where: { wbsElementId: wbsElement.wbsElementId }
+    });
+
     const numChangeRequests = await prisma.change_Request.count({
       where: { organizationId: organization.organizationId }
     });
@@ -912,7 +930,10 @@ export default class ChangeRequestsService {
             lead: leadId ? { connect: { userId: leadId } } : undefined,
             manager: managerId ? { connect: { userId: managerId } } : undefined
           }
-        }
+        },
+        snapshotBlockingCount: 0,
+        snapshotStartDate: workPackage?.startDate,
+        snapshotDuration: workPackage?.duration
       }
     });
 
@@ -1044,6 +1065,10 @@ export default class ChangeRequestsService {
       where: { organizationId: organization.organizationId }
     });
 
+    const workPackage = await prisma.work_Package.findFirst({
+      where: { wbsElementId: wbsElement.wbsElementId }
+    });
+
     const createdCR = await prisma.change_Request.create({
       data: {
         submitter: { connect: { userId: submitter.userId } },
@@ -1054,7 +1079,10 @@ export default class ChangeRequestsService {
           requestedReviewers: { connect: { userId: requestedReviewerId } }
         }),
         organization: { connect: { organizationId: organization.organizationId } },
-        identifier: numChangeRequests + 1
+        identifier: numChangeRequests + 1,
+        snapshotBlockingCount: 0,
+        snapshotStartDate: workPackage!.startDate,
+        snapshotDuration: workPackage!.duration
       },
       include: {
         wbsElement: {
@@ -1103,6 +1131,10 @@ export default class ChangeRequestsService {
 
       const isCreatingNewProject = projectNumber === 0;
 
+      const workPackageQuery = await prisma.work_Package.findFirst({
+        where: { wbsElementId: wbsElement.wbsElementId }
+      });
+
       const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
           changeRequest: { connect: { crId: createdCR.crId } },
@@ -1139,7 +1171,10 @@ export default class ChangeRequestsService {
                         }))
                       },
                       leadId: workPackage.originalElement.leadId,
-                      managerId: workPackage.originalElement.managerId
+                      managerId: workPackage.originalElement.managerId,
+                      snapshotBlockingCount: workPackage.validatedBlockedBys,
+                      snapshotStartDate: workPackageQuery!.startDate,
+                      snapshotDuration: workPackageQuery!.duration
                     }
                   },
                   duration: workPackage.originalElement.duration,
