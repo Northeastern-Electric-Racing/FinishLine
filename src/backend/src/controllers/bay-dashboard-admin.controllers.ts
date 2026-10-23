@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import BayDashboardAdminService from '../services/bay-dashboard-admin.services.js';
+import { broadcastBayDashboardUpdate } from '../utils/bay-dashboard-events.utils.js';
 
 export default class BayDashboardAdminController {
   static async getCurrentBayDashboardConfig(req: Request, res: Response, next: NextFunction) {
@@ -14,6 +15,20 @@ export default class BayDashboardAdminController {
   }
 
   /**
+   * Returns every widget type available for a bay dashboard along with its display name and supported sizes.
+   */
+  static async getAvailableWidgets(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { currentUser, organization } = req;
+
+      const widgets = await BayDashboardAdminService.getAvailableWidgets(currentUser, organization);
+      res.status(200).json(widgets);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  /**
    * Saves a new bay dashboard config for the current user's organization, replacing the one the TV is showing.
    */
   static async saveBayDashboardConfig(req: Request, res: Response, next: NextFunction) {
@@ -22,6 +37,7 @@ export default class BayDashboardAdminController {
       const { currentUser, organization } = req;
 
       const config = await BayDashboardAdminService.saveBayDashboardConfig(currentUser, organization, slots);
+      broadcastBayDashboardUpdate(organization.slug);
       res.status(201).json(config);
     } catch (error: unknown) {
       next(error);

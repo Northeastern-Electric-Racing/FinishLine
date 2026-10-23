@@ -5,8 +5,10 @@
 
 import { Box } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import { useBayDashboardEvents } from '../../hooks/bay-dashboard.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { useBayDashboardEvents, useGetBayDashboardConfig } from '../../hooks/bay-dashboard.hooks';
 import { defaultBayDashboardSlots } from '../../utils/bay-dashboard.utils';
+import ErrorPage from '../ErrorPage';
 import BayDashboardGrid from './components/BayDashboardGrid';
 
 interface ParamTypes {
@@ -20,6 +22,11 @@ const BayDashboardPage: React.FC = () => {
   const { slug } = useParams<ParamTypes>();
 
   useBayDashboardEvents(slug);
+  const { data: config, isLoading, isError, error } = useGetBayDashboardConfig(slug);
+
+  // a failed refetch keeps the last config that loaded, so only show the error when there's nothing to display
+  if (isError && config === undefined) return <ErrorPage message={error.message} />;
+  if (isLoading) return <LoadingIndicator />;
 
   return (
     <Box
@@ -34,8 +41,7 @@ const BayDashboardPage: React.FC = () => {
       }}
     >
       <Box sx={{ width: 'min(100vw, calc(100vh * 16 / 9))' }}>
-        {/* TODO: display the most recent saved config so the TV matches the Admin Tools preview, instead of the defaults */}
-        <BayDashboardGrid slots={defaultBayDashboardSlots} />
+        <BayDashboardGrid slots={config?.slots ?? defaultBayDashboardSlots} />
       </Box>
     </Box>
   );

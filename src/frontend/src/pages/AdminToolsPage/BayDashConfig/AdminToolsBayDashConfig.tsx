@@ -5,6 +5,11 @@
 
 import { Box, Theme, Typography } from '@mui/material';
 import { SystemStyleObject } from '@mui/system';
+import { useState } from 'react';
+import { NERButton } from '../../../components/NERButton';
+import { useGetCurrentBayDashboardConfig, useSaveBayDashboardConfig } from '../../../hooks/bay-dashboard.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
+import { applyWidgetSelection, BayDashboardWidgetSelection, toSlotCreateArgs } from '../../../utils/bay-dashboard.utils';
 import PreviewDashboard from './PreviewDashboard';
 import WidgetSelection from './WidgetSelection';
 
@@ -18,13 +23,30 @@ const widgetBoxSx: SystemStyleObject<Theme> = {
  * The Bay Dashboard tab in Admin Tools
  */
 const AdminToolsBayDashConfig: React.FC = () => {
+  const [selection, setSelection] = useState<BayDashboardWidgetSelection>({});
+  const hasSelection = Object.values(selection).some((type) => type);
+  const { data: config, isLoading, isError } = useGetCurrentBayDashboardConfig();
+  const { mutate: save, isLoading: isSaving } = useSaveBayDashboardConfig();
+
+  const toast = useToast();
+
+  const handleClear = () => {
+    setSelection({});
+    toast.success('Successfully cleared widget selections. The preview matches the current TV display.');
+  };
+
+  const handleSave = () => {
+    save(toSlotCreateArgs(applyWidgetSelection(config?.slots ?? [], selection)), { onSuccess: () => setSelection({}) });
+  };
+
   return (
     <Box
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-        gridTemplateRows: { md: 'repeat(3, 1fr)' },
+        gridTemplateRows: { md: 'auto auto 1fr' },
         gap: 4,
+        rowGap: 2,
         p: 2,
         boxSizing: 'border-box',
         width: '100%',
@@ -35,7 +57,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
         sx={{
           ...widgetBoxSx,
           gridColumn: { md: 'span 2' },
-          gridRow: { md: 'span 2' },
+          gridRow: { md: 1 },
           minHeight: { xs: 240, md: 0 },
           p: 2
         }}
@@ -43,7 +65,15 @@ const AdminToolsBayDashConfig: React.FC = () => {
         <Typography variant="h5" gutterBottom pl={1}>
           Preview
         </Typography>
-        <PreviewDashboard />
+        <PreviewDashboard selection={selection} />
+      </Box>
+      <Box sx={{ gridColumn: { md: 'span 2' }, gridRow: { md: 2 }, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+        <NERButton variant="contained" disabled={!hasSelection} onClick={handleClear}>
+          CLEAR
+        </NERButton>
+        <NERButton variant="contained" disabled={!hasSelection || isLoading || isError || isSaving} onClick={handleSave}>
+          SAVE
+        </NERButton>
       </Box>
       <Box
         sx={{
@@ -58,7 +88,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
           overflowY: 'auto'
         }}
       >
-        <WidgetSelection />
+        <WidgetSelection selection={selection} onSelectionChange={setSelection} />
       </Box>
     </Box>
   );

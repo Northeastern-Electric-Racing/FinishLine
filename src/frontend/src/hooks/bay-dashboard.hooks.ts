@@ -4,10 +4,21 @@
  */
 
 import { useEffect } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
-import { AvailableBayDashboardWidgets, BayDashboardConfig } from 'shared';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import {
+  AvailableBayDashboardWidgets,
+  BayDashboardConfig,
+  BayDashboardSlotCreateArgs,
+  PublicBayDashboardConfig
+} from 'shared';
 import { apiUrls } from '../utils/urls';
-import { getAvailableBayDashboardWidgets, getCurrentBayDashboardConfig } from '../apis/bay-dashboard.api';
+import {
+  getAvailableBayDashboardWidgets,
+  getBayDashboardConfig,
+  getCurrentBayDashboardConfig,
+  saveBayDashboardConfig
+} from '../apis/bay-dashboard.api';
+import { useToast } from './toasts.hooks';
 
 /**
  * Custom React Hook to get the bay dashboard config currently displayed on the TV, for the Admin Tools preview.
@@ -21,14 +32,50 @@ export const useGetCurrentBayDashboardConfig = () => {
 };
 
 /**
- * Custom React Hook to get every widget type that can be placed on the bay dashboard
- * @param slug the organization's slug
+ * Custom React Hook to get the bay dashboard config the public TV display shows.
+ * Null if the organization has never saved a config.
+ * The key sits under ['bay-dashboard', slug] so the server's update events refetch it.
+ * @param slug the organization slug from the /bay-dashboard/:slug route
  */
-export const useAvailableBayDashboardWidgets = (slug: string) => {
-  return useQuery<AvailableBayDashboardWidgets, Error>(['bay-dashboard', slug, 'widgets'], async () => {
-    const { data } = await getAvailableBayDashboardWidgets(slug);
+export const useGetBayDashboardConfig = (slug: string) => {
+  return useQuery<PublicBayDashboardConfig | null, Error>(['bay-dashboard', slug, 'config'], async () => {
+    const { data } = await getBayDashboardConfig(slug);
     return data;
   });
+};
+
+/**
+ * Custom React Hook to get every widget type that can be placed on the bay dashboard
+ */
+export const useAvailableBayDashboardWidgets = () => {
+  return useQuery<AvailableBayDashboardWidgets, Error>(['bay-dashboard', 'admin', 'widgets'], async () => {
+    const { data } = await getAvailableBayDashboardWidgets();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to save a new bay dashboard config, replacing the one the TV is showing.
+ */
+export const useSaveBayDashboardConfig = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  return useMutation<BayDashboardConfig, Error, BayDashboardSlotCreateArgs[]>(
+    ['bay-dashboard', 'admin', 'save'],
+    async (slots: BayDashboardSlotCreateArgs[]) => {
+      const { data } = await saveBayDashboardConfig(slots);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['bay-dashboard', 'admin', 'config']);
+        toast.success('Successfully saved widget selections. The TV display has been updated.');
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      }
+    }
+  );
 };
 
 /**

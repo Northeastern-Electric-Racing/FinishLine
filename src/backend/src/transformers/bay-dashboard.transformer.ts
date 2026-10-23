@@ -9,13 +9,15 @@ import {
   BayDashboardSlot,
   BayDashboardWidget,
   BayDashboardWidgetSize,
-  BayDashboardWidgetType
+  BayDashboardWidgetType,
+  PublicBayDashboardConfig
 } from 'shared';
 import {
   BayDashboardConfigQueryArgs,
   BayDashboardCountdownQueryArgs,
   BayDashboardSlotQueryArgs,
-  BayDashboardWidgetQueryArgs
+  BayDashboardWidgetQueryArgs,
+  PublicBayDashboardConfigQueryArgs
 } from '../prisma-query-args/bay-dashboard.query-args.js';
 
 export const bayDashboardWidgetSizeTransformer = (size: PrismaBayDashboardWidgetSize): BayDashboardWidgetSize => {
@@ -70,6 +72,23 @@ export const bayDashboardConfigTransformer = (
     bayDashboardConfigId: config.bayDashboardConfigId,
     dateCreated: config.dateCreated,
     slots: config.slots.map(bayDashboardSlotTransformer)
+  };
+};
+
+export const publicBayDashboardConfigTransformer = (
+  config: Prisma.Bay_Dashboard_ConfigGetPayload<PublicBayDashboardConfigQueryArgs>
+): PublicBayDashboardConfig => {
+  return {
+    slots: config.slots.map((slot) => ({
+      size: bayDashboardWidgetSizeTransformer(slot.size),
+      position: slot.position,
+      rotationSeconds: slot.rotationSeconds,
+      widgets: slot.widgets.map((widget) => ({
+        type: bayDashboardWidgetTypeTransformer(widget.type),
+        order: widget.order,
+        text: widget.text ?? undefined
+      }))
+    }))
   };
 };
 

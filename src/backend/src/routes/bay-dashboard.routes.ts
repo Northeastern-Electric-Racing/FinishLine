@@ -8,6 +8,6 @@ import BayDashboardController from '../controllers/bay-dashboard.controllers.js'
 const bayDashboardRouter = express.Router();
 
 bayDashboardRouter.get('/:slug/events', BayDashboardController.streamBayDashboardEvents);
-bayDashboardRouter.get('/:slug/widgets', BayDashboardController.getAvailableWidgets);
+bayDashboardRouter.get('/:slug/config', BayDashboardController.getBayDashboardConfig);
 
 export default bayDashboardRouter;

@@ -5,7 +5,12 @@
 
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { AvailableBayDashboardWidgets, BayDashboardConfig } from 'shared';
+import {
+  AvailableBayDashboardWidgets,
+  BayDashboardConfig,
+  BayDashboardSlotCreateArgs,
+  PublicBayDashboardConfig
+} from 'shared';
 import { bayDashboardConfigTransformer } from './transformers/bay-dashboard.transformers';
 
 /**
@@ -21,11 +26,32 @@ export const getCurrentBayDashboardConfig = () => {
 };
 
 /**
- * Gets every widget type that can be placed on the bay dashboard, along with the sizes each supports
+ * Gets the bay dashboard config the TV is displaying for an organization
  * @param slug the organization's slug
  */
-export const getAvailableBayDashboardWidgets = (slug: string) => {
-  return axios.get<AvailableBayDashboardWidgets>(apiUrls.bayDashboardWidgets(slug), {
+export const getBayDashboardConfig = (slug: string) => {
+  return axios.get<PublicBayDashboardConfig | null>(apiUrls.bayDashboardConfig(slug), {
     transformResponse: (data) => JSON.parse(data)
   });
+};
+
+/**
+ * Gets every widget type that can be placed on the bay dashboard, along with the sizes each supports
+ */
+export const getAvailableBayDashboardWidgets = () => {
+  return axios.get<AvailableBayDashboardWidgets>(apiUrls.bayDashboardAdminWidgets(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * Saves a new bay dashboard config for the current organization, replacing the one the TV is showing
+ * @param slots the slots to display, any position left out is saved with its default widget
+ */
+export const saveBayDashboardConfig = (slots: BayDashboardSlotCreateArgs[]) => {
+  return axios.post<BayDashboardConfig>(
+    apiUrls.bayDashboardAdminSave(),
+    { slots },
+    { transformResponse: (data) => bayDashboardConfigTransformer(JSON.parse(data)) }
+  );
 };
