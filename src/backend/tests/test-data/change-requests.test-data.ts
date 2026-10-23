@@ -22,7 +22,8 @@ export const prismaChangeRequest1: PrismaChangeRequest = {
   deletedByUserId: null,
   snapshotBlockingCount: null,
   snapshotStartDate: null,
-  snapshotDuration: null
+  snapshotDuration: null,
+  snapshotBudget: null
 };
 
 export const sharedChangeRequest: SharedChangeRequest = {

@@ -80,7 +80,7 @@ const triageScoreInputOf = (changeRequest: {
   snapshotBudget: number | null;
   budgetChangeRequest: { proposedBudget: number } | null;
   activationChangeRequest: { startDate: Date } | null;
-  wbsProposedChanges: { projectProposedChanges: { budget: number } | null } | null;
+  wbsProposedChanges?: { projectProposedChanges: { budget: number } | null } | null;
 }): TriageScoreInput => {
   const currentBudget = changeRequest.snapshotBudget ?? undefined;
   const proposedBudget =
