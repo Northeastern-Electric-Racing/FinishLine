@@ -429,7 +429,7 @@ export default class ExecSummaryServices {
     };
   }
 
-    /**
+  /**
    * Edits an existing competition performance entry.
    * @param submitter the user editing the competition performance
    * @param organization the organization the competition performance belongs to
@@ -452,7 +452,7 @@ export default class ExecSummaryServices {
    * @throws InvalidOrganizationException if the competition performance belongs to a different organization
    * @throws DeletedException if the competition performance has been deleted
    */
-  static async editCompetionPerformance(
+  static async editCompetitionPerformance(
     submitter: User,
     organization: Organization,
     finalPlace: number | null,
@@ -478,17 +478,17 @@ export default class ExecSummaryServices {
       } catch {
         // Ops team may not exist yet
       }
-      if (!isOpsTeamMember) throw new AccessDeniedException('edit an executive summary');
+      if (!isOpsTeamMember) throw new AccessDeniedException('edit a competition performance');
     }
 
     const currentCompetitionPerformance = await prisma.competition_Performance.findUnique({
       where: { competitionPerformanceId },
       include: { executiveSummary: { include: { car: { include: { wbsElement: true } } } } }
-    })
+    });
     if (!currentCompetitionPerformance) {
       throw new NotFoundException('Competition Performance', competitionPerformanceId);
     }
- 
+
     if (currentCompetitionPerformance.executiveSummary.car.wbsElement.organizationId !== organization.organizationId) {
       throw new InvalidOrganizationException('Competition Performance');
     }
@@ -510,7 +510,7 @@ export default class ExecSummaryServices {
       },
       ...getBaseCompetitionPerformanceQueryArgs()
     });
- 
+
     return competitionPerformanceTransformer(updatedCompetitionPerformance);
   }
 }

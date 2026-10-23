@@ -6,7 +6,12 @@
 import { Car, Organization, Prisma, User } from '@prisma/client';
 import ExecSummaryServices from '../../src/services/exec-summaries.services.js';
 import { executiveSummaryTransformer } from '../../src/transformers/executive-summary.transformer.js';
-import { AccessDeniedException, DeletedException, InvalidOrganizationException, NotFoundException } from '../../src/utils/errors.utils.js';
+import {
+  AccessDeniedException,
+  DeletedException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../../src/utils/errors.utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import {
   getBaseCompetitionDocumentsSummaryQueryArgs,
@@ -608,191 +613,195 @@ describe('Executive Summary Tests', () => {
     });
   });
 
-describe('Edit Competition Performance', () => {
-  it('Fails if the user is not an admin and not on the ops team', async () => {
-    const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
-    const competitionPerformance = await createTestCompetitionPerformance(executiveSummary.executiveSummaryId);
-    const nonAdminMember = await createTestUser(member, orgId);
+  describe('Edit Competition Performance', () => {
+    it('Fails if the user is not an admin and not on the ops team', async () => {
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const competitionPerformance = await createTestCompetitionPerformance(executiveSummary.executiveSummaryId);
+      const nonAdminMember = await createTestUser(member, orgId);
 
-    await expect(
-      async () =>
-        await ExecSummaryServices.editCompetitionPerformance(
-          nonAdminMember,
-          organization,
-          1,
-          500,
-          600,
-          'Acceleration',
-          'Skidpad',
-          'Autocross',
-          'Endurance',
-          4,
-          50,
-          20,
-          22,
-          95,
-          competitionPerformance.competitionPerformanceId
-        )
-    ).rejects.toThrow(new AccessDeniedException('edit a competition performance'));
-  });
-
-  it('Fails if the competition performance does not exist', async () => {
-    const admin = await createTestUser(batmanAppAdmin, orgId);
-
-    await expect(
-      async () =>
-        await ExecSummaryServices.editCompetitionPerformance(
-          admin,
-          organization,
-          1,
-          500,
-          600,
-          'Acceleration',
-          'Skidpad',
-          'Autocross',
-          'Endurance',
-          4,
-          50,
-          20,
-          22,
-          95,
-          'nonexistent-id'
-        )
-    ).rejects.toThrow(new NotFoundException('Competition Performance', 'nonexistent-id'));
-  });
-
-  it('Fails if the competition performance belongs to a different organization', async () => {
-    const admin = await createTestUser(batmanAppAdmin, orgId);
-
-    // createTestOrganization() always uses the same googleAuthId, so it can't be called a second
-    // time in this test (the outer beforeEach already called it once). The organization/car/exec
-    // summary FKs just need a valid existing userId, with no requirement that the user actually
-    // hold a role in that specific organization, so reuse the already-created superman user
-    // (no new User row is created at all, so there's nothing to collide).
-    const dummyOrganization = await prisma.organization.create({
-      data: {
-        name: 'Dummy Org',
-        description: 'Dummy org for cross-organization test',
-        applicationLink: '',
-        userCreated: { connect: { userId: superman.userId } }
-      }
+      await expect(
+        async () =>
+          await ExecSummaryServices.editCompetitionPerformance(
+            nonAdminMember,
+            organization,
+            1,
+            500,
+            600,
+            'Acceleration',
+            'Skidpad',
+            'Autocross',
+            'Endurance',
+            4,
+            50,
+            20,
+            22,
+            95,
+            competitionPerformance.competitionPerformanceId
+          )
+      ).rejects.toThrow(new AccessDeniedException('edit a competition performance'));
     });
-    const dummyOrgCar = await createTestCar(dummyOrganization.organizationId, superman.userId);
-    const otherOrgExecutiveSummary = await createTestExecutiveSummary(dummyOrganization, dummyOrgCar.carId, superman.userId);
-    const otherOrgCompetitionPerformance = await createTestCompetitionPerformance(
-      otherOrgExecutiveSummary.executiveSummaryId
-    );
 
-    await expect(
-      async () =>
-        await ExecSummaryServices.editCompetitionPerformance(
-          admin,
-          organization,
-          1,
-          500,
-          600,
-          'Acceleration',
-          'Skidpad',
-          'Autocross',
-          'Endurance',
-          4,
-          50,
-          20,
-          22,
-          95,
-          otherOrgCompetitionPerformance.competitionPerformanceId
-        )
-    ).rejects.toThrow(new InvalidOrganizationException('Competition Performance'));
+    it('Fails if the competition performance does not exist', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editCompetitionPerformance(
+            admin,
+            organization,
+            1,
+            500,
+            600,
+            'Acceleration',
+            'Skidpad',
+            'Autocross',
+            'Endurance',
+            4,
+            50,
+            20,
+            22,
+            95,
+            'nonexistent-id'
+          )
+      ).rejects.toThrow(new NotFoundException('Competition Performance', 'nonexistent-id'));
+    });
+
+    it('Fails if the competition performance belongs to a different organization', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+
+      // createTestOrganization() always uses the same googleAuthId, so it can't be called a second
+      // time in this test (the outer beforeEach already called it once). The organization/car/exec
+      // summary FKs just need a valid existing userId, with no requirement that the user actually
+      // hold a role in that specific organization, so reuse the already-created superman user
+      // (no new User row is created at all, so there's nothing to collide).
+      const dummyOrganization = await prisma.organization.create({
+        data: {
+          name: 'Dummy Org',
+          description: 'Dummy org for cross-organization test',
+          applicationLink: '',
+          userCreated: { connect: { userId: superman.userId } }
+        }
+      });
+      const dummyOrgCar = await createTestCar(dummyOrganization.organizationId, superman.userId);
+      const otherOrgExecutiveSummary = await createTestExecutiveSummary(
+        dummyOrganization,
+        dummyOrgCar.carId,
+        superman.userId
+      );
+      const otherOrgCompetitionPerformance = await createTestCompetitionPerformance(
+        otherOrgExecutiveSummary.executiveSummaryId
+      );
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editCompetitionPerformance(
+            admin,
+            organization,
+            1,
+            500,
+            600,
+            'Acceleration',
+            'Skidpad',
+            'Autocross',
+            'Endurance',
+            4,
+            50,
+            20,
+            22,
+            95,
+            otherOrgCompetitionPerformance.competitionPerformanceId
+          )
+      ).rejects.toThrow(new InvalidOrganizationException('Competition Performance'));
+    });
+
+    it('Succeeds and edits the competition performance as an admin', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const competitionPerformance = await createTestCompetitionPerformance(executiveSummary.executiveSummaryId);
+
+      const edited = await ExecSummaryServices.editCompetitionPerformance(
+        admin,
+        organization,
+        1,
+        500,
+        600,
+        'Acceleration',
+        'Skidpad',
+        'Autocross',
+        'Endurance',
+        4,
+        50,
+        20,
+        22,
+        95,
+        competitionPerformance.competitionPerformanceId
+      );
+
+      expect(edited.finalPlace).toBe(1);
+      expect(edited.totalPointsEarned).toBe(500);
+      expect(edited.maxPoints).toBe(600);
+      expect(edited.bestStaticEvent).toBe('Acceleration');
+      expect(edited.worstStaticEvent).toBe('Skidpad');
+      expect(edited.bestDynamicEvent).toBe('Autocross');
+      expect(edited.worstDynamicEvent).toBe('Endurance');
+      expect(edited.accelerationTopTimeSeconds).toBe(4);
+      expect(edited.autocrossTopTimeSeconds).toBe(50);
+      expect(edited.enduranceLapsCompleted).toBe(20);
+      expect(edited.maxLaps).toBe(22);
+      expect(edited.enduranceAvgLapTimeSeconds).toBe(95);
+    });
+
+    it('Succeeds and edits the competition performance as an ops team member', async () => {
+      const opsMember = await createOpsTeamAndMember(organization);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const competitionPerformance = await createTestCompetitionPerformance(executiveSummary.executiveSummaryId);
+
+      const edited = await ExecSummaryServices.editCompetitionPerformance(
+        opsMember,
+        organization,
+        1,
+        500,
+        600,
+        'Acceleration',
+        'Skidpad',
+        'Autocross',
+        'Endurance',
+        4,
+        50,
+        20,
+        22,
+        95,
+        competitionPerformance.competitionPerformanceId
+      );
+
+      expect(edited.finalPlace).toBe(1);
+    });
+
+    it('Succeeds clearing optional fields by passing null', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const competitionPerformance = await createTestCompetitionPerformance(executiveSummary.executiveSummaryId);
+
+      const edited = await ExecSummaryServices.editCompetitionPerformance(
+        admin,
+        organization,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        competitionPerformance.competitionPerformanceId
+      );
+
+      expect(edited.finalPlace).toBeUndefined();
+      expect(edited.totalPointsEarned).toBeUndefined();
+    });
   });
-
-  it('Succeeds and edits the competition performance as an admin', async () => {
-    const admin = await createTestUser(batmanAppAdmin, orgId);
-    const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
-    const competitionPerformance = await createTestCompetitionPerformance(executiveSummary.executiveSummaryId);
-
-    const edited = await ExecSummaryServices.editCompetitionPerformance(
-      admin,
-      organization,
-      1,
-      500,
-      600,
-      'Acceleration',
-      'Skidpad',
-      'Autocross',
-      'Endurance',
-      4,
-      50,
-      20,
-      22,
-      95,
-      competitionPerformance.competitionPerformanceId
-    );
-
-    expect(edited.finalPlace).toBe(1);
-    expect(edited.totalPointsEarned).toBe(500);
-    expect(edited.maxPoints).toBe(600);
-    expect(edited.bestStaticEvent).toBe('Acceleration');
-    expect(edited.worstStaticEvent).toBe('Skidpad');
-    expect(edited.bestDynamicEvent).toBe('Autocross');
-    expect(edited.worstDynamicEvent).toBe('Endurance');
-    expect(edited.accelerationTopTimeSeconds).toBe(4);
-    expect(edited.autocrossTopTimeSeconds).toBe(50);
-    expect(edited.enduranceLapsCompleted).toBe(20);
-    expect(edited.maxLaps).toBe(22);
-    expect(edited.enduranceAvgLapTimeSeconds).toBe(95);
-  });
-
-  it('Succeeds and edits the competition performance as an ops team member (non-admin)', async () => {
-    const opsMember = await createOpsTeamAndMember(organization);
-    const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
-    const competitionPerformance = await createTestCompetitionPerformance(executiveSummary.executiveSummaryId);
-
-    const edited = await ExecSummaryServices.editCompetitionPerformance(
-      opsMember,
-      organization,
-      1,
-      500,
-      600,
-      'Acceleration',
-      'Skidpad',
-      'Autocross',
-      'Endurance',
-      4,
-      50,
-      20,
-      22,
-      95,
-      competitionPerformance.competitionPerformanceId
-    );
-
-    expect(edited.finalPlace).toBe(1);
-  });
-
-  it('Succeeds clearing optional fields by passing null', async () => {
-    const admin = await createTestUser(batmanAppAdmin, orgId);
-    const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
-    const competitionPerformance = await createTestCompetitionPerformance(executiveSummary.executiveSummaryId);
-
-    const edited = await ExecSummaryServices.editCompetitionPerformance(
-      admin,
-      organization,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      competitionPerformance.competitionPerformanceId
-    );
-
-    expect(edited.finalPlace).toBeUndefined();
-    expect(edited.totalPointsEarned).toBeUndefined();
-  });
-});
 });

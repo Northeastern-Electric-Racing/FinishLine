@@ -33,8 +33,8 @@ execSummaryRouter.post(
 );
 
 execSummaryRouter.post(
-  '/competition-performance/:competitionPerformanceId:/edit',
-  body('finalPlace').optional({nullable: true}).isInt(),
+  '/competition-performance/:competitionPerformanceId/edit',
+  body('finalPlace').optional({ nullable: true }).isInt(),
   body('totalPointsEarned').optional({ nullable: true }).isInt(),
   body('maxPoints').optional({ nullable: true }).isInt(),
   body('bestStaticEvent').optional({ nullable: true }).isString(),
@@ -48,6 +48,6 @@ execSummaryRouter.post(
   body('enduranceAvgLapTimeSeconds').optional({ nullable: true }).isInt(),
   validateInputs,
   ExecSummaryController.editCompetitionPerformance
-)
+);
 
 export default execSummaryRouter;

@@ -17,7 +17,7 @@ import {
 import prisma from '../src/prisma/prisma.js';
 import TeamsService from '../src/services/teams.services.js';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services.js';
-import { RoleEnum, TaskPriority, TaskStatus } from 'shared';
+import { RoleEnum, TaskPriority, TaskStatus, Competition } from 'shared';
 import {
   batmanAppAdmin,
   batmanScheduleSettings,
@@ -1054,6 +1054,18 @@ export const createTestExecutiveSummary = async (organization?: Organization, ca
       seasonStartDate: new Date('01/01/2024'),
       seasonEndDate: new Date('06/01/2024'),
       userCreated: { connect: { userId: userCreatedId } }
+    }
+  });
+};
+
+export const createTestCompetitionPerformance = async (
+  executiveSummaryId: string,
+  competition: Competition = Competition.FSAE
+) => {
+  return prisma.competition_Performance.create({
+    data: {
+      executiveSummaryId,
+      competition
     }
   });
 };

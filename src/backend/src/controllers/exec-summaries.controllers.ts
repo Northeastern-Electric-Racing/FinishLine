@@ -95,7 +95,7 @@ export default class ExecSummaryController {
         enduranceAvgLapTimeSeconds
       } = req.body;
 
-       const competitionPerformance = await ExecSummaryServices.editCompetitionPerformance(
+      const competitionPerformance = await ExecSummaryServices.editCompetitionPerformance(
         req.currentUser,
         req.organization,
         finalPlace ?? null,
