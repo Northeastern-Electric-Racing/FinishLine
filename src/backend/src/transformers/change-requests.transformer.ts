@@ -77,13 +77,14 @@ const triageScoreInputOf = (changeRequest: {
   type: CR_Type;
   snapshotBlockingCount: number | null;
   snapshotStartDate: Date | null;
+  snapshotBudget: number | null;
   budgetChangeRequest: { proposedBudget: number } | null;
-  accountCode: { amount: number | null } | null;
-  category: { budget: number } | null;
   activationChangeRequest: { startDate: Date } | null;
+  wbsProposedChanges: { projectProposedChanges: { budget: number } | null } | null;
 }): TriageScoreInput => {
-  const currentBudget = changeRequest.accountCode?.amount ?? changeRequest.category?.budget ?? undefined;
-  const proposedBudget = changeRequest.budgetChangeRequest?.proposedBudget;
+  const currentBudget = changeRequest.snapshotBudget ?? undefined;
+  const proposedBudget =
+    changeRequest.budgetChangeRequest?.proposedBudget ?? changeRequest.wbsProposedChanges?.projectProposedChanges?.budget;
 
   const msPerDay = 1000 * 60 * 60 * 24;
   const timelineChangeInDays =

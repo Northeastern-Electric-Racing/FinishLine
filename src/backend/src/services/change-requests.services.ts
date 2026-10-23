@@ -97,7 +97,12 @@ export default class ChangeRequestsService {
         organizationId: organization.organizationId,
         ...(carId && { wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } })
       },
-      ...getManyChangeRequestQueryArgs(organization.organizationId)
+      include: {
+        ...getManyChangeRequestQueryArgs(organization.organizationId).include,
+        wbsProposedChanges: {
+          select: { projectProposedChanges: { select: { budget: true } } }
+        }
+      }
     });
 
     return changeRequests.map(changeRequestManyTransformer);
@@ -163,7 +168,12 @@ export default class ChangeRequestsService {
         organizationId: organization.organizationId,
         OR: queryOr
       },
-      ...getManyChangeRequestQueryArgs(organization.organizationId)
+      include: {
+        ...getManyChangeRequestQueryArgs(organization.organizationId).include,
+        wbsProposedChanges: {
+          select: { projectProposedChanges: { select: { budget: true } } }
+        }
+      }
     });
 
     return changeRequests.map(changeRequestManyTransformer);
@@ -198,7 +208,12 @@ export default class ChangeRequestsService {
         AND: queryAnd,
         dateDeleted: null
       },
-      ...getManyChangeRequestQueryArgs(organization.organizationId)
+      include: {
+        ...getManyChangeRequestQueryArgs(organization.organizationId).include,
+        wbsProposedChanges: {
+          select: { projectProposedChanges: { select: { budget: true } } }
+        }
+      }
     });
 
     return changeRequests.map(changeRequestManyTransformer);
@@ -239,7 +254,12 @@ export default class ChangeRequestsService {
         dateDeleted: null,
         AND: queryAnd
       },
-      ...getManyChangeRequestQueryArgs(organization.organizationId)
+      include: {
+        ...getManyChangeRequestQueryArgs(organization.organizationId).include,
+        wbsProposedChanges: {
+          select: { projectProposedChanges: { select: { budget: true } } }
+        }
+      }
     });
 
     return changeRequests.map(changeRequestManyTransformer);
