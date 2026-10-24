@@ -35,7 +35,8 @@ const renderComponent = (modalShow: boolean, route: string) => {
           type: 'BUDGET',
           wbsName: 'a',
           status: ChangeRequestStatus.Open,
-          requestedReviewers: []
+          requestedReviewers: [],
+          triageScore: 0
         }}
         modalShow={modalShow}
         handleClose={() => null}
