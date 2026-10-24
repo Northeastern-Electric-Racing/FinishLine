@@ -79,8 +79,13 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
         const startX = x.getPixelForValue(0);
         const progressX = x.getPixelForValue(elapsedDays[idx]);
         ctx.textAlign = 'left';
-        ctx.fillText(formatDate(project.startDate), startX + 6, yPos);
-        ctx.fillText(formatDate(project.plannedEndDate), x.getPixelForValue(lengths[idx]) + 6, yPos);
+        const startLabel = formatDate(project.startDate);
+        const endX = x.getPixelForValue(lengths[idx]) + 6;
+        ctx.fillText(startLabel, startX + 6, yPos);
+        // hide the end date if it would overlap the start date on very short bars
+        if (endX >= startX + 6 + ctx.measureText(startLabel).width + 6) {
+          ctx.fillText(formatDate(project.plannedEndDate), endX, yPos);
+        }
         if (elapsedDays[idx] > 0 && elapsedDays[idx] < lengths[idx]) {
           ctx.save();
           ctx.setLineDash([2, 2]);
