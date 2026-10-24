@@ -173,6 +173,12 @@ export const getManyChangeRequestQueryArgs = (organizationId: string) =>
       requestedReviewers: getUserQueryArgs(organizationId),
       leadershipChangeRequest: {
         include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      },
+      wbsProposedChanges: {
+        select: {
+          projectProposedChanges: { select: { budget: true } },
+          workPackageProposedChanges: { select: { startDate: true, duration: true } }
+        }
       }
     }
   });
