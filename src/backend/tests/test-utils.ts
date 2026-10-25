@@ -778,6 +778,17 @@ export const createTestTask = async (
   return task;
 };
 
+export const createTestTaskLabel = async (user: User, organizationId: string, name: string, colorHexCode: string) => {
+  return await prisma.task_Label.create({
+    data: {
+      name,
+      colorHexCode,
+      userCreated: { connect: { userId: user.userId } },
+      organization: { connect: { organizationId } }
+    }
+  });
+};
+
 export const createTestTaskWithOrganization = async (user: User, organization?: Organization) => {
   if (!organization) organization = await createTestOrganization();
   const orgId = organization.organizationId;

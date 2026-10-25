@@ -321,31 +321,49 @@ Shared types use `PascalCase` with no underscores — they follow standard TypeS
 | `Event_Type`            | `EventType`            |
 | `Change_Request`        | `ChangeRequest`        |
 
-### Entity Types vs Preview Types
+### Base Types and Extended Types
 
-Many entities have both a full type and a lighter preview type. The full type includes resolved relations; the preview includes only essential fields for list views:
+Every entity has a slim `Base{Entity}` type: the minimum that every consumer needs, slim enough to appear in any list. Each endpoint's model extends it with only what its pages read, and is named after what it serves:
 
 ```typescript
-// Full type — used on detail pages
-export interface Project extends WbsElement {
-  summary: string;
-  budget: number;
-  workPackages: WorkPackage[];
-  teams: TeamPreview[];
-  tasks: Task[];
-  favoritedBy: User[];
+/** The minimum every consumer of a task needs; slim enough to appear in any list. Extend it, don't grow it. */
+export interface BaseTask {
+  taskId: string;
+  wbsNum: WbsNumber;
+  title: string;
+  notes: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  deadline?: Date;
+  assignees: BaseUser[];
+  labels: TaskLabel[];
 }
 
-// Preview type — used in lists and dropdowns
-export interface ProjectPreview extends WbsElementPreview {
+/** My Tasks and My Team's Overdue Tasks on the home page */
+export interface TaskHomeCard extends BaseTask {
+  projectName: string;
+}
+
+/** Kanban boards and the calendar */
+export interface TaskBoardItem extends BaseTask {
   startDate?: Date;
-  endDate?: Date;
-  budget: number;
-  duration: number;
-  workPackages: WorkPackagePreview[];
-  teams: { teamName: string; teamId: string }[];
+  wbsName: string;
+  createdBy: BaseUser;
+  blockedBy: TaskBlockerPreview[];
+  projectName: string;
 }
 ```
+
+Rules:
+
+- **The base stays slim.** Primitives are fine. Relations go in only if the entity is meaningless without them. No unbounded lists.
+- **Extend, don't grow.** A field one page needs goes on that page's extended type, not the base.
+- **Name extended types after what they serve** (`TaskBoardItem`, `TaskHomeCard`), not `Preview`/`Full`/`WithX`.
+- **Give each type a one-line doc comment** naming the pages or endpoints it serves.
+- **Values computed in the database** (counts, derived names) are explicit fields, e.g. `numOpenTasks: number`.
+- **Related entities use their base type** (`assignees: BaseUser[]`), never the related entity's full type.
+
+These types mirror the Base and extended query args and transformers on the backend. See the `query-args-and-transformers` skill.
 
 ### Enum Mirroring
 
@@ -402,18 +420,18 @@ Payload types differ from entity types in important ways: they use IDs instead o
 
 ### Type Relationships Across Files
 
-Shared type files import from each other. Keep imports minimal — prefer importing `Preview` types over full types when the full relation isn't needed:
+Shared type files import from each other. Keep imports minimal: reference related entities by their `Base` type, and only use a richer type when the page actually reads those fields:
 
 ```typescript
-// In project-types.ts
-import { TeamPreview } from './team-types.js';
-import { User, UserPreview } from './user-types.js';
+// In task-types.ts
+import { BaseUser } from './user-types.js';
 
-export interface Project extends WbsElement {
-  teams: TeamPreview[]; // NOT Team[]
-  lead?: User;
+export interface BaseTask {
+  assignees: BaseUser[]; // NOT User[]
 }
 ```
+
+Older domains that haven't been refactored yet may only have `Preview` types. Use the slimmest type that exists.
 
 ## Step-by-Step: Adding a New Model
 
@@ -561,9 +579,12 @@ See the `query-args-and-transformers` skill for how to create the Prisma-to-shar
 - Shared types MUST be re-exported from `src/shared/index.ts`
 - New features MUST define separate `Create` and `Edit` payload types in shared
 - Payload types use IDs (`teamIds: string[]`) not resolved objects (`teams: Team[]`)
+- Every entity has a slim `Base{Entity}` type. Per-endpoint types `extends` it, and related entities are referenced by their base type
 - Foreign key fields MUST be indexed with `@@index`
 
 ## Common Mistakes
+
+- **Growing the base type for one page.** Add the field to that page's extended type instead.
 
 - **Forgetting to re-export from `src/shared/index.ts`.** The frontend won't see your new types until they're re-exported from the barrel file. If imports fail with "not exported," check the barrel.
 
@@ -586,9 +607,9 @@ See the `query-args-and-transformers` skill for how to create the Prisma-to-shar
 These files demonstrate the conventions well:
 
 - `src/backend/src/prisma/schema.prisma` — The single source of truth for all models and enums
-- `src/shared/src/types/calendar-types.ts` — Good example of entity types, preview types, enums, and create args
+- `src/shared/src/types/task-types.ts` — Base type with per-endpoint extended types
+- `src/shared/src/types/calendar-types.ts` — Good example of enums and create args
 - `src/shared/src/types/reimbursement-requests-types.ts` — Good example of complex nested types and multiple payload types
-- `src/shared/src/types/project-types.ts` — Good example of type hierarchies (`WbsElement` → `Project`, preview types)
 - `src/shared/index.ts` — Barrel export file; every new type file must be added here
 
 ## Checklist
@@ -601,7 +622,7 @@ These files demonstrate the conventions well:
 - [ ] All FK fields have `@@index` declarations
 - [ ] Named relations used when multiple relations target the same model
 - [ ] Soft deletion uses `dateDeleted DateTime?` pattern (if applicable)
-- [ ] Corresponding shared TypeScript types created in `src/shared/src/types/`
+- [ ] Corresponding shared TypeScript types created in `src/shared/src/types/`, with a slim `Base{Entity}` and extended types per endpoint
 - [ ] Shared type file re-exported from `src/shared/index.ts`
 - [ ] Prisma enums mirrored as TypeScript enums in shared types
 - [ ] Separate `Create` and `Edit` payload types defined for API operations
@@ -618,5 +639,7 @@ These files demonstrate the conventions well:
 **Timestamp fields:** Most existing models use `dateCreated DateTime @default(now())`. A few newer models (`Part`, `Part_Submission`, `Part_Review`, `Part_Review_Popup`) use `createdAt`/`updatedAt`. New models MUST use `createdAt` (not `dateCreated`) for the creation timestamp.
 
 **Primary key naming:** Some older models use a bare `id` field (e.g., `Unit`, `Link_Type`, `Material_Type`, `Manufacturer`, `Graph`, `Graph_Collection`). New models MUST use `{modelName}Id`.
+
+**Preview and full types:** Many older domains have a fat full type plus `Preview` variants (e.g. `Project` / `ProjectPreview`). New code MUST use the Base + extended pattern. When a domain is refactored, older types still used elsewhere stay, marked `@deprecated`, until nothing uses them.
 
 **Payload types:** The codebase is inconsistent about defining explicit create/edit payload types. Some features have them (e.g., `EventTypeCreateArgs`, `ReimbursementProductCreateArgs`, `ScheduleSlotCreateArgs`), while others pass inline objects or rely on partial Prisma types. The naming also varies between `CreateArgs`, `CreatePayload`, `ApiInputs`, and `FormInput`. New code MUST define explicit payload types. Prefer the `{Feature}CreateArgs` naming to match the majority of existing patterns.

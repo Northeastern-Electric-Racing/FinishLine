@@ -118,6 +118,7 @@ This is optional — inline arrays like `['events']` are equally valid. The impo
 - Keys MUST use lowercase hyphen-separated strings (e.g., `'filter-events'`, `'event-types'`)
 - NEVER use the same key for two different queries
 - If a key is used for invalidation in another hook file, export it as a named constant
+- When adding or renaming a read key, keep it under a prefix the feature's mutations already invalidate (e.g. `['tasks', 'overdue', userId]`, not `[userId, 'tasks']`), or mutations will leave it stale
 
 ## Step-by-Step: Adding a New Query Hook
 
@@ -192,6 +193,21 @@ export const getAllEvents = () => {
 };
 ```
 
+When the backend has a Base model with extended models, mirror it: write one generic transformer for the base fields and spread it in each extended transformer:
+
+```typescript
+export const baseTaskTransformer = <T extends BaseTask>(task: T): T => ({
+  ...task,
+  deadline: task.deadline ? dbDateToLocalDate(new Date(task.deadline)) : undefined,
+  labels: task.labels.map(taskLabelTransformer)
+});
+
+export const taskBoardItemTransformer = (task: TaskBoardItem): TaskBoardItem => ({
+  ...baseTaskTransformer(task),
+  startDate: task.startDate ? dbDateToLocalDate(new Date(task.startDate)) : undefined
+});
+```
+
 See the [query-args-and-transformers skill](../general-practices/query-args-and-transformers) for detailed transformer patterns.
 
 ### Step 4: Write the Query Hook
@@ -231,20 +247,21 @@ export const useSingleEvent = (id?: string) => {
 - Type the hook as `useQuery<ResponseType, Error>`
 - Use `enabled` to conditionally skip queries when required params are missing
 - Use `keepPreviousData: true` for filter/pagination queries to avoid UI flicker
+- For paginated endpoints, use `useInfiniteQuery` with `getNextPageParam` reading the page's next offset (see `useFilterTasksPages` in `tasks.hooks.ts`)
 
 ## Step-by-Step: Adding a New Mutation Hook
 
 ### Step 1: Add the URL and API Function
 
-Same as query steps 1-2, but using `axios.post` (or `.put`, `.delete`):
+Same as query steps 1-2, but using `axios.post`. Mutation endpoints return `204` with no body, so there is no response type or `transformResponse`:
 
 ```typescript
 export const postCreateShop = (payload: { name: string; description: string }) => {
-  return axios.post<Shop>(apiUrls.calendarCreateShop(), payload, {
-    transformResponse: (data) => JSON.parse(data) as Shop
-  });
+  return axios.post(apiUrls.calendarCreateShop(), payload);
 };
 ```
+
+Only when the endpoint deliberately returns data (because a caller reads it) do you add the response type and a `transformResponse`.
 
 ### Step 2: Write the Mutation Hook
 
@@ -257,17 +274,15 @@ Every mutation hook MUST:
 
 ```typescript
 import { useMutation, useQueryClient } from 'react-query';
-import { Shop } from 'shared';
 import { postCreateShop } from '../apis/calendar.api';
 import { useToast } from './toasts.hooks';
 
 export const useCreateShop = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
-  return useMutation<Shop, Error, { name: string; description: string }>(
+  return useMutation<void, Error, { name: string; description: string }>(
     async (payload) => {
-      const { data } = await postCreateShop(payload);
-      return data;
+      await postCreateShop(payload);
     },
     {
       onSuccess: () => {
@@ -311,13 +326,13 @@ Unlike query hooks, mutation hooks do NOT require an explicit mutation key. You 
 
 ```typescript
 // Without mutation key (standard)
-useMutation<Shop, Error, CreateShopPayload>(
+useMutation<void, Error, CreateShopPayload>(
   async (payload) => { ... },
   { onSuccess: () => { ... } }
 );
 
 // With optional mutation key
-useMutation<Shop, Error, CreateShopPayload>(
+useMutation<void, Error, CreateShopPayload>(
   ['shops', 'create'],
   async (payload) => { ... },
   { onSuccess: () => { ... } }
@@ -328,12 +343,12 @@ useMutation<Shop, Error, CreateShopPayload>(
 
 `useMutation` takes three type parameters: `<TData, TError, TVariables>`:
 
-- `TData` — the type returned by the mutation function (what the backend sends back)
+- `TData` — the type returned by the mutation function. This is `void` for standard mutations, since the backend returns `204`. Use a shared type only when the endpoint deliberately returns data.
 - `TError` — always `Error`
 - `TVariables` — the type of the argument passed to `mutateAsync(arg)`
 
 ```typescript
-useMutation<Shop, Error, { name: string; description: string }>(...);
+useMutation<void, Error, { name: string; description: string }>(...);
 //          ^TData ^TError  ^TVariables
 ```
 
@@ -353,10 +368,9 @@ import { EVENT_KEY } from './calendar.hooks';
 export const useDeleteProject = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
-  return useMutation<{ message: string }, Error, string>(
+  return useMutation<void, Error, string>(
     async (projectId) => {
-      const { data } = await deleteProject(projectId);
-      return data;
+      await deleteProject(projectId);
     },
     {
       onSuccess: () => {
@@ -423,6 +437,7 @@ The second argument is an optional `autoHideDuration` in milliseconds. Error toa
 - Every mutation hook MUST call `useToast()` and show toasts in `onSuccess` and `onError`
 - Every mutation hook MUST invalidate all relevant query keys on success
 - Mutation hooks MUST return the `useMutation` result directly (the component uses `mutateAsync`)
+- Mutation hooks are typed `useMutation<void, ...>` and don't return data, unless the endpoint deliberately returns it for a caller that reads it
 - Types for API responses MUST come from the `shared` package
 - Payload/input types that are unique to the frontend (e.g., form-specific types) MAY be defined in the hooks or API file
 
@@ -433,6 +448,7 @@ The second argument is an optional `autoHideDuration` in milliseconds. Error toa
 - **Using a plain string as a query key** — `useQuery('events', ...)` is fragile and doesn't support partial invalidation. Always use an array: `useQuery(['events'], ...)` or `useQuery(['events', id], ...)`.
 - **Not invalidating filtered/variant queries** — If you have both `['events']` and a filter query (`['filter-events', args]`), a mutation that changes events MUST invalidate both.
 - **Handling toasts in the component instead of the hook** — New code MUST handle toasts in the hook's `onSuccess`/`onError`. Components should NOT call `toast.success/error` for standard mutation outcomes.
+- **Expecting data back from a mutation.** Mutations return `204`. Refresh with `invalidateQueries` instead of reading a response body.
 - **Adding unnecessary mutation keys** — Mutation keys are optional and only needed if you have a specific use case for them. Don't add them by default.
 
 ## Reference Files
@@ -444,6 +460,8 @@ These files demonstrate the patterns well:
 - `src/frontend/src/hooks/work-packages.hooks.ts` — Query hooks with parameter-based keys and mutation hooks
 - `src/frontend/src/apis/work-packages.api.ts` — API functions using `workPackageTransformer` in `transformResponse`
 - `src/frontend/src/apis/transformers/calendar.transformer.ts` — Frontend transformers for date conversion and nested object handling
+- `src/frontend/src/hooks/tasks.hooks.ts` — `void` mutation hooks, `useInfiniteQuery` pagination, and query keys nested under invalidated prefixes
+- `src/frontend/src/apis/transformers/tasks.transformers.ts` — Generic base transformer spread by extended transformers
 - `src/frontend/src/hooks/toasts.hooks.ts` — The toast hook API
 - `src/frontend/src/pages/CalendarPage/Components/CreateEventModal.tsx` — Example of consuming a mutation hook in a component
 
@@ -456,6 +474,7 @@ These files demonstrate the patterns well:
 - [ ] Query hooks use `enabled` when parameters may be undefined
 - [ ] Mutation hooks call `useToast()` and show toasts in `onSuccess` and `onError`
 - [ ] Mutation hooks invalidate all affected query keys (list, detail, filtered variants)
+- [ ] Mutation API functions and hooks don't expect a response body (`useMutation<void, ...>`) unless the endpoint deliberately returns one
 - [ ] Response types are imported from `shared`
 - [ ] URL is added to `apiUrls` in `src/frontend/src/utils/urls.ts`
 - [ ] Hook and API files share the same feature-name prefix
@@ -467,5 +486,7 @@ These files demonstrate the patterns well:
 **Toast notifications:** Many existing mutation hooks (e.g., `useCreateShop`, `useEditCalendar` in `calendar.hooks.ts`) do not include toast notifications. Instead, toasts were handled at the component level. The prescribed pattern moves toasts into the hook's `onSuccess`/`onError` callbacks so that every consumer of the hook gets consistent feedback without duplicating toast logic. When adding new mutations, always include toasts in the hook. When modifying existing mutation hooks, add `useToast()` and the `onSuccess`/`onError` toast callbacks.
 
 **API function return values:** Some existing API functions (e.g., `postCreateMachinery`, `postEditMachinery` in `calendar.api.ts`) extract `.data` from the Axios response and return the raw data instead of the `AxiosResponse`. The prescribed pattern is for API functions to always return `AxiosResponse`. When touching existing API functions that extract `.data`, refactor them to return the full response and update the corresponding hook to extract `.data`.
+
+**Mutation responses:** Many existing mutation endpoints still return the created or updated object, and their hooks are typed with a shared type or `{ message: string }`. New mutations MUST return `204`, with hooks typed `useMutation<void, ...>`. When refactoring a domain, convert its mutations at the same time.
 
 **Mutation keys:** Some existing mutation hooks include an explicit mutation key as the first argument to `useMutation`. This is optional — new code does not need mutation keys unless there is a specific reason (e.g., tracking mutation state externally). Either approach is fine.

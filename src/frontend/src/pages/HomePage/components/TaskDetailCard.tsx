@@ -1,6 +1,6 @@
 import { Card, CardContent, useTheme, Stack, Link, Typography, Box, Chip } from '@mui/material';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
-import { Task, wbsPipe } from 'shared';
+import { TaskHomeCard, wbsPipe } from 'shared';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { taskPriorityColor } from '../../../utils/task.utils';
@@ -8,14 +8,11 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { useState } from 'react';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { styled } from '@mui/material/styles';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
-import { useSingleProject } from '../../../hooks/projects.hooks';
 import { daysOverdue } from '../../../utils/datetime.utils';
 import { formatDateOnly } from 'shared';
 
 interface TaskDetailCardProps {
-  task: Task;
+  task: TaskHomeCard;
   taskNumber: number;
 }
 
@@ -35,10 +32,6 @@ const TaskDetailCard: React.FC<TaskDetailCardProps> = ({ task, taskNumber }) => 
   const taskDaysOverdue = task.deadline ? daysOverdue(new Date(task.deadline)) : 0;
   const taskOverdue = taskDaysOverdue > 0;
   const [hover, setHover] = useState<boolean>(false);
-  const { data: project, isLoading, isError, error } = useSingleProject(task.wbsNum);
-
-  if (isLoading || !project) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error.message} />;
 
   return (
     <NERToolTip
@@ -86,7 +79,7 @@ const TaskDetailCard: React.FC<TaskDetailCardProps> = ({ task, taskNumber }) => 
                 </Box>
                 <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(task.wbsNum)}`} noWrap>
                   <Typography fontWeight={'regular'} variant="subtitle2">
-                    {wbsPipe(task.wbsNum)} - {project.name}
+                    {wbsPipe(task.wbsNum)} - {task.projectName}
                   </Typography>
                 </Link>
               </Stack>

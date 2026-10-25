@@ -13,8 +13,8 @@ import { isDate } from '../utils/validation.utils.js';
 
 const tasksRouter = express.Router();
 
-tasksRouter.post(
-  '/filter',
+// the filter criteria shared by the full and paginated filter endpoints
+const filterTasksValidators = [
   isDate(body('startPeriod').optional()),
   isDate(body('endPeriod').optional()),
   body('memberIds').optional().isArray(),
@@ -37,9 +37,18 @@ tasksRouter.post(
   intMinZero(body('workPackageWbsNums.*.projectNumber').optional()),
   intMinZero(body('workPackageWbsNums.*.workPackageNumber').optional()),
   body('search').optional().isString(),
-  body('andMemberTeam').optional().isBoolean(),
+  body('andMemberTeam').optional().isBoolean()
+];
+
+tasksRouter.post('/filter', ...filterTasksValidators, validateInputs, TasksController.getFilteredTasks);
+
+tasksRouter.post(
+  '/filter-paginated',
+  ...filterTasksValidators,
+  isTaskStatus(body('status')),
+  intMinZero(body('offset')),
   validateInputs,
-  TasksController.getFilteredTasks
+  TasksController.getFilteredTasksPage
 );
 
 tasksRouter.post(
