@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import UsersService from '../services/users.services.js';
 import ApiTokenService from '../services/api-tokens.services.js';
 import { AccessDeniedException } from '../utils/errors.utils.js';
+import { AUTH_TOKEN_LIFETIME_DAYS } from '../utils/auth.utils.js';
 import { Task } from 'shared';
 export default class UsersController {
   static async getAllUsers(_req: Request, res: Response, next: NextFunction) {
@@ -116,7 +117,12 @@ export default class UsersController {
 
       const { user, token } = await UsersService.logUserIn(idToken, header!);
 
-      res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 7 * 24 * 60 * 60 * 1000 });
+      res.cookie('token', token, {
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true,
+        maxAge: AUTH_TOKEN_LIFETIME_DAYS * 24 * 60 * 60 * 1000
+      });
       res.status(200).json(user);
     } catch (error: unknown) {
       next(error);

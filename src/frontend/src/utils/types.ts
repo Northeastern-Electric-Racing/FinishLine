@@ -13,6 +13,7 @@ export interface Auth {
   signInCurrent: () => Promise<void>;
   isLoading: boolean;
   triedCurrent: boolean;
+  serverUnavailable: boolean;
 }
 
 export const themeChoices = ['DARK', 'LIGHT'];
