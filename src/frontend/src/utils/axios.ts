@@ -31,14 +31,18 @@ export class HttpError extends Error {
   }
 }
 
+// statuses the load balancer returns while the backend is down or restarting
+const SERVER_UNAVAILABLE_STATUSES = [502, 503, 504];
+
 /**
- * Whether an error means the backend couldn't be reached or failed, rather than rejecting the request.
+ * Whether an error means the backend couldn't be reached, rather than the backend answering with an error.
  * A load balancer 502/503 has no CORS headers, so the browser reports it as a network error with no status.
+ * A plain 500 comes from the backend itself, so it isn't treated as the server being unavailable.
  * @param error the error thrown by a request
- * @returns true if there was no response or the response was a 5xx
+ * @returns true if there was no response or the response was a 502, 503 or 504
  */
 export const isServerUnavailableError = (error: unknown): boolean =>
-  error instanceof HttpError && (error.status === undefined || error.status >= 500);
+  error instanceof HttpError && (error.status === undefined || SERVER_UNAVAILABLE_STATUSES.includes(error.status));
 
 // This allows us to get good server errors
 // All express responses must be: res.status(404).json({ message: "You are not authorized to do that." })

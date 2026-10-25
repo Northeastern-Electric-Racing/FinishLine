@@ -27,11 +27,12 @@ export const useProvideAuth = () => {
   const signingInCurrent = useRef(false);
 
   /**
-   * Restores the session from the auth cookie. Only a rejected request (4xx) counts as not being signed in.
-   * If the backend is down or restarting, the cookie may still be valid, so keep retrying with backoff
-   * instead of sending the user to the login page.
+   * Restores the session from the auth cookie. If the backend is down or restarting, the cookie may still be
+   * valid, so keep retrying with backoff instead of sending the user to the login page.
+   * @param retryUntilAvailable false to throw when the backend is unavailable instead of retrying, for callers
+   * that are refreshing an already signed in user and need to surface the failure
    */
-  const signInCurrent = async () => {
+  const signInCurrent = async (retryUntilAvailable = true) => {
     if (signingInCurrent.current) return;
     signingInCurrent.current = true;
 
@@ -46,6 +47,7 @@ export const useProvideAuth = () => {
             console.log(error);
             return;
           }
+          if (!retryUntilAvailable) throw error;
           setServerUnavailable(true);
           const delay = Math.min(1000 * 2 ** attempt, MAX_CURRENT_USER_RETRY_DELAY_MS);
           await new Promise((resolve) => setTimeout(resolve, delay));

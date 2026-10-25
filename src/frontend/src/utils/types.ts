@@ -10,7 +10,7 @@ export interface Auth {
   devSignin: (userId: string) => Promise<AuthenticatedUser>;
   signin: (token: string) => Promise<AuthenticatedUser>;
   signout: () => void;
-  signInCurrent: () => Promise<void>;
+  signInCurrent: (retryUntilAvailable?: boolean) => Promise<void>;
   isLoading: boolean;
   triedCurrent: boolean;
   serverUnavailable: boolean;
