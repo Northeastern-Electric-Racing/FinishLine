@@ -36,8 +36,9 @@ const createOtherOrganization = async () => {
 
 // Creates a team with a team type properly scoped to orgId.
 // (createTestTeam(head, undefined, orgId) incorrectly passes orgId as the team type name.)
-const createTeamInOrg = async (headId: string, teamOrgId: string) => {
-  const teamType = await createTestTeamType('aTeam', teamOrgId);
+// Team type names are unique per org, so pass a different name when creating more than one team in a test.
+const createTeamInOrg = async (headId: string, teamOrgId: string, teamTypeName = 'aTeam') => {
+  const teamType = await createTestTeamType(teamTypeName, teamOrgId);
   return createTestTeam(headId, teamType.teamTypeId, teamOrgId);
 };
 
@@ -581,7 +582,7 @@ describe('Attendance Tests', () => {
       const head = await createTestUser(greenlanternHead, orgId);
       const otherHead = await createTestUser({ ...supermanAdmin, googleAuthId: 'otherTeamHead' }, orgId);
       const team = await createTeamInOrg(head.userId, orgId);
-      const otherTeam = await createTeamInOrg(otherHead.userId, orgId);
+      const otherTeam = await createTeamInOrg(otherHead.userId, orgId, 'bTeam');
       const now = Date.now();
       await createAttendanceEvent(
         head.userId,
@@ -684,7 +685,7 @@ describe('Attendance Tests', () => {
       const head = await createTestUser(greenlanternHead, orgId);
       const otherHead = await createTestUser({ ...supermanAdmin, googleAuthId: 'otherTeamHead' }, orgId);
       const team = await createTeamInOrg(head.userId, orgId);
-      const otherTeam = await createTeamInOrg(otherHead.userId, orgId);
+      const otherTeam = await createTeamInOrg(otherHead.userId, orgId, 'bTeam');
       const now = Date.now();
       await createAttendanceEvent(head.userId, orgId, [team.teamId], new Date(now - hourMs), new Date(now + hourMs));
       await createAttendanceEvent(
