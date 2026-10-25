@@ -19,7 +19,7 @@ export const meetingAttendanceTransformer = (
     closedAt: attendance.closedAt ?? undefined,
     attendeesCount: attendance.attendees.length,
     teamMemberAttendancePercent: calculateTeamMemberAttendancePercent(attendance.team, attendance.attendees),
-    scheduleSlotId: attendance.scheduleSlotId ?? undefined
+    eventId: attendance.eventId ?? undefined
   };
 };
 
@@ -35,7 +35,7 @@ export const meetingAttendanceWithAttendeesTransformer = (
     closedAt: attendance.closedAt ?? undefined,
     attendeesCount: attendance.attendees.length,
     teamMemberAttendancePercent: calculateTeamMemberAttendancePercent(attendance.team, attendance.attendees),
-    scheduleSlotId: attendance.scheduleSlotId ?? undefined,
+    eventId: attendance.eventId ?? undefined,
     attendees: attendance.attendees.map(userTransformer)
   };
 };

@@ -55,7 +55,6 @@ import {
 } from '../utils/errors.utils.js';
 import { createCalendarEvent, uploadFile, downloadFile, deleteCalendarEvents } from '../utils/google-integration.utils.js';
 import { sendEventPopUp } from '../utils/pop-up.utils.js';
-import AttendanceService from './attendance.services.js';
 import {
   sendSlackEventConfirmNotification,
   sendEventConfirmationToThread,
@@ -1182,8 +1181,6 @@ export default class CalendarService {
       return this.deleteEvent(submitter, event.eventId, organization);
     }
 
-    await AttendanceService.closeAttendancesForScheduleSlots([scheduleSlotId]);
-
     // Delete the schedule slot (hard delete for schedule slots)
     await prisma.schedule_Slot.delete({
       where: { scheduleSlotId }
@@ -1478,10 +1475,6 @@ export default class CalendarService {
 
     if (!event) throw new NotFoundException('Event', eventId);
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
-
-    // Attendance sessions open on the old slots, moved onto the new slot once it's created
-    let openAttendanceIds: string[] = [];
-
     if (event.status === Event_Status.SCHEDULED) {
       const timeSlots = await prisma.schedule_Slot.findMany({
         where: { eventId: event.eventId }
@@ -1520,10 +1513,6 @@ export default class CalendarService {
         where: { eventId: event.eventId },
         data: { status: Event_Status.SCHEDULED }
       });
-
-      openAttendanceIds = await AttendanceService.getOpenAttendanceIdsForScheduleSlots(
-        timeSlots.map((slot) => slot.scheduleSlotId)
-      );
 
       await prisma.schedule_Slot.deleteMany({
         where: { eventId: event.eventId }
@@ -1572,16 +1561,6 @@ export default class CalendarService {
 
       ...getEventQueryArgs(organization.organizationId)
     });
-
-    // Keep the meeting's attendance session on the rescheduled slot so a second one isn't opened for it
-    const newSlot = updatedEvent.scheduledTimes.find(
-      (slot) => slot.startTime.getTime() === startTime.getTime() && slot.endTime.getTime() === endTime.getTime()
-    );
-    if (newSlot !== undefined) {
-      await AttendanceService.moveAttendancesToScheduleSlot(openAttendanceIds, newSlot.scheduleSlotId);
-    } else {
-      await AttendanceService.closeAttendances(openAttendanceIds);
-    }
 
     // Remove the scheduled time from confirmed members' availabilities so they can't be
     // double-booked for other events that require confirmation during the same time slot

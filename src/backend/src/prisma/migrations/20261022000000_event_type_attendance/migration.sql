@@ -4,10 +4,10 @@ ALTER TABLE "Event_Type" ADD COLUMN     "takeAttendance" BOOLEAN NOT NULL DEFAUL
 ALTER TABLE "Event_Type" ALTER COLUMN "takeAttendance" DROP DEFAULT;
 
 -- AlterTable
-ALTER TABLE "Meeting_Attendance" ADD COLUMN     "scheduleSlotId" TEXT;
+ALTER TABLE "Meeting_Attendance" ADD COLUMN     "eventId" TEXT;
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Meeting_Attendance_scheduleSlotId_teamId_key" ON "Meeting_Attendance"("scheduleSlotId", "teamId");
+CREATE INDEX "Meeting_Attendance_eventId_idx" ON "Meeting_Attendance"("eventId");
 
 -- AddForeignKey
-ALTER TABLE "Meeting_Attendance" ADD CONSTRAINT "Meeting_Attendance_scheduleSlotId_fkey" FOREIGN KEY ("scheduleSlotId") REFERENCES "Schedule_Slot"("scheduleSlotId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Meeting_Attendance" ADD CONSTRAINT "Meeting_Attendance_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("eventId") ON DELETE SET NULL ON UPDATE CASCADE;

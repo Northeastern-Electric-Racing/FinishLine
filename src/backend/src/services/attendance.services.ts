@@ -179,50 +179,9 @@ export default class AttendanceService {
   }
 
   /**
-   * Gets the ids of the open attendance sessions tied to the given schedule slots.
-   *
-   * @param scheduleSlotIds the schedule slots to look up
-   * @returns the ids of the open attendance sessions for those slots
-   */
-  static async getOpenAttendanceIdsForScheduleSlots(scheduleSlotIds: string[]): Promise<string[]> {
-    const attendances = await prisma.meeting_Attendance.findMany({
-      where: { scheduleSlotId: { in: scheduleSlotIds }, closedAt: null },
-      select: { meetingAttendanceId: true }
-    });
-    return attendances.map((attendance) => attendance.meetingAttendanceId);
-  }
-
-  /**
-   * Closes the open attendance sessions for the given schedule slots. Must be called before the slots are
-   * deleted, since deleting a slot unlinks its sessions and the scheduled job can no longer close them.
-   *
-   * @param scheduleSlotIds the schedule slots being removed
-   */
-  static async closeAttendancesForScheduleSlots(scheduleSlotIds: string[]): Promise<void> {
-    await AttendanceService.closeAttendances(await AttendanceService.getOpenAttendanceIdsForScheduleSlots(scheduleSlotIds));
-  }
-
-  /**
-   * Moves open attendance sessions onto a new schedule slot, used when an event is rescheduled and its old
-   * slots are replaced, so the meeting keeps its attendance session instead of getting a second one.
-   * The scheduled job closes the session if the new slot isn't happening right now.
-   *
-   * @param meetingAttendanceIds the open sessions from the replaced slots
-   * @param scheduleSlotId the event's new schedule slot
-   */
-  static async moveAttendancesToScheduleSlot(meetingAttendanceIds: string[], scheduleSlotId: string): Promise<void> {
-    if (meetingAttendanceIds.length === 0) return;
-
-    await prisma.meeting_Attendance.updateMany({
-      where: { meetingAttendanceId: { in: meetingAttendanceIds } },
-      data: { scheduleSlotId }
-    });
-  }
-
-  /**
    * Run by the bay-cron scheduled job. Closes attendance for meetings that are no longer happening, then
-   * opens attendance for meetings that have started. Reads the slots' current times on every run, so
-   * meetings that are edited, rescheduled, or deleted are picked up on the next run.
+   * opens attendance for meetings that have started. Reads the events' current schedule slots on every run,
+   * so meetings that are edited, rescheduled, or deleted are picked up on the next run.
    */
   static async updateScheduledAttendances(): Promise<void> {
     await AttendanceService.closeEndedScheduledAttendances();
@@ -230,8 +189,9 @@ export default class AttendanceService {
   }
 
   /**
-   * Closes every automatically opened attendance session whose meeting is no longer happening: it ended,
-   * it was moved to a later time or to all day, or its event was deleted.
+   * Closes every automatically opened attendance session whose meeting is no longer happening: its event
+   * was deleted, or none of its event's schedule slots are going on right now (the meeting ended, was
+   * moved, or its slot was deleted).
    */
   static async closeEndedScheduledAttendances(): Promise<void> {
     const now = new Date();
@@ -239,12 +199,10 @@ export default class AttendanceService {
     const attendances = await prisma.meeting_Attendance.findMany({
       where: {
         closedAt: null,
-        scheduleSlot: {
+        event: {
           OR: [
-            { endTime: { lte: now } },
-            { startTime: { gt: now } },
-            { allDay: true },
-            { event: { dateDeleted: { not: null } } }
+            { dateDeleted: { not: null } },
+            { scheduledTimes: { none: { allDay: false, startTime: { lte: now }, endTime: { gt: now } } } }
           ]
         }
       },
@@ -256,8 +214,8 @@ export default class AttendanceService {
 
   /**
    * Opens attendance in each team's slack channel for every schedule slot that is currently happening
-   * on an event whose event type takes attendance. Safe to run repeatedly, since a slot/team pair
-   * only ever gets one attendance session.
+   * on an event whose event type takes attendance. Safe to run repeatedly, since a team only gets one
+   * attendance session per meeting.
    */
   static async openScheduledAttendances(): Promise<void> {
     const now = new Date();
@@ -275,7 +233,7 @@ export default class AttendanceService {
         }
       },
       select: {
-        scheduleSlotId: true,
+        startTime: true,
         event: {
           select: {
             eventId: true,
@@ -284,8 +242,7 @@ export default class AttendanceService {
             eventType: { select: { organizationId: true } },
             teams: { where: { dateArchived: null }, select: { teamId: true, slackId: true } }
           }
-        },
-        meetingAttendances: { select: { teamId: true } }
+        }
       }
     });
 
@@ -299,12 +256,30 @@ export default class AttendanceService {
     });
     const teamsWithOpenAttendance = new Set(openAttendances.map((attendance) => attendance.teamId));
 
-    for (const scheduleSlot of scheduleSlots) {
-      const { event } = scheduleSlot;
-      const teamsWithAttendance = new Set(scheduleSlot.meetingAttendances.map((attendance) => attendance.teamId));
+    // Sessions already opened for these meetings, so a meeting never gets a second session
+    const meetingAttendances = await prisma.meeting_Attendance.findMany({
+      where: {
+        OR: scheduleSlots.map((scheduleSlot) => ({
+          eventId: scheduleSlot.event.eventId,
+          openedAt: { gte: scheduleSlot.startTime }
+        }))
+      },
+      select: { eventId: true, teamId: true }
+    });
+    const meetingTeamKey = (eventId: string, teamId: string) => `${eventId}:${teamId}`;
+    const meetingsWithAttendance = new Set(
+      meetingAttendances.flatMap((attendance) =>
+        attendance.eventId === null ? [] : [meetingTeamKey(attendance.eventId, attendance.teamId)]
+      )
+    );
 
+    for (const { event } of scheduleSlots) {
       for (const team of event.teams) {
-        if (teamsWithAttendance.has(team.teamId) || teamsWithOpenAttendance.has(team.teamId)) continue;
+        if (
+          meetingsWithAttendance.has(meetingTeamKey(event.eventId, team.teamId)) ||
+          teamsWithOpenAttendance.has(team.teamId)
+        )
+          continue;
 
         try {
           const result = await sendMessage(
@@ -324,7 +299,7 @@ export default class AttendanceService {
                 userCreatedId: event.userCreatedId,
                 slackChannelId: result.channelId,
                 slackMessageTimestamp: result.ts,
-                scheduleSlotId: scheduleSlot.scheduleSlotId,
+                eventId: event.eventId,
                 openedAt: now
               }
             })
@@ -381,7 +356,7 @@ export default class AttendanceService {
       throw new HttpException(400, 'There is no open attendance session for this team');
     }
 
-    if (openAttendance.scheduleSlotId !== null) {
+    if (openAttendance.eventId !== null) {
       throw new HttpException(
         400,
         'This attendance session was opened automatically for a meeting and will close when the meeting ends'

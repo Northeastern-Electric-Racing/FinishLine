@@ -337,7 +337,7 @@ describe('Attendance Tests', () => {
           userCreatedId: head.userId,
           slackChannelId: 'C12345',
           slackMessageTimestamp: '111.001',
-          scheduleSlotId: event.scheduledTimes[0].scheduleSlotId
+          eventId: event.eventId
         }
       });
 
@@ -554,7 +554,7 @@ describe('Attendance Tests', () => {
       expect(sendMessage).toHaveBeenCalledWith(team.slackId, expect.stringContaining('<!channel>'));
       const attendances = await prisma.meeting_Attendance.findMany({ where: { teamId: team.teamId } });
       expect(attendances).toHaveLength(1);
-      expect(attendances[0].scheduleSlotId).toBe(event.scheduledTimes[0].scheduleSlotId);
+      expect(attendances[0].eventId).toBe(event.eventId);
       expect(attendances[0].closedAt).toBeNull();
     });
 
@@ -716,7 +716,7 @@ describe('Attendance Tests', () => {
           userCreatedId: head.userId,
           slackChannelId: 'C12345',
           slackMessageTimestamp: '111.001',
-          scheduleSlotId: scheduleSlot.scheduleSlotId
+          eventId: event.eventId
         }
       });
       return { head, team, event, scheduleSlot, attendance };
@@ -788,33 +788,33 @@ describe('Attendance Tests', () => {
       expect(await getClosedAt(attendance.meetingAttendanceId)).toBeNull();
     });
 
-    it('closes attendance for a slot that is about to be deleted', async () => {
+    it("closes attendance when the meeting's slot is deleted", async () => {
       const now = Date.now();
       const { scheduleSlot, attendance } = await createOpenAutomaticAttendance(
         new Date(now - hourMs),
         new Date(now + hourMs)
       );
+      await prisma.schedule_Slot.delete({ where: { scheduleSlotId: scheduleSlot.scheduleSlotId } });
 
-      await AttendanceService.closeAttendancesForScheduleSlots([scheduleSlot.scheduleSlotId]);
+      await AttendanceService.closeEndedScheduledAttendances();
 
       expect(await getClosedAt(attendance.meetingAttendanceId)).not.toBeNull();
     });
 
-    it('moves attendance onto the new slot when the event is rescheduled', async () => {
+    it('keeps the same session when the event is rescheduled to a slot that is still going on', async () => {
       const now = Date.now();
-      const { event, attendance } = await createOpenAutomaticAttendance(new Date(now - hourMs), new Date(now + hourMs));
-      const newSlot = await prisma.schedule_Slot.create({
-        data: { eventId: event.eventId, startTime: new Date(now - hourMs / 2), endTime: new Date(now + hourMs) }
+      const { event, scheduleSlot, attendance } = await createOpenAutomaticAttendance(
+        new Date(now - hourMs),
+        new Date(now + hourMs)
+      );
+      await prisma.schedule_Slot.delete({ where: { scheduleSlotId: scheduleSlot.scheduleSlotId } });
+      await prisma.schedule_Slot.create({
+        data: { eventId: event.eventId, startTime: new Date(now - hourMs / 2), endTime: new Date(now + 2 * hourMs) }
       });
 
-      await AttendanceService.moveAttendancesToScheduleSlot([attendance.meetingAttendanceId], newSlot.scheduleSlotId);
       await AttendanceService.updateScheduledAttendances();
 
-      const record = await prisma.meeting_Attendance.findUnique({
-        where: { meetingAttendanceId: attendance.meetingAttendanceId }
-      });
-      expect(record!.scheduleSlotId).toBe(newSlot.scheduleSlotId);
-      expect(record!.closedAt).toBeNull();
+      expect(await getClosedAt(attendance.meetingAttendanceId)).toBeNull();
       expect(sendMessage).not.toHaveBeenCalled();
     });
   });

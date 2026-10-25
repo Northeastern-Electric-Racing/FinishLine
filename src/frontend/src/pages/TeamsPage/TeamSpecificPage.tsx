@@ -117,7 +117,7 @@ const TeamSpecificPage: React.FC = () => {
   // Attendance opened automatically for a scheduled meeting closes when the meeting ends, so it can't be closed
   // early and a new session can't be started until then
   const AttendanceButton = () =>
-    ongoingAttendance?.scheduleSlotId !== undefined ? (
+    ongoingAttendance?.eventId !== undefined ? (
       <Tooltip title="Attendance is being taken automatically for an ongoing meeting">
         <span>
           <NERButton variant="contained" size="medium" disabled sx={{ whiteSpace: 'nowrap' }}>
