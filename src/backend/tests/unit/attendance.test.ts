@@ -609,17 +609,21 @@ describe('Attendance Tests', () => {
       await createAttendanceEvent(head.userId, orgId, [team.teamId], new Date(now - hourMs), new Date(now + hourMs));
 
       (sendMessage as Mock).mockResolvedValue({ channelId: 'C12345', ts: '111.001' });
-      const createSpy = vi
-        .spyOn(prisma.meeting_Attendance, 'create')
-        .mockRejectedValueOnce(new Error('Unique constraint failed'));
+      // mockRestore can't be used here: prisma's model proxy doesn't report create as a real property,
+      // so restoring sets it to undefined and breaks every later test. Put the original back instead.
+      const originalCreate = prisma.meeting_Attendance.create;
+      vi.spyOn(prisma.meeting_Attendance, 'create').mockRejectedValueOnce(new Error('Database error'));
 
-      await AttendanceService.openScheduledAttendances();
+      try {
+        await AttendanceService.openScheduledAttendances();
 
-      expect(deleteMessage).toHaveBeenCalledWith('C12345', '111.001');
-      createSpy.mockRestore();
+        expect(deleteMessage).toHaveBeenCalledWith('C12345', '111.001');
+      } finally {
+        prisma.meeting_Attendance.create = originalCreate;
+      }
     });
 
-    it('only opens attendance once per schedule slot', async () => {
+    it('only opens attendance once per meeting', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
       const team = await createTeamInOrg(head.userId, orgId);
       const now = Date.now();
