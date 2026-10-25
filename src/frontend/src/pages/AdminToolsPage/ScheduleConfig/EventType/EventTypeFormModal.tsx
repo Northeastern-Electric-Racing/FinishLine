@@ -25,6 +25,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import HowToRegIcon from '@mui/icons-material/HowToReg';
 
 export interface EventTypeFormValues {
   name: string;
@@ -44,6 +45,7 @@ export interface EventTypeFormValues {
   onlyHeadsOrAbove: boolean;
   requiresConfirmation: boolean;
   sendSlackNotifications: boolean;
+  takeAttendance: boolean;
 }
 
 const eventTypeSchema = yup.object({
@@ -63,7 +65,8 @@ const eventTypeSchema = yup.object({
   description: yup.boolean().required(),
   onlyHeadsOrAbove: yup.boolean().required(),
   requiresConfirmation: yup.boolean().required(),
-  sendSlackNotifications: yup.boolean().required()
+  sendSlackNotifications: yup.boolean().required(),
+  takeAttendance: yup.boolean().required()
 });
 
 interface EventTypeFormModalProps {
@@ -94,7 +97,8 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
     description: true,
     onlyHeadsOrAbove: false,
     requiresConfirmation: false,
-    sendSlackNotifications: false
+    sendSlackNotifications: false,
+    takeAttendance: false
   };
 
   const {
@@ -125,6 +129,9 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
       setValue('sendSlackNotifications', false);
     }
   }, [notificationsDisabled, setValue]);
+
+  // Attendance is posted in the event's team channels, so it requires teams to be enabled
+  const attendanceDisabled = !watchTeams;
 
   const onFormSubmit = async (data: EventTypeFormValues) => {
     try {
@@ -442,7 +449,15 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
             control={control}
             name="teams"
             render={({ field: { onChange, value } }) => (
-              <Checkbox checked={value} onChange={onChange} sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />
+              <Checkbox
+                checked={value}
+                onChange={(e) => {
+                  onChange(e);
+                  // Attendance requires teams, so turning teams off turns attendance off too
+                  if (!e.target.checked) setValue('takeAttendance', false);
+                }}
+                sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }}
+              />
             )}
           />
           <GroupsIcon sx={{ color: 'white', mr: 1 }} />
@@ -856,6 +871,30 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2" sx={{ color: notificationsDisabled ? 'rgba(255,255,255,0.3)' : 'white' }}>
               Send Slack Notifications
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Take Attendance Field */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Controller
+            control={control}
+            name="takeAttendance"
+            render={({ field: { onChange, value } }) => (
+              <Checkbox
+                checked={value}
+                onChange={onChange}
+                disabled={attendanceDisabled}
+                sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }}
+              />
+            )}
+          />
+          <Tooltip title={attendanceDisabled ? 'Attendance cannot be taken without teams enabled' : ''} placement="right">
+            <HowToRegIcon sx={{ color: attendanceDisabled ? 'rgba(255,255,255,0.3)' : 'white', mr: 1 }} />
+          </Tooltip>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body2" sx={{ color: attendanceDisabled ? 'rgba(255,255,255,0.3)' : 'white' }}>
+              Take Attendance
             </Typography>
           </Box>
         </Box>

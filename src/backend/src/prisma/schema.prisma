@@ -1169,12 +1169,13 @@ enum DayOfWeek {
 }
 
 model Schedule_Slot {
-  scheduleSlotId String   @id @default(uuid())
-  startTime      DateTime
-  endTime        DateTime
-  allDay         Boolean  @default(false)
-  eventId        String
-  event          Event    @relation(fields: [eventId], references: [eventId])
+  scheduleSlotId     String               @id @default(uuid())
+  startTime          DateTime
+  endTime            DateTime
+  allDay             Boolean              @default(false)
+  eventId            String
+  event              Event                @relation(fields: [eventId], references: [eventId])
+  meetingAttendances Meeting_Attendance[]
 
   @@index([endTime])
   @@index([startTime])
@@ -1282,6 +1283,7 @@ model Event_Type {
   onlyHeadsOrAboveForEventCreation Boolean
   requiresConfirmation             Boolean
   sendSlackNotifications           Boolean
+  takeAttendance                   Boolean
   events                           Event[]
   organizationId                   String
   organization                     Organization @relation(fields: [organizationId], references: [organizationId])
@@ -1995,19 +1997,22 @@ model Guest_Definition {
 }
 
 model Meeting_Attendance {
-  meetingAttendanceId   String       @id @default(uuid())
+  meetingAttendanceId   String         @id @default(uuid())
   organizationId        String
-  organization          Organization @relation(fields: [organizationId], references: [organizationId])
+  organization          Organization   @relation(fields: [organizationId], references: [organizationId])
   teamId                String
-  team                  Team         @relation(fields: [teamId], references: [teamId])
+  team                  Team           @relation(fields: [teamId], references: [teamId])
   userCreatedId         String
-  userCreated           User         @relation(name: "meetingAttendanceCreated", fields: [userCreatedId], references: [userId])
-  openedAt              DateTime     @default(now())
+  userCreated           User           @relation(name: "meetingAttendanceCreated", fields: [userCreatedId], references: [userId])
+  openedAt              DateTime       @default(now())
   closedAt              DateTime?
   slackChannelId        String
   slackMessageTimestamp String
-  attendees             User[]       @relation(name: "meetingAttendees")
+  attendees             User[]         @relation(name: "meetingAttendees")
+  scheduleSlotId        String?
+  scheduleSlot          Schedule_Slot? @relation(fields: [scheduleSlotId], references: [scheduleSlotId])
 
+  @@unique([scheduleSlotId, teamId])
   @@index([organizationId])
   @@index([teamId])
 }

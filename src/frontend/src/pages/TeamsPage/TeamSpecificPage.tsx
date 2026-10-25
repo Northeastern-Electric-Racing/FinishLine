@@ -1,4 +1,4 @@
-import { Box, Grid, ListItemIcon, Menu, MenuItem, Stack, Typography } from '@mui/material';
+import { Box, Grid, ListItemIcon, Menu, MenuItem, Stack, Tooltip, Typography } from '@mui/material';
 import { useArchiveTeam, useSingleTeam } from '../../hooks/teams.hooks';
 import { useParams } from 'react-router-dom';
 import TeamMembersPageBlock from './TeamMembersPageBlock';
@@ -114,8 +114,18 @@ const TeamSpecificPage: React.FC = () => {
     }
   };
 
+  // Attendance opened automatically for a scheduled meeting closes when the meeting ends, so it can't be closed
+  // early and a new session can't be started until then
   const AttendanceButton = () =>
-    ongoingAttendance ? (
+    ongoingAttendance?.scheduleSlotId !== undefined ? (
+      <Tooltip title="Attendance is being taken automatically for an ongoing meeting">
+        <span>
+          <NERButton variant="contained" size="medium" disabled sx={{ whiteSpace: 'nowrap' }}>
+            Take Attendance
+          </NERButton>
+        </span>
+      </Tooltip>
+    ) : ongoingAttendance ? (
       <NERButton
         variant="contained"
         size="medium"

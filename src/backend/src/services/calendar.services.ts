@@ -55,6 +55,7 @@ import {
 } from '../utils/errors.utils.js';
 import { createCalendarEvent, uploadFile, downloadFile, deleteCalendarEvents } from '../utils/google-integration.utils.js';
 import { sendEventPopUp } from '../utils/pop-up.utils.js';
+import AttendanceService from './attendance.services.js';
 import {
   sendSlackEventConfirmNotification,
   sendEventConfirmationToThread,
@@ -94,6 +95,7 @@ export default class CalendarService {
    * @param onlyHeadsOrAbove Determines if events under this event type can only be created by heads or above.
    * @param requiredConfirmation Determines if events under this event type need to be confirmed.
    * @param sendSlackNotifications Determines if users will be notified via slack
+   * @param takeAttendance Determines if an attendance message is automatically sent to the event's teams while the event is happening
    *
    * @returns The created event type.
    *
@@ -120,10 +122,16 @@ export default class CalendarService {
     description: boolean,
     onlyHeadsOrAbove: boolean,
     requiresConfirmation: boolean,
-    sendSlackNotifications: boolean
+    sendSlackNotifications: boolean,
+    takeAttendance: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create event type');
+    }
+
+    // Attendance is posted in the event's team channels, so the event type must allow teams
+    if (takeAttendance && !teams) {
+      throw new HttpException(400, 'Event types that take attendance must have teams enabled');
     }
 
     // Check if calendars with ids exist and belong to the same organization
@@ -180,6 +188,7 @@ export default class CalendarService {
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
         requiresConfirmation,
         sendSlackNotifications,
+        takeAttendance,
         organizationId: organization.organizationId
       },
       ...getEventTypeQueryArgs(organization.organizationId)
@@ -1075,6 +1084,9 @@ export default class CalendarService {
       }
     }
 
+    // Close or move the close time of any attendance session open on an edited slot
+    await AttendanceService.syncAttendancesForScheduleSlots(slotsToUpdate);
+
     // Update conflict status if needed
     if (hasConflict) {
       await prisma.event.update({
@@ -1172,6 +1184,8 @@ export default class CalendarService {
     if (event.scheduledTimes.length <= 1) {
       return this.deleteEvent(submitter, event.eventId, organization);
     }
+
+    await AttendanceService.closeAttendancesForScheduleSlots([scheduleSlotId]);
 
     // Delete the schedule slot (hard delete for schedule slots)
     await prisma.schedule_Slot.delete({
@@ -1467,6 +1481,10 @@ export default class CalendarService {
 
     if (!event) throw new NotFoundException('Event', eventId);
     if (event.dateDeleted) throw new DeletedException('Event', eventId);
+
+    // Attendance sessions open on the old slots, moved onto the new slot once it's created
+    let openAttendanceIds: string[] = [];
+
     if (event.status === Event_Status.SCHEDULED) {
       const timeSlots = await prisma.schedule_Slot.findMany({
         where: { eventId: event.eventId }
@@ -1505,6 +1523,10 @@ export default class CalendarService {
         where: { eventId: event.eventId },
         data: { status: Event_Status.SCHEDULED }
       });
+
+      openAttendanceIds = await AttendanceService.getOpenAttendanceIdsForScheduleSlots(
+        timeSlots.map((slot) => slot.scheduleSlotId)
+      );
 
       await prisma.schedule_Slot.deleteMany({
         where: { eventId: event.eventId }
@@ -1553,6 +1575,16 @@ export default class CalendarService {
 
       ...getEventQueryArgs(organization.organizationId)
     });
+
+    // Keep the meeting's attendance session on the rescheduled slot so a second one isn't opened for it
+    const newSlot = updatedEvent.scheduledTimes.find(
+      (slot) => slot.startTime.getTime() === startTime.getTime() && slot.endTime.getTime() === endTime.getTime()
+    );
+    if (newSlot !== undefined) {
+      await AttendanceService.moveAttendancesToScheduleSlot(openAttendanceIds, newSlot.scheduleSlotId);
+    } else {
+      await AttendanceService.closeAttendances(openAttendanceIds);
+    }
 
     // Remove the scheduled time from confirmed members' availabilities so they can't be
     // double-booked for other events that require confirmation during the same time slot
@@ -1660,6 +1692,8 @@ export default class CalendarService {
         console.error('Failed to delete Google Calendar events:', error);
       }
     }
+
+    await AttendanceService.closeAttendancesForEvent(eventId);
 
     const deletedEvent = await prisma.event.update({
       where: { eventId },
@@ -2346,6 +2380,7 @@ export default class CalendarService {
    * @param onlyHeadsOrAbove Determines if events associated with this event type can only be made by heads or above.
    * @param requiredConfirmation Determines if events associated with this event type need to be confirmed.
    * @param sendSlackNotifications Determines if events associated with this event type should receive slack notifications.
+   * @param takeAttendance Determines if events associated with this event type automatically take attendance in their teams' slack channels.
    *
    * @returns The created event type.
    *
@@ -2373,10 +2408,16 @@ export default class CalendarService {
     description: boolean,
     onlyHeadsOrAbove: boolean,
     requiresConfirmation: boolean,
-    sendSlackNotifications: boolean
+    sendSlackNotifications: boolean,
+    takeAttendance: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('edit event type');
+    }
+
+    // Attendance is posted in the event's team channels, so the event type must allow teams
+    if (takeAttendance && !teams) {
+      throw new HttpException(400, 'Event types that take attendance must have teams enabled');
     }
 
     // Check if calendars with ids exist and belong to the same organization
@@ -2432,7 +2473,8 @@ export default class CalendarService {
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications
+        sendSlackNotifications,
+        takeAttendance
       },
       ...getEventTypeQueryArgs(organization.organizationId)
     });

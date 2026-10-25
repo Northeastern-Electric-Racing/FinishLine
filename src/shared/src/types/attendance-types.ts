@@ -9,6 +9,7 @@ export interface MeetingAttendance {
   closedAt?: Date;
   attendeesCount: number;
   teamMemberAttendancePercent: number;
+  scheduleSlotId?: string;
 }
 
 export interface MeetingAttendanceWithAttendees extends MeetingAttendance {
