@@ -208,16 +208,9 @@ export const getAllTaskLabels = () => {
  * Api call to create a task label.
  * @param name the name of the task label
  * @param colorHexCode the hex code for the task label color
- * @returns the created task label
  */
 export const createTaskLabel = (name: string, colorHexCode: string) => {
-  return axios.post<TaskLabel>(
-    apiUrls.taskLabelCreate(),
-    { name, colorHexCode },
-    {
-      transformResponse: (data) => taskLabelTransformer(JSON.parse(data))
-    }
-  );
+  return axios.post(apiUrls.taskLabelCreate(), { name, colorHexCode });
 };
 
 /**

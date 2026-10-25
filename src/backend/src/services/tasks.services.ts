@@ -18,7 +18,7 @@ import {
   taskBlockedByTransformer,
   taskBoardItemTransformer,
   taskHomeCardTransformer,
-  taskLabelTransformer
+  baseTaskLabelTransformer
 } from '../transformers/tasks.transformer.js';
 import {
   NotFoundException,
@@ -38,7 +38,7 @@ import {
   getTaskBlockingWorkPackagesQueryArgs,
   getTaskBoardItemQueryArgs,
   getTaskHomeCardQueryArgs,
-  getTaskLabelQueryArgs
+  getBaseTaskLabelQueryArgs
 } from '../prisma-query-args/tasks.query-args.js';
 
 // how many tasks each column of the global tasks board loads at a time
@@ -639,10 +639,10 @@ export default class TasksService {
   static async getAllTaskLabels(organization: Organization): Promise<TaskLabel[]> {
     const labels = await prisma.task_Label.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null },
-      ...getTaskLabelQueryArgs()
+      ...getBaseTaskLabelQueryArgs()
     });
 
-    return labels.map(taskLabelTransformer);
+    return labels.map(baseTaskLabelTransformer);
   }
 
   /**
@@ -651,7 +651,6 @@ export default class TasksService {
    * @param name the name of the task label
    * @param colorHexCode the hex code for the task label color
    * @param organization the organization that the user is currently in
-   * @returns the created task label
    * @throws if the user does not have permission
    */
   static async createTaskLabel(
@@ -659,21 +658,18 @@ export default class TasksService {
     name: string,
     colorHexCode: string,
     organization: Organization
-  ): Promise<TaskLabel> {
+  ): Promise<void> {
     const hasPermission = await userHasPermission(creator.userId, organization.organizationId, isAdmin);
     if (!hasPermission) throw new AccessDeniedException('Non admins cannot create task labels');
 
-    const label = await prisma.task_Label.create({
+    await prisma.task_Label.create({
       data: {
         name,
         colorHexCode,
         userCreated: { connect: { userId: creator.userId } },
         organization: { connect: { organizationId: organization.organizationId } }
-      },
-      ...getTaskLabelQueryArgs()
+      }
     });
-
-    return taskLabelTransformer(label);
   }
 
   /**

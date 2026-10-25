@@ -15,7 +15,7 @@ import {
   BaseTaskQueryArgs,
   TaskBoardItemQueryArgs,
   TaskHomeCardQueryArgs,
-  TaskLabelQueryArgs,
+  BaseTaskLabelQueryArgs,
   TaskQueryArgs,
   TaskBlockedByQueryArgs,
   TaskBlockingWorkPackagesQueryArgs,
@@ -67,6 +67,10 @@ export const getActiveTaskBlockerNames = (
   ...taskBlockingWorkPackagesTransformer(workPackage).map((wp) => wp.name)
 ];
 
+// the name of the project a task belongs to, whether it hangs off the project itself or one of its work packages
+const taskProjectName = (wbsElement: { name: string; workPackage: { project: { wbsElement: { name: string } } } | null }) =>
+  wbsElement.workPackage?.project.wbsElement.name ?? wbsElement.name;
+
 export const baseTaskTransformer = (task: Prisma.TaskGetPayload<BaseTaskQueryArgs>): BaseTask => ({
   taskId: task.taskId,
   wbsNum: wbsNumOf(task.wbsElement),
@@ -76,7 +80,7 @@ export const baseTaskTransformer = (task: Prisma.TaskGetPayload<BaseTaskQueryArg
   priority: convertTaskPriority(task.priority),
   deadline: task.deadline ?? undefined,
   assignees: task.assignees.map(baseUserTransformer),
-  labels: task.labels.map(taskLabelTransformer)
+  labels: task.labels.map(baseTaskLabelTransformer)
 });
 
 export const taskBoardItemTransformer = (task: Prisma.TaskGetPayload<TaskBoardItemQueryArgs>): TaskBoardItem => ({
@@ -87,12 +91,9 @@ export const taskBoardItemTransformer = (task: Prisma.TaskGetPayload<TaskBoardIt
   blockedBy: task.blockedBy.map(taskBlockedByTransformer),
   blockedByWorkPackages: taskBlockingWorkPackagesTransformer(task.wbsElement.workPackage),
   projectLeadId: task.wbsElement.leadId ?? undefined,
-  projectManagerId: task.wbsElement.managerId ?? undefined
+  projectManagerId: task.wbsElement.managerId ?? undefined,
+  projectName: taskProjectName(task.wbsElement)
 });
-
-// the name of the project a task belongs to, whether it hangs off the project itself or one of its work packages
-const taskProjectName = (wbsElement: { name: string; workPackage: { project: { wbsElement: { name: string } } } | null }) =>
-  wbsElement.workPackage?.project.wbsElement.name ?? wbsElement.name;
 
 export const taskHomeCardTransformer = (task: Prisma.TaskGetPayload<TaskHomeCardQueryArgs>): TaskHomeCard => ({
   ...baseTaskTransformer(task),
@@ -114,7 +115,7 @@ export const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Tas
     status: convertTaskStatus(task.status),
     createdBy: userPreviewWithEmailTransformer(task.createdBy),
     assignees: task.assignees.map(userPreviewWithEmailTransformer),
-    labels: task.labels.map(taskLabelTransformer),
+    labels: task.labels.map(baseTaskLabelTransformer),
     blockedBy: task.blockedBy.map(taskBlockedByTransformer),
     blockedByWorkPackages: getBlockingWorkPackagePreviews(task.wbsElement),
     dateDeleted: task.dateDeleted ?? undefined,
@@ -123,7 +124,7 @@ export const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Tas
   };
 };
 
-export const taskLabelTransformer = (label: Prisma.Task_LabelGetPayload<TaskLabelQueryArgs>): TaskLabel => ({
+export const baseTaskLabelTransformer = (label: Prisma.Task_LabelGetPayload<BaseTaskLabelQueryArgs>): TaskLabel => ({
   taskLabelId: label.taskLabelId,
   name: label.name,
   colorHexCode: label.colorHexCode

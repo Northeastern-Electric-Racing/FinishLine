@@ -168,8 +168,8 @@ export default class TasksController {
   static async createTaskLabel(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, colorHexCode } = req.body;
-      const label = await TasksService.createTaskLabel(req.currentUser, name, colorHexCode, req.organization);
-      res.status(200).json(label);
+      await TasksService.createTaskLabel(req.currentUser, name, colorHexCode, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }

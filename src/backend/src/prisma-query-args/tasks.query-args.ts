@@ -7,12 +7,12 @@ export type TaskHomeCardQueryArgs = ReturnType<typeof getTaskHomeCardQueryArgs>;
 export type TaskBlockingWorkPackagesQueryArgs = ReturnType<typeof getTaskBlockingWorkPackagesQueryArgs>;
 /** @deprecated Use BaseTaskQueryArgs or a per-endpoint model's query args. Still used by projects.query-args.ts until projects is refactored */
 export type TaskQueryArgs = ReturnType<typeof getTaskQueryArgs>;
-export type TaskLabelQueryArgs = ReturnType<typeof getTaskLabelQueryArgs>;
+export type BaseTaskLabelQueryArgs = ReturnType<typeof getBaseTaskLabelQueryArgs>;
 export type TaskBlockedByQueryArgs = ReturnType<typeof getTaskBlockedByQueryArgs>;
 /** @deprecated Use TaskBlockingWorkPackagesQueryArgs. Still used by getTaskQueryArgs until projects is refactored */
 export type BlockingWorkPackagesQueryArgs = ReturnType<typeof getBlockingWorkPackagesArgs>;
 
-export const getTaskLabelQueryArgs = () =>
+export const getBaseTaskLabelQueryArgs = () =>
   Prisma.validator<Prisma.Task_LabelDefaultArgs>()({
     select: {
       taskLabelId: true,
@@ -43,7 +43,7 @@ export const getBaseTaskQueryArgs = () =>
       // a task is meaningless without the wbs element it belongs to; every consumer navigates by it
       wbsElement: { select: { carNumber: true, projectNumber: true, workPackageNumber: true } },
       assignees: getBaseUserQueryArgs(),
-      labels: getTaskLabelQueryArgs()
+      labels: getBaseTaskLabelQueryArgs()
     }
   });
 
@@ -77,7 +77,12 @@ export const getTaskBoardItemQueryArgs = () =>
           leadId: true,
           managerId: true,
           // null when the task hangs off a project rather than a work package
-          workPackage: getTaskBlockingWorkPackagesQueryArgs()
+          workPackage: {
+            select: {
+              ...getTaskBlockingWorkPackagesQueryArgs().select,
+              project: { select: { wbsElement: { select: { name: true } } } }
+            }
+          }
         }
       },
       createdBy: getBaseUserQueryArgs(),
@@ -135,7 +140,7 @@ export const getTaskQueryArgs = () =>
       createdBy: getUserPreviewWithEmailQueryArgs(),
       deletedBy: getUserPreviewWithEmailQueryArgs(),
       assignees: getUserPreviewWithEmailQueryArgs(),
-      labels: getTaskLabelQueryArgs(),
+      labels: getBaseTaskLabelQueryArgs(),
       blockedBy: getTaskBlockedByQueryArgs()
     }
   });

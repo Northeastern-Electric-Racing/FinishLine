@@ -248,11 +248,10 @@ export const useAllTaskLabels = () => {
  */
 export const useCreateTaskLabel = () => {
   const queryClient = useQueryClient();
-  return useMutation<TaskLabel, Error, { name: string; colorHexCode: string }>(
+  return useMutation<void, Error, { name: string; colorHexCode: string }>(
     ['task-labels', 'create'],
     async ({ name, colorHexCode }) => {
-      const { data } = await createTaskLabel(name, colorHexCode);
-      return data;
+      await createTaskLabel(name, colorHexCode);
     },
     {
       onSuccess: () => {

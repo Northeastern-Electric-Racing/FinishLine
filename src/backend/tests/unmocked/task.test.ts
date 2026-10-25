@@ -15,7 +15,8 @@ import {
   createTestCar,
   createTestProject,
   createTestWorkPackage,
-  createTestTeamType
+  createTestTeamType,
+  createTestTaskLabel
 } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import TasksService from '../../src/services/tasks.services.js';
@@ -164,7 +165,7 @@ describe('Task Tests', () => {
     it('successfully sets labels on a task', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
-      const label = await TasksService.createTaskLabel(user, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(user, organizationId, 'Test Label', '#3B82F6');
 
       await TasksService.editTask(user, organizationId, task.taskId, 'Test Task', '', 'HIGH', [label.taskLabelId], []);
 
@@ -188,7 +189,7 @@ describe('Task Tests', () => {
     it('throws DeletedException when a label is deleted', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
-      const label = await TasksService.createTaskLabel(user, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(user, organizationId, 'Test Label', '#3B82F6');
       await prisma.task_Label.update({ where: { taskLabelId: label.taskLabelId }, data: { dateDeleted: new Date() } });
 
       await expect(async () =>
@@ -206,7 +207,7 @@ describe('Task Tests', () => {
         }
       });
       const otherUser = await createTestUser(flashAdmin, otherOrg.organizationId);
-      const label = await TasksService.createTaskLabel(otherUser, 'Test Label', '#3B82F6', otherOrg);
+      const label = await createTestTaskLabel(otherUser, otherOrg.organizationId, 'Test Label', '#3B82F6');
 
       await expect(async () =>
         TasksService.editTask(user, organizationId, task.taskId, 'Test Task', '', 'HIGH', [label.taskLabelId], [])
@@ -746,7 +747,7 @@ describe('Task Tests', () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const car = await createTestCar(organizationId, user.userId);
       const project = await createTestProject(user, organizationId, undefined, car.carId);
-      const label = await TasksService.createTaskLabel(user, 'Bug', '#EF4444', organization);
+      const label = await createTestTaskLabel(user, organizationId, 'Bug', '#EF4444');
 
       await prisma.task.create({
         data: {
@@ -1082,10 +1083,13 @@ describe('Task Tests', () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
 
-      const label = await TasksService.createTaskLabel(admin, 'Bug', '#EF4444', organization);
+      await TasksService.createTaskLabel(admin, 'Bug', '#EF4444', organization);
 
-      expect(label.name).toBe('Bug');
-      expect(label.colorHexCode).toBe('#EF4444');
+      const label = await prisma.task_Label.findFirst({
+        where: { organizationId, name: 'Bug' },
+        select: { colorHexCode: true }
+      });
+      expect(label?.colorHexCode).toBe('#EF4444');
     });
 
     it('throws AccessDeniedException when non-admin tries to create a task label', async () => {
@@ -1102,7 +1106,7 @@ describe('Task Tests', () => {
     it('successfully edits a task label as admin', async () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
-      const label = await TasksService.createTaskLabel(admin, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(admin, organizationId, 'Test Label', '#3B82F6');
 
       await TasksService.editTaskLabel(admin, label.taskLabelId, 'New Name', '#22C55E', organization);
 
@@ -1118,7 +1122,7 @@ describe('Task Tests', () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const member = await createTestUser(financeMember, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
-      const label = await TasksService.createTaskLabel(admin, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(admin, organizationId, 'Test Label', '#3B82F6');
 
       await expect(async () =>
         TasksService.editTaskLabel(member, label.taskLabelId, 'New Name', '#22C55E', organization)
@@ -1137,7 +1141,7 @@ describe('Task Tests', () => {
     it('throws DeletedException when label is already deleted', async () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
-      const label = await TasksService.createTaskLabel(admin, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(admin, organizationId, 'Test Label', '#3B82F6');
       await prisma.task_Label.update({ where: { taskLabelId: label.taskLabelId }, data: { dateDeleted: new Date() } });
 
       await expect(async () =>
@@ -1155,7 +1159,7 @@ describe('Task Tests', () => {
         }
       });
       const otherUser = await createTestUser(flashAdmin, otherOrg.organizationId);
-      const label = await TasksService.createTaskLabel(otherUser, 'Test Label', '#3B82F6', otherOrg);
+      const label = await createTestTaskLabel(otherUser, otherOrg.organizationId, 'Test Label', '#3B82F6');
 
       await expect(async () =>
         TasksService.editTaskLabel(admin, label.taskLabelId, 'New Name', '#22C55E', organization)
@@ -1167,7 +1171,7 @@ describe('Task Tests', () => {
     it('successfully deletes a task label as admin', async () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
-      const label = await TasksService.createTaskLabel(admin, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(admin, organizationId, 'Test Label', '#3B82F6');
 
       await TasksService.deleteTaskLabel(admin, label.taskLabelId, organization);
 
@@ -1183,7 +1187,7 @@ describe('Task Tests', () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const member = await createTestUser(financeMember, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
-      const label = await TasksService.createTaskLabel(admin, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(admin, organizationId, 'Test Label', '#3B82F6');
 
       await expect(async () => TasksService.deleteTaskLabel(member, label.taskLabelId, organization)).rejects.toThrow(
         AccessDeniedException
@@ -1202,7 +1206,7 @@ describe('Task Tests', () => {
     it('throws DeletedException when label is already deleted', async () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
-      const label = await TasksService.createTaskLabel(admin, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(admin, organizationId, 'Test Label', '#3B82F6');
       await prisma.task_Label.update({ where: { taskLabelId: label.taskLabelId }, data: { dateDeleted: new Date() } });
 
       await expect(async () => TasksService.deleteTaskLabel(admin, label.taskLabelId, organization)).rejects.toThrow(
@@ -1220,7 +1224,7 @@ describe('Task Tests', () => {
         }
       });
       const otherUser = await createTestUser(flashAdmin, otherOrg.organizationId);
-      const label = await TasksService.createTaskLabel(otherUser, 'Test Label', '#3B82F6', otherOrg);
+      const label = await createTestTaskLabel(otherUser, otherOrg.organizationId, 'Test Label', '#3B82F6');
 
       await expect(async () => TasksService.deleteTaskLabel(admin, label.taskLabelId, organization)).rejects.toThrow(
         InvalidOrganizationException

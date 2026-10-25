@@ -145,7 +145,7 @@ Remember: the full endpoint URL is `index.ts` base path + route path = `POST /ca
 
 ### Step 3: Write the Controller Method
 
-Controllers follow a rigid structure: try/catch, extract request data, call service, return JSON, pass errors to `next`.
+Controllers follow a rigid structure: try/catch, extract request data, call service, send the response, pass errors to `next`.
 
 ```typescript
 // src/backend/src/controllers/calendar.controllers.ts
@@ -161,9 +161,19 @@ export default class CalendarController {
       // before passing to the service
       const parsedDate = new Date(dateEstablished);
 
-      const shop = await CalendarService.createShop(req.currentUser, name, description, parsedDate, req.organization);
+      await CalendarService.createShop(req.currentUser, name, description, parsedDate, req.organization);
 
-      res.status(200).json(shop);
+      res.sendStatus(204);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllShops(req: Request, res: Response, next: NextFunction) {
+    try {
+      const shops = await CalendarService.getAllShops(req.organization);
+
+      res.status(200).json(shops);
     } catch (error: unknown) {
       next(error);
     }
@@ -178,19 +188,18 @@ export default class CalendarController {
 - Extract URL params with: `const { id } = req.params as Record<string, string>;`
 - **Parse date strings to `Date` objects in the controller** before passing to the service: `new Date(startTime)`.
 - Pass `req.currentUser` and `req.organization` to service methods that need them.
-- Return `res.status(200).json(result)` for all successful responses.
+- Reads return `res.status(200).json(result)`.
+- Mutations (create, edit, delete) return `res.sendStatus(204)` with no body. Only return data from a mutation when a frontend caller actually reads it, and then return the slimmest model that caller needs.
 
 ### Step 4: Write the Service Method
 
-Services contain all business logic.
+Services contain all business logic. Mutation services return `Promise<void>`.
 
 ```typescript
 // src/backend/src/services/calendar.services.ts
-import { User, Shop, notGuest } from 'shared';
+import { User, notGuest } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { AccessDeniedGuestException, HttpException } from '../utils/errors.utils.js';
-import { shopTransformer } from '../transformers/calendar.transformer.js';
-import { getShopQueryArgs } from '../prisma-query-args/shop.query-args.js';
 import { userHasPermission } from '../utils/users.utils.js';
 import { Organization } from '@prisma/client';
 
@@ -203,7 +212,6 @@ export default class CalendarService {
    * @param description a description of the shop
    * @param dateEstablished when the shop was set up
    * @param organization the current organization
-   * @returns the created Shop
    * @throws AccessDeniedGuestException if the
    *   submitter is a guest
    * @throws HttpException if a shop with the same
@@ -215,13 +223,13 @@ export default class CalendarService {
     description: string,
     dateEstablished: Date,
     organization: Organization
-  ): Promise<Shop> {
+  ): Promise<void> {
     // 1. Permission check
     if (!(await userHasPermission(submitter.userId, organization.organizationId, notGuest))) {
       throw new AccessDeniedGuestException('create shops');
     }
 
-    // 2. Business rule validation (inline select)
+    // 2. Business rule validation (inline select of only what's checked)
     const duplicate = await prisma.shop.findFirst({
       where: {
         organizationId: organization.organizationId,
@@ -235,20 +243,16 @@ export default class CalendarService {
       throw new HttpException(400, 'A shop with that name already exists');
     }
 
-    // 3. Database write (query args for response)
-    const created = await prisma.shop.create({
+    // 3. Database write (no query args, nothing is returned)
+    await prisma.shop.create({
       data: {
         name,
         description,
         dateEstablished,
         organizationId: organization.organizationId,
         userCreatedId: submitter.userId
-      },
-      ...getShopQueryArgs(organization.organizationId)
+      }
     });
-
-    // 4. Transform and return
-    return shopTransformer(created);
   }
 }
 ```
@@ -258,15 +262,17 @@ export default class CalendarService {
 - Every method MUST be `static async`.
 - Every mutation method MUST accept `submitter: User` and `organization: Organization`.
 - Every read method MUST accept `organization: Organization` and filter by `organization.organizationId`.
-- NEVER return raw Prisma objects. Always pass results through a transformer.
+- Read methods return shared types. NEVER return raw Prisma objects; always pass results through a transformer.
+- Mutation methods return `Promise<void>` and pass no query args to the write, unless a frontend caller reads the result.
+- Validation and permission lookups select the absolute minimum inline (only the columns being checked, or `_count`). Never use query args for them.
 - Throw custom exceptions from `errors.utils.ts` — never throw plain `Error` objects.
-- Add JSDoc comments with `@param`, `@returns`, and `@throws` tags.
+- Add JSDoc comments with `@param`, `@returns` (for reads), and `@throws` tags.
 - Multiple database writes MUST be wrapped in `prisma.$transaction()`.
 - Check permissions early, before any database writes.
 - ALWAYS filter `dateDeleted: null` on queries at both the top level and within nested includes/selects.
 - Deleting an entity MUST be a soft delete (`dateDeleted: new Date()`), never `prisma.*.delete()`.
 
-For query args and transformer patterns, see the [query-args-and-transformers](./query-args-and-transformers) document.
+For query args and transformer patterns (Base models, extended models, keeping payloads small), see the [query-args-and-transformers](./query-args-and-transformers) document.
 
 ### Step 5: Deciding the Access Level
 
@@ -330,6 +336,7 @@ For complex reusable validators, spread them: `...descriptionBulletsValidators`.
 - Every service method MUST filter by `organization.organizationId`.
 - Use `GET` for reads, `POST` for all mutations. NEVER use `PUT`, `PATCH`, or `DELETE`.
 - NEVER return raw Prisma objects from services. Always use transformers.
+- Mutations return `204` with no body unless a frontend caller reads the response.
 - Multiple database writes MUST be wrapped in `prisma.$transaction()`.
 - Service and controller classes use `static` methods — never instantiated.
 - Always use `.js` extensions in import paths (NodeNext module resolution).
@@ -349,12 +356,15 @@ For complex reusable validators, spread them: `...descriptionBulletsValidators`.
 - **Confusing the endpoint URL.** Full path = `index.ts` base path + route path.
 - **Forgetting to parse dates in the controller.** Convert with `new Date()` before passing to the service.
 - **Forgetting `dateDeleted: null`** on queries or nested relations.
+- **Returning the created or updated object from a mutation** that no caller reads. This costs a full query and a large payload for nothing. Return `204`.
+- **Fetching full query args for a validation check.** Select only the columns being checked.
 
 ## Reference Files
 
 - `src/backend/src/routes/calendar.routes.ts` — Comprehensive route file with many endpoint types
 - `src/backend/src/controllers/calendar.controllers.ts` — Clean controller class with consistent try/catch/next
 - `src/backend/src/services/calendar.services.ts` — Full-featured service with permissions, org validation, transactions
+- `src/backend/src/controllers/tasks.controllers.ts` and `src/backend/src/services/tasks.services.ts` — `204` mutations, minimal validation selects, and a paginated read
 - `src/backend/src/utils/errors.utils.ts` — Custom exception classes and global error handler
 - `src/backend/src/utils/validation.utils.ts` — Shared validation helpers
 - `src/backend/index.ts` — Middleware ordering and route registration
@@ -375,7 +385,9 @@ For complex reusable validators, spread them: `...descriptionBulletsValidators`.
 - [ ] Entity name added to `ExceptionObjectNames` if needed
 - [ ] All queries filter `dateDeleted: null` at every level
 - [ ] Delete operations are soft deletes
-- [ ] Service returns transformed shared types (see [query-args-and-transformers](./query-args-and-transformers))
+- [ ] Read services return transformed shared types (see [query-args-and-transformers](./query-args-and-transformers))
+- [ ] Mutations return `204` / `Promise<void>` unless a caller reads the response
+- [ ] Validation lookups select only the columns being checked
 - [ ] Multiple writes wrapped in `prisma.$transaction()`
 - [ ] All imports use `.js` extensions
 - [ ] Router registered in `index.ts` (if new feature)

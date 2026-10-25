@@ -43,6 +43,8 @@ export interface TaskBoardItem extends BaseTask {
   // the lead and manager of the task's own wbs element, for the calendar's delete permission check
   projectLeadId?: string;
   projectManagerId?: string;
+  // labels cards on the global board, where tasks span projects
+  projectName: string;
 }
 
 /** One page of a single status column on the global tasks board */

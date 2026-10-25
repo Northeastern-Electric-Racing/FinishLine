@@ -51,7 +51,8 @@ export const exampleTaskBoardItem1: TaskBoardItem = {
   labels: [],
   blockedBy: [],
   blockedByWorkPackages: [],
-  projectLeadId: exampleLeadershipUser.userId
+  projectLeadId: exampleLeadershipUser.userId,
+  projectName: 'Battery Box'
 };
 
 export const exampleTaskHomeCard1: TaskHomeCard = {
