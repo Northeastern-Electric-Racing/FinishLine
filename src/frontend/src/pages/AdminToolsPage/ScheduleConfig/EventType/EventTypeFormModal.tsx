@@ -614,6 +614,30 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
           </Box>
         </Box>
 
+        {/* Take Attendance Field */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Controller
+            control={control}
+            name="takeAttendance"
+            render={({ field: { onChange, value } }) => (
+              <Checkbox
+                checked={value}
+                onChange={onChange}
+                disabled={attendanceDisabled}
+                sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }}
+              />
+            )}
+          />
+          <Tooltip title={attendanceDisabled ? 'Attendance cannot be taken without teams enabled' : ''} placement="right">
+            <HowToRegIcon sx={{ color: attendanceDisabled ? 'rgba(255,255,255,0.3)' : 'white', mr: 1 }} />
+          </Tooltip>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body2" sx={{ color: attendanceDisabled ? 'rgba(255,255,255,0.3)' : 'white' }}>
+              Take Attendance
+            </Typography>
+          </Box>
+        </Box>
+
         {/* Shop Field */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Controller
@@ -871,30 +895,6 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2" sx={{ color: notificationsDisabled ? 'rgba(255,255,255,0.3)' : 'white' }}>
               Send Slack Notifications
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Take Attendance Field */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Controller
-            control={control}
-            name="takeAttendance"
-            render={({ field: { onChange, value } }) => (
-              <Checkbox
-                checked={value}
-                onChange={onChange}
-                disabled={attendanceDisabled}
-                sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }}
-              />
-            )}
-          />
-          <Tooltip title={attendanceDisabled ? 'Attendance cannot be taken without teams enabled' : ''} placement="right">
-            <HowToRegIcon sx={{ color: attendanceDisabled ? 'rgba(255,255,255,0.3)' : 'white', mr: 1 }} />
-          </Tooltip>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="body2" sx={{ color: attendanceDisabled ? 'rgba(255,255,255,0.3)' : 'white' }}>
-              Take Attendance
             </Typography>
           </Box>
         </Box>
