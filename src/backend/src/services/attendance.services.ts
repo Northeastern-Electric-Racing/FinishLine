@@ -21,13 +21,6 @@ import {
 import { userHasPermission } from '../utils/users.utils.js';
 import { calculateTeamMemberAttendancePercent } from '../utils/attendance.utils.js';
 
-// Node's setTimeout can't wait longer than this (about 24.8 days)
-const MAX_TIMEOUT_MS = 2 ** 31 - 1;
-
-// Close timers for automatically opened attendance sessions, keyed by meetingAttendanceId, so they can be moved or
-// cancelled when the meeting's schedule slot changes
-const closeTimers = new Map<string, NodeJS.Timeout>();
-
 export default class AttendanceService {
   static async takeAttendance(
     submitter: User,
@@ -142,8 +135,6 @@ export default class AttendanceService {
   }
 
   static async closeAttendance(meetingAttendanceId: string): Promise<void> {
-    AttendanceService.clearScheduledClose(meetingAttendanceId);
-
     const attendance = await prisma.meeting_Attendance.findUnique({
       where: { meetingAttendanceId },
       include: {
@@ -170,47 +161,6 @@ export default class AttendanceService {
       where: { meetingAttendanceId },
       data: { closedAt: new Date() }
     });
-  }
-
-  /**
-   * Sets (or replaces) the timer that closes an automatically opened attendance session at the given time.
-   * Node can't wait longer than MAX_TIMEOUT_MS in one timer, so longer waits are split across several.
-   *
-   * @param meetingAttendanceId the attendance session to close
-   * @param closeAt when the session should close
-   */
-  static scheduleClose(meetingAttendanceId: string, closeAt: Date): void {
-    AttendanceService.clearScheduledClose(meetingAttendanceId);
-
-    const delay = Math.max(closeAt.getTime() - Date.now(), 0);
-    const timer = setTimeout(
-      () => {
-        closeTimers.delete(meetingAttendanceId);
-        if (delay > MAX_TIMEOUT_MS) {
-          AttendanceService.scheduleClose(meetingAttendanceId, closeAt);
-          return;
-        }
-        AttendanceService.closeAttendance(meetingAttendanceId).catch((error: unknown) =>
-          console.error(`Failed to close attendance ${meetingAttendanceId}:`, error)
-        );
-      },
-      Math.min(delay, MAX_TIMEOUT_MS)
-    );
-
-    closeTimers.set(meetingAttendanceId, timer);
-  }
-
-  /**
-   * Cancels the close timer for an attendance session, if it has one.
-   *
-   * @param meetingAttendanceId the attendance session whose timer should be cancelled
-   */
-  static clearScheduledClose(meetingAttendanceId: string): void {
-    const timer = closeTimers.get(meetingAttendanceId);
-    if (timer !== undefined) {
-      clearTimeout(timer);
-      closeTimers.delete(meetingAttendanceId);
-    }
   }
 
   /**
@@ -244,7 +194,7 @@ export default class AttendanceService {
 
   /**
    * Closes the open attendance sessions for the given schedule slots. Must be called before the slots are
-   * deleted, since deleting a slot unlinks its sessions.
+   * deleted, since deleting a slot unlinks its sessions and the scheduled job can no longer close them.
    *
    * @param scheduleSlotIds the schedule slots being removed
    */
@@ -253,49 +203,9 @@ export default class AttendanceService {
   }
 
   /**
-   * Closes the open attendance sessions for every schedule slot of an event, e.g. when the event is deleted.
-   *
-   * @param eventId the event whose attendance sessions should close
-   */
-  static async closeAttendancesForEvent(eventId: string): Promise<void> {
-    const attendances = await prisma.meeting_Attendance.findMany({
-      where: { scheduleSlot: { eventId }, closedAt: null },
-      select: { meetingAttendanceId: true }
-    });
-    await AttendanceService.closeAttendances(attendances.map((attendance) => attendance.meetingAttendanceId));
-  }
-
-  /**
-   * Brings the open attendance sessions for the given schedule slots in line with the slots' current times
-   * after they were edited. Sessions whose meeting is no longer happening are closed, and the rest have
-   * their close timer moved to the slot's new end time.
-   *
-   * @param scheduleSlotIds the schedule slots that were edited
-   */
-  static async syncAttendancesForScheduleSlots(scheduleSlotIds: string[]): Promise<void> {
-    const now = new Date();
-
-    const attendances = await prisma.meeting_Attendance.findMany({
-      where: { scheduleSlotId: { in: scheduleSlotIds }, closedAt: null },
-      include: { scheduleSlot: { select: { startTime: true, endTime: true, allDay: true } } }
-    });
-
-    const attendanceIdsToClose: string[] = [];
-    for (const attendance of attendances) {
-      const { scheduleSlot } = attendance;
-      if (scheduleSlot === null || scheduleSlot.allDay || scheduleSlot.startTime > now || scheduleSlot.endTime <= now) {
-        attendanceIdsToClose.push(attendance.meetingAttendanceId);
-      } else {
-        AttendanceService.scheduleClose(attendance.meetingAttendanceId, scheduleSlot.endTime);
-      }
-    }
-
-    await AttendanceService.closeAttendances(attendanceIdsToClose);
-  }
-
-  /**
    * Moves open attendance sessions onto a new schedule slot, used when an event is rescheduled and its old
    * slots are replaced, so the meeting keeps its attendance session instead of getting a second one.
+   * The scheduled job closes the session if the new slot isn't happening right now.
    *
    * @param meetingAttendanceIds the open sessions from the replaced slots
    * @param scheduleSlotId the event's new schedule slot
@@ -307,33 +217,41 @@ export default class AttendanceService {
       where: { meetingAttendanceId: { in: meetingAttendanceIds } },
       data: { scheduleSlotId }
     });
-
-    await AttendanceService.syncAttendancesForScheduleSlots([scheduleSlotId]);
   }
 
   /**
-   * Recovers automatically opened attendance sessions after a server restart, since their close timers
-   * only live in memory. Sessions whose meeting has already ended are closed, and the rest get their
-   * close timer set again for when the meeting ends.
+   * Run by the bay-cron scheduled job. Closes attendance for meetings that are no longer happening, then
+   * opens attendance for meetings that have started. Reads the slots' current times on every run, so
+   * meetings that are edited, rescheduled, or deleted are picked up on the next run.
    */
-  static async resumeScheduledAttendances(): Promise<void> {
+  static async updateScheduledAttendances(): Promise<void> {
+    await AttendanceService.closeEndedScheduledAttendances();
+    await AttendanceService.openScheduledAttendances();
+  }
+
+  /**
+   * Closes every automatically opened attendance session whose meeting is no longer happening: it ended,
+   * it was moved to a later time or to all day, or its event was deleted.
+   */
+  static async closeEndedScheduledAttendances(): Promise<void> {
     const now = new Date();
 
     const attendances = await prisma.meeting_Attendance.findMany({
-      where: { closedAt: null, scheduleSlotId: { not: null } },
-      include: { scheduleSlot: { select: { endTime: true } } }
+      where: {
+        closedAt: null,
+        scheduleSlot: {
+          OR: [
+            { endTime: { lte: now } },
+            { startTime: { gt: now } },
+            { allDay: true },
+            { event: { dateDeleted: { not: null } } }
+          ]
+        }
+      },
+      select: { meetingAttendanceId: true }
     });
 
-    const attendanceIdsToClose: string[] = [];
-    for (const attendance of attendances) {
-      if (attendance.scheduleSlot === null || attendance.scheduleSlot.endTime <= now) {
-        attendanceIdsToClose.push(attendance.meetingAttendanceId);
-      } else {
-        AttendanceService.scheduleClose(attendance.meetingAttendanceId, attendance.scheduleSlot.endTime);
-      }
-    }
-
-    await AttendanceService.closeAttendances(attendanceIdsToClose);
+    await AttendanceService.closeAttendances(attendances.map((attendance) => attendance.meetingAttendanceId));
   }
 
   /**
@@ -356,27 +274,39 @@ export default class AttendanceService {
           eventType: { takeAttendance: true, dateDeleted: null }
         }
       },
-      include: {
-        event: { include: { teams: true, eventType: { select: { organizationId: true } } } },
+      select: {
+        scheduleSlotId: true,
+        event: {
+          select: {
+            eventId: true,
+            title: true,
+            userCreatedId: true,
+            eventType: { select: { organizationId: true } },
+            teams: { where: { dateArchived: null }, select: { teamId: true, slackId: true } }
+          }
+        },
         meetingAttendances: { select: { teamId: true } }
       }
     });
+
+    if (scheduleSlots.length === 0) return;
+
+    // A team can only have one open attendance session at a time, so teams with one wait for it to close.
+    // Different teams can still take attendance at the same time.
+    const openAttendances = await prisma.meeting_Attendance.findMany({
+      where: { closedAt: null },
+      select: { teamId: true }
+    });
+    const teamsWithOpenAttendance = new Set(openAttendances.map((attendance) => attendance.teamId));
 
     for (const scheduleSlot of scheduleSlots) {
       const { event } = scheduleSlot;
       const teamsWithAttendance = new Set(scheduleSlot.meetingAttendances.map((attendance) => attendance.teamId));
 
       for (const team of event.teams) {
-        if (teamsWithAttendance.has(team.teamId) || team.dateArchived !== null) continue;
+        if (teamsWithAttendance.has(team.teamId) || teamsWithOpenAttendance.has(team.teamId)) continue;
 
         try {
-          // A team can only have one open attendance session at a time, so wait for its current one to close.
-          // Different teams can still take attendance at the same time.
-          const openAttendance = await prisma.meeting_Attendance.findFirst({
-            where: { teamId: team.teamId, closedAt: null }
-          });
-          if (openAttendance !== null) continue;
-
           const result = await sendMessage(
             team.slackId,
             `<!channel> Please react to this message to confirm your attendance at ${event.title}!`
@@ -386,7 +316,7 @@ export default class AttendanceService {
             continue;
           }
 
-          const attendance = await prisma.meeting_Attendance
+          await prisma.meeting_Attendance
             .create({
               data: {
                 organizationId: event.eventType.organizationId,
@@ -404,8 +334,7 @@ export default class AttendanceService {
               throw error;
             });
 
-          // Attendance stays open for as long as the meeting is scheduled
-          AttendanceService.scheduleClose(attendance.meetingAttendanceId, scheduleSlot.endTime);
+          teamsWithOpenAttendance.add(team.teamId);
         } catch (error: unknown) {
           console.error(`Failed to open attendance for event ${event.eventId} for team ${team.teamId}:`, error);
         }

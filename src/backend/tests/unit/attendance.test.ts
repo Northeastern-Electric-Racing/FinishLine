@@ -558,24 +558,6 @@ describe('Attendance Tests', () => {
       expect(attendances[0].closedAt).toBeNull();
     });
 
-    it('schedules attendance to close when the meeting ends', async () => {
-      const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
-      const head = await createTestUser(greenlanternHead, orgId);
-      const team = await createTeamInOrg(head.userId, orgId);
-      const now = Date.now();
-      await createAttendanceEvent(head.userId, orgId, [team.teamId], new Date(now - hourMs), new Date(now + hourMs));
-
-      (sendMessage as Mock).mockResolvedValue({ channelId: 'C12345', ts: '111.001' });
-
-      await AttendanceService.openScheduledAttendances();
-
-      const closeTimers = setTimeoutSpy.mock.calls.filter(
-        ([, delay]) => delay !== undefined && delay > hourMs - 60 * 1000 && delay <= hourMs
-      );
-      expect(closeTimers).toHaveLength(1);
-      setTimeoutSpy.mockRestore();
-    });
-
     it('does not open attendance for events still waiting on conflict approval', async () => {
       const head = await createTestUser(greenlanternHead, orgId);
       const team = await createTeamInOrg(head.userId, orgId);
@@ -635,27 +617,6 @@ describe('Attendance Tests', () => {
 
       expect(deleteMessage).toHaveBeenCalledWith('C12345', '111.001');
       createSpy.mockRestore();
-    });
-
-    it('splits close timers longer than the setTimeout limit', async () => {
-      const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
-      const head = await createTestUser(greenlanternHead, orgId);
-      const team = await createTeamInOrg(head.userId, orgId);
-      const now = Date.now();
-      await createAttendanceEvent(
-        head.userId,
-        orgId,
-        [team.teamId],
-        new Date(now - hourMs),
-        new Date(now + 30 * 24 * hourMs)
-      );
-
-      (sendMessage as Mock).mockResolvedValue({ channelId: 'C12345', ts: '111.001' });
-
-      await AttendanceService.openScheduledAttendances();
-
-      expect(setTimeoutSpy.mock.calls.some(([, delay]) => delay === 2 ** 31 - 1)).toBe(true);
-      setTimeoutSpy.mockRestore();
     });
 
     it('only opens attendance once per schedule slot', async () => {
@@ -740,20 +701,13 @@ describe('Attendance Tests', () => {
     });
   });
 
-  describe('schedule slot changes', () => {
+  describe('closeEndedScheduledAttendances', () => {
     const hourMs = 60 * 60 * 1000;
 
-    const createOpenAutomaticAttendance = async () => {
+    const createOpenAutomaticAttendance = async (startTime: Date, endTime: Date) => {
       const head = await createTestUser(greenlanternHead, orgId);
       const team = await createTeamInOrg(head.userId, orgId);
-      const now = Date.now();
-      const event = await createAttendanceEvent(
-        head.userId,
-        orgId,
-        [team.teamId],
-        new Date(now - hourMs),
-        new Date(now + hourMs)
-      );
+      const event = await createAttendanceEvent(head.userId, orgId, [team.teamId], startTime, endTime);
       const [scheduleSlot] = event.scheduledTimes;
       const attendance = await prisma.meeting_Attendance.create({
         data: {
@@ -765,124 +719,55 @@ describe('Attendance Tests', () => {
           scheduleSlotId: scheduleSlot.scheduleSlotId
         }
       });
-      return { event, scheduleSlot, attendance };
+      return { head, team, event, scheduleSlot, attendance };
     };
 
     const getClosedAt = async (meetingAttendanceId: string) =>
       (await prisma.meeting_Attendance.findUnique({ where: { meetingAttendanceId } }))!.closedAt;
 
-    it('closes attendance when its slot is moved so the meeting is no longer happening', async () => {
-      const { scheduleSlot, attendance } = await createOpenAutomaticAttendance();
+    it('closes attendance once the meeting has ended', async () => {
       const now = Date.now();
+      const { attendance } = await createOpenAutomaticAttendance(new Date(now - 2 * hourMs), new Date(now - hourMs));
+
+      await AttendanceService.closeEndedScheduledAttendances();
+
+      expect(await getClosedAt(attendance.meetingAttendanceId)).not.toBeNull();
+      expect(editMessage).toHaveBeenCalledWith('C12345', '111.001', expect.stringContaining('Attendance is now closed.'));
+    });
+
+    it('keeps attendance open while the meeting is ongoing', async () => {
+      const now = Date.now();
+      const { attendance } = await createOpenAutomaticAttendance(new Date(now - hourMs), new Date(now + hourMs));
+
+      await AttendanceService.closeEndedScheduledAttendances();
+
+      expect(await getClosedAt(attendance.meetingAttendanceId)).toBeNull();
+    });
+
+    it('closes attendance when the meeting is moved to a later time', async () => {
+      const now = Date.now();
+      const { scheduleSlot, attendance } = await createOpenAutomaticAttendance(
+        new Date(now - hourMs),
+        new Date(now + hourMs)
+      );
       await prisma.schedule_Slot.update({
         where: { scheduleSlotId: scheduleSlot.scheduleSlotId },
         data: { startTime: new Date(now + hourMs), endTime: new Date(now + 2 * hourMs) }
       });
 
-      await AttendanceService.syncAttendancesForScheduleSlots([scheduleSlot.scheduleSlotId]);
+      await AttendanceService.closeEndedScheduledAttendances();
 
       expect(await getClosedAt(attendance.meetingAttendanceId)).not.toBeNull();
     });
 
-    it('moves the close timer when the meeting is extended', async () => {
-      const { scheduleSlot, attendance } = await createOpenAutomaticAttendance();
-      const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
-      await prisma.schedule_Slot.update({
-        where: { scheduleSlotId: scheduleSlot.scheduleSlotId },
-        data: { endTime: new Date(Date.now() + 3 * hourMs) }
-      });
+    it('closes attendance when the event is deleted', async () => {
+      const now = Date.now();
+      const { event, attendance } = await createOpenAutomaticAttendance(new Date(now - hourMs), new Date(now + hourMs));
+      await prisma.event.update({ where: { eventId: event.eventId }, data: { dateDeleted: new Date() } });
 
-      await AttendanceService.syncAttendancesForScheduleSlots([scheduleSlot.scheduleSlotId]);
-
-      expect(await getClosedAt(attendance.meetingAttendanceId)).toBeNull();
-      const closeTimers = setTimeoutSpy.mock.calls.filter(
-        ([, delay]) => delay !== undefined && delay > 3 * hourMs - 60 * 1000 && delay <= 3 * hourMs
-      );
-      expect(closeTimers).toHaveLength(1);
-      setTimeoutSpy.mockRestore();
-    });
-
-    it('closes attendance for a slot that is about to be deleted', async () => {
-      const { scheduleSlot, attendance } = await createOpenAutomaticAttendance();
-
-      await AttendanceService.closeAttendancesForScheduleSlots([scheduleSlot.scheduleSlotId]);
+      await AttendanceService.closeEndedScheduledAttendances();
 
       expect(await getClosedAt(attendance.meetingAttendanceId)).not.toBeNull();
-    });
-
-    it('closes attendance when its event is deleted', async () => {
-      const { event, attendance } = await createOpenAutomaticAttendance();
-
-      await AttendanceService.closeAttendancesForEvent(event.eventId);
-
-      expect(await getClosedAt(attendance.meetingAttendanceId)).not.toBeNull();
-    });
-
-    it('moves attendance onto the new slot when the event is rescheduled', async () => {
-      const { event, attendance } = await createOpenAutomaticAttendance();
-      const now = Date.now();
-      const newSlot = await prisma.schedule_Slot.create({
-        data: { eventId: event.eventId, startTime: new Date(now - hourMs / 2), endTime: new Date(now + hourMs) }
-      });
-
-      await AttendanceService.moveAttendancesToScheduleSlot([attendance.meetingAttendanceId], newSlot.scheduleSlotId);
-
-      const record = await prisma.meeting_Attendance.findUnique({
-        where: { meetingAttendanceId: attendance.meetingAttendanceId }
-      });
-      expect(record!.scheduleSlotId).toBe(newSlot.scheduleSlotId);
-      expect(record!.closedAt).toBeNull();
-    });
-  });
-
-  describe('resumeScheduledAttendances', () => {
-    const hourMs = 60 * 60 * 1000;
-
-    const createAutomaticAttendance = async (startTime: Date, endTime: Date) => {
-      const head = await createTestUser(greenlanternHead, orgId);
-      const team = await createTeamInOrg(head.userId, orgId);
-      const event = await createAttendanceEvent(head.userId, orgId, [team.teamId], startTime, endTime);
-      return prisma.meeting_Attendance.create({
-        data: {
-          organizationId: orgId,
-          teamId: team.teamId,
-          userCreatedId: head.userId,
-          slackChannelId: 'C12345',
-          slackMessageTimestamp: '111.001',
-          scheduleSlotId: event.scheduledTimes[0].scheduleSlotId
-        }
-      });
-    };
-
-    it('closes automatic sessions whose meeting already ended', async () => {
-      const now = Date.now();
-      const attendance = await createAutomaticAttendance(new Date(now - 2 * hourMs), new Date(now - hourMs));
-
-      await AttendanceService.resumeScheduledAttendances();
-
-      const record = await prisma.meeting_Attendance.findUnique({
-        where: { meetingAttendanceId: attendance.meetingAttendanceId }
-      });
-      expect(record!.closedAt).not.toBeNull();
-      expect(editMessage).toHaveBeenCalledWith('C12345', '111.001', expect.stringContaining('Attendance is now closed.'));
-    });
-
-    it('sets the close timer again for sessions whose meeting is still ongoing', async () => {
-      const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
-      const now = Date.now();
-      const attendance = await createAutomaticAttendance(new Date(now - hourMs), new Date(now + hourMs));
-
-      await AttendanceService.resumeScheduledAttendances();
-
-      const record = await prisma.meeting_Attendance.findUnique({
-        where: { meetingAttendanceId: attendance.meetingAttendanceId }
-      });
-      expect(record!.closedAt).toBeNull();
-      const closeTimers = setTimeoutSpy.mock.calls.filter(
-        ([, delay]) => delay !== undefined && delay > hourMs - 60 * 1000 && delay <= hourMs
-      );
-      expect(closeTimers).toHaveLength(1);
-      setTimeoutSpy.mockRestore();
     });
 
     it('leaves manual sessions alone', async () => {
@@ -898,12 +783,39 @@ describe('Attendance Tests', () => {
         }
       });
 
-      await AttendanceService.resumeScheduledAttendances();
+      await AttendanceService.closeEndedScheduledAttendances();
+
+      expect(await getClosedAt(attendance.meetingAttendanceId)).toBeNull();
+    });
+
+    it('closes attendance for a slot that is about to be deleted', async () => {
+      const now = Date.now();
+      const { scheduleSlot, attendance } = await createOpenAutomaticAttendance(
+        new Date(now - hourMs),
+        new Date(now + hourMs)
+      );
+
+      await AttendanceService.closeAttendancesForScheduleSlots([scheduleSlot.scheduleSlotId]);
+
+      expect(await getClosedAt(attendance.meetingAttendanceId)).not.toBeNull();
+    });
+
+    it('moves attendance onto the new slot when the event is rescheduled', async () => {
+      const now = Date.now();
+      const { event, attendance } = await createOpenAutomaticAttendance(new Date(now - hourMs), new Date(now + hourMs));
+      const newSlot = await prisma.schedule_Slot.create({
+        data: { eventId: event.eventId, startTime: new Date(now - hourMs / 2), endTime: new Date(now + hourMs) }
+      });
+
+      await AttendanceService.moveAttendancesToScheduleSlot([attendance.meetingAttendanceId], newSlot.scheduleSlotId);
+      await AttendanceService.updateScheduledAttendances();
 
       const record = await prisma.meeting_Attendance.findUnique({
         where: { meetingAttendanceId: attendance.meetingAttendanceId }
       });
+      expect(record!.scheduleSlotId).toBe(newSlot.scheduleSlotId);
       expect(record!.closedAt).toBeNull();
+      expect(sendMessage).not.toHaveBeenCalled();
     });
   });
 

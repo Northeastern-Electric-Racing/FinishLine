@@ -1084,9 +1084,6 @@ export default class CalendarService {
       }
     }
 
-    // Close or move the close time of any attendance session open on an edited slot
-    await AttendanceService.syncAttendancesForScheduleSlots(slotsToUpdate);
-
     // Update conflict status if needed
     if (hasConflict) {
       await prisma.event.update({
@@ -1692,8 +1689,6 @@ export default class CalendarService {
         console.error('Failed to delete Google Calendar events:', error);
       }
     }
-
-    await AttendanceService.closeAttendancesForEvent(eventId);
 
     const deletedEvent = await prisma.event.update({
       where: { eventId },

@@ -37,7 +37,6 @@ import { attachAuthInfo, requireApiToken } from './src/utils/mcp-auth.utils.js';
 import dashboardsRouter from './src/routes/dashboards.routes.js';
 import { withRequestContext } from './src/utils/request-context.utils.js';
 import { logRequests } from './src/utils/request-logger.utils.js';
-import { startAttendanceJobs } from './src/jobs/attendance.jobs.js';
 
 const app = express();
 
@@ -158,7 +157,6 @@ app.use(errorHandler);
 
 // start the server
 app.listen(port, () => {
-  startAttendanceJobs();
   console.log(
     `FinishLine listening at http://localhost:${port}. Currently running in ${isProd ? 'production' : 'development'} mode.`
   );
