@@ -6,7 +6,8 @@ import {
   startOfTodayEST,
   startOfTomorrowEST,
   usersToSlackPings,
-  EventWithAttendees
+  EventWithAttendees,
+  getEventChannelIds
 } from '../utils/notifications.utils.js';
 import { sendMessage } from '../integrations/slack.js';
 import { daysBetween, wbsPipe, formatTimeForSlack } from 'shared';
@@ -19,8 +20,8 @@ import { scheduleTimesTransformer } from '../transformers/calendar.transformer.j
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
-    await NotificationsService.sendTaskDeadlineSlackNotifications();
     await NotificationsService.sendEventSlackNotifications();
+    await NotificationsService.sendTaskDeadlineSlackNotifications();
     await NotificationsService.sendWorkPackageDeadlineSlackNotifications();
     await NotificationsService.sendSponsorTaskNotifications();
     await NotificationsService.sendPendingSaboSubmissionNotifications();
@@ -168,30 +169,17 @@ export default class NotificationsService {
     const eventTeamMap = new Map<string, EventWithAttendees[]>();
 
     events.forEach((event) => {
-      // Collect unique team Slack IDs: first from teams directly on the event, then from work packages
-      const teamSlackIds = new Set<string>();
-
-      event.teams.forEach((team) => {
-        if (team.slackId) {
-          teamSlackIds.add(team.slackId);
-        }
-      });
-
-      event.workPackages.forEach((workPackage) => {
-        workPackage.project.teams.forEach((team) => {
-          if (team.slackId) {
-            teamSlackIds.add(team.slackId);
-          }
-        });
-      });
+      // Collect unique Slack channel IDs: standalone notification channels on the event,
+      // teams directly on the event, then teams of the event's work packages
+      const channelIds = getEventChannelIds(event);
 
       const attendees = event.requiredMembers
         .concat(event.optionalMembers)
         .concat(event.userCreated)
         .filter((user, index, arr) => arr.findIndex((other) => other.userId === user.userId) === index);
 
-      teamSlackIds.forEach((teamSlackId) => {
-        const currentEvents = eventTeamMap.get(teamSlackId);
+      channelIds.forEach((channelId) => {
+        const currentEvents = eventTeamMap.get(channelId);
         const eventWithAttendees = {
           ...event,
           attendees,
@@ -201,12 +189,12 @@ export default class NotificationsService {
         if (currentEvents) {
           currentEvents.push(eventWithAttendees);
         } else {
-          eventTeamMap.set(teamSlackId, [eventWithAttendees]);
+          eventTeamMap.set(channelId, [eventWithAttendees]);
         }
       });
     });
 
-    // Send the notifications to each team for their respective events
+    // Send the notifications to each channel for its respective events
     const promises = Array.from(eventTeamMap).map(async ([slackId, events]) => {
       const messageBlock = events
         .map((event) => {
