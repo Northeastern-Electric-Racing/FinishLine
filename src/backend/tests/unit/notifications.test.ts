@@ -1,11 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getEventChannelIds } from '../../src/utils/notifications.utils';
 
-const makeEvent = (
-  teamSlackIds: string[],
-  wpTeamSlackIds: string[][],
-  notificationChannelIds: string[] = []
-) => ({
+const makeEvent = (teamSlackIds: string[], wpTeamSlackIds: string[][], notificationChannelIds: string[] = []) => ({
   notificationChannelIds,
   teams: teamSlackIds.map((slackId) => ({ slackId })),
   workPackages: wpTeamSlackIds.map((ids) => ({ project: { teams: ids.map((slackId) => ({ slackId })) } }))
