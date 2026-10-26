@@ -8,8 +8,6 @@ import { getWorkPackageQueryArgs, getWorkPackagePreviewQueryArgs } from './work-
 
 export type ProjectQueryArgs = ReturnType<typeof getProjectQueryArgs>;
 
-export type ProjectGanttQueryArgs = ReturnType<typeof getProjectGanttQueryArgs>;
-
 export type ProjectPreviewQueryArgs = ReturnType<typeof getProjectPreviewQueryArgs>;
 
 export type ProjectOverviewQueryArgs = ReturnType<typeof getProjectOverviewQueryArgs>;
@@ -32,39 +30,6 @@ export const getProjectQueryArgs = (organizationId: string) =>
         }
       },
       teams: getTeamPreviewQueryArgs(organizationId),
-      workPackages: {
-        where: {
-          wbsElement: {
-            dateDeleted: null
-          }
-        },
-        ...getWorkPackageQueryArgs(organizationId)
-      },
-      favoritedBy: getUserQueryArgs(organizationId)
-    }
-  });
-
-export const getProjectGanttQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.ProjectDefaultArgs>()({
-    include: {
-      wbsElement: {
-        include: {
-          lead: getUserQueryArgs(organizationId),
-          manager: getUserQueryArgs(organizationId),
-          tasks: {
-            where: {
-              dateDeleted: null
-            },
-            ...getTaskQueryArgs()
-          }
-        }
-      },
-      teams: {
-        select: {
-          teamId: true,
-          teamName: true
-        }
-      },
       workPackages: {
         where: {
           wbsElement: {

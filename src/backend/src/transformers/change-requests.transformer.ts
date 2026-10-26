@@ -18,7 +18,7 @@ import { calculateChangeRequestStatus } from '../utils/change-requests.utils.js'
 import { getDateImplemented } from '../utils/change-requests.utils.js';
 import { userTransformer } from './user.transformer.js';
 import { descBulletConverter } from '../utils/description-bullets.utils.js';
-import teamTransformer from './teams.transformer.js';
+import { teamPreviewTransformer } from './teams.transformer.js';
 import { HttpException } from '../utils/errors.utils.js';
 import {
   ChangeRequestGuestQueryArgs,
@@ -46,7 +46,7 @@ const projectProposedChangesTransformer = (
     summary: projectProposedChanges.summary,
     budget: projectProposedChanges.budget,
     descriptionBullets: wbsProposedChanges.proposedDescriptionBulletChanges.map(descBulletConverter),
-    teams: projectProposedChanges.teams.map(teamTransformer),
+    teams: projectProposedChanges.teams.map(teamPreviewTransformer),
     carNumber: projectProposedChanges.car?.wbsElement.carNumber ?? undefined,
     workPackageProposedChanges: projectProposedChanges.workPackageProposedChanges.map(workPackageProposedChangesTransformer)
   };

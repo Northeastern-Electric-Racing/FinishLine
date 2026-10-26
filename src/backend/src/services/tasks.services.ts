@@ -34,7 +34,7 @@ import {
 } from '../utils/tasks.utils.js';
 import { getUsers, userHasPermission } from '../utils/users.utils.js';
 import { wbsNumOf } from '../utils/utils.js';
-import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args.js';
+import { getTeamDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
 import {
   getBlockingWorkPackagesArgs,
   getCalendarTaskQueryArgs,
@@ -86,7 +86,7 @@ export default class TasksService {
       include: {
         project: {
           include: {
-            teams: getTeamQueryArgs(organization.organizationId),
+            teams: getTeamDropdownQueryArgs(),
             wbsElement: true,
             workPackages: { include: { wbsElement: true } }
           }
@@ -95,7 +95,7 @@ export default class TasksService {
           include: {
             project: {
               include: {
-                teams: getTeamQueryArgs(organization.organizationId)
+                teams: getTeamDropdownQueryArgs()
               }
             }
           }

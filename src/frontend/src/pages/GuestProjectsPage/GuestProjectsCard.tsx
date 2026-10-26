@@ -1,5 +1,5 @@
 import { alpha, Box, Card, CardContent, Chip, Stack, Typography, useTheme, Link } from '@mui/material';
-import { wbsNamePipe, ProjectPreview, wbsPipe, WbsElementStatus } from 'shared';
+import { wbsNamePipe, ProjectPreview, wbsPipe, WbsElementStatus, WorkPackagePreview } from 'shared';
 import { datePipe } from '../../utils/pipes';
 import { NERButton } from '../../components/NERButton';
 import { useSingleProject } from '../../hooks/projects.hooks';
@@ -8,7 +8,8 @@ import ErrorPage from '../ErrorPage';
 import { Link as RouterLink } from 'react-router-dom';
 
 interface ProjectCardProps {
-  project: ProjectPreview;
+  // only what's read here, so both project previews and team projects fit
+  project: Pick<ProjectPreview, 'wbsNum'> & { workPackages: Pick<WorkPackagePreview, 'status' | 'stage'>[] };
 }
 
 const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {

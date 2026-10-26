@@ -3,7 +3,7 @@ import { getUserQueryArgs } from './user.query-args.js';
 import { getWorkPackageQueryArgs } from './work-packages.query-args.js';
 import { getReimbursementProductOtherReasonQueryArgs } from './reimbursement-product-other-reason.query-args.js';
 import { getAccountCodeQueryArgs } from './account-code.query-args.js';
-import { getTeamQueryArgs } from './teams.query-args.js';
+import { getTeamPreviewQueryArgs } from './teams.query-args.js';
 
 export type ChangeRequestQueryArgs = ReturnType<typeof getChangeRequestQueryArgs>;
 export type ChangeRequestWithProjectAndWorkPackageQueryArgs = ReturnType<
@@ -17,7 +17,7 @@ export type ProjectProposedChangesQueryArgs = ReturnType<typeof getProjectPropos
 const getProjectProposedChangesQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Project_Proposed_ChangesDefaultArgs>()({
     include: {
-      teams: getTeamQueryArgs(organizationId),
+      teams: getTeamPreviewQueryArgs(organizationId),
       car: { select: { wbsElement: { select: { carNumber: true } } } },
       workPackageProposedChanges: getWorkPackageProposedChangesQueryArgs(organizationId)
     }
@@ -117,7 +117,7 @@ const getWbsProposedChangesQueryArgs = (organizationId: string) =>
           carId: true,
           summary: true,
           budget: true,
-          teams: getTeamQueryArgs(organizationId),
+          teams: getTeamPreviewQueryArgs(organizationId),
           car: { select: { wbsElement: { select: { carNumber: true } } } },
           workPackageProposedChanges: getWorkPackageProposedChangesQueryArgs(organizationId)
         }

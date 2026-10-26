@@ -19,7 +19,6 @@ import { calculateProjectStatus } from '../utils/projects.utils.js';
 import { descBulletConverter } from '../utils/description-bullets.utils.js';
 import { userTransformer } from './user.transformer.js';
 import {
-  ProjectGanttQueryArgs,
   ProjectOverviewQueryArgs,
   ProjectPreviewQueryArgs,
   ProjectQueryArgs
@@ -68,7 +67,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
   };
 };
 
-export const projectGanttTransformer = (project: Prisma.ProjectGetPayload<ProjectGanttQueryArgs>): ProjectGantt => {
+export const projectGanttTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>): ProjectGantt => {
   const { wbsElement } = project;
   const wbsNum = wbsNumOf(wbsElement);
 
@@ -164,7 +163,7 @@ export type RetrospectiveWorkPackageQueryArgs = Prisma.Work_PackageGetPayload<Wo
   originalDuration: number;
 };
 
-export type RetrospectiveProjectPreviewQueryArgs = Omit<Prisma.ProjectGetPayload<ProjectGanttQueryArgs>, 'workPackages'> & {
+export type RetrospectiveProjectPreviewQueryArgs = Omit<Prisma.ProjectGetPayload<ProjectQueryArgs>, 'workPackages'> & {
   workPackages: RetrospectiveWorkPackageQueryArgs[];
 };
 

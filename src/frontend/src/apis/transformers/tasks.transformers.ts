@@ -1,4 +1,19 @@
-import { dbDateToLocalDate, Task, TaskLabel } from 'shared';
+import { dbDateToLocalDate, GanttChartTask, Task, TaskLabel } from 'shared';
+
+/**
+ * Transforms a gantt chart task to ensure deep field transformation of date objects.
+ * Generic so re-parsing a richer task (e.g. one created locally on the gantt) keeps its other fields.
+ *
+ * @param task Incoming gantt chart task object supplied by the HTTP response.
+ * @returns Properly transformed gantt chart task object.
+ */
+export const ganttChartTaskTransformer = <T extends GanttChartTask>(task: T): T => {
+  return {
+    ...task,
+    deadline: task.deadline ? dbDateToLocalDate(new Date(task.deadline)) : undefined,
+    startDate: task.startDate ? dbDateToLocalDate(new Date(task.startDate)) : undefined
+  };
+};
 
 /**
  * Transforms a task to ensure deep field transformation of date objects.

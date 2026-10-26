@@ -8,7 +8,7 @@ import {
   TeamWithProjectsQueryArgs
 } from '../prisma-query-args/teams.query-args.js';
 import { userTransformer } from './user.transformer.js';
-import { projectGanttTransformer } from './projects.transformer.js';
+import { ganttChartProjectTransformer } from './gantt-chart.transformer.js';
 import { teamTypeTransformer } from './team-types.transformer.js';
 import { wbsNumOf } from '../utils/utils.js';
 
@@ -20,7 +20,7 @@ const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
     description: team.description,
     head: userTransformer(team.head),
     members: team.members.map(userTransformer),
-    projects: team.projects.map(projectGanttTransformer),
+    projects: team.projects.map((project) => ({ ...ganttChartProjectTransformer(project), budget: project.budget })),
     leads: team.leads.map(userTransformer),
     userArchived: team.userArchived ? userTransformer(team.userArchived) : undefined,
     dateArchived: team.dateArchived ?? undefined,

@@ -5,7 +5,7 @@
 
 import { EventPreview, TeamType } from './calendar-types.js';
 import { ImplementedChange } from './change-request-types.js';
-import { Task } from './task-types.js';
+import { Task, TaskStatus } from './task-types.js';
 import { TeamPreview } from './team-types.js';
 import { User, UserPreview } from './user-types.js';
 import { WorkPackageStage } from './work-package-types.js';
@@ -72,6 +72,42 @@ export interface ProjectGantt extends WbsElementPreview {
   abbreviation?: string;
   lead?: User;
   manager?: User;
+}
+
+/**
+ * The base gantt chart shapes: only what the gantt chart reads. Full ProjectGantt / WorkPackage /
+ * RetrospectiveProjectPreview objects also satisfy them, so the gantt helpers serve every gantt view,
+ * and views that need more (e.g. retrospective) extend them.
+ */
+export type GanttChartEvent = Pick<EventPreview, 'eventId' | 'dateScheduled' | 'status' | 'wbsName'>;
+
+export interface GanttChartWorkPackage extends WbsElementPreview {
+  projectId: string;
+  startDate: Date;
+  endDate: Date;
+  stage?: WorkPackageStage;
+  blocking: WbsNumber[];
+  events: GanttChartEvent[];
+}
+
+// a task bar and its tooltip; saving edits reads everything else from the full project
+export interface GanttChartTask {
+  taskId: string;
+  wbsNum: WbsNumber;
+  title: string;
+  status: TaskStatus;
+  startDate?: Date;
+  deadline?: Date;
+  createdBy: UserPreview;
+  assignees: UserPreview[];
+}
+
+export interface GanttChartProject extends WbsElementPreview {
+  startDate?: Date;
+  endDate?: Date;
+  teams: { teamId: string }[];
+  workPackages: GanttChartWorkPackage[];
+  tasks: GanttChartTask[];
 }
 
 export interface ProjectPreview extends WbsElementPreview {
