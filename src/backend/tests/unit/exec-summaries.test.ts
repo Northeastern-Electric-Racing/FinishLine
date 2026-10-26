@@ -6,7 +6,13 @@
 import { Car, Organization, Prisma, User } from '@prisma/client';
 import ExecSummaryServices from '../../src/services/exec-summaries.services.js';
 import { executiveSummaryTransformer } from '../../src/transformers/executive-summary.transformer.js';
-import { AccessDeniedException, DeletedException, NotFoundException } from '../../src/utils/errors.utils.js';
+import {
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../../src/utils/errors.utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import {
   getBaseCompetitionDocumentsSummaryQueryArgs,
@@ -28,6 +34,7 @@ import {
   createTestTeamType,
   resetUsers
 } from '../test-utils.js';
+import { DataSource } from 'shared';
 import { batmanAppAdmin, member, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data.js';
 
 // the same fields the service selects when returning a full executive summary
@@ -178,6 +185,179 @@ describe('Executive Summary Tests', () => {
       );
 
       expect(edited.goals).toBe('new goals');
+    });
+  });
+
+  describe('Edit Competition Documents Summary', () => {
+    const createDocumentsSummary = (executiveSummaryId: string) =>
+      prisma.competition_Documents_Summary.create({
+        data: { executiveSummaryId, submittedOnTimeCount: 1, firstSubmissionRejectedCount: 1 }
+      });
+
+    it('Fails if the user is not an admin and not on the ops team', async () => {
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await createDocumentsSummary(executiveSummary.executiveSummaryId);
+      const nonAdminMember = await createTestUser(member, orgId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editCompetitionDocumentsSummary(
+            nonAdminMember,
+            organization,
+            executiveSummary.executiveSummaryId,
+            { submittedOnTimeCount: 5 }
+          )
+      ).rejects.toThrow(new AccessDeniedException('edit a competition documents summary'));
+    });
+
+    it('Fails if the executive summary does not exist', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editCompetitionDocumentsSummary(admin, organization, 'nonexistent-id', {
+            submittedOnTimeCount: 5
+          })
+      ).rejects.toThrow(new NotFoundException('Executive Summary', 'nonexistent-id'));
+    });
+
+    it('Fails if the executive summary belongs to a different organization', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const otherOrganization = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          description: 'for invalid org executive summary case',
+          applicationLink: '',
+          userCreated: { connect: { userId: superman.userId } }
+        }
+      });
+      const otherCar = await createTestCar(otherOrganization.organizationId, superman.userId);
+      const executiveSummary = await createTestExecutiveSummary(otherOrganization, otherCar.carId, superman.userId);
+      await createDocumentsSummary(executiveSummary.executiveSummaryId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editCompetitionDocumentsSummary(
+            admin,
+            organization,
+            executiveSummary.executiveSummaryId,
+            { submittedOnTimeCount: 5 }
+          )
+      ).rejects.toThrow(new InvalidOrganizationException('Executive Summary'));
+    });
+
+    it('Fails if the executive summary has been deleted', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await createDocumentsSummary(executiveSummary.executiveSummaryId);
+
+      await prisma.executive_Summary.update({
+        where: { executiveSummaryId: executiveSummary.executiveSummaryId },
+        data: { dateDeleted: new Date(), deletedBy: { connect: { userId: admin.userId } } }
+      });
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editCompetitionDocumentsSummary(
+            admin,
+            organization,
+            executiveSummary.executiveSummaryId,
+            { submittedOnTimeCount: 5 }
+          )
+      ).rejects.toThrow(new DeletedException('Executive Summary', executiveSummary.executiveSummaryId));
+    });
+
+    it('Fails if the competition documents summary does not exist', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editCompetitionDocumentsSummary(
+            admin,
+            organization,
+            executiveSummary.executiveSummaryId,
+            { submittedOnTimeCount: 5 }
+          )
+      ).rejects.toThrow(new NotFoundException('Competition Documents Summary', executiveSummary.executiveSummaryId));
+    });
+
+    it('Fails if a count is negative or not an integer', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await createDocumentsSummary(executiveSummary.executiveSummaryId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editCompetitionDocumentsSummary(
+            admin,
+            organization,
+            executiveSummary.executiveSummaryId,
+            { submittedOnTimeCount: -1 }
+          )
+      ).rejects.toThrow(new HttpException(400, 'Submitted on time count must be a non-negative integer'));
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editCompetitionDocumentsSummary(
+            admin,
+            organization,
+            executiveSummary.executiveSummaryId,
+            { firstSubmissionRejectedCount: 1.5 }
+          )
+      ).rejects.toThrow(new HttpException(400, 'First submission rejected count must be a non-negative integer'));
+    });
+
+    it('Succeeds and edits the competition documents summary as an admin', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await createDocumentsSummary(executiveSummary.executiveSummaryId);
+      const dateSynced = new Date('01/01/2025');
+
+      const edited = await ExecSummaryServices.editCompetitionDocumentsSummary(
+        admin,
+        organization,
+        executiveSummary.executiveSummaryId,
+        { submittedOnTimeCount: 8, firstSubmissionRejectedCount: 2, source: DataSource.AUTO, dateSynced }
+      );
+
+      expect(edited.executiveSummaryId).toBe(executiveSummary.executiveSummaryId);
+      expect(edited.submittedOnTimeCount).toBe(8);
+      expect(edited.firstSubmissionRejectedCount).toBe(2);
+      expect(edited.source).toBe(DataSource.AUTO);
+      expect(edited.dateSynced).toEqual(dateSynced);
+    });
+
+    it('Leaves omitted fields unchanged', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await createDocumentsSummary(executiveSummary.executiveSummaryId);
+
+      const edited = await ExecSummaryServices.editCompetitionDocumentsSummary(
+        admin,
+        organization,
+        executiveSummary.executiveSummaryId,
+        { submittedOnTimeCount: 8 }
+      );
+
+      expect(edited.submittedOnTimeCount).toBe(8);
+      expect(edited.firstSubmissionRejectedCount).toBe(1);
+      expect(edited.source).toBe(DataSource.MANUAL);
+    });
+
+    it('Succeeds and edits the competition documents summary as an ops team member (non-admin)', async () => {
+      const opsMember = await createOpsTeamAndMember(organization);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await createDocumentsSummary(executiveSummary.executiveSummaryId);
+
+      const edited = await ExecSummaryServices.editCompetitionDocumentsSummary(
+        opsMember,
+        organization,
+        executiveSummary.executiveSummaryId,
+        { submittedOnTimeCount: 9 }
+      );
+
+      expect(edited.submittedOnTimeCount).toBe(9);
     });
   });
 
