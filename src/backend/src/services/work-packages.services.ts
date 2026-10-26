@@ -14,7 +14,8 @@ import {
   WorkPackageStage,
   User,
   WorkPackageSelection,
-  WorkPackageDropdownItem
+  WorkPackageDropdownItem,
+  workPackageEditNeedsCR
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -29,7 +30,7 @@ import { getWorkPackageQueryArgs, getWorkPackagePreviewQueryArgs } from '../pris
 import { getWorkPackageDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
 import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer.js';
 import { workPackageDropdownTransformer } from '../transformers/dropdown.transformer.js';
-import { validateChangeRequestAccepted, workPackageEditIsMeaningful } from '../utils/change-requests.utils.js';
+import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils.js';
 import { getWorkPackageChanges } from '../utils/changes.utils.js';
 import {
@@ -394,7 +395,7 @@ export default class WorkPackagesService {
     user: User,
     workPackageId: string,
     name: string,
-    crId: string,
+    crId: string | null,
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
@@ -427,25 +428,24 @@ export default class WorkPackagesService {
     if (originalWorkPackage.wbsElement.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Work Package');
 
-    // the crId must match a valid approved change request
-    await validateChangeRequestAccepted(crId);
-
     const { wbsElementId } = originalWorkPackage;
 
-    // only timeline and description bullet changes need a change request, everything else applies directly
-    const isMeaningful = await workPackageEditIsMeaningful(
+    // only timeline and description bullet changes require a change request
+    const needsCR = workPackageEditNeedsCR(
       originalWorkPackage.startDate,
       new Date(startDate),
       originalWorkPackage.duration,
       duration,
-      originalWorkPackage.wbsElement.descriptionBullets,
-      descriptionBullets,
-      wbsElementId,
-      userId
+      originalWorkPackage.wbsElement.descriptionBullets.map((bullet) => ({
+        id: bullet.descriptionId,
+        detail: bullet.detail
+      })),
+      descriptionBullets.map((bullet) => ({ id: bullet.id, detail: bullet.detail }))
     );
 
     // the crId must match a valid approved change request
-    if (isMeaningful) {
+    if (needsCR) {
+      if (!crId) throw new HttpException(400, 'This edit requires an accepted change request');
       await validateChangeRequestAccepted(crId);
     }
 
@@ -468,7 +468,7 @@ export default class WorkPackagesService {
       managerId,
       originalWorkPackage.wbsElement.descriptionBullets,
       descriptionBullets,
-      isMeaningful ? crId : null,
+      needsCR ? crId : null,
       wbsElementId,
       userId
     );

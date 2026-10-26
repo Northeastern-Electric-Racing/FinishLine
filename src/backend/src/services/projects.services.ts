@@ -13,7 +13,8 @@ import {
   ProjectDropdownItem,
   WbsNumber,
   wbsPipe,
-  User
+  User,
+  projectEditNeedsCR
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { getProjectDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
@@ -23,7 +24,7 @@ import projectTransformer, {
   projectGanttTransformer,
   projectPreviewTransformer
 } from '../transformers/projects.transformer.js';
-import { projectEditIsMeaningful, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
@@ -367,7 +368,7 @@ export default class ProjectsService {
   static async editProject(
     user: User,
     projectId: string,
-    crId: string,
+    crId: string | null,
     name: string,
     budget: number,
     summary: string,
@@ -402,23 +403,25 @@ export default class ProjectsService {
     if (originalProject.wbsElement.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Project');
 
-    // only budget and description bullet changes need a change request, everything else applies directly
-    const isMeaningful = await projectEditIsMeaningful(
+    // only budget and description bullet changes require a change request
+    const needsCR = projectEditNeedsCR(
       originalProject.budget,
       budget,
-      originalProject.wbsElement.descriptionBullets,
-      newDescriptionBullets,
-      originalProject.wbsElementId,
-      userId
+      originalProject.wbsElement.descriptionBullets.map((bullet) => ({
+        id: bullet.descriptionId,
+        detail: bullet.detail
+      })),
+      newDescriptionBullets.map((bullet) => ({ id: bullet.id, detail: bullet.detail }))
     );
 
-    if (isMeaningful) {
+    if (needsCR) {
+      if (!crId) throw new HttpException(400, 'This edit requires an accepted change request');
       await validateChangeRequestAccepted(crId);
     }
 
     const { project: updatedProject } = await updateProjectAndCreateChanges(
       originalProject.projectId,
-      isMeaningful ? crId : null,
+      needsCR ? crId : null,
       userId,
       name,
       budget,
@@ -433,7 +436,6 @@ export default class ProjectsService {
     // return the updated work package
     return projectTransformer(updatedProject);
   }
-
   /**
    * Adds or removes the given team to the projects teams depending if it is already assigned to the project or not.
    *
