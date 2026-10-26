@@ -64,6 +64,7 @@ export const getBayDashboardCountdownQueryArgs = () =>
       bayDashboardCountdownId: true,
       name: true,
       startDate: true,
-      endDate: true
+      endDate: true,
+      isPrimary: true
     }
   });
