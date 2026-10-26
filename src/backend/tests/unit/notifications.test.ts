@@ -70,7 +70,7 @@ describe('Notifications Service Tests', () => {
 
       await NotificationsService.sendTaskDeadlineSlackNotifications();
 
-      const calls = (sendMessage as Mock).mock.calls;
+      const { calls } = (sendMessage as Mock).mock;
       expect(calls.length).toBeGreaterThan(1);
       calls.forEach(([, message]) => expect(message.length).toBeLessThanOrEqual(3000));
       calls.slice(0, -1).forEach(([, , link, linkText]) => {
@@ -79,7 +79,7 @@ describe('Notifications Service Tests', () => {
       });
       expect(calls[calls.length - 1][2]).toBe(`${getFrontendBaseUrl()}/tasks?projects=1.2.0`);
       expect(calls[calls.length - 1][3]).toBe('View Tasks on Task Board');
-      // every task is sent exactly once, in order
+      // every task is sent
       const sentText = calls.map(([, message]) => message).join('\n\n');
       Array.from({ length: 40 }, (_, i) => expect(sentText).toContain(`task ${i} `));
     });
