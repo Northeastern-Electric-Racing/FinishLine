@@ -607,6 +607,10 @@ export default class ChangeRequestsService {
       where: { organizationId: organization.organizationId }
     });
 
+    const blockingCount = await prisma.work_Package.count({
+      where: { blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } } }
+    });
+
     const createdCR = await prisma.change_Request.create({
       data: {
         submitter: { connect: { userId: submitter.userId } },
@@ -622,9 +626,9 @@ export default class ChangeRequestsService {
         },
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChanges + 1,
-        snapshotBlockingCount: 0,
-        snapshotStartDate: workPackage!.startDate,
-        snapshotDuration: workPackage!.duration
+        snapshotBlockingCount: blockingCount,
+        snapshotStartDate: workPackage ? workPackage.startDate : null,
+        snapshotDuration: workPackage ? workPackage.duration : null
       },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
@@ -701,6 +705,10 @@ export default class ChangeRequestsService {
       );
     }
 
+    const blockingCount = await prisma.work_Package.count({
+      where: { blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } } }
+    });
+
     const numChangeRequests = await prisma.change_Request.count({
       where: { organizationId: organization.organizationId }
     });
@@ -715,9 +723,9 @@ export default class ChangeRequestsService {
         },
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChangeRequests + 1,
-        snapshotBlockingCount: 0,
-        snapshotStartDate: workPackage!.startDate,
-        snapshotDuration: workPackage!.duration
+        snapshotBlockingCount: blockingCount,
+        snapshotStartDate: workPackage ? workPackage.startDate : null,
+        snapshotDuration: workPackage ? workPackage.duration : null
       },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
@@ -918,6 +926,10 @@ export default class ChangeRequestsService {
       where: { organizationId: organization.organizationId }
     });
 
+    const blockingCount = await prisma.work_Package.count({
+      where: { blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } } }
+    });
+
     const createdCR = await prisma.change_Request.create({
       data: {
         submitter: { connect: { userId: submitter.userId } },
@@ -931,9 +943,9 @@ export default class ChangeRequestsService {
             manager: managerId ? { connect: { userId: managerId } } : undefined
           }
         },
-        snapshotBlockingCount: 0,
-        snapshotStartDate: workPackage?.startDate,
-        snapshotDuration: workPackage?.duration
+        snapshotBlockingCount: blockingCount,
+        snapshotStartDate: workPackage ? workPackage.startDate : null,
+        snapshotDuration: workPackage ? workPackage.duration : null
       }
     });
 
@@ -1069,6 +1081,10 @@ export default class ChangeRequestsService {
       where: { wbsElementId: wbsElement.wbsElementId }
     });
 
+    const blockingCount = await prisma.work_Package.count({
+      where: { blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } } }
+    });
+
     const createdCR = await prisma.change_Request.create({
       data: {
         submitter: { connect: { userId: submitter.userId } },
@@ -1080,9 +1096,9 @@ export default class ChangeRequestsService {
         }),
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChangeRequests + 1,
-        snapshotBlockingCount: 0,
-        snapshotStartDate: workPackage!.startDate,
-        snapshotDuration: workPackage!.duration
+        snapshotBlockingCount: blockingCount,
+        snapshotStartDate: workPackage ? workPackage.startDate : null,
+        snapshotDuration: workPackage ? workPackage.duration : null
       },
       include: {
         wbsElement: {
@@ -1135,6 +1151,10 @@ export default class ChangeRequestsService {
         where: { wbsElementId: wbsElement.wbsElementId }
       });
 
+      const blockingCount = await prisma.work_Package.count({
+        where: { blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } } }
+      });
+
       const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
           changeRequest: { connect: { crId: createdCR.crId } },
@@ -1172,9 +1192,9 @@ export default class ChangeRequestsService {
                       },
                       leadId: workPackage.originalElement.leadId,
                       managerId: workPackage.originalElement.managerId,
-                      snapshotBlockingCount: workPackage.validatedBlockedBys,
-                      snapshotStartDate: workPackageQuery!.startDate,
-                      snapshotDuration: workPackageQuery!.duration
+                      snapshotBlockingCount: blockingCount,
+                      snapshotStartDate: workPackageQuery ? workPackageQuery.startDate : null,
+                      snapshotDuration: workPackageQuery ? workPackageQuery.duration : null
                     }
                   },
                   duration: workPackage.originalElement.duration,
