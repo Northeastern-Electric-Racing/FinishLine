@@ -32,9 +32,10 @@ import {
 } from '../prisma-query-args/change-requests.query-args.js';
 import ProjectsService from '../services/projects.services.js';
 import WorkPackagesService from '../services/work-packages.services.js';
-import { descriptionBulletToDescriptionBulletPreview } from './description-bullets.utils.js';
+import { DescriptionBulletWithType, descriptionBulletToDescriptionBulletPreview } from './description-bullets.utils.js';
 import { sendSlackCRReviewedNotification } from './slack.utils.js';
 import { validateBlockedBys } from './work-packages.utils.js';
+import { getDescriptionBulletChanges } from './changes.utils.js';
 
 /** Makes sure that a change request has been accepted already (and not deleted)
  * @param crId - the id of the change request to check
@@ -546,4 +547,65 @@ export const validateWbsElement = async (wbsNum: WbsNumber, organization: Organi
   if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
   if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
   return wbsElement;
+};
+
+/**
+ * Whether a project edit touches a field that requires a change request. Budget and
+ * description bullets are meaningful; name, summary, links, lead and manager are not.
+ *
+ * @param originalBudget the project's current budget
+ * @param newBudget the budget being set
+ * @param originalBullets the project's current description bullets
+ * @param newBullets the description bullets being set
+ * @param wbsElementId the project's wbs element id
+ * @param implementerId the user making the edit
+ * @returns whether the edit requires a change request
+ */
+export const projectEditIsMeaningful = async (
+  originalBudget: number,
+  newBudget: number | null,
+  originalBullets: DescriptionBulletWithType[],
+  newBullets: DescriptionBulletPreview[],
+  wbsElementId: string,
+  implementerId: string
+): Promise<boolean> => {
+  if (newBudget !== null && originalBudget !== newBudget) return true;
+
+  // passing null as the crId means no change rows get built, we only want the comparison
+  const bulletChanges = await getDescriptionBulletChanges(originalBullets, newBullets, null, wbsElementId, implementerId);
+
+  return bulletChanges.deleted.length > 0 || bulletChanges.added.length > 0 || bulletChanges.edited.length > 0;
+};
+
+/**
+ * Whether a work package edit touches a field that requires a change request. Timeline
+ * (start date and duration) and description bullets are meaningful; name, stage, blocked by,
+ * lead and manager are not.
+ *
+ * @param originalStartDate the work package's current start date
+ * @param newStartDate the start date being set
+ * @param originalDuration the work package's current duration
+ * @param newDuration the duration being set
+ * @param originalBullets the work package's current description bullets
+ * @param newBullets the description bullets being set
+ * @param wbsElementId the work package's wbs element id
+ * @param implementerId the user making the edit
+ * @returns whether the edit requires a change request
+ */
+export const workPackageEditIsMeaningful = async (
+  originalStartDate: Date,
+  newStartDate: Date,
+  originalDuration: number,
+  newDuration: number,
+  originalBullets: DescriptionBulletWithType[],
+  newBullets: DescriptionBulletPreview[],
+  wbsElementId: string,
+  implementerId: string
+): Promise<boolean> => {
+  if (originalStartDate.getTime() !== newStartDate.getTime()) return true;
+  if (originalDuration !== newDuration) return true;
+
+  const bulletChanges = await getDescriptionBulletChanges(originalBullets, newBullets, null, wbsElementId, implementerId);
+
+  return bulletChanges.deleted.length > 0 || bulletChanges.added.length > 0 || bulletChanges.edited.length > 0;
 };

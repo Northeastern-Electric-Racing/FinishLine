@@ -29,7 +29,7 @@ import { getWorkPackageQueryArgs, getWorkPackagePreviewQueryArgs } from '../pris
 import { getWorkPackageDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
 import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer.js';
 import { workPackageDropdownTransformer } from '../transformers/dropdown.transformer.js';
-import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import { validateChangeRequestAccepted, workPackageEditIsMeaningful } from '../utils/change-requests.utils.js';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils.js';
 import { getWorkPackageChanges } from '../utils/changes.utils.js';
 import {
@@ -432,6 +432,23 @@ export default class WorkPackagesService {
 
     const { wbsElementId } = originalWorkPackage;
 
+    // only timeline and description bullet changes need a change request, everything else applies directly
+    const isMeaningful = await workPackageEditIsMeaningful(
+      originalWorkPackage.startDate,
+      new Date(startDate),
+      originalWorkPackage.duration,
+      duration,
+      originalWorkPackage.wbsElement.descriptionBullets,
+      descriptionBullets,
+      wbsElementId,
+      userId
+    );
+
+    // the crId must match a valid approved change request
+    if (isMeaningful) {
+      await validateChangeRequestAccepted(crId);
+    }
+
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
 
     const changes = await getWorkPackageChanges(
@@ -451,7 +468,7 @@ export default class WorkPackagesService {
       managerId,
       originalWorkPackage.wbsElement.descriptionBullets,
       descriptionBullets,
-      crId,
+      isMeaningful ? crId : null,
       wbsElementId,
       userId
     );

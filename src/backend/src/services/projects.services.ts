@@ -23,7 +23,7 @@ import projectTransformer, {
   projectGanttTransformer,
   projectPreviewTransformer
 } from '../transformers/projects.transformer.js';
-import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import { projectEditIsMeaningful, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
@@ -381,8 +381,6 @@ export default class ProjectsService {
     if (await userHasPermission(userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('edit projects');
 
-    await validateChangeRequestAccepted(crId);
-
     // get the original project so we can compare things
     const originalProject = await prisma.project.findUnique({
       where: {
@@ -404,9 +402,23 @@ export default class ProjectsService {
     if (originalProject.wbsElement.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Project');
 
+    // only budget and description bullet changes need a change request, everything else applies directly
+    const isMeaningful = await projectEditIsMeaningful(
+      originalProject.budget,
+      budget,
+      originalProject.wbsElement.descriptionBullets,
+      newDescriptionBullets,
+      originalProject.wbsElementId,
+      userId
+    );
+
+    if (isMeaningful) {
+      await validateChangeRequestAccepted(crId);
+    }
+
     const { project: updatedProject } = await updateProjectAndCreateChanges(
       originalProject.projectId,
-      crId,
+      isMeaningful ? crId : null,
       userId,
       name,
       budget,
