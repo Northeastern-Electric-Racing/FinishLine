@@ -276,7 +276,6 @@ export default class BayDashboardAdminService {
 
     const trimmedName = name.trim();
 
-
     const countdown = await prisma.bay_Dashboard_Countdown.findUnique({
       where: { bayDashboardCountdownId: countdownId }
     });
@@ -301,5 +300,4 @@ export default class BayDashboardAdminService {
 
     return bayDashboardCountdownTransformer(updatedCountdown);
   }
-
 }

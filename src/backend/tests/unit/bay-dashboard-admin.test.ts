@@ -544,7 +544,5 @@ describe('Bay Dashboard Admin Tests', () => {
 
       expect(edited.name).toBe('Competition');
     });
-
   });
-
 });
