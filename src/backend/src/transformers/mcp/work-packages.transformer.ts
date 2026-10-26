@@ -3,7 +3,7 @@ import { calculateEndDate, McpDescriptionBulletGroup, McpWorkPackage, wbsPipe } 
 import { McpWorkPackageQueryArgs } from '../../prisma-query-args/mcp/work-packages.query-args.js';
 import { wbsNumOf } from '../../utils/utils.js';
 import { wbsElementUrl } from '../../utils/urls.utils.js';
-import { fullName } from './shared.js';
+import { optionalMcpUser } from './shared.js';
 
 /**
  * Groups description bullets by their type name, preserving whatever types the organization has
@@ -39,8 +39,8 @@ export const mcpWorkPackageTransformer = (
     // there is no end date column, it is the start date plus the duration in weeks
     endDate: calculateEndDate(workPackage.startDate, workPackage.duration),
     durationWeeks: workPackage.duration,
-    lead: fullName(workPackage.wbsElement.lead),
-    manager: fullName(workPackage.wbsElement.manager),
+    lead: optionalMcpUser(workPackage.wbsElement.lead),
+    manager: optionalMcpUser(workPackage.wbsElement.manager),
     descriptionBullets: groupDescriptionBullets(workPackage.wbsElement.descriptionBullets),
     blockedBy: workPackage.blockedBy.map((blocker) => wbsPipe(wbsNumOf(blocker))),
     viewOnFinishline: wbsElementUrl(wbsNum)

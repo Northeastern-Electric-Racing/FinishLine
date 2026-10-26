@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { userSelect } from './teams.query-args.js';
 
 export type McpTaskQueryArgs = ReturnType<typeof getMcpTaskQueryArgs>;
 
@@ -12,8 +13,8 @@ export const getMcpTaskQueryArgs = () =>
       priority: true,
       startDate: true,
       deadline: true,
-      assignees: { select: { firstName: true, lastName: true } },
-      createdBy: { select: { firstName: true, lastName: true } },
+      assignees: userSelect,
+      createdBy: userSelect,
       labels: { where: { dateDeleted: null }, select: { name: true } },
       // a task hangs off either the project's wbs element or one of its work packages'
       wbsElement: {
