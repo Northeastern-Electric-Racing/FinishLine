@@ -10,12 +10,14 @@ import {
 } from '../utils/notifications.utils.js';
 import { sendMessage } from '../integrations/slack.js';
 import { daysBetween, wbsPipe, formatTimeForSlack } from 'shared';
-import { buildDueString, sendThreadResponse } from '../utils/slack.utils.js';
+import { buildDueString, sendThreadResponse, splitSlackMessage } from '../utils/slack.utils.js';
 import WorkPackagesService from './work-packages.services.js';
 import { addWeeksToDate } from 'shared';
 import { HttpException } from '../utils/errors.utils.js';
 import { Reimbursement_Status_Type } from '@prisma/client';
 import { scheduleTimesTransformer } from '../transformers/calendar.transformer.js';
+import { globalTasksUrl } from '../utils/urls.utils.js';
+import { wbsNumOf } from '../utils/utils.js';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
@@ -83,7 +85,7 @@ export default class NotificationsService {
 
     // send the notifications to each team for their respective tasks sorted by deadline
     const promises = Array.from(teamTaskMap).map(async ([slackId, tasks]) => {
-      const messageBlock = tasks
+      const taskLines = tasks
         .sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime())
         .map((task) => {
           // prisma call earlier allows the forced unwrap (deadline is guaranteed to be a non-null value)
@@ -93,15 +95,30 @@ export default class NotificationsService {
           return `${usersToSlackPings(task.assignees ?? [])} <https://finishlinebyner.com/projects/${wbsPipe(
             task.wbsElement
           )}/tasks|${task.title}> ${buildDueString(daysUntilDeadline)} in project ${task.wbsElement?.name}`;
-        })
-        .join('\n\n');
+        });
 
-      // messageBlock will be empty if there are tasks with no assignees
-      if (messageBlock !== '')
+      // link to the global task board filtered to the distinct projects of the tasks in this message
+      const projectWbsNums = Array.from(
+        new Map(tasks.map((task) => [wbsPipe(task.wbsElement), wbsNumOf(task.wbsElement)])).values()
+      );
+
+      // long task lists are split across messages to fit slack's length limit, with the link on the last one
+      const messages = splitSlackMessage(
+        ':sparkles: :pepe-coop: UPCOMING TASK DEADLINES :pepe-coop: :sparkles: \n\n\n',
+        taskLines,
+        '\n\n'
+      );
+
+      // sent one at a time so the messages stay in order in the channel
+      for (const [index, message] of messages.entries()) {
+        const isLastMessage = index === messages.length - 1;
         await sendMessage(
           slackId,
-          ':sparkles: :pepe-coop: UPCOMING TASK DEADLINES :pepe-coop: :sparkles: \n\n\n' + messageBlock
+          message,
+          isLastMessage ? globalTasksUrl({ projectWbsNums }) : undefined,
+          isLastMessage ? 'View Tasks on Task Board' : undefined
         );
+      }
     });
 
     await Promise.all(promises);
