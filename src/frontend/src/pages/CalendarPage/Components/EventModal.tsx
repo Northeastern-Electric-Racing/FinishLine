@@ -88,6 +88,7 @@ export interface EventFormValues {
   days: DayOfWeek[];
   selectedScheduleSlotId?: string;
   mention: SlackMentionType;
+  sendSlackNotifications?: boolean;
 }
 
 export interface EventPayload {
@@ -355,12 +356,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   );
 
   const [preferSlackNotification, setPreferSlackNotification] = useState<boolean>(
-    selectedEventType?.sendSlackNotifications ?? false
+    initialValues?.sendSlackNotifications ?? true
   );
-
-  useEffect(() => {
-    setPreferSlackNotification(selectedEventType?.sendSlackNotifications ?? false);
-  }, [selectedEventType]);
 
   // Filter machinery based on selected shops
   const filteredMachineryOptions = useMemo(() => {
@@ -1247,10 +1244,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 arrow
                 placement="right"
                 title={
-                  !selectedEventType.sendSlackNotifications
-                    ? 'Slack notifications are disabled for this event type.'
-                    : preferSlackNotification &&
-                        (selectedTeams.length || workPackageIds.length || selectedNotificationChannels.length)
+                  !preferSlackNotification
+                    ? 'Slack notifications are disabled for this event.'
+                    : selectedTeams.length || workPackageIds.length || selectedNotificationChannels.length
                       ? 'Slack notifications will be sent for this event.'
                       : 'Slack notifications will not be sent for this event.'
                 }
@@ -1259,7 +1255,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 <span style={{ display: 'inline-flex', flexShrink: 0 }}>
                   <Button
                     onClick={() => setPreferSlackNotification((prev) => !prev)}
-                    disabled={!selectedEventType.sendSlackNotifications}
                     disableRipple
                     sx={{
                       minWidth: 0,
@@ -1295,7 +1290,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 )}
 
               {/* Slack Mention Type Toggle */}
-              {selectedEventType.sendSlackNotifications && !initialValues && (
+              {preferSlackNotification && !initialValues && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginLeft: 'auto' }}>
                   <Controller
                     name="mention"
@@ -1460,7 +1455,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             </Box>
           )}
           {/* Notification Channels Section */}
-          {selectedEventType?.sendSlackNotifications && (
+          {preferSlackNotification && (
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
               <NotificationsIcon sx={{ color: 'text.secondary', mt: 1 }} />
               <Box sx={{ flex: 1, width: '100%' }}>

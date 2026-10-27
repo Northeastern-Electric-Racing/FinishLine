@@ -40,8 +40,7 @@ const EditEventTypeModal = ({ open, onClose, eventType }: EditEventTypeModalProp
     documents: eventType.documents,
     description: eventType.description,
     onlyHeadsOrAbove: eventType.onlyHeadsOrAboveForEventCreation,
-    requiresConfirmation: eventType.requiresConfirmation || false,
-    sendSlackNotifications: eventType.sendSlackNotifications || false
+    requiresConfirmation: eventType.requiresConfirmation || false
   };
 
   if (isError) return <ErrorPage message={error?.message} />;

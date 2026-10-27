@@ -471,7 +471,6 @@ type EventTypeConfig = {
   description: boolean;
   onlyHeadsOrAboveForEventCreation: boolean;
   requiresConfirmation: boolean;
-  sendSlackNotifications: boolean;
 };
 
 export const eventTypeConfigs: EventTypeConfig[] = [
@@ -491,8 +490,7 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: false,
     description: false,
     onlyHeadsOrAboveForEventCreation: false,
-    requiresConfirmation: false,
-    sendSlackNotifications: false
+    requiresConfirmation: false
   },
   {
     name: 'Educational',
@@ -510,8 +508,7 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: true,
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
-    requiresConfirmation: false,
-    sendSlackNotifications: true
+    requiresConfirmation: false
   },
   {
     name: 'FSAE',
@@ -529,8 +526,7 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: true,
     description: true,
     onlyHeadsOrAboveForEventCreation: true,
-    requiresConfirmation: true,
-    sendSlackNotifications: true
+    requiresConfirmation: true
   },
   {
     name: 'FHE',
@@ -548,8 +544,7 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: true,
     description: true,
     onlyHeadsOrAboveForEventCreation: true,
-    requiresConfirmation: true,
-    sendSlackNotifications: true
+    requiresConfirmation: true
   },
   {
     name: 'Misc. Event (When2Meet)',
@@ -567,8 +562,7 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: false,
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
-    requiresConfirmation: true,
-    sendSlackNotifications: true
+    requiresConfirmation: true
   },
   {
     name: 'Deadline/Heads Up',
@@ -586,8 +580,7 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: false,
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
-    requiresConfirmation: false,
-    sendSlackNotifications: true
+    requiresConfirmation: false
   },
   {
     name: 'Misc. Event (Standard)',
@@ -605,8 +598,7 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: false,
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
-    requiresConfirmation: false,
-    sendSlackNotifications: true
+    requiresConfirmation: false
   }
 ];
 
@@ -633,7 +625,6 @@ export const eventTypeCreateInput = (
   description: config.description,
   onlyHeadsOrAboveForEventCreation: config.onlyHeadsOrAboveForEventCreation,
   requiresConfirmation: config.requiresConfirmation,
-  sendSlackNotifications: config.sendSlackNotifications,
   calendars: {
     connect: config.calendarNames.map((name) => {
       const calendarId = calendarIdsByName[name];

@@ -65,7 +65,6 @@ calendarRouter.post(
   body('description').isBoolean(),
   body('onlyHeadsOrAbove').isBoolean(),
   body('requiresConfirmation').isBoolean(),
-  body('sendSlackNotifications').isBoolean(),
   validateInputs,
   CalendarController.createEventType
 );
@@ -89,7 +88,6 @@ calendarRouter.post(
   body('description').isBoolean(),
   body('onlyHeadsOrAbove').isBoolean(),
   body('requiresConfirmation').isBoolean(),
-  body('sendSlackNotifications').isBoolean(),
   validateInputs,
   CalendarController.editEventType
 );

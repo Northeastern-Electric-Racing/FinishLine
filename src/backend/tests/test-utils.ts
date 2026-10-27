@@ -635,8 +635,7 @@ export const createTestDesignReviewEvent = async () => {
     true, // questionDocument
     true, // documents
     false, // description
-    true, // onlyHeadsOrAbove
-    true // requiresConfirmation
+    true
   );
 
   const testWorkPackage = await prisma.work_Package.findFirst({

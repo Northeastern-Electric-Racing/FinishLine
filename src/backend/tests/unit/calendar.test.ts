@@ -79,8 +79,7 @@ describe('Calendar Tests', () => {
       true, // documents
       true, // description
       true, // onlyHeadsOrAbove
-      false, // requiresConfirmation - changed to false so tests don't need initialDateScheduled
-      true // sendSlackNotifications
+      false // requiresConfirmation - changed to false so tests don't need initialDateScheduled
     );
   });
 
@@ -267,7 +266,6 @@ describe('Calendar Tests', () => {
             true,
             false,
             true,
-            false,
             false
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create event type'));
@@ -292,7 +290,6 @@ describe('Calendar Tests', () => {
         false,
         false,
         true,
-        false,
         false
       );
 
@@ -311,7 +308,6 @@ describe('Calendar Tests', () => {
       expect(result.description).toBe(false);
       expect(result.onlyHeadsOrAboveForEventCreation).toBe(true);
       expect(result.requiresConfirmation).toBe(false);
-      expect(result.sendSlackNotifications).toBe(false);
     });
   });
 
@@ -667,8 +663,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         true,
-        true,
-        false
+        true
       );
     });
 
@@ -681,7 +676,6 @@ describe('Calendar Tests', () => {
           [calendar.calendarId],
           organization,
           'Initial Event Type',
-          false,
           false,
           false,
           false,
@@ -709,7 +703,6 @@ describe('Calendar Tests', () => {
           [invalidCalendarId],
           organization,
           'Initial Event Type 2',
-          true,
           true,
           true,
           true,
@@ -768,7 +761,6 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
-          false,
           false
         )
       ).rejects.toThrow(new InvalidOrganizationException('Calendar'));
@@ -796,8 +788,7 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
-          true,
-          false
+          true
         )
       ).rejects.toThrow(new NotFoundException('Event Type', nonExistentId));
     });
@@ -822,7 +813,6 @@ describe('Calendar Tests', () => {
         true,
         false,
         false,
-        false,
         false
       );
 
@@ -842,7 +832,6 @@ describe('Calendar Tests', () => {
       expect(result.description).toBe(false);
       expect(result.onlyHeadsOrAboveForEventCreation).toBe(false);
       expect(result.requiresConfirmation).toBe(false);
-      expect(result.sendSlackNotifications).toBe(false);
     });
   });
 
@@ -2038,8 +2027,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         false,
-        true,
-        false
+        true
       );
     });
 
@@ -2096,8 +2084,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         false,
-        true,
-        false
+        true
       );
 
       await expect(CalendarService.deleteEventType(adminUser, otherOrgEventType.eventTypeId, organization)).rejects.toThrow(

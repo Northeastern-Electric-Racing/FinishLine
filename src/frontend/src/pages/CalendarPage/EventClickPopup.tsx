@@ -506,7 +506,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
             <Typography variant="body2" sx={{ flex: 1 }}>
               <b>Status:</b> {event.status}
             </Typography>
-            {specificEventType?.sendSlackNotifications && (event.teams.length > 0 || event.workPackages.length > 0) && (
+            {event.sendSlackNotifications && (event.teams.length > 0 || event.workPackages.length > 0) && (
               <NotificationsIcon sx={{ color: 'white', fontSize: 18, mt: '3px', flexShrink: 0 }} />
             )}
           </Stack>
