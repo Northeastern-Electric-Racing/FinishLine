@@ -26,6 +26,19 @@ import {
 } from 'shared';
 import { fullNamePipe, projectWbsPipe } from './pipes';
 import dayjs from 'dayjs';
+import {
+  differenceInCalendarDays,
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  eachWeekOfInterval,
+  eachYearOfInterval,
+  Interval,
+  isSameDay,
+  startOfDay,
+  startOfISOWeek,
+  startOfMonth,
+  startOfYear
+} from 'date-fns';
 import { deepOrange, green, grey, indigo, orange, pink } from '@mui/material/colors';
 import { projectGanttTransformer } from '../apis/transformers/projects.transformers';
 import { ReactNode, useEffect, useMemo } from 'react';
@@ -55,6 +68,140 @@ export interface GanttTaskCreate {
 }
 
 export const GANTT_CHART_CELL_SIZE = '2.375rem';
+
+// Placeholder width of the chart's visible area, until the container width is measured live
+export const GANTT_CHART_VIEWPORT_WIDTH_PX = 1300;
+
+export enum GanttTimeUnit {
+  Day = 'DAY',
+  Week = 'WEEK',
+  Month = 'MONTH',
+  Year = 'YEAR'
+}
+
+export enum GanttTimeWindow {
+  Week = 'WEEK',
+  Month = 'MONTH',
+  HalfYear = 'HALF_YEAR',
+  Year = 'YEAR'
+}
+
+export interface GanttTimeWindowConfig {
+  label: string;
+  visibleSpan: { unit: GanttTimeUnit; amount: number };
+  columnUnit: GanttTimeUnit; // bottom header row, highlighted unit, and grid lines
+  headerGroupUnit: GanttTimeUnit; // top header row labels
+  minElementDays: number; // shortest an element can be drawn, so short elements stay clickable
+  showTasks: boolean;
+  showWorkPackages: boolean;
+}
+
+export const GANTT_TIME_WINDOWS: Record<GanttTimeWindow, GanttTimeWindowConfig> = {
+  [GanttTimeWindow.Week]: {
+    label: 'Week',
+    visibleSpan: { unit: GanttTimeUnit.Week, amount: 2 },
+    columnUnit: GanttTimeUnit.Day,
+    headerGroupUnit: GanttTimeUnit.Month,
+    minElementDays: 1,
+    showTasks: true,
+    showWorkPackages: true
+  },
+  [GanttTimeWindow.Month]: {
+    label: 'Month',
+    visibleSpan: { unit: GanttTimeUnit.Month, amount: 2 },
+    columnUnit: GanttTimeUnit.Week,
+    headerGroupUnit: GanttTimeUnit.Month,
+    minElementDays: 1,
+    showTasks: true,
+    showWorkPackages: true
+  },
+  [GanttTimeWindow.HalfYear]: {
+    label: 'Half Year',
+    visibleSpan: { unit: GanttTimeUnit.Month, amount: 8 },
+    columnUnit: GanttTimeUnit.Week,
+    headerGroupUnit: GanttTimeUnit.Month,
+    minElementDays: 7,
+    showTasks: true,
+    showWorkPackages: true
+  },
+  [GanttTimeWindow.Year]: {
+    label: 'Year',
+    visibleSpan: { unit: GanttTimeUnit.Month, amount: 18 },
+    columnUnit: GanttTimeUnit.Month,
+    headerGroupUnit: GanttTimeUnit.Year,
+    minElementDays: 14,
+    showTasks: false,
+    showWorkPackages: false
+  }
+};
+
+interface GanttTimeUnitOps {
+  startOf: (date: Date) => Date; // start of the unit that the date falls in
+  eachInInterval: (interval: Interval) => Date[]; // start of every unit in the interval
+  nominalDays: number; // typical length, used to size the visible span
+}
+
+const GANTT_TIME_UNIT_OPS: Record<GanttTimeUnit, GanttTimeUnitOps> = {
+  [GanttTimeUnit.Day]: {
+    startOf: startOfDay,
+    eachInInterval: (interval) => eachDayOfInterval(interval),
+    nominalDays: 1
+  },
+  [GanttTimeUnit.Week]: {
+    startOf: startOfISOWeek,
+    eachInInterval: (interval) => eachWeekOfInterval(interval, { weekStartsOn: 1 }),
+    nominalDays: 7
+  },
+  [GanttTimeUnit.Month]: {
+    startOf: startOfMonth,
+    eachInInterval: (interval) => eachMonthOfInterval(interval),
+    nominalDays: 365.25 / 12
+  },
+  [GanttTimeUnit.Year]: {
+    startOf: startOfYear,
+    eachInInterval: (interval) => eachYearOfInterval(interval),
+    nominalDays: 365.25
+  }
+};
+
+/**
+ * Returns the start date of every column between start and end, inclusive.
+ * The first column is the one containing start, even if start falls partway through it.
+ */
+export const getColumns = (start: Date, end: Date, unit: GanttTimeUnit): Date[] => {
+  const ops = GANTT_TIME_UNIT_OPS[unit];
+  return ops.eachInInterval({ start: ops.startOf(start), end });
+};
+
+/**
+ * Returns true if the given date falls in the same column as today (today's day, week, month, or year)
+ */
+export const isCurrentColumn = (date: Date, unit: GanttTimeUnit, today: Date = new Date()): boolean => {
+  const { startOf } = GANTT_TIME_UNIT_OPS[unit];
+  return isSameDay(startOf(date), startOf(today));
+};
+
+/**
+ * Returns how many pixels one day takes up in the given window, so that its visible span fills the viewport
+ */
+export const getPixelsPerDay = (timeWindow: GanttTimeWindow, viewportWidthPx: number = GANTT_CHART_VIEWPORT_WIDTH_PX) => {
+  const { visibleSpan } = GANTT_TIME_WINDOWS[timeWindow];
+  return viewportWidthPx / (visibleSpan.amount * GANTT_TIME_UNIT_OPS[visibleSpan.unit].nominalDays);
+};
+
+/**
+ * Returns the horizontal position of a date, in pixels from the start of the chart
+ */
+export const getDateOffsetPx = (date: Date, chartStart: Date, pixelsPerDay: number) =>
+  differenceInCalendarDays(date, chartStart) * pixelsPerDay;
+
+/**
+ * Returns the width of an element in pixels, never less than the window's minimum element width
+ */
+export const getElementWidthPx = (start: Date, end: Date, timeWindow: GanttTimeWindow, pixelsPerDay: number) => {
+  const days = Math.max(differenceInCalendarDays(end, start), GANTT_TIME_WINDOWS[timeWindow].minElementDays);
+  return days * pixelsPerDay;
+};
 
 export interface GanttCollection<E, T> {
   id: string;
