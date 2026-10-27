@@ -582,7 +582,8 @@ export default class ChangeRequestsService {
         wbsNumber: { carNumber, projectNumber, workPackageNumber, organizationId: organization.organizationId }
       },
       include: {
-        changeRequests: { where: { dateDeleted: null }, include: { changes: true } }
+        changeRequests: { where: { dateDeleted: null }, include: { changes: true } },
+        project: { select: { budget: true } }
       }
     });
 
@@ -629,7 +630,8 @@ export default class ChangeRequestsService {
         identifier: numChanges + 1,
         snapshotBlockingCount: blockingCount,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
-        snapshotDuration: workPackage ? workPackage.duration : null
+        snapshotDuration: workPackage ? workPackage.duration : null,
+        snapshotBudget: wbsElement ? wbsElement.project?.budget : null
       },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
@@ -699,7 +701,8 @@ export default class ChangeRequestsService {
       include: {
         workPackage: true,
         descriptionBullets: true,
-        changeRequests: { where: { dateDeleted: null }, include: { changes: true } }
+        changeRequests: { where: { dateDeleted: null }, include: { changes: true } },
+        project: true
       }
     });
 
@@ -745,7 +748,8 @@ export default class ChangeRequestsService {
         identifier: numChangeRequests + 1,
         snapshotBlockingCount: blockingCount,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
-        snapshotDuration: workPackage ? workPackage.duration : null
+        snapshotDuration: workPackage ? workPackage.duration : null,
+        snapshotBudget: wbsElement ? wbsElement.project?.budget : null
       },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
@@ -811,6 +815,12 @@ export default class ChangeRequestsService {
         where: { organizationId: organization.organizationId }
       });
 
+
+      const accountCode = await prisma.account_Code.findUnique({
+        where: { accountCodeId },
+        include: { changeRequests: { where: { dateDeleted: null }, include: { changes: true } } }
+      });
+
       createdChangeRequest = await prisma.change_Request.create({
         data: {
           submitter: { connect: { userId: submitter.userId } },
@@ -818,7 +828,8 @@ export default class ChangeRequestsService {
           type: CR_Type.BUDGET,
           budgetChangeRequest: { create: { proposedBudget } },
           organization: { connect: { organizationId: organization.organizationId } },
-          identifier: numChangeRequests + 1
+          identifier: numChangeRequests + 1,
+          snapshotBudget: accountCode ? accountCode.amount || null
         },
         ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
       });
@@ -857,7 +868,7 @@ export default class ChangeRequestsService {
       const numChangeRequests = await prisma.change_Request.count({
         where: { organizationId: organization.organizationId }
       });
-
+      
       createdChangeRequest = await prisma.change_Request.create({
         data: {
           submitter: { connect: { userId: submitter.userId } },
@@ -865,7 +876,8 @@ export default class ChangeRequestsService {
           type: CR_Type.BUDGET,
           budgetChangeRequest: { create: { proposedBudget } },
           organization: { connect: { organizationId: organization.organizationId } },
-          identifier: numChangeRequests + 1
+          identifier: numChangeRequests + 1,
+          snapshotBudget: accountCode.amount
         },
         ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
       });
@@ -920,14 +932,15 @@ export default class ChangeRequestsService {
 
     const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
-        wbsNumber: { carNumber, projectNumber, workPackageNumber, organizationId: organization.organizationId }
+        wbsNumber: { carNumber, projectNumber, workPackageNumber, organizationId: organization.organizationId },
       },
       select: {
         wbsElementId: true,
         dateDeleted: true,
         organizationId: true,
         leadId: true,
-        managerId: true
+        managerId: true,
+        project: true
       }
     });
 
@@ -965,7 +978,9 @@ export default class ChangeRequestsService {
         },
         snapshotBlockingCount: blockingCount,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
-        snapshotDuration: workPackage ? workPackage.duration : null
+        snapshotDuration: workPackage ? workPackage.duration : null,
+        snapshotBudget: wbsElement ? wbsElement.project?.budget : null
+
       }
     });
 
@@ -1118,7 +1133,8 @@ export default class ChangeRequestsService {
         identifier: numChangeRequests + 1,
         snapshotBlockingCount: blockingCount,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
-        snapshotDuration: workPackage ? workPackage.duration : null
+        snapshotDuration: workPackage ? workPackage.duration : null,
+        snapshotBudget: wbsElement ? wbsElement.project?.budget : null
       },
       include: {
         wbsElement: {
