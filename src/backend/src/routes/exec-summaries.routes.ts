@@ -4,6 +4,7 @@
  */
 
 import express from 'express';
+import { DataSource } from 'shared';
 import { body, query } from 'express-validator';
 import { isOptionalDate, validateInputs } from '../utils/validation.utils.js';
 import ExecSummaryController from '../controllers/exec-summaries.controllers.js';
@@ -30,6 +31,16 @@ execSummaryRouter.post(
   isOptionalDate(body('seasonEndDate')),
   validateInputs,
   ExecSummaryController.editExecutiveSummary
+);
+
+execSummaryRouter.post(
+  '/:executiveSummaryId/competition-documents-summary/edit',
+  body('submittedOnTimeCount').optional().isInt({ min: 0 }),
+  body('firstSubmissionRejectedCount').optional().isInt({ min: 0 }),
+  body('source').optional().isIn(Object.values(DataSource)),
+  isOptionalDate(body('dateSynced')),
+  validateInputs,
+  ExecSummaryController.editCompetitionDocumentsSummary
 );
 
 export default execSummaryRouter;

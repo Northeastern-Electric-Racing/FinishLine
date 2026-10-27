@@ -8,6 +8,7 @@ import {
   BudgetHighlight,
   calculateProjectEndDate,
   calculateProjectStartDate,
+  EditCompetitionDocumentsSummaryArgs,
   isAdmin,
   notGuest,
   User,
@@ -34,6 +35,7 @@ import {
   getVehicleDevelopmentProjectQueryArgs
 } from '../prisma-query-args/executive-summary.query-args.js';
 import {
+  competitionDocumentsSummaryTransformer,
   executiveSummaryTransformer,
   vehicleDevelopmentSummaryTransformer
 } from '../transformers/executive-summary.transformer.js';
@@ -140,6 +142,80 @@ export default class ExecSummaryServices {
     });
 
     return executiveSummaryTransformer(updatedExecutiveSummary);
+  }
+
+  /**
+   * Edits the competition documents summary of an executive summary. Fields that are omitted are left unchanged.
+   * @param submitter the user editing the competition documents summary
+   * @param organization the organization the executive summary belongs to
+   * @param executiveSummaryId the id of the executive summary that owns the competition documents summary
+   * @param args the fields to update
+   * @returns the updated competition documents summary
+   * @throws AccessDeniedException if the submitter is not an admin and not on the ops team
+   * @throws NotFoundException if the executive summary or its competition documents summary does not exist
+   * @throws InvalidOrganizationException if the executive summary belongs to a different organization
+   * @throws DeletedException if the executive summary has been deleted
+   */
+  static async editCompetitionDocumentsSummary(
+    submitter: User,
+    organization: Organization,
+    executiveSummaryId: string,
+    { submittedOnTimeCount, firstSubmissionRejectedCount, source, dateSynced }: EditCompetitionDocumentsSummaryArgs
+  ) {
+    const isAdminUser = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+
+    if (!isAdminUser) {
+      let isOpsTeamMember = false;
+      try {
+        isOpsTeamMember = await isUserOnOpsTeam(submitter, organization.organizationId);
+      } catch {
+        // Ops team may not exist yet
+      }
+      if (!isOpsTeamMember) throw new AccessDeniedException('edit a competition documents summary');
+    }
+
+    const currentExecutiveSummary = await prisma.executive_Summary.findUnique({
+      where: { executiveSummaryId },
+      select: {
+        ...getBaseExecutiveSummaryQueryArgs().select,
+        competitionDocumentsSummary: getBaseCompetitionDocumentsSummaryQueryArgs()
+      }
+    });
+
+    if (!currentExecutiveSummary) {
+      throw new NotFoundException('Executive Summary', executiveSummaryId);
+    }
+
+    if (currentExecutiveSummary.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Executive Summary');
+    }
+
+    if (currentExecutiveSummary.dateDeleted) {
+      throw new DeletedException('Executive Summary', executiveSummaryId);
+    }
+
+    if (!currentExecutiveSummary.competitionDocumentsSummary) {
+      throw new NotFoundException('Competition Documents Summary', executiveSummaryId);
+    }
+
+    if (submittedOnTimeCount !== undefined && (!Number.isInteger(submittedOnTimeCount) || submittedOnTimeCount < 0)) {
+      throw new HttpException(400, 'Submitted on time count must be a non-negative integer');
+    }
+
+    if (
+      firstSubmissionRejectedCount !== undefined &&
+      (!Number.isInteger(firstSubmissionRejectedCount) || firstSubmissionRejectedCount < 0)
+    ) {
+      throw new HttpException(400, 'First submission rejected count must be a non-negative integer');
+    }
+
+    const updatedCompetitionDocumentsSummary = await prisma.competition_Documents_Summary.update({
+      where: { executiveSummaryId },
+      data: { submittedOnTimeCount, firstSubmissionRejectedCount, source, dateSynced },
+      ...getBaseCompetitionDocumentsSummaryQueryArgs()
+    });
+
+    return competitionDocumentsSummaryTransformer(updatedCompetitionDocumentsSummary);
   }
 
   /**
