@@ -6,37 +6,34 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
-import { BarElement, CategoryScale, Chart, ChartOptions, LinearScale, Plugin, Tooltip } from 'chart.js';
+import { BarElement, CategoryScale, Chart, ChartOptions, LinearScale, Legend, Plugin, Tooltip } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { ExecutiveSummary, VehicleDevelopmentProjectSummary } from 'shared';
+import { daysBetween, ExecutiveSummary, VehicleDevelopmentProjectSummary } from 'shared';
 import { useVehicleDevelopmentSummary } from '../hooks/exec-summaries.hooks';
 import { useAllTeams } from '../hooks/teams.hooks';
-import { getBarLengthInDays, getDaysAxisTicks, getElapsedDays } from '../utils/exec-summary.utils';
+import { getDaysAxisTicks, getElapsedDays } from '../utils/exec-summary.utils';
+import { datePipe } from '../utils/pipes';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
 
-Chart.register(BarElement, CategoryScale, LinearScale, Tooltip);
+Chart.register(BarElement, CategoryScale, LinearScale, Legend, Tooltip);
 
 // the executive panel is always a dark card, regardless of the app theme
 const BACKGROUND = '#121212';
 const ROW_HEIGHT = 54;
 const ALL_TEAMS = 'all';
-const ELAPSED_COLOR = '#DC5350';
+const ELAPSED_COLOR = '#ef4345';
 const REMAINING_COLOR = '#9B3425';
 
 interface ExecutiveSummaryVehicleDevelopmentProps {
   executiveSummary: ExecutiveSummary;
 }
 
-// project dates are @db.Date values (midnight UTC), so they have to be formatted in UTC to avoid showing the previous day
-const formatDate = (date: Date, utc = true): string =>
-  date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', ...(utc ? { timeZone: 'UTC' } : {}) });
-
 const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelopmentProps> = ({ executiveSummary }) => {
   const accent = useTheme().palette.primary.main;
   const today = new Date();
   const [teamId, setTeamId] = useState<string>(ALL_TEAMS);
-  const { data: teams, isError: teamsIsError, error: teamsError } = useAllTeams();
+  const { data: teams, isLoading: teamsIsLoading, isError: teamsIsError } = useAllTeams();
   const {
     data: summary,
     isLoading,
@@ -45,11 +42,10 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
   } = useVehicleDevelopmentSummary(executiveSummary.executiveSummaryId, teamId === ALL_TEAMS ? undefined : teamId);
 
   if (isError) return <ErrorPage message={error?.message} />;
-  if (teamsIsError) return <ErrorPage message={teamsError?.message} />;
 
   const projects: VehicleDevelopmentProjectSummary[] = summary?.projects ?? [];
   // every bar starts at day 0 and is as long as the project, so bars compare project lengths
-  const lengths = projects.map((p) => getBarLengthInDays(p.startDate, p.plannedEndDate));
+  const lengths = projects.map((p) => Math.max(0, daysBetween(p.plannedEndDate, p.startDate)));
   const elapsedDays = projects.map((p) => getElapsedDays(p, today));
   const ticks = getDaysAxisTicks(Math.max(0, ...lengths));
 
@@ -58,8 +54,13 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
   const chartData = {
     labels: projects.map((p) => p.name),
     datasets: [
-      { ...barStyle, data: elapsedDays.map((elapsed) => [0, elapsed]), backgroundColor: ELAPSED_COLOR },
-      { ...barStyle, data: lengths.map((length, idx) => [elapsedDays[idx], length]), backgroundColor: REMAINING_COLOR }
+      { ...barStyle, label: 'Elapsed', data: elapsedDays.map((elapsed) => [0, elapsed]), backgroundColor: ELAPSED_COLOR },
+      {
+        ...barStyle,
+        label: 'Remaining',
+        data: lengths.map((length, idx) => [elapsedDays[idx], length]),
+        backgroundColor: REMAINING_COLOR
+      }
     ]
   };
 
@@ -79,12 +80,12 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
         const startX = x.getPixelForValue(0);
         const progressX = x.getPixelForValue(elapsedDays[idx]);
         ctx.textAlign = 'left';
-        const startLabel = formatDate(project.startDate);
+        const startLabel = datePipe(project.startDate, false);
         const endX = x.getPixelForValue(lengths[idx]) + 6;
         ctx.fillText(startLabel, startX + 6, yPos);
         // hide the end date if it would overlap the start date on very short bars
         if (endX >= startX + 6 + ctx.measureText(startLabel).width + 6) {
-          ctx.fillText(formatDate(project.plannedEndDate), endX, yPos);
+          ctx.fillText(datePipe(project.plannedEndDate, false), endX, yPos);
         }
         if (elapsedDays[idx] > 0 && elapsedDays[idx] < lengths[idx]) {
           ctx.save();
@@ -95,7 +96,7 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
           ctx.lineTo(progressX, yPos + 17);
           ctx.stroke();
           ctx.restore();
-          ctx.fillText(formatDate(today, false), progressX + 6, yPos);
+          ctx.fillText(datePipe(today, false), progressX + 6, yPos);
         }
       });
       ctx.restore();
@@ -123,12 +124,15 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
       y: { ticks: { color: 'white' }, grid: { display: false } }
     },
     plugins: {
-      legend: { display: false },
+      legend: { display: true, labels: { color: 'white' } },
       tooltip: {
         callbacks: {
           label: (ctx) => {
             const p = projects[ctx.dataIndex];
-            return `${formatDate(p.startDate)} - ${formatDate(p.plannedEndDate)}`;
+            const isElapsed = ctx.datasetIndex === 0;
+            const segmentStart = isElapsed ? datePipe(p.startDate, false) : datePipe(today, false);
+            const segmentEnd = isElapsed ? datePipe(today, false) : datePipe(p.plannedEndDate, false);
+            return `${ctx.dataset.label}: ${segmentStart} - ${segmentEnd}`;
           }
         }
       }
@@ -146,6 +150,7 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
             select
             size="small"
             inputProps={{ 'aria-label': 'Team' }}
+            disabled={teamsIsLoading || teamsIsError}
             value={teamId}
             onChange={(e) => setTeamId(e.target.value)}
             sx={{
@@ -170,7 +175,7 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
           <Typography>No projects to show.</Typography>
         ) : (
           <Box sx={{ position: 'relative', height: projects.length * ROW_HEIGHT + 80 }}>
-            <Bar data={chartData} options={chartOptions} plugins={[dateLabels]} />
+            <Bar key={teamId} data={chartData} options={chartOptions} plugins={[dateLabels]} />
           </Box>
         )}
 

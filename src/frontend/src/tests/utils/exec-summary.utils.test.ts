@@ -4,7 +4,7 @@
  */
 
 import { VehicleDevelopmentProjectSummary } from 'shared';
-import { getBarLengthInDays, getDaysAxisTicks, getElapsedDays } from '../../utils/exec-summary.utils';
+import { getDaysAxisTicks, getElapsedDays } from '../../utils/exec-summary.utils';
 
 const project = (startDate: Date, plannedEndDate: Date): VehicleDevelopmentProjectSummary => ({
   wbsElementId: 'id',
@@ -14,27 +14,16 @@ const project = (startDate: Date, plannedEndDate: Date): VehicleDevelopmentProje
   plannedEndDate
 });
 
-describe('getBarLengthInDays', () => {
-  it('counts days between dates', () => {
-    expect(getBarLengthInDays(new Date('2026-01-01'), new Date('2026-01-31'))).toBe(30);
-  });
-
-  it('is 0 for same day and for an end before the start', () => {
-    expect(getBarLengthInDays(new Date('2026-01-01'), new Date('2026-01-01'))).toBe(0);
-    expect(getBarLengthInDays(new Date('2026-02-01'), new Date('2026-01-01'))).toBe(0);
-  });
-});
-
 describe('getElapsedDays', () => {
-  const p = project(new Date('2026-01-06'), new Date('2026-02-05'));
+  const p = project(new Date(2026, 0, 6), new Date(2026, 1, 5));
 
   it('is the days since the start when today is inside the project', () => {
-    expect(getElapsedDays(p, new Date('2026-01-16'))).toBe(10);
+    expect(getElapsedDays(p, new Date(2026, 0, 16))).toBe(10);
   });
 
   it('clamps to 0 before the start and to the bar length after the end', () => {
-    expect(getElapsedDays(p, new Date('2025-12-01'))).toBe(0);
-    expect(getElapsedDays(p, new Date('2026-06-01'))).toBe(30);
+    expect(getElapsedDays(p, new Date(2025, 11, 1))).toBe(0);
+    expect(getElapsedDays(p, new Date(2026, 5, 1))).toBe(30);
   });
 });
 

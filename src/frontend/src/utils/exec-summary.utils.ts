@@ -3,20 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { VehicleDevelopmentProjectSummary } from 'shared';
+import { daysBetween, VehicleDevelopmentProjectSummary } from 'shared';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
-
-/**
- * Computes the length of a bar in whole days.
- *
- * @param startDate start of the project
- * @param plannedEndDate planned end of the project
- * @returns the number of days between the two dates, never negative
- */
-export const getBarLengthInDays = (startDate: Date, plannedEndDate: Date): number => {
-  return Math.max(0, Math.round((plannedEndDate.getTime() - startDate.getTime()) / MS_PER_DAY));
-};
 
 /**
  * Computes how many days of a project have elapsed as of today, i.e. where the dotted "today" marker
@@ -24,8 +13,10 @@ export const getBarLengthInDays = (startDate: Date, plannedEndDate: Date): numbe
  * and a finished one is at its full length.
  */
 export const getElapsedDays = (project: VehicleDevelopmentProjectSummary, today: Date): number => {
-  const elapsed = Math.round((today.getTime() - project.startDate.getTime()) / MS_PER_DAY);
-  return Math.min(getBarLengthInDays(project.startDate, project.plannedEndDate), Math.max(0, elapsed));
+  // startDate is local midnight (see dbDateToLocalDate in the transformer), so compare it against today at local midnight
+  const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const elapsed = Math.floor((todayLocal.getTime() - project.startDate.getTime()) / MS_PER_DAY);
+  return Math.min(Math.max(0, daysBetween(project.plannedEndDate, project.startDate)), Math.max(0, elapsed));
 };
 
 /**
