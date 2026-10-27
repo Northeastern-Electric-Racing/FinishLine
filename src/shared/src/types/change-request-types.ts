@@ -26,6 +26,7 @@ export interface ChangeRequest {
   implementedChanges?: ImplementedChange[];
   status: ChangeRequestStatus;
   requestedReviewers: User[];
+  triageScore: number;
 }
 
 export const ChangeRequestType = {

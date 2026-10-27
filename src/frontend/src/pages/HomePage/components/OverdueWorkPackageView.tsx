@@ -3,6 +3,7 @@ import { WorkPackage } from 'shared';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import OverdueWorkPackageCard from './OverdueWorkPackageCard';
+import { daysOverdue } from '../../../utils/datetime.utils';
 
 interface OverdueWorkPackagesViewProps {
   theme: Theme;
@@ -21,6 +22,9 @@ const NoOverdueWPsDisplay: React.FC = () => {
 
 const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ theme, workPackages }) => {
   const isEmpty = workPackages.length === 0;
+
+  workPackages = workPackages.sort((a, b) => daysOverdue(new Date(b.endDate)) - daysOverdue(new Date(a.endDate)));
+
   return (
     <Box sx={{ position: 'relative', mt: 5, height: '90%' }}>
       <Box

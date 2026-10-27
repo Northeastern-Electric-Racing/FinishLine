@@ -18,6 +18,32 @@ export const setCurrentCarId = (id: string | null) => {
   currentCarId = id;
 };
 
+/**
+ * An error from a request to the backend, keeping the HTTP status so callers can tell a rejected
+ * request (4xx) apart from the server being unreachable or down (no status, or 5xx).
+ */
+export class HttpError extends Error {
+  status?: number;
+
+  constructor(message: string, status?: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+// statuses the load balancer returns while the backend is down or restarting
+const SERVER_UNAVAILABLE_STATUSES = [502, 503, 504];
+
+/**
+ * Whether an error means the backend couldn't be reached, rather than the backend answering with an error.
+ * A load balancer 502/503 has no CORS headers, so the browser reports it as a network error with no status.
+ * A plain 500 comes from the backend itself, so it isn't treated as the server being unavailable.
+ * @param error the error thrown by a request
+ * @returns true if there was no response or the response was a 502, 503 or 504
+ */
+export const isServerUnavailableError = (error: unknown): boolean =>
+  error instanceof HttpError && (error.status === undefined || SERVER_UNAVAILABLE_STATUSES.includes(error.status));
+
 // This allows us to get good server errors
 // All express responses must be: res.status(404).json({ message: "You are not authorized to do that." })
 axios.interceptors.response.use(
@@ -25,10 +51,12 @@ axios.interceptors.response.use(
     return response;
   },
   (error) => {
+    const status: number | undefined = error?.response?.status;
+
     // this is how normal errors get sent (e.g., res.status(400).json({message: 'blah blah'}))
     const message = error?.response?.data?.message;
     if (message) {
-      throw new Error(message);
+      throw new HttpError(message, status);
     }
 
     // this is how validation errors get sent
@@ -39,10 +67,10 @@ axios.interceptors.response.use(
         const errorMessage = `\n${element.msg}: ${element.value} for "${element.param}" in ${element.location}`;
         messages += errorMessage;
       });
-      throw new Error(messages);
+      throw new HttpError(messages, status);
     }
 
-    throw new Error('Unknown Error!' + error.message);
+    throw new HttpError('Unknown Error!' + error.message, status);
   }
 );
 
