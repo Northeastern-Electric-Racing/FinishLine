@@ -11,6 +11,7 @@ interface EditableTextFieldProps {
   editPlaceholder?: string;
   isEditing: boolean;
   isSaving?: boolean;
+  canEdit?: boolean;
   onEditStart: () => void;
   onCancel: () => void;
   onSave: (newText: string) => void;
@@ -23,6 +24,7 @@ const EditableTextField: React.FC<EditableTextFieldProps> = ({
   editPlaceholder,
   isEditing,
   isSaving = false,
+  canEdit = true,
   onEditStart,
   onCancel,
   onSave
@@ -40,9 +42,11 @@ const EditableTextField: React.FC<EditableTextFieldProps> = ({
       <Box>
         <Box display="flex" alignItems="center">
           <Typography variant="h5">{label}</Typography>
-          <IconButton onClick={onEditStart} aria-label={`Edit ${label}`}>
-            <EditOutlinedIcon />
-          </IconButton>
+          {canEdit && (
+            <IconButton onClick={onEditStart} aria-label={`Edit ${label}`}>
+              <EditOutlinedIcon />
+            </IconButton>
+          )}
         </Box>
         <Typography sx={{ whiteSpace: 'pre-wrap' }}> {value.trim() ? value : emptyPlaceholder}</Typography>
       </Box>
@@ -73,6 +77,7 @@ const EditableTextField: React.FC<EditableTextFieldProps> = ({
         onKeyDown={(e) => {
           if (e.key === 'Escape' && !isSaving) {
             onCancel();
+            e.stopPropagation();
           }
         }}
       />

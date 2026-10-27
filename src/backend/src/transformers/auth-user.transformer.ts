@@ -13,6 +13,7 @@ const authenticatedUserTransformer = (user: Prisma.UserGetPayload<AuthUserQueryA
     defaultTheme: user.userSettings?.defaultTheme,
     isFinance: isCurrentUserOnFinance(user),
     isAtLeastFinanceLead: isCurrentUserAtLeastLeadForFinance(user),
+    isOperations: [...user.teamsAsHead, ...user.teamsAsLead, ...user.teamsAsMember].some((team) => team.operationsTeam),
     organizations: user.organizations.map((organization) => organization.organizationId),
     onboardingTeamTypeIds: user.onboardingTeamTypes.map((teamType) => teamType.teamTypeId),
     onboardedTeamTypeIds: user.onboardedTeamTypes.map((teamType) => teamType.teamTypeId)

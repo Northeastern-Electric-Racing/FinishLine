@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { ExecutiveSummary } from 'shared';
+import { ExecutiveSummary, isAdmin } from 'shared';
 import { useEditExecutiveSummary } from '../hooks/exec-summaries.hooks';
 import { useToast } from '../hooks/toasts.hooks';
+import { useCurrentUser } from '../hooks/users.hooks';
 import EditableTextField from './EditableTextField';
 
 interface ExecSummaryOverviewProps {
@@ -20,6 +21,8 @@ const ExecSummaryOverview: React.FC<ExecSummaryOverviewProps> = ({ executiveSumm
     executiveSummary.executiveSummaryId
   );
   const toast = useToast();
+  const user = useCurrentUser();
+  const canEdit = isAdmin(user.role) || !!user.isOperations;
   const [editingSection, setEditingSection] = useState<EditableSection | null>(null);
 
   const saveSection = async (section: EditableSection, newText: string) => {
@@ -59,6 +62,7 @@ const ExecSummaryOverview: React.FC<ExecSummaryOverviewProps> = ({ executiveSumm
         editPlaceholder="What did the team set out to accomplish this season?"
         isEditing={editingSection === 'goals'}
         isSaving={isSaving}
+        canEdit={canEdit}
         onEditStart={() => setEditingSection('goals')}
         onCancel={() => setEditingSection(null)}
         onSave={(text) => saveSection('goals', text)}
@@ -70,6 +74,7 @@ const ExecSummaryOverview: React.FC<ExecSummaryOverviewProps> = ({ executiveSumm
         editPlaceholder="What went well, and what should the team do better next season?"
         isEditing={editingSection === 'winsAndImprovements'}
         isSaving={isSaving}
+        canEdit={canEdit}
         onEditStart={() => setEditingSection('winsAndImprovements')}
         onCancel={() => setEditingSection(null)}
         onSave={(text) => saveSection('winsAndImprovements', text)}
