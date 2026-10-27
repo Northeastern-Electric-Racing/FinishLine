@@ -492,6 +492,9 @@ export default class ExecSummaryServices {
     if (currentCompetitionPerformance.executiveSummary.car.wbsElement.organizationId !== organization.organizationId) {
       throw new InvalidOrganizationException('Competition Performance');
     }
+    if (currentCompetitionPerformance.executiveSummary.dateDeleted) {
+      throw new DeletedException('Executive Summary', currentCompetitionPerformance.executiveSummary.executiveSummaryId);
+    }
     const updatedCompetitionPerformance = await prisma.competition_Performance.update({
       where: { competitionPerformanceId },
       data: {
