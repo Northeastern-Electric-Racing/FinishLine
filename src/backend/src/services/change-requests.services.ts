@@ -815,7 +815,6 @@ export default class ChangeRequestsService {
         where: { organizationId: organization.organizationId }
       });
 
-
       const accountCode = await prisma.account_Code.findUnique({
         where: { accountCodeId },
         include: { changeRequests: { where: { dateDeleted: null }, include: { changes: true } } }
@@ -829,7 +828,7 @@ export default class ChangeRequestsService {
           budgetChangeRequest: { create: { proposedBudget } },
           organization: { connect: { organizationId: organization.organizationId } },
           identifier: numChangeRequests + 1,
-          snapshotBudget: accountCode ? accountCode.amount || null
+          snapshotBudget: accountCode ? accountCode.amount : null
         },
         ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
       });
@@ -868,7 +867,7 @@ export default class ChangeRequestsService {
       const numChangeRequests = await prisma.change_Request.count({
         where: { organizationId: organization.organizationId }
       });
-      
+
       createdChangeRequest = await prisma.change_Request.create({
         data: {
           submitter: { connect: { userId: submitter.userId } },
@@ -932,7 +931,7 @@ export default class ChangeRequestsService {
 
     const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
-        wbsNumber: { carNumber, projectNumber, workPackageNumber, organizationId: organization.organizationId },
+        wbsNumber: { carNumber, projectNumber, workPackageNumber, organizationId: organization.organizationId }
       },
       select: {
         wbsElementId: true,
@@ -980,7 +979,6 @@ export default class ChangeRequestsService {
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
         snapshotBudget: wbsElement ? wbsElement.project?.budget : null
-
       }
     });
 
