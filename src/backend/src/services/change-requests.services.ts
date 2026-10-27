@@ -1147,14 +1147,6 @@ export default class ChangeRequestsService {
 
       const isCreatingNewProject = projectNumber === 0;
 
-      const workPackageQuery = await prisma.work_Package.findFirst({
-        where: { wbsElementId: wbsElement.wbsElementId }
-      });
-
-      const blockingCount = await prisma.work_Package.count({
-        where: { blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } } }
-      });
-
       const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
           changeRequest: { connect: { crId: createdCR.crId } },
@@ -1191,10 +1183,7 @@ export default class ChangeRequestsService {
                         }))
                       },
                       leadId: workPackage.originalElement.leadId,
-                      managerId: workPackage.originalElement.managerId,
-                      snapshotBlockingCount: blockingCount,
-                      snapshotStartDate: workPackageQuery ? workPackageQuery.startDate : null,
-                      snapshotDuration: workPackageQuery ? workPackageQuery.duration : null
+                      managerId: workPackage.originalElement.managerId
                     }
                   },
                   duration: workPackage.originalElement.duration,
