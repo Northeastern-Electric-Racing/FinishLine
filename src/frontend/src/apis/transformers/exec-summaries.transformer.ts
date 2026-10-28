@@ -1,4 +1,4 @@
-import { CompetitionDocumentsSummary, ExecutiveSummary, VehicleDevelopmentSummary } from 'shared';
+import { CompetitionDocumentsSummary, dbDateToLocalDate, ExecutiveSummary, VehicleDevelopmentSummary } from 'shared';
 
 /**
  * Transforms a competition documents summary received from the API so that its
@@ -51,8 +51,8 @@ export const vehicleDevelopmentSummaryTransformer = (summary: VehicleDevelopment
     ...summary,
     projects: summary.projects.map((project) => ({
       ...project,
-      startDate: new Date(project.startDate),
-      plannedEndDate: new Date(project.plannedEndDate)
+      startDate: dbDateToLocalDate(new Date(project.startDate)),
+      plannedEndDate: dbDateToLocalDate(new Date(project.plannedEndDate))
     }))
   };
 };
