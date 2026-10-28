@@ -5,16 +5,6 @@ import dayjs from 'dayjs';
   https://fakerjs.dev/api/date.html
 */
 
-export const SECOND_MS = 1000;
-export const MINUTE_MS = SECOND_MS * 60;
-export const HOUR_MS = MINUTE_MS * 60;
-export const DAY_MS = HOUR_MS * 24;
-export const WEEK_MS = DAY_MS * 7;
-
-export const DAYS_PER_WEEK = 7;
-
-// `from`/`to` are required so a caller can't silently fall back to the real clock -- the seed is
-// generated relative to a pinned instant, see seed-time.ts.
 export function generateRandomDate(faker: Faker, from: Date, to: Date) {
   return faker.date.between({ from, to });
 }
