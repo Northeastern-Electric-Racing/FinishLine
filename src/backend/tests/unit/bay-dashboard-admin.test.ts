@@ -569,7 +569,13 @@ describe('Bay Dashboard Admin Tests', () => {
       );
 
       await expect(
-        BayDashboardAdminService.editBayDashboardCountdown(otherHead, countdown.bayDashboardCountdownId, otherOrganization, 'FHE', new Date('2025-04-26'))
+        BayDashboardAdminService.editBayDashboardCountdown(
+          otherHead,
+          countdown.bayDashboardCountdownId,
+          otherOrganization,
+          'FHE',
+          new Date('2025-04-26')
+        )
       ).rejects.toThrow(new InvalidOrganizationException('Bay Dashboard Countdown'));
     });
   });
