@@ -32,4 +32,22 @@ execSummaryRouter.post(
   ExecSummaryController.editExecutiveSummary
 );
 
+execSummaryRouter.post(
+  '/competition-performance/:competitionPerformanceId/edit',
+  body('finalPlace').optional().isInt(),
+  body('totalPointsEarned').optional().isInt(),
+  body('maxPoints').optional().isInt(),
+  body('bestStaticEvent').optional().isString(),
+  body('worstStaticEvent').optional().isString(),
+  body('bestDynamicEvent').optional().isString(),
+  body('worstDynamicEvent').optional().isString(),
+  body('accelerationTopTimeSeconds').optional().isInt(),
+  body('autocrossTopTimeSeconds').optional().isInt(),
+  body('enduranceLapsCompleted').optional().isInt(),
+  body('maxLaps').optional().isInt(),
+  body('enduranceAvgLapTimeSeconds').optional().isInt(),
+  validateInputs,
+  ExecSummaryController.editCompetitionPerformance
+);
+
 export default execSummaryRouter;

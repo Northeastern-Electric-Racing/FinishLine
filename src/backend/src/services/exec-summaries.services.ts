@@ -22,15 +22,21 @@ import {
   NotFoundException
 } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
+import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { isUserOnOpsTeam } from '../utils/exec-summaries.utils.js';
 import {
+  getBaseCompetitionDocumentsSummaryQueryArgs,
+  getBaseCompetitionPerformanceQueryArgs,
+  getBaseExecutiveSummaryQueryArgs,
+  getBaseRecruitmentCycleQueryArgs,
+  getBaseRecruitmentDivisionCountQueryArgs,
   getBudgetProjectQueryArgs,
-  getExecutiveSummaryQueryArgs,
   getVehicleDevelopmentProjectQueryArgs
 } from '../prisma-query-args/executive-summary.query-args.js';
 import {
   executiveSummaryTransformer,
-  vehicleDevelopmentSummaryTransformer
+  vehicleDevelopmentSummaryTransformer,
+  competitionPerformanceTransformer
 } from '../transformers/executive-summary.transformer.js';
 
 // rounds a dollar amount to the nearest cent so that splitting across divisions doesn't leave floating point noise
@@ -80,7 +86,7 @@ export default class ExecSummaryServices {
 
     const currentExecutiveSummary = await prisma.executive_Summary.findUnique({
       where: { executiveSummaryId },
-      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      ...getBaseExecutiveSummaryQueryArgs()
     });
 
     if (!currentExecutiveSummary) {
@@ -114,7 +120,24 @@ export default class ExecSummaryServices {
         seasonStartDate,
         seasonEndDate
       },
-      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      select: {
+        ...getBaseExecutiveSummaryQueryArgs().select,
+        goals: true,
+        winsAndImprovements: true,
+        budgetNotes: true,
+        recruitmentNotes: true,
+        userCreated: getUserQueryArgs(organization.organizationId),
+        deletedBy: getUserQueryArgs(organization.organizationId),
+        competitionPerformances: getBaseCompetitionPerformanceQueryArgs(),
+        competitionDocumentsSummary: getBaseCompetitionDocumentsSummaryQueryArgs(),
+        recruitmentCycles: {
+          orderBy: { term: 'asc' },
+          select: {
+            ...getBaseRecruitmentCycleQueryArgs().select,
+            divisionCounts: getBaseRecruitmentDivisionCountQueryArgs()
+          }
+        }
+      }
     });
 
     return executiveSummaryTransformer(updatedExecutiveSummary);
@@ -139,7 +162,24 @@ export default class ExecSummaryServices {
 
     const executiveSummary = await prisma.executive_Summary.findUnique({
       where: { executiveSummaryId },
-      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      select: {
+        ...getBaseExecutiveSummaryQueryArgs().select,
+        goals: true,
+        winsAndImprovements: true,
+        budgetNotes: true,
+        recruitmentNotes: true,
+        userCreated: getUserQueryArgs(organization.organizationId),
+        deletedBy: getUserQueryArgs(organization.organizationId),
+        competitionPerformances: getBaseCompetitionPerformanceQueryArgs(),
+        competitionDocumentsSummary: getBaseCompetitionDocumentsSummaryQueryArgs(),
+        recruitmentCycles: {
+          orderBy: { term: 'asc' },
+          select: {
+            ...getBaseRecruitmentCycleQueryArgs().select,
+            divisionCounts: getBaseRecruitmentDivisionCountQueryArgs()
+          }
+        }
+      }
     });
 
     if (!executiveSummary) {
@@ -163,7 +203,24 @@ export default class ExecSummaryServices {
 
     const executiveSummaries = await prisma.executive_Summary.findMany({
       where: { car: { wbsElement: { organizationId: organization.organizationId } }, dateDeleted: null },
-      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      select: {
+        ...getBaseExecutiveSummaryQueryArgs().select,
+        goals: true,
+        winsAndImprovements: true,
+        budgetNotes: true,
+        recruitmentNotes: true,
+        userCreated: getUserQueryArgs(organization.organizationId),
+        deletedBy: getUserQueryArgs(organization.organizationId),
+        competitionPerformances: getBaseCompetitionPerformanceQueryArgs(),
+        competitionDocumentsSummary: getBaseCompetitionDocumentsSummaryQueryArgs(),
+        recruitmentCycles: {
+          orderBy: { term: 'asc' },
+          select: {
+            ...getBaseRecruitmentCycleQueryArgs().select,
+            divisionCounts: getBaseRecruitmentDivisionCountQueryArgs()
+          }
+        }
+      }
     });
 
     return executiveSummaries.map(executiveSummaryTransformer);
@@ -196,7 +253,7 @@ export default class ExecSummaryServices {
 
     const executiveSummary = await prisma.executive_Summary.findUnique({
       where: { executiveSummaryId },
-      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      ...getBaseExecutiveSummaryQueryArgs()
     });
 
     if (!executiveSummary) {
@@ -261,7 +318,7 @@ export default class ExecSummaryServices {
 
     const executiveSummary = await prisma.executive_Summary.findUnique({
       where: { executiveSummaryId },
-      ...getExecutiveSummaryQueryArgs(organization.organizationId)
+      ...getBaseExecutiveSummaryQueryArgs()
     });
 
     if (!executiveSummary) {
@@ -370,5 +427,93 @@ export default class ExecSummaryServices {
       mostOverbudgetDivision,
       mostOverbudgetProject
     };
+  }
+
+  /**
+   * Edits an existing competition performance entry.
+   * @param submitter the user editing the competition performance
+   * @param organization the organization the competition performance belongs to
+   * @param finalPlace the updated final place, or null to clear it
+   * @param totalPointsEarned the updated total points earned, or null to clear it
+   * @param maxPoints the updated max points, or null to clear it
+   * @param bestStaticEvent the updated best static event, or null to clear it
+   * @param worstStaticEvent the updated worst static event, or null to clear it
+   * @param bestDynamicEvent the updated best dynamic event, or null to clear it
+   * @param worstDynamicEvent the updated worst dynamic event, or null to clear it
+   * @param accelerationTopTimeSeconds the updated acceleration top time, or null to clear it
+   * @param autocrossTopTimeSeconds the updated autocross top time, or null to clear it
+   * @param enduranceLapsCompleted the updated endurance laps completed, or null to clear it
+   * @param maxLaps the updated max laps, or null to clear it
+   * @param enduranceAvgLapTimeSeconds the updated endurance average lap time, or null to clear it
+   * @param competitionPerformanceId the id of the competition performance being edited
+   * @returns the updated competition performance
+   * @throws AccessDeniedException if the submitter is not an admin and not on the ops team
+   * @throws NotFoundException if the competition performance does not exist
+   * @throws InvalidOrganizationException if the competition performance belongs to a different organization
+   * @throws DeletedException if the competition performance has been deleted
+   */
+  static async editCompetitionPerformance(
+    submitter: User,
+    organization: Organization,
+    finalPlace: number | null,
+    totalPointsEarned: number | null,
+    maxPoints: number | null,
+    bestStaticEvent: string | null,
+    worstStaticEvent: string | null,
+    bestDynamicEvent: string | null,
+    worstDynamicEvent: string | null,
+    accelerationTopTimeSeconds: number | null,
+    autocrossTopTimeSeconds: number | null,
+    enduranceLapsCompleted: number | null,
+    maxLaps: number | null,
+    enduranceAvgLapTimeSeconds: number | null,
+    competitionPerformanceId: string
+  ) {
+    const isAdminUser = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+
+    if (!isAdminUser) {
+      let isOpsTeamMember = false;
+      try {
+        isOpsTeamMember = await isUserOnOpsTeam(submitter, organization.organizationId);
+      } catch {
+        // Ops team may not exist yet
+      }
+      if (!isOpsTeamMember) throw new AccessDeniedException('edit a competition performance');
+    }
+
+    const currentCompetitionPerformance = await prisma.competition_Performance.findUnique({
+      where: { competitionPerformanceId },
+      include: { executiveSummary: { include: { car: { include: { wbsElement: true } } } } }
+    });
+    if (!currentCompetitionPerformance) {
+      throw new NotFoundException('Competition Performance', competitionPerformanceId);
+    }
+
+    if (currentCompetitionPerformance.executiveSummary.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Competition Performance');
+    }
+    if (currentCompetitionPerformance.executiveSummary.dateDeleted) {
+      throw new DeletedException('Executive Summary', currentCompetitionPerformance.executiveSummary.executiveSummaryId);
+    }
+    const updatedCompetitionPerformance = await prisma.competition_Performance.update({
+      where: { competitionPerformanceId },
+      data: {
+        finalPlace,
+        totalPointsEarned,
+        maxPoints,
+        bestStaticEvent,
+        worstStaticEvent,
+        bestDynamicEvent,
+        worstDynamicEvent,
+        accelerationTopTimeSeconds,
+        autocrossTopTimeSeconds,
+        enduranceLapsCompleted,
+        maxLaps,
+        enduranceAvgLapTimeSeconds
+      },
+      ...getBaseCompetitionPerformanceQueryArgs()
+    });
+
+    return competitionPerformanceTransformer(updatedCompetitionPerformance);
   }
 }

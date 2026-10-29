@@ -221,4 +221,5 @@ export type ExceptionObjectNames =
   | 'Notification Channel'
   | 'Dashboard'
   | 'Team Join Request'
-  | 'Executive Summary';
+  | 'Executive Summary'
+  | 'Competition Performance';

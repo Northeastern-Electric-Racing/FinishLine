@@ -10,18 +10,21 @@ export const getAuthUserQueryArgs = (organizationId: string) =>
       teamsAsHead: {
         select: {
           teamId: true,
-          financeTeam: true
+          financeTeam: true,
+          operationsTeam: true
         }
       },
       teamsAsLead: {
         select: {
           financeTeam: true,
+          operationsTeam: true,
           teamId: true
         }
       },
       teamsAsMember: {
         select: {
           financeTeam: true,
+          operationsTeam: true,
           teamId: true
         }
       },

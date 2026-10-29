@@ -14,18 +14,44 @@ import {
   calculateProjectStartDate
 } from 'shared';
 import {
-  ExecutiveSummaryQueryArgs,
-  RecruitmentCycleQueryArgs,
-  RecruitmentDivisionCountQueryArgs,
+  BaseCompetitionDocumentsSummaryQueryArgs,
+  BaseCompetitionPerformanceQueryArgs,
+  BaseExecutiveSummaryQueryArgs,
+  BaseRecruitmentCycleQueryArgs,
+  BaseRecruitmentDivisionCountQueryArgs,
   VehicleDevelopmentProjectQueryArgs
 } from '../prisma-query-args/executive-summary.query-args.js';
+import { UserQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { teamBaseTransformer } from './teams.transformer.js';
 import { teamTypeTransformer } from './team-types.transformer.js';
 import { userTransformer } from './user.transformer.js';
 
-export const executiveSummaryTransformer = (
-  executiveSummary: Prisma.Executive_SummaryGetPayload<ExecutiveSummaryQueryArgs>
-): ExecutiveSummary => {
+type BaseExecutiveSummaryPayload = Prisma.Executive_SummaryGetPayload<BaseExecutiveSummaryQueryArgs>;
+type CompetitionPerformancePayload = Prisma.Competition_PerformanceGetPayload<BaseCompetitionPerformanceQueryArgs>;
+type CompetitionDocumentsSummaryPayload =
+  Prisma.Competition_Documents_SummaryGetPayload<BaseCompetitionDocumentsSummaryQueryArgs>;
+type RecruitmentDivisionCountPayload = Prisma.Recruitment_Division_CountGetPayload<BaseRecruitmentDivisionCountQueryArgs>;
+type RecruitmentCyclePayload = Prisma.Recruitment_CycleGetPayload<BaseRecruitmentCycleQueryArgs> & {
+  divisionCounts: RecruitmentDivisionCountPayload[];
+};
+
+/**
+ * The base executive summary payload plus everything the full executive summary opts in to. Service functions are
+ * responsible for selecting these fields on top of getBaseExecutiveSummaryQueryArgs.
+ */
+export type ExecutiveSummaryPayload = BaseExecutiveSummaryPayload & {
+  goals: string;
+  winsAndImprovements: string;
+  budgetNotes: string;
+  recruitmentNotes: string;
+  userCreated: Prisma.UserGetPayload<UserQueryArgs>;
+  deletedBy: Prisma.UserGetPayload<UserQueryArgs> | null;
+  competitionPerformances: CompetitionPerformancePayload[];
+  competitionDocumentsSummary: CompetitionDocumentsSummaryPayload | null;
+  recruitmentCycles: RecruitmentCyclePayload[];
+};
+
+export const executiveSummaryTransformer = (executiveSummary: ExecutiveSummaryPayload): ExecutiveSummary => {
   return {
     executiveSummaryId: executiveSummary.executiveSummaryId,
     car: { name: executiveSummary.car.wbsElement.name },
@@ -48,7 +74,7 @@ export const executiveSummaryTransformer = (
 };
 
 export const competitionPerformanceTransformer = (
-  competitionPerformance: Prisma.Competition_PerformanceGetPayload<null>
+  competitionPerformance: CompetitionPerformancePayload
 ): CompetitionPerformance => {
   return {
     competitionPerformanceId: competitionPerformance.competitionPerformanceId,
@@ -70,7 +96,7 @@ export const competitionPerformanceTransformer = (
 };
 
 export const competitionDocumentsSummaryTransformer = (
-  competitionDocumentsSummary: Prisma.Competition_Documents_SummaryGetPayload<null>
+  competitionDocumentsSummary: CompetitionDocumentsSummaryPayload
 ): CompetitionDocumentsSummary => {
   return {
     competitionDocumentsSummaryId: competitionDocumentsSummary.competitionDocumentsSummaryId,
@@ -82,9 +108,7 @@ export const competitionDocumentsSummaryTransformer = (
   };
 };
 
-export const recruitmentCycleTransformer = (
-  recruitmentCycle: Prisma.Recruitment_CycleGetPayload<RecruitmentCycleQueryArgs>
-): RecruitmentCycle => {
+export const recruitmentCycleTransformer = (recruitmentCycle: RecruitmentCyclePayload): RecruitmentCycle => {
   return {
     recruitmentCycleId: recruitmentCycle.recruitmentCycleId,
     executiveSummaryId: recruitmentCycle.executiveSummaryId,
@@ -98,7 +122,7 @@ export const recruitmentCycleTransformer = (
 };
 
 export const recruitmentDivisionCountTransformer = (
-  divisionCount: Prisma.Recruitment_Division_CountGetPayload<RecruitmentDivisionCountQueryArgs>
+  divisionCount: RecruitmentDivisionCountPayload
 ): RecruitmentDivisionCount => {
   return {
     recruitmentDivisionCountId: divisionCount.recruitmentDivisionCountId,

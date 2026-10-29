@@ -76,4 +76,45 @@ export default class ExecSummaryController {
       next(error);
     }
   }
+
+  static async editCompetitionPerformance(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { competitionPerformanceId } = req.params as Record<string, string>;
+      const {
+        finalPlace,
+        totalPointsEarned,
+        maxPoints,
+        bestStaticEvent,
+        worstStaticEvent,
+        bestDynamicEvent,
+        worstDynamicEvent,
+        accelerationTopTimeSeconds,
+        autocrossTopTimeSeconds,
+        enduranceLapsCompleted,
+        maxLaps,
+        enduranceAvgLapTimeSeconds
+      } = req.body;
+
+      const competitionPerformance = await ExecSummaryServices.editCompetitionPerformance(
+        req.currentUser,
+        req.organization,
+        finalPlace ?? null,
+        totalPointsEarned ?? null,
+        maxPoints ?? null,
+        bestStaticEvent ?? null,
+        worstStaticEvent ?? null,
+        bestDynamicEvent ?? null,
+        worstDynamicEvent ?? null,
+        accelerationTopTimeSeconds ?? null,
+        autocrossTopTimeSeconds ?? null,
+        enduranceLapsCompleted ?? null,
+        maxLaps ?? null,
+        enduranceAvgLapTimeSeconds ?? null,
+        competitionPerformanceId
+      );
+      res.status(200).json(competitionPerformance);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

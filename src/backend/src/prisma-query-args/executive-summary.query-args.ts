@@ -1,42 +1,92 @@
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args.js';
 import { getTeamBaseQueryArgs } from './teams.query-args.js';
 
-export type ExecutiveSummaryQueryArgs = ReturnType<typeof getExecutiveSummaryQueryArgs>;
+export type BaseExecutiveSummaryQueryArgs = ReturnType<typeof getBaseExecutiveSummaryQueryArgs>;
+export type BaseCompetitionPerformanceQueryArgs = ReturnType<typeof getBaseCompetitionPerformanceQueryArgs>;
+export type BaseCompetitionDocumentsSummaryQueryArgs = ReturnType<typeof getBaseCompetitionDocumentsSummaryQueryArgs>;
+export type BaseRecruitmentCycleQueryArgs = ReturnType<typeof getBaseRecruitmentCycleQueryArgs>;
+export type BaseRecruitmentDivisionCountQueryArgs = ReturnType<typeof getBaseRecruitmentDivisionCountQueryArgs>;
 export type VehicleDevelopmentProjectQueryArgs = ReturnType<typeof getVehicleDevelopmentProjectQueryArgs>;
 export type BudgetProjectQueryArgs = ReturnType<typeof getBudgetProjectQueryArgs>;
-export type RecruitmentCycleQueryArgs = ReturnType<typeof getRecruitmentCycleQueryArgs>;
-export type RecruitmentDivisionCountQueryArgs = ReturnType<typeof getRecruitmentDivisionCountQueryArgs>;
 
-export const getExecutiveSummaryQueryArgs = (organizationId: string) =>
+const baseExecutiveSummarySelect = Prisma.validator<Prisma.Executive_SummarySelect>()({
+  executiveSummaryId: true,
+  carId: true,
+  seasonStartDate: true,
+  seasonEndDate: true,
+  dateCreated: true,
+  dateDeleted: true,
+  car: { select: { wbsElement: { select: { organizationId: true, name: true } } } }
+});
+
+export const getBaseExecutiveSummaryQueryArgs = () =>
   Prisma.validator<Prisma.Executive_SummaryDefaultArgs>()({
-    include: {
-      car: { select: { wbsElement: { select: { organizationId: true, name: true } } } },
-      userCreated: getUserQueryArgs(organizationId),
-      deletedBy: getUserQueryArgs(organizationId),
-      competitionPerformances: true,
-      competitionDocumentsSummary: true,
-      recruitmentCycles: getRecruitmentCycleQueryArgs()
+    select: baseExecutiveSummarySelect
+  });
+
+export const getBaseCompetitionPerformanceQueryArgs = () =>
+  Prisma.validator<Prisma.Competition_PerformanceDefaultArgs>()({
+    select: {
+      competitionPerformanceId: true,
+      executiveSummaryId: true,
+      competition: true,
+      finalPlace: true,
+      totalPointsEarned: true,
+      maxPoints: true,
+      bestStaticEvent: true,
+      worstStaticEvent: true,
+      bestDynamicEvent: true,
+      worstDynamicEvent: true,
+      accelerationTopTimeSeconds: true,
+      autocrossTopTimeSeconds: true,
+      enduranceLapsCompleted: true,
+      maxLaps: true,
+      enduranceAvgLapTimeSeconds: true
     }
   });
 
-export const getRecruitmentCycleQueryArgs = () =>
+export const getBaseCompetitionDocumentsSummaryQueryArgs = () =>
+  Prisma.validator<Prisma.Competition_Documents_SummaryDefaultArgs>()({
+    select: {
+      competitionDocumentsSummaryId: true,
+      executiveSummaryId: true,
+      submittedOnTimeCount: true,
+      firstSubmissionRejectedCount: true,
+      source: true,
+      dateSynced: true
+    }
+  });
+
+const baseRecruitmentCycleSelect = Prisma.validator<Prisma.Recruitment_CycleSelect>()({
+  recruitmentCycleId: true,
+  executiveSummaryId: true,
+  term: true,
+  eventsHeld: true,
+  signUps: true,
+  onboarded: true,
+  activeMembers: true
+});
+
+export const getBaseRecruitmentCycleQueryArgs = () =>
   Prisma.validator<Prisma.Recruitment_CycleDefaultArgs>()({
-    include: {
-      divisionCounts: getRecruitmentDivisionCountQueryArgs()
-    }
+    select: baseRecruitmentCycleSelect
   });
 
-export const getRecruitmentDivisionCountQueryArgs = () =>
+export const getBaseRecruitmentDivisionCountQueryArgs = () =>
   Prisma.validator<Prisma.Recruitment_Division_CountDefaultArgs>()({
-    include: {
+    select: {
+      recruitmentDivisionCountId: true,
+      recruitmentCycleId: true,
+      newMembers: true,
+      returningMembers: true,
       teamType: true
     }
   });
 
 export const getVehicleDevelopmentProjectQueryArgs = () =>
   Prisma.validator<Prisma.ProjectDefaultArgs>()({
-    include: {
+    select: {
+      wbsElementId: true,
       wbsElement: { select: { name: true } },
       teams: getTeamBaseQueryArgs(),
       workPackages: {
@@ -68,7 +118,8 @@ const reimbursedProductReasonsSelect = Prisma.validator<Prisma.WBS_ElementSelect
 
 export const getBudgetProjectQueryArgs = () =>
   Prisma.validator<Prisma.ProjectDefaultArgs>()({
-    include: {
+    select: {
+      budget: true,
       wbsElement: {
         select: {
           name: true,
