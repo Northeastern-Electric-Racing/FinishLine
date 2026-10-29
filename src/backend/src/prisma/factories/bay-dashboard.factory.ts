@@ -22,11 +22,27 @@ export const slotConfigs: SlotConfig[] = [
   }
 ];
 
+// the config the current one replaced
+export const previousSlotConfigs: SlotConfig[] = [
+  { position: 0, size: Bay_Dashboard_Widget_Size.LARGE, widgetType: Bay_Dashboard_Widget_Type.OVERDUE_WORK_PACKAGES },
+  { position: 1, size: Bay_Dashboard_Widget_Size.MEDIUM, widgetType: Bay_Dashboard_Widget_Type.CALENDAR },
+  {
+    position: 2,
+    size: Bay_Dashboard_Widget_Size.SMALL,
+    widgetType: Bay_Dashboard_Widget_Type.TEXT_FIELD,
+    text: 'Welcome back to the bay!'
+  }
+];
+
 export const bayDashboardConfigCreateInput = (
   userCreatedId: string,
   organizationId: string,
-  slots: SlotConfig[]
+  slots: SlotConfig[],
+  dateCreated?: Date,
+  dateDeleted?: Date
 ): Prisma.Bay_Dashboard_ConfigCreateInput => ({
+  dateCreated,
+  dateDeleted,
   userCreated: connectUser(userCreatedId),
   organization: connectOrganization(organizationId),
   slots: {

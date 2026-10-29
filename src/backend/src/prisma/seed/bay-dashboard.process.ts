@@ -5,8 +5,10 @@ import {
   bayDashboardConfigCreateInput,
   bayDashboardCountdownCreateInput,
   countdownConfigs,
+  previousSlotConfigs,
   slotConfigs
 } from '../factories/bay-dashboard.factory.js';
+import { subtractDaysFromDate } from '../dates.js';
 import { SeedProcess } from '../processes/seed-process.js';
 
 type BayDashboardInput = OrganizationOutput & UsersOutput;
@@ -28,6 +30,17 @@ export class BayDashboardProcess extends SeedProcess<BayDashboardInput, BayDashb
     if (!creator) throw new Error('BayDashboardProcess requires at least one app admin user.');
 
     const now = new Date();
+
+    // saving a config soft deletes the previous one
+    await this.prisma.bay_Dashboard_Config.create({
+      data: bayDashboardConfigCreateInput(
+        creator.userId,
+        organizationId,
+        previousSlotConfigs,
+        subtractDaysFromDate(now, 30),
+        now
+      )
+    });
 
     const config = await this.prisma.bay_Dashboard_Config.create({
       data: bayDashboardConfigCreateInput(creator.userId, organizationId, slotConfigs)
