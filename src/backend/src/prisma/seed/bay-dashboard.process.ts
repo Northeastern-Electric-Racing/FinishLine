@@ -1,12 +1,18 @@
-import { Bay_Dashboard_Countdown } from '@prisma/client';
+import { Bay_Dashboard_Config, Bay_Dashboard_Countdown } from '@prisma/client';
 import { OrganizationOutput, OrganizationProcess } from './organization.process.js';
 import { UsersOutput, UsersProcess } from './user.process.js';
-import { bayDashboardCountdownCreateInput, countdownConfigs } from '../factories/bay-dashboard.factory.js';
+import {
+  bayDashboardConfigCreateInput,
+  bayDashboardCountdownCreateInput,
+  countdownConfigs,
+  slotConfigs
+} from '../factories/bay-dashboard.factory.js';
 import { SeedProcess } from '../processes/seed-process.js';
 
 type BayDashboardInput = OrganizationOutput & UsersOutput;
 
 export type BayDashboardOutput = {
+  config: Bay_Dashboard_Config;
   countdowns: Bay_Dashboard_Countdown[];
 };
 
@@ -23,6 +29,10 @@ export class BayDashboardProcess extends SeedProcess<BayDashboardInput, BayDashb
 
     const now = new Date();
 
+    const config = await this.prisma.bay_Dashboard_Config.create({
+      data: bayDashboardConfigCreateInput(creator.userId, organizationId, slotConfigs)
+    });
+
     const countdowns = await Promise.all(
       countdownConfigs.map((config) =>
         this.prisma.bay_Dashboard_Countdown.create({
@@ -31,6 +41,6 @@ export class BayDashboardProcess extends SeedProcess<BayDashboardInput, BayDashb
       )
     );
 
-    return { countdowns };
+    return { config, countdowns };
   }
 }

@@ -1,7 +1,42 @@
-import { Prisma } from '@prisma/client';
+import { Bay_Dashboard_Widget_Size, Bay_Dashboard_Widget_Type, Prisma } from '@prisma/client';
 import { addDaysToDate } from 'shared';
 import { subtractDaysFromDate } from '../dates.js';
 import { connectOrganization, connectUser } from '../utils/common.factory.js';
+
+type SlotConfig = {
+  position: number;
+  size: Bay_Dashboard_Widget_Size;
+  widgetType: Bay_Dashboard_Widget_Type;
+  text?: string;
+};
+
+// position 0 left large Calendar, 1 right medium Overdue WP, 2 right small Text Field
+export const slotConfigs: SlotConfig[] = [
+  { position: 0, size: Bay_Dashboard_Widget_Size.LARGE, widgetType: Bay_Dashboard_Widget_Type.CALENDAR },
+  { position: 1, size: Bay_Dashboard_Widget_Size.MEDIUM, widgetType: Bay_Dashboard_Widget_Type.OVERDUE_WORK_PACKAGES },
+  {
+    position: 2,
+    size: Bay_Dashboard_Widget_Size.SMALL,
+    widgetType: Bay_Dashboard_Widget_Type.TEXT_FIELD,
+    text: 'Fill out the census for Spring 2026!'
+  }
+];
+
+export const bayDashboardConfigCreateInput = (
+  userCreatedId: string,
+  organizationId: string,
+  slots: SlotConfig[]
+): Prisma.Bay_Dashboard_ConfigCreateInput => ({
+  userCreated: connectUser(userCreatedId),
+  organization: connectOrganization(organizationId),
+  slots: {
+    create: slots.map((slot) => ({
+      position: slot.position,
+      size: slot.size,
+      widgets: { create: [{ type: slot.widgetType, order: 0, text: slot.text }] }
+    }))
+  }
+});
 
 type CountdownConfig = {
   name: string;
