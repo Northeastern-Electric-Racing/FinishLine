@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
@@ -9,7 +11,9 @@ import PageLayout from '../../components/PageLayout';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CompetitionDocuments from '../../components/CompetitionDocuments';
 import CompetitionPerformanceSection from '../../components/CompetitionPerformance';
+import ExecSummaryOverview from '../../components/ExecSummaryOverview';
 import ExecutiveSummaryBudget from '../../components/ExecutiveSummaryBudget';
+import ExecutiveSummaryVehicleDevelopment from '../../components/ExecutiveSummaryVehicleDevelopment';
 import RecruitmentMembership from '../../components/RecruitmentMembership';
 import { useGetAllCars } from '../../hooks/cars.hooks';
 import { useGetAllExecutiveSummaries } from '../../hooks/exec-summaries.hooks';
@@ -63,13 +67,35 @@ const ExecutiveSummariesPage: React.FC = () => {
           No executive summary found for {selectedCar?.name ?? 'this car'}.
         </Typography>
       ) : (
-        <Box display="flex" flexWrap="wrap" justifyContent="center" alignItems="flex-start" gap={3} pb={4}>
-          <CompetitionPerformanceSection competitionPerformances={executiveSummary.competitionPerformances} />
+        <Box
+          display="grid"
+          gap={2}
+          pb={2}
+          alignItems="stretch"
+          gridTemplateColumns={{ xs: 'minmax(0, 1fr)', lg: 'repeat(3, minmax(0, 1fr))' }}
+        >
+          <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 0, width: '100%' }}>
+            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+              <ExecSummaryOverview executiveSummary={executiveSummary} />
+            </CardContent>
+          </Card>
+          <ExecutiveSummaryVehicleDevelopment executiveSummary={executiveSummary} />
+          <Box
+            display="flex"
+            flexDirection="column"
+            gap={2}
+            gridRow={{ lg: '1 / span 2' }}
+            gridColumn={{ lg: 3 }}
+            // the last card absorbs leftover height so this column ends level with the others
+            sx={{ '& > :last-child': { flexGrow: 1 } }}
+          >
+            <CompetitionPerformanceSection competitionPerformances={executiveSummary.competitionPerformances} />
+            {executiveSummary.competitionDocumentsSummary && (
+              <CompetitionDocuments competitionDocumentsSummary={executiveSummary.competitionDocumentsSummary} />
+            )}
+          </Box>
           <ExecutiveSummaryBudget executiveSummary={executiveSummary} />
           <RecruitmentMembership recruitmentCycles={executiveSummary.recruitmentCycles} />
-          {executiveSummary.competitionDocumentsSummary && (
-            <CompetitionDocuments competitionDocumentsSummary={executiveSummary.competitionDocumentsSummary} />
-          )}
         </Box>
       )}
     </PageLayout>

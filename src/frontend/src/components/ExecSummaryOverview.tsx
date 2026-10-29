@@ -49,11 +49,11 @@ const ExecSummaryOverview: React.FC<ExecSummaryOverviewProps> = ({ executiveSumm
       : 'Season dates have not been set.';
 
   return (
-    <Box display="flex" flexDirection="column" gap={3}>
+    <Box display="flex" flexDirection="column" gap={2}>
       <Box>
-        <Typography variant="h5">Overview</Typography>
-        <Typography>{car.name}</Typography>
-        <Typography>{seasonText}</Typography>
+        <Typography variant="h5" fontWeight="bold" textAlign="center" mb={1}>
+          Overview
+        </Typography>
       </Box>
       <EditableTextField
         label="Goals"

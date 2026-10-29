@@ -57,9 +57,9 @@ const RecruitmentMembership: React.FC<RecruitmentMembershipProps> = ({ recruitme
     })) ?? [];
 
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 2, width: 700 }}>
-      <CardContent>
-        <Typography variant="h4" fontWeight="bold" textAlign="center" mb={1}>
+    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 0, width: '100%' }}>
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+        <Typography variant="h5" fontWeight="bold" textAlign="center" mb={1}>
           Recruitment &amp; Membership
         </Typography>
 
@@ -83,12 +83,12 @@ const RecruitmentMembership: React.FC<RecruitmentMembershipProps> = ({ recruitme
         {!cycle ? (
           <Typography textAlign="center">No recruitment data available for {displayEnum(selectedTerm)}.</Typography>
         ) : (
-          <Box display="flex" flexWrap="wrap" gap={4}>
+          <Box display="flex" flexWrap="wrap" justifyContent="center" gap={4}>
             <Box flex="0 0 220px">
               <Typography variant="h5" fontWeight="bold" textAlign="center" sx={{ textDecoration: 'underline', mb: 2 }}>
                 Recruitment Stats
               </Typography>
-              <Box display="grid" gridTemplateColumns="1fr 1fr" rowGap={3} columnGap={2} justifyItems="center">
+              <Box display="grid" gridTemplateColumns="1fr 1fr" rowGap={2} columnGap={2} justifyItems="center">
                 <StatBlock value={formatStat(cycle.eventsHeld)} label="Events" />
                 <StatBlock value={formatStat(cycle.signUps)} label="Sign-Ups" />
                 <StatBlock value={formatStat(cycle.onboarded)} label="Onboarded" />
@@ -100,7 +100,7 @@ const RecruitmentMembership: React.FC<RecruitmentMembershipProps> = ({ recruitme
               <Typography variant="h5" fontWeight="bold" textAlign="center" sx={{ textDecoration: 'underline', mb: 1 }}>
                 Total Active Members By Division
               </Typography>
-              <ResponsiveContainer width="100%" height={270}>
+              <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#3a3a3a" vertical={false} />
                   <XAxis dataKey="name" stroke="white" tick={{ fill: 'white', fontSize: 12 }} />
