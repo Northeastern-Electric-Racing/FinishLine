@@ -275,21 +275,23 @@ export default class BayDashboardAdminService {
     }
 
     const trimmedName = name.trim();
-
-    const countdown = await prisma.bay_Dashboard_Countdown.findUnique({
-      where: { bayDashboardCountdownId: countdownId }
-    });
-    if (!countdown || countdown.dateDeleted) {
-      throw new NotFoundException('Bay Dashboard Countdown', countdownId);
-    }
-    if (countdown.organizationId !== organization.organizationId) {
-      throw new InvalidOrganizationException('Bay Dashboard Countdown');
-    }
     if (endDate && endDate <= startDate) {
       throw new HttpException(400, 'End date must be after start date');
     }
     if (!trimmedName) {
       throw new HttpException(400, 'The name must be non-empty');
+    }
+    const countdown = await prisma.bay_Dashboard_Countdown.findUnique({
+      where: { bayDashboardCountdownId: countdownId }
+    });
+    if (!countdown) {
+      throw new NotFoundException('Bay Dashboard Countdown', countdownId);
+    }
+    if (countdown.dateDeleted) {
+      throw new DeletedException('Bay Dashboard Countdown', countdownId);
+    }
+    if (countdown.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Bay Dashboard Countdown');
     }
 
     const updatedCountdown = await prisma.bay_Dashboard_Countdown.update({
