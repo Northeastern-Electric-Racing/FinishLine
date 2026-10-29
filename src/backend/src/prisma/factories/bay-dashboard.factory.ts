@@ -79,6 +79,7 @@ export const bayDashboardCountdownCreateInput = (
   startDate: subtractDaysFromDate(now, config.startDaysAgo),
   endDate: config.endDaysFromNow === null ? null : addDaysToDate(now, config.endDaysFromNow),
   isPrimary: config.isPrimary,
+  dateCreated: config.deleted ? subtractDaysFromDate(now, 30) : undefined,
   dateDeleted: config.deleted ? now : null,
   userDeleted: config.deleted ? connectUser(userCreatedId) : undefined,
   userCreated: connectUser(userCreatedId),

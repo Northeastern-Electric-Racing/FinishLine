@@ -47,9 +47,9 @@ export class BayDashboardProcess extends SeedProcess<BayDashboardInput, BayDashb
     });
 
     const countdowns = await Promise.all(
-      countdownConfigs.map((config) =>
+      countdownConfigs.map((countdownConfig) =>
         this.prisma.bay_Dashboard_Countdown.create({
-          data: bayDashboardCountdownCreateInput(creator.userId, organizationId, config, now)
+          data: bayDashboardCountdownCreateInput(creator.userId, organizationId, countdownConfig, now)
         })
       )
     );
