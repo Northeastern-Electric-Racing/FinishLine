@@ -46,7 +46,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
     changes: wbsElement.changes.map((change) => ({
       changeId: change.changeId,
       changeRequestId: change.changeRequestId,
-      changeRequestIdentifier: change.changeRequest?.identifier ?? null,
+      changeRequestIdentifier: change.changeRequest?.identifier,
       wbsNum,
       implementer: userTransformer(change.implementer),
       detail: change.detail,

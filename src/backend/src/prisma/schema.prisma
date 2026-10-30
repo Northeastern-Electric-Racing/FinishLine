@@ -527,12 +527,12 @@ model Leadership_CR {
 }
 
 model Change {
-  changeId        String          @id @default(uuid())
-  changeRequestId String?
-  changeRequest   Change_Request? @relation(fields: [changeRequestId], references: [crId])
-  dateImplemented DateTime        @default(now())
+  changeId        String         @id @default(uuid())
+  changeRequestId String
+  changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
+  dateImplemented DateTime       @default(now())
   implementerId   String
-  implementer     User            @relation(fields: [implementerId], references: [userId])
+  implementer     User           @relation(fields: [implementerId], references: [userId])
 
   // Can be either a WBS_Element, Other_Reimbursement_Product_Reason or Account_Code, not a combination and not none
   wbsElementId  String?
