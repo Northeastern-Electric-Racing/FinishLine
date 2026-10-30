@@ -405,7 +405,7 @@ const CreditsPage: React.FC = () => {
         '-webkit-background-clip': 'text'
       }
     },
-    { name: 'Arya Baviskar', color: '#92b5ed' }
+    { name: 'Arya Baviskar', color: '#92b5ed' },
     { name: 'Udhaya Bhuvanesh', color: '#B57EDC' }
   ];
 
