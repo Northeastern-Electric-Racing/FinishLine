@@ -29,7 +29,7 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
     changes: wpInput.wbsElement.changes.map((change) => ({
       wbsNum,
       changeId: change.changeId,
-      changeRequestIdentifier: change.changeRequest.identifier,
+      changeRequestIdentifier: change.changeRequest?.identifier ?? null,
       changeRequestId: change.changeRequestId,
       implementer: userTransformer(change.implementer),
       detail: change.detail,

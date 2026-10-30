@@ -6,7 +6,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import * as yup from 'yup';
 import { useCreateLeadershipChangeRequest, useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { routes } from '../../utils/routes';
-import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 
 interface EditWorkPackageFormProps {
   wbsNum: WbsNumber;

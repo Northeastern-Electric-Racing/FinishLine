@@ -90,8 +90,8 @@ export enum ChangeRequestStatus {
 
 export interface ImplementedChange {
   changeId: string;
-  changeRequestId: string;
-  changeRequestIdentifier: number;
+  changeRequestId: string | null;
+  changeRequestIdentifier: number | null;
   wbsNum?: WbsNumber;
   category?: OtherProductReason;
   accountCode?: AccountCode;
