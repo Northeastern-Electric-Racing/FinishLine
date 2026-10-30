@@ -45,4 +45,13 @@ bayDashboardAdminRouter.post(
   BayDashboardAdminController.deleteBayDashboardCountdown
 );
 
+bayDashboardAdminRouter.post(
+  '/admin/countdown/:countdownId/edit',
+  nonEmptyString(body('name')),
+  isDate(body('startDate')),
+  isOptionalDate(body('endDate')),
+  validateInputs,
+  BayDashboardAdminController.editBayDashboardCountdown
+);
+
 export default bayDashboardAdminRouter;

@@ -73,4 +73,24 @@ export default class BayDashboardAdminController {
       next(error);
     }
   }
+
+  static async editBayDashboardCountdown(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { countdownId } = req.params as Record<string, string>;
+      const { name, startDate, endDate } = req.body;
+      const { currentUser, organization } = req;
+
+      const countdown = await BayDashboardAdminService.editBayDashboardCountdown(
+        currentUser,
+        countdownId,
+        organization,
+        name,
+        new Date(startDate),
+        endDate ? new Date(endDate) : undefined
+      );
+      res.status(200).json(countdown);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
