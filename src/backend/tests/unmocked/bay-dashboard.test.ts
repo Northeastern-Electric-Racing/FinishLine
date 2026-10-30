@@ -213,4 +213,49 @@ describe('Bay Dashboard Tests', () => {
       });
     });
   });
+
+  describe('Get Bay Dashboard Countdowns', () => {
+    const createCountdown = async (name: string, dateDeleted?: Date, orgId = organization.organizationId) =>
+      await prisma.bay_Dashboard_Countdown.create({
+        data: { name, startDate: new Date('2026-01-01'), dateDeleted, userCreatedId: head.userId, organizationId: orgId }
+      });
+
+    it('Fails if the slug does not belong to an organization', async () => {
+      await expect(BayDashboardService.getBayDashboardCountdowns('not-a-real-slug')).rejects.toThrow(
+        new NotFoundException('Organization', 'not-a-real-slug')
+      );
+    });
+
+    it('Fails if the organization is deleted', async () => {
+      await prisma.organization.update({
+        where: { organizationId: organization.organizationId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(BayDashboardService.getBayDashboardCountdowns(organization.slug)).rejects.toThrow(
+        new DeletedException('Organization', organization.slug)
+      );
+    });
+
+    it('Returns the non-deleted countdowns for the organization', async () => {
+      const expected = await createCountdown('FHE');
+      await createCountdown('deleted', new Date('2026-02-01'));
+      const otherOrg = await prisma.organization.create({
+        data: { name: 'Other Org', slug: 'other-org', description: '', userCreatedId: head.userId }
+      });
+      await createCountdown('other org', undefined, otherOrg.organizationId);
+
+      const countdowns = await BayDashboardService.getBayDashboardCountdowns(organization.slug);
+
+      expect(countdowns).toEqual([
+        {
+          bayDashboardCountdownId: expected.bayDashboardCountdownId,
+          name: 'FHE',
+          startDate: new Date('2026-01-01'),
+          endDate: undefined,
+          isPrimary: false
+        }
+      ]);
+    });
+  });
 });
