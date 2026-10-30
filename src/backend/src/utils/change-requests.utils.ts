@@ -32,10 +32,9 @@ import {
 } from '../prisma-query-args/change-requests.query-args.js';
 import ProjectsService from '../services/projects.services.js';
 import WorkPackagesService from '../services/work-packages.services.js';
-import { DescriptionBulletWithType, descriptionBulletToDescriptionBulletPreview } from './description-bullets.utils.js';
+import { descriptionBulletToDescriptionBulletPreview } from './description-bullets.utils.js';
 import { sendSlackCRReviewedNotification } from './slack.utils.js';
 import { validateBlockedBys } from './work-packages.utils.js';
-import { getDescriptionBulletChanges } from './changes.utils.js';
 
 /** Makes sure that a change request has been accepted already (and not deleted)
  * @param crId - the id of the change request to check

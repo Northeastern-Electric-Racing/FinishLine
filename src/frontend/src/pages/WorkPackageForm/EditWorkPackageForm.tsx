@@ -42,18 +42,10 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, workP
     }
   ];
 
-  const editWorkPackageWrapper = (data: WorkPackageApiInputs) => {
-    const { crId } = data;
-    if (!crId) {
-      throw new Error('Change Request is Required');
-    }
-    return editWorkPackage({ ...data, crId });
-  };
-
   return (
     <WorkPackageForm
       wbsNum={wbsNum}
-      workPackageMutateAsync={editWorkPackageWrapper}
+      workPackageMutateAsync={editWorkPackage}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
       createLeadershipCR={mutateLeadershipCR}
       exitActiveMode={() => {

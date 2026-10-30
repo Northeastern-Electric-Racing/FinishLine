@@ -2,8 +2,8 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { Project, ProjectProposedChangesCreateArgs } from 'shared';
-import { useAllLinkTypes } from '../../../hooks/projects.hooks';
+import { Project, ProjectProposedChangesCreateArgs, projectEditNeedsCR } from 'shared';
+import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.hooks';
 import { bulletsToObject } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useState } from 'react';
@@ -40,6 +40,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
   const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
   const { mutateAsync: mutateLeadershipCR, isLoading: isLeadershipCRLoading } = useCreateLeadershipChangeRequest();
+  const { mutateAsync: editProject, isLoading: isEditProjectLoading } = useEditSingleProject(project.wbsNum);
 
   const {
     data: allLinkTypes,
@@ -54,7 +55,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     linkTypeName: link.linkType.name
   }));
 
-  if (isCRHookLoading || isLeadershipCRLoading) return <LoadingIndicator />;
+  if (isCRHookLoading || isLeadershipCRLoading || isEditProjectLoading) return <LoadingIndicator />;
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
 
@@ -104,13 +105,20 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       const leadershipChanged =
         leadId !== project.lead?.userId.toString() || managerId !== project.manager?.userId.toString();
 
-      const otherFieldsChanged =
+      // budget and description bullets need a change request
+      const meaningfulFieldsChanged = projectEditNeedsCR(
+        project.budget,
+        budget,
+        bulletsToObject(project.descriptionBullets),
+        descriptionBullets
+      );
+
+      // name, summary and links can be saved directly
+      const nonMeaningfulFieldsChanged =
         name !== project.name ||
-        budget !== project.budget ||
         summary !== project.summary ||
         JSON.stringify(links.map((l) => `${l.linkTypeName}:${l.url}`).sort()) !==
-          JSON.stringify(project.links.map((l) => `${l.linkType.name}:${l.url}`).sort()) ||
-        JSON.stringify(descriptionBullets) !== JSON.stringify(bulletsToObject(project.descriptionBullets));
+          JSON.stringify(project.links.map((l) => `${l.linkType.name}:${l.url}`).sort());
 
       if (leadershipChanged) {
         await mutateLeadershipCR({
@@ -121,7 +129,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         });
       }
 
-      if (otherFieldsChanged) {
+      if (meaningfulFieldsChanged) {
         if (!why) throw new Error('Why is required for standard change request');
         const projectPayload: ProjectProposedChangesCreateArgs = {
           name,
@@ -147,6 +155,24 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         return;
       }
 
+      if (nonMeaningfulFieldsChanged) {
+        await editProject({
+          projectId: project.id,
+          name,
+          budget,
+          summary,
+          descriptionBullets,
+          links,
+          leadId,
+          managerId
+        });
+        toast.success('Project updated successfully');
+        await queryClient.refetchQueries(['projects']);
+        exitEditMode();
+        return;
+      }
+
+      // only leadership changed
       toast.success('Changes submitted successfully');
       await queryClient.refetchQueries(['projects']);
       history.push(routes.CHANGE_REQUESTS_OVERVIEW);
@@ -155,7 +181,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       if (e instanceof Error) toast.error(e.message);
     }
   };
-
   return (
     <ProjectFormContainer
       requiredLinkTypeNames={requiredLinkTypeNames}
