@@ -14,7 +14,8 @@ import {
   WorkPackageStage,
   User,
   WorkPackageSelection,
-  WorkPackageDropdownItem
+  WorkPackageDropdownItem,
+  workPackageEditNeedsCR
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -394,7 +395,7 @@ export default class WorkPackagesService {
     user: User,
     workPackageId: string,
     name: string,
-    crId: string,
+    crId: string | null,
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
@@ -427,10 +428,26 @@ export default class WorkPackagesService {
     if (originalWorkPackage.wbsElement.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Work Package');
 
-    // the crId must match a valid approved change request
-    await validateChangeRequestAccepted(crId);
-
     const { wbsElementId } = originalWorkPackage;
+
+    // only timeline and description bullet changes require a change request
+    const needsCR = workPackageEditNeedsCR(
+      originalWorkPackage.startDate,
+      new Date(startDate),
+      originalWorkPackage.duration,
+      duration,
+      originalWorkPackage.wbsElement.descriptionBullets.map((bullet) => ({
+        id: bullet.descriptionId,
+        detail: bullet.detail
+      })),
+      descriptionBullets.map((bullet) => ({ id: bullet.id, detail: bullet.detail }))
+    );
+
+    // the crId must match a valid approved change request
+    if (needsCR) {
+      if (!crId) throw new HttpException(400, 'This edit requires an accepted change request');
+      await validateChangeRequestAccepted(crId);
+    }
 
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
 
@@ -451,7 +468,7 @@ export default class WorkPackagesService {
       managerId,
       originalWorkPackage.wbsElement.descriptionBullets,
       descriptionBullets,
-      crId,
+      needsCR ? crId : null,
       wbsElementId,
       userId
     );
