@@ -234,6 +234,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Xander Hoke', color: '#C50D93' },
     { name: 'Claire Hendershot', color: '#008080' },
     { name: 'Marcus Yi', color: '#FFFFFF' },
+    { name: 'Brendan Keefe', color: '#1370e1' },
     { name: 'Alex Dong', color: '#5d42f5' },
     { name: 'Chris Li', color: '#5d42f5' },
     { name: 'Kenneth Aldridge', color: '#E70D0D' },
@@ -381,8 +382,10 @@ const CreditsPage: React.FC = () => {
     { name: 'Jasper Pinkus', color: '#276221' },
     { name: 'Hamilton LaPides', color: '#55a50a' },
     { name: 'Sara Johnson', color: '#ffff99' },
+    { name: 'Lucas Nussbaum', color: '#135DF0' },
     { name: 'Abhishek Vijay', color: '#4287f5' },
     { name: 'Kidus Desalegn', color: '#B027F5' },
+    { name: 'Naman Patel', color: '#27f5a9ff' },
     {
       name: 'Ethan Chen',
       color: '#ffffff',
@@ -392,6 +395,17 @@ const CreditsPage: React.FC = () => {
         padding: '0 8px'
       }
     },
+    { name: 'Kidus Desalegn', color: '#B027F5' },
+    {
+      name: 'John Frederick Harrison',
+      color: 'transparent',
+      sx: {
+        background:
+          'linear-gradient(to right, #aaaaaa 20%, #dd5421 20%, #dd5421 41%, #aaaaaa 40%, #aaaaaa 62%, #dd5421 62%)',
+        '-webkit-background-clip': 'text'
+      }
+    },
+    { name: 'Arya Baviskar', color: '#92b5ed' }
     { name: 'Udhaya Bhuvanesh', color: '#B57EDC' }
   ];
 

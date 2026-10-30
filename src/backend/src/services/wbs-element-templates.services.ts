@@ -395,9 +395,11 @@ export default class WbsElementTemplatesService {
     const dateDeleted = new Date();
 
     // Delete all work package templates associated with the project template
-    projectTemplate.workPackageTemplates.forEach(async (template) => {
-      this.deleteWorkPackageTemplate(submitter, template.wbsElementTemplateId, organization, false);
-    });
+    await Promise.all(
+      projectTemplate.workPackageTemplates.map((template) =>
+        this.deleteWorkPackageTemplate(submitter, template.wbsElementTemplateId, organization, false)
+      )
+    );
 
     // Soft delete the project template by updating its related "deleted" fields
     await prisma.project_Template.update({
