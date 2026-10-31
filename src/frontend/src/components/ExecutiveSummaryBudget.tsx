@@ -10,9 +10,10 @@ import { useTheme } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import { ArcElement, Chart, ChartOptions, Legend, Tooltip } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
-import { BudgetHighlight, ExecutiveSummary } from 'shared';
+import { BudgetHighlight, ExecutiveSummary, isAdmin } from 'shared';
 import { useBudgetSummary, useEditExecutiveSummary, useSingleExecutiveSummary } from '../hooks/exec-summaries.hooks';
 import { useToast } from '../hooks/toasts.hooks';
+import { useCurrentUser } from '../hooks/users.hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
 
@@ -67,6 +68,8 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
   const executiveSummary = latestSummary ?? initialSummary;
   const { mutateAsync: editExecutiveSummary, isLoading: isSaving } = useEditExecutiveSummary(executiveSummaryId);
   const toast = useToast();
+  const user = useCurrentUser();
+  const canEdit = isAdmin(user.role) || !!user.isOperations;
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesDraft, setNotesDraft] = useState(executiveSummary.budgetNotes);
 
@@ -196,9 +199,11 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
         <Box display="flex" alignItems="center" gap={2} mb={1} mt={1}>
           <Typography variant="h6">Notes</Typography>
           {!isEditingNotes ? (
-            <IconButton aria-label="edit-budget-notes" onClick={startEditing} sx={{ color: 'white' }}>
-              <EditIcon fontSize="small" />
-            </IconButton>
+            canEdit && (
+              <IconButton aria-label="edit-budget-notes" onClick={startEditing} sx={{ color: 'white' }}>
+                <EditIcon fontSize="small" />
+              </IconButton>
+            )
           ) : (
             <>
               <Button
