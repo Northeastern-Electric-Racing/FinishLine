@@ -141,7 +141,6 @@ const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
 const changeRequestsCreateBudget = () => `${changeRequestsCreate()}/budget`;
-const changeRequestsCreateLeadership = () => `${changeRequestsCreate()}/leadership`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
 const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/request-review';
@@ -696,7 +695,6 @@ export const apiUrls = {
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
   changeRequestsCreateBudget,
-  changeRequestsCreateLeadership,
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
   changeRequestRequestReviewer,

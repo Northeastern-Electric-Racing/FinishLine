@@ -9,7 +9,6 @@ import { useSingleProject } from '../../hooks/projects.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { ObjectSchema } from 'yup';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
-import { LeadershipChangeCreateArgs } from '../../../../shared';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
