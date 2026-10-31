@@ -28,6 +28,7 @@ import { useCurrentOrganization } from '../hooks/organizations.hooks';
 import { GlobalCarFilterProvider } from './AppGlobalCarFilterContext';
 import Statistics from '../pages/StatisticsPage/Statistics';
 import RetrospectiveGanttChartPage from '../pages/RetrospectivePage/Retrospective';
+import ExecutiveSummariesPage from '../pages/ExecutiveSummariesPage/ExecutiveSummariesPage';
 import Calendar from '../pages/CalendarPage/Calendar';
 import GuestEventPage from '../pages/GuestEventPage/GuestEventPage';
 import GuestInfoPage from '../pages/GuestInfoPage/GuestInfoPage';
@@ -85,6 +86,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, c
               <Route path={routes.STATISTICS} component={Statistics} />
               <Route path={routes.HOME} component={Home} />
               <Route path={routes.RETROSPECTIVE} component={RetrospectiveGanttChartPage} />
+              <Route path={routes.EXECUTIVE_SUMMARIES} component={ExecutiveSummariesPage} />
               <Route path={routes.PROJECT_MANAGEMENT} component={ProjectManagementPage} />
               <Route path={routes.EVENTS} component={GuestEventPage} />
               <Route path={routes.SPONSORS} component={GuestSponsorsPage} />

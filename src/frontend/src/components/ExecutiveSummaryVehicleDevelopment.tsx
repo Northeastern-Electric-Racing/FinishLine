@@ -20,7 +20,7 @@ Chart.register(BarElement, CategoryScale, LinearScale, Legend, Tooltip);
 
 // the executive panel is always a dark card, regardless of the app theme
 const BACKGROUND = '#121212';
-const ROW_HEIGHT = 54;
+const ROW_HEIGHT = 34;
 const ALL_TEAMS = 'all';
 const ELAPSED_COLOR = '#ef4345';
 const REMAINING_COLOR = '#9B3425';
@@ -50,7 +50,7 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
   const ticks = getDaysAxisTicks(Math.max(0, ...lengths));
 
   // each project is drawn as an elapsed segment (project start to today) followed by a remaining segment (today to end)
-  const barStyle = { borderRadius: 0, barThickness: 34, grouped: false };
+  const barStyle = { borderRadius: 0, barThickness: 22, grouped: false };
   const chartData = {
     labels: projects.map((p) => p.name),
     datasets: [
@@ -92,8 +92,8 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
           ctx.setLineDash([2, 2]);
           ctx.strokeStyle = 'white';
           ctx.beginPath();
-          ctx.moveTo(progressX, yPos - 17);
-          ctx.lineTo(progressX, yPos + 17);
+          ctx.moveTo(progressX, yPos - 11);
+          ctx.lineTo(progressX, yPos + 11);
           ctx.stroke();
           ctx.restore();
           ctx.fillText(datePipe(today, false), progressX + 6, yPos);
@@ -140,10 +140,10 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
   };
 
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: BACKGROUND, color: 'white', width: '100%', maxWidth: 1000 }}>
-      <CardContent sx={{ p: { xs: 2, md: 4 } }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2} mb={2}>
-          <Typography variant="h2" sx={{ flexGrow: 1, textAlign: 'center' }}>
+    <Card sx={{ borderRadius: 5, backgroundColor: BACKGROUND, color: 'white', width: '100%', height: '100%' }}>
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2} mb={1}>
+          <Typography variant="h5" fontWeight="bold" sx={{ flexGrow: 1, textAlign: 'center' }}>
             Vehicle Development
           </Typography>
           <TextField
