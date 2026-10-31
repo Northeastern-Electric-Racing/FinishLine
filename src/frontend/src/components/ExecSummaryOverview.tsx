@@ -13,9 +13,6 @@ interface ExecSummaryOverviewProps {
 
 type EditableSection = 'goals' | 'winsAndImprovements';
 
-const formatDate = (date: Date): string =>
-  new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
 const ExecSummaryOverview: React.FC<ExecSummaryOverviewProps> = ({ executiveSummary }) => {
   const { mutateAsync: editExecutiveSummary, isLoading: isSaving } = useEditExecutiveSummary(
     executiveSummary.executiveSummaryId
@@ -41,12 +38,6 @@ const ExecSummaryOverview: React.FC<ExecSummaryOverviewProps> = ({ executiveSumm
       toast.error(e instanceof Error ? e.message : 'Failed to save executive summary');
     }
   };
-
-  const { car, seasonStartDate, seasonEndDate } = executiveSummary;
-  const seasonText =
-    seasonStartDate && seasonEndDate
-      ? `${formatDate(seasonStartDate)} - ${formatDate(seasonEndDate)}`
-      : 'Season dates have not been set.';
 
   return (
     <Box display="flex" flexDirection="column" gap={2}>
