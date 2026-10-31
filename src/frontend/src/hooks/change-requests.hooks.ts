@@ -10,7 +10,6 @@ import {
   ProjectProposedChangesCreateArgs,
   WbsNumber,
   WorkPackageProposedChangesCreateArgs,
-  LeadershipChangeCreateArgs,
   GuestChangeRequest
 } from 'shared';
 import {
@@ -26,7 +25,6 @@ import {
   getUnreviewedChangeRequests,
   getApprovedChangeRequests,
   createBudgetChangeRequest,
-  createLeadershipChangeRequest,
   getAllGuestChangeRequests
 } from '../apis/change-requests.api';
 
@@ -260,33 +258,6 @@ export const useCreateBudgetChangeRequest = () => {
         payload.accountCodeId
       );
       return data;
-    }
-  );
-};
-
-/**
- * Custome React hook to create a leadership change request
- * to change lead and/or manager of a project or work package
- */
-export const useCreateLeadershipChangeRequest = () => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, LeadershipChangeCreateArgs>(
-    ['change requests', 'create', 'leadership'],
-    async (payload: LeadershipChangeCreateArgs) => {
-      const { data } = await createLeadershipChangeRequest(
-        payload.submitterId,
-        payload.wbsNum,
-        payload.leadId,
-        payload.managerId
-      );
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['change requests']);
-        queryClient.invalidateQueries(['projects']);
-        queryClient.invalidateQueries(['work packages']);
-      }
     }
   );
 };

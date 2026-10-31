@@ -10,7 +10,6 @@ import {
   wbsPipe,
   WorkPackageTemplate,
   WorkPackageStage,
-  LeadershipChangeCreateArgs,
   isSameDay
 } from 'shared';
 import {
