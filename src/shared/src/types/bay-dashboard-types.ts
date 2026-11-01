@@ -84,3 +84,16 @@ export interface AvailableBayDashboardWidget {
 export interface AvailableBayDashboardWidgets {
   widgets: AvailableBayDashboardWidget[];
 }
+
+/**
+ * A scheduled event the unauthenticated TV can show.
+ * An event with several schedule slots is returned once per slot.
+ */
+export interface PublicBayDashboardCalendarEvent {
+  title: string;
+  startTime: Date;
+  endTime: Date;
+  allDay: boolean;
+  location?: string;
+  colorHexCode: string;
+}
