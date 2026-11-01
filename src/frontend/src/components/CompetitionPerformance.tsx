@@ -123,9 +123,9 @@ const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ 
 
   //NOTE: Width and height are currently hardcoded to emulate the full mock executive panel
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 2, width: 500, minHeight: 560 }}>
-      <CardContent>
-        <Typography variant="h4" fontWeight="bold" mb={1}>
+    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 0, width: '100%' }}>
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+        <Typography variant="h5" fontWeight="bold" textAlign="center" mb={1}>
           Competition Performance
         </Typography>
 

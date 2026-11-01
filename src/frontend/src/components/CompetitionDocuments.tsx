@@ -35,13 +35,23 @@ const CompetitionDocuments: React.FC<CompetitionDocumentsProps> = ({ competition
   const firstSubmissionRejected = competitionDocumentsSummary.firstSubmissionRejectedCount ?? 0;
 
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 2, width: 500 }}>
-      <CardContent>
-        <Typography variant="h4" fontWeight="bold" textAlign="center" mb={3}>
+    <Card
+      sx={{
+        borderRadius: 5,
+        backgroundColor: '#1e1e1e',
+        color: 'white',
+        p: 0,
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 }, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        <Typography variant="h5" fontWeight="bold" textAlign="center" mb={2}>
           Competition Documents
         </Typography>
 
-        <Box display="flex" justifyContent="center" gap={6} mb={3}>
+        <Box display="flex" justifyContent="center" alignItems="center" gap={6} flexGrow={1}>
           <StatBlock value={`${submittedOnTime}`} label="Submitted On Time" />
           <StatBlock value={`${firstSubmissionRejected}`} label="First Submission Rejected" />
         </Box>

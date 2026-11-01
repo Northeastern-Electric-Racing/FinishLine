@@ -83,7 +83,11 @@ const GRAPH_COLLECTION_BY_ID = '/statistics/graph-collections/:graphCollectionId
 /**************** Retrospective ****************/
 const RETROSPECTIVE = `/retrospective`;
 
+/**************** Executive Summaries ****************/
+const EXECUTIVE_SUMMARIES = `/executive-summaries`;
+
 export const routes = {
+  EXECUTIVE_SUMMARIES,
   BASE,
   LOGIN,
   INFO,

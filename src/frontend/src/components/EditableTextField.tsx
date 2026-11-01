@@ -41,7 +41,7 @@ const EditableTextField: React.FC<EditableTextFieldProps> = ({
     return (
       <Box>
         <Box display="flex" alignItems="center">
-          <Typography variant="h5">{label}</Typography>
+          <Typography variant="h6">{label}</Typography>
           {canEdit && (
             <IconButton onClick={onEditStart} aria-label={`Edit ${label}`}>
               <EditOutlinedIcon />
@@ -56,7 +56,7 @@ const EditableTextField: React.FC<EditableTextFieldProps> = ({
   return (
     <Box>
       <Box display="flex" alignItems="center">
-        <Typography variant="h5">{label}</Typography>
+        <Typography variant="h6">{label}</Typography>
         <NERFailButton sx={{ ml: 2 }} type="button" onClick={onCancel} disabled={isSaving}>
           Cancel
         </NERFailButton>

@@ -10,9 +10,10 @@ import { useTheme } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import { ArcElement, Chart, ChartOptions, Legend, Tooltip } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
-import { BudgetHighlight, ExecutiveSummary } from 'shared';
+import { BudgetHighlight, ExecutiveSummary, isAdmin } from 'shared';
 import { useBudgetSummary, useEditExecutiveSummary, useSingleExecutiveSummary } from '../hooks/exec-summaries.hooks';
 import { useToast } from '../hooks/toasts.hooks';
+import { useCurrentUser } from '../hooks/users.hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
 
@@ -37,11 +38,11 @@ interface UnderlinedLabelProps {
 }
 
 const UnderlinedLabel: React.FC<UnderlinedLabelProps> = ({ label, highlight, showOverbudget }) => (
-  <Box sx={{ mb: 2.5 }}>
-    <Typography variant="h5" sx={{ textDecoration: 'underline', lineHeight: 1.2 }}>
+  <Box sx={{ mb: 1.5 }}>
+    <Typography variant="h6" sx={{ textDecoration: 'underline', lineHeight: 1.2 }}>
       {label}
     </Typography>
-    <Typography>
+    <Typography variant="body2">
       {highlight ? `${highlight.label} (${formatDollars(highlight.amount)}${showOverbudget ? ' Overbudget' : ''})` : 'N/A'}
     </Typography>
   </Box>
@@ -67,6 +68,8 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
   const executiveSummary = latestSummary ?? initialSummary;
   const { mutateAsync: editExecutiveSummary, isLoading: isSaving } = useEditExecutiveSummary(executiveSummaryId);
   const toast = useToast();
+  const user = useCurrentUser();
+  const canEdit = isAdmin(user.role) || !!user.isOperations;
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesDraft, setNotesDraft] = useState(executiveSummary.budgetNotes);
 
@@ -135,15 +138,18 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
         : 'Exactly on budget';
 
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: BACKGROUND, color: 'white', width: '100%', maxWidth: 1000 }}>
-      <CardContent sx={{ p: { xs: 2, md: 4 } }}>
-        <Typography variant="h2" textAlign="center" mb={2}>
+    <Card sx={{ borderRadius: 5, backgroundColor: BACKGROUND, color: 'white', width: '100%', height: '100%' }}>
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+        <Typography variant="h5" fontWeight="bold" textAlign="center" mb={1}>
           Budget
         </Typography>
 
-        <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} alignItems="center" gap={{ xs: 3, md: 5 }}>
-          <Box sx={{ position: 'relative', width: '100%', maxWidth: 360, aspectRatio: '1 / 1', flexShrink: 0 }}>
-            <Doughnut data={chartData} options={chartOptions} />
+        <Box display="flex" flexWrap="wrap" justifyContent="center" alignItems="center" gap={2}>
+          <Box sx={{ position: 'relative', width: '100%', maxWidth: 160, aspectRatio: '1 / 1', flexShrink: 0 }}>
+            {/* absolutely positioned so the canvas can't feed back into the box's height and distort the square */}
+            <Box sx={{ position: 'absolute', inset: 0 }}>
+              <Doughnut data={chartData} options={chartOptions} />
+            </Box>
             <Box
               sx={{
                 position: 'absolute',
@@ -162,21 +168,20 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
               }}
             >
               <Typography variant="h5">{formatDollars(totalSpent)}</Typography>
-              <Typography variant="caption">spent of {formatDollars(totalBudget)}</Typography>
             </Box>
           </Box>
 
-          <Box flexGrow={1} width="100%">
+          <Box flex="1 1 190px" minWidth={0}>
             <Box
               sx={{
                 backgroundColor: overage > 0 ? accent : theme.palette.success.main,
                 borderRadius: 3,
-                py: 2,
-                mb: 3,
+                py: 1,
+                mb: 2,
                 textAlign: 'center'
               }}
             >
-              <Typography variant="h5" sx={{ textTransform: 'uppercase', fontFamily: 'inherit', fontWeight: 400 }}>
+              <Typography variant="h6" sx={{ textTransform: 'uppercase', fontFamily: 'inherit', fontWeight: 400 }}>
                 {bannerText}
               </Typography>
             </Box>
@@ -192,11 +197,13 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
         </Box>
 
         <Box display="flex" alignItems="center" gap={2} mb={1} mt={1}>
-          <Typography variant="h4">Notes</Typography>
+          <Typography variant="h6">Notes</Typography>
           {!isEditingNotes ? (
-            <IconButton aria-label="edit-budget-notes" onClick={startEditing} sx={{ color: 'white' }}>
-              <EditIcon fontSize="small" />
-            </IconButton>
+            canEdit && (
+              <IconButton aria-label="edit-budget-notes" onClick={startEditing} sx={{ color: 'white' }}>
+                <EditIcon fontSize="small" />
+              </IconButton>
+            )
           ) : (
             <>
               <Button
@@ -237,7 +244,7 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
         ) : noteLines.length === 0 ? (
           <Typography>No notes.</Typography>
         ) : (
-          <Box component="ul" sx={{ m: 0, pl: 3, maxWidth: 650, fontSize: '1.1rem' }}>
+          <Box component="ul" sx={{ m: 0, pl: 3, maxWidth: 650, fontSize: '0.95rem' }}>
             {noteLines.map((line, idx) => (
               <li key={idx}>{line}</li>
             ))}
