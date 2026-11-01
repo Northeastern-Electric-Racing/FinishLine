@@ -55,9 +55,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     linkTypeName: link.linkType.name
   }));
 
-  if (isCRHookLoading || isLeadershipCRLoading || isEditProjectLoading) return <LoadingIndicator />;
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
+  if (isCRHookLoading || isLeadershipCRLoading || isEditProjectLoading) return <LoadingIndicator />;
 
   const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
   const projectLinkTypeNames = links.map((link) => link.linkTypeName);

@@ -1,4 +1,4 @@
-import { datesEqual } from './date-utils.js';
+import { isSameDayUTC } from './date-utils.js';
 /**
  * Determines if the two dates are in bufferDays distance from each other
  *
@@ -43,7 +43,7 @@ export const workPackageEditNeedsCR = (
   originalBullets: { id: string; detail: string }[],
   newBullets: { id: string; detail: string }[]
 ): boolean => {
-  if (!datesEqual(originalStartDate, newStartDate)) return true;
+  if (!isSameDayUTC(originalStartDate, newStartDate)) return true;
   if (originalDuration !== newDuration) return true;
   return bulletsChanged(originalBullets, newBullets);
 };

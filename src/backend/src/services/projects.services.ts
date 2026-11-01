@@ -354,7 +354,7 @@ export default class ProjectsService {
    * Edits the given project with the given information.
    * @param user the user editing the project
    * @param projectId the id of the project to edit
-   * @param crId the change request used to do the editing
+   * @param crId the id of the approved change request being applied, or null for a direct edit
    * @param name the new name of the project
    * @param budget the new budget of the project
    * @param summary the new summary of the project
@@ -390,8 +390,11 @@ export default class ProjectsService {
       include: {
         wbsElement: {
           include: {
-            links: getLinkQueryArgs(),
-            descriptionBullets: getDescriptionBulletQueryArgs(organization.organizationId)
+            links: { where: { dateDeleted: null }, ...getLinkQueryArgs() },
+            descriptionBullets: {
+              where: { dateDeleted: null },
+              ...getDescriptionBulletQueryArgs(organization.organizationId)
+            }
           }
         }
       }
@@ -421,7 +424,7 @@ export default class ProjectsService {
 
     const { project: updatedProject } = await updateProjectAndCreateChanges(
       originalProject.projectId,
-      needsCR ? crId : null,
+      crId,
       userId,
       name,
       budget,
