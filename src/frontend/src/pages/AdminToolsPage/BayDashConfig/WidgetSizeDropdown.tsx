@@ -14,13 +14,14 @@ interface WidgetSizeDropdownProps {
   widgets: AvailableBayDashboardWidget[];
   selectedType?: BayDashboardWidgetType;
   onSelect: (type: BayDashboardWidgetType) => void;
+  slug?: string;
 }
 
 /**
  * A collapsible dropdown listing the widgets available for one widget size.
  * Clicking a widget selects it, and only one widget is highlighted at a time (until phase 3 widget rotations)
  */
-const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ size, widgets, selectedType, onSelect }) => {
+const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ size, widgets, selectedType, onSelect, slug }) => {
   const [expanded, setExpanded] = useState(true);
 
   return (
@@ -81,7 +82,7 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({ size, widgets, 
                 <AddCircle fontSize="small" sx={{ position: 'absolute', top: -6, left: -6, zIndex: 1, color: 'white' }} />
               )}
               <Box>
-                <BayDashboardWidgetView size={size} widget={{ type: widget.type, order: 0 }} />
+                <BayDashboardWidgetView size={size} widget={{ type: widget.type, order: 0 }} slug={slug} />
               </Box>
               <Box
                 sx={{

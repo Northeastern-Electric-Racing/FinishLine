@@ -8,6 +8,7 @@ import { SystemStyleObject } from '@mui/system';
 import { useState } from 'react';
 import { NERButton } from '../../../components/NERButton';
 import { useGetCurrentBayDashboardConfig, useSaveBayDashboardConfig } from '../../../hooks/bay-dashboard.hooks';
+import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { applyWidgetSelection, BayDashboardWidgetSelection, toSlotCreateArgs } from '../../../utils/bay-dashboard.utils';
 import PreviewDashboard from './PreviewDashboard';
@@ -19,14 +20,12 @@ const widgetBoxSx: SystemStyleObject<Theme> = {
   minWidth: 300
 };
 
-/**
- * The Bay Dashboard tab in Admin Tools
- */
 const AdminToolsBayDashConfig: React.FC = () => {
   const [selection, setSelection] = useState<BayDashboardWidgetSelection>({});
   const hasSelection = Object.values(selection).some((type) => type);
   const { data: config, isLoading, isError } = useGetCurrentBayDashboardConfig();
   const { mutate: save, isLoading: isSaving } = useSaveBayDashboardConfig();
+  const { data: organization } = useCurrentOrganization();
 
   const toast = useToast();
 
@@ -65,7 +64,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
         <Typography variant="h5" gutterBottom pl={1}>
           Preview
         </Typography>
-        <PreviewDashboard selection={selection} />
+        <PreviewDashboard selection={selection} slug={organization?.slug} />
       </Box>
       <Box sx={{ gridColumn: { md: 'span 2' }, gridRow: { md: 2 }, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
         <NERButton variant="contained" disabled={!hasSelection} onClick={handleClear}>
@@ -88,7 +87,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
           overflowY: 'auto'
         }}
       >
-        <WidgetSelection selection={selection} onSelectionChange={setSelection} />
+        <WidgetSelection selection={selection} onSelectionChange={setSelection} slug={organization?.slug} />
       </Box>
     </Box>
   );

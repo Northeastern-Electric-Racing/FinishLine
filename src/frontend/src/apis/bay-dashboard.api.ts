@@ -11,7 +11,11 @@ import {
   BayDashboardSlotCreateArgs,
   PublicBayDashboardConfig
 } from 'shared';
-import { bayDashboardConfigTransformer } from './transformers/bay-dashboard.transformers';
+import {
+  bayDashboardConfigTransformer,
+  publicBayDashboardCalendarEventTransformer
+} from './transformers/bay-dashboard.transformers';
+import { PublicBayDashboardCalendarEvent } from '../utils/bay-dashboard-calendar.utils';
 
 /**
  * Gets the bay dashboard config currently displayed on the TV for the current organization
@@ -32,6 +36,17 @@ export const getCurrentBayDashboardConfig = () => {
 export const getBayDashboardConfig = (slug: string) => {
   return axios.get<PublicBayDashboardConfig | null>(apiUrls.bayDashboardConfig(slug), {
     transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * Gets the upcoming calendar events the TV is displaying for an organization
+ * @param slug the organization's slug
+ */
+export const getBayDashboardCalendarEvents = (slug: string) => {
+  return axios.get<PublicBayDashboardCalendarEvent[]>(apiUrls.bayDashboardCalendar(slug), {
+    transformResponse: (data) =>
+      (JSON.parse(data) as PublicBayDashboardCalendarEvent[]).map(publicBayDashboardCalendarEventTransformer)
   });
 };
 

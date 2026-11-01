@@ -9,6 +9,7 @@ import { BAY_DASHBOARD_BACKGROUND, defaultBayDashboardSlots, widgetHeights } fro
 import BayDashboardWidgetView from './widgets/BayDashboardWidgetView';
 interface BayDashboardGridProps {
   slots: PublicBayDashboardSlot[];
+  slug?: string;
 }
 
 const gridAreas: Record<BayDashboardWidgetSize, string> = {
@@ -26,7 +27,7 @@ const gridRows = `60fr 380fr ${MEDIUM_HEIGHT}fr ${SMALL_HEIGHT}fr`;
  * The Big/Medium/Small widget grid the TV renders. Fills the width of its parent at the TV's 16:9 shape,
  * so the preview is a scaled down copy of the TV.
  */
-const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots }) => {
+const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, slug }) => {
   return (
     <Box sx={{ containerType: 'inline-size', width: '100%' }}>
       <Box
@@ -48,7 +49,7 @@ const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots }) => {
 
           return (
             <Box key={position} sx={{ gridArea: gridAreas[size], minWidth: 0, minHeight: 0 }}>
-              <BayDashboardWidgetView widget={widget} size={size} fallbackWidget={defaultWidget} />
+              <BayDashboardWidgetView widget={widget} size={size} slug={slug} fallbackWidget={defaultWidget} />
             </Box>
           );
         })}

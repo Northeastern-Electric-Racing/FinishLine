@@ -543,6 +543,7 @@ const dashboardDelete = (dashboardId: string) => `${dashboards()}/${dashboardId}
 const bayDashboard = () => `${API_URL}/bay-dashboard`;
 const bayDashboardEvents = (slug: string) => `${bayDashboard()}/${slug}/events`;
 const bayDashboardConfig = (slug: string) => `${bayDashboard()}/${slug}/config`;
+const bayDashboardCalendar = (slug: string) => `${bayDashboard()}/${slug}/calendar`;
 const bayDashboardAdmin = () => `${bayDashboard()}/admin`;
 const bayDashboardAdminWidgets = () => `${bayDashboardAdmin()}/widgets`;
 const bayDashboardAdminSave = () => `${bayDashboardAdmin()}/save`;
@@ -952,6 +953,7 @@ export const apiUrls = {
 
   bayDashboardEvents,
   bayDashboardConfig,
+  bayDashboardCalendar,
   bayDashboardAdmin,
   bayDashboardAdminWidgets,
   bayDashboardAdminSave,

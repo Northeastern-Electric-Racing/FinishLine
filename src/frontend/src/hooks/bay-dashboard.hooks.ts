@@ -11,9 +11,12 @@ import {
   BayDashboardSlotCreateArgs,
   PublicBayDashboardConfig
 } from 'shared';
+import { PublicBayDashboardCalendarEvent } from '../utils/bay-dashboard-calendar.utils';
+import { getMockBayDashboardCalendarEvents } from '../utils/bay-dashboard-calendar.mock';
 import { apiUrls } from '../utils/urls';
 import {
   getAvailableBayDashboardWidgets,
+  getBayDashboardCalendarEvents,
   getBayDashboardConfig,
   getCurrentBayDashboardConfig,
   saveBayDashboardConfig
@@ -42,6 +45,25 @@ export const useGetBayDashboardConfig = (slug: string) => {
     const { data } = await getBayDashboardConfig(slug);
     return data;
   });
+};
+
+// TEMPORARY: shows hardcoded events until the calendar endpoint exists, delete with utils/bay-dashboard-calendar.mock.ts
+const USE_MOCK_CALENDAR_EVENTS = import.meta.env.VITE_MOCK_BAY_DASHBOARD_CALENDAR !== 'false';
+
+/**
+ * Custom React Hook to get the upcoming calendar events the public TV display shows.
+ * @param slug the organization slug (example: ner)
+ */
+export const useGetBayDashboardCalendarEvents = (slug?: string) => {
+  return useQuery<PublicBayDashboardCalendarEvent[], Error>(
+    ['bay-dashboard', slug, 'calendar'],
+    async () => {
+      if (USE_MOCK_CALENDAR_EVENTS) return getMockBayDashboardCalendarEvents(new Date());
+      const { data } = await getBayDashboardCalendarEvents(slug!);
+      return data;
+    },
+    { enabled: !!slug, refetchInterval: 5 * 60 * 1000 }
+  );
 };
 
 /**
