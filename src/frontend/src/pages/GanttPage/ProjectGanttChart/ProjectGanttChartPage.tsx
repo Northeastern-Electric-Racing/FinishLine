@@ -7,16 +7,19 @@ import React, { ChangeEvent, FC, useEffect, useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAllProjectsGantt } from '../../../hooks/projects.hooks';
 import ErrorPage from '../../ErrorPage';
-import { add, sub } from 'date-fns';
 import { useHistory } from 'react-router-dom';
 import {
   applyChangesToWBSElement,
   constructCollectionsFromTeamPreviewAndProjects,
   constructFinalizedChanges,
+  DEFAULT_GANTT_TIME_WINDOW,
   GanttChange,
   GanttCollection,
   GanttFilters,
   GanttTask,
+  GanttTimeWindow,
+  GANTT_TIME_WINDOWS,
+  getGanttDateBounds,
   isProjectPreview,
   RequestEventChange,
   transformProjectToGanttTask,
@@ -28,6 +31,7 @@ import PageLayout from '../../../components/PageLayout';
 import { SearchBar } from '../../../components/SearchBar';
 import GanttChartColorLegend from './GanttChartColorLegend';
 import GanttChartFiltersButton from './GanttChartFiltersButton';
+import GanttTimeWindowDropdown from './GanttTimeWindowDropdown';
 import GanttChart from '../GanttChart/GanttChart';
 import {
   ProjectGantt,
@@ -83,6 +87,7 @@ const ProjectGanttChartPage: FC = () => {
   const { selectedCar, allCars, isLoading: carFilterLoading } = useGlobalCarFilter();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
+  const [timeWindow, setTimeWindow] = useState<GanttTimeWindow>(DEFAULT_GANTT_TIME_WINDOW);
   const [addedProjects, setAddedProjects] = useState<ProjectGantt[]>([]);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
@@ -137,7 +142,9 @@ const ProjectGanttChartPage: FC = () => {
     };
 
     if (projects && teams) {
-      requestRefresh(projects, teams, editedProjects, addedProjects, { ...filters, showCars }, searchText);
+      // some windows (Year) never show tasks, regardless of the filter
+      const hideTasks = (filters.hideTasks ?? false) || !GANTT_TIME_WINDOWS[timeWindow].showTasks;
+      requestRefresh(projects, teams, editedProjects, addedProjects, { ...filters, showCars, hideTasks }, searchText);
     }
   }, [
     teams,
@@ -149,7 +156,8 @@ const ProjectGanttChartPage: FC = () => {
     filters,
     showCars,
     searchText,
-    history
+    history,
+    timeWindow
   ]);
 
   const handleSetGanttFilters = (newFilters: GanttFilters) => {
@@ -603,31 +611,16 @@ const ProjectGanttChartPage: FC = () => {
 
   const allWorkPackages = projects.concat(addedProjects).flatMap((project) => project.workPackages);
 
-  // find the earliest start date and subtract 2 weeks to use as the first date on calendar
-  const startDate =
-    allWorkPackages.length !== 0
-      ? sub(
-          allWorkPackages
-            .map((wp) => wp.startDate)
-            .reduce((previous, current) => {
-              return previous < current ? previous : current;
-            }, new Date(8.64e15)),
-          { weeks: 2 }
-        )
-      : sub(Date.now(), { weeks: 15 });
+  const { start: startDate, end: endDate } = getGanttDateBounds(allWorkPackages);
 
-  // find the latest end date and add 6 months to use as the last date on calendar
-  const endDate =
-    allWorkPackages.length !== 0
-      ? add(
-          allWorkPackages
-            .map((wp) => wp.endDate)
-            .reduce((previous, current) => {
-              return previous > current ? previous : current;
-            }, new Date(-8.64e15)),
-          { months: 6 }
-        )
-      : add(Date.now(), { weeks: 15 });
+  const chips = (
+    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mr: 1 }}>
+      <Box sx={{ flexGrow: 1 }}>
+        <SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />
+      </Box>
+      <GanttTimeWindowDropdown timeWindow={timeWindow} onChange={setTimeWindow} />
+    </Box>
+  );
 
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
@@ -652,13 +645,10 @@ const ProjectGanttChartPage: FC = () => {
       {requestEventChanges.map((change) => (
         <GanttRequestChangeModal change={change} open handleClose={(didCancel) => removeActiveModal(change, didCancel)} />
       ))}
-      <PageLayout
-        title="Gantt Chart"
-        chips={<SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />}
-        headerRight={headerRight}
-      >
+      <PageLayout title="Gantt Chart" chips={chips} headerRight={headerRight} titleColumns={3}>
         <GanttChart
           collections={collections}
+          timeWindow={timeWindow}
           startDate={startDate}
           endDate={endDate}
           editability={{

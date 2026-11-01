@@ -1,11 +1,20 @@
 import { Box, Chip, Typography } from '@mui/material';
 import { useTheme } from '@mui/system';
-import { CSSProperties, DragEvent, MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
-import useMeasure from 'react-use-measure';
+import { CSSProperties, DragEvent, MouseEvent, useRef, useState } from 'react';
 import { addDaysToDate } from 'shared';
-import { GanttChange, GanttTask, GANTT_CHART_CELL_SIZE } from '../../../../../utils/gantt.utils';
+import {
+  GanttChange,
+  GanttScale,
+  GanttTask,
+  GanttTimeUnit,
+  GANTT_EDIT_SNAP_DAYS,
+  getColumns,
+  getDateOffsetPx,
+  getElementPositionPx
+} from '../../../../../utils/gantt.utils';
 import { differenceInDays } from 'date-fns';
 import {
+  ganttElementPositionStyles,
   ganttTaskBarBackgroundStyles,
   ganttTaskBarContainerStyles,
   taskNameContainerStyles,
@@ -15,53 +24,52 @@ import {
 import { ArcherElement } from 'react-archer';
 import { v4 as uuidv4 } from 'uuid';
 
-const CELL_SIZE_PX = 38 + 2; // 38px cell + 2px for borders (1px each side)
-const GAP_SIZE_PX = 10; // empirically determined, see note above
-const WIDTH_PER_DAY = 7.2; //width per day to use for resizing calculations, kind of arbitrary,
-
 interface GanttTaskBarEditProps<T> {
-  days: Date[];
+  scale: GanttScale;
   task: GanttTask<T>;
   createChange: (change: GanttChange<T>) => void;
-  getStartCol: (start: Date) => number;
-  getEndCol: (end: Date) => number;
   onAddTaskPressed: (parent: GanttTask<T>) => void;
 }
 
-export const GanttTaskBarEditView = <T,>({
-  days,
-  task,
-  createChange,
-  getStartCol,
-  getEndCol,
-  onAddTaskPressed
-}: GanttTaskBarEditProps<T>) => {
+// used to make sure that any changes to the start and end dates are made in whole weeks
+const roundToSnap = (days: number) => Math.round(days / GANTT_EDIT_SNAP_DAYS) * GANTT_EDIT_SNAP_DAYS;
+const ceilToSnap = (days: number) => Math.ceil(days / GANTT_EDIT_SNAP_DAYS) * GANTT_EDIT_SNAP_DAYS;
+
+export const GanttTaskBarEditView = <T,>({ scale, task, createChange, onAddTaskPressed }: GanttTaskBarEditProps<T>) => {
   const theme = useTheme();
   const [showDropPoints, setShowDropPoints] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
-  const [width, setWidth] = useState(0);
-  const [correctWidth, setCorrectWidth] = useState(0);
-  const [measureRef, bounds] = useMeasure();
-  const hasMeasuredRef = useRef(false);
+  // length of the bar while it is being resized, in days
+  const [resizeDays, setResizeDays] = useState<number | undefined>(undefined);
   const boxRef = useRef<HTMLDivElement | null>(null);
+  const isResizing = resizeDays !== undefined;
+
+  const position = getElementPositionPx(task.start, isResizing ? addDaysToDate(task.start, resizeDays) : task.end, scale);
 
   const taskBarDisplayStyles: CSSProperties = {
-    gridColumnStart: getStartCol(task.start),
-    gridColumnEnd: getEndCol(task.end),
+    ...ganttElementPositionStyles(position),
     height: '2rem',
-    width: task.root ? 'unset' : correctWidth > 0 ? `${correctWidth}px` : 'auto',
     border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
     borderRadius: '0.25rem',
     backgroundColor: task.styles ? task.styles.backgroundColor : theme.palette.background.paper,
     cursor: task.root ? 'default' : 'move'
   };
 
-  const dropPointCellStyles: CSSProperties = {
+  const dropPointCellStyles = (weekStart: Date): CSSProperties => ({
+    position: 'absolute',
+    top: 0,
+    left: getDateOffsetPx(weekStart, scale.start, scale.pixelsPerDay) + 1,
+    width: GANTT_EDIT_SNAP_DAYS * scale.pixelsPerDay - 2,
     borderRadius: '0.25rem',
     height: '2rem',
-    minWidth: GANTT_CHART_CELL_SIZE,
-    maxWidth: GANTT_CHART_CELL_SIZE,
     backgroundColor: `color-mix(in srgb, ${theme.palette.background.default}, transparent 75%);`
+  });
+
+  const addTaskChipStyles: CSSProperties = {
+    gridRow: 1,
+    gridColumn: 1,
+    justifySelf: 'start',
+    alignSelf: 'center',
+    marginLeft: position.left + position.width + 8
   };
 
   const hoverContainerBoxStyles: CSSProperties = {
@@ -70,29 +78,6 @@ export const GanttTaskBarEditView = <T,>({
     width: '5rem',
     position: 'relative',
     right: '-10'
-  };
-
-  const getCorrectWidth = useCallback((rawWidth: number) => {
-    const newEventLengthInDays = floorToMultipleOf7(rawWidth / WIDTH_PER_DAY);
-    const displayWeeks = newEventLengthInDays / 7 + 1;
-    return displayWeeks * CELL_SIZE_PX + (displayWeeks - 1) * GAP_SIZE_PX;
-  }, []);
-
-  useEffect(() => {
-    if (!hasMeasuredRef.current && bounds.width > 0) {
-      setWidth(bounds.width);
-      setCorrectWidth(getCorrectWidth(bounds.width));
-      hasMeasuredRef.current = true;
-    }
-  }, [bounds.width, getCorrectWidth]);
-
-  // used to make sure that any changes to the start and end dates are made in multiples of 7
-  const floorToMultipleOf7 = (num: number) => {
-    return Math.floor(num / 7) * 7;
-  };
-
-  const ceilToMultipleOf7 = (num: number) => {
-    return Math.ceil(num / 7) * 7;
   };
 
   const getDistanceFromLeft = (clientX: number) => {
@@ -105,32 +90,27 @@ export const GanttTaskBarEditView = <T,>({
     const bar = (e.currentTarget as HTMLElement).closest('[data-gantt-bar]');
     if (!bar) return;
 
-    boxRef.current = (e.currentTarget as HTMLElement).closest('[data-gantt-bar]') as HTMLDivElement;
-    setIsResizing(true);
+    boxRef.current = bar as HTMLDivElement;
+    setResizeDays(differenceInDays(task.end, task.start));
   };
 
   const handleMouseMove = (e: MouseEvent<HTMLElement>) => {
     if (!isResizing) return;
 
-    const newWidth = Math.max(100, getDistanceFromLeft(e.clientX));
-
-    setWidth(newWidth); // sync render
-    setCorrectWidth(getCorrectWidth(newWidth));
+    const days = getDistanceFromLeft(e.clientX) / scale.pixelsPerDay;
+    setResizeDays(Math.max(GANTT_EDIT_SNAP_DAYS, roundToSnap(days)));
   };
 
   const handleMouseUp = () => {
     if (isResizing) {
-      setIsResizing(false);
-      const newEventLengthInDays = floorToMultipleOf7(width / WIDTH_PER_DAY);
-      const displayWeeks = newEventLengthInDays / 7 + 1;
-      const correctWidth = displayWeeks * 40 + (displayWeeks - 1) * 10;
-      setWidth(correctWidth);
+      setResizeDays(undefined);
+      if (resizeDays === differenceInDays(task.end, task.start)) return;
       createChange({
         id: uuidv4(),
         element: task.element,
         type: 'change-end-date',
         originalEnd: task.end,
-        newEnd: addDaysToDate(task.start, newEventLengthInDays)
+        newEnd: addDaysToDate(task.start, resizeDays)
       });
     }
   };
@@ -145,28 +125,24 @@ export const GanttTaskBarEditView = <T,>({
   const onDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
   };
-  const onDrop = (day: Date) => {
-    const days = ceilToMultipleOf7(differenceInDays(day, task.start));
+  const onDrop = (weekStart: Date) => {
+    const days = ceilToSnap(differenceInDays(weekStart, task.start));
     createChange({ id: uuidv4(), element: task.element, type: 'shift-by-days', days });
   };
 
   return (
     <div style={ganttTaskBarContainerStyles()} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}>
-      <Box
-        sx={{
-          ...ganttTaskBarBackgroundStyles(days.length),
-          position: 'absolute', // These will make it so that the bar stays on top of the drop points, i kind of like it going to a new line though
-          top: 0,
-          left: 0
-        }}
-      >
-        {/* Drop areas */}
-        {showDropPoints &&
-          days.map((day, index) => (
-            <Box key={index} onDragOver={onDragOver} onDrop={() => onDrop(day)} sx={dropPointCellStyles} />
-          ))}
-      </Box>
-      <Box sx={ganttTaskBarBackgroundStyles(days.length)}>
+      {/* Drop areas, one per week. Positioned absolutely so the bar stays on top of them */}
+      {showDropPoints &&
+        getColumns(scale.start, scale.end, GanttTimeUnit.Week).map((weekStart) => (
+          <Box
+            key={weekStart.toISOString()}
+            onDragOver={onDragOver}
+            onDrop={() => onDrop(weekStart)}
+            sx={dropPointCellStyles(weekStart)}
+          />
+        ))}
+      <Box sx={ganttTaskBarBackgroundStyles(scale.widthPx)}>
         <ArcherElement
           id={task.id}
           relations={task.blocking.map((blocking) => {
@@ -178,7 +154,7 @@ export const GanttTaskBarEditView = <T,>({
             };
           })}
         >
-          <div data-gantt-bar ref={measureRef} style={taskBarDisplayStyles}>
+          <div data-gantt-bar style={taskBarDisplayStyles}>
             <Box sx={webKitBoxContainerStyles()}>
               <Box draggable={!task.root} onDrag={onDragStart} onDragEnd={onDragEnd} sx={webKitBoxStyles()}>
                 <Box sx={{ display: 'flex', flexDirection: 'row' }}>
@@ -192,7 +168,7 @@ export const GanttTaskBarEditView = <T,>({
             </Box>
           </div>
         </ArcherElement>
-        {task.root && <Chip label={'+'} onClick={() => onAddTaskPressed(task)} />}
+        {task.root && <Chip label={'+'} onClick={() => onAddTaskPressed(task)} sx={addTaskChipStyles} />}
       </Box>
     </div>
   );

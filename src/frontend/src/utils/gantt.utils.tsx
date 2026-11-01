@@ -36,6 +36,7 @@ import {
   eachMonthOfInterval,
   eachWeekOfInterval,
   eachYearOfInterval,
+  format,
   Interval,
   isSameDay,
   startOfDay,
@@ -55,8 +56,6 @@ import { useQuery } from '../hooks/utils.hooks';
 
 export const NO_TEAM = 'No Team';
 
-export const GANTT_CHART_GAP_SIZE = '0.75rem';
-
 // Gantt-specific task type for local state management (before API calls)
 export interface GanttTaskCreate {
   id?: string; // actual task ID for existing tasks (when editing)
@@ -70,8 +69,6 @@ export interface GanttTaskCreate {
   status: TaskStatus;
   assigneeIds: string[]; // Just the IDs, not full user objects
 }
-
-export const GANTT_CHART_CELL_SIZE = '2.375rem';
 
 // Placeholder width of the chart's visible area, until the container width is measured live
 export const GANTT_CHART_VIEWPORT_WIDTH_PX = 1300;
@@ -141,6 +138,8 @@ interface GanttTimeUnitOps {
   add: (date: Date, amount: number) => Date;
   eachInInterval: (interval: Interval) => Date[]; // start of every unit in the interval
   nominalDays: number; // typical length, used to size the visible span
+  columnLabel: string; // date-fns format for a header cell when this unit is the column unit
+  groupLabel: string; // date-fns format for the top header row when this unit is the group unit
 }
 
 const GANTT_TIME_UNIT_OPS: Record<GanttTimeUnit, GanttTimeUnitOps> = {
@@ -148,27 +147,38 @@ const GANTT_TIME_UNIT_OPS: Record<GanttTimeUnit, GanttTimeUnitOps> = {
     startOf: startOfDay,
     add: addDays,
     eachInInterval: (interval) => eachDayOfInterval(interval),
-    nominalDays: 1
+    nominalDays: 1,
+    columnLabel: 'd',
+    groupLabel: 'MMM d'
   },
   [GanttTimeUnit.Week]: {
     startOf: startOfISOWeek,
     add: addWeeks,
     eachInInterval: (interval) => eachWeekOfInterval(interval, { weekStartsOn: 1 }),
-    nominalDays: 7
+    nominalDays: 7,
+    columnLabel: 'd', // day of the month the week starts on
+    groupLabel: 'MMM d'
   },
   [GanttTimeUnit.Month]: {
     startOf: startOfMonth,
     add: addMonths,
     eachInInterval: (interval) => eachMonthOfInterval(interval),
-    nominalDays: 365.25 / 12
+    nominalDays: 365.25 / 12,
+    columnLabel: 'MMM',
+    groupLabel: 'MMM y'
   },
   [GanttTimeUnit.Year]: {
     startOf: startOfYear,
     add: addYears,
     eachInInterval: (interval) => eachYearOfInterval(interval),
-    nominalDays: 365.25
+    nominalDays: 365.25,
+    columnLabel: 'y',
+    groupLabel: 'y'
   }
 };
+
+// Edits snap to whole weeks in every window, since work package durations are stored in weeks
+export const GANTT_EDIT_SNAP_DAYS = 7;
 
 /**
  * Returns the start date of every column between start and end, inclusive.
@@ -223,6 +233,97 @@ export const getDateOffsetPx = (date: Date, chartStart: Date, pixelsPerDay: numb
 export const getElementWidthPx = (start: Date, end: Date, timeWindow: GanttTimeWindow, pixelsPerDay: number) => {
   const days = Math.max(differenceInCalendarDays(end, start), GANTT_TIME_WINDOWS[timeWindow].minElementDays);
   return days * pixelsPerDay;
+};
+
+/**
+ * Everything the chart needs to turn dates into pixels for the active window
+ */
+export interface GanttScale {
+  timeWindow: GanttTimeWindow;
+  start: Date; // start of the first column
+  end: Date; // end of the last column (exclusive)
+  columnUnit: GanttTimeUnit;
+  headerGroupUnit: GanttTimeUnit;
+  columns: Date[];
+  pixelsPerDay: number;
+  widthPx: number;
+}
+
+/**
+ * Builds the scale for a chart showing elements between dataStart and dataEnd.
+ * Pads one visible span on each side so there is always a full screen to scroll past the data,
+ * and lines the edges up with column boundaries.
+ */
+export const getGanttScale = (
+  dataStart: Date,
+  dataEnd: Date,
+  timeWindow: GanttTimeWindow,
+  viewportWidthPx: number = GANTT_CHART_VIEWPORT_WIDTH_PX
+): GanttScale => {
+  const { visibleSpan, columnUnit, headerGroupUnit } = GANTT_TIME_WINDOWS[timeWindow];
+  const columnOps = GANTT_TIME_UNIT_OPS[columnUnit];
+  const spanOps = GANTT_TIME_UNIT_OPS[visibleSpan.unit];
+
+  const start = columnOps.startOf(spanOps.add(dataStart, -visibleSpan.amount));
+  const end = columnOps.add(columnOps.startOf(spanOps.add(dataEnd, visibleSpan.amount)), 1);
+  const pixelsPerDay = getPixelsPerDay(timeWindow, viewportWidthPx);
+
+  return {
+    timeWindow,
+    start,
+    end,
+    columnUnit,
+    headerGroupUnit,
+    columns: getColumns(start, addDays(end, -1), columnUnit),
+    pixelsPerDay,
+    widthPx: differenceInCalendarDays(end, start) * pixelsPerDay
+  };
+};
+
+/**
+ * Returns where an element sits on the chart, in pixels, with the window's minimum width applied
+ * and anything outside the chart clipped off
+ */
+export const getElementPositionPx = (start: Date, end: Date, scale: GanttScale): { left: number; width: number } => {
+  const rawLeft = getDateOffsetPx(start, scale.start, scale.pixelsPerDay);
+  const rawRight = rawLeft + getElementWidthPx(start, end, scale.timeWindow, scale.pixelsPerDay);
+  const left = Math.min(Math.max(rawLeft, 0), scale.widthPx);
+  const right = Math.min(Math.max(rawRight, 0), scale.widthPx);
+  return { left, width: right - left };
+};
+
+/**
+ * Returns the span of time covered by a group in the top header row, clipped to the chart
+ */
+export const getHeaderGroups = (scale: GanttScale): { start: Date; widthPx: number }[] =>
+  getColumns(scale.start, addDays(scale.end, -1), scale.headerGroupUnit).map((groupStart) => {
+    const start = groupStart < scale.start ? scale.start : groupStart;
+    const nextGroupStart = GANTT_TIME_UNIT_OPS[scale.headerGroupUnit].add(groupStart, 1);
+    const end = nextGroupStart > scale.end ? scale.end : nextGroupStart;
+    return { start, widthPx: differenceInCalendarDays(end, start) * scale.pixelsPerDay };
+  });
+
+export const formatColumnLabel = (columnStart: Date, unit: GanttTimeUnit) =>
+  format(columnStart, GANTT_TIME_UNIT_OPS[unit].columnLabel);
+
+export const formatGroupLabel = (groupStart: Date, unit: GanttTimeUnit) =>
+  format(groupStart, GANTT_TIME_UNIT_OPS[unit].groupLabel);
+
+/**
+ * Returns the earliest start and latest end of the given elements, or today for both if there are none
+ */
+export const getGanttDateBounds = (elements: { startDate: Date; endDate: Date }[]): { start: Date; end: Date } => {
+  if (elements.length === 0) {
+    const today = startOfDay(new Date());
+    return { start: today, end: today };
+  }
+  return elements.reduce(
+    (bounds, element) => ({
+      start: element.startDate < bounds.start ? element.startDate : bounds.start,
+      end: element.endDate > bounds.end ? element.endDate : bounds.end
+    }),
+    { start: elements[0].startDate, end: elements[0].endDate }
+  );
 };
 
 export interface GanttCollection<E, T> {

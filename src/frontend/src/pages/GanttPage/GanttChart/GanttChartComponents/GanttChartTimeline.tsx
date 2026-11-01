@@ -4,31 +4,34 @@
  */
 
 import { Box, Typography, Card, useTheme } from '@mui/material';
-import { eachDayOfInterval, isMonday, format, getDate } from 'date-fns';
-import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../../utils/gantt.utils';
-import { getMonday } from '../../../../utils/datetime.utils';
-import { toDateString } from 'shared';
+import {
+  formatColumnLabel,
+  formatGroupLabel,
+  GanttScale,
+  getColumnWidthPx,
+  getHeaderGroups,
+  isCurrentColumn
+} from '../../../../utils/gantt.utils';
 import { useEffect, useRef } from 'react';
 
 interface GanttChartTimelineProps {
-  start: Date;
-  end: Date;
+  scale: GanttScale;
 }
 
-export function GanttChartTimeline({ start, end }: GanttChartTimelineProps) {
+export function GanttChartTimeline({ scale }: GanttChartTimelineProps) {
   const theme = useTheme();
-  const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
-  const currentWeekRef = useRef<HTMLDivElement>();
+  const currentColumnRef = useRef<HTMLDivElement>();
 
+  // re-center on today whenever the window changes
   useEffect(() => {
-    if (currentWeekRef.current) {
-      currentWeekRef.current.scrollIntoView({
+    if (currentColumnRef.current) {
+      currentColumnRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'nearest',
         inline: 'center'
       });
     }
-  }, []);
+  }, [scale.timeWindow]);
 
   return (
     <Box
@@ -42,67 +45,53 @@ export function GanttChartTimeline({ start, end }: GanttChartTimelineProps) {
         width: 'fit-content'
       }}
     >
-      <Box
-        sx={{
-          display: 'grid',
-          gap: GANTT_CHART_GAP_SIZE,
-          gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
-          gridTemplateColumns: `repeat(${days.length}, minmax(auto, 1fr))`
-        }}
-      >
-        {days.map((day, index) => {
-          // displays the month and year for the first monday of a month;
-          // displays the month and year for the first date on the calendar if it's the first or second monday
-          const isCurrentWeek = toDateString(day) === toDateString(getMonday(new Date()));
-          const monthDisplay = (index === 0 && getDate(day) <= 14) || getDate(day) <= 7 ? format(day, 'MMM y') : '';
+      <Box sx={{ display: 'flex', width: scale.widthPx }}>
+        {getHeaderGroups(scale).map((group) => (
+          <Box
+            key={group.start.toISOString()}
+            sx={{
+              width: group.widthPx,
+              flexShrink: 0,
+              height: '2rem',
+              lineHeight: '1rem',
+              px: 0.5,
+              overflow: 'hidden',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <Typography fontWeight="bold" variant="h6">
+              {formatGroupLabel(group.start, scale.headerGroupUnit)}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+      <Box sx={{ display: 'flex', width: scale.widthPx }}>
+        {scale.columns.map((column) => {
+          const isCurrent = isCurrentColumn(column, scale.columnUnit);
           return (
             <Box
-              key={day.toISOString()}
+              key={column.toISOString()}
+              ref={isCurrent ? currentColumnRef : null}
               sx={{
-                whiteSpace: 'nowrap',
-                lineHeight: '1rem',
-                textAlign: 'center',
-                height: '2rem',
-                minWidth: GANTT_CHART_CELL_SIZE,
-                maxWidth: GANTT_CHART_CELL_SIZE
+                width: getColumnWidthPx(column, scale.columnUnit, scale.pixelsPerDay),
+                flexShrink: 0,
+                px: '2px'
               }}
-              ref={isCurrentWeek ? currentWeekRef : null}
             >
-              <Typography fontWeight="bold" variant="h6">
-                {monthDisplay}
-              </Typography>
+              <Card
+                sx={{
+                  display: 'flex',
+                  backgroundColor: isCurrent ? theme.palette.info.main : 'transparent',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderRadius: '0.25rem',
+                  height: '1.75rem',
+                  overflow: 'hidden'
+                }}
+              >
+                <Typography noWrap>{formatColumnLabel(column, scale.columnUnit)}</Typography>
+              </Card>
             </Box>
-          );
-        })}
-      </Box>
-      <Box
-        sx={{
-          display: 'grid',
-          gap: GANTT_CHART_GAP_SIZE,
-          gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
-          gridTemplateColumns: `repeat(${days.length}, minmax(auto, 1fr))`,
-          maxWidth: 10
-        }}
-      >
-        {days.map((day) => {
-          return (
-            <Card
-              key={day.toISOString()}
-              sx={{
-                display: 'flex',
-                backgroundColor:
-                  toDateString(day) === toDateString(getMonday(new Date())) ? theme.palette.info.main : 'transparent',
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: '0.25rem',
-                textAlign: 'center',
-                height: '1.75rem',
-                minWidth: GANTT_CHART_CELL_SIZE,
-                maxWidth: GANTT_CHART_CELL_SIZE
-              }}
-            >
-              <Typography>{format(day, 'd')}</Typography>
-            </Card>
           );
         })}
       </Box>

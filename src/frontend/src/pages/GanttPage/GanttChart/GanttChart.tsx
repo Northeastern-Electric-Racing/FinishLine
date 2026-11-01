@@ -3,16 +3,16 @@ import {
   GanttChange,
   GanttCollection,
   GanttTask,
+  GanttTimeWindow,
+  getDateOffsetPx,
+  getGanttScale,
   HighlightTaskComparator,
   RequestEventChange
 } from '../../../utils/gantt.utils';
 import GanttChartCollectionSection from './GanttChartCollectionSection';
 import { GanttChartTimeline } from './GanttChartComponents/GanttChartTimeline';
-import { eachDayOfInterval, isMonday, differenceInDays } from 'date-fns';
-import { getMonday } from '../../../utils/datetime.utils';
-import { toDateString } from 'shared';
-import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../utils/gantt.utils';
-import { useCallback, useState } from 'react';
+import { startOfDay } from 'date-fns';
+import { useCallback, useMemo, useState } from 'react';
 export interface GanttEditability<E, T> {
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
@@ -27,20 +27,33 @@ export interface GanttEditability<E, T> {
 }
 
 interface GanttChartProps<E, T> {
-  startDate: Date;
-  endDate: Date;
+  startDate: Date; // earliest date the chart needs to show; padding is added based on the time window
+  endDate: Date; // latest date the chart needs to show
   collections: GanttCollection<E, T>[];
   editability?: GanttEditability<E, T>;
+  timeWindow?: GanttTimeWindow;
 }
 
-const GanttChart = <E, T>({ startDate, endDate, collections, editability }: GanttChartProps<E, T>) => {
+const GanttChart = <E, T>({
+  startDate,
+  endDate,
+  collections,
+  editability,
+  timeWindow = GanttTimeWindow.HalfYear // closest to the chart's original layout, for pages without a view selector
+}: GanttChartProps<E, T>) => {
   const theme = useTheme();
-  const days = eachDayOfInterval({ start: startDate, end: endDate }).filter((day) => isMonday(day));
+  // keyed on the timestamps so new Date objects for the same dates don't rebuild the scale
+  const startTime = startDate.getTime();
+  const endTime = endDate.getTime();
+  const scale = useMemo(
+    () => getGanttScale(new Date(startTime), new Date(endTime), timeWindow),
+    [startTime, endTime, timeWindow]
+  );
 
-  const today = new Date(new Date().setHours(0, 0, 0, 0));
-  const currentWeekCol = days.findIndex((day) => toDateString(day) === toDateString(getMonday(today))) + 1;
-  const daysIntoWeek = differenceInDays(today, getMonday(today));
-  const dailyOffset = daysIntoWeek * (parseFloat(GANTT_CHART_CELL_SIZE) / 7);
+  const today = startOfDay(new Date());
+  const isTodayOnChart = today >= scale.start && today < scale.end;
+  // centered on today's date
+  const todayOffsetPx = getDateOffsetPx(today, scale.start, scale.pixelsPerDay) + scale.pixelsPerDay / 2;
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const toggleExpanded = useCallback((id: string) => {
@@ -65,13 +78,12 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
         msOverflowStyle: 'none' // IE and Edge
       }}
     >
-      <GanttChartTimeline start={startDate} end={endDate} />
+      <GanttChartTimeline scale={scale} />
       <Box sx={{ position: 'relative' }}>
         {collections.map((collection) => {
           return collection.tasks ? (
             <GanttChartCollectionSection
-              startDate={startDate}
-              endDate={endDate}
+              scale={scale}
               collection={collection}
               editability={editability}
               toggleExpanded={toggleExpanded}
@@ -83,11 +95,12 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
           );
         })}
 
-        {currentWeekCol > 0 && (
+        {isTodayOnChart && (
           <Box
             sx={{
               position: 'absolute',
-              left: `calc(${currentWeekCol - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) + 1.1rem + ${dailyOffset}rem)`,
+              // collection rows are indented by spacing(2)
+              left: `calc(${theme.spacing(2)} + ${todayOffsetPx}px)`,
               top: 0,
               bottom: 0,
               width: '1px',

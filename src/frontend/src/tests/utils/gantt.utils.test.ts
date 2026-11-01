@@ -12,6 +12,12 @@ import {
   getElementWidthPx,
   snapToColumn,
   getColumnWidthPx,
+  getGanttScale,
+  getElementPositionPx,
+  getHeaderGroups,
+  getGanttDateBounds,
+  formatColumnLabel,
+  formatGroupLabel,
   GanttTimeUnit,
   GanttTimeWindow
 } from '../../utils/gantt.utils';
@@ -180,5 +186,78 @@ describe('Gantt time window column widths', () => {
   it('gives month columns their real length', () => {
     expect(getColumnWidthPx(new Date(2026, 1, 1), GanttTimeUnit.Month, 10)).toBe(280);
     expect(getColumnWidthPx(new Date(2026, 2, 1), GanttTimeUnit.Month, 10)).toBe(310);
+  });
+});
+
+describe('Gantt chart scale', () => {
+  const dataStart = new Date(2026, 2, 4); // Wednesday, March 4, 2026
+  const dataEnd = new Date(2026, 4, 20); // Wednesday, May 20, 2026
+
+  it('pads one visible span on each side and lines up with columns', () => {
+    const scale = getGanttScale(dataStart, dataEnd, GanttTimeWindow.Month, 1400);
+    expect(scale.start).toEqual(new Date(2025, 11, 29)); // Monday of the week two months before (Sunday, Jan 4)
+    expect(scale.end).toEqual(new Date(2026, 6, 27)); // Monday after the week two months after
+    expect(scale.columns[0]).toEqual(scale.start);
+    expect(scale.columns.every((column) => column.getDay() === 1)).toBe(true);
+  });
+
+  it('makes the chart as wide as its days', () => {
+    const scale = getGanttScale(dataStart, dataEnd, GanttTimeWindow.Week, 1400);
+    expect(scale.pixelsPerDay).toBe(100);
+    expect(scale.widthPx).toBe(scale.columns.length * 100);
+  });
+
+  it('uses month columns in year view', () => {
+    const scale = getGanttScale(dataStart, dataEnd, GanttTimeWindow.Year);
+    expect(scale.columns.every((column) => column.getDate() === 1)).toBe(true);
+  });
+});
+
+describe('Gantt element positions', () => {
+  const scale = getGanttScale(new Date(2026, 2, 2), new Date(2026, 2, 30), GanttTimeWindow.Week, 1400);
+
+  it('places an element at its start date', () => {
+    const start = new Date(2026, 2, 2);
+    const position = getElementPositionPx(start, new Date(2026, 2, 5), scale);
+    expect(position.left).toBe(14 * 100); // two week padding before the data
+    expect(position.width).toBe(300);
+  });
+
+  it('applies the minimum width', () => {
+    const yearScale = getGanttScale(new Date(2026, 2, 2), new Date(2026, 2, 30), GanttTimeWindow.Year);
+    const position = getElementPositionPx(new Date(2026, 2, 2), new Date(2026, 2, 9), yearScale);
+    expect(position.width).toBeCloseTo(14 * yearScale.pixelsPerDay);
+  });
+
+  it('clips elements that run off the start of the chart', () => {
+    const position = getElementPositionPx(new Date(2026, 1, 1), new Date(2026, 1, 20), scale);
+    expect(position.left).toBe(0);
+    expect(position.width).toBe(400); // Feb 16 (chart start) to Feb 20
+  });
+});
+
+describe('Gantt header groups', () => {
+  it('clips the first and last groups to the chart', () => {
+    const scale = getGanttScale(new Date(2026, 2, 2), new Date(2026, 2, 30), GanttTimeWindow.Week, 1400);
+    const groups = getHeaderGroups(scale);
+    expect(groups[0].start).toEqual(scale.start);
+    expect(groups.reduce((total, group) => total + group.widthPx, 0)).toBe(scale.widthPx);
+  });
+
+  it('formats labels by unit', () => {
+    expect(formatColumnLabel(new Date(2026, 2, 9), GanttTimeUnit.Week)).toBe('9');
+    expect(formatColumnLabel(new Date(2026, 2, 1), GanttTimeUnit.Month)).toBe('Mar');
+    expect(formatGroupLabel(new Date(2026, 2, 1), GanttTimeUnit.Month)).toBe('Mar 2026');
+    expect(formatGroupLabel(new Date(2026, 0, 1), GanttTimeUnit.Year)).toBe('2026');
+  });
+});
+
+describe('Gantt date bounds', () => {
+  it('finds the earliest start and latest end', () => {
+    const bounds = getGanttDateBounds([
+      { startDate: new Date(2026, 2, 9), endDate: new Date(2026, 3, 6) },
+      { startDate: new Date(2026, 2, 2), endDate: new Date(2026, 2, 16) }
+    ]);
+    expect(bounds).toEqual({ start: new Date(2026, 2, 2), end: new Date(2026, 3, 6) });
   });
 });

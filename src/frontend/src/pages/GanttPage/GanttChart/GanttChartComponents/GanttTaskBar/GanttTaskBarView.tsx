@@ -1,5 +1,6 @@
 import {
   RequestEventChange,
+  GanttScale,
   GanttTask,
   HighlightTaskComparator,
   OnMouseOverOptions
@@ -12,10 +13,8 @@ import React from 'react';
 const noop = () => {};
 
 interface GanttTaskBarViewProps<T> {
-  days: Date[];
+  scale: GanttScale;
   task: GanttTask<T>;
-  getStartCol: (start: Date) => number;
-  getEndCol: (end: Date) => number;
   handleOnMouseOver: (e: React.MouseEvent, task: OnMouseOverOptions) => void;
   handleOnMouseLeave: () => void;
   highlightedChange?: RequestEventChange<T>;
@@ -29,10 +28,8 @@ interface GanttTaskBarViewProps<T> {
 }
 
 const GanttTaskBarView = <T,>({
-  days,
+  scale,
   task,
-  getStartCol,
-  getEndCol,
   handleOnMouseOver,
   handleOnMouseLeave,
   highlightedChange,
@@ -51,15 +48,13 @@ const GanttTaskBarView = <T,>({
   return (
     <>
       <GanttTaskBarDisplay
-        days={days}
+        scale={scale}
         task={task}
         handleOnMouseOver={handleOnMouseOver}
         handleOnMouseLeave={handleOnMouseLeave}
         isExpanded={isExpanded}
         onShowChildrenToggle={handleToggle}
         highlightedChange={highlightedChange}
-        getStartCol={getStartCol}
-        getEndCol={getEndCol}
         highlightSubtaskComparator={highlightSubtaskComparator}
         highlightTaskComparator={highlightTaskComparator}
       />
@@ -68,7 +63,7 @@ const GanttTaskBarView = <T,>({
         {task.children.map((child) => (
           <GanttTaskBar
             key={child.id}
-            days={days}
+            scale={scale}
             task={child}
             isEditMode={false}
             createChange={noop}
@@ -82,8 +77,6 @@ const GanttTaskBarView = <T,>({
             toggleExpanded={toggleExpanded}
             isExpanded={expanded.has(child.id)}
             expanded={expanded}
-            getStartCol={getStartCol}
-            getEndCol={getEndCol}
           />
         ))}
       </Collapse>

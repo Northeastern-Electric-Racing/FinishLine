@@ -20,6 +20,7 @@ interface PageLayoutProps {
   headerRight?: ReactNode;
   tabs?: ReactElement;
   stickyHeader?: boolean;
+  titleColumns?: number;
 }
 
 export const PAGE_GRID_HEIGHT = 85;
@@ -33,6 +34,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   headerRight,
   tabs,
   stickyHeader,
+  titleColumns,
   useTitleForHelmet = true
 }) => {
   return (
@@ -49,7 +51,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
           <Box mb={-1}>
             <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
           </Box>
-          <PageTitle sticky={stickyHeader} {...{ title, chips, headerRight, tabs }} />
+          <PageTitle sticky={stickyHeader} {...{ title, chips, headerRight, tabs, titleColumns }} />
         </>
       )}
       {children}
