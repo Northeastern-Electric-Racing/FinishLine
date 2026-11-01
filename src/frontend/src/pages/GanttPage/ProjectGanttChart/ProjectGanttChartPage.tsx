@@ -633,9 +633,17 @@ const ProjectGanttChartPage: FC = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
+  const chips = (
+    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mr: 1 }}>
+      <Box sx={{ flexGrow: 1 }}>
+        <SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />
+      </Box>
+      <GanttTimeWindowDropdown timeWindow={timeWindow} onChange={setTimeWindow} />
+    </Box>
+  );
+
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
-      <GanttTimeWindowDropdown timeWindow={timeWindow} onChange={setTimeWindow} />
       <GanttChartColorLegend />
       <GanttChartFiltersButton
         carHandlers={carHandlers}
@@ -657,11 +665,7 @@ const ProjectGanttChartPage: FC = () => {
       {requestEventChanges.map((change) => (
         <GanttRequestChangeModal change={change} open handleClose={(didCancel) => removeActiveModal(change, didCancel)} />
       ))}
-      <PageLayout
-        title="Gantt Chart"
-        chips={<SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />}
-        headerRight={headerRight}
-      >
+      <PageLayout title="Gantt Chart" chips={chips} headerRight={headerRight} titleColumns={3}>
         <GanttChart
           collections={collections}
           timeWindow={timeWindow}
