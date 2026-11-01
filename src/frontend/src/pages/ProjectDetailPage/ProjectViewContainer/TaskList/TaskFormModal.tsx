@@ -313,7 +313,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
               </FormControl>
             </Grid>
           )}
-          <Grid item md={12}>
+          <Grid item xs={12}>
             <FormControl fullWidth>
               <FormLabel>Assignees</FormLabel>
               <Controller
@@ -338,7 +338,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
               <FormHelperText error={!!errors.assignees}>{errors.assignees?.message}</FormHelperText>
             </FormControl>
           </Grid>
-          <Grid item md={12}>
+          <Grid item xs={14}>
             <FormControl fullWidth>
               <FormLabel>Labels</FormLabel>
               <Controller
@@ -392,7 +392,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
               />
             </FormControl>
           </Grid>
-          <Grid item md={12}>
+          <Grid item xs={12}>
             <FormControl fullWidth>
               <FormLabel>Blocked By</FormLabel>
               <Controller
