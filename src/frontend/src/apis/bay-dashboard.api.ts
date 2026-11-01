@@ -9,13 +9,13 @@ import {
   AvailableBayDashboardWidgets,
   BayDashboardConfig,
   BayDashboardSlotCreateArgs,
+  PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig
 } from 'shared';
 import {
   bayDashboardConfigTransformer,
   publicBayDashboardCalendarEventTransformer
 } from './transformers/bay-dashboard.transformers';
-import { PublicBayDashboardCalendarEvent } from '../utils/bay-dashboard-calendar.utils';
 
 /**
  * Gets the bay dashboard config currently displayed on the TV for the current organization

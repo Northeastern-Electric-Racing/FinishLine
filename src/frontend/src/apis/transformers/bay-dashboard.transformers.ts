@@ -1,5 +1,4 @@
-import { BayDashboardConfig } from 'shared';
-import { PublicBayDashboardCalendarEvent } from '../../utils/bay-dashboard-calendar.utils';
+import { BayDashboardConfig, PublicBayDashboardCalendarEvent } from 'shared';
 
 export const bayDashboardConfigTransformer = (config: BayDashboardConfig): BayDashboardConfig => {
   return {
