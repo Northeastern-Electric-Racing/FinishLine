@@ -12,6 +12,7 @@ teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/previews/', TeamsController.getAllTeamPreviews);
 teamsRouter.get('/dropdown', TeamsController.getAllTeamsDropdown);
 teamsRouter.get('/archive', TeamsController.getAllArchivedTeams);
+teamsRouter.get('/summaries', TeamsController.getAllTeamsWithProjects);
 teamsRouter.get('/users-teams', TeamsController.getUsersTeams);
 teamsRouter.get('/my-team-as-head', TeamsController.getMyTeamAsHead);
 teamsRouter.get('/join-requests/mine', TeamsController.getMyTeamJoinRequests);

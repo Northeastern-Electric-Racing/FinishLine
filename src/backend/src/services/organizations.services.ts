@@ -572,4 +572,38 @@ export default class OrganizationsService {
 
     return newImages;
   }
+
+  /**
+   * Sets the number of days a work package's activation start date can drift from its
+   * scheduled date before the change requires a change request
+   * @param submitter the user making the change (must be admin)
+   * @param organization the organization whose buffer is changing
+   * @param activationBufferDays the new buffer in days
+   * @returns the updated organization
+   * @throws if the user is not an admin or the value is invalid
+   */
+  static async setActivationBufferDays(submitter: User, organization: Organization, activationBufferDays: number) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update activation buffer days');
+    }
+
+    if (!Number.isInteger(activationBufferDays)) {
+      throw new HttpException(400, 'Activation buffer days must be an integer');
+    }
+
+    if (activationBufferDays < 0) {
+      throw new HttpException(400, 'Activation buffer days must not be negative');
+    }
+
+    if (activationBufferDays < 0 || activationBufferDays > 365) {
+      throw new HttpException(400, 'Activation buffer days must be between 0 and 365');
+    }
+
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: { activationBufferDays }
+    });
+
+    return organizationTransformer(updatedOrg);
+  }
 }
