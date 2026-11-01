@@ -13,10 +13,12 @@ import {
   applyChangesToWBSElement,
   constructCollectionsFromTeamPreviewAndProjects,
   constructFinalizedChanges,
+  DEFAULT_GANTT_TIME_WINDOW,
   GanttChange,
   GanttCollection,
   GanttFilters,
   GanttTask,
+  GanttTimeWindow,
   isProjectPreview,
   RequestEventChange,
   transformProjectToGanttTask,
@@ -28,6 +30,7 @@ import PageLayout from '../../../components/PageLayout';
 import { SearchBar } from '../../../components/SearchBar';
 import GanttChartColorLegend from './GanttChartColorLegend';
 import GanttChartFiltersButton from './GanttChartFiltersButton';
+import GanttTimeWindowDropdown from './GanttTimeWindowDropdown';
 import GanttChart from '../GanttChart/GanttChart';
 import {
   ProjectGantt,
@@ -83,6 +86,7 @@ const ProjectGanttChartPage: FC = () => {
   const { selectedCar, allCars, isLoading: carFilterLoading } = useGlobalCarFilter();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
+  const [timeWindow, setTimeWindow] = useState<GanttTimeWindow>(DEFAULT_GANTT_TIME_WINDOW);
   const [addedProjects, setAddedProjects] = useState<ProjectGantt[]>([]);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
@@ -631,6 +635,7 @@ const ProjectGanttChartPage: FC = () => {
 
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
+      <GanttTimeWindowDropdown timeWindow={timeWindow} onChange={setTimeWindow} />
       <GanttChartColorLegend />
       <GanttChartFiltersButton
         carHandlers={carHandlers}
@@ -659,6 +664,7 @@ const ProjectGanttChartPage: FC = () => {
       >
         <GanttChart
           collections={collections}
+          timeWindow={timeWindow}
           startDate={startDate}
           endDate={endDate}
           editability={{

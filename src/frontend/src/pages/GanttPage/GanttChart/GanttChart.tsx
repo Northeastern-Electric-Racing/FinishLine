@@ -3,6 +3,7 @@ import {
   GanttChange,
   GanttCollection,
   GanttTask,
+  GanttTimeWindow,
   HighlightTaskComparator,
   RequestEventChange
 } from '../../../utils/gantt.utils';
@@ -31,6 +32,7 @@ interface GanttChartProps<E, T> {
   endDate: Date;
   collections: GanttCollection<E, T>[];
   editability?: GanttEditability<E, T>;
+  timeWindow?: GanttTimeWindow;
 }
 
 const GanttChart = <E, T>({ startDate, endDate, collections, editability }: GanttChartProps<E, T>) => {
