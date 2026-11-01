@@ -11,8 +11,9 @@ import {
   getOverdueStatus,
   workPackageCreateInput
 } from '../factories/work-package.factory.js';
-import { DAYS_PER_WEEK, daysBetween, WEEK_MS } from '../dates.js';
+import { daysBetween } from '../dates.js';
 import { WBS_Element_Status, Work_Package_Stage } from '@prisma/client';
+import { DAYS_PER_WEEK, WEEK_MS } from '../../utils/time.utils.js';
 
 type WorkPackageInput = OrganizationOutput & UsersOutput & ProjectOutput;
 const BLOCKED_PERCENTAGE = 0.3;

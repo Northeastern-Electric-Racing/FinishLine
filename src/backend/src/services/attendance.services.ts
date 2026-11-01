@@ -1,4 +1,4 @@
-import { Organization } from '@prisma/client';
+import { Conflict_Status, Event_Status, Organization } from '@prisma/client';
 import { MeetingAttendance, MeetingAttendanceWithAttendees, RoleEnum, User, isAtLeastRank } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
@@ -12,6 +12,7 @@ import {
 } from '../transformers/attendance.transformer.js';
 import {
   checkBotInChannel,
+  deleteMessage,
   editMessage,
   getChannelName,
   replyToMessageInThread,
@@ -162,6 +163,160 @@ export default class AttendanceService {
     });
   }
 
+  /**
+   * Closes the given attendance sessions one at a time, logging failures so one bad session doesn't stop the rest.
+   *
+   * @param meetingAttendanceIds the attendance sessions to close
+   */
+  static async closeAttendances(meetingAttendanceIds: string[]): Promise<void> {
+    for (const meetingAttendanceId of meetingAttendanceIds) {
+      try {
+        await AttendanceService.closeAttendance(meetingAttendanceId);
+      } catch (error: unknown) {
+        console.error(`Failed to close attendance ${meetingAttendanceId}:`, error);
+      }
+    }
+  }
+
+  /**
+   * Run by the bay-cron scheduled job. Closes attendance for meetings that are no longer happening, then
+   * opens attendance for meetings that have started. Reads the events' current schedule slots on every run,
+   * so meetings that are edited, rescheduled, or deleted are picked up on the next run.
+   */
+  static async updateScheduledAttendances(): Promise<void> {
+    await AttendanceService.closeEndedScheduledAttendances();
+    await AttendanceService.openScheduledAttendances();
+  }
+
+  /**
+   * Closes every automatically opened attendance session whose meeting is no longer happening: its event
+   * was deleted, or none of its event's schedule slots are going on right now (the meeting ended, was
+   * moved, or its slot was deleted).
+   */
+  static async closeEndedScheduledAttendances(): Promise<void> {
+    const now = new Date();
+
+    const attendances = await prisma.meeting_Attendance.findMany({
+      where: {
+        closedAt: null,
+        event: {
+          OR: [
+            { dateDeleted: { not: null } },
+            { scheduledTimes: { none: { allDay: false, startTime: { lte: now }, endTime: { gt: now } } } }
+          ]
+        }
+      },
+      select: { meetingAttendanceId: true }
+    });
+
+    await AttendanceService.closeAttendances(attendances.map((attendance) => attendance.meetingAttendanceId));
+  }
+
+  /**
+   * Opens attendance in each team's slack channel for every schedule slot that is currently happening
+   * on an event whose event type takes attendance. Safe to run repeatedly, since a team only gets one
+   * attendance session per meeting.
+   */
+  static async openScheduledAttendances(): Promise<void> {
+    const now = new Date();
+
+    const scheduleSlots = await prisma.schedule_Slot.findMany({
+      where: {
+        allDay: false,
+        startTime: { lte: now },
+        endTime: { gt: now },
+        event: {
+          status: Event_Status.SCHEDULED,
+          dateDeleted: null,
+          approved: { in: [Conflict_Status.NO_CONFLICT, Conflict_Status.APPROVED] },
+          eventType: { takeAttendance: true, dateDeleted: null }
+        }
+      },
+      select: {
+        startTime: true,
+        event: {
+          select: {
+            eventId: true,
+            title: true,
+            userCreatedId: true,
+            eventType: { select: { organizationId: true } },
+            teams: { where: { dateArchived: null }, select: { teamId: true, slackId: true } }
+          }
+        }
+      }
+    });
+
+    if (scheduleSlots.length === 0) return;
+
+    // A team can only have one open attendance session at a time, so teams with one wait for it to close.
+    // Different teams can still take attendance at the same time.
+    const openAttendances = await prisma.meeting_Attendance.findMany({
+      where: { closedAt: null },
+      select: { teamId: true }
+    });
+    const teamsWithOpenAttendance = new Set(openAttendances.map((attendance) => attendance.teamId));
+
+    // Sessions already opened for these meetings, so a meeting never gets a second session
+    const meetingAttendances = await prisma.meeting_Attendance.findMany({
+      where: {
+        OR: scheduleSlots.map((scheduleSlot) => ({
+          eventId: scheduleSlot.event.eventId,
+          openedAt: { gte: scheduleSlot.startTime }
+        }))
+      },
+      select: { eventId: true, teamId: true }
+    });
+    const meetingTeamKey = (eventId: string, teamId: string) => `${eventId}:${teamId}`;
+    const meetingsWithAttendance = new Set(
+      meetingAttendances.flatMap((attendance) =>
+        attendance.eventId === null ? [] : [meetingTeamKey(attendance.eventId, attendance.teamId)]
+      )
+    );
+
+    for (const { event } of scheduleSlots) {
+      for (const team of event.teams) {
+        if (
+          meetingsWithAttendance.has(meetingTeamKey(event.eventId, team.teamId)) ||
+          teamsWithOpenAttendance.has(team.teamId)
+        )
+          continue;
+
+        try {
+          const result = await sendMessage(
+            team.slackId,
+            `<!channel> Please react to this message to confirm your attendance at ${event.title}!`
+          );
+          if (!result) {
+            console.error(`Failed to send attendance message for event ${event.eventId} to team ${team.teamId}`);
+            continue;
+          }
+
+          await prisma.meeting_Attendance
+            .create({
+              data: {
+                organizationId: event.eventType.organizationId,
+                teamId: team.teamId,
+                userCreatedId: event.userCreatedId,
+                slackChannelId: result.channelId,
+                slackMessageTimestamp: result.ts,
+                eventId: event.eventId,
+                openedAt: now
+              }
+            })
+            .catch(async (error: unknown) => {
+              // Don't leave a message in slack that no attendance session is tracking
+              await deleteMessage(result.channelId, result.ts);
+              throw error;
+            });
+
+          teamsWithOpenAttendance.add(team.teamId);
+        } catch (error: unknown) {
+          console.error(`Failed to open attendance for event ${event.eventId} for team ${team.teamId}:`, error);
+        }
+      }
+    }
+  }
+
   static async getOngoingAttendance(teamId: string, organization: Organization): Promise<MeetingAttendance | null> {
     const team = await prisma.team.findUnique({ where: { teamId } });
 
@@ -199,6 +354,13 @@ export default class AttendanceService {
 
     if (!openAttendance) {
       throw new HttpException(400, 'There is no open attendance session for this team');
+    }
+
+    if (openAttendance.eventId !== null) {
+      throw new HttpException(
+        400,
+        'This attendance session was opened automatically for a meeting and will close when the meeting ends'
+      );
     }
 
     await AttendanceService.closeAttendance(openAttendance.meetingAttendanceId);
