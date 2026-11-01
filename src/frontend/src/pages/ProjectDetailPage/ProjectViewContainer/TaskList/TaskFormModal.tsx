@@ -7,7 +7,7 @@ import {
   countWords,
   isGuest,
   isUnderWordCount,
-  Task,
+  TaskBoardItem,
   TaskLabel,
   TaskBlockerPreview,
   TaskPriority,
@@ -40,8 +40,8 @@ export interface EditTaskFormInput {
 }
 
 interface TaskFormModalProps {
-  task?: Task;
-  status?: Task['status'];
+  task?: TaskBoardItem;
+  status?: TaskStatus;
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
