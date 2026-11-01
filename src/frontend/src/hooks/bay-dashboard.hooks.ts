@@ -8,11 +8,13 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   AvailableBayDashboardWidgets,
   BayDashboardConfig,
+  BayDashboardCountdown,
   BayDashboardSlotCreateArgs,
   PublicBayDashboardConfig
 } from 'shared';
 import { apiUrls } from '../utils/urls';
 import {
+  editBayDashboardCountdown,
   getAvailableBayDashboardWidgets,
   getBayDashboardConfig,
   getCurrentBayDashboardConfig,
@@ -70,6 +72,30 @@ export const useSaveBayDashboardConfig = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['bay-dashboard', 'admin', 'config']);
         toast.success('Successfully saved widget selections. The TV display has been updated.');
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit a bay dashboard countdown, changing the one the TV is showing.
+ */
+export const useEditBayDashboardCountdown = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  return useMutation<BayDashboardCountdown, Error, { countdownId: string; name: string; startDate: Date; endDate?: Date }>(
+    ['bay-dashboard', 'admin', 'countdown', 'edit'],
+    async ({ countdownId, name, startDate, endDate }) => {
+      const { data } = await editBayDashboardCountdown(countdownId, name, startDate, endDate);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['bay-dashboard', 'admin', 'countdowns']);
+        toast.success('Countdown updated successfully!');
       },
       onError: (error) => {
         toast.error(error.message);
