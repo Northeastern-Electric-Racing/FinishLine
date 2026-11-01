@@ -8,6 +8,7 @@ import { RetrospectiveProjectPreview, Task, TeamPreview, TeamType, WbsElementPre
 import {
   constructCollectionsFromTeamPreviewAndProjects,
   GanttCollection,
+  getGanttDateBounds,
   RetroGanttFilters,
   transformRetrospectiveProjectToGanttTask,
   useGanttFilters
@@ -21,7 +22,6 @@ import GanttChart from '../GanttPage/GanttChart/GanttChart';
 import GanttChartColorLegend from '../GanttPage/ProjectGanttChart/GanttChartColorLegend';
 import GanttChartFiltersButton from '../GanttPage/ProjectGanttChart/GanttChartFiltersButton';
 import { Box } from '@mui/system';
-import { add, sub } from 'date-fns';
 import { retrospectiveProjectPreviewTransformer } from '../../apis/transformers/projects.transformers';
 import { DatePicker } from '@mui/x-date-pickers';
 
@@ -174,31 +174,7 @@ const RetrospectivePage = () => {
 
   const allWorkPackages = projects.flatMap((project) => project.workPackages);
 
-  // find the earliest start date and subtract 2 weeks to use as the first date on calendar
-  const startDate =
-    allWorkPackages.length !== 0
-      ? sub(
-          allWorkPackages
-            .map((wp) => wp.startDate)
-            .reduce((previous, current) => {
-              return previous < current ? previous : current;
-            }, new Date(8.64e15)),
-          { weeks: 2 }
-        )
-      : sub(Date.now(), { weeks: 15 });
-
-  // find the latest end date and add 6 months to use as the last date on calendar
-  const endDate =
-    allWorkPackages.length !== 0
-      ? add(
-          allWorkPackages
-            .map((wp) => wp.endDate)
-            .reduce((previous, current) => {
-              return previous > current ? previous : current;
-            }, new Date(-8.64e15)),
-          { months: 6 }
-        )
-      : add(Date.now(), { weeks: 15 });
+  const { start: startDate, end: endDate } = getGanttDateBounds(allWorkPackages);
 
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>

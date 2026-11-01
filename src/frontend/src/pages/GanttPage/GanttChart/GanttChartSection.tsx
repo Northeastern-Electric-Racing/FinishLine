@@ -3,25 +3,22 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { eachDayOfInterval, isMonday } from 'date-fns';
 import {
   GanttChange,
+  GanttScale,
   GanttTask,
   HighlightTaskComparator,
   OnMouseOverOptions,
   RequestEventChange
 } from '../../../utils/gantt.utils';
 import { Box } from '@mui/material';
-import { MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
 import { ArcherContainer, ArcherContainerRef } from 'react-archer';
-import { toDateString } from 'shared';
-import { getMonday } from '../../../utils/datetime.utils';
 
 interface GanttChartSectionProps<T> {
-  start: Date;
-  end: Date;
+  scale: GanttScale;
   tasks: GanttTask<T>[];
   isEditMode: boolean;
   createChange: (change: GanttChange<T>) => void;
@@ -62,8 +59,7 @@ const GanttTooltipLayer: React.FC<GanttTooltipLayerProps> = ({ updateRef }) => {
 };
 
 const GanttChartSection = <T,>({
-  start,
-  end,
+  scale,
   tasks,
   isEditMode,
   createChange,
@@ -74,26 +70,6 @@ const GanttChartSection = <T,>({
   toggleExpanded,
   expanded
 }: GanttChartSectionProps<T>) => {
-  const days = useMemo(() => eachDayOfInterval({ start, end }).filter((day) => isMonday(day)), [start, end]);
-
-  const dayColIndex = useMemo(() => {
-    const m = new Map<string, number>();
-    days.forEach((day, i) => m.set(toDateString(day), i));
-    return m;
-  }, [days]);
-
-  const getStartCol = useCallback(
-    (start: Date) => (dayColIndex.get(toDateString(getMonday(start))) ?? -1) + 1,
-    [dayColIndex]
-  );
-
-  const getEndCol = useCallback(
-    (end: Date) => {
-      const idx = dayColIndex.get(toDateString(getMonday(end)));
-      return idx === undefined ? days.length + 1 : idx + 2;
-    },
-    [dayColIndex, days.length]
-  );
   const treeContainerRef = useRef<HTMLDivElement>(null);
   const archerContainerRef = useRef<ArcherContainerRef>(null);
 
@@ -147,7 +123,7 @@ const GanttChartSection = <T,>({
             return (
               <Box key={task.id} display="flex" alignItems="center">
                 <GanttTaskBar
-                  days={days}
+                  scale={scale}
                   task={task}
                   isEditMode={isEditMode}
                   createChange={handleCreateProjectChange}
@@ -161,8 +137,6 @@ const GanttChartSection = <T,>({
                   toggleExpanded={toggleExpanded}
                   isExpanded={expanded.has(task.id)}
                   expanded={expanded}
-                  getStartCol={getStartCol}
-                  getEndCol={getEndCol}
                 />
               </Box>
             );

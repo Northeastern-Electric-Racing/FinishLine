@@ -1,7 +1,7 @@
 import { Edit } from '@mui/icons-material';
 import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import GanttChartSection from './GanttChartSection';
-import { GanttCollection } from '../../../utils/gantt.utils';
+import { GanttCollection, GanttScale } from '../../../utils/gantt.utils';
 import { useState } from 'react';
 import { GanttEditability } from './GanttChart';
 
@@ -10,8 +10,7 @@ const ignore = () => {};
 const ignoreBool = () => false;
 
 interface GanttChartCollectionSectionProps<E, T> {
-  startDate: Date;
-  endDate: Date;
+  scale: GanttScale;
   collection: GanttCollection<E, T>;
   editability?: GanttEditability<E, T>;
   toggleExpanded: (id: string) => void;
@@ -19,8 +18,7 @@ interface GanttChartCollectionSectionProps<E, T> {
 }
 
 const GanttChartCollectionSection = <E, T>({
-  startDate,
-  endDate,
+  scale,
   collection,
   editability,
   toggleExpanded,
@@ -89,8 +87,7 @@ const GanttChartCollectionSection = <E, T>({
       </Box>
       <Box key={collection.id} sx={{ my: 0, width: 'fit-content', pl: 2 }}>
         <GanttChartSection
-          start={startDate}
-          end={endDate}
+          scale={scale}
           isEditMode={isEditMode}
           createChange={editability?.onCreateChange ?? ignore}
           highlightedChange={editability?.highlightedChange}

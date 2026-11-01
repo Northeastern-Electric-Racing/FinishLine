@@ -5,9 +5,8 @@
 
 import { WorkPackage } from 'shared';
 import { Box } from '@mui/material';
-import { add, sub } from 'date-fns';
 import GanttChart from '../../GanttPage/GanttChart/GanttChart';
-import { GanttCollection, transformWorkPackageToGanttTask } from '../../../utils/gantt.utils';
+import { GanttCollection, getGanttDateBounds, transformWorkPackageToGanttTask } from '../../../utils/gantt.utils';
 
 interface ProjectGanttProps {
   workPackages: WorkPackage[];
@@ -16,14 +15,7 @@ interface ProjectGanttProps {
 const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
   if (workPackages.length === 0) return <Box sx={{ my: 2 }} />;
 
-  const startDate = sub(
-    workPackages.map((wp) => wp.startDate).reduce((prev, curr) => (prev < curr ? prev : curr), new Date(8.64e15)),
-    { weeks: 2 }
-  );
-  const endDate = add(
-    workPackages.map((wp) => wp.endDate).reduce((prev, curr) => (prev > curr ? prev : curr), new Date(-8.64e15)),
-    { months: 6 }
-  );
+  const { start: startDate, end: endDate } = getGanttDateBounds(workPackages);
 
   const collection: GanttCollection<string, WorkPackage> = {
     id: 'project-gantt',
