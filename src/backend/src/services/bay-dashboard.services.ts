@@ -1,8 +1,14 @@
 import { Organization } from '@prisma/client';
-import { PublicBayDashboardConfig } from 'shared';
+import { BayDashboardCountdown, PublicBayDashboardConfig } from 'shared';
 import prisma from '../prisma/prisma.js';
-import { getPublicBayDashboardConfigQueryArgs } from '../prisma-query-args/bay-dashboard.query-args.js';
-import { publicBayDashboardConfigTransformer } from '../transformers/bay-dashboard.transformer.js';
+import {
+  getBayDashboardCountdownQueryArgs,
+  getPublicBayDashboardConfigQueryArgs
+} from '../prisma-query-args/bay-dashboard.query-args.js';
+import {
+  bayDashboardCountdownTransformer,
+  publicBayDashboardConfigTransformer
+} from '../transformers/bay-dashboard.transformer.js';
 import { DeletedException, NotFoundException } from '../utils/errors.utils.js';
 
 export default class BayDashboardService {
@@ -39,5 +45,22 @@ export default class BayDashboardService {
     });
 
     return config ? publicBayDashboardConfigTransformer(config) : null;
+  }
+
+  /**
+   * Gets the organization's bay dashboard countdowns.
+   * Public, so the TV's countdown widgets can load them without logging in.
+   * @param slug the organization slug from the /bay-dashboard/:slug URL
+   * @returns the organization's non-deleted countdowns
+   */
+  static async getBayDashboardCountdowns(slug: string): Promise<BayDashboardCountdown[]> {
+    const organization = await BayDashboardService.getOrganizationBySlug(slug);
+
+    const countdowns = await prisma.bay_Dashboard_Countdown.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      ...getBayDashboardCountdownQueryArgs()
+    });
+
+    return countdowns.map(bayDashboardCountdownTransformer);
   }
 }

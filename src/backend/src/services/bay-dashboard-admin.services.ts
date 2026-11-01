@@ -251,4 +251,55 @@ export default class BayDashboardAdminService {
 
     return bayDashboardCountdownTransformer(deletedCountdown);
   }
+
+  /**
+   * Edits a bay dashboard countdown
+   * @param submitter the user editing the countdown, required to be a head or above
+   * @param countdownId the id of the countdown being edited
+   * @param organization the organization it belongs to
+   * @param name the new name of the countdown
+   * @param startDate the new start date of the countdown
+   * @param endDate the new end date of the countdown, cleared if not given
+   * @returns the edited countdown
+   */
+  static async editBayDashboardCountdown(
+    submitter: User,
+    countdownId: string,
+    organization: Organization,
+    name: string,
+    startDate: Date,
+    endDate?: Date
+  ): Promise<BayDashboardCountdown> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
+      throw new AccessDeniedException('Only heads and above can edit bay dashboard countdowns');
+    }
+
+    const trimmedName = name.trim();
+    if (endDate && endDate <= startDate) {
+      throw new HttpException(400, 'End date must be after start date');
+    }
+    if (!trimmedName) {
+      throw new HttpException(400, 'The name must be non-empty');
+    }
+    const countdown = await prisma.bay_Dashboard_Countdown.findUnique({
+      where: { bayDashboardCountdownId: countdownId }
+    });
+    if (!countdown) {
+      throw new NotFoundException('Bay Dashboard Countdown', countdownId);
+    }
+    if (countdown.dateDeleted) {
+      throw new DeletedException('Bay Dashboard Countdown', countdownId);
+    }
+    if (countdown.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Bay Dashboard Countdown');
+    }
+
+    const updatedCountdown = await prisma.bay_Dashboard_Countdown.update({
+      where: { bayDashboardCountdownId: countdownId },
+      data: { name: trimmedName, startDate, endDate: endDate ?? null },
+      ...getBayDashboardCountdownQueryArgs()
+    });
+
+    return bayDashboardCountdownTransformer(updatedCountdown);
+  }
 }

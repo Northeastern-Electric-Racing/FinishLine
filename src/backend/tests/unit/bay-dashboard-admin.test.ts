@@ -383,4 +383,200 @@ describe('Bay Dashboard Admin Tests', () => {
       ).rejects.toThrow(new InvalidOrganizationException('Bay Dashboard Countdown'));
     });
   });
+  describe('Edit Bay Dashboard Countdown', () => {
+    it('fails if user is not a head', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+      const regularMember = await createTestUser(member, orgId);
+
+      await expect(
+        BayDashboardAdminService.editBayDashboardCountdown(
+          regularMember,
+          countdown.bayDashboardCountdownId,
+          organization,
+          'New Name',
+          new Date('2025-04-26')
+        )
+      ).rejects.toThrow(new AccessDeniedException('Only heads and above can edit bay dashboard countdowns'));
+    });
+
+    it('edits a countdown for a head', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+
+      const edited = await BayDashboardAdminService.editBayDashboardCountdown(
+        head,
+        countdown.bayDashboardCountdownId,
+        organization,
+        'Competition',
+        new Date('2025-06-01'),
+        new Date('2025-06-05')
+      );
+
+      expect(edited.name).toBe('Competition');
+      expect(edited.startDate).toEqual(new Date('2025-06-01'));
+      expect(edited.endDate).toEqual(new Date('2025-06-05'));
+    });
+
+    it('clears the end date when none is given', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26'),
+        new Date('2025-04-27')
+      );
+
+      const edited = await BayDashboardAdminService.editBayDashboardCountdown(
+        head,
+        countdown.bayDashboardCountdownId,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+
+      expect(edited.endDate).toBeUndefined();
+    });
+
+    it('fails if end date is not after start date', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+
+      await expect(
+        BayDashboardAdminService.editBayDashboardCountdown(
+          head,
+          countdown.bayDashboardCountdownId,
+          organization,
+          'FHE',
+          new Date('2025-04-26'),
+          new Date('2025-04-25')
+        )
+      ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
+    });
+
+    it('fails if the countdown does not exist', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+
+      await expect(
+        BayDashboardAdminService.editBayDashboardCountdown(
+          head,
+          'fake-countdown-id',
+          organization,
+          'FHE',
+          new Date('2025-04-26')
+        )
+      ).rejects.toThrow(new NotFoundException('Bay Dashboard Countdown', 'fake-countdown-id'));
+    });
+
+    it('fails if the countdown is deleted', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+      await BayDashboardAdminService.deleteBayDashboardCountdown(head, countdown.bayDashboardCountdownId, organization);
+
+      await expect(
+        BayDashboardAdminService.editBayDashboardCountdown(
+          head,
+          countdown.bayDashboardCountdownId,
+          organization,
+          'FHE',
+          new Date('2025-04-26')
+        )
+      ).rejects.toThrow(new DeletedException('Bay Dashboard Countdown', countdown.bayDashboardCountdownId));
+    });
+
+    it('fails if the name is only whitespace', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+
+      await expect(
+        BayDashboardAdminService.editBayDashboardCountdown(
+          head,
+          countdown.bayDashboardCountdownId,
+          organization,
+          '   ',
+          new Date('2025-04-26')
+        )
+      ).rejects.toThrow(new HttpException(400, 'The name must be non-empty'));
+    });
+
+    it('trims the name before saving', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+
+      const edited = await BayDashboardAdminService.editBayDashboardCountdown(
+        head,
+        countdown.bayDashboardCountdownId,
+        organization,
+        '  Competition  ',
+        new Date('2025-04-26')
+      );
+
+      expect(edited.name).toBe('Competition');
+    });
+
+    it('fails if the countdown organizationId is different from the organizations organizationId', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26')
+      );
+      // created inline rather than with createTestOrganization, which always uses the same unique slug
+      const otherOrganization = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          slug: 'other-org',
+          description: 'A second organization',
+          applicationLink: '',
+          userCreated: { connect: { userId: head.userId } }
+        }
+      });
+      const otherHead = await createTestUser(
+        { ...greenlanternHead, googleAuthId: 'otherOrgHead', email: 'other.head@test.com', emailId: 'other.head' },
+        otherOrganization.organizationId
+      );
+
+      await expect(
+        BayDashboardAdminService.editBayDashboardCountdown(
+          otherHead,
+          countdown.bayDashboardCountdownId,
+          otherOrganization,
+          'FHE',
+          new Date('2025-04-26')
+        )
+      ).rejects.toThrow(new InvalidOrganizationException('Bay Dashboard Countdown'));
+    });
+  });
 });

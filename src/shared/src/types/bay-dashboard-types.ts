@@ -69,6 +69,7 @@ export interface BayDashboardCountdown {
   name: string;
   startDate: Date;
   endDate?: Date;
+  isPrimary: boolean;
 }
 
 /**

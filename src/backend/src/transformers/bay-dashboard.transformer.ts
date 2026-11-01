@@ -99,6 +99,7 @@ export const bayDashboardCountdownTransformer = (
     bayDashboardCountdownId: countdown.bayDashboardCountdownId,
     name: countdown.name,
     startDate: countdown.startDate,
-    endDate: countdown.endDate ?? undefined
+    endDate: countdown.endDate ?? undefined,
+    isPrimary: countdown.isPrimary
   };
 };
