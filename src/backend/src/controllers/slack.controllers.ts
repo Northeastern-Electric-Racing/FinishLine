@@ -15,7 +15,8 @@ export default class SlackController {
       const nerSlackWorkspaceId = await getWorkspaceId();
       const relatedOrganization = organizations.find((org) => org.slackWorkspaceId === nerSlackWorkspaceId);
       if (relatedOrganization) {
-        SlackServices.processMessageSent(event, relatedOrganization.organizationId);
+        // awaited so a failure lands in the catch below, an unawaited rejection crashes the whole process
+        await SlackServices.processMessageSent(event, relatedOrganization.organizationId);
       }
     } catch (error: unknown) {
       console.log(error);

@@ -223,42 +223,42 @@ export const accountCodeCreateInputs = (organizationId: string): Prisma.Account_
     name: 'Subscriptions',
     code: 73201,
     allowed: true,
-    amount: 5000,
+    amount: 500000,
     organization: connectOrganization(organizationId)
   },
   {
     name: 'Travel-Auto/Van Rental',
     code: 73026,
     allowed: true,
-    amount: 12000,
+    amount: 1200000,
     organization: connectOrganization(organizationId)
   },
   {
     name: 'Travel-Misc',
     code: 73030,
     allowed: true,
-    amount: 8000,
+    amount: 800000,
     organization: connectOrganization(organizationId)
   },
   {
     name: 'Competition-Registration',
     code: 74310,
     allowed: true,
-    amount: 15000,
+    amount: 1500000,
     organization: connectOrganization(organizationId)
   },
   {
     name: 'Food',
     code: 74320,
     allowed: true,
-    amount: 3000,
+    amount: 300000,
     organization: connectOrganization(organizationId)
   },
   {
     name: 'General Supplies/Tools',
     code: 73313,
     allowed: true,
-    amount: 10000,
+    amount: 1000000,
     organization: connectOrganization(organizationId)
   }
 ];
@@ -345,7 +345,7 @@ export const vendorCreateInputs = (addedByUserId: string, organizationId: string
 
 type OtherReasonConfig = {
   name: string;
-  budget: number;
+  budget: number; // in cents
   indexCodeName: 'CASH' | 'BUDGET';
   accountCodeNames: string[];
 };
@@ -353,31 +353,31 @@ type OtherReasonConfig = {
 export const otherReimbursementReasonConfigs: OtherReasonConfig[] = [
   {
     name: 'CONSUMABLES',
-    budget: 500,
+    budget: 50000,
     indexCodeName: 'CASH',
     accountCodeNames: ['Food', 'General Supplies/Tools']
   },
   {
     name: 'TOOLS_AND_EQUIPMENT',
-    budget: 10000,
+    budget: 1000000,
     indexCodeName: 'BUDGET',
     accountCodeNames: ['General Supplies/Tools', 'Travel-Misc']
   },
   {
     name: 'COMPETITION',
-    budget: 1500,
+    budget: 150000,
     indexCodeName: 'BUDGET',
     accountCodeNames: ['Competition-Registration', 'Travel-Auto/Van Rental', 'Travel-Misc', 'Food']
   },
   {
     name: 'GENERAL_STOCK',
-    budget: 8000,
+    budget: 800000,
     indexCodeName: 'CASH',
     accountCodeNames: ['General Supplies/Tools']
   },
   {
     name: 'SUBSCRIPTIONS_AND_MEMBERSHIP',
-    budget: 5000,
+    budget: 500000,
     indexCodeName: 'CASH',
     accountCodeNames: ['Subscriptions']
   }
@@ -472,6 +472,7 @@ type EventTypeConfig = {
   onlyHeadsOrAboveForEventCreation: boolean;
   requiresConfirmation: boolean;
   sendSlackNotifications: boolean;
+  takeAttendance: boolean;
 };
 
 export const eventTypeConfigs: EventTypeConfig[] = [
@@ -492,7 +493,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: false,
     onlyHeadsOrAboveForEventCreation: false,
     requiresConfirmation: false,
-    sendSlackNotifications: false
+    sendSlackNotifications: false,
+    takeAttendance: false
   },
   {
     name: 'Educational',
@@ -511,7 +513,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
     requiresConfirmation: false,
-    sendSlackNotifications: true
+    sendSlackNotifications: true,
+    takeAttendance: false
   },
   {
     name: 'FSAE',
@@ -530,7 +533,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: true,
     onlyHeadsOrAboveForEventCreation: true,
     requiresConfirmation: true,
-    sendSlackNotifications: true
+    sendSlackNotifications: true,
+    takeAttendance: false
   },
   {
     name: 'FHE',
@@ -549,7 +553,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: true,
     onlyHeadsOrAboveForEventCreation: true,
     requiresConfirmation: true,
-    sendSlackNotifications: true
+    sendSlackNotifications: true,
+    takeAttendance: false
   },
   {
     name: 'Misc. Event (When2Meet)',
@@ -568,7 +573,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
     requiresConfirmation: true,
-    sendSlackNotifications: true
+    sendSlackNotifications: true,
+    takeAttendance: false
   },
   {
     name: 'Deadline/Heads Up',
@@ -587,7 +593,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
     requiresConfirmation: false,
-    sendSlackNotifications: true
+    sendSlackNotifications: true,
+    takeAttendance: false
   },
   {
     name: 'Misc. Event (Standard)',
@@ -606,7 +613,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
     requiresConfirmation: false,
-    sendSlackNotifications: true
+    sendSlackNotifications: true,
+    takeAttendance: false
   }
 ];
 
@@ -634,6 +642,7 @@ export const eventTypeCreateInput = (
   onlyHeadsOrAboveForEventCreation: config.onlyHeadsOrAboveForEventCreation,
   requiresConfirmation: config.requiresConfirmation,
   sendSlackNotifications: config.sendSlackNotifications,
+  takeAttendance: config.takeAttendance,
   calendars: {
     connect: config.calendarNames.map((name) => {
       const calendarId = calendarIdsByName[name];

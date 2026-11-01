@@ -10,7 +10,9 @@ import {
 } from '../test-data/users.test-data.js';
 import * as apiFunctions from '../../src/integrations/slack.js';
 import AnnouncementService from '../../src/services/announcement.services.js';
-import slackServices from '../../src/services/slack.services.js';
+import slackServices, { SlackMessage } from '../../src/services/slack.services.js';
+import SlackController from '../../src/controllers/slack.controllers.js';
+import { NotFoundException } from '../../src/utils/errors.utils.js';
 import { vi } from 'vitest';
 import prisma from '../../src/prisma/prisma.js';
 
@@ -19,7 +21,8 @@ vi.mock('../../src/integrations/slack', async (importOriginal) => {
     ...(await importOriginal<typeof import('../../src/integrations/slack')>()),
     getUserName: vi.fn(),
     getChannelName: vi.fn(),
-    getUsersInChannel: vi.fn()
+    getUsersInChannel: vi.fn(),
+    getWorkspaceId: vi.fn()
   };
 });
 
@@ -395,5 +398,51 @@ describe('Slack message tests', () => {
     );
     expect(createSpy).toBeCalledTimes(0);
     expect(announcement).toBeUndefined();
+  });
+
+  it('Ignores a deleted message that has no client_msg_id', async () => {
+    vi.mocked(apiFunctions.getChannelName).mockReturnValue(Promise.resolve('Slack Channel Name'));
+
+    const deleteSpy = vi.spyOn(AnnouncementService, 'deleteAnnouncement');
+    // bot and API posted messages come through without a client_msg_id
+    const botMessage: Partial<SlackMessage> = createSlackMessageEvent('channel id', '1', 'user name', 'id_1', []);
+    delete botMessage.client_msg_id;
+
+    const announcement = await slackServices.processMessageSent(
+      {
+        type: 'message',
+        subtype: 'message_deleted',
+        channel: 'channel id',
+        event_ts: '1',
+        channel_type: 'channel',
+        previous_message: botMessage
+      },
+      orgId
+    );
+    expect(deleteSpy).toBeCalledTimes(0);
+    expect(announcement).toBeUndefined();
+  });
+
+  it('Catches a failure processing a message event instead of letting it escape', async () => {
+    vi.mocked(apiFunctions.getChannelName).mockReturnValue(Promise.resolve('Slack Channel Name'));
+    vi.mocked(apiFunctions.getWorkspaceId).mockReturnValue(Promise.resolve('T0WORKSPACE'));
+    await prisma.organization.update({ where: { organizationId: orgId }, data: { slackWorkspaceId: 'T0WORKSPACE' } });
+
+    const deleteSpy = vi.spyOn(AnnouncementService, 'deleteAnnouncement');
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    // deleting a message that was never stored as an announcement makes deleteAnnouncement throw
+    await expect(
+      SlackController.processMessageEvent({
+        type: 'message',
+        subtype: 'message_deleted',
+        channel: 'channel id',
+        event_ts: '1',
+        channel_type: 'channel',
+        previous_message: createSlackMessageEvent('channel id', '1', 'user name', 'never_an_announcement', [])
+      })
+    ).resolves.toBeUndefined();
+    expect(deleteSpy).toBeCalledWith('never_an_announcement', orgId);
+    expect(logSpy).toBeCalledWith(expect.any(NotFoundException));
   });
 });

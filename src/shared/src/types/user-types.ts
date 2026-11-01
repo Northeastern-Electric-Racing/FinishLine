@@ -52,6 +52,7 @@ export type OrganizationPreview = Pick<
   | 'applicationLink'
   | 'platformDescription'
   | 'platformLogoImageId'
+  | 'activationBufferDays'
 >;
 
 export interface Organization {
@@ -72,6 +73,7 @@ export interface Organization {
   sponsorshipNotificationsSlackChannelId?: string;
   platformDescription: string;
   platformLogoImageId?: string;
+  activationBufferDays: number;
 }
 
 /**

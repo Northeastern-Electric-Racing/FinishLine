@@ -1075,7 +1075,7 @@ export default class FinanceServices {
 
     if (!category) throw new NotFoundException('Reimbursement Product Other Reason', otherReasonId);
 
-    const totalBudget = category.budget;
+    const totalBudget = category.budget / 100;
 
     const { approved, pendingApproval, addedToSabo, reimbursed } = computeRRTotals(reimbursementRequests);
 

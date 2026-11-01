@@ -161,3 +161,13 @@ export const getNotificationChannels = async () => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+/**
+ * Sets the number of days a work package's activation start date can drift from its scheduled date
+ * @param activationBufferDays the new buffer in days
+ */
+export const setActivationBufferDays = async (activationBufferDays: number) => {
+  return axios.post<Organization>(apiUrls.organizationsSetActivationBufferDays(), {
+    activationBufferDays
+  });
+};

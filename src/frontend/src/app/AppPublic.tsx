@@ -4,7 +4,7 @@
  */
 
 import { Switch, Route, Redirect, useHistory, RouteComponentProps } from 'react-router-dom';
-import { useAuth } from '../hooks/auth.hooks';
+import { SERVER_UNAVAILABLE_MESSAGE, useAuth } from '../hooks/auth.hooks';
 import { routes } from '../utils/routes';
 import Login from '../pages/LoginPage/Login';
 import AppAuthenticated from './AppAuthenticated';
@@ -51,6 +51,7 @@ const AppPublic: React.FC = () => {
 
     if (!auth.user && !auth.triedCurrent) {
       auth.signInCurrent();
+      if (auth.serverUnavailable) return <ErrorPage message={SERVER_UNAVAILABLE_MESSAGE} />;
       return <LoadingIndicator />;
     }
 

@@ -1,8 +1,12 @@
-import { NextFunction, Request, Response } from 'express';
+import { CookieOptions, NextFunction, Request, Response } from 'express';
 import UsersService from '../services/users.services.js';
 import ApiTokenService from '../services/api-tokens.services.js';
 import { AccessDeniedException } from '../utils/errors.utils.js';
+import { AUTH_TOKEN_LIFETIME_DAYS } from '../utils/auth.utils.js';
 import { Task } from 'shared';
+
+// browsers only clear a cookie when these match the options it was set with, so login and logout share them
+const AUTH_COOKIE_OPTIONS: CookieOptions = { httpOnly: true, sameSite: 'none', secure: true };
 export default class UsersController {
   static async getAllUsers(_req: Request, res: Response, next: NextFunction) {
     try {
@@ -116,7 +120,7 @@ export default class UsersController {
 
       const { user, token } = await UsersService.logUserIn(idToken, header!);
 
-      res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 7 * 24 * 60 * 60 * 1000 });
+      res.cookie('token', token, { ...AUTH_COOKIE_OPTIONS, maxAge: AUTH_TOKEN_LIFETIME_DAYS * 24 * 60 * 60 * 1000 });
       res.status(200).json(user);
     } catch (error: unknown) {
       next(error);
@@ -253,7 +257,7 @@ export default class UsersController {
 
   static async logUserOut(_req: Request, res: Response, next: NextFunction) {
     try {
-      res.clearCookie('token');
+      res.clearCookie('token', AUTH_COOKIE_OPTIONS);
       res.status(200).json({ message: 'successfully logged out' });
     } catch (error: unknown) {
       next(error);
