@@ -1,5 +1,6 @@
 import { Faker } from '@faker-js/faker';
 import { Conflict_Status, Event_Status, Prisma } from '@prisma/client';
+import dayjs from 'dayjs';
 import { arrayOrNull } from '../utils/arrays.js';
 import { DAY_MS, MINUTE_MS } from '../dates.js';
 import { addDaysToDate } from 'shared';
@@ -251,6 +252,114 @@ export const scheduleSlotCreateInput = (
   allDay,
   event: { connect: { eventId } }
 });
+
+type CalendarEventConfig = {
+  title: string;
+  eventTypeName: string;
+  location?: string;
+  startDaysFromNow: number;
+  startHour: number;
+  endDaysFromNow: number;
+  endHour: number;
+  allDay: boolean;
+};
+
+// Add events from today to 5 days in the future, including all day event and multi day event. 
+// Useful for calendar widget visualizations
+export const calendarEventConfigs: CalendarEventConfig[] = [
+  {
+    title: 'Docker Learning Session',
+    eventTypeName: 'Educational',
+    location: 'Richards 010',
+    startDaysFromNow: 0,
+    startHour: 2,
+    endDaysFromNow: 0,
+    endHour: 4,
+    allDay: false
+  },
+  {
+    title: 'Bay Time',
+    eventTypeName: 'Manufacturing',
+    location: 'Richards 050',
+    startDaysFromNow: 0,
+    startHour: 18,
+    endDaysFromNow: 0,
+    endHour: 20,
+    allDay: false
+  },
+  {
+    title: 'Bay Cleanup',
+    eventTypeName: 'Manufacturing',
+    startDaysFromNow: 1,
+    startHour: 0,
+    endDaysFromNow: 2,
+    endHour: 0,
+    allDay: true
+  },
+  {
+    title: 'Design Freeze Deadline',
+    eventTypeName: 'Deadline/Heads Up',
+    startDaysFromNow: 1,
+    startHour: 17,
+    endDaysFromNow: 1,
+    endHour: 18,
+    allDay: false
+  },
+  {
+    title: 'FHE Comp Prep Meeting',
+    eventTypeName: 'FHE',
+    location: 'Richards 050',
+    startDaysFromNow: 1,
+    startHour: 9,
+    endDaysFromNow: 2,
+    endHour: 17,
+    allDay: false
+  },
+  {
+    title: 'NER Social',
+    eventTypeName: 'Misc. Event (Standard)',
+    location: 'Curry Student Center',
+    startDaysFromNow: 3,
+    startHour: 18,
+    endDaysFromNow: 3,
+    endHour: 20,
+    allDay: false
+  },
+  {
+    title: 'FSAE Comp Prep Meeting',
+    eventTypeName: 'FSAE',
+    startDaysFromNow: 4,
+    startHour: 10,
+    endDaysFromNow: 4,
+    endHour: 12,
+    allDay: false
+  }
+];
+
+export const calendarEventCreateInput = (
+  userCreatedId: string,
+  eventTypeId: string,
+  config: CalendarEventConfig,
+  now: Date
+): Prisma.EventCreateInput => {
+  const timeOnDay = (daysFromNow: number, hour: number) =>
+    dayjs(now).startOf('day').add(daysFromNow, 'day').hour(hour).toDate();
+  const startTime = timeOnDay(config.startDaysFromNow, config.startHour);
+  const endTime = timeOnDay(config.endDaysFromNow, config.endHour);
+
+  return {
+    title: config.title,
+    status: Event_Status.SCHEDULED,
+    approved: Conflict_Status.NO_CONFLICT,
+    location: config.location,
+    initialDateScheduled: startTime,
+    calendarEventIds: [],
+    userCreated: { connect: { userId: userCreatedId } },
+    eventType: { connect: { eventTypeId } },
+    requiredMembers: { connect: [{ userId: userCreatedId }] },
+    scheduledTimes: { create: { startTime, endTime, allDay: config.allDay } }
+  };
+};
 
 export const documentCreateInput = (
   faker: Faker,
