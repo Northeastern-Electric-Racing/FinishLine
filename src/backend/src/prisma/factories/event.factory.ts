@@ -318,9 +318,9 @@ export const calendarEventConfigs: CalendarEventConfig[] = [
     title: 'NER Social',
     eventTypeName: 'Misc. Event (Standard)',
     location: 'Curry Student Center',
-    startDaysFromNow: 3,
+    startDaysFromNow: 2,
     startHour: 18,
-    endDaysFromNow: 3,
+    endDaysFromNow: 2,
     endHour: 20,
     allDay: false
   },

@@ -4,6 +4,7 @@
  */
 
 import { Box, Typography } from '@mui/material';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { BayDashboardWidgetSize, BayDashboardWidgetType, PublicBayDashboardCalendarEvent } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
@@ -12,8 +13,9 @@ import { useGetBayDashboardCalendarEvents } from '../../../../hooks/bay-dashboar
 import {
   formatCalendarDay,
   getCalendarDays,
-  getUpcomingEvents,
+  getNextEventDay,
   groupEventsByDay,
+  LARGE_CALENDAR_MAX_DAYS,
   limitEventsToHeight,
   MEDIUM_CALENDAR_MAX_EVENTS
 } from '../../../../utils/bay-dashboard-calendar.utils';
@@ -41,7 +43,7 @@ interface CalendarEventsProps {
 }
 
 const LargeCalendar: React.FC<CalendarEventsProps> = ({ events, now }) => {
-  const days = limitEventsToHeight(groupEventsByDay(events, getCalendarDays(now)));
+  const days = limitEventsToHeight(groupEventsByDay(events, getCalendarDays(now, LARGE_CALENDAR_MAX_DAYS)));
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1.5cqw', mt: '1cqw' }}>
@@ -67,23 +69,23 @@ const LargeCalendar: React.FC<CalendarEventsProps> = ({ events, now }) => {
 };
 
 const MediumCalendar: React.FC<CalendarEventsProps> = ({ events, now }) => {
-  const upcomingEvents = getUpcomingEvents(events, now);
-  const shownEvents = upcomingEvents.slice(0, MEDIUM_CALENDAR_MAX_EVENTS);
-  const hiddenCount = upcomingEvents.length - shownEvents.length;
+  const nextEventDay = getNextEventDay(events, now);
 
-  if (shownEvents.length === 0) return <Typography sx={{ ...textSx, fontSize: '2.4cqw' }}>No upcoming events</Typography>;
+  if (!nextEventDay) return <Typography sx={{ ...textSx, fontSize: '2.4cqw' }}>No upcoming events</Typography>;
+
+  const { day, events: dayEvents } = nextEventDay;
+  const shownEvents = dayEvents.slice(0, MEDIUM_CALENDAR_MAX_EVENTS);
+  const hiddenCount = dayEvents.length - shownEvents.length;
 
   return (
     <Box sx={{ mt: '1cqw' }}>
+      {/* the date is only shown when it isn't today */}
+      {!dayjs(day).isSame(now, 'day') && (
+        <Typography sx={{ ...textSx, fontSize: '2.4cqw', mb: '0.5cqw' }}>{formatCalendarDay(day)}</Typography>
+      )}
       <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${MEDIUM_CALENDAR_MAX_EVENTS}, 1fr)`, gap: '2cqw' }}>
         {shownEvents.map((event) => (
-          <CalendarEventCard
-            key={`${event.title}-${event.startTime.getTime()}`}
-            event={event}
-            // an event that's already started is shown as of now
-            day={event.startTime > now ? event.startTime : now}
-            showDay
-          />
+          <CalendarEventCard key={`${event.title}-${event.startTime.getTime()}`} event={event} day={day} />
         ))}
       </Box>
       {hiddenCount > 0 && <Typography sx={{ ...moreSx, mt: '1cqw' }}>+{hiddenCount} more</Typography>}
@@ -93,7 +95,7 @@ const MediumCalendar: React.FC<CalendarEventsProps> = ({ events, now }) => {
 
 /**
  * The upcoming events from the organization's calendars, for the TV.
- * The large widget groups the next few days, and the medium widget shows what's coming up next.
+ * The large widget groups the next few days, and the medium widget shows one day: today, or the next day with events.
  */
 const CalendarWidget: React.FC<BayDashboardWidgetProps> = ({ size, slug }) => {
   const { data: events, isLoading, isError, error } = useGetBayDashboardCalendarEvents(slug);

@@ -5,19 +5,18 @@
 
 import { Box, Typography } from '@mui/material';
 import { PublicBayDashboardCalendarEvent } from 'shared';
-import { formatCalendarDay, formatEventTime } from '../../../../utils/bay-dashboard-calendar.utils';
+import { formatEventTime } from '../../../../utils/bay-dashboard-calendar.utils';
 
 interface CalendarEventCardProps {
   event: PublicBayDashboardCalendarEvent;
   day: Date;
-  showDay?: boolean;
   dense?: boolean;
 }
 
 /**
  * A single calendar event, colored with its calendar's color.
  */
-const CalendarEventCard: React.FC<CalendarEventCardProps> = ({ event, day, showDay = false, dense = false }) => {
+const CalendarEventCard: React.FC<CalendarEventCardProps> = ({ event, day, dense = false }) => {
   const { title, location, colorHexCode } = event;
   const time = formatEventTime(event, day);
 
@@ -44,7 +43,7 @@ const CalendarEventCard: React.FC<CalendarEventCardProps> = ({ event, day, showD
           {title}
         </Typography>
         <Typography noWrap sx={{ color: 'inherit', fontSize: detailSize }}>
-          {showDay ? `${formatCalendarDay(day)}, ${time}` : time}
+          {time}
         </Typography>
         {location && (
           <Typography noWrap sx={{ color: 'inherit', fontSize: detailSize }}>

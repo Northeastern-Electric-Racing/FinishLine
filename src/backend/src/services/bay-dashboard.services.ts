@@ -13,7 +13,8 @@ import {
 } from '../transformers/bay-dashboard.transformer.js';
 import { DeletedException, NotFoundException } from '../utils/errors.utils.js';
 
-const CALENDAR_DAYS_AHEAD = 4;
+// the medium widget looks this far ahead for the next day that has an event
+const CALENDAR_DAYS_AHEAD = 7;
 
 export default class BayDashboardService {
   /**
