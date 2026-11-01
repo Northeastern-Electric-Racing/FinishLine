@@ -65,7 +65,7 @@ export const saveBayDashboardConfig = (slots: BayDashboardSlotCreateArgs[]) => {
  */
 export const getBayDashboardCountdowns = (slug: string) => {
   return axios.get<BayDashboardCountdown[]>(apiUrls.bayDashboardCountdowns(slug), {
-    transformResponse: (data) => (JSON.parse(data) as BayDashboardCountdown[]).map(bayDashboardCountdownTransformer)
+    transformResponse: (data) => JSON.parse(data).map(bayDashboardCountdownTransformer)
   });
 };
 
