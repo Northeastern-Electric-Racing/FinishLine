@@ -10,6 +10,8 @@ import {
   getPixelsPerDay,
   getDateOffsetPx,
   getElementWidthPx,
+  snapToColumn,
+  getColumnWidthPx,
   GanttTimeUnit,
   GanttTimeWindow
 } from '../../utils/gantt.utils';
@@ -152,5 +154,31 @@ describe('Gantt time window sizing', () => {
 
   it('gives a same-day element a one day minimum in week view', () => {
     expect(getElementWidthPx(new Date(2026, 2, 2), new Date(2026, 2, 2), GanttTimeWindow.Week, 100)).toBe(100);
+  });
+});
+
+describe('Gantt time window snapping', () => {
+  it('snaps to the start of the current week when early in the week', () => {
+    expect(snapToColumn(new Date(2026, 2, 4), GanttTimeUnit.Week)).toEqual(new Date(2026, 2, 2));
+  });
+
+  it('snaps to the start of the next week when late in the week', () => {
+    expect(snapToColumn(new Date(2026, 2, 7), GanttTimeUnit.Week)).toEqual(new Date(2026, 2, 9));
+  });
+
+  it('snaps to the nearest month', () => {
+    expect(snapToColumn(new Date(2026, 2, 10), GanttTimeUnit.Month)).toEqual(new Date(2026, 2, 1));
+    expect(snapToColumn(new Date(2026, 2, 25), GanttTimeUnit.Month)).toEqual(new Date(2026, 3, 1));
+  });
+});
+
+describe('Gantt time window column widths', () => {
+  it('gives week columns seven days', () => {
+    expect(getColumnWidthPx(new Date(2026, 2, 2), GanttTimeUnit.Week, 10)).toBe(70);
+  });
+
+  it('gives month columns their real length', () => {
+    expect(getColumnWidthPx(new Date(2026, 1, 1), GanttTimeUnit.Month, 10)).toBe(280);
+    expect(getColumnWidthPx(new Date(2026, 2, 1), GanttTimeUnit.Month, 10)).toBe(310);
   });
 });

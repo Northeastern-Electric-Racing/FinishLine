@@ -27,6 +27,10 @@ import {
 import { fullNamePipe, projectWbsPipe } from './pipes';
 import dayjs from 'dayjs';
 import {
+  addDays,
+  addMonths,
+  addWeeks,
+  addYears,
   differenceInCalendarDays,
   eachDayOfInterval,
   eachMonthOfInterval,
@@ -93,7 +97,6 @@ export interface GanttTimeWindowConfig {
   headerGroupUnit: GanttTimeUnit; // top header row labels
   minElementDays: number; // shortest an element can be drawn, so short elements stay clickable
   showTasks: boolean;
-  showWorkPackages: boolean;
 }
 
 export const GANTT_TIME_WINDOWS: Record<GanttTimeWindow, GanttTimeWindowConfig> = {
@@ -103,8 +106,7 @@ export const GANTT_TIME_WINDOWS: Record<GanttTimeWindow, GanttTimeWindowConfig> 
     columnUnit: GanttTimeUnit.Day,
     headerGroupUnit: GanttTimeUnit.Month,
     minElementDays: 1,
-    showTasks: true,
-    showWorkPackages: true
+    showTasks: true
   },
   [GanttTimeWindow.Month]: {
     label: 'Month',
@@ -112,8 +114,7 @@ export const GANTT_TIME_WINDOWS: Record<GanttTimeWindow, GanttTimeWindowConfig> 
     columnUnit: GanttTimeUnit.Week,
     headerGroupUnit: GanttTimeUnit.Month,
     minElementDays: 1,
-    showTasks: true,
-    showWorkPackages: true
+    showTasks: true
   },
   [GanttTimeWindow.HalfYear]: {
     label: 'Half Year',
@@ -121,8 +122,7 @@ export const GANTT_TIME_WINDOWS: Record<GanttTimeWindow, GanttTimeWindowConfig> 
     columnUnit: GanttTimeUnit.Week,
     headerGroupUnit: GanttTimeUnit.Month,
     minElementDays: 7,
-    showTasks: true,
-    showWorkPackages: true
+    showTasks: true
   },
   [GanttTimeWindow.Year]: {
     label: 'Year',
@@ -130,13 +130,15 @@ export const GANTT_TIME_WINDOWS: Record<GanttTimeWindow, GanttTimeWindowConfig> 
     columnUnit: GanttTimeUnit.Month,
     headerGroupUnit: GanttTimeUnit.Year,
     minElementDays: 14,
-    showTasks: false,
-    showWorkPackages: false
+    showTasks: false
   }
 };
 
+export const DEFAULT_GANTT_TIME_WINDOW = GanttTimeWindow.Month;
+
 interface GanttTimeUnitOps {
   startOf: (date: Date) => Date; // start of the unit that the date falls in
+  add: (date: Date, amount: number) => Date;
   eachInInterval: (interval: Interval) => Date[]; // start of every unit in the interval
   nominalDays: number; // typical length, used to size the visible span
 }
@@ -144,21 +146,25 @@ interface GanttTimeUnitOps {
 const GANTT_TIME_UNIT_OPS: Record<GanttTimeUnit, GanttTimeUnitOps> = {
   [GanttTimeUnit.Day]: {
     startOf: startOfDay,
+    add: addDays,
     eachInInterval: (interval) => eachDayOfInterval(interval),
     nominalDays: 1
   },
   [GanttTimeUnit.Week]: {
     startOf: startOfISOWeek,
+    add: addWeeks,
     eachInInterval: (interval) => eachWeekOfInterval(interval, { weekStartsOn: 1 }),
     nominalDays: 7
   },
   [GanttTimeUnit.Month]: {
     startOf: startOfMonth,
+    add: addMonths,
     eachInInterval: (interval) => eachMonthOfInterval(interval),
     nominalDays: 365.25 / 12
   },
   [GanttTimeUnit.Year]: {
     startOf: startOfYear,
+    add: addYears,
     eachInInterval: (interval) => eachYearOfInterval(interval),
     nominalDays: 365.25
   }
@@ -180,6 +186,22 @@ export const isCurrentColumn = (date: Date, unit: GanttTimeUnit, today: Date = n
   const { startOf } = GANTT_TIME_UNIT_OPS[unit];
   return isSameDay(startOf(date), startOf(today));
 };
+
+/**
+ * Returns the start of whichever column boundary is closest to the given date, used to snap dragged elements
+ */
+export const snapToColumn = (date: Date, unit: GanttTimeUnit): Date => {
+  const { startOf, add } = GANTT_TIME_UNIT_OPS[unit];
+  const columnStart = startOf(date);
+  const nextColumnStart = add(columnStart, 1);
+  return date.getTime() - columnStart.getTime() < nextColumnStart.getTime() - date.getTime() ? columnStart : nextColumnStart;
+};
+
+/**
+ * Returns the width of the column starting at columnStart, in pixels (month and year columns vary in length)
+ */
+export const getColumnWidthPx = (columnStart: Date, unit: GanttTimeUnit, pixelsPerDay: number) =>
+  differenceInCalendarDays(GANTT_TIME_UNIT_OPS[unit].add(columnStart, 1), columnStart) * pixelsPerDay;
 
 /**
  * Returns how many pixels one day takes up in the given window, so that its visible span fills the viewport
