@@ -29,10 +29,10 @@ import {
 } from '../utils/errors.utils.js';
 import {
   sendSlackTaskAssignedNotificationToUsers,
-  validateTaskBlockedBys,
+    validateTaskBlockedBys,
   validateTaskLabels
 } from '../utils/tasks.utils.js';
-import { getUsers, userHasPermission } from '../utils/users.utils.js';
+import { userHasPermission, validateOrgUsers } from '../utils/users.utils.js';
 import { wbsNumOf } from '../utils/utils.js';
 import {
   getTaskBlockingWorkPackagesQueryArgs,
@@ -66,15 +66,8 @@ const getFilteredTasksWhere = async (
     andMemberTeam
   } = filters;
 
-  // Validate memberIds if provided
   if (memberIds && memberIds.length > 0) {
-    const users = await prisma.user.findMany({
-      where: { userId: { in: memberIds }, organizations: { some: { organizationId: organization.organizationId } } },
-      select: { userId: true }
-    });
-    if (users.length !== memberIds.length) {
-      throw new NotFoundException('User', 'one or more member IDs');
-    }
+    await validateOrgUsers(memberIds, organization.organizationId);
   }
 
   // Validate teamIds if provided
@@ -96,9 +89,9 @@ const getFilteredTasksWhere = async (
   }
 
   // Legacy calendar semantics: member and team OR together (and member also matches the task creator).
-  const orFilters: any[] = [];
+  const orFilters: Prisma.TaskWhereInput[] = [];
   // Global-page semantics: each filter is its own AND condition, OR-ing only within its own selections.
-  const andConditions: any[] = [];
+  const andConditions: Prisma.TaskWhereInput[] = [];
 
   if (andMemberTeam) {
     if (memberIds && memberIds.length > 0) {
@@ -252,7 +245,7 @@ export default class TasksService {
       throw new AccessDeniedException('Guests cannot create tasks');
     }
 
-    const users = await getUsers(assignees); // this throws if any of the users aren't found
+    await validateOrgUsers(assignees, organization.organizationId);
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
@@ -300,7 +293,7 @@ export default class TasksService {
         priority,
         status,
         createdBy: { connect: { userId: createdBy.userId } },
-        assignees: { connect: users.map((user) => ({ userId: user.userId })) },
+        assignees: { connect: assignees.map((userId) => ({ userId })) },
         labels: { connect: labelIds.map((id) => ({ taskLabelId: id })) },
         blockedBy: { connect: blockedByTasks.map((task) => ({ taskId: task.taskId })) }
       },
@@ -483,22 +476,14 @@ export default class TasksService {
     const originalAssigneeIds = originalTask.assignees.map((assignee) => assignee.userId);
     const newAssigneeIds = assignees.filter((userId) => !originalAssigneeIds.includes(userId));
 
-    // this throws if any of the users aren't found
-    const assigneeUsers = await getUsers(assignees);
-
-    // retrieve userId for every assignee to update task's assignees in the database
-    const transformedAssigneeUsers = assigneeUsers.map((user) => {
-      return {
-        userId: user.userId
-      };
-    });
+    await validateOrgUsers(assignees, organization.organizationId);
 
     const updatedTask = taskBoardItemTransformer(
       await prisma.task.update({
         where: { taskId },
         data: {
           assignees: {
-            set: transformedAssigneeUsers
+            set: assignees.map((userId) => ({ userId }))
           }
         },
         ...getTaskBoardItemQueryArgs()
@@ -529,6 +514,7 @@ export default class TasksService {
     const wbsElement = await prisma.wBS_Element.findUnique({
       where: { wbsElementId: task.wbsElementId },
       select: {
+        organizationId: true,
         dateDeleted: true,
         leadId: true,
         managerId: true,
@@ -538,6 +524,7 @@ export default class TasksService {
       }
     });
     if (!wbsElement) throw new NotFoundException('WBS Element', task.wbsElementId);
+    if (wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Task');
     if (wbsElement.dateDeleted) {
       const wbsNum = wbsNumOf(wbsElement);
       throw new DeletedException('WBS Element', wbsPipe(wbsNum));
