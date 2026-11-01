@@ -29,7 +29,7 @@ import {
 } from '../utils/errors.utils.js';
 import {
   sendSlackTaskAssignedNotificationToUsers,
-    validateTaskBlockedBys,
+  validateTaskBlockedBys,
   validateTaskLabels
 } from '../utils/tasks.utils.js';
 import { userHasPermission, validateOrgUsers } from '../utils/users.utils.js';

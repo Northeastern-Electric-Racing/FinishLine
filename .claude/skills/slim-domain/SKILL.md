@@ -20,11 +20,12 @@ If `$ARGUMENTS` is empty or does not match a domain (no `src/backend/src/routes/
 3. Spawn one `Explore` subagent per read endpoint, all in a single message so they run in parallel. Give each one this brief, filled in:
 
    > Endpoint `<METHOD path>` is called through `<api fn>` → `<hook>`. Find every component in `src/frontend/src` that consumes this hook's data, directly or through props or utils it passes the data to. For **each call site** (a distinct page or component usage), report:
+   >
    > - `site`: page/component file path
    > - `fields`: every field of the response actually read, as dot paths (e.g. `assignees[].firstName`, `wbsElement.name`). Follow the data through props, utils, and transformers in `src/frontend/src/apis/transformers/`. Do not list a field just because the type has it.
    > - `db-pushdown`: anything the frontend derives that the query could compute instead (counts, existence checks, filters, sums, "latest X"). Example: loading every task only to count the open ones should be a Prisma `_count`.
    > - `volume`: how many items the site loads, and whether they are all visible at once or only after the user clicks, expands, or scrolls.
-   > Report facts only, with file:line references. Don't propose models.
+   >   Report facts only, with file:line references. Don't propose models.
 
 4. Mutation endpoints (create/update/delete) don't need subagents. Just record whether any frontend caller reads the response body (`onSuccess` data, the `mutateAsync` result).
 
@@ -106,6 +107,7 @@ Then verify, and fix until everything passes:
 5. `yarn workspace frontend test` for the touched components.
 
 Finish with a summary covering:
+
 - the models created
 - the endpoints changed
 - the deprecated items left behind and which domain still uses them
