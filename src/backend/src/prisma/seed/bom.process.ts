@@ -44,7 +44,7 @@ export class BOMProcess extends SeedProcess<BOMInput, BOMOutput> {
   }: BOMInput): Promise<BOMOutput> {
     const creators = [...leadership, ...heads, ...admins, ...appAdmins];
     const materialsByProjectId: Record<string, Material[]> = {};
-    const now = new Date();
+    const { now } = this;
 
     for (let i = 0; i < projectsWithTimeline.length; i += BATCH_SIZE) {
       const batch = projectsWithTimeline.slice(i, i + BATCH_SIZE);

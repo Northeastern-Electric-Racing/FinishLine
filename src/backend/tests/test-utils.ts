@@ -116,6 +116,11 @@ export const resetUsers = async () => {
   await prisma.part_Review.deleteMany();
   await prisma.part_Submission.deleteMany();
   await prisma.part.deleteMany();
+  await prisma.rule_Status_History.deleteMany();
+  await prisma.project_Rule.deleteMany();
+  await prisma.rule.deleteMany();
+  await prisma.ruleset.deleteMany();
+  await prisma.ruleset_Type.deleteMany();
   await prisma.project.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.material.deleteMany();
@@ -128,12 +133,21 @@ export const resetUsers = async () => {
   await prisma.user_Secure_Settings.deleteMany();
   await prisma.receipt.deleteMany();
   await prisma.reimbursement_Product.deleteMany();
+  await prisma.reimbursement_Product_Reason.deleteMany();
   await prisma.reimbursement_Status.deleteMany();
   await prisma.reimbursement_Request_Comment.deleteMany();
   await prisma.reimbursement_Request.deleteMany();
   await prisma.reimbursement.deleteMany();
   await prisma.vendor.deleteMany();
   await prisma.account_Code.deleteMany();
+  await prisma.rule.deleteMany();
+  await prisma.ruleset.deleteMany();
+  await prisma.ruleset_Type.deleteMany();
+  await prisma.recruitment_Division_Count.deleteMany();
+  await prisma.recruitment_Cycle.deleteMany();
+  await prisma.competition_Performance.deleteMany();
+  await prisma.competition_Documents_Summary.deleteMany();
+  await prisma.executive_Summary.deleteMany();
   await prisma.car.deleteMany();
   await prisma.task_Label.deleteMany();
   await prisma.task.deleteMany();
@@ -166,6 +180,7 @@ export const resetUsers = async () => {
   await prisma.sponsor_Task.deleteMany();
   await prisma.prospective_Sponsor.deleteMany();
   await prisma.sponsor.deleteMany();
+  await prisma.sponsor_Contact.deleteMany();
   await prisma.sponsor_Tier.deleteMany();
   await prisma.reimbursement_Product_Other_Reason.deleteMany();
   await prisma.account_Code.deleteMany();
@@ -628,7 +643,8 @@ export const createTestDesignReviewEvent = async () => {
     true, // documents
     false, // description
     true, // onlyHeadsOrAbove
-    true // requiresConfirmation
+    true, // requiresConfirmation
+    false // takeAttendance
   );
 
   const testWorkPackage = await prisma.work_Package.findFirst({

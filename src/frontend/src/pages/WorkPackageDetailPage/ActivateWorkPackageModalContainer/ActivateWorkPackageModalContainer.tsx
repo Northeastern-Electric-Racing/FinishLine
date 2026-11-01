@@ -13,6 +13,7 @@ import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ActivateWorkPackageModal from './ActivateWorkPackageModal';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 
 interface ActivateWorkPackageModalContainerProps {
   wbsNum: WbsNumber;
@@ -37,6 +38,7 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
   const history = useHistory();
   const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useCreateActivationChangeRequest();
+  const { data: workPackage, isLoading: wpIsLoading, isError: wpIsError, error: wpError } = useSingleWorkPackage(wbsNum);
 
   const handleConfirm = async ({ leadId, managerId, startDate, confirmDetails }: FormInput) => {
     handleClose();
@@ -65,11 +67,11 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
     }
   };
 
-  if (isLoading || usersIsLoading || !users) return <LoadingIndicator />;
-
   if (isError) return <ErrorPage message={error?.message} />;
-
   if (usersIsError) return <ErrorPage message={usersError?.message} />;
+  if (wpIsError) return <ErrorPage message={wpError?.message} />;
+
+  if (isLoading || usersIsLoading || !users || wpIsLoading || !workPackage) return <LoadingIndicator />;
 
   return (
     <ActivateWorkPackageModal
@@ -78,6 +80,7 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
       onHide={handleClose}
       onSubmit={handleConfirm}
       allUsers={users}
+      scheduledStartDate={workPackage.startDate}
     />
   );
 };

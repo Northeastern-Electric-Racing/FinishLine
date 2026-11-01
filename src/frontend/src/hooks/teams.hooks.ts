@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
-import { Team, TeamBase, TeamJoinRequest, TeamPreview } from 'shared';
+import { Team, TeamBase, TeamJoinRequest, TeamNamePreview, TeamPreview, TeamWithProjects } from 'shared';
 import {
   getAllTeams,
   getSingleTeam,
@@ -16,6 +16,7 @@ import {
   setTeamLeads,
   archiveTeam,
   getAllArchivedTeams,
+  getAllTeamsWithProjects,
   getUsersTeams,
   setTeamSlackId,
   getMyTeamAsHead,
@@ -55,6 +56,13 @@ export const useAllArchivedTeams = () => {
   });
 };
 
+export const useAllTeamsWithProjects = () => {
+  return useQuery<TeamWithProjects[], Error>(['teams', 'summaries'], async () => {
+    const { data } = await getAllTeamsWithProjects();
+    return data;
+  });
+};
+
 export const useSingleTeam = (teamId: string) => {
   return useQuery<Team, Error>(['teams', teamId], async () => {
     const { data } = await getSingleTeam(teamId);
@@ -63,7 +71,7 @@ export const useSingleTeam = (teamId: string) => {
 };
 
 export const useGetUsersTeams = () => {
-  return useQuery<Team[], Error>(['teams', 'mine'], async () => {
+  return useQuery<TeamNamePreview[], Error>(['teams', 'mine'], async () => {
     const { data } = await getUsersTeams();
     return data;
   });
