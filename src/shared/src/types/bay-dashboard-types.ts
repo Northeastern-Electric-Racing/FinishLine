@@ -72,6 +72,13 @@ export interface BayDashboardCountdown {
   isPrimary: boolean;
 }
 
+export interface BayDashboardCountdownCreateArgs {
+  name: string;
+  startDate: Date;
+  endDate?: Date;
+  isPrimary: boolean;
+}
+
 /**
  * A widget type that can be placed on a bay dashboard, along with the sizes it supports.
  */

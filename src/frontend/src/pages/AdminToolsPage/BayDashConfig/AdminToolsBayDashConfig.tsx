@@ -6,10 +6,14 @@
 import { Box, Theme, Typography } from '@mui/material';
 import { SystemStyleObject } from '@mui/system';
 import { useState } from 'react';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import { NERButton } from '../../../components/NERButton';
 import { useGetCurrentBayDashboardConfig, useSaveBayDashboardConfig } from '../../../hooks/bay-dashboard.hooks';
+import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { applyWidgetSelection, BayDashboardWidgetSelection, toSlotCreateArgs } from '../../../utils/bay-dashboard.utils';
+import ErrorPage from '../../ErrorPage';
+import CountdownTable from './CountdownTable';
 import PreviewDashboard from './PreviewDashboard';
 import WidgetSelection from './WidgetSelection';
 
@@ -27,6 +31,12 @@ const AdminToolsBayDashConfig: React.FC = () => {
   const hasSelection = Object.values(selection).some((type) => type);
   const { data: config, isLoading, isError } = useGetCurrentBayDashboardConfig();
   const { mutate: save, isLoading: isSaving } = useSaveBayDashboardConfig();
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    isError: organizationIsError,
+    error: organizationError
+  } = useCurrentOrganization();
 
   const toast = useToast();
 
@@ -38,6 +48,9 @@ const AdminToolsBayDashConfig: React.FC = () => {
   const handleSave = () => {
     save(toSlotCreateArgs(applyWidgetSelection(config?.slots ?? [], selection)), { onSuccess: () => setSelection({}) });
   };
+
+  if (organizationIsError) return <ErrorPage message={organizationError.message} />;
+  if (organizationIsLoading || !organization) return <LoadingIndicator />;
 
   return (
     <Box
@@ -65,7 +78,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
         <Typography variant="h5" gutterBottom pl={1}>
           Preview
         </Typography>
-        <PreviewDashboard selection={selection} />
+        <PreviewDashboard selection={selection} slug={organization.slug} />
       </Box>
       <Box sx={{ gridColumn: { md: 'span 2' }, gridRow: { md: 2 }, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
         <NERButton variant="contained" disabled={!hasSelection} onClick={handleClear}>
@@ -74,6 +87,9 @@ const AdminToolsBayDashConfig: React.FC = () => {
         <NERButton variant="contained" disabled={!hasSelection || isLoading || isError || isSaving} onClick={handleSave}>
           SAVE
         </NERButton>
+      </Box>
+      <Box sx={{ gridColumn: { md: 'span 2' }, gridRow: { md: 3 } }}>
+        <CountdownTable slug={organization.slug} />
       </Box>
       <Box
         sx={{

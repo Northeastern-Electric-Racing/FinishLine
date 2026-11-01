@@ -8,10 +8,13 @@ import { apiUrls } from '../utils/urls';
 import {
   AvailableBayDashboardWidgets,
   BayDashboardConfig,
+  BayDashboardCountdown,
+  BayDashboardCountdownCreateArgs,
   BayDashboardSlotCreateArgs,
+  dateToMidnightUTC,
   PublicBayDashboardConfig
 } from 'shared';
-import { bayDashboardConfigTransformer } from './transformers/bay-dashboard.transformers';
+import { bayDashboardConfigTransformer, bayDashboardCountdownTransformer } from './transformers/bay-dashboard.transformers';
 
 /**
  * Gets the bay dashboard config currently displayed on the TV for the current organization
@@ -54,4 +57,30 @@ export const saveBayDashboardConfig = (slots: BayDashboardSlotCreateArgs[]) => {
     { slots },
     { transformResponse: (data) => bayDashboardConfigTransformer(JSON.parse(data)) }
   );
+};
+
+/**
+ * Gets the non-deleted countdowns for an organization's bay dashboard
+ * @param slug the organization's slug
+ */
+export const getBayDashboardCountdowns = (slug: string) => {
+  return axios.get<BayDashboardCountdown[]>(apiUrls.bayDashboardCountdowns(slug), {
+    transformResponse: (data) => (JSON.parse(data) as BayDashboardCountdown[]).map(bayDashboardCountdownTransformer)
+  });
+};
+
+/**
+ * Creates a countdown for the current organization's bay dashboard
+ * @param countdown the countdown to create, marking it primary unsets any other primary countdown
+ */
+export const createBayDashboardCountdown = (countdown: BayDashboardCountdownCreateArgs) => {
+  const payload = {
+    ...countdown,
+    // countdown dates are calendar days, so send the picked day at midnight UTC rather than the local time
+    startDate: dateToMidnightUTC(countdown.startDate),
+    endDate: countdown.endDate && dateToMidnightUTC(countdown.endDate)
+  };
+  return axios.post<BayDashboardCountdown>(apiUrls.bayDashboardAdminCountdownCreate(), payload, {
+    transformResponse: (data) => bayDashboardCountdownTransformer(JSON.parse(data))
+  });
 };
