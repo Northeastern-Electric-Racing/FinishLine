@@ -264,7 +264,7 @@ type CalendarEventConfig = {
   allDay: boolean;
 };
 
-// Add events from today to 5 days in the future, including all day event and multi day event. 
+// Add events from today to 5 days in the future, including all day event and multi day event.
 // Useful for calendar widget visualizations
 export const calendarEventConfigs: CalendarEventConfig[] = [
   {
@@ -278,7 +278,7 @@ export const calendarEventConfigs: CalendarEventConfig[] = [
     allDay: false
   },
   {
-    title: 'Bay Time',
+    title: 'General Engineering Meeting',
     eventTypeName: 'Manufacturing',
     location: 'Richards 050',
     startDaysFromNow: 0,
@@ -306,14 +306,13 @@ export const calendarEventConfigs: CalendarEventConfig[] = [
     allDay: false
   },
   {
-    title: 'FHE Comp Prep Meeting',
-    eventTypeName: 'FHE',
-    location: 'Richards 050',
-    startDaysFromNow: 1,
-    startHour: 9,
-    endDaysFromNow: 2,
-    endHour: 17,
-    allDay: false
+    title: 'Bay Time',
+    eventTypeName: 'Misc. Event (Standard)',
+    startDaysFromNow: 0,
+    startHour: 0,
+    endDaysFromNow: 3,
+    endHour: 0,
+    allDay: true
   },
   {
     title: 'NER Social',
@@ -328,9 +327,9 @@ export const calendarEventConfigs: CalendarEventConfig[] = [
   {
     title: 'FSAE Comp Prep Meeting',
     eventTypeName: 'FSAE',
-    startDaysFromNow: 4,
+    startDaysFromNow: 1,
     startHour: 10,
-    endDaysFromNow: 4,
+    endDaysFromNow: 1,
     endHour: 12,
     allDay: false
   }

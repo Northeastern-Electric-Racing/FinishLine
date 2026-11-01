@@ -11,7 +11,7 @@ import {
   getCalendarDays,
   getUpcomingEvents,
   groupEventsByDay,
-  limitEventsAcrossDays
+  limitEventsPerDay
 } from '../../utils/bay-dashboard-calendar.utils';
 
 // Nov 22 2026 is a Sunday, all dates are local so the tests don't depend on the time zone they run in
@@ -96,56 +96,48 @@ describe('groupEventsByDay', () => {
   });
 });
 
-describe('limitEventsAcrossDays', () => {
-  // the first day has 3 events, the second has 2, and the third has none
-  const groups = groupEventsByDay([battery, bayTime, shakedown, cleanup], getCalendarDays(day(22)));
+describe('limitEventsPerDay', () => {
+  const lateEvent = event('Late', new Date(2026, 10, 24, 12), new Date(2026, 10, 24, 13));
+  const lateEvent2 = event('Later', new Date(2026, 10, 24, 15), new Date(2026, 10, 24, 16));
+  const lateEvent3 = event('Latest', new Date(2026, 10, 24, 18), new Date(2026, 10, 24, 19));
 
-  const counts = (limited: ReturnType<typeof limitEventsAcrossDays>) =>
+  const counts = (limited: ReturnType<typeof limitEventsPerDay>) =>
     limited.map((group) => [group.events.length, group.hiddenCount]);
 
-  it('always shows every event on the first day', () => {
-    expect(counts(limitEventsAcrossDays(groups, 1))).toEqual([
-      [3, 0],
-      [0, 2],
-      [0, 0]
-    ]);
-  });
+  it('shows every event on the first two days', () => {
+    // first day: bay time, shakedown and battery, second day: shakedown and cleanup
+    const groups = groupEventsByDay([battery, bayTime, shakedown, cleanup], getCalendarDays(day(22)));
 
-  it('shares what is left across the other days one event at a time', () => {
-    expect(counts(limitEventsAcrossDays(groups, 4))).toEqual([
-      [3, 0],
-      [1, 1],
-      [0, 0]
-    ]);
-    expect(counts(limitEventsAcrossDays(groups, 5))).toEqual([
+    expect(counts(limitEventsPerDay(groups))).toEqual([
       [3, 0],
       [2, 0],
       [0, 0]
     ]);
   });
 
-  it('gives the later days an equal share', () => {
-    const lateEvent = event('Late', new Date(2026, 10, 24, 12), new Date(2026, 10, 24, 13));
-    const evenGroups = groupEventsByDay([battery, cleanup, shakedown, lateEvent, lateEvent], getCalendarDays(day(22)));
+  it('shows one event on the days after and counts the rest', () => {
+    const groups = groupEventsByDay([battery, lateEvent, lateEvent2, lateEvent3], getCalendarDays(day(22)));
 
-    // first day: battery and shakedown, second day: cleanup and shakedown, third day: two late events
-    expect(counts(limitEventsAcrossDays(evenGroups, 4))).toEqual([
-      [2, 0],
-      [1, 1],
-      [1, 1]
+    expect(counts(limitEventsPerDay(groups))).toEqual([
+      [1, 0],
+      [0, 0],
+      [1, 2]
     ]);
   });
 
-  it('keeps each day in order, starting with all day events', () => {
-    const [, secondDay] = limitEventsAcrossDays(groups, 4);
+  it('keeps the first event of a later day, starting with all day events', () => {
+    const lateAllDay = event('Late All Day', day(24), day(25), { allDay: true });
+    const groups = groupEventsByDay([lateEvent, lateAllDay], getCalendarDays(day(22)));
 
-    expect(secondDay.events.map((e) => e.title)).toEqual(['Bay Cleanup']);
+    const [, , thirdDay] = limitEventsPerDay(groups);
+
+    expect(thirdDay.events.map((e) => e.title)).toEqual(['Late All Day']);
   });
 
-  it('does not hide anything when everything fits', () => {
-    const smallGroups = groupEventsByDay([battery], getCalendarDays(day(22)));
+  it('does not hide anything when there is one event on each later day', () => {
+    const groups = groupEventsByDay([battery, lateEvent], getCalendarDays(day(22)));
 
-    expect(limitEventsAcrossDays(smallGroups, 3).every((group) => group.hiddenCount === 0)).toBe(true);
+    expect(limitEventsPerDay(groups).every((group) => group.hiddenCount === 0)).toBe(true);
   });
 });
 

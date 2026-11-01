@@ -11,7 +11,8 @@ export interface LimitedCalendarDayEvents extends CalendarDayEvents {
 }
 
 export const CALENDAR_DAYS_SHOWN = 3;
-export const LARGE_CALENDAR_MAX_EVENTS = 5;
+export const FULL_CALENDAR_DAYS = 2;
+export const LATER_DAY_MAX_EVENTS = 1;
 export const MEDIUM_CALENDAR_MAX_EVENTS = 2;
 
 /**
@@ -44,32 +45,14 @@ export const groupEventsByDay = (events: PublicBayDashboardCalendarEvent[], days
   days.map((day) => ({ day, events: events.filter((event) => eventOccursOnDay(event, day)).sort(compareEvents) }));
 
 /**
- * Keeps at most `maxEvents` events across the days and counts the ones that didn't fit on each day.
- * The first day always shows all of its events. The days after it share what's left one event at a time, so one busy
- * day can't use it all up.
+ * Keeps every event on the first days and only the first event on each day after them,
+ * and counts the events that were left out of each day.
  */
-export const limitEventsAcrossDays = (groups: CalendarDayEvents[], maxEvents: number): LimitedCalendarDayEvents[] => {
-  const shownCounts = groups.map((group, i) => (i === 0 ? group.events.length : 0));
-  let remaining = maxEvents - (shownCounts[0] ?? 0);
-  let sharedOut = true;
-
-  while (remaining > 0 && sharedOut) {
-    sharedOut = false;
-    for (let i = 1; i < groups.length && remaining > 0; i++) {
-      if (shownCounts[i] < groups[i].events.length) {
-        shownCounts[i]++;
-        remaining--;
-        sharedOut = true;
-      }
-    }
-  }
-
-  return groups.map(({ day, events }, i) => ({
-    day,
-    events: events.slice(0, shownCounts[i]),
-    hiddenCount: events.length - shownCounts[i]
-  }));
-};
+export const limitEventsPerDay = (groups: CalendarDayEvents[]): LimitedCalendarDayEvents[] =>
+  groups.map(({ day, events }, i) => {
+    const shownEvents = i < FULL_CALENDAR_DAYS ? events : events.slice(0, LATER_DAY_MAX_EVENTS);
+    return { day, events: shownEvents, hiddenCount: events.length - shownEvents.length };
+  });
 
 /**
  * The events that haven't ended yet, in the order they start
