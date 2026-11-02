@@ -22,7 +22,8 @@ export const prismaChangeRequest1: PrismaChangeRequest = {
   deletedByUserId: null,
   snapshotBlockingCount: null,
   snapshotStartDate: null,
-  snapshotDuration: null
+  snapshotDuration: null,
+  snapshotBudget: null
 };
 
 export const sharedChangeRequest: SharedChangeRequest = {
@@ -38,5 +39,6 @@ export const sharedChangeRequest: SharedChangeRequest = {
   type: ChangeRequestType.Leadership,
   status: ChangeRequestStatus.Open,
   requestedReviewers: [],
-  identifier: 1
+  identifier: 1,
+  triageScore: 0
 };

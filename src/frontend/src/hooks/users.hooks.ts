@@ -20,7 +20,6 @@ import {
   getUserBusyTimes,
   updateUserScheduleSettings,
   getUserTasks,
-  getManyUserTasks,
   getCurrentUser,
   logUserOut,
   getManyUsersWithScheduleSettings,
@@ -37,7 +36,7 @@ import {
   UserSecureSettings,
   UserScheduleSettings,
   SetUserScheduleSettingsPayload,
-  Task,
+  TaskHomeCard,
   UserWithRole,
   UserWithScheduleSettings,
   ProjectOverview,
@@ -297,20 +296,8 @@ export const useUpdateUserRole = () => {
  * @returns user's assigned task
  */
 export const useUserTasks = (userId: string) => {
-  return useQuery<Task[], Error>(['users', userId, 'tasks'], async () => {
+  return useQuery<TaskHomeCard[], Error>(['users', userId, 'tasks'], async () => {
     const { data } = await getUserTasks(userId);
-    return data;
-  });
-};
-
-/**
- * Custom react hook to get the assigned tasks of all users in the list
- * @param userIds ids of users to get assigned tasks from
- * @returns tasks assigned to all users in list
- */
-export const useManyUserTasks = (userIds: string[]) => {
-  return useQuery<Task[], Error>(['users', userIds, 'tasks'], async () => {
-    const { data } = await getManyUserTasks(userIds);
     return data;
   });
 };

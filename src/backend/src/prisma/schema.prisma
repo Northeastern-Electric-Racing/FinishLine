@@ -457,6 +457,7 @@ model Change_Request {
   snapshotBlockingCount    Int?
   snapshotStartDate        DateTime?                           @db.Date
   snapshotDuration         Int?
+  snapshotBudget           Int?
 
   @@unique([identifier, organizationId], name: "uniqueChangeRequest")
   @@index([reviewerId])
