@@ -609,9 +609,14 @@ export default class ChangeRequestsService {
       where: { organizationId: organization.organizationId }
     });
 
-    const blockingCount = await prisma.work_Package.count({
-      where: { blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } } }
-    });
+    const blockingCount = workPackage
+      ? await prisma.work_Package.count({
+          where: {
+            blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } },
+            wbsElement: { dateDeleted: null }
+          }
+        })
+      : null;
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -628,7 +633,7 @@ export default class ChangeRequestsService {
         },
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChanges + 1,
-        snapshotBlockingCount: workPackage ? blockingCount : null,
+        snapshotBlockingCount: blockingCount,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
         snapshotBudget: wbsElement ? wbsElement.project?.budget : null
@@ -728,9 +733,14 @@ export default class ChangeRequestsService {
       );
     }
 
-    const blockingCount = await prisma.work_Package.count({
-      where: { blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } } }
-    });
+    const blockingCount = workPackage
+      ? await prisma.work_Package.count({
+          where: {
+            blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } },
+            wbsElement: { dateDeleted: null }
+          }
+        })
+      : null;
 
     const numChangeRequests = await prisma.change_Request.count({
       where: { organizationId: organization.organizationId }
@@ -746,7 +756,7 @@ export default class ChangeRequestsService {
         },
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChangeRequests + 1,
-        snapshotBlockingCount: workPackage ? blockingCount : null,
+        snapshotBlockingCount: blockingCount,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
         snapshotBudget: wbsElement ? wbsElement.project?.budget : null
@@ -965,9 +975,14 @@ export default class ChangeRequestsService {
       where: { organizationId: organization.organizationId }
     });
 
-    const blockingCount = await prisma.work_Package.count({
-      where: { blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } } }
-    });
+    const blockingCount = workPackage
+      ? await prisma.work_Package.count({
+          where: {
+            blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } },
+            wbsElement: { dateDeleted: null }
+          }
+        })
+      : null;
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -982,7 +997,7 @@ export default class ChangeRequestsService {
             manager: managerId ? { connect: { userId: managerId } } : undefined
           }
         },
-        snapshotBlockingCount: workPackage ? blockingCount : null,
+        snapshotBlockingCount: blockingCount,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
         snapshotBudget: wbsElement ? wbsElement.project?.budget : null
@@ -1121,9 +1136,14 @@ export default class ChangeRequestsService {
       where: { wbsElementId: wbsElement.wbsElementId }
     });
 
-    const blockingCount = await prisma.work_Package.count({
-      where: { blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } } }
-    });
+    const blockingCount = workPackage
+      ? await prisma.work_Package.count({
+          where: {
+            blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } },
+            wbsElement: { dateDeleted: null }
+          }
+        })
+      : null;
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -1136,7 +1156,7 @@ export default class ChangeRequestsService {
         }),
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChangeRequests + 1,
-        snapshotBlockingCount: workPackage ? blockingCount : null,
+        snapshotBlockingCount: blockingCount,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
         snapshotBudget: wbsElement ? wbsElement.project?.budget : null
