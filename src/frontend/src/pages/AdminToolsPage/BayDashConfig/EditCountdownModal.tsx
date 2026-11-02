@@ -13,7 +13,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useEditBayDashboardCountdown } from '../../../hooks/bay-dashboard.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { BayDashboardCountdown } from 'shared';
+import { BayDashboardCountdown, dbDateToLocalDate } from 'shared';
 import NERFormModal from '../../../components/NERFormModal';
 import { DatePicker } from '@mui/x-date-pickers';
 
@@ -48,10 +48,18 @@ const EditCountdownModal: React.FC<EditCountdownModalProps> = ({ showModal, hand
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: { name: countdown.name, startDate: countdown.startDate, endDate: countdown.endDate ?? null }
+    defaultValues: {
+      name: countdown.name,
+      startDate: dbDateToLocalDate(countdown.startDate),
+      endDate: countdown.endDate ? dbDateToLocalDate(countdown.endDate) : null
+    }
   });
   const handleReset = useCallback(() => {
-    reset({ name: countdown.name, startDate: countdown.startDate, endDate: countdown.endDate ?? null });
+    reset({
+      name: countdown.name,
+      startDate: dbDateToLocalDate(countdown.startDate),
+      endDate: countdown.endDate ? dbDateToLocalDate(countdown.endDate) : null
+    });
   }, [reset, countdown]);
 
   const onSubmit = async (data: { name: string; startDate: Date; endDate: Date | null }) => {
