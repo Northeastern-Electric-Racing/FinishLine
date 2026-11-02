@@ -82,8 +82,9 @@ export const useSaveBayDashboardConfig = () => {
 
 /**
  * Custom React Hook to edit a bay dashboard countdown, changing the one the TV is showing.
+ * @param slug the organization slug, whose countdowns are refetched after editing
  */
-export const useEditBayDashboardCountdown = () => {
+export const useEditBayDashboardCountdown = (slug: string) => {
   const queryClient = useQueryClient();
   const toast = useToast();
   return useMutation<BayDashboardCountdown, Error, { countdownId: string; name: string; startDate: Date; endDate?: Date }>(
@@ -94,7 +95,7 @@ export const useEditBayDashboardCountdown = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['bay-dashboard', 'admin', 'countdowns']);
+        queryClient.invalidateQueries(['bay-dashboard', slug, 'countdowns']);
         toast.success('Countdown updated successfully!');
       },
       onError: (error) => {

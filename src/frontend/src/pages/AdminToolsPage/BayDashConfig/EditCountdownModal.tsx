@@ -35,11 +35,12 @@ interface EditCountdownModalProps {
   showModal: boolean;
   handleClose: () => void;
   countdown: BayDashboardCountdown;
+  slug: string;
 }
 
-const EditCountdownModal: React.FC<EditCountdownModalProps> = ({ showModal, handleClose, countdown }) => {
+const EditCountdownModal: React.FC<EditCountdownModalProps> = ({ showModal, handleClose, countdown, slug }) => {
   const toast = useToast();
-  const { isLoading, isError, error, mutateAsync } = useEditBayDashboardCountdown();
+  const { isLoading, isError, error, mutateAsync } = useEditBayDashboardCountdown(slug);
   const {
     handleSubmit,
     control,
