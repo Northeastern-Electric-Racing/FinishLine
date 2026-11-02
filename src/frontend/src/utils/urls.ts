@@ -543,9 +543,11 @@ const dashboardDelete = (dashboardId: string) => `${dashboards()}/${dashboardId}
 const bayDashboard = () => `${API_URL}/bay-dashboard`;
 const bayDashboardEvents = (slug: string) => `${bayDashboard()}/${slug}/events`;
 const bayDashboardConfig = (slug: string) => `${bayDashboard()}/${slug}/config`;
+const bayDashboardCountdowns = (slug: string) => `${bayDashboard()}/${slug}/countdowns`;
 const bayDashboardAdmin = () => `${bayDashboard()}/admin`;
 const bayDashboardAdminWidgets = () => `${bayDashboardAdmin()}/widgets`;
 const bayDashboardAdminSave = () => `${bayDashboardAdmin()}/save`;
+const bayDashboardAdminCountdownCreate = () => `${bayDashboardAdmin()}/countdown/create`;
 const bayDashboardCountdownEdit = (countdownId: string) => `${bayDashboardAdmin()}/countdown/${countdownId}/edit`;
 
 /**************** Other Endpoints ****************/
@@ -953,10 +955,12 @@ export const apiUrls = {
 
   bayDashboardEvents,
   bayDashboardConfig,
+  bayDashboardCountdowns,
   bayDashboardAdmin,
   bayDashboardCountdownEdit,
   bayDashboardAdminWidgets,
   bayDashboardAdminSave,
+  bayDashboardAdminCountdownCreate,
 
   version
 };
