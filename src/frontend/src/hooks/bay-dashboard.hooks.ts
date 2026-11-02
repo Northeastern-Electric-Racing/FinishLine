@@ -123,10 +123,14 @@ export const useSaveBayDashboardConfig = () => {
 export const useEditBayDashboardCountdown = (slug: string) => {
   const queryClient = useQueryClient();
   const toast = useToast();
-  return useMutation<BayDashboardCountdown, Error, { countdownId: string; name: string; startDate: Date; endDate?: Date }>(
+  return useMutation<
+    BayDashboardCountdown,
+    Error,
+    { countdownId: string; name: string; startDate: Date; isPrimary: boolean; endDate?: Date }
+  >(
     ['bay-dashboard', 'admin', 'countdown', 'edit'],
-    async ({ countdownId, name, startDate, endDate }) => {
-      const { data } = await editBayDashboardCountdown(countdownId, name, startDate, endDate);
+    async ({ countdownId, name, startDate, isPrimary, endDate }) => {
+      const { data } = await editBayDashboardCountdown(countdownId, name, startDate, isPrimary, endDate);
       return data;
     },
     {

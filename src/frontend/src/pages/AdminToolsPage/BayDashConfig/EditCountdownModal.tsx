@@ -68,6 +68,7 @@ const EditCountdownModal: React.FC<EditCountdownModalProps> = ({ showModal, hand
         countdownId: countdown.bayDashboardCountdownId,
         name: data.name,
         startDate: data.startDate,
+        isPrimary: countdown.isPrimary,
         endDate: data.endDate ?? undefined
       });
       handleClose();

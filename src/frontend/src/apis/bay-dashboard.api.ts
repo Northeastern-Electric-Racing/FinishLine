@@ -93,10 +93,16 @@ export const createBayDashboardCountdown = (countdown: BayDashboardCountdownCrea
  *@param endDate the new end date for the countdown (optional)
  *@returns this returns something that is resolved to the update of the countdown object
  */
-export const editBayDashboardCountdown = (countdownId: string, name: string, startDate: Date, endDate?: Date) => {
+export const editBayDashboardCountdown = (
+  countdownId: string,
+  name: string,
+  startDate: Date,
+  isPrimary: boolean,
+  endDate?: Date
+) => {
   return axios.post<BayDashboardCountdown>(
     apiUrls.bayDashboardCountdownEdit(countdownId),
-    { name, startDate: dateToMidnightUTC(startDate), endDate: endDate && dateToMidnightUTC(endDate) },
+    { name, startDate: dateToMidnightUTC(startDate), endDate: endDate && dateToMidnightUTC(endDate), isPrimary },
     { transformResponse: (data) => bayDashboardCountdownTransformer(JSON.parse(data)) }
   );
 };
