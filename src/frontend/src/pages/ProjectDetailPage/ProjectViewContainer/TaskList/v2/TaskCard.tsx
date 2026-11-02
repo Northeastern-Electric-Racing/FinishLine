@@ -2,7 +2,7 @@ import { Draggable } from '@hello-pangea/dnd';
 import { Construction, Folder, Delete, Schedule } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Grid, Typography, IconButton } from '@mui/material';
 import { useState } from 'react';
-import { notGuest, Task, TaskStatus, WbsNumber } from 'shared';
+import { notGuest, TaskBoardItem, TaskStatus, WbsNumber } from 'shared';
 import { useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
@@ -13,7 +13,6 @@ import NERModal from '../../../../../components/NERModal';
 import { Link as RouterLink, useHistory, useLocation } from 'react-router-dom';
 import { routes } from '../../../../../utils/routes';
 import { wbsPipe } from '../../../../../utils/pipes';
-import { useProjectsDropdown } from '../../../../../hooks/dropdowns.hooks';
 
 const wpColors = [
   { bg: 'rgba(55,138,221,0.15)', color: '#7dbef4' }, // blue
@@ -35,7 +34,7 @@ export const TaskCard = ({
   onDeleteTask,
   onEditTask
 }: {
-  task: Task;
+  task: TaskBoardItem;
   index: number;
   wbsNum?: WbsNumber;
   // the board this card lives on, forwarded to the modal so the edit form knows whether it's WP-scoped
@@ -43,20 +42,13 @@ export const TaskCard = ({
   // shows the owning project's name on the card (used only on the global board, where tasks span projects)
   showProjectName?: boolean;
   onDeleteTask: (taskId: string) => void;
-  onEditTask: (task: Task) => void;
+  onEditTask: (task: TaskBoardItem) => void;
 }) => {
   const { mutateAsync: deleteTask } = useDeleteTask();
   const { mutateAsync: editTask } = useEditTask();
   const { mutateAsync: editTaskAssignees } = useEditTaskAssignees();
 
-  // only fetch the projects dropdown list when we actually need to label cards (global board)
-  const { data: dropdownProjects } = useProjectsDropdown(showProjectName);
-  const projectName = showProjectName
-    ? dropdownProjects?.find(
-        (project) =>
-          project.wbsNum.carNumber === task.wbsNum.carNumber && project.wbsNum.projectNumber === task.wbsNum.projectNumber
-      )?.name
-    : undefined;
+  const projectName = showProjectName ? task.projectName : undefined;
 
   const user = useCurrentUser();
 

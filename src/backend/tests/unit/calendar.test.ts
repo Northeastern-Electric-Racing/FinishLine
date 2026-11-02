@@ -5,7 +5,8 @@ import {
   AccessDeniedException,
   DeletedException,
   NotFoundException,
-  InvalidOrganizationException
+  InvalidOrganizationException,
+  HttpException
 } from '../../src/utils/errors.utils';
 import {
   batmanAppAdmin,
@@ -80,7 +81,8 @@ describe('Calendar Tests', () => {
       true, // description
       true, // onlyHeadsOrAbove
       false, // requiresConfirmation - changed to false so tests don't need initialDateScheduled
-      true // sendSlackNotifications
+      true, // sendSlackNotifications
+      false // takeAttendance
     );
   });
 
@@ -268,6 +270,7 @@ describe('Calendar Tests', () => {
             false,
             true,
             false,
+            false,
             false
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create event type'));
@@ -293,6 +296,7 @@ describe('Calendar Tests', () => {
         false,
         true,
         false,
+        false,
         false
       );
 
@@ -312,6 +316,34 @@ describe('Calendar Tests', () => {
       expect(result.onlyHeadsOrAboveForEventCreation).toBe(true);
       expect(result.requiresConfirmation).toBe(false);
       expect(result.sendSlackNotifications).toBe(false);
+      expect(result.takeAttendance).toBe(false);
+    });
+
+    it('fails if attendance is enabled without teams', async () => {
+      await expect(
+        CalendarService.createEventType(
+          await createTestUser(supermanAdmin, orgId),
+          'Meeting',
+          [],
+          organization,
+          true,
+          true,
+          false, // teams
+          false,
+          false,
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          false,
+          true // takeAttendance
+        )
+      ).rejects.toThrow(new HttpException(400, 'Event types that take attendance must have teams enabled'));
     });
   });
 
@@ -668,6 +700,7 @@ describe('Calendar Tests', () => {
         false,
         true,
         true,
+        false,
         false
       );
     });
@@ -681,6 +714,7 @@ describe('Calendar Tests', () => {
           [calendar.calendarId],
           organization,
           'Initial Event Type',
+          false,
           false,
           false,
           false,
@@ -723,7 +757,8 @@ describe('Calendar Tests', () => {
           true,
           true,
           true,
-          true
+          true,
+          false
         )
       ).rejects.toThrow(new NotFoundException('Calendar', invalidCalendarId));
     });
@@ -769,6 +804,7 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
+          false,
           false
         )
       ).rejects.toThrow(new InvalidOrganizationException('Calendar'));
@@ -797,6 +833,7 @@ describe('Calendar Tests', () => {
           false,
           false,
           true,
+          false,
           false
         )
       ).rejects.toThrow(new NotFoundException('Event Type', nonExistentId));
@@ -823,6 +860,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         false,
+        false,
         false
       );
 
@@ -843,6 +881,35 @@ describe('Calendar Tests', () => {
       expect(result.onlyHeadsOrAboveForEventCreation).toBe(false);
       expect(result.requiresConfirmation).toBe(false);
       expect(result.sendSlackNotifications).toBe(false);
+      expect(result.takeAttendance).toBe(false);
+    });
+
+    it('fails if attendance is enabled without teams', async () => {
+      await expect(
+        CalendarService.editEventType(
+          eventType.eventTypeId,
+          adminUser,
+          [calendar.calendarId],
+          organization,
+          'Initial Event Type',
+          true,
+          true,
+          false, // teams
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          true,
+          false,
+          true // takeAttendance
+        )
+      ).rejects.toThrow(new HttpException(400, 'Event types that take attendance must have teams enabled'));
     });
   });
 
@@ -2039,6 +2106,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         true,
+        false,
         false
       );
     });
@@ -2097,6 +2165,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         true,
+        false,
         false
       );
 

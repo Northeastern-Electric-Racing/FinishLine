@@ -2091,47 +2091,40 @@ export default class RulesService {
       throw new HttpException(500, 'Error parsing rules from PDF file');
     }
 
+    // pre-generate ids so parent links can be set in a single createMany instead of one update per rule
+    const rulesWithIds = parsedRules.map((rule) => ({ ...rule, ruleId: crypto.randomUUID() }));
+    const ruleByCode = new Map(rulesWithIds.map((rule) => [rule.ruleCode, rule]));
+
+    const getDepth = (rule: ParsedRule): number => {
+      let depth = 0;
+      let parentCode = rule.parentRuleCode;
+      const seen = new Set<string>();
+      while (parentCode && ruleByCode.has(parentCode) && !seen.has(parentCode)) {
+        seen.add(parentCode);
+        depth++;
+        parentCode = ruleByCode.get(parentCode)!.parentRuleCode;
+      }
+      return depth;
+    };
+
+    // parents must be inserted before children, since createMany may split into multiple statements
+    const orderedRules = rulesWithIds
+      .map((rule) => ({ rule, depth: getDepth(rule) }))
+      .sort((a, b) => a.depth - b.depth)
+      .map(({ rule }) => rule);
+
     await prisma.$transaction(async (tx) => {
       await tx.rule.createMany({
-        data: parsedRules.map((rule) => ({
+        data: orderedRules.map((rule) => ({
+          ruleId: rule.ruleId,
           ruleCode: rule.ruleCode,
           ruleContent: rule.ruleContent,
           imageFileIds: [],
           rulesetId,
-          createdByUserId: user.userId
+          createdByUserId: user.userId,
+          parentRuleId: rule.parentRuleCode ? (ruleByCode.get(rule.parentRuleCode)?.ruleId ?? null) : null
         }))
       });
-
-      const createdRules = await tx.rule.findMany({
-        where: { rulesetId, dateDeleted: null },
-        select: {
-          ruleId: true,
-          ruleCode: true
-        }
-      });
-
-      const ruleMap = new Map<string, string>();
-      createdRules.forEach((rule) => {
-        ruleMap.set(rule.ruleCode, rule.ruleId);
-      });
-
-      // update parent relationships
-      const parentUpdates = parsedRules
-        .filter((rule) => rule.parentRuleCode)
-        .map((rule) => {
-          const parentId = ruleMap.get(rule.parentRuleCode!);
-          const ruleId = ruleMap.get(rule.ruleCode);
-
-          if (!parentId || !ruleId) return null;
-
-          return tx.rule.update({
-            where: { ruleId },
-            data: { parentRuleId: parentId }
-          });
-        })
-        .filter(Boolean);
-
-      await Promise.all(parentUpdates);
     });
 
     const savedRules = await prisma.rule.findMany({
