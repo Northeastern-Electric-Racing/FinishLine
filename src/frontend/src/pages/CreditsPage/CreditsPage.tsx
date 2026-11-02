@@ -234,6 +234,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Xander Hoke', color: '#C50D93' },
     { name: 'Claire Hendershot', color: '#008080' },
     { name: 'Marcus Yi', color: '#FFFFFF' },
+    { name: 'Brendan Keefe', color: '#1370e1' },
     { name: 'Alex Dong', color: '#5d42f5' },
     { name: 'Chris Li', color: '#5d42f5' },
     { name: 'Kenneth Aldridge', color: '#E70D0D' },
@@ -404,7 +405,8 @@ const CreditsPage: React.FC = () => {
         '-webkit-background-clip': 'text'
       }
     },
-    { name: 'Arya Baviskar', color: '#92b5ed' }
+    { name: 'Arya Baviskar', color: '#92b5ed' },
+    { name: 'Udhaya Bhuvanesh', color: '#B57EDC' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];

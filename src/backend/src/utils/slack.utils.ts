@@ -1,7 +1,7 @@
 import {
   ChangeRequest,
   daysBetween,
-  Task,
+  BaseTask,
   wbsPipe,
   calculateEndDate,
   CreateSponsorTask,
@@ -124,7 +124,7 @@ export const sendSlackRequestedReviewNotification = async (
  */
 export const sendSlackTaskAssignedNotification = async (
   slackId: string,
-  task: Task,
+  task: Pick<BaseTask, 'wbsNum' | 'title'>,
   organizationId: string
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod

@@ -67,6 +67,27 @@ export const getUsers = async (userIds: string[]): Promise<User[]> => {
 };
 
 /**
+ * Validates that all given user IDs exist and are members of the given organization.
+ * @throws NotFoundException if any ID doesn't exist
+ * @throws InvalidOrganizationException if any user isn't a member of the organization
+ */
+export const validateOrgUsers = async (userIds: string[], organizationId: string): Promise<void> => {
+  if (userIds.length === 0) return;
+
+  const users = await prisma.user.findMany({
+    where: { userId: { in: userIds } },
+    select: { userId: true, organizations: { where: { organizationId }, select: { organizationId: true } } }
+  });
+
+  const foundIds = users.map((u) => u.userId);
+  const missingIds = userIds.filter((id) => !foundIds.includes(id));
+  if (missingIds.length > 0) throw new NotFoundException('User', missingIds.join(', '));
+
+  const outsideOrgUser = users.find((u) => u.organizations.length === 0);
+  if (outsideOrgUser) throw new InvalidOrganizationException('User');
+};
+
+/**
  * Produce a array of primsa formated userIds, given the array of User
  * @param userIds the userIds to get as users
  * @returns userIds in prisma format

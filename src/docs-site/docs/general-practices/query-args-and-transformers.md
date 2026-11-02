@@ -1,43 +1,51 @@
 ---
 title: Query Args and Transformers
-description: Guide for Prisma query args and transformer functions in FinishLine. Query args define reusable select/include objects for Prisma queries. Transformers convert Prisma results into shared types for the API. Use when creating query args, writing transformers, fetching data from Prisma for API responses, or when asked how data flows from the database to the frontend.
+description: Guide for Prisma query args and transformer functions in FinishLine. Every domain has a slim Base model (query args, transformer, shared type) that per-endpoint models extend with only what they need. Transformers convert Prisma results into shared types for the API. Use when creating query args, writing transformers, fetching data from Prisma for API responses, or when asked how data flows from the database to the frontend.
 skill: true
 skill_name: query-args-and-transformers
 ---
 
 # Query Args and Transformers
 
-> **Summary:** Query args define what data Prisma fetches from the database. Transformers convert that Prisma data into the shared types sent to the frontend. Together they form the data-shaping layer between Prisma and the API response.
+> **Summary:** Query args define what data Prisma fetches from the database. Transformers convert that Prisma data into the shared types sent to the frontend. Every domain has a slim **Base** model that endpoints **opt in** to extending, never a fat default that endpoints opt out of.
 
 ## Overview
 
 When a service method needs to return data to the frontend, it goes through two steps:
 
-1. **Query args** tell Prisma exactly which fields and relations to fetch. They are reusable `select`/`include` objects defined with `Prisma.validator`.
+1. **Query args** tell Prisma exactly which fields and relations to fetch. They are `select` objects defined with `Prisma.validator`.
 2. **Transformers** take the typed Prisma result and reshape it into a shared type (defined in `src/shared/`) that the frontend expects.
 
 This separation exists because Prisma's auto-generated types (column names, nested relation shapes, enum values) often differ from the API contract. Transformers handle renaming fields, mapping enums, flattening relations, and filtering out internal data.
 
-**Critical distinction:** Query args and transformers are ONLY for data being returned to the frontend. For internal queries in a service (validation checks, duplicate detection, permission lookups), use inline `select: {}` clauses directly in the Prisma call. See the "Internal Queries" section below.
+**Why payload size matters:** our EC2 instances have about 1.3GB of memory for the app. Several large queries running at once will crash the instance (OOM). As a rule of thumb, keep every query well under **75,000 nodes**, where a node is one object or value in the result. 10,000 nodes is roughly 1MB over the wire. The usual cause of oversized queries is a "full" query args that every endpoint reuses, with every relation nested inside it. The Base pattern below exists to prevent that.
+
+**Critical distinction:** Query args and transformers are ONLY for data being returned to the frontend. For internal queries in a service (validation checks, duplicate detection, permission lookups), use a minimal inline `select` directly in the Prisma call. See the "Internal Queries" section below.
 
 ## Architecture
 
 ```
+            Base<Domain>                      ← slim: every consumer needs it
+            ┌──────┴───────┐
+   <Domain>BoardItem   <Domain>HomeCard       ← per-endpoint: spread the base, add only what that page reads
+```
+
+The same tree exists three times, once per layer:
+
+| Layer       | Base                        | Extended                                              |
+| ----------- | --------------------------- | ----------------------------------------------------- |
+| Query args  | `getBaseTaskQueryArgs()`    | `select: { ...getBaseTaskQueryArgs().select, extra }` |
+| Transformer | `baseTaskTransformer(task)` | `{ ...baseTaskTransformer(task), extra }`             |
+| Shared type | `interface BaseTask`        | `interface TaskBoardItem extends BaseTask`            |
+
+```
   Service Method
-       │
-       │  uses query args to fetch
+       │  fetches with Base or extended query args
        ▼
-┌──────────────┐
-│  Prisma      │  returns typed result:
-│  Query Args  │  Prisma.XGetPayload<Args>
-└──────┬───────┘
-       │
-       │  passes result to transformer
+  Prisma.XGetPayload<Args>
+       │  passes result to matching transformer
        ▼
-┌──────────────┐
-│  Transformer │  returns shared type
-│              │  (API contract)
-└──────┬───────┘
+  Shared type (API contract)
        │
        ▼
   Controller sends as JSON
@@ -45,217 +53,162 @@ This separation exists because Prisma's auto-generated types (column names, nest
 
 ## File Locations
 
-| Layer        | Path                                                        | Naming                 |
-| ------------ | ----------------------------------------------------------- | ---------------------- |
-| Query args   | `src/backend/src/prisma-query-args/{feature}.query-args.ts` | `get{Entity}QueryArgs` |
-| Transformers | `src/backend/src/transformers/{feature}.transformer.ts`     | `{entity}Transformer`  |
-| Shared types | `src/shared/src/types/{feature}-types.ts`                   | TypeScript interfaces  |
+| Layer        | Path                                                        | Contents                                                        |
+| ------------ | ----------------------------------------------------------- | --------------------------------------------------------------- |
+| Query args   | `src/backend/src/prisma-query-args/{feature}.query-args.ts` | `getBase{Entity}QueryArgs` + extended args used by 2+ endpoints |
+| Service      | `src/backend/src/services/{feature}.services.ts`            | Inline extended args for single-endpoint models                 |
+| Transformers | `src/backend/src/transformers/{feature}.transformer.ts`     | `base{Entity}Transformer` + every extended transformer          |
+| Shared types | `src/shared/src/types/{feature}-types.ts`                   | `Base{Entity}` + every extended interface                       |
 
-## Query Args
+## The Base Model
 
-### Structure
-
-Every query args file follows the same pattern: export a type alias using `ReturnType`, and export a function that returns a `Prisma.validator` call.
+The base is the smallest shape that every consumer of the entity needs. It must be slim enough to appear in any list.
 
 ```typescript
-// src/backend/src/prisma-query-args/shop.query-args.ts
-import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args.js';
+// src/backend/src/prisma-query-args/tasks.query-args.ts
+export type BaseTaskQueryArgs = ReturnType<typeof getBaseTaskQueryArgs>;
 
-export type ShopQueryArgs = ReturnType<typeof getShopQueryArgs>;
-
-export const getShopQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.ShopDefaultArgs>()({
-    include: {
-      userCreated: getUserQueryArgs(organizationId)
+export const getBaseTaskQueryArgs = () =>
+  Prisma.validator<Prisma.TaskDefaultArgs>()({
+    select: {
+      taskId: true,
+      title: true,
+      notes: true,
+      status: true,
+      priority: true,
+      deadline: true,
+      // a task is meaningless without the wbs element it belongs to; every consumer navigates by it
+      wbsElement: { select: { carNumber: true, projectNumber: true, workPackageNumber: true } },
+      assignees: getBaseUserQueryArgs(),
+      labels: getBaseTaskLabelQueryArgs()
     }
   });
 ```
 
-The type alias (`ShopQueryArgs`) is used by the transformer to type its input parameter via `Prisma.ShopGetPayload<ShopQueryArgs>`. This creates end-to-end type safety: if you change what the query fetches, the transformer's input type updates automatically and TypeScript will flag any mismatches.
+Rules for the base:
 
-### `select` vs `include`
+- **Use `select`, never `include`.** `include` pulls every column on the model, so a field added for one endpoint bloats every other endpoint. `select` is the equivalent of listing columns in SQL instead of `select *`.
+- **Be liberal with primitive columns.** They are cheap, and including them saves writing an extended model just for one scalar.
+- **Be strict about relations.** Include one only if the entity is meaningless without it (a task's wbs element, a project's wbs element). When you do, select only the fields needed, or nest that entity's own `getBase{X}QueryArgs()`.
+- **No to-many relations** (lists), except ones that are tiny and bounded in practice, like a task's assignees and labels.
+- **No `organizationId` parameter** unless the select actually uses it.
 
-**Always prefer `select` over `include`.** `include` fetches all columns on the relation plus the specified nested relations. `select` fetches only the fields you list.
+## Extended Models
 
-```typescript
-// GOOD — fetches only what's needed
-teams: {
-  select: {
-    teamName: true,
-    teamId: true
-  }
-}
-
-// AVOID — fetches every column on Team
-teams: true
-
-// ALSO AVOID — include fetches all Team
-// columns plus the nested relation
-teams: {
-  include: {
-    teamType: true
-  }
-}
-```
-
-Use `include` only when the transformer genuinely needs all (or nearly all) columns from the relation AND also needs nested relations. The `getWorkPackageQueryArgs` function uses `include` on `wbsElement` because the transformer needs most of its fields plus several nested relations. But even within that, nested relations like `teams` use `select` when only a few fields are needed.
-
-A good example of selective fetching is `getWorkPackagePreviewQueryArgs`, which uses `select` at every level to fetch the minimal data for a dropdown/list view:
+Each endpoint (or group of endpoints with near-identical needs) gets a model that extends the base with exactly what its pages read.
 
 ```typescript
-export const getWorkPackagePreviewQueryArgs = () =>
-  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
+export const getTaskHomeCardQueryArgs = () =>
+  Prisma.validator<Prisma.TaskDefaultArgs>()({
     select: {
-      blockedBy: true,
+      ...getBaseTaskQueryArgs().select,
       wbsElement: {
         select: {
-          wbsElementId: true,
           carNumber: true,
           projectNumber: true,
           workPackageNumber: true,
-          dateCreated: true,
-          dateDeleted: true,
+          // enough to name the task's project
           name: true,
-          lead: getUserPreviewQueryArgs(),
-          manager: getUserPreviewQueryArgs(),
-          status: true
-        }
-      },
-      project: {
-        select: {
-          projectId: true,
-          wbsElement: {
-            select: {
-              name: true,
-              links: getLinkQueryArgs()
-            }
-          }
-        }
-      },
-      startDate: true,
-      duration: true,
-      workPackageId: true,
-      stage: true
-    }
-  });
-```
-
-### Nesting
-
-Be very careful about nested query args. Every level of nesting adds database joins and increases query cost. Only include nested relations when the transformer actually needs that data to satisfy the shared type.
-
-**Good reasons to nest:**
-
-- The shared type has a `userCreated: User` field → nest `getUserQueryArgs`
-- The shared type has a `teams: Team[]` field that needs team names → nest with `select: { teamName: true, teamId: true }`
-
-**Bad reasons to nest:**
-
-- "The frontend might need it eventually" — add it when it's actually needed
-- Nesting three or more levels deep without confirming the transformer uses all that data
-
-When nesting gets deep, consider whether a separate endpoint with its own query args would be better. For example, `getEventQueryArgs` and `getEventWithMembersQueryArgs` exist as two separate functions because the member-expanded version adds significant nesting that most callers don't need.
-
-### `organizationId` Parameter
-
-Many query args accept `organizationId` to scope nested relations. The most common case is filtering user roles to the current organization:
-
-```typescript
-export const getUserQueryArgs = (organizationId?: string) =>
-  Prisma.validator<Prisma.UserDefaultArgs>()({
-    select: {
-      roles: organizationId ? { where: { organizationId } } : true,
-      userId: true,
-      firstName: true,
-      lastName: true,
-      email: true
-    }
-  });
-```
-
-Pass `organizationId` through from the service method. If your query args don't need to filter nested relations by org, the parameter can be omitted.
-
-### Filtering Soft-Deleted Records
-
-Query args MUST filter out soft-deleted records in nested relations using `where: { dateDeleted: null }`. This applies at every nesting level:
-
-```typescript
-export const getWorkPackageQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
-    include: {
-      blockedBy: {
-        where: { dateDeleted: null }
-      },
-      events: {
-        where: { dateDeleted: null },
-        ...getEventQueryArgs(organizationId)
-      },
-      wbsElement: {
-        include: {
-          descriptionBullets: {
-            where: { dateDeleted: null },
-            ...getDescriptionBulletQueryArgs(organizationId)
-          },
-          changes: {
-            where: {
-              changeRequest: { dateDeleted: null }
-            }
-          },
-          blocking: {
-            where: {
-              wbsElement: { dateDeleted: null }
-            }
-          }
+          workPackage: { select: { project: { select: { wbsElement: { select: { name: true } } } } } }
         }
       }
     }
   });
 ```
 
-Note: the top-level `dateDeleted: null` filter is applied in the service's `where` clause, not in the query args. Query args handle nested relation filtering.
+**Merge or split?** Two endpoints share a model when they differ only by primitives or single-row relations, because a few extra fields cost less than another query args, transformer and type. Split them when one needs a to-many relation, a multi-hop nested object, or anything that grows with the org's data and the other doesn't.
+
+**Name models after what they serve** (`TaskBoardItem`, `TaskHomeCard`), not `Preview`/`Full`/`WithX`.
+
+**Never nest older, fat query args** (e.g. `getUserQueryArgs`, `getProjectQueryArgs`) inside a new model. Query the nested fields directly, or use that entity's `getBase{X}QueryArgs()`. If the entity has no base yet, create one.
+
+**Push computation into the query.** If the frontend would load a list only to count, filter, or check it, compute that in Prisma instead (`_count`, a relation `where`) and expose it as an explicit field on the shared type:
+
+```typescript
+_count: { select: { tasks: { where: { dateDeleted: null, status: { not: 'DONE' } } } } }
+```
+
+### Where extended query args live
+
+- Used by **two or more** endpoints → export it from the query args file, with its `ReturnType` type.
+- Used by **one** endpoint → write it inline in the service function, still spread from the base:
+
+```typescript
+const task = await prisma.task.findUnique({
+  where: { taskId },
+  select: { ...getBaseTaskQueryArgs().select, startDate: true }
+});
+```
+
+## Query Args Details
+
+### Structure
+
+Every exported query args function has a type alias using `ReturnType`, and returns a `Prisma.validator` call. The transformer uses the alias via `Prisma.TaskGetPayload<BaseTaskQueryArgs>`. If you change what the query fetches, the transformer's input type updates and TypeScript flags any mismatch.
+
+### `organizationId` Parameter
+
+Some query args accept `organizationId` to scope nested relations, most commonly user roles:
+
+```typescript
+roles: organizationId ? { where: { organizationId } } : true,
+```
+
+Pass it through from the service method only when the select uses it.
+
+### Filtering Soft-Deleted Records
+
+Query args MUST filter soft-deleted records in nested to-many relations with `where: { dateDeleted: null }`:
+
+```typescript
+export const getTaskBlockedByQueryArgs = () =>
+  Prisma.validator<Prisma.TaskFindManyArgs>()({
+    where: { dateDeleted: null },
+    select: { taskId: true, title: true, status: true }
+  });
+```
+
+The top-level `dateDeleted: null` filter goes in the service's `where` clause, not in the query args.
 
 ### Circular Dependencies
 
-The `user.query-args.ts` file has a comment: `// DO NOT CALL ANY OTHER QUERY ARGS FROM HERE TO AVOID CIRCULAR DEPENDENCIES`. Because user query args are nested into almost every other query args file, they sit at the bottom of the dependency tree. If user query args imported from, say, `event.query-args.ts`, it would create a circular import. Keep this in mind when adding new nesting.
+`user.query-args.ts` has a comment: `// DO NOT CALL ANY OTHER QUERY ARGS FROM HERE TO AVOID CIRCULAR DEPENDENCIES`. User query args are nested into almost every other file, so they sit at the bottom of the dependency tree. Keep this in mind when adding new nesting.
 
 ## Transformers
 
 ### Structure
 
-A transformer is a pure function that takes a Prisma result (typed using the query args) and returns a shared type.
+A transformer is a pure function that takes a Prisma result (typed using the query args) and returns a shared type. Extended transformers start by spreading the base transformer:
 
 ```typescript
-// src/backend/src/transformers/calendar.transformer.ts
-import { Prisma } from '@prisma/client';
-import { Shop } from 'shared';
-import { ShopQueryArgs } from '../prisma-query-args/shop.query-args.js';
-import { userTransformer } from './user.transformer.js';
+// src/backend/src/transformers/tasks.transformer.ts
+export const baseTaskTransformer = (task: Prisma.TaskGetPayload<BaseTaskQueryArgs>): BaseTask => ({
+  taskId: task.taskId,
+  wbsNum: wbsNumOf(task.wbsElement),
+  title: task.title,
+  notes: task.notes,
+  status: convertTaskStatus(task.status),
+  priority: convertTaskPriority(task.priority),
+  deadline: task.deadline ?? undefined,
+  assignees: task.assignees.map(baseUserTransformer),
+  labels: task.labels.map(baseTaskLabelTransformer)
+});
 
-export const shopTransformer = (shop: Prisma.ShopGetPayload<ShopQueryArgs>): Shop => {
-  return {
-    shopId: shop.shopId,
-    name: shop.name,
-    description: shop.description,
-    dateCreated: shop.dateCreated,
-    userCreated: userTransformer(shop.userCreated)
-  };
-};
+export const taskHomeCardTransformer = (task: Prisma.TaskGetPayload<TaskHomeCardQueryArgs>): TaskHomeCard => ({
+  ...baseTaskTransformer(task),
+  projectName: taskProjectName(task.wbsElement)
+});
 ```
 
-**The input type** is always `Prisma.{Model}GetPayload<{QueryArgs}>`. This gives you a type that exactly matches what Prisma returns when using those query args.
+**The input type** is always `Prisma.{Model}GetPayload<{QueryArgs}>`. Because extended args spread the base select, an extended payload is assignable to the base transformer's input.
 
-**The return type** is always the shared type from `src/shared/`. The transformer's job is to bridge any gap between the two.
+**The return type** is always the shared type from `src/shared/`.
 
 ### Common Transformer Operations
 
-**Renaming fields** — when Prisma column names differ from the shared type:
+**Renaming fields:** `color: calendar.colorHexCode`
 
-```typescript
-color: calendar.colorHexCode,
-```
-
-**Mapping enums** — Prisma enums and shared enums are separate types. Create a mapping:
+**Mapping enums.** Prisma enums and shared enums are separate types, so map them explicitly:
 
 ```typescript
 export const eventStatusTransformer = (status: PrismaEventStatus): EventStatus => {
@@ -269,227 +222,136 @@ export const eventStatusTransformer = (status: PrismaEventStatus): EventStatus =
 };
 ```
 
-**Converting nulls to undefined** — Prisma uses `null` for optional fields, but shared types often use `undefined`:
+**Converting nulls to undefined:** `deadline: task.deadline ?? undefined`
 
-```typescript
-location: event.location ?? undefined,
-zoomLink: event.zoomLink ?? undefined,
-```
+**Transforming nested relations** with the related entity's base transformer: `assignees: task.assignees.map(baseUserTransformer)`
 
-**Transforming nested relations** — call other transformers for nested objects:
-
-```typescript
-requiredMembers:
-  event.requiredMembers.map(userTransformer),
-teams: event.teams.map((team) => ({
-  ...team,
-  members: team.members.map(userTransformer),
-  leads: team.leads.map(userTransformer),
-  head: userTransformer(team.head)
-})),
-```
-
-**Computing derived fields** — some shared types have fields that don't exist in the database:
-
-```typescript
-endDate: calculateEndDate(
-  wpInput.startDate, wpInput.duration
-),
-deleted: wpInput.wbsElement.dateDeleted !== null,
-```
-
-### Composing Transformers
-
-Transformers compose naturally. A `shopMachineryTransformer` calls `shopTransformer`, which calls `userTransformer`:
-
-```typescript
-export const shopMachineryTransformer = (sm: Prisma.Shop_MachineryGetPayload<ShopMachineryQueryArgs>): ShopMachinery => {
-  return {
-    shopMachineryId: sm.shopMachineryId,
-    shop: shopTransformer(sm.shop),
-    quantity: sm.quantity
-  };
-};
-```
-
-This mirrors the nesting in query args: `getMachineryQueryArgs` includes `getShopMachineryQueryArgs`, which includes `getShopQueryArgs`. The transformer chain matches the query args chain.
-
-### Preview Transformers
-
-When the frontend needs a lightweight version of an entity (for dropdowns, lists, or cards), create a separate "preview" query args and transformer pair:
-
-```typescript
-// Query args: minimal select
-export const getWorkPackagePreviewQueryArgs = () =>
-  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
-    select: {
-      /* only essential fields */
-    }
-  });
-
-// Transformer: maps to preview type
-export const workPackagePreviewTransformer = (
-  wp: Prisma.Work_PackageGetPayload<WorkPackagePreviewQueryArgs>
-): WorkPackagePreview => {
-  return {
-    /* minimal fields */
-  };
-};
-```
-
-This avoids fetching heavyweight data (nested changes, description bullets, events) when all the frontend needs is a name and ID.
+**Computing derived fields** from data the query already selected, such as `_count` results or a name one hop up. Prefer computing in the query over loading extra rows to compute here.
 
 ## Internal Queries (Not for API Response)
 
-When a service method queries the database for validation, permission checks, duplicate detection, or calculations — NOT to return data to the frontend — do NOT use query args. Write inline `select` clauses:
+Any database call whose result is never returned (validation, permission checks, org checks, duplicate detection, counts) selects the **absolute minimum** inline. That is usually not a base query args:
 
 ```typescript
-// Checking for duplicates: only need the ID
-const duplicate = await prisma.shop.findFirst({
-  where: {
-    organizationId: organization.organizationId,
-    dateDeleted: null,
-    name: { equals: name, mode: 'insensitive' }
-  },
-  select: { shopId: true }
-});
-
-// Counting members: only need the count
-const team = await prisma.team.findUnique({
-  where: { teamId },
-  select: {
-    _count: { select: { members: true } }
-  }
-});
-
 // Checking existence and org ownership
-const calendar = await prisma.calendar.findUnique({
-  where: { calendarId },
-  select: {
-    calendarId: true,
-    organizationId: true,
-    dateDeleted: true
-  }
+const originalTask = await prisma.task.findUnique({
+  where: { taskId },
+  select: { dateDeleted: true, wbsElement: { select: { organizationId: true } } }
+});
+
+// Only need a count
+const requestedWbsElement = await prisma.wBS_Element.findUnique({
+  where: { wbsNumber: { ...wbsNum, organizationId } },
+  select: { dateDeleted: true, project: { select: { _count: { select: { teams: true } } } } }
 });
 ```
 
-The principle is simple: query args exist to satisfy shared types via transformers. Everything else should fetch the minimum data needed.
+The same applies in utils and helpers (e.g. `validateTaskLabels`), not only in services.
 
-## How It All Connects in a Service
+## Mutations Don't Return Data
 
-Here's the full flow in a service method:
+Create, update and delete endpoints return `204` with no body. The service returns `Promise<void>` and does not pass query args to the write:
 
 ```typescript
-static async getSingleShop(
-  shopId: string,
-  organization: Organization
-): Promise<Shop> {
-  // 1. Fetch with query args (for API response)
-  const shop = await prisma.shop.findUnique({
-    where: { shopId },
-    ...getShopQueryArgs(organization.organizationId)
-  });
-
-  // 2. Validate existence
-  if (!shop) throw new NotFoundException(
-    'Shop', shopId
-  );
-  if (shop.dateDeleted)
-    throw new DeletedException('Shop', shopId);
-  if (
-    shop.organizationId !==
-    organization.organizationId
-  )
-    throw new InvalidOrganizationException('Shop');
-
-  // 3. Transform and return
-  return shopTransformer(shop);
+static async editTaskStatus(user: User, organizationId: string, taskId: string, status: Task_Status): Promise<void> {
+  // ... permission + validation with minimal selects ...
+  await prisma.task.update({ where: { taskId }, data: { status } });
 }
 ```
 
-For mutations that need both internal lookups and a final return:
+**Exception:** if a frontend caller actually reads the response (e.g. the task board inserts the created task without refetching), return the slimmest extended model that caller needs. See the [backend-endpoints](./backend-endpoints) document for the controller side.
+
+## Helper Parameter Types
+
+Functions that take a model (utils, Slack notifications, permission checks) accept only the fields they read, never a full type:
 
 ```typescript
-static async editShop(
-  submitter: User,
-  shopId: string,
-  name: string,
-  description: string,
-  organization: Organization
-): Promise<Shop> {
-  // Internal lookup — inline select
-  const existing = await prisma.shop.findUnique({
-    where: { shopId },
-    select: {
-      shopId: true,
-      organizationId: true,
-      dateDeleted: true
-    }
+export const sendSlackTaskAssignedNotification = async (
+  slackId: string,
+  task: Pick<BaseTask, 'wbsNum' | 'title'>,
+  organizationId: string
+) => { ... };
+```
+
+This lets any model that extends the base be passed in, without forcing callers to fetch more than they need.
+
+## How It All Connects in a Service
+
+```typescript
+static async getOverdueTasksByTeamLeadership(userId: string, organization: Organization): Promise<TaskHomeCard[]> {
+  // 1. Internal lookup: minimal inline select
+  const teams = await prisma.team.findMany({
+    where: { organizationId: organization.organizationId, OR: [{ leads: { some: { userId } } }, { headId: userId }] },
+    select: { teamId: true }
   });
 
-  if (!existing) throw new NotFoundException(
-    'Shop', shopId
-  );
-  // ... more validation ...
-
-  // Write + fetch for response — query args
-  const updated = await prisma.shop.update({
-    where: { shopId },
-    data: { name, description },
-    ...getShopQueryArgs(organization.organizationId)
+  // 2. Fetch for the response: extended query args
+  const tasks = await prisma.task.findMany({
+    where: { deadline: { lt: new Date() }, status: { not: 'DONE' }, dateDeleted: null /* ... */ },
+    ...getTaskHomeCardQueryArgs()
   });
 
-  return shopTransformer(updated);
+  // 3. Transform and return
+  return tasks.map(taskHomeCardTransformer);
 }
 ```
 
 ## Key Rules
 
-- Query args are ONLY for data returned to the frontend via transformers. Use inline `select` for internal queries.
-- Always prefer `select` over `include` to avoid over-fetching.
-- Only add nested query args when the transformer actually needs that data for the shared type.
-- Export a type alias using `ReturnType<typeof getFunction>` for every query args function.
-- Transformer input MUST be typed as `Prisma.{Model}GetPayload<{QueryArgs}>`.
-- Transformer return type MUST be a shared type from `src/shared/`.
-- NEVER return raw Prisma objects from a service. Always transform.
-- Filter `dateDeleted: null` in nested relations within query args.
-- Convert Prisma `null` to `undefined` when the shared type uses optional fields.
-- Map Prisma enums to shared enums explicitly — do not assume they are the same type.
-- Do not import other query args from `user.query-args.ts` to avoid circular dependencies.
+- Every domain has `getBase{Entity}QueryArgs`, `base{Entity}Transformer`, and `Base{Entity}`. Extended models spread or extend them.
+- Always use `select`, never `include`.
+- The base has primitives freely, and relations only when the entity is meaningless without them.
+- Never nest older, fat query args in a new model. Use the related entity's base, or select fields directly.
+- The query args file holds only the base and extended args used by 2+ endpoints. Single-endpoint args go inline in the service.
+- Push counts, filters and existence checks into the query and expose them as explicit fields.
+- Query args are ONLY for data returned to the frontend. Internal queries select the bare minimum inline.
+- Mutations return `204` and pass no query args, unless a caller reads the response.
+- Helper functions take a `Pick` of only the fields they use.
+- Transformer input MUST be `Prisma.{Model}GetPayload<{QueryArgs}>`, and its output MUST be a shared type.
+- NEVER return raw Prisma objects from a service.
+- Filter `dateDeleted: null` in nested to-many relations.
+- Map Prisma enums to shared enums explicitly, and convert `null` to `undefined` for optional fields.
+- Do not import other query args from `user.query-args.ts`.
 
 ## Common Mistakes
 
-- **Using query args for internal lookups.** Fetching full nested relations just to check if a record exists wastes database resources. Use `select: { id: true }`.
-- **Using `include: true`** on a relation when only a few fields are needed. Switch to `select` with specific fields.
-- **Adding deep nesting "just in case."** Every nested level adds joins. Only nest what the transformer uses.
-- **Forgetting `dateDeleted: null`** in nested `where` clauses within query args. This returns soft-deleted child records.
-- **Returning Prisma objects directly** without a transformer. Even if the shapes look identical today, they can diverge when the schema or shared types change.
-- **Forgetting `?? undefined`** on nullable Prisma fields that map to optional shared type fields. TypeScript will catch this, but it's easy to miss.
-- **Not creating a preview variant** when a lightweight version exists. If the frontend has both a detail view and a list view, make separate query args and transformers for each.
+- **Growing the base for one endpoint.** If only one page needs a field or relation, it belongs in that page's extended model.
+- **Reusing one big model everywhere.** This is what causes OOMs. Each page should get only what it reads.
+- **Nesting another domain's full query args** (e.g. `getUserQueryArgs` for a list of assignees). Use `getBaseUserQueryArgs()`.
+- **Using `include`**, even for a single relation.
+- **Loading a list just to count it** on the frontend or in a transformer. Use `_count`.
+- **Using query args for internal lookups.** Select only the columns being checked.
+- **Returning the updated object from a mutation** that no caller reads.
+- **Exporting single-use query args** from the query args file instead of writing them inline in the service.
+- **Forgetting `dateDeleted: null`** in nested to-many `where` clauses.
 
 ## Reference Files
 
-- `src/backend/src/prisma-query-args/work-packages.query-args.ts` — Shows both a full query args (with `include`) and a preview query args (with `select` throughout)
-- `src/backend/src/prisma-query-args/event.query-args.ts` — Two variants (`getEventQueryArgs` and `getEventWithMembersQueryArgs`) for different data needs
-- `src/backend/src/prisma-query-args/user.query-args.ts` — Base-level query args with `select`-first approach, org-scoped role filtering, and circular dependency warning
-- `src/backend/src/transformers/calendar.transformer.ts` — Comprehensive transformer file showing enum mapping, null-to-undefined conversion, nested transformers, and soft-delete filtering
-- `src/backend/src/transformers/work-packages.transformer.ts` — Demonstrates computed fields (`endDate`, `deleted`) and full/preview transformer pair
+- `src/backend/src/prisma-query-args/tasks.query-args.ts`: base task args, extended board and home card args, and `_count` pushdown
+- `src/backend/src/transformers/tasks.transformer.ts`: base transformer and extended transformers that spread it
+- `src/shared/src/types/task-types.ts`: `BaseTask` and the interfaces that extend it
+- `src/backend/src/services/tasks.services.ts`: minimal validation selects, `204` mutations, pagination
+- `src/backend/src/prisma-query-args/user.query-args.ts`: `getBaseUserQueryArgs` and the circular dependency warning
 
 ## Checklist
 
-When adding query args and a transformer for a new entity:
+- [ ] Base query args, transformer and shared type exist for the entity
+- [ ] Every query args uses `select` at every level, with no `include`
+- [ ] Base contains no relations the entity can live without, and no unbounded lists
+- [ ] Extended args spread `getBase{Entity}QueryArgs().select`
+- [ ] Extended transformers spread `base{Entity}Transformer(...)`
+- [ ] Extended shared types `extends Base{Entity}`
+- [ ] Nested relations use the related entity's base args or a direct select, never older fat args
+- [ ] Single-endpoint args are inline in the service, and only shared ones are exported
+- [ ] Counts, filters and existence checks are computed in the query
+- [ ] Type alias exported as `ReturnType<typeof getFunction>` for each exported args
+- [ ] Internal and validation queries select the bare minimum
+- [ ] Mutations return nothing unless a caller reads the response
+- [ ] Nested to-many relations filter `dateDeleted: null`
+- [ ] Nullable Prisma fields converted with `?? undefined`, and enums mapped explicitly
 
-- [ ] Query args function uses `Prisma.validator<Prisma.{Model}DefaultArgs>()`
-- [ ] Type alias exported as `ReturnType<typeof getFunction>`
-- [ ] `organizationId` parameter included if nested relations need org scoping
-- [ ] `select` preferred over `include` at every level
-- [ ] Nested relations filtered with `where: { dateDeleted: null }` where applicable
-- [ ] No unnecessary deep nesting
-- [ ] No circular dependency on `user.query-args.ts`
-- [ ] Transformer input typed as `Prisma.{Model}GetPayload<{QueryArgs}>`
-- [ ] Transformer return type is the shared type from `src/shared/`
-- [ ] All nullable Prisma fields converted with `?? undefined` if shared type uses optional
-- [ ] Prisma enums mapped to shared enums explicitly
-- [ ] Nested relations transformed using their respective transformer functions
-- [ ] Soft-deleted nested records filtered if not handled in query args
-- [ ] Preview variant created if a lightweight view is needed
+## Migration Notes
+
+> Many domains still use the older pattern: one or two "full" query args (often built with `include` and nested full query args from other domains) reused by every endpoint, plus `Preview` variants to opt out. New code MUST follow the Base pattern above.
+
+When refactoring a domain onto the Base pattern, older query args, transformers or types that other, not-yet-refactored domains still use should stay. Mark them `/** @deprecated Use <new>. Still used by <file> until <domain> is refactored */`, and delete them once nothing uses them. The `slim-domain` skill walks through refactoring a whole domain.
