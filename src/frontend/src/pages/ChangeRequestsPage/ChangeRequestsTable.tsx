@@ -134,7 +134,7 @@ const ChangeRequestsTable: React.FC = () => {
 
   const priorityColumn: GridColDef = {
     ...baseColDef,
-    field: 'priority',
+    field: 'triageScore',
     headerName: 'Priority',
     maxWidth: 75
   };
