@@ -36,3 +36,8 @@ export const getDaysAxisTicks = (totalDays: number): number[] => {
   }
   return ticks;
 };
+
+export const EXEC_SUMMARY_BACKGROUND = '#121212';
+export const BUDGET_CHART_COLORS = ['#ef4345', '#9B3425', '#5E1A10', '#B3B3B3', '#808080', '#5C5C5C', '#3D3D3D', '#2A2A2A'];
+
+export const formatDollars = (amount: number): string => `$${amount.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;

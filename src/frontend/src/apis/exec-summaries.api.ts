@@ -48,10 +48,13 @@ export const getVehicleDevelopmentSummary = (id: string, teamId?: string) => {
  * Gets the budget summary (budget by division) for an executive summary
  *
  * @param id the id of the executive summary
+ * @param teamTypeId optional id of a team type to filter the budget down to
  * @returns the budget summary
  */
-export const getBudgetSummary = (id: string) => {
-  return axios.get<BudgetSummary>(apiUrls.executiveSummaryBudget(id));
+export const getBudgetSummary = (id: string, teamTypeId?: string) => {
+  return axios.get<BudgetSummary>(apiUrls.executiveSummaryBudget(id), {
+    params: teamTypeId ? { teamTypeId } : undefined
+  });
 };
 
 /**
