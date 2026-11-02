@@ -628,7 +628,7 @@ export default class ChangeRequestsService {
         },
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChanges + 1,
-        snapshotBlockingCount: blockingCount,
+        snapshotBlockingCount: workPackage ? blockingCount : null,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
         snapshotBudget: wbsElement ? wbsElement.project?.budget : null
@@ -746,7 +746,7 @@ export default class ChangeRequestsService {
         },
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChangeRequests + 1,
-        snapshotBlockingCount: blockingCount,
+        snapshotBlockingCount: workPackage ? blockingCount : null,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
         snapshotBudget: wbsElement ? wbsElement.project?.budget : null
@@ -820,6 +820,13 @@ export default class ChangeRequestsService {
         include: { changeRequests: { where: { dateDeleted: null }, include: { changes: true } } }
       });
 
+      let calculatedSnapshotBudget;
+      if (category.budget) {
+        calculatedSnapshotBudget = category ? category.budget : null;
+      } else {
+        calculatedSnapshotBudget = accountCode ? accountCode.amount : null;
+      }
+
       createdChangeRequest = await prisma.change_Request.create({
         data: {
           submitter: { connect: { userId: submitter.userId } },
@@ -828,7 +835,7 @@ export default class ChangeRequestsService {
           budgetChangeRequest: { create: { proposedBudget } },
           organization: { connect: { organizationId: organization.organizationId } },
           identifier: numChangeRequests + 1,
-          snapshotBudget: accountCode ? accountCode.amount : null
+          snapshotBudget: calculatedSnapshotBudget
         },
         ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
       });
@@ -975,7 +982,7 @@ export default class ChangeRequestsService {
             manager: managerId ? { connect: { userId: managerId } } : undefined
           }
         },
-        snapshotBlockingCount: blockingCount,
+        snapshotBlockingCount: workPackage ? blockingCount : null,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
         snapshotBudget: wbsElement ? wbsElement.project?.budget : null
@@ -1129,7 +1136,7 @@ export default class ChangeRequestsService {
         }),
         organization: { connect: { organizationId: organization.organizationId } },
         identifier: numChangeRequests + 1,
-        snapshotBlockingCount: blockingCount,
+        snapshotBlockingCount: workPackage ? blockingCount : null,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
         snapshotBudget: wbsElement ? wbsElement.project?.budget : null
