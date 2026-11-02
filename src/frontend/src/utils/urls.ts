@@ -393,6 +393,7 @@ const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizat
 const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
 const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
 const organizationsNotificationChannels = () => `${organizations()}/notification-channels`;
+const organizationsSetActivationBufferDays = () => `${organizations()}/activation-buffer-days/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -869,6 +870,7 @@ export const apiUrls = {
   organizationsFinanceDelegates,
   organizationsSetFinanceDelegates,
   organizationsNotificationChannels,
+  organizationsSetActivationBufferDays,
 
   cars,
   carsCreate,

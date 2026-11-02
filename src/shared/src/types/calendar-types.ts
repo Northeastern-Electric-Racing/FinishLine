@@ -154,6 +154,7 @@ export interface EventType {
   description: boolean;
   onlyHeadsOrAboveForEventCreation: boolean;
   requiresConfirmation: boolean;
+  takeAttendance: boolean;
 }
 
 export interface EventTypeCreateArgs {
@@ -173,6 +174,7 @@ export interface EventTypeCreateArgs {
   description: boolean;
   onlyHeadsOrAbove: boolean;
   requiresConfirmation: boolean;
+  takeAttendance: boolean;
 }
 
 export interface Shop {
@@ -268,6 +270,7 @@ export interface EventWithMembers {
   status: EventStatus;
   initialDateScheduled?: Date;
   notificationChannelIds: string[];
+  sendSlackNotifications: boolean;
 }
 
 export interface TeamType {

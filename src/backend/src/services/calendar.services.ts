@@ -93,6 +93,7 @@ export default class CalendarService {
    * @param description Determines if a description is associated with this event type.
    * @param onlyHeadsOrAbove Determines if events under this event type can only be created by heads or above.
    * @param requiredConfirmation Determines if events under this event type need to be confirmed.
+   * @param takeAttendance Determines if an attendance message is automatically sent to the event's teams while the event is happening
    *
    * @returns The created event type.
    *
@@ -118,10 +119,16 @@ export default class CalendarService {
     documents: boolean,
     description: boolean,
     onlyHeadsOrAbove: boolean,
-    requiresConfirmation: boolean
+    requiresConfirmation: boolean,
+    takeAttendance: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create event type');
+    }
+
+    // Attendance is posted in the event's team channels, so the event type must allow teams
+    if (takeAttendance && !teams) {
+      throw new HttpException(400, 'Event types that take attendance must have teams enabled');
     }
 
     // Check if calendars with ids exist and belong to the same organization
@@ -177,6 +184,7 @@ export default class CalendarService {
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
         requiresConfirmation,
+        takeAttendance,
         organizationId: organization.organizationId
       },
       ...getEventTypeQueryArgs(organization.organizationId)
@@ -2339,6 +2347,7 @@ export default class CalendarService {
    * @param description Determines if a description is associated with this event type.
    * @param onlyHeadsOrAbove Determines if events associated with this event type can only be made by heads or above.
    * @param requiredConfirmation Determines if events associated with this event type need to be confirmed.
+   * @param takeAttendance Determines if events associated with this event type automatically take attendance in their teams' slack channels.
    *
    * @returns The created event type.
    *
@@ -2365,10 +2374,16 @@ export default class CalendarService {
     documents: boolean,
     description: boolean,
     onlyHeadsOrAbove: boolean,
-    requiresConfirmation: boolean
+    requiresConfirmation: boolean,
+    takeAttendance: boolean
   ): Promise<EventType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('edit event type');
+    }
+
+    // Attendance is posted in the event's team channels, so the event type must allow teams
+    if (takeAttendance && !teams) {
+      throw new HttpException(400, 'Event types that take attendance must have teams enabled');
     }
 
     // Check if calendars with ids exist and belong to the same organization
@@ -2423,7 +2438,8 @@ export default class CalendarService {
         documents,
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
-        requiresConfirmation
+        requiresConfirmation,
+        takeAttendance
       },
       ...getEventTypeQueryArgs(organization.organizationId)
     });

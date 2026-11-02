@@ -40,7 +40,8 @@ const EditEventTypeModal = ({ open, onClose, eventType }: EditEventTypeModalProp
     documents: eventType.documents,
     description: eventType.description,
     onlyHeadsOrAbove: eventType.onlyHeadsOrAboveForEventCreation,
-    requiresConfirmation: eventType.requiresConfirmation || false
+    requiresConfirmation: eventType.requiresConfirmation || false,
+    takeAttendance: eventType.takeAttendance
   };
 
   if (isError) return <ErrorPage message={error?.message} />;

@@ -471,6 +471,7 @@ type EventTypeConfig = {
   description: boolean;
   onlyHeadsOrAboveForEventCreation: boolean;
   requiresConfirmation: boolean;
+  takeAttendance: boolean;
 };
 
 export const eventTypeConfigs: EventTypeConfig[] = [
@@ -490,7 +491,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: false,
     description: false,
     onlyHeadsOrAboveForEventCreation: false,
-    requiresConfirmation: false
+    requiresConfirmation: false,
+    takeAttendance: false
   },
   {
     name: 'Educational',
@@ -508,7 +510,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: true,
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
-    requiresConfirmation: false
+    requiresConfirmation: false,
+    takeAttendance: false
   },
   {
     name: 'FSAE',
@@ -526,7 +529,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: true,
     description: true,
     onlyHeadsOrAboveForEventCreation: true,
-    requiresConfirmation: true
+    requiresConfirmation: true,
+    takeAttendance: false
   },
   {
     name: 'FHE',
@@ -544,7 +548,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: true,
     description: true,
     onlyHeadsOrAboveForEventCreation: true,
-    requiresConfirmation: true
+    requiresConfirmation: true,
+    takeAttendance: false
   },
   {
     name: 'Misc. Event (When2Meet)',
@@ -562,7 +567,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: false,
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
-    requiresConfirmation: true
+    requiresConfirmation: true,
+    takeAttendance: false
   },
   {
     name: 'Deadline/Heads Up',
@@ -580,7 +586,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: false,
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
-    requiresConfirmation: false
+    requiresConfirmation: false,
+    takeAttendance: false
   },
   {
     name: 'Misc. Event (Standard)',
@@ -598,7 +605,8 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     documents: false,
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
-    requiresConfirmation: false
+    requiresConfirmation: false,
+    takeAttendance: false
   }
 ];
 
@@ -625,6 +633,7 @@ export const eventTypeCreateInput = (
   description: config.description,
   onlyHeadsOrAboveForEventCreation: config.onlyHeadsOrAboveForEventCreation,
   requiresConfirmation: config.requiresConfirmation,
+  takeAttendance: config.takeAttendance,
   calendars: {
     connect: config.calendarNames.map((name) => {
       const calendarId = calendarIdsByName[name];

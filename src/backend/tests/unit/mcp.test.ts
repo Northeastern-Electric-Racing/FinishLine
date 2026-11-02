@@ -347,6 +347,7 @@ describe('MCP Endpoint Tests', () => {
           description: true,
           onlyHeadsOrAboveForEventCreation: false,
           requiresConfirmation: false,
+          takeAttendance: false,
           calendars: { connect: { calendarId: calendar.calendarId } }
         }
       });

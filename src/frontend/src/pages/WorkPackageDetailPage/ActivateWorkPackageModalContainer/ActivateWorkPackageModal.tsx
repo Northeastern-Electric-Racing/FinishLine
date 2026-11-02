@@ -8,7 +8,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { User, WbsNumber } from 'shared';
+import { User, WbsNumber, isWithinBuffer } from 'shared';
 import { FormInput } from './ActivateWorkPackageModalContainer';
 import { fullNamePipe, wbsPipe } from '../../../utils/pipes';
 import { Grid, FormLabel, FormControl } from '@mui/material';
@@ -17,6 +17,9 @@ import { FormControlLabel } from '@mui/material';
 import { Radio } from '@mui/material';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import NERFormModal from '../../../components/NERFormModal';
+import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 interface ActivateWorkPackageModalProps {
   allUsers: User[];
@@ -24,6 +27,7 @@ interface ActivateWorkPackageModalProps {
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
+  scheduledStartDate: Date;
 }
 
 const schema = yup.object().shape({
@@ -41,14 +45,10 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   wbsNum,
   modalShow,
   onHide,
-  onSubmit
+  onSubmit,
+  scheduledStartDate
 }) => {
-  const startDate = new Date();
-  const today = startDate.getDay();
-  if (today !== 1) {
-    const daysUntilNextMonday = (7 - today + 1) % 7;
-    startDate.setDate(startDate.getDate() + daysUntilNextMonday);
-  }
+  const startDate = useMemo(() => new Date(), []);
 
   const defaultValues: FormInput = {
     startDate,
@@ -59,6 +59,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     reset,
     handleSubmit,
     control,
+    watch,
     formState: { errors, isValid }
   } = useForm({
     resolver: yupResolver(schema),
@@ -80,6 +81,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
       })),
     [allUsers]
   );
+  const { data: organization, isLoading: orgIsLoading, isError: orgIsError, error: orgError } = useCurrentOrganization();
 
   /**
    * Wrapper function for onSubmit so that form data is reset after submit
@@ -94,6 +96,15 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     });
     reset(defaultValues);
   };
+  const selectedStartDate = watch('startDate');
+
+  if (orgIsError) return <ErrorPage message={orgError?.message} />;
+  if (orgIsLoading || !organization) return <LoadingIndicator />;
+
+  const outsideBuffer =
+    !!selectedStartDate && !isWithinBuffer(scheduledStartDate, selectedStartDate, organization.activationBufferDays);
+
+  const submitText = outsideBuffer ? 'Submit CR' : 'Submit';
 
   return (
     <NERFormModal
@@ -101,7 +112,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
       onHide={onHide}
       title={`Activate #${wbsPipe(wbsNum)}`}
       reset={() => reset(defaultValues)}
-      submitText="Submit"
+      submitText={submitText}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmitWrapper}
       formId="activate-work-package-form"

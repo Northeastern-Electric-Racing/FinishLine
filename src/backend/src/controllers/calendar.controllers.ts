@@ -22,7 +22,8 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
-        requiresConfirmation
+        requiresConfirmation,
+        takeAttendance
       } = req.body;
 
       const eventType = await CalendarService.createEventType(
@@ -43,7 +44,8 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
-        requiresConfirmation
+        requiresConfirmation,
+        takeAttendance
       );
       res.status(200).json(eventType);
     } catch (error: unknown) {
@@ -215,7 +217,8 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
-        requiresConfirmation
+        requiresConfirmation,
+        takeAttendance
       } = req.body;
 
       const eventType = await CalendarService.editEventType(
@@ -237,7 +240,8 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
-        requiresConfirmation
+        requiresConfirmation,
+        takeAttendance
       );
       res.status(200).json(eventType);
     } catch (error: unknown) {

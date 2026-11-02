@@ -69,7 +69,8 @@ describe('Get User Busy Times', () => {
       false, // documents
       false, // description
       false, // onlyHeadsOrAbove
-      false // requiresConfirmation
+      false, // requiresConfirmation
+      false // takeAttendance
     );
   });
 
