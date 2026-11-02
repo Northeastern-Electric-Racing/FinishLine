@@ -3,14 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableHead, TableRow, IconButton } from '@mui/material';
 import { useState } from 'react';
-import { BayDashboardCountdown, BayDashboardCountdownCreateArgs, formatDateOnly } from 'shared';
+import { BayDashboardCountdown, BayDashboardCountdownCreateArgs, formatDateOnly, isHead } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { NERButton } from '../../../components/NERButton';
 import { useCreateBayDashboardCountdown, useGetBayDashboardCountdowns } from '../../../hooks/bay-dashboard.hooks';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { Edit } from '@mui/icons-material';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { pickDisplayedCountdowns } from '../../../utils/bay-dashboard-countdown.utils';
+import EditCountdownModal from './EditCountdownModal';
 import ErrorPage from '../../ErrorPage';
 import CountdownFormModal from './CountdownFormModal';
 
@@ -43,6 +46,8 @@ const displayLabel = (
  */
 const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingCountdown, setEditingCountdown] = useState<BayDashboardCountdown | null>(null);
+  const user = useCurrentUser();
   const { data: countdowns, isLoading, isError, error } = useGetBayDashboardCountdowns(slug);
   const { mutateAsync: createCountdown } = useCreateBayDashboardCountdown(slug);
   const toast = useToast();
@@ -61,6 +66,14 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
   return (
     <Box>
       <CountdownFormModal open={showCreateModal} handleClose={() => setShowCreateModal(false)} onSubmit={handleCreate} />
+      {editingCountdown && (
+        <EditCountdownModal
+          showModal
+          handleClose={() => setEditingCountdown(null)}
+          countdown={editingCountdown}
+          slug={slug}
+        />
+      )}
       <Table sx={{ '& td': { borderBottom: 'none' } }}>
         <TableHead>
           <TableRow>
@@ -73,15 +86,16 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
             <TableCell align="center" sx={headerCellSx}>
               End Date
             </TableCell>
-            <TableCell align="center" sx={{ ...headerCellSx, borderRadius: '0px 10px 0px 0px' }}>
+            <TableCell align="center" sx={headerCellSx}>
               Display
             </TableCell>
+            <TableCell align="center" sx={{ ...headerCellSx, borderRadius: '0px 10px 0px 0px' }} />
           </TableRow>
         </TableHead>
         <TableBody>
           {sortedCountdowns.length === 0 && (
             <TableRow>
-              <TableCell colSpan={4} align="center">
+              <TableCell colSpan={5} align="center">
                 No countdowns yet
               </TableCell>
             </TableRow>
@@ -92,6 +106,13 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
               <TableCell align="center">{formatDateOnly(countdown.startDate)}</TableCell>
               <TableCell align="center">{countdown.endDate ? formatDateOnly(countdown.endDate) : '-'}</TableCell>
               <TableCell align="center">{displayLabel(countdown, displayed)}</TableCell>
+              <TableCell align="center">
+                {isHead(user.role) && (
+                  <IconButton onClick={() => setEditingCountdown(countdown)}>
+                    <Edit />
+                  </IconButton>
+                )}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
