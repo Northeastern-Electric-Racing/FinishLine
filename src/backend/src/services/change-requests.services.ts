@@ -16,7 +16,7 @@ import {
   isHead,
   isWithinBuffer
 } from 'shared';
-import prisma from '../prisma/prisma.js';
+import prisma, { PrismaTransactionClient } from '../prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -279,28 +279,53 @@ export default class ChangeRequestsService {
     }
 
     // Mark as reviewed FIRST so validateChangeRequestAccepted passes when applying proposed changes
-    const updated = await prisma.change_Request.update({
-      where: { crId },
-      data: {
-        reviewer: { connect: { userId: reviewer.userId } },
-        reviewNotes,
-        accepted,
-        dateReviewed: new Date()
-      },
-      include: {
-        ...getChangeRequestQueryArgs(organization.organizationId).include,
-        notificationSlackThreads: true
-      }
-    });
+    let updated;
 
-    if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
-      await this.reviewStageGateChangeRequest(foundCR, reviewer, new Date());
-    } else if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
-      await this.reviewActivationChangeRequest(foundCR, reviewer);
-    } else if (foundCR.type === CR_Type.BUDGET && foundCR.budgetChangeRequest && accepted) {
-      await this.reviewBudgetChangeRequest(foundCR, reviewer);
-    } else if (foundCR.type === CR_Type.STANDARD && accepted) {
-      await this.reviewStandardChangeRequest(foundCR, reviewer, organization);
+    if (foundCR.type === CR_Type.STANDARD) {
+      // TODO #4459: move into the transaction once the standard apply path takes tx
+      // Mark as reviewed FIRST so validateChangeRequestAccepted passes when applying proposed changes
+      updated = await prisma.change_Request.update({
+        where: { crId },
+        data: {
+          reviewer: { connect: { userId: reviewer.userId } },
+          reviewNotes,
+          accepted,
+          dateReviewed: new Date()
+        },
+        include: {
+          ...getChangeRequestQueryArgs(organization.organizationId).include,
+          notificationSlackThreads: true
+        }
+      });
+
+      if (accepted) await this.reviewStandardChangeRequest(foundCR, reviewer, organization);
+    } else {
+      // mark as reviewed and apply the changes together, so a failure leaves the CR unreviewed
+      updated = await prisma.$transaction(async (tx) => {
+        const reviewedCR = await tx.change_Request.update({
+          where: { crId },
+          data: {
+            reviewer: { connect: { userId: reviewer.userId } },
+            reviewNotes,
+            accepted,
+            dateReviewed: new Date()
+          },
+          include: {
+            ...getChangeRequestQueryArgs(organization.organizationId).include,
+            notificationSlackThreads: true
+          }
+        });
+
+        if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
+          await this.reviewStageGateChangeRequest(foundCR, reviewer, new Date(), tx);
+        } else if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
+          await this.reviewActivationChangeRequest(foundCR, reviewer, tx);
+        } else if (foundCR.type === CR_Type.BUDGET && foundCR.budgetChangeRequest && accepted) {
+          await this.reviewBudgetChangeRequest(foundCR, reviewer, tx);
+        }
+
+        return reviewedCR;
+      });
     }
 
     await sendCRSubmitterReviewedNotification(updated);
@@ -368,11 +393,13 @@ export default class ChangeRequestsService {
    * @param foundCR the change request to be reviewed
    * @param reviewer the user reviewing the change request
    * @param dateCompleted the date the work package was completed
+   * @param tx the transaction client to run the writes in
    */
   static async reviewStageGateChangeRequest(
     foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
     reviewer: User,
-    dateCompleted: Date
+    dateCompleted: Date,
+    tx: PrismaTransactionClient
   ): Promise<void> {
     if (!foundCR.wbsElement?.workPackage) {
       throw new HttpException(400, 'Stage gate can only be made on work packages!');
@@ -408,7 +435,7 @@ export default class ChangeRequestsService {
       });
     }
 
-    await prisma.work_Package.update({
+    await tx.work_Package.update({
       where: { wbsElementId: foundCR.wbsElement.wbsElementId },
       data: {
         duration: newDuration,
@@ -426,10 +453,12 @@ export default class ChangeRequestsService {
    * Reviews the activation change request and automates any changes that are made
    * @param foundCR the change request to be reviewed
    * @param reviewer the user reviewing the change request
+   * @param tx the transaction client to run the writes in
    */
   static async reviewActivationChangeRequest(
     foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
-    reviewer: User
+    reviewer: User,
+    tx: PrismaTransactionClient
   ): Promise<void> {
     const { activationChangeRequest } = foundCR;
     if (!activationChangeRequest) throw new HttpException(400, 'No activation change request found!');
@@ -483,9 +512,9 @@ export default class ChangeRequestsService {
       detail: buildChangeDetail('status', foundCR.wbsElement?.status ?? '', WBS_Element_Status.ACTIVE)
     });
 
-    await prisma.change.createMany({ data: changes });
+    await tx.change.createMany({ data: changes });
 
-    await prisma.wBS_Element.update({
+    await tx.wBS_Element.update({
       where: { wbsElementId: foundCR.wbsElementId ?? '' },
       data: {
         leadId: activationChangeRequest.leadId,
@@ -500,10 +529,12 @@ export default class ChangeRequestsService {
    * Reviews the budget change request and automates any changes that are made
    * @param foundCR the change request to be reviewed
    * @param reviewer the user reviewing the change request
+   * @param tx the transaction client to run the writes in
    */
   static async reviewBudgetChangeRequest(
     foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
-    reviewer: User
+    reviewer: User,
+    tx: PrismaTransactionClient
   ): Promise<void> {
     const { budgetChangeRequest } = foundCR;
     if (!budgetChangeRequest) throw new HttpException(400, 'No budget change request found!');
@@ -523,9 +554,9 @@ export default class ChangeRequestsService {
         )
       });
 
-      await prisma.change.createMany({ data: changesList });
+      await tx.change.createMany({ data: changesList });
 
-      await prisma.reimbursement_Product_Other_Reason.update({
+      await tx.reimbursement_Product_Other_Reason.update({
         where: { otherReimbursementProductReasonId: foundCR.categoryId ?? '' },
         data: { budget: budgetChangeRequest.proposedBudget }
       });
@@ -542,9 +573,9 @@ export default class ChangeRequestsService {
       )
     });
 
-    await prisma.change.createMany({ data: changesList });
+    await tx.change.createMany({ data: changesList });
 
-    await prisma.account_Code.update({
+    await tx.account_Code.update({
       where: { accountCodeId: foundCR.accountCodeId ?? '' },
       data: { amount: budgetChangeRequest.proposedBudget }
     });
@@ -654,7 +685,7 @@ export default class ChangeRequestsService {
       }
     }
 
-    await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter);
+    await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter, prisma);
 
     return createdCR.crId;
   }
@@ -740,7 +771,7 @@ export default class ChangeRequestsService {
       await addSlackThreadsToChangeRequest(createdChangeRequest.crId, notifications);
     }
 
-    await ChangeRequestsService.reviewStageGateChangeRequest(createdChangeRequest, submitter, dateCompleted);
+    await ChangeRequestsService.reviewStageGateChangeRequest(createdChangeRequest, submitter, dateCompleted, prisma);
 
     return createdChangeRequest.crId;
   }
