@@ -1,4 +1,4 @@
-import prisma from '../prisma/prisma.js';
+import prisma, { PrismaTransactionClient } from '../prisma/prisma.js';
 import {
   Prisma,
   Change_Request,
@@ -38,11 +38,12 @@ import { validateBlockedBys } from './work-packages.utils.js';
 
 /** Makes sure that a change request has been accepted already (and not deleted)
  * @param crId - the id of the change request to check
+ * @param tx the transaction client to read with, so it sees the review inside the same transaction (defaults to prisma)
  * @returns the change request
  * @throws if the change request is unreviewed, denied, or deleted
  */
-export const validateChangeRequestAccepted = async (crId: string) => {
-  const changeRequest = await prisma.change_Request.findUnique({ where: { crId }, include: { changes: true } });
+export const validateChangeRequestAccepted = async (crId: string, tx: PrismaTransactionClient = prisma) => {
+  const changeRequest = await tx.change_Request.findUnique({ where: { crId }, include: { changes: true } });
   const currentDate = new Date();
 
   if (!changeRequest) throw new NotFoundException('Change Request', crId);
