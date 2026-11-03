@@ -635,23 +635,30 @@ export default class ChangeRequestsService {
       where: { organizationId: organization.organizationId }
     });
 
-    const createdCR = await prisma.change_Request.create({
-      data: {
-        submitter: { connect: { userId: submitter.userId } },
-        wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
-        type: CR_Type.ACTIVATION,
-        activationChangeRequest: {
-          create: {
-            lead: { connect: { userId: leadId } },
-            manager: { connect: { userId: managerId } },
-            startDate: new Date(startDate),
-            confirmDetails
-          }
+    // create the CR and apply the activation together, so a failure doesn't leave an unapplied CR behind
+    const createdCR = await prisma.$transaction(async (tx) => {
+      const cr = await tx.change_Request.create({
+        data: {
+          submitter: { connect: { userId: submitter.userId } },
+          wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
+          type: CR_Type.ACTIVATION,
+          activationChangeRequest: {
+            create: {
+              lead: { connect: { userId: leadId } },
+              manager: { connect: { userId: managerId } },
+              startDate: new Date(startDate),
+              confirmDetails
+            }
+          },
+          organization: { connect: { organizationId: organization.organizationId } },
+          identifier: numChanges + 1
         },
-        organization: { connect: { organizationId: organization.organizationId } },
-        identifier: numChanges + 1
-      },
-      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
+        ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
+      });
+
+      await ChangeRequestsService.reviewActivationChangeRequest(cr, submitter, tx);
+
+      return cr;
     });
 
     const teams = createdCR.wbsElement?.workPackage?.project.teams;
@@ -745,18 +752,24 @@ export default class ChangeRequestsService {
       where: { organizationId: organization.organizationId }
     });
 
-    const createdChangeRequest = await prisma.change_Request.create({
-      data: {
-        submitter: { connect: { userId: submitter.userId } },
-        wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
-        type: CR_Type.STAGE_GATE,
-        stageGateChangeRequest: {
-          create: { leftoverBudget: 0, confirmDone }
+    const createdChangeRequest = await prisma.$transaction(async (tx) => {
+      const cr = await tx.change_Request.create({
+        data: {
+          submitter: { connect: { userId: submitter.userId } },
+          wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
+          type: CR_Type.STAGE_GATE,
+          stageGateChangeRequest: {
+            create: { leftoverBudget: 0, confirmDone }
+          },
+          organization: { connect: { organizationId: organization.organizationId } },
+          identifier: numChangeRequests + 1
         },
-        organization: { connect: { organizationId: organization.organizationId } },
-        identifier: numChangeRequests + 1
-      },
-      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
+        ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
+      });
+
+      await ChangeRequestsService.reviewStageGateChangeRequest(cr, submitter, dateCompleted, tx);
+
+      return cr;
     });
 
     const teams = createdChangeRequest.wbsElement?.workPackage?.project.teams;
