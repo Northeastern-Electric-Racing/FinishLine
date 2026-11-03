@@ -386,7 +386,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Abhishek Vijay', color: '#4287f5' },
     { name: 'Kidus Desalegn', color: '#B027F5' },
 
-    { name: 'Arav Thikekar', color: '#3127f5' }
+    { name: 'Arav Thikekar', color: '#3127f5' },
 
     { name: 'Naman Patel', color: '#27f5a9ff' },
     {
