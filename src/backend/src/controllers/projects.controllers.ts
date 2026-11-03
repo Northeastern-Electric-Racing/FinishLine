@@ -12,6 +12,7 @@ import {
 import { NextFunction, Request, Response } from 'express';
 import ProjectsService from '../services/projects.services.js';
 import BillOfMaterialsService from '../services/boms.services.js';
+import { broadcastBayDashboardUpdate } from '../utils/bay-dashboard-events.utils.js';
 
 export default class ProjectsController {
   static async getAllProjectsGantt(req: Request, res: Response, next: NextFunction) {
@@ -154,6 +155,8 @@ export default class ProjectsController {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
       const deletedProject: Project = await ProjectsService.deleteProject(req.currentUser, wbsNumber, req.organization);
+      broadcastBayDashboardUpdate(req.organization.name);
+
       res.status(200).json(deletedProject);
     } catch (error: unknown) {
       next(error);
