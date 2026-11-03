@@ -68,7 +68,8 @@ const CHANGE_DETAILS = [
   'Updated status'
 ];
 
-const BUDGET_AMOUNTS = [500, 1000, 1500, 2000, 2500, 5000];
+// in cents
+const BUDGET_AMOUNTS = [50000, 100000, 150000, 200000, 250000, 500000];
 
 const NAME_REVISION_SUFFIXES = [' v2', ' (Updated)', ' - Rev B', ' (Revised)'];
 

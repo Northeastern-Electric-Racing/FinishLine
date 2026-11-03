@@ -31,7 +31,6 @@ const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings
 const userScheduleSettingsBusyTimes = (id: string) => `${usersById(id)}/schedule-settings/busy-times`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
-const manyUserTasks = () => `${users()}/tasks/get-many`;
 const currentUser = () => `${users()}/auth/current`;
 const logUserOut = () => `${users()}/auth/log-out`;
 const manyUsersWithScheduleSettings = () => `${users()}/scheduleSettings`;
@@ -99,6 +98,7 @@ const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
+const tasksFilterPaginated = () => `${tasks()}/filter-paginated`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
 const taskLabels = () => `${tasks()}/task-labels`;
 const taskLabelCreate = () => `${taskLabels()}/create`;
@@ -150,6 +150,7 @@ const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/
 const teams = () => `${API_URL}/teams`;
 const teamPreviews = () => `${API_URL}/teams/previews/`;
 const teamsById = (id: string) => `${teams()}/${id}`;
+const teamsWithProjects = () => `${teams()}/summaries`;
 const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
@@ -392,6 +393,7 @@ const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizat
 const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
 const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
 const organizationsNotificationChannels = () => `${organizations()}/notification-channels`;
+const organizationsSetActivationBufferDays = () => `${organizations()}/activation-buffer-days/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -602,7 +604,6 @@ export const apiUrls = {
   userScheduleSettingsBusyTimes,
   userScheduleSettingsSet,
   userTasks,
-  manyUserTasks,
   currentUser,
   logUserOut,
   manyUsersWithScheduleSettings,
@@ -663,6 +664,7 @@ export const apiUrls = {
   tasksCreate,
   tasks,
   tasksFilter,
+  tasksFilterPaginated,
   editTaskById,
   taskEditStatus,
   editTaskAssignees,
@@ -705,6 +707,7 @@ export const apiUrls = {
   teams,
   teamPreviews,
   teamsById,
+  teamsWithProjects,
   teamsDelete,
   teamsSetMembers,
   teamsArchive,
@@ -867,6 +870,7 @@ export const apiUrls = {
   organizationsFinanceDelegates,
   organizationsSetFinanceDelegates,
   organizationsNotificationChannels,
+  organizationsSetActivationBufferDays,
 
   cars,
   carsCreate,

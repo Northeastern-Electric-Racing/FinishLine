@@ -2,9 +2,9 @@ import { Faker } from '@faker-js/faker';
 import { Prisma, Task_Priority, Task_Status } from '@prisma/client';
 import { addDaysToDate } from 'shared';
 import { DateRange } from '../context.js';
-import { clampDate, daysBetween, DAY_MS } from '../dates.js';
+import { clampDate, daysBetween } from '../dates.js';
 import { seedConfig } from '../seed-config.js';
-
+import { DAY_MS } from '../../utils/time.utils.js';
 export type SeedTaskParent = {
   wbsElementId: string;
   timeline: DateRange;

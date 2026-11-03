@@ -96,7 +96,8 @@ export const mockAuth = (isLoading: boolean, user?: AuthenticatedUser) => {
     signout: () => {},
     isLoading,
     signInCurrent: () => new Promise((res) => res()),
-    triedCurrent: true
+    triedCurrent: true,
+    serverUnavailable: false
   } as Auth;
 };
 
