@@ -410,7 +410,6 @@ const CreditsPage: React.FC = () => {
     },
     { name: 'Arya Baviskar', color: '#92b5ed' },
     { name: 'Udhaya Bhuvanesh', color: '#B57EDC' }
-
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
