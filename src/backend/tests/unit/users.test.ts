@@ -8,8 +8,23 @@ import {
   greenlanternHead
 } from '../test-data/users.test-data.js';
 import UsersService from '../../src/services/users.services.js';
+import prisma from '../../src/prisma/prisma.js';
 import { NotFoundException, AccessDeniedException } from '../../src/utils/errors.utils.js';
-import { RoleEnum } from 'shared';
+import { RoleEnum, TaskBoardItem, TaskHomeCard } from 'shared';
+
+// what getUserTasks should return for a task created on a project (createTestTaskWithOrganization uses project 0.1.0)
+const toTaskHomeCard = (task: TaskBoardItem): TaskHomeCard => ({
+  taskId: task.taskId,
+  wbsNum: task.wbsNum,
+  title: task.title,
+  notes: task.notes,
+  status: task.status,
+  priority: task.priority,
+  deadline: task.deadline,
+  assignees: task.assignees,
+  labels: task.labels,
+  projectName: task.wbsName
+});
 
 describe('User Tests', () => {
   let orgId: string;
@@ -36,23 +51,40 @@ describe('User Tests', () => {
       const { task } = await createTestTaskWithOrganization(testBatman, organization);
       const userTasks = await UsersService.getUserTasks(testBatman.userId, organization);
 
-      expect(userTasks).toStrictEqual([task]);
-    });
-  });
-
-  describe('Get Many Users Tasks', () => {
-    it('fails on invalid user id', async () => {
-      await expect(async () => await UsersService.getManyUserTasks(['1'], organization)).rejects.toThrow(
-        new NotFoundException('User', '1')
-      );
+      expect(userTasks).toStrictEqual([toTaskHomeCard(task)]);
     });
 
-    it("Succeeds and gets all user' tasks in the list", async () => {
+    it('leaves out tasks whose wbs element is deleted', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const { task: batmanTask } = await createTestTaskWithOrganization(testBatman, organization);
-      const userTasks = await UsersService.getManyUserTasks([testBatman.userId, testBatman.userId], organization);
+      await createTestTaskWithOrganization(testBatman, organization);
+      await prisma.wBS_Element.update({
+        where: { wbsNumber: { carNumber: 0, projectNumber: 1, workPackageNumber: 0, organizationId: orgId } },
+        data: { dateDeleted: new Date() }
+      });
 
-      expect(userTasks).toStrictEqual([batmanTask, batmanTask]);
+      const userTasks = await UsersService.getUserTasks(testBatman.userId, organization);
+
+      expect(userTasks).toStrictEqual([]);
+    });
+
+    it('leaves out tasks from other organizations', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const { task } = await createTestTaskWithOrganization(testBatman, organization);
+      const otherOrg = await prisma.organization.create({
+        data: { name: 'Other Org', userCreated: { connect: { userId: testBatman.userId } } }
+      });
+      await prisma.user.update({
+        where: { userId: testBatman.userId },
+        data: {
+          organizations: { connect: { organizationId: otherOrg.organizationId } },
+          roles: { create: { roleType: 'APP_ADMIN', organizationId: otherOrg.organizationId } }
+        }
+      });
+      await createTestTaskWithOrganization(testBatman, otherOrg);
+
+      const userTasks = await UsersService.getUserTasks(testBatman.userId, organization);
+
+      expect(userTasks).toStrictEqual([toTaskHomeCard(task)]);
     });
   });
 

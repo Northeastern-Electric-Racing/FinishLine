@@ -92,7 +92,7 @@ export class OrganizationContentProcess extends SeedProcess<OrganizationContentI
     teamTypes
   }: OrganizationContentInput): Promise<OrganizationContentOutput> {
     const { organizationId } = organization;
-    const now = new Date();
+    const { now } = this;
 
     const leadershipPool: FullUser[] = [...admins, ...heads, ...leadership];
     if (leadershipPool.length === 0)

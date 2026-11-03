@@ -29,7 +29,7 @@ interface GanttTaskBarDisplayProps<T> {
   handleOnMouseLeave: () => void;
   onShowChildrenToggle: () => void;
   highlightedChange?: RequestEventChange<T>;
-  showChildren?: boolean;
+  isExpanded: boolean;
   getStartCol: (start: Date) => number;
   getEndCol: (end: Date) => number;
   highlightTaskComparator: HighlightTaskComparator<T>;
@@ -42,7 +42,7 @@ const GanttTaskBarDisplay = <T,>({
   handleOnMouseOver,
   handleOnMouseLeave,
   onShowChildrenToggle,
-  showChildren,
+  isExpanded,
   highlightedChange,
   getStartCol,
   getEndCol,
@@ -182,7 +182,7 @@ const GanttTaskBarDisplay = <T,>({
                     }}
                     sx={{ marginRight: '-15px', marginLeft: '-5px' }}
                   >
-                    {showChildren ? (
+                    {isExpanded ? (
                       <ArrowDropDownIcon fontSize="large" />
                     ) : (
                       <ArrowDropDownIcon fontSize="large" sx={{ transform: `rotate(270deg)` }} />

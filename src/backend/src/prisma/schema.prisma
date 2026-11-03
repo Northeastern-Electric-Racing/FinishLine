@@ -32,6 +32,12 @@ enum Task_Status {
   DONE
 }
 
+enum Rule_Status {
+  PENDING
+  PASS
+  FAIL
+}
+
 enum WBS_Element_Status {
   INACTIVE
   ACTIVE
@@ -101,6 +107,9 @@ enum Graph_Type {
 
   CHANGE_REQUESTS_BY_STATUS
   PROJECT_BUDGET_VS_REIMBURSED_AMOUNT
+
+  ATTENDANCE_BY_TEAM
+  ATTENDANCE_BY_DIVISION
 }
 
 enum Graph_Display_Type {
@@ -301,6 +310,18 @@ model User {
   deletedSponsorTiers                     Sponsor_Tier[]
   financeDelegateForOrganizations         Organization[]                       @relation(name: "financeDelegates")
   assignedReimbursementRequests           Reimbursement_Request[]              @relation(name: "reimbursementRequestAssignee")
+  ruleStatusUpdates                       Rule[]                               @relation(name: "ruleStatusUpdater")
+  createdRulesetTypes                     Ruleset_Type[]                       @relation(name: "rulesetTypeCreator")
+  deletedRulesetTypes                     Ruleset_Type[]                       @relation(name: "rulesetTypeDeleter")
+  createdRulesets                         Ruleset[]                            @relation(name: "rulesetCreator")
+  deletedRulesets                         Ruleset[]                            @relation(name: "rulesetDeleter")
+  createdRules                            Rule[]                               @relation(name: "ruleCreator")
+  updatedRules                            Rule[]                               @relation(name: "ruleUpdater")
+  deletedRules                            Rule[]                               @relation(name: "ruleDeletor")
+  createdProjectRules                     Project_Rule[]                       @relation(name: "projectRuleCreator")
+  deletedProjectRules                     Project_Rule[]                       @relation(name: "projectRuleDeletor")
+  projectRuleStatusUpdates                Project_Rule[]                       @relation(name: "projectRuleStatusUpdater")
+  ruleStatusHistoryUpdates                Rule_Status_History[]                @relation(name: "ruleStatusHistoryUpdater")
   deletedGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionDeleter")
   createdGuestDefinitions                 Guest_Definition[]                   @relation(name: "guestDefinitionCreator")
   requiredEvents                          Event[]                              @relation(name: "requiredEventAttendee")
@@ -358,6 +379,7 @@ model Team {
   projectTemplates       Project_Template[]
   meetingAttendances     Meeting_Attendance[]
   joinRequests           Team_Join_Request[]        @relation(name: "teamJoinRequests")
+  rules                  Rule[]                     @relation(name: "teamRules")
 
   @@index([headId])
   @@index([organizationId])
@@ -579,6 +601,7 @@ model Project {
   featuredByOrganization   Organization?  @relation(fields: [featuredByOrganizationId], references: [organizationId])
   abbreviation             String?
   parts                    Part[]
+  rules                    Project_Rule[] @relation(name: "projectsForRule")
 
   @@index([carId])
 }
@@ -1181,26 +1204,26 @@ model Document {
 }
 
 model Event {
-  eventId                    String          @id @default(uuid())
-  dateCreated                DateTime        @default(now())
+  eventId                    String               @id @default(uuid())
+  dateCreated                DateTime             @default(now())
   dateDeleted                DateTime?
   title                      String
   userCreatedId              String
-  userCreated                User            @relation(name: "eventCreator", fields: [userCreatedId], references: [userId])
+  userCreated                User                 @relation(name: "eventCreator", fields: [userCreatedId], references: [userId])
   userDeletedId              String?
-  userDeleted                User?           @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
+  userDeleted                User?                @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
   eventTypeId                String
-  eventType                  Event_Type      @relation(fields: [eventTypeId], references: [eventTypeId])
+  eventType                  Event_Type           @relation(fields: [eventTypeId], references: [eventTypeId])
   approved                   Conflict_Status
   approvalRequiredFromUserId String?
-  approvalRequiredBy         User?           @relation(fields: [approvalRequiredFromUserId], references: [userId], name: "eventApprovalRequiredBy")
+  approvalRequiredBy         User?                @relation(fields: [approvalRequiredFromUserId], references: [userId], name: "eventApprovalRequiredBy")
   scheduledTimes             Schedule_Slot[]
-  requiredMembers            User[]          @relation(name: "requiredEventAttendee")
-  optionalMembers            User[]          @relation(name: "optionalEventAttendee")
-  confirmedMembers           User[]          @relation(name: "confirmedEventAttendee")
-  deniedMembers              User[]          @relation(name: "deniedEventAttendee")
-  teams                      Team[]          @relation(name: "affiliatedTeam")
-  teamType                   Team_Type?      @relation(fields: [teamTypeId], references: [teamTypeId])
+  requiredMembers            User[]               @relation(name: "requiredEventAttendee")
+  optionalMembers            User[]               @relation(name: "optionalEventAttendee")
+  confirmedMembers           User[]               @relation(name: "confirmedEventAttendee")
+  deniedMembers              User[]               @relation(name: "deniedEventAttendee")
+  teams                      Team[]               @relation(name: "affiliatedTeam")
+  teamType                   Team_Type?           @relation(fields: [teamTypeId], references: [teamTypeId])
   teamTypeId                 String?
   location                   String?
   zoomLink                   String?
@@ -1214,7 +1237,8 @@ model Event {
   description                String?
   notificationSlackThreads   Message_Info[]
   calendarEventIds           String[]
-  notificationChannelIds     String[]        @default([])
+  notificationChannelIds     String[]             @default([])
+  meetingAttendances         Meeting_Attendance[]
 }
 
 model Calendar {
@@ -1259,6 +1283,7 @@ model Event_Type {
   onlyHeadsOrAboveForEventCreation Boolean
   requiresConfirmation             Boolean
   sendSlackNotifications           Boolean
+  takeAttendance                   Boolean
   events                           Event[]
   organizationId                   String
   organization                     Organization @relation(fields: [organizationId], references: [organizationId])
@@ -1412,6 +1437,7 @@ model Car {
   wbsElement             WBS_Element                @relation(fields: [wbsElementId], references: [wbsElementId])
   linkedGraphs           Graph[]                    @relation(name: "graphCars")
   executiveSummary       Executive_Summary?
+  rulesets               Ruleset[]                  @relation(name: "rulesetCar")
 
   @@index([wbsElementId])
 }
@@ -1475,6 +1501,7 @@ model Organization {
   prospectiveSponsors      Prospective_Sponsor[]
   indexCodes               Index_Code[]
   financeDelegates         User[]                       @relation(name: "financeDelegates")
+  rulesetTypes             Ruleset_Type[]
   guestDefinitions         Guest_Definition[]
   shops                    Shop[]
   machineries              Machinery[]
@@ -1844,6 +1871,110 @@ enum Guest_Definition_Type {
   INFO_PAGE
 }
 
+model Ruleset_Type {
+  rulesetTypeId   String       @id @default(uuid())
+  name            String
+  lastUpdated     DateTime     @updatedAt
+  revisionFiles   Ruleset[]    @relation(name: "rulesetFileType")
+  dateCreated     DateTime     @default(now())
+  createdByUserId String
+  createdBy       User         @relation(name: "rulesetTypeCreator", fields: [createdByUserId], references: [userId])
+  dateDeleted     DateTime?
+  deletedByUserId String?
+  deletedBy       User?        @relation(name: "rulesetTypeDeleter", fields: [deletedByUserId], references: [userId])
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [organizationId])
+
+  @@index([organizationId])
+}
+
+model Ruleset {
+  rulesetId       String       @id @default(uuid())
+  fileId          String
+  name            String
+  active          Boolean
+  rules           Rule[]
+  rulesetTypeId   String
+  rulesetType     Ruleset_Type @relation(name: "rulesetFileType", fields: [rulesetTypeId], references: [rulesetTypeId])
+  carId           String
+  car             Car          @relation(name: "rulesetCar", fields: [carId], references: [carId])
+  dateCreated     DateTime     @default(now())
+  createdByUserId String
+  createdBy       User         @relation(name: "rulesetCreator", fields: [createdByUserId], references: [userId])
+  dateDeleted     DateTime?
+  deletedByUserId String?
+  deletedBy       User?        @relation(name: "rulesetDeleter", fields: [deletedByUserId], references: [userId])
+}
+
+model Rule {
+  ruleId                String                @id @default(uuid())
+  ruleCode              String
+  ruleContent           String
+  imageFileIds          String[]
+  rulesetId             String
+  ruleset               Ruleset               @relation(fields: [rulesetId], references: [rulesetId])
+  parentRuleId          String?
+  parentRule            Rule?                 @relation(name: "subRules", fields: [parentRuleId], references: [ruleId])
+  subRules              Rule[]                @relation(name: "subRules")
+  referencedRule        Rule[]                @relation(name: "ruleReferences")
+  referencedBy          Rule[]                @relation(name: "ruleReferences")
+  projects              Project_Rule[]        @relation(name: "rulesInProject")
+  teams                 Team[]                @relation(name: "teamRules")
+  status                Rule_Status           @default(PENDING)
+  statusUpdatedByUserId String?
+  statusUpdatedBy       User?                 @relation(name: "ruleStatusUpdater", fields: [statusUpdatedByUserId], references: [userId])
+  statusUpdatedAt       DateTime?
+  statusHistory         Rule_Status_History[]
+  dateCreated           DateTime              @default(now())
+  dateUpdated           DateTime?             @updatedAt
+  dateDeleted           DateTime?
+  createdByUserId       String
+  createdBy             User                  @relation(name: "ruleCreator", fields: [createdByUserId], references: [userId])
+  updatedByUserId       String?
+  updatedBy             User?                 @relation(name: "ruleUpdater", fields: [updatedByUserId], references: [userId])
+  deletedByUserId       String?
+  deletedBy             User?                 @relation(name: "ruleDeletor", fields: [deletedByUserId], references: [userId])
+
+  @@index([rulesetId, ruleCode])
+  @@index([parentRuleId, rulesetId, ruleCode])
+}
+
+model Project_Rule {
+  projectRuleId         String                @id @default(uuid())
+  ruleId                String
+  rule                  Rule                  @relation(name: "rulesInProject", fields: [ruleId], references: [ruleId])
+  projectId             String
+  project               Project               @relation(name: "projectsForRule", fields: [projectId], references: [projectId])
+  status                Rule_Status           @default(PENDING)
+  statusUpdatedByUserId String?
+  statusUpdatedBy       User?                 @relation(name: "projectRuleStatusUpdater", fields: [statusUpdatedByUserId], references: [userId])
+  statusUpdatedAt       DateTime?
+  statusHistory         Rule_Status_History[]
+  dateCreated           DateTime              @default(now())
+  createdByUserId       String
+  createdBy             User                  @relation(name: "projectRuleCreator", fields: [createdByUserId], references: [userId])
+  dateDeleted           DateTime?
+  deletedByUserId       String?
+  deletedBy             User?                 @relation(name: "projectRuleDeletor", fields: [deletedByUserId], references: [userId])
+
+  @@unique([ruleId, projectId])
+}
+
+model Rule_Status_History {
+  ruleStatusHistoryId String        @id @default(uuid())
+  ruleId              String
+  rule                Rule          @relation(fields: [ruleId], references: [ruleId])
+  projectRuleId       String?
+  projectRule         Project_Rule? @relation(fields: [projectRuleId], references: [projectRuleId])
+  status              Rule_Status
+  updatedByUserId     String
+  updatedBy           User          @relation(name: "ruleStatusHistoryUpdater", fields: [updatedByUserId], references: [userId])
+  dateCreated         DateTime      @default(now())
+
+  @@index([ruleId])
+  @@index([projectRuleId])
+}
+
 model Guest_Definition {
   definitionId   String                @id @default(uuid())
   term           String
@@ -1878,7 +2009,10 @@ model Meeting_Attendance {
   slackChannelId        String
   slackMessageTimestamp String
   attendees             User[]       @relation(name: "meetingAttendees")
+  eventId               String?
+  event                 Event?       @relation(fields: [eventId], references: [eventId])
 
+  @@index([eventId])
   @@index([organizationId])
   @@index([teamId])
 }

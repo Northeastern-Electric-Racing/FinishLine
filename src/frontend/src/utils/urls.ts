@@ -31,7 +31,6 @@ const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings
 const userScheduleSettingsBusyTimes = (id: string) => `${usersById(id)}/schedule-settings/busy-times`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
-const manyUserTasks = () => `${users()}/tasks/get-many`;
 const currentUser = () => `${users()}/auth/current`;
 const logUserOut = () => `${users()}/auth/log-out`;
 const manyUsersWithScheduleSettings = () => `${users()}/scheduleSettings`;
@@ -99,6 +98,7 @@ const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
+const tasksFilterPaginated = () => `${tasks()}/filter-paginated`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
 const taskLabels = () => `${tasks()}/task-labels`;
 const taskLabelCreate = () => `${taskLabels()}/create`;
@@ -150,6 +150,7 @@ const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/
 const teams = () => `${API_URL}/teams`;
 const teamPreviews = () => `${API_URL}/teams/previews/`;
 const teamsById = (id: string) => `${teams()}/${id}`;
+const teamsWithProjects = () => `${teams()}/summaries`;
 const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
@@ -392,6 +393,7 @@ const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizat
 const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
 const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
 const organizationsNotificationChannels = () => `${organizations()}/notification-channels`;
+const organizationsSetActivationBufferDays = () => `${organizations()}/activation-buffer-days/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -468,6 +470,43 @@ const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
   (endDate ? `end=${encodeURIComponent(new Date(endDate).toISOString())}` : '');
 const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
 
+/**************** Rules Endpoints ****************/
+const rules = () => `${API_URL}/rules`;
+const rulesTopLevel = (rulesetId: string) => `${rules()}/${rulesetId}/parentRules`;
+const rulesAllRules = (rulesetId: string) => `${rules()}/${rulesetId}/allRules`;
+const rulesToggleTeam = (ruleId: string) => `${rules()}/rule/${ruleId}/toggle-team`;
+const rulesChildRules = (ruleId: string) => `${rules()}/${ruleId}/subrules`;
+const rulesetTypes = () => `${rules()}/rulesetTypes`;
+const rulesetsByType = (rulesetTypeId: string) => `${rules()}/rulesets/${rulesetTypeId}`;
+const ruleset = () => `${rules()}/ruleset`;
+const rulesetTypeCreate = () => `${rules()}/rulesetType/create`;
+const rulesetsCreate = () => `${ruleset()}/create`;
+const rulesetById = (rulesetId: string) => `${ruleset()}/${rulesetId}`;
+const ruleCreate = () => `${rules()}/rule/create`;
+const parseRuleset = (rulesetId: string) => `${rulesetById(rulesetId)}/parse`;
+const uploadRulesetFile = () => `${rules()}/upload/file`;
+const rulesGetActiveRuleset = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/active`;
+const rulesGetProjectRules = (rulesetId: string, projectId: string) =>
+  `${rules()}/ruleset/${rulesetId}/project/${projectId}/rules`;
+const rulesGetUnassignedRulesForRuleset = (rulesetId: string, projectId: string) =>
+  `${rules()}/ruleset/${rulesetId}/project/${projectId}/rules/unassigned`;
+const rulesCreateProjectRule = () => `${rules()}/projectRule/create`;
+const rulesDeleteProjectRule = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/delete`;
+const rulesSetRuleStatus = (ruleId: string) => `${rules()}/rule/${ruleId}/setStatus`;
+const rulesSetProjectRuleStatus = (projectRuleId: string) => `${rules()}/projectRule/${projectRuleId}/setStatus`;
+const rulesGetStatusHistory = (ruleId: string) => `${rules()}/rule/${ruleId}/status-history`;
+const rulesResetRulesetStatuses = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}/resetStatuses`;
+const rulesResetProjectRuleStatuses = (rulesetId: string, projectId: string) =>
+  `${rules()}/ruleset/${rulesetId}/project/${projectId}/resetStatuses`;
+const rulesEdit = (ruleId: string) => `${rules()}/rule/${ruleId}/edit`;
+const rulesDelete = (ruleId: string) => `${rules()}/rule/${ruleId}/delete`;
+const rulesAddReferences = (ruleId: string) => `${rules()}/rule/${ruleId}/references/add`;
+const rulesRemoveReferences = (ruleId: string) => `${rules()}/rule/${ruleId}/references/delete`;
+const rulesetUpdate = (rulesetId: string) => `${ruleset()}/${rulesetId}/update`;
+const rulesetDelete = (rulesetId: string) => `${ruleset()}/${rulesetId}/delete`;
+const rulesetTypeDelete = (rulesetTypeId: string) => `${rules()}/rulesetType/${rulesetTypeId}/delete`;
+const rulesetType = (rulesetTypeId: string) => `${rules()}/${rulesetTypeId}`;
+const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
 /**************** Calendar Endpoints ****************/
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
@@ -572,7 +611,6 @@ export const apiUrls = {
   userScheduleSettingsBusyTimes,
   userScheduleSettingsSet,
   userTasks,
-  manyUserTasks,
   currentUser,
   logUserOut,
   manyUsersWithScheduleSettings,
@@ -633,6 +671,7 @@ export const apiUrls = {
   tasksCreate,
   tasks,
   tasksFilter,
+  tasksFilterPaginated,
   editTaskById,
   taskEditStatus,
   editTaskAssignees,
@@ -675,6 +714,7 @@ export const apiUrls = {
   teams,
   teamPreviews,
   teamsById,
+  teamsWithProjects,
   teamsDelete,
   teamsSetMembers,
   teamsArchive,
@@ -837,6 +877,7 @@ export const apiUrls = {
   organizationsFinanceDelegates,
   organizationsSetFinanceDelegates,
   organizationsNotificationChannels,
+  organizationsSetActivationBufferDays,
 
   cars,
   carsCreate,
@@ -896,6 +937,38 @@ export const apiUrls = {
   retrospectiveTimelines,
   retrospectiveBudgets,
 
+  rules,
+  rulesTopLevel,
+  rulesAllRules,
+  rulesToggleTeam,
+  rulesChildRules,
+  ruleset,
+  rulesetTypes,
+  rulesetsByType,
+  rulesetTypeCreate,
+  rulesetsCreate,
+  ruleCreate,
+  rulesGetActiveRuleset,
+  rulesGetProjectRules,
+  rulesGetUnassignedRulesForRuleset,
+  rulesCreateProjectRule,
+  rulesDeleteProjectRule,
+  rulesSetRuleStatus,
+  rulesSetProjectRuleStatus,
+  rulesGetStatusHistory,
+  rulesResetRulesetStatuses,
+  rulesResetProjectRuleStatuses,
+  rulesEdit,
+  rulesDelete,
+  rulesAddReferences,
+  rulesRemoveReferences,
+  rulesetUpdate,
+  rulesetDelete,
+  rulesetTypeDelete,
+  rulesetType,
+  parseRuleset,
+  uploadRulesetFile,
+  singleRuleset,
   calendarShops,
   calendarCreateShop,
   calendarFilterEvents,
