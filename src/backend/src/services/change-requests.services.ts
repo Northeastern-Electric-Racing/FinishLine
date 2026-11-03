@@ -464,7 +464,7 @@ export default class ChangeRequestsService {
     if (!activationChangeRequest) throw new HttpException(400, 'No activation change request found!');
 
     const shouldUpdateProjLead = activationChangeRequest.leadId !== foundCR.wbsElement?.leadId;
-    const shouldUpdateProjManager = activationChangeRequest.leadId !== foundCR.wbsElement?.managerId;
+    const shouldUpdateProjManager = activationChangeRequest.managerId !== foundCR.wbsElement?.managerId;
     const shouldChangeStartDate =
       activationChangeRequest.startDate.setHours(0, 0, 0, 0) !==
       foundCR.wbsElement?.workPackage?.startDate.setHours(0, 0, 0, 0);
