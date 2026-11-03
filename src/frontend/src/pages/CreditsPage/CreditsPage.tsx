@@ -405,7 +405,8 @@ const CreditsPage: React.FC = () => {
         '-webkit-background-clip': 'text'
       }
     },
-    { name: 'Arya Baviskar', color: '#92b5ed' }
+    { name: 'Arya Baviskar', color: '#92b5ed' },
+    { name: 'Reem Alsheikh-Ali', color: '#57d87e' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
