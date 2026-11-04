@@ -636,7 +636,7 @@ export default class ChangeRequestsService {
         snapshotBlockingCount: blockingCount,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
-        snapshotBudget: wbsElement ? wbsElement.project?.budget : null
+        snapshotBudget: wbsElement.project?.budget
       },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
@@ -759,7 +759,7 @@ export default class ChangeRequestsService {
         snapshotBlockingCount: blockingCount,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
-        snapshotBudget: wbsElement ? wbsElement.project?.budget : null
+        snapshotBudget: wbsElement.project?.budget
       },
       ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
     });
@@ -1000,7 +1000,7 @@ export default class ChangeRequestsService {
         snapshotBlockingCount: blockingCount,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
-        snapshotBudget: wbsElement ? wbsElement.project?.budget : null
+        snapshotBudget: wbsElement.project?.budget
       }
     });
 
@@ -1159,7 +1159,7 @@ export default class ChangeRequestsService {
         snapshotBlockingCount: blockingCount,
         snapshotStartDate: workPackage ? workPackage.startDate : null,
         snapshotDuration: workPackage ? workPackage.duration : null,
-        snapshotBudget: wbsElement ? wbsElement.project?.budget : null
+        snapshotBudget: wbsElement.project?.budget
       },
       include: {
         wbsElement: {
