@@ -132,7 +132,16 @@ const ChangeRequestsTable: React.FC = () => {
     maxWidth: 200
   };
 
-  const smallColumns: GridColDef[] = [idColumn, dateReviewedColumn, dynamicColumn, submitterColumn];
+  const priorityColumn: GridColDef = {
+    ...baseColDef,
+    field: 'triageScore',
+    type: 'number',
+    headerName: 'Priority',
+    valueFormatter: (params) => Math.round(params.value),
+    maxWidth: 75
+  };
+
+  const smallColumns: GridColDef[] = [idColumn, dateReviewedColumn, dynamicColumn, submitterColumn, priorityColumn];
 
   const columns: GridColDef[] = [
     idColumn,
@@ -190,7 +199,8 @@ const ChangeRequestsTable: React.FC = () => {
       field: 'status',
       headerName: 'Status',
       maxWidth: 150
-    }
+    },
+    priorityColumn
   ];
 
   const defaultFilter = { columnField: 'identifier', operatorValue: '=', value: '' };
