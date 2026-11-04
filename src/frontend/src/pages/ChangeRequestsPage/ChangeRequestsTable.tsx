@@ -137,6 +137,7 @@ const ChangeRequestsTable: React.FC = () => {
     field: 'triageScore',
     type: 'number',
     headerName: 'Priority',
+    valueFormatter: (params) => Math.round(params.value),
     maxWidth: 75
   };
 
