@@ -1,5 +1,5 @@
 import { Project, WBS_Element_Status } from '@prisma/client';
-import prisma from '../prisma/prisma.js';
+import prisma, { PrismaTransactionClient } from '../prisma/prisma.js';
 import { DescriptionBulletPreview, LinkCreateArgs, WbsElementStatus } from 'shared';
 import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
 import { ChangeCreateArgs, createChange, createListChanges, getDescriptionBulletChanges } from './changes.utils.js';
@@ -60,11 +60,12 @@ export const updateProjectAndCreateChanges = async (
   newLinkCreateArgs: LinkCreateArgs[] | null,
   leadId: string | null,
   managerId: string | null,
-  organizationId: string
+  organizationId: string,
+  tx: PrismaTransactionClient = prisma
 ) => {
   let changesJson: ChangeCreateArgs[] = [];
 
-  const originalProject = await prisma.project.findUnique({
+  const originalProject = await tx.project.findUnique({
     where: {
       projectId
     },
@@ -182,7 +183,7 @@ export const updateProjectAndCreateChanges = async (
 
     changesJson = changesJson.concat(wpChanges);
 
-    await prisma.wBS_Element.updateMany({
+    await tx.wBS_Element.updateMany({
       where: { wbsElementId: { in: wpToUpdate.map((wp) => wp.wbsElementId) } },
       data: { managerId }
     });
@@ -202,14 +203,14 @@ export const updateProjectAndCreateChanges = async (
 
     changesJson = changesJson.concat(wpChanges);
 
-    await prisma.wBS_Element.updateMany({
+    await tx.wBS_Element.updateMany({
       where: { wbsElementId: { in: wpToUpdate.map((wp) => wp.wbsElementId) } },
       data: { leadId }
     });
   }
 
   // update the project with the input fields
-  const updatedProject = await prisma.project.update({
+  const updatedProject = await tx.project.update({
     where: {
       wbsElementId
     },
@@ -231,7 +232,7 @@ export const updateProjectAndCreateChanges = async (
   const deletedDescriptionBullets: DescriptionBulletPreview[] = descriptionBulletChanges.deleted;
 
   if (deletedDescriptionBullets.length > 0) {
-    await prisma.description_Bullet.updateMany({
+    await tx.description_Bullet.updateMany({
       where: {
         descriptionId: {
           in: deletedDescriptionBullets.map((descriptionBullet) => descriptionBullet.id)
@@ -248,16 +249,17 @@ export const updateProjectAndCreateChanges = async (
     descriptionBulletChanges.added,
     DescriptionBulletDestination.WBS_ELEMENT,
     wbsElementId,
-    organizationId
+    organizationId,
+    tx
   );
 
   // Edit the existing description bullets
-  await editDescriptionBullets(descriptionBulletChanges.edited, organizationId);
+  await editDescriptionBullets(descriptionBulletChanges.edited, organizationId, tx);
 
   // Update links
-  await updateLinks(linkChanges, wbsElementId, implementerId, organizationId);
+  await updateLinks(linkChanges, wbsElementId, implementerId, organizationId, tx);
 
-  await prisma.change.createMany({
+  await tx.change.createMany({
     data: changesJson
   });
 

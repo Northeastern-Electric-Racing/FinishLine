@@ -1,4 +1,4 @@
-import { Organization, User, WBS_Element_Status } from '@prisma/client';
+import { CR_Type, Organization, User, WBS_Element_Status } from '@prisma/client';
 import {
   createTestCar,
   createTestOrganization,
@@ -190,6 +190,29 @@ describe('Change Request Tests', () => {
       expect(wbsElement?.carNumber).toEqual(12);
       expect(wbsElement?.projectNumber).toEqual(13);
       expect(wbsElement?.workPackageNumber).toEqual(14);
+    });
+  });
+
+  describe('Activation Change Requests', () => {
+    it('does not log a manager change when the manager stays the same', async () => {
+      const wbs = await prisma.wBS_Element.findUnique({ where: { wbsElementId: wpWbsElementId } });
+      const newLead = await createTestUser(aquamanLeadership, orgId);
+
+      const crId = await ChangeRequestsService.createActivationChangeRequest(
+        user,
+        2,
+        1,
+        1,
+        newLead.userId,
+        wbs!.managerId!,
+        startDate,
+        true,
+        organization
+      );
+
+      const changes = await prisma.change.findMany({ where: { changeRequestId: crId } });
+      expect(changes.find((c) => c.detail.includes('Project Lead'))).toBeDefined();
+      expect(changes.find((c) => c.detail.includes('Project Manager'))).toBeUndefined();
     });
   });
 
@@ -585,5 +608,65 @@ describe('Change Request Tests', () => {
       const durationChange = changes.find((c) => c.detail.includes('duration'));
       expect(durationChange).toBeUndefined();
     });
+
+    it('does not leave a change request behind when creating the stage gate fails', async () => {
+      const crCountBefore = await prisma.change_Request.count({ where: { wbsElementId: wpWbsElementId } });
+
+      const dateCompleted = new Date(startDate);
+      dateCompleted.setDate(dateCompleted.getDate() - 7);
+
+      await expect(
+        ChangeRequestsService.createStageGateChangeRequest(user, 2, 1, 1, true, dateCompleted, organization)
+      ).rejects.toThrow('Date completed cannot be before the work package start date');
+
+      const crCountAfter = await prisma.change_Request.count({ where: { wbsElementId: wpWbsElementId } });
+      expect(crCountAfter).toEqual(crCountBefore);
+
+      const wbs = await prisma.wBS_Element.findUnique({ where: { wbsElementId: wpWbsElementId } });
+      expect(wbs?.status).not.toEqual(WBS_Element_Status.COMPLETE);
+    });
+
+    it('leaves the change request unreviewed when approving the stage gate fails, and it can be approved again', async () => {
+      // move the start date into the future so approving today fails the date check
+      const futureStart = new Date();
+      futureStart.setDate(futureStart.getDate() + 14);
+      await prisma.work_Package.update({ where: { workPackageId }, data: { startDate: futureStart } });
+
+      // create an unreviewed stage gate CR directly, since the service would auto-approve it
+      const numChangeRequests = await prisma.change_Request.count({ where: { organizationId: orgId } });
+      const cr = await prisma.change_Request.create({
+        data: {
+          submitter: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: wpWbsElementId } },
+          type: CR_Type.STAGE_GATE,
+          stageGateChangeRequest: { create: { leftoverBudget: 0, confirmDone: true } },
+          organization: { connect: { organizationId: orgId } },
+          identifier: numChangeRequests + 1
+        }
+      });
+
+      await expect(
+        ChangeRequestsService.reviewChangeRequest(user, cr.crId, true, organization, 'approving')
+      ).rejects.toThrow('Date completed cannot be before the work package start date');
+
+      // nothing from the failed review was saved
+      const failedCR = await prisma.change_Request.findUnique({ where: { crId: cr.crId } });
+      expect(failedCR?.dateReviewed).toBeNull();
+      expect(failedCR?.reviewerId).toBeNull();
+      expect(failedCR?.accepted).not.toBe(true);
+
+      const changes = await prisma.change.findMany({ where: { changeRequestId: cr.crId } });
+      expect(changes).toHaveLength(0);
+
+      const wbs = await prisma.wBS_Element.findUnique({ where: { wbsElementId: wpWbsElementId } });
+      expect(wbs?.status).not.toEqual(WBS_Element_Status.COMPLETE);
+
+      // once the problem is fixed, the same CR can still be approved
+      await prisma.work_Package.update({ where: { workPackageId }, data: { startDate } });
+      await ChangeRequestsService.reviewChangeRequest(user, cr.crId, true, organization, 'approving');
+
+      const approvedWbs = await prisma.wBS_Element.findUnique({ where: { wbsElementId: wpWbsElementId } });
+      expect(approvedWbs?.status).toEqual(WBS_Element_Status.COMPLETE);
+    }, 15000);
   });
 });
