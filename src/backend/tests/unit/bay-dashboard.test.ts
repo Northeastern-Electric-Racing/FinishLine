@@ -257,9 +257,9 @@ describe('Bay Dashboard Calendar Tests', () => {
     });
 
     describe('which days are returned', () => {
-      it('includes an event up to 14 days ahead and leaves out one after that', async () => {
-        await createEvent('Soon', [slotIn(10 * DAY_MS)]);
-        await createEvent('Too Far Away', [slotIn(30 * DAY_MS)]);
+      it('includes an event up to 7 days ahead and leaves out one after that', async () => {
+        await createEvent('Soon', [slotIn(5 * DAY_MS)]);
+        await createEvent('Too Far Away', [slotIn(10 * DAY_MS)]);
 
         const events = await getEvents();
 
