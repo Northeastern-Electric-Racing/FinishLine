@@ -1,4 +1,4 @@
-import { Organization, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Organization, WBS_Element, WBS_Element_Status, Work_Package_Stage } from '@prisma/client';
 import {
   calculateEndDate,
   DescriptionBulletPreview,
@@ -14,7 +14,8 @@ import {
   WorkPackageStage,
   User,
   WorkPackageSelection,
-  WorkPackageDropdownItem
+  WorkPackageDropdownItem,
+  isWithinBuffer
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -41,6 +42,7 @@ import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packa
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
 import { userHasPermission } from '../utils/users.utils.js';
 import { getUserPreviewQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { sendMessage } from '../integrations/slack.js';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -231,6 +233,29 @@ export default class WorkPackagesService {
     });
 
     return workPackages.map(workPackageTransformer);
+  }
+
+  static async sendWorkPackageDeadlineNotifications() {
+    const currDay = new Date();
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        wbsElement: { dateDeleted: null }
+      }
+    });
+
+    for (const workPackage of workPackages) {
+      const startDateIsADayApart = isWithinBuffer(currDay, workPackage.startDate, 1);
+      if (startDateIsADayApart && workPackage.stage === Work_Package_Stage.INACTIVE) {
+        // send message
+
+        sendMessage(team.slackId, message, link, linkButtonText);
+      }
+
+      const endDateIsADayApart = isWithinBuffer(currDay, calculateEndDate(workPackage.startDate, workPackage.duration), 1);
+      if (endDateIsADayApart && workPackage.stage === Work_Package_Stage.INACTIVE) {
+        // send message
+      }
+    }
   }
 
   /**
