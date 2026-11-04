@@ -137,21 +137,19 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       )
     : false;
 
+  // lead and manager apply directly now, same as name, summary and links
   const nonMeaningfulFieldsChanged = project
-    ? watchedName !== project.name ||
+    ? leadershipChanged ||
+      watchedName !== project.name ||
       watchedSummary !== project.summary ||
       JSON.stringify((watchedLinks ?? []).map((l) => `${l.linkTypeName}:${l.url}`).sort()) !==
         JSON.stringify(project.links.map((l) => `${l.linkType.name}:${l.url}`).sort())
     : false;
 
-  const otherFieldsChanged = meaningfulFieldsChanged || nonMeaningfulFieldsChanged;
-
-  const liveOnlyLeadershipChanged = leadershipChanged && !otherFieldsChanged;
-  const anyChangesMade = leadershipChanged || otherFieldsChanged;
+  const anyChangesMade = meaningfulFieldsChanged || nonMeaningfulFieldsChanged;
 
   const getButtonLabel = () => {
     if (!project) return 'Create Project';
-    if (liveOnlyLeadershipChanged) return 'Submit & Implement';
     if (meaningfulFieldsChanged) return 'Submit Change Request';
     return 'Save Changes';
   };
