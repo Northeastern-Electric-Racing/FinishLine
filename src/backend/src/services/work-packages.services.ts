@@ -14,7 +14,8 @@ import {
   WorkPackageStage,
   User,
   WorkPackageSelection,
-  WorkPackageDropdownItem
+  WorkPackageDropdownItem,
+  workPackageEditNeedsCR
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -381,7 +382,7 @@ export default class WorkPackagesService {
    * @param user the user editing the work package
    * @param workPackageId the id of the work package
    * @param name the new name of the work package
-   * @param crId the id of the change request implementing this edit
+   * @param crId the id of the approved change request being applied, or null for a direct edit
    * @param startDate the date string representing the new start date
    * @param duration the new duration of this work package, in weeks
    * @param blockedBy the new WBS elements to be completed before this WP
@@ -394,7 +395,7 @@ export default class WorkPackagesService {
     user: User,
     workPackageId: string,
     name: string,
-    crId: string,
+    crId: string | null,
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
@@ -415,7 +416,10 @@ export default class WorkPackagesService {
       include: {
         wbsElement: {
           include: {
-            descriptionBullets: getDescriptionBulletQueryArgs(organization.organizationId)
+            descriptionBullets: {
+              where: { dateDeleted: null },
+              ...getDescriptionBulletQueryArgs(organization.organizationId)
+            }
           }
         },
         blockedBy: true
@@ -427,10 +431,26 @@ export default class WorkPackagesService {
     if (originalWorkPackage.wbsElement.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Work Package');
 
-    // the crId must match a valid approved change request
-    await validateChangeRequestAccepted(crId);
-
     const { wbsElementId } = originalWorkPackage;
+
+    // only timeline and description bullet changes require a change request
+    const needsCR = workPackageEditNeedsCR(
+      originalWorkPackage.startDate,
+      new Date(startDate),
+      originalWorkPackage.duration,
+      duration,
+      originalWorkPackage.wbsElement.descriptionBullets.map((bullet) => ({
+        id: bullet.descriptionId,
+        detail: bullet.detail
+      })),
+      descriptionBullets.map((bullet) => ({ id: bullet.id, detail: bullet.detail }))
+    );
+
+    // the crId must match a valid approved change request
+    if (needsCR) {
+      if (!crId) throw new HttpException(400, 'This edit requires an accepted change request');
+      await validateChangeRequestAccepted(crId);
+    }
 
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
 
@@ -445,9 +465,9 @@ export default class WorkPackagesService {
       duration,
       originalWorkPackage.blockedBy,
       blockedByElems,
-      originalWorkPackage.wbsElement.managerId,
-      leadId,
       originalWorkPackage.wbsElement.leadId,
+      leadId,
+      originalWorkPackage.wbsElement.managerId,
       managerId,
       originalWorkPackage.wbsElement.descriptionBullets,
       descriptionBullets,

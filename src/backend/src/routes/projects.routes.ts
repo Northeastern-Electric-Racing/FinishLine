@@ -59,7 +59,6 @@ projectRouter.post(
   '/edit',
   nonEmptyString(body('projectId')),
   intMinZero(body('budget')),
-  nonEmptyString(body('crId')),
   ...projectValidators,
   validateInputs,
   ProjectsController.editProject

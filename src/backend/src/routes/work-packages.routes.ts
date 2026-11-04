@@ -53,7 +53,6 @@ workPackagesRouter.post(
 workPackagesRouter.post(
   '/edit',
   nonEmptyString(body('workPackageId')),
-  nonEmptyString(body('crId')),
   nonEmptyString(body('name')),
   isDateOnly(body('startDate')),
   intMinZero(body('duration')),

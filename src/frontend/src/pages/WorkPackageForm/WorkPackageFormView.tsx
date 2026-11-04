@@ -198,22 +198,28 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     ? leadId !== wbsElement.lead?.userId.toString() || managerId !== wbsElement.manager?.userId.toString()
     : false;
 
-  const otherFieldsChanged = defaultValues
-    ? watchedName !== defaultValues.name ||
-      !isSameDay(watchedStartDate, defaultValues.startDate) ||
+  // start date, duration and description bullets need a change request
+  const meaningfulFieldsChanged = defaultValues
+    ? !isSameDay(watchedStartDate, defaultValues.startDate) ||
       watchedDuration !== defaultValues.duration ||
-      JSON.stringify([...watchedBlockedBy].sort()) !== JSON.stringify([...(defaultValues.blockedBy || [])].sort()) ||
-      watchedStage !== defaultValues.stage ||
       JSON.stringify(watchedDescriptionBullets) !== JSON.stringify(defaultValues.descriptionBullets)
     : false;
+
+  const nonMeaningfulFieldsChanged = defaultValues
+    ? watchedName !== defaultValues.name ||
+      JSON.stringify([...watchedBlockedBy].sort()) !== JSON.stringify([...(defaultValues.blockedBy || [])].sort()) ||
+      watchedStage !== defaultValues.stage
+    : false;
+
+  const otherFieldsChanged = meaningfulFieldsChanged || nonMeaningfulFieldsChanged;
 
   const liveOnlyLeadershipChanged = leadershipChanged && !otherFieldsChanged;
 
   const getButtonLabel = () => {
     if (!defaultValues) return 'Create Work Package';
     if (liveOnlyLeadershipChanged) return 'Submit & Implement';
-    if (otherFieldsChanged) return 'Submit Change Request';
-    return 'Submit & Implement';
+    if (meaningfulFieldsChanged) return 'Submit Change Request';
+    return 'Save Changes';
   };
 
   const isButtonDisabled = () => {
@@ -222,7 +228,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   };
 
   const handleButtonClick = (e: React.MouseEvent) => {
-    if (defaultValues && otherFieldsChanged) {
+    if (defaultValues && meaningfulFieldsChanged) {
       e.preventDefault();
       e.stopPropagation();
       setIsModalOpen(true);
