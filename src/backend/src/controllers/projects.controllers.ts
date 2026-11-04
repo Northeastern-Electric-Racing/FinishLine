@@ -116,11 +116,11 @@ export default class ProjectsController {
 
   static async editProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectId, crId, name, budget, summary, descriptionBullets, links, leadId, managerId } = req.body;
+      const { projectId, name, budget, summary, descriptionBullets, links, leadId, managerId } = req.body;
       const editedProject: Project = await ProjectsService.editProject(
         req.currentUser,
         projectId,
-        crId,
+        null,
         name,
         budget,
         summary,

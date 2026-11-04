@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { DescriptionBulletPreview, LinkCreateArgs, Project, ProjectTemplate } from 'shared';
+import { DescriptionBulletPreview, LinkCreateArgs, Project, ProjectTemplate, projectEditNeedsCR } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -127,14 +127,24 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     ? leadId !== project.lead?.userId.toString() || managerId !== project.manager?.userId.toString()
     : false;
 
-  const otherFieldsChanged = project
+  // budget and description bullets need a change request (same predicate the backend uses)
+  const meaningfulFieldsChanged = project
+    ? projectEditNeedsCR(
+        project.budget,
+        watchedBudget,
+        bulletsToObject(project.descriptionBullets),
+        watchedDescriptionBullets ?? []
+      )
+    : false;
+
+  const nonMeaningfulFieldsChanged = project
     ? watchedName !== project.name ||
-      watchedBudget !== project.budget ||
       watchedSummary !== project.summary ||
       JSON.stringify((watchedLinks ?? []).map((l) => `${l.linkTypeName}:${l.url}`).sort()) !==
-        JSON.stringify(project.links.map((l) => `${l.linkType.name}:${l.url}`).sort()) ||
-      JSON.stringify(watchedDescriptionBullets) !== JSON.stringify(bulletsToObject(project.descriptionBullets))
+        JSON.stringify(project.links.map((l) => `${l.linkType.name}:${l.url}`).sort())
     : false;
+
+  const otherFieldsChanged = meaningfulFieldsChanged || nonMeaningfulFieldsChanged;
 
   const liveOnlyLeadershipChanged = leadershipChanged && !otherFieldsChanged;
   const anyChangesMade = leadershipChanged || otherFieldsChanged;
@@ -142,8 +152,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   const getButtonLabel = () => {
     if (!project) return 'Create Project';
     if (liveOnlyLeadershipChanged) return 'Submit & Implement';
-    if (otherFieldsChanged) return 'Submit Change Request';
-    return 'Submit & Implement';
+    if (meaningfulFieldsChanged) return 'Submit Change Request';
+    return 'Save Changes';
   };
 
   const isButtonDisabled = () => {
@@ -152,7 +162,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   };
 
   const handleButtonClick = (e: React.MouseEvent) => {
-    if (project && otherFieldsChanged) {
+    if (project && meaningfulFieldsChanged) {
       e.preventDefault();
       e.stopPropagation();
       setIsModalOpen(true);

@@ -31,7 +31,6 @@ const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings
 const userScheduleSettingsBusyTimes = (id: string) => `${usersById(id)}/schedule-settings/busy-times`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
-const manyUserTasks = () => `${users()}/tasks/get-many`;
 const currentUser = () => `${users()}/auth/current`;
 const logUserOut = () => `${users()}/auth/log-out`;
 const manyUsersWithScheduleSettings = () => `${users()}/scheduleSettings`;
@@ -99,6 +98,7 @@ const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
+const tasksFilterPaginated = () => `${tasks()}/filter-paginated`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
 const taskLabels = () => `${tasks()}/task-labels`;
 const taskLabelCreate = () => `${taskLabels()}/create`;
@@ -603,7 +603,6 @@ export const apiUrls = {
   userScheduleSettingsBusyTimes,
   userScheduleSettingsSet,
   userTasks,
-  manyUserTasks,
   currentUser,
   logUserOut,
   manyUsersWithScheduleSettings,
@@ -664,6 +663,7 @@ export const apiUrls = {
   tasksCreate,
   tasks,
   tasksFilter,
+  tasksFilterPaginated,
   editTaskById,
   taskEditStatus,
   editTaskAssignees,

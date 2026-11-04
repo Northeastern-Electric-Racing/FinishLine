@@ -60,6 +60,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { convertDayToInt, convertIntToDay } from '../../../utils/calendar.utils';
 import EditSeriesConfirmationModal from './EditSeriesConfirmationModal';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import HowToRegIcon from '@mui/icons-material/HowToReg';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 
@@ -1238,7 +1239,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 placement="right"
                 title={
                   !selectedEventType.sendSlackNotifications
-                    ? 'Slack notifications are disabled for this event type.'
+                    ? selectedEventType.takeAttendance
+                      ? 'Slack notifications are disabled for this event type. Attendance messages are still posted.'
+                      : 'Slack notifications are disabled for this event type.'
                     : selectedTeams.length || workPackageIds.length || selectedNotificationChannels.length
                       ? 'Slack notifications will be sent for this event.'
                       : ''
@@ -1251,7 +1254,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     fontWeight={500}
                     sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
                   >
-                    {selectedEventType.sendSlackNotifications ? 'On' : 'Off'}
+                    {selectedEventType.sendSlackNotifications ? 'Notifications on' : 'Notifications off'}
                   </Typography>
                   {selectedEventType.sendSlackNotifications &&
                     !selectedTeams.length &&
@@ -1319,6 +1322,25 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   />
                 </Box>
               )}
+            </Box>
+          )}
+          {/* Attendance Section */}
+          {selectedEventType?.takeAttendance && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <HowToRegIcon sx={{ color: 'text.secondary', flexShrink: 0 }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', minWidth: 0 }}>
+                <Typography variant="body2" color={'text.disabled'} fontWeight={500}>
+                  Attendance will be taken in each team's Slack channel when the meeting starts
+                </Typography>
+                {selectedTeams.length === 0 && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+                    <WarningAmberIcon sx={{ color: 'error.main', fontSize: 18, flexShrink: 0 }} />
+                    <Typography variant="body2" color="error.main">
+                      Add a team to take attendance
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
             </Box>
           )}
           {/* Required Members Section */}

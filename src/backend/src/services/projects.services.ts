@@ -13,7 +13,8 @@ import {
   ProjectDropdownItem,
   WbsNumber,
   wbsPipe,
-  User
+  User,
+  projectEditNeedsCR
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { getProjectDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
@@ -353,7 +354,7 @@ export default class ProjectsService {
    * Edits the given project with the given information.
    * @param user the user editing the project
    * @param projectId the id of the project to edit
-   * @param crId the change request used to do the editing
+   * @param crId the id of the approved change request being applied, or null for a direct edit
    * @param name the new name of the project
    * @param budget the new budget of the project
    * @param summary the new summary of the project
@@ -367,7 +368,7 @@ export default class ProjectsService {
   static async editProject(
     user: User,
     projectId: string,
-    crId: string,
+    crId: string | null,
     name: string,
     budget: number,
     summary: string,
@@ -381,8 +382,6 @@ export default class ProjectsService {
     if (await userHasPermission(userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('edit projects');
 
-    await validateChangeRequestAccepted(crId);
-
     // get the original project so we can compare things
     const originalProject = await prisma.project.findUnique({
       where: {
@@ -391,8 +390,11 @@ export default class ProjectsService {
       include: {
         wbsElement: {
           include: {
-            links: getLinkQueryArgs(),
-            descriptionBullets: getDescriptionBulletQueryArgs(organization.organizationId)
+            links: { where: { dateDeleted: null }, ...getLinkQueryArgs() },
+            descriptionBullets: {
+              where: { dateDeleted: null },
+              ...getDescriptionBulletQueryArgs(organization.organizationId)
+            }
           }
         }
       }
@@ -403,6 +405,22 @@ export default class ProjectsService {
     if (originalProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
     if (originalProject.wbsElement.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Project');
+
+    // only budget and description bullet changes require a change request
+    const needsCR = projectEditNeedsCR(
+      originalProject.budget,
+      budget,
+      originalProject.wbsElement.descriptionBullets.map((bullet) => ({
+        id: bullet.descriptionId,
+        detail: bullet.detail
+      })),
+      newDescriptionBullets.map((bullet) => ({ id: bullet.id, detail: bullet.detail }))
+    );
+
+    if (needsCR) {
+      if (!crId) throw new HttpException(400, 'This edit requires an accepted change request');
+      await validateChangeRequestAccepted(crId);
+    }
 
     const { project: updatedProject } = await updateProjectAndCreateChanges(
       originalProject.projectId,
@@ -421,7 +439,6 @@ export default class ProjectsService {
     // return the updated work package
     return projectTransformer(updatedProject);
   }
-
   /**
    * Adds or removes the given team to the projects teams depending if it is already assigned to the project or not.
    *

@@ -31,7 +31,6 @@ export interface VersionObject {
 
 export interface EditSingleProjectPayload {
   projectId: string;
-  crId: string;
   name: string;
   budget: number;
   summary: string;

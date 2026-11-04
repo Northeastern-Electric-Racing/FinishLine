@@ -3,7 +3,6 @@ import UsersService from '../services/users.services.js';
 import ApiTokenService from '../services/api-tokens.services.js';
 import { AccessDeniedException } from '../utils/errors.utils.js';
 import { AUTH_TOKEN_LIFETIME_DAYS } from '../utils/auth.utils.js';
-import { Task } from 'shared';
 
 // browsers only clear a cookie when these match the options it was set with, so login and logout share them
 const AUTH_COOKIE_OPTIONS: CookieOptions = { httpOnly: true, sameSite: 'none', secure: true };
@@ -239,17 +238,6 @@ export default class UsersController {
 
       const userTasks = await UsersService.getUserTasks(userId, organization);
       res.status(200).json(userTasks);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getManyUserTasks(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { userIds } = req.body;
-
-      const tasks: Task[] = await UsersService.getManyUserTasks(userIds, req.organization);
-      res.status(200).json(tasks);
     } catch (error: unknown) {
       next(error);
     }
