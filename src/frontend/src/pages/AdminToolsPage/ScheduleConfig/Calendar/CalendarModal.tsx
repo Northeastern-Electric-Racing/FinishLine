@@ -14,13 +14,15 @@ export interface CalendarFormValues {
   description: string;
   colorHexCode: string;
   isNewMemberCalendar: boolean;
+  isLeadCalendar: boolean;
 }
 
 const schema = yup.object({
   name: yup.string().required('Calendar Name is required'),
   description: yup.string().required('Description is required'),
   colorHexCode: yup.string().required('Color is required'),
-  isNewMemberCalendar: yup.boolean().required()
+  isNewMemberCalendar: yup.boolean().required(),
+  isLeadCalendar: yup.boolean().required()
 });
 
 export interface BaseCalendarModalProps {
@@ -42,14 +44,15 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
     formState: { errors }
   } = useForm<CalendarFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: { name: '', description: '', colorHexCode: '', isNewMemberCalendar: false }
+    defaultValues: { name: '', description: '', colorHexCode: '', isNewMemberCalendar: false, isLeadCalendar: false }
   });
 
   const frozenValuesRef = useRef<CalendarFormValues>({
     name: '',
     description: '',
     colorHexCode: '',
-    isNewMemberCalendar: false
+    isNewMemberCalendar: false,
+    isLeadCalendar: false
   });
 
   useEffect(() => {
@@ -58,11 +61,12 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
         name: initialValues?.name ?? '',
         description: initialValues?.description ?? '',
         colorHexCode: initialValues?.colorHexCode ?? '',
-        isNewMemberCalendar: initialValues?.isNewMemberCalendar ?? false
+        isNewMemberCalendar: initialValues?.isNewMemberCalendar ?? false,
+        isLeadCalendar: initialValues?.isLeadCalendar ?? false
       };
       reset(frozenValuesRef.current);
     } else {
-      frozenValuesRef.current = { name: '', description: '', colorHexCode: '', isNewMemberCalendar: false };
+      frozenValuesRef.current = { name: '', description: '', colorHexCode: '', isNewMemberCalendar: false, isLeadCalendar: false };
       reset(frozenValuesRef.current);
     }
   }, [open, initialValues, reset]);
@@ -73,7 +77,7 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
     try {
       await onSubmit(data);
       onClose();
-      reset({ name: '', description: '', colorHexCode: '', isNewMemberCalendar: false });
+      reset({ name: '', description: '', colorHexCode: '', isNewMemberCalendar: false, isLeadCalendar: false });
     } catch (e: unknown) {
       if (e instanceof Error) toast.error(e.message);
     }
@@ -90,10 +94,10 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
       open={open}
       onHide={() => {
         onClose();
-        reset({ name: '', description: '', colorHexCode: '', isNewMemberCalendar: false });
+        reset({ name: '', description: '', colorHexCode: '', isNewMemberCalendar: false, isLeadCalendar: false });
       }}
       title={computedTitle}
-      reset={() => reset({ name: '', description: '', colorHexCode: '', isNewMemberCalendar: false })}
+      reset={() => reset({ name: '', description: '', colorHexCode: '', isNewMemberCalendar: false, isLeadCalendar: false })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId="calendar-form"
@@ -137,6 +141,15 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
             name="isNewMemberCalendar"
             render={({ field: { onChange, value } }) => (
               <FormControlLabel control={<Checkbox checked={value} onChange={onChange} />} label="New member calendar" />
+            )}
+          />
+        </FormControl>
+        <FormControl fullWidth>
+          <Controller
+            control={control}
+            name="isLeadCalendar"
+            render={({ field: { onChange, value } }) => (
+              <FormControlLabel control={<Checkbox checked={value} onChange={onChange} />} label="Lead calendar" />
             )}
           />
         </FormControl>

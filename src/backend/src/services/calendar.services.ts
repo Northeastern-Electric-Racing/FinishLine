@@ -2,6 +2,7 @@ import {
   User,
   isAdmin,
   isHead,
+  isLeadership,
   isGuest,
   AvailabilityCreateArgs,
   Event,
@@ -120,6 +121,7 @@ export default class CalendarService {
     documents: boolean,
     description: boolean,
     onlyHeadsOrAbove: boolean,
+    onlyAdminsOrAbove: boolean,
     requiresConfirmation: boolean,
     sendSlackNotifications: boolean,
     takeAttendance: boolean
@@ -185,6 +187,7 @@ export default class CalendarService {
         documents,
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
+        onlyAdminsOrAboveForEventCreation: onlyAdminsOrAbove,
         requiresConfirmation,
         sendSlackNotifications,
         takeAttendance,
@@ -295,7 +298,12 @@ export default class CalendarService {
       throw new InvalidOrganizationException('Event Type');
     }
 
-    if (foundEventType.onlyHeadsOrAboveForEventCreation) {
+    if (foundEventType.onlyAdminsOrAboveForEventCreation) {
+      const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+      if (!hasPermission) {
+        throw new AccessDeniedAdminOnlyException('create events under this event type');
+      }
+    } else if (foundEventType.onlyHeadsOrAboveForEventCreation) {
       const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isHead);
 
       if (!hasPermission) {
@@ -641,7 +649,12 @@ export default class CalendarService {
       throw new HttpException(400, 'required members cannot be in optional members');
     }
 
-    if (foundEventType.onlyHeadsOrAboveForEventCreation) {
+    if (foundEventType.onlyAdminsOrAboveForEventCreation) {
+      const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+      if (!hasPermission) {
+        throw new AccessDeniedAdminOnlyException('edit this event');
+      }
+    } else if (foundEventType.onlyHeadsOrAboveForEventCreation) {
       const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isHead);
 
       if (!hasPermission) {
@@ -2169,6 +2182,7 @@ export default class CalendarService {
     description: string,
     colorHexCode: string,
     isNewMemberCalendar: boolean,
+    isLeadCalendar: boolean,
     organization: Organization
   ): Promise<Calendar> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
@@ -2205,6 +2219,7 @@ export default class CalendarService {
           description,
           colorHexCode,
           isNewMemberCalendar,
+          isLeadCalendar,
           userCreatedId: submitter.userId,
           organizationId: organization.organizationId
         },
@@ -2238,6 +2253,7 @@ export default class CalendarService {
     description: string,
     colorHexCode: string,
     isNewMemberCalendar: boolean,
+    isLeadCalendar: boolean,
     organization: Organization
   ): Promise<Calendar> {
     const calendar = await prisma.calendar.findUnique({
@@ -2284,7 +2300,8 @@ export default class CalendarService {
           name,
           description,
           colorHexCode,
-          isNewMemberCalendar
+          isNewMemberCalendar,
+          isLeadCalendar
         },
         ...getCalendarQueryArgs(organization.organizationId)
       });
@@ -2381,6 +2398,7 @@ export default class CalendarService {
     documents: boolean,
     description: boolean,
     onlyHeadsOrAbove: boolean,
+    onlyAdminsOrAbove: boolean,
     requiresConfirmation: boolean,
     sendSlackNotifications: boolean,
     takeAttendance: boolean
@@ -2446,6 +2464,7 @@ export default class CalendarService {
         documents,
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
+        onlyAdminsOrAboveForEventCreation: onlyAdminsOrAbove,
         requiresConfirmation,
         sendSlackNotifications,
         takeAttendance
@@ -2548,9 +2567,19 @@ export default class CalendarService {
    *
    * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
    */
-  static async getFilteredEvents(filters: FilterArgs, organization: Organization): Promise<Event[]> {
+  static async getFilteredEvents(
+    filters: FilterArgs,
+    organization: Organization,
+    submitter?: User
+  ): Promise<Event[]> {
     const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalIds, startPeriod, endPeriod, statuses } =
       filters;
+    const canSeeLeadCalendars =
+      !!submitter &&
+      (await userHasPermission(submitter.userId, organization.organizationId, isLeadership));
+    const canCreateAdminEventTypes =
+      !!submitter &&
+      (await userHasPermission(submitter.userId, organization.organizationId, isAdmin));
 
     // validate memberIds
     if (memberIds?.length) {
@@ -2587,12 +2616,17 @@ export default class CalendarService {
           calendarId: { in: calendarIds },
           organization: { organizationId: organization.organizationId },
           dateDeleted: null
-        }
+        },
+        select: { calendarId: true, isLeadCalendar: true }
       });
       if (foundcalendars.length !== calendarIds.length) {
         const missingIds = calendarIds.filter((id) => !foundcalendars.some((mem) => mem.calendarId === id));
         throw new NotFoundException('Calendar', missingIds.join(', '));
       }
+      const allowedCalendarIds = foundcalendars
+        .filter((calendar) => canSeeLeadCalendars || !calendar.isLeadCalendar)
+        .map((calendar) => calendar.calendarId);
+      calendarIds.splice(0, calendarIds.length, ...allowedCalendarIds);
     }
 
     // validate eventTypeIds
@@ -2601,12 +2635,15 @@ export default class CalendarService {
         where: {
           eventTypeId: { in: eventTypeIds },
           organization: { organizationId: organization.organizationId },
-          dateDeleted: null
+          dateDeleted: null,
+          ...(canCreateAdminEventTypes ? {} : { onlyAdminsOrAboveForEventCreation: false })
         }
+        ,
+        select: { eventTypeId: true }
       });
       if (foundEventTypes.length !== eventTypeIds.length) {
-        const missingIds = eventTypeIds.filter((id) => !foundEventTypes.some((et) => et.eventTypeId === id));
-        throw new NotFoundException('Event Type', missingIds.join(', '));
+        const allowedIds = foundEventTypes.map((et) => et.eventTypeId);
+        eventTypeIds.splice(0, eventTypeIds.length, ...allowedIds);
       }
     }
 
@@ -2680,6 +2717,26 @@ export default class CalendarService {
     if (startPeriod || endPeriod) {
       andConditions.push({ OR: scheduleSlotsOrDateScheduled });
     }
+    if (!canSeeLeadCalendars) {
+      andConditions.push({
+        eventType: {
+          is: {
+            NOT: {
+              calendars: {
+                some: { isLeadCalendar: true }
+              }
+            }
+          }
+        }
+      });
+    }
+    if (!canCreateAdminEventTypes) {
+      andConditions.push({
+        eventType: {
+          is: { onlyAdminsOrAboveForEventCreation: false }
+        }
+      });
+    }
 
     // get event using filter args
     const events = await prisma.event.findMany({
@@ -2739,11 +2796,17 @@ export default class CalendarService {
     return shops.map(shopTransformer);
   }
 
-  static async getAllCalendars(organization: Organization): Promise<Calendar[]> {
+  static async getAllCalendars(submitter: User, organization: Organization): Promise<Calendar[]> {
+    const canSeeLeadCalendar = await userHasPermission(
+      submitter.userId,
+      organization.organizationId,
+      isLeadership
+    );
     const calendars = await prisma.calendar.findMany({
       where: {
         organizationId: organization.organizationId,
-        dateDeleted: null
+        dateDeleted: null,
+        ...(canSeeLeadCalendar ? {} : { isLeadCalendar: false })
       },
       ...getCalendarQueryArgs(organization.organizationId)
     });

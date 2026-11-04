@@ -28,6 +28,7 @@ export const postCreateCalendar = (payload: {
   description: string;
   colorHexCode: string;
   isNewMemberCalendar: boolean;
+  isLeadCalendar: boolean;
 }) => {
   return axios.post<Calendar>(apiUrls.calendarCreateCalendar(), payload, {
     transformResponse: (data) => JSON.parse(data) as Calendar
@@ -36,7 +37,13 @@ export const postCreateCalendar = (payload: {
 
 export const postEditCalendar = (
   calendarId: string,
-  payload: { name: string; description: string; colorHexCode: string; isNewMemberCalendar: boolean }
+  payload: {
+    name: string;
+    description: string;
+    colorHexCode: string;
+    isNewMemberCalendar: boolean;
+    isLeadCalendar: boolean;
+  }
 ) => {
   return axios.post<Calendar>(apiUrls.calendarEditCalendar(calendarId), payload, {
     transformResponse: (data) => JSON.parse(data) as Calendar
