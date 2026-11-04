@@ -613,7 +613,7 @@ export default class ChangeRequestsService {
       ? await prisma.work_Package.count({
           where: {
             blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } },
-            wbsElement: { dateDeleted: null }
+            wbsElement: { dateDeleted: null, status: { not: WBS_Element_Status.COMPLETE } }
           }
         })
       : null;
@@ -735,7 +735,7 @@ export default class ChangeRequestsService {
       ? await prisma.work_Package.count({
           where: {
             blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } },
-            wbsElement: { dateDeleted: null }
+            wbsElement: { dateDeleted: null, status: { not: WBS_Element_Status.COMPLETE } }
           }
         })
       : null;
@@ -965,7 +965,7 @@ export default class ChangeRequestsService {
       ? await prisma.work_Package.count({
           where: {
             blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } },
-            wbsElement: { dateDeleted: null }
+            wbsElement: { dateDeleted: null, status: { not: WBS_Element_Status.COMPLETE } }
           }
         })
       : null;
@@ -1126,7 +1126,7 @@ export default class ChangeRequestsService {
       ? await prisma.work_Package.count({
           where: {
             blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } },
-            wbsElement: { dateDeleted: null }
+            wbsElement: { dateDeleted: null, status: { not: WBS_Element_Status.COMPLETE } }
           }
         })
       : null;
