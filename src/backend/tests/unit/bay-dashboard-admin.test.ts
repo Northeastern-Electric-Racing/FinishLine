@@ -248,7 +248,13 @@ describe('Bay Dashboard Admin Tests', () => {
       const regularMember = await createTestUser(member, orgId);
 
       await expect(
-        BayDashboardAdminService.createBayDashboardCountdown(regularMember, organization, 'FHE', new Date('2025-04-26'))
+        BayDashboardAdminService.createBayDashboardCountdown(
+          regularMember,
+          organization,
+          'FHE',
+          new Date('2025-04-26'),
+          false
+        )
       ).rejects.toThrow(new AccessDeniedException('Only heads and above can create bay dashboard countdowns'));
     });
 
@@ -259,7 +265,8 @@ describe('Bay Dashboard Admin Tests', () => {
         head,
         organization,
         'Days Since Last Bay Clean Up',
-        new Date('2026-03-07')
+        new Date('2026-03-07'),
+        false
       );
 
       expect(countdown.name).toBe('Days Since Last Bay Clean Up');
@@ -275,6 +282,7 @@ describe('Bay Dashboard Admin Tests', () => {
         organization,
         'FHE',
         new Date('2025-04-26'),
+        false,
         new Date('2026-04-26')
       );
 
@@ -292,9 +300,60 @@ describe('Bay Dashboard Admin Tests', () => {
           organization,
           'FHE',
           new Date('2026-04-26'),
+          false,
           new Date('2025-04-26')
         )
       ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
+    });
+
+    it('makes the new countdown the only primary countdown', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const oldPrimary = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26'),
+        true
+      );
+
+      const newPrimary = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FSAE',
+        new Date('2025-05-01'),
+        true
+      );
+
+      expect(newPrimary.isPrimary).toBe(true);
+      const oldPrimaryAfter = await prisma.bay_Dashboard_Countdown.findUniqueOrThrow({
+        where: { bayDashboardCountdownId: oldPrimary.bayDashboardCountdownId }
+      });
+      expect(oldPrimaryAfter.isPrimary).toBe(false);
+    });
+
+    it('leaves the existing primary countdown when creating a secondary countdown', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const primary = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26'),
+        true
+      );
+
+      const secondary = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FSAE',
+        new Date('2025-05-01'),
+        false
+      );
+
+      expect(secondary.isPrimary).toBe(false);
+      const primaryAfter = await prisma.bay_Dashboard_Countdown.findUniqueOrThrow({
+        where: { bayDashboardCountdownId: primary.bayDashboardCountdownId }
+      });
+      expect(primaryAfter.isPrimary).toBe(true);
     });
   });
   describe('Delete Bay Dashboard Countdown', () => {
@@ -304,7 +363,8 @@ describe('Bay Dashboard Admin Tests', () => {
         head,
         organization,
         'FHE',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
       const regularMember = await createTestUser(member, orgId);
 
@@ -319,7 +379,8 @@ describe('Bay Dashboard Admin Tests', () => {
         head,
         organization,
         'FHE',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
 
       await BayDashboardAdminService.deleteBayDashboardCountdown(head, countdown.bayDashboardCountdownId, organization);
@@ -337,7 +398,8 @@ describe('Bay Dashboard Admin Tests', () => {
         head,
         organization,
         'FHE',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
 
       await BayDashboardAdminService.deleteBayDashboardCountdown(head, countdown.bayDashboardCountdownId, organization);
@@ -361,7 +423,8 @@ describe('Bay Dashboard Admin Tests', () => {
         head,
         organization,
         'FHE',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
       // created inline rather than with createTestOrganization, which always uses the same unique slug
       const otherOrganization = await prisma.organization.create({
@@ -390,7 +453,8 @@ describe('Bay Dashboard Admin Tests', () => {
         head,
         organization,
         'FHE',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
       const regularMember = await createTestUser(member, orgId);
 
@@ -400,7 +464,8 @@ describe('Bay Dashboard Admin Tests', () => {
           countdown.bayDashboardCountdownId,
           organization,
           'New Name',
-          new Date('2025-04-26')
+          new Date('2025-04-26'),
+          false
         )
       ).rejects.toThrow(new AccessDeniedException('Only heads and above can edit bay dashboard countdowns'));
     });
@@ -411,7 +476,8 @@ describe('Bay Dashboard Admin Tests', () => {
         head,
         organization,
         'FHE',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
 
       const edited = await BayDashboardAdminService.editBayDashboardCountdown(
@@ -420,6 +486,7 @@ describe('Bay Dashboard Admin Tests', () => {
         organization,
         'Competition',
         new Date('2025-06-01'),
+        false,
         new Date('2025-06-05')
       );
 
@@ -435,6 +502,7 @@ describe('Bay Dashboard Admin Tests', () => {
         organization,
         'FHE',
         new Date('2025-04-26'),
+        false,
         new Date('2025-04-27')
       );
 
@@ -443,7 +511,8 @@ describe('Bay Dashboard Admin Tests', () => {
         countdown.bayDashboardCountdownId,
         organization,
         'FHE',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
 
       expect(edited.endDate).toBeUndefined();
@@ -455,7 +524,8 @@ describe('Bay Dashboard Admin Tests', () => {
         head,
         organization,
         'FHE',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
 
       await expect(
@@ -465,6 +535,7 @@ describe('Bay Dashboard Admin Tests', () => {
           organization,
           'FHE',
           new Date('2025-04-26'),
+          false,
           new Date('2025-04-25')
         )
       ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
@@ -479,7 +550,8 @@ describe('Bay Dashboard Admin Tests', () => {
           'fake-countdown-id',
           organization,
           'FHE',
-          new Date('2025-04-26')
+          new Date('2025-04-26'),
+          false
         )
       ).rejects.toThrow(new NotFoundException('Bay Dashboard Countdown', 'fake-countdown-id'));
     });
@@ -490,7 +562,8 @@ describe('Bay Dashboard Admin Tests', () => {
         head,
         organization,
         'FHE',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
       await BayDashboardAdminService.deleteBayDashboardCountdown(head, countdown.bayDashboardCountdownId, organization);
 
@@ -500,7 +573,8 @@ describe('Bay Dashboard Admin Tests', () => {
           countdown.bayDashboardCountdownId,
           organization,
           'FHE',
-          new Date('2025-04-26')
+          new Date('2025-04-26'),
+          false
         )
       ).rejects.toThrow(new DeletedException('Bay Dashboard Countdown', countdown.bayDashboardCountdownId));
     });
@@ -511,7 +585,8 @@ describe('Bay Dashboard Admin Tests', () => {
         head,
         organization,
         'FHE',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
 
       await expect(
@@ -520,7 +595,8 @@ describe('Bay Dashboard Admin Tests', () => {
           countdown.bayDashboardCountdownId,
           organization,
           '   ',
-          new Date('2025-04-26')
+          new Date('2025-04-26'),
+          false
         )
       ).rejects.toThrow(new HttpException(400, 'The name must be non-empty'));
     });
@@ -531,7 +607,8 @@ describe('Bay Dashboard Admin Tests', () => {
         head,
         organization,
         'FHE',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
 
       const edited = await BayDashboardAdminService.editBayDashboardCountdown(
@@ -539,7 +616,8 @@ describe('Bay Dashboard Admin Tests', () => {
         countdown.bayDashboardCountdownId,
         organization,
         '  Competition  ',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
 
       expect(edited.name).toBe('Competition');
@@ -551,7 +629,8 @@ describe('Bay Dashboard Admin Tests', () => {
         head,
         organization,
         'FHE',
-        new Date('2025-04-26')
+        new Date('2025-04-26'),
+        false
       );
       // created inline rather than with createTestOrganization, which always uses the same unique slug
       const otherOrganization = await prisma.organization.create({
@@ -574,9 +653,65 @@ describe('Bay Dashboard Admin Tests', () => {
           countdown.bayDashboardCountdownId,
           otherOrganization,
           'FHE',
-          new Date('2025-04-26')
+          new Date('2025-04-26'),
+          false
         )
       ).rejects.toThrow(new InvalidOrganizationException('Bay Dashboard Countdown'));
+    });
+
+    it('makes the edited countdown the only primary countdown', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const oldPrimary = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26'),
+        true
+      );
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FSAE',
+        new Date('2025-05-01'),
+        false
+      );
+
+      const edited = await BayDashboardAdminService.editBayDashboardCountdown(
+        head,
+        countdown.bayDashboardCountdownId,
+        organization,
+        'FSAE',
+        new Date('2025-05-01'),
+        true
+      );
+
+      expect(edited.isPrimary).toBe(true);
+      const oldPrimaryAfter = await prisma.bay_Dashboard_Countdown.findUniqueOrThrow({
+        where: { bayDashboardCountdownId: oldPrimary.bayDashboardCountdownId }
+      });
+      expect(oldPrimaryAfter.isPrimary).toBe(false);
+    });
+
+    it('keeps a primary countdown primary when it is edited', async () => {
+      const head = await createTestUser(greenlanternHead, orgId);
+      const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
+        head,
+        organization,
+        'FHE',
+        new Date('2025-04-26'),
+        true
+      );
+
+      const edited = await BayDashboardAdminService.editBayDashboardCountdown(
+        head,
+        countdown.bayDashboardCountdownId,
+        organization,
+        'FH+E',
+        new Date('2025-04-26'),
+        true
+      );
+
+      expect(edited.isPrimary).toBe(true);
     });
   });
 });

@@ -41,7 +41,7 @@ const BayDashboardPage: React.FC = () => {
       }}
     >
       <Box sx={{ width: 'min(100vw, calc(100vh * 16 / 9))' }}>
-        <BayDashboardGrid slots={config?.slots ?? defaultBayDashboardSlots} />
+        <BayDashboardGrid slots={config?.slots ?? defaultBayDashboardSlots} slug={slug} />
       </Box>
     </Box>
   );

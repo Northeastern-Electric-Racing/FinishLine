@@ -17,6 +17,7 @@ import BayDashboardGrid from '../../BayDashboardPage/components/BayDashboardGrid
 
 interface PreviewDashboardProps {
   selection: BayDashboardWidgetSelection;
+  slug: string;
 }
 
 const frameSx = { border: '2px solid white', borderRadius: '4px', width: '100%', aspectRatio: '16 / 9' };
@@ -25,7 +26,7 @@ const frameSx = { border: '2px solid white', borderRadius: '4px', width: '100%',
  * Scaled down copy of what the TV in the bay is currently displaying, with the widget picked for each
  * size in the right column swapped in. A size with nothing picked shows what the TV has.
  */
-const PreviewDashboard: React.FC<PreviewDashboardProps> = ({ selection }) => {
+const PreviewDashboard: React.FC<PreviewDashboardProps> = ({ selection, slug }) => {
   const { data: config, isLoading, isError, error } = useGetCurrentBayDashboardConfig();
 
   if (isError || isLoading || config === undefined) {
@@ -48,7 +49,7 @@ const PreviewDashboard: React.FC<PreviewDashboardProps> = ({ selection }) => {
 
   return (
     <Box sx={frameSx}>
-      <BayDashboardGrid slots={applyWidgetSelection(config?.slots ?? defaultBayDashboardSlots, selection)} />
+      <BayDashboardGrid slots={applyWidgetSelection(config?.slots ?? defaultBayDashboardSlots, selection)} slug={slug} />
     </Box>
   );
 };
