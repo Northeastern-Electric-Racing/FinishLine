@@ -86,7 +86,7 @@ export const createBayDashboardCountdown = (countdown: BayDashboardCountdownCrea
 };
 
 /**
- *this edits a countdown on the bay dashboard.
+ * Edits a countdown on the bay dashboard.
  *@param countdownId the id of the countdown being edited
  *@param name the new name for the countdown
  *@param startDate the new start date of countdown

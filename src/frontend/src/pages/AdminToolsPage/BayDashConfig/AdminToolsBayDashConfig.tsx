@@ -71,7 +71,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
           ...widgetBoxSx,
           gridColumn: { md: 'span 2' },
           gridRow: { md: 1 },
-          minHeight: { xs: 240, md: 0 },
+          minHeight: { xs: 240, md: 'auto' },
           p: 2
         }}
       >
