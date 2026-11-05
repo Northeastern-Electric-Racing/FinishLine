@@ -153,6 +153,13 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             disabled: !isAdmin(user.role),
             icon: <DeleteIcon fontSize="small" />,
             dividerTop: true
+          },
+          {
+            title: 'Assign to Teams',
+            onClick: handleClickDelete,
+            disabled: !isAdmin(user.role),
+            icon: <DeleteIcon fontSize="small" />,
+            dividerTop: true
           }
         ]}
       />
