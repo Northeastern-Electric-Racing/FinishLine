@@ -86,15 +86,16 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
             <TableCell align="center" sx={headerCellSx}>
               End Date
             </TableCell>
-            <TableCell align="center" sx={{ ...headerCellSx, borderRadius: '0px 10px 0px 0px' }}>
+            <TableCell align="center" sx={headerCellSx}>
               Display
             </TableCell>
+            <TableCell align="center" sx={{ ...headerCellSx, borderRadius: '0px 10px 0px 0px' }} />
           </TableRow>
         </TableHead>
         <TableBody>
           {sortedCountdowns.length === 0 && (
             <TableRow>
-              <TableCell colSpan={4} align="center">
+              <TableCell colSpan={5} align="center">
                 No countdowns yet
               </TableCell>
             </TableRow>
