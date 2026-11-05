@@ -7,7 +7,7 @@ import { PublicBayDashboardCalendarEvent } from 'shared';
 import {
   eventOccursOnDay,
   formatCalendarDay,
-  formatEventTime,
+  formatEventTimeOnDay,
   getCalendarDays,
   getNextEventDay,
   groupEventsByDay,
@@ -261,27 +261,27 @@ describe('getNextEventDay', () => {
   });
 });
 
-describe('formatEventTime', () => {
-  it('shows the range once when it stays within the morning or afternoon', () => {
-    expect(formatEventTime(battery, day(22))).toBe('3:00 - 5:00 PM');
+describe('formatEventTimeOnDay', () => {
+  it('shows the start and end time', () => {
+    expect(formatEventTimeOnDay(battery, day(22))).toBe('3:00 PM - 5:00 PM');
   });
 
   it('shows both AM and PM when the range crosses noon', () => {
     const lunch = event('Lunch', new Date(2026, 10, 22, 11, 30), new Date(2026, 10, 22, 13));
 
-    expect(formatEventTime(lunch, day(22))).toBe('11:30 AM - 1:00 PM');
+    expect(formatEventTimeOnDay(lunch, day(22))).toBe('11:30 AM - 1:00 PM');
   });
 
   it('shows all day events as all day', () => {
-    expect(formatEventTime(cleanup, day(23))).toBe('All day');
+    expect(formatEventTimeOnDay(cleanup, day(23))).toBe('All day');
   });
 
   it('cuts a multi-day event to the part on each day', () => {
     const threeDays = event('Competition', new Date(2026, 10, 22, 9), new Date(2026, 10, 24, 17));
 
-    expect(formatEventTime(threeDays, day(22))).toBe('From 9:00 AM');
-    expect(formatEventTime(threeDays, day(23))).toBe('All day');
-    expect(formatEventTime(threeDays, day(24))).toBe('Until 5:00 PM');
+    expect(formatEventTimeOnDay(threeDays, day(22))).toBe('From 9:00 AM');
+    expect(formatEventTimeOnDay(threeDays, day(23))).toBe('All day');
+    expect(formatEventTimeOnDay(threeDays, day(24))).toBe('Until 5:00 PM');
   });
 });
 

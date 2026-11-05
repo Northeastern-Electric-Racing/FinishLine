@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { BAY_DASHBOARD_CALENDAR_DAYS_AHEAD, PublicBayDashboardCalendarEvent } from 'shared';
+import { BAY_DASHBOARD_CALENDAR_DAYS_AHEAD, formatEventTime, PublicBayDashboardCalendarEvent } from 'shared';
 
 export interface CalendarDayEvents {
   day: Date;
@@ -113,26 +113,21 @@ export const getNextEventDay = (
   groupEventsByDay(events, getCalendarDays(now, daysToCheck)).find((group) => group.events.length > 0);
 
 /**
- * The time an event is shown with on a given day, e.g. "3:00 - 5:00 PM".
+ * The time an event is shown with on a given day, e.g. "3:00 PM - 5:00 PM".
+ * A multi-day event only shows the part on that day: "From 9:00 AM", "All day" or "Until 5:00 PM".
  */
-export const formatEventTime = (event: PublicBayDashboardCalendarEvent, day: Date): string => {
+export const formatEventTimeOnDay = (event: PublicBayDashboardCalendarEvent, day: Date): string => {
   if (event.allDay) return 'All day';
 
   const dayStart = dayjs(day).startOf('day');
   const dayEnd = dayStart.add(1, 'day');
-  const start = dayjs(event.startTime);
-  const end = dayjs(event.endTime);
 
-  const startsToday = !start.isBefore(dayStart);
-  const endsToday = !end.isAfter(dayEnd);
+  const startsToday = !dayjs(event.startTime).isBefore(dayStart);
+  const endsToday = !dayjs(event.endTime).isAfter(dayEnd);
 
-  if (startsToday && endsToday) {
-    // only repeat AM/PM when the range crosses noon
-    const startFormat = start.format('A') === end.format('A') ? 'h:mm' : 'h:mm A';
-    return `${start.format(startFormat)} - ${end.format('h:mm A')}`;
-  }
-  if (startsToday) return `From ${start.format('h:mm A')}`;
-  if (endsToday) return `Until ${end.format('h:mm A')}`;
+  if (startsToday && endsToday) return `${formatEventTime(event.startTime)} - ${formatEventTime(event.endTime)}`;
+  if (startsToday) return `From ${formatEventTime(event.startTime)}`;
+  if (endsToday) return `Until ${formatEventTime(event.endTime)}`;
   return 'All day';
 };
 

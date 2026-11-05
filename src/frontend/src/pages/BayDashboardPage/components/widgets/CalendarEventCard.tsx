@@ -5,7 +5,7 @@
 
 import { Box, Typography } from '@mui/material';
 import { PublicBayDashboardCalendarEvent } from 'shared';
-import { formatEventTime } from '../../../../utils/bay-dashboard-calendar.utils';
+import { formatEventTimeOnDay } from '../../../../utils/bay-dashboard-calendar.utils';
 
 interface CalendarEventCardProps {
   event: PublicBayDashboardCalendarEvent;
@@ -18,7 +18,7 @@ interface CalendarEventCardProps {
  */
 const CalendarEventCard: React.FC<CalendarEventCardProps> = ({ event, day, dense = false }) => {
   const { title, location, colorHexCode } = event;
-  const time = formatEventTime(event, day);
+  const time = formatEventTimeOnDay(event, day);
 
   const titleSize = dense ? '2.8cqw' : '3.4cqw';
   const detailSize = dense ? '1.8cqw' : '2.2cqw';
