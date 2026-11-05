@@ -1,4 +1,27 @@
-import { dbDateToLocalDate, GanttChartTask, Task, TaskLabel } from 'shared';
+import { BaseTask, dbDateToLocalDate, GanttChartTask, Task, TaskBoardItem, TaskLabel } from 'shared';
+
+/**
+ * Transforms any task model that extends BaseTask, converting Base's date fields.
+ *
+ * @param task Incoming task object supplied by the HTTP response.
+ * @returns Properly transformed task object.
+ */
+export const baseTaskTransformer = <T extends BaseTask>(task: T): T => ({
+  ...task,
+  deadline: task.deadline ? dbDateToLocalDate(new Date(task.deadline)) : undefined,
+  labels: task.labels.map(taskLabelTransformer)
+});
+
+/**
+ * Transforms a task board item (kanban boards and the calendar), converting the date fields it adds to Base.
+ *
+ * @param task Incoming task board item supplied by the HTTP response.
+ * @returns Properly transformed task board item.
+ */
+export const taskBoardItemTransformer = (task: TaskBoardItem): TaskBoardItem => ({
+  ...baseTaskTransformer(task),
+  startDate: task.startDate ? dbDateToLocalDate(new Date(task.startDate)) : undefined
+});
 
 /**
  * Transforms a gantt chart task to ensure deep field transformation of date objects.
@@ -18,6 +41,7 @@ export const ganttChartTaskTransformer = <T extends GanttChartTask>(task: T): T 
 /**
  * Transforms a task to ensure deep field transformation of date objects.
  *
+ * @deprecated Use baseTaskTransformer or a per-endpoint model's transformer. Still used by projects.transformers.ts until projects is refactored
  * @param task Incoming task object supplied by the HTTP response.
  * @returns Properly transformed task object.
  */
