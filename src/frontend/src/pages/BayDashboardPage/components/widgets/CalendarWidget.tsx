@@ -25,6 +25,12 @@ import CalendarEventCard from './CalendarEventCard';
 const textSx = { color: 'white' };
 const moreSx = { ...textSx, fontSize: '2.2cqw' };
 
+const EmptyBar: React.FC<{ message: string }> = ({ message }) => (
+  <Box sx={{ px: '2.5cqw', py: '0.8cqw', borderRadius: '1cqw', bgcolor: 'rgba(0, 0, 0, 0.6)' }}>
+    <Typography sx={{ ...textSx, fontSize: '1.9cqw' }}>{message}</Typography>
+  </Box>
+);
+
 // the current time, updated every minute so the days and the events that have ended stay right on a TV that's never refreshed
 const useNow = () => {
   const [now, setNow] = useState(new Date());
@@ -51,9 +57,7 @@ const LargeCalendar: React.FC<CalendarEventsProps> = ({ events, now }) => {
         <Box key={day.toISOString()}>
           <Typography sx={{ ...textSx, fontSize: '2.4cqw', mb: '0.5cqw' }}>{formatCalendarDay(day)}</Typography>
           {dayEvents.length === 0 && hiddenCount === 0 ? (
-            <Box sx={{ px: '2.5cqw', py: '0.8cqw', borderRadius: '1cqw', bgcolor: 'rgba(0, 0, 0, 0.6)' }}>
-              <Typography sx={{ ...textSx, fontSize: '1.9cqw' }}>No events</Typography>
-            </Box>
+            <EmptyBar message="No events" />
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.8cqw' }}>
               {dayEvents.map((event, i) => (
@@ -71,7 +75,13 @@ const LargeCalendar: React.FC<CalendarEventsProps> = ({ events, now }) => {
 const MediumCalendar: React.FC<CalendarEventsProps> = ({ events, now }) => {
   const nextEventDay = getNextEventDay(events, now);
 
-  if (!nextEventDay) return <Typography sx={{ ...textSx, fontSize: '2.4cqw' }}>No upcoming events</Typography>;
+  if (!nextEventDay) {
+    return (
+      <Box sx={{ mt: '2cqw' }}>
+        <EmptyBar message="No upcoming events" />
+      </Box>
+    );
+  }
 
   const { day, events: dayEvents } = nextEventDay;
   const shownEvents = dayEvents.slice(0, MEDIUM_CALENDAR_MAX_EVENTS);
