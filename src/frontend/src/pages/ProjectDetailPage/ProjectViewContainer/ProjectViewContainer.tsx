@@ -11,12 +11,13 @@ import { routes } from '../../../utils/routes';
 import EditIcon from '@mui/icons-material/Edit';
 import { Box } from '@mui/material';
 import { useState } from 'react';
-import { useSetProjectTeam } from '../../../hooks/projects.hooks';
+import { useEditProjectTeams, useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import ProjectGantt from './ProjectGantt';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -35,6 +36,7 @@ import ActionsMenu from '../../../components/ActionsMenu';
 import ProjectSpendingHistory from '../../ProjectPage/ProjectSpendingHistory';
 import { useMyTeamAsHead } from '../../../hooks/teams.hooks';
 import { ProjectRulesTab } from './ProjectRules/ProjectRulesTab';
+import AssignToTeams from './AssignToTeams';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -46,6 +48,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const toast = useToast();
   const history = useHistory();
   const { mutateAsync: mutateAsyncSetProjectTeam } = useSetProjectTeam(project.wbsNum);
+  const { mutateAsync: mutateAsyncEditProjectTeams } = useEditProjectTeams(project.wbsNum);
   const {
     data: favoriteProjects,
     isLoading: favoriteProjectsIsLoading,
@@ -65,9 +68,14 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     error: teamAsHeadIdError
   } = useMyTeamAsHead();
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
+  const [assignToTeamsModalShow, setAssignToTeamsModalShow] = useState<boolean>(false);
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleClickDelete = () => {
     setDeleteModalShow(true);
+  };
+  const handleAssignToTeamsClose = () => setAssignToTeamsModalShow(false);
+  const handleClickAssignToTeams = () => {
+    setAssignToTeamsModalShow(true);
   };
   const [, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tab, setTab] = useState(0);
@@ -97,6 +105,17 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       const successMessage = await mutateAsyncSetProjectTeam(teamAsHeadId);
       toast.success(successMessage.message);
       handleDropdownClose();
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
+  };
+
+  const handleSaveTeams = async (teamIds: string[]) => {
+    try {
+      const successMessage = await mutateAsyncEditProjectTeams(teamIds);
+      toast.success(successMessage.message);
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -148,14 +167,13 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             icon: <ContentPasteIcon fontSize="small" />
           },
           {
-            title: 'Delete',
-            onClick: handleClickDelete,
+            title: 'Assign to Teams',
+            onClick: handleClickAssignToTeams,
             disabled: !isAdmin(user.role),
-            icon: <DeleteIcon fontSize="small" />,
-            dividerTop: true
+            icon: <AssignmentIcon fontSize="small" />
           },
           {
-            title: 'Assign to Teams',
+            title: 'Delete',
             onClick: handleClickDelete,
             disabled: !isAdmin(user.role),
             icon: <DeleteIcon fontSize="small" />,
@@ -253,6 +271,9 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />
+      )}
+      {assignToTeamsModalShow && (
+        <AssignToTeams modalShow={assignToTeamsModalShow} handleClose={handleAssignToTeamsClose} onSubmit={handleSaveTeams} project={project} />
       )}
     </PageLayout>
   );

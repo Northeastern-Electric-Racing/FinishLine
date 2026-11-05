@@ -89,6 +89,7 @@ const notifyPartAssignee = () => `${parts()}/notifyAssignee`;
 const notifyPartReviewer = () => `${parts()}/notifyReviewer`;
 const getPartReviewSampleImage = () => `${parts()}/partReviewSampleImage`;
 const setPartReviewSampleImage = () => `${parts()}/partReviewSampleImage/update`;
+const projectsEditTeams = (wbsNum: string) => `${projectsByWbsNum(wbsNum)}/edit-teams`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -649,6 +650,7 @@ export const apiUrls = {
   notifyPartReviewer,
   getPartReviewSampleImage,
   setPartReviewSampleImage,
+  projectsEditTeams,
 
   parts,
   partsByProject,

@@ -219,3 +219,14 @@ export const setAbbreviation = (payload: { wbsNum: string; abbreviation: string 
 export const deleteAbbreviation = (wbsNum: string) => {
   return axios.post<{ message: string }>(apiUrls.projectsDeleteAbbreviation(wbsNum));
 };
+
+/**
+ * Replaces the project's teams with the given list of teams.
+ * @param wbsNum the wbsNum of the project
+ * @param teamIds the ids of the teams the project should be assigned to
+ */
+export const editProjectTeams = (wbsNum: WbsNumber, teamIds: string[]) => {
+  return axios.post<{ message: string }>(apiUrls.projectsEditTeams(wbsPipe(wbsNum)), {
+    teamIds
+  });
+};
