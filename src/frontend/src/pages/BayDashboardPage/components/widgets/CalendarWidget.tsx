@@ -56,8 +56,8 @@ const LargeCalendar: React.FC<CalendarEventsProps> = ({ events, now }) => {
             </Box>
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.8cqw' }}>
-              {dayEvents.map((event) => (
-                <CalendarEventCard key={`${event.title}-${event.startTime.getTime()}`} event={event} day={day} dense />
+              {dayEvents.map((event, i) => (
+                <CalendarEventCard key={`${event.title}-${event.startTime.getTime()}-${i}`} event={event} day={day} dense />
               ))}
               {hiddenCount > 0 && <Typography sx={{ ...moreSx, fontSize: '1.8cqw' }}>+{hiddenCount} more</Typography>}
             </Box>
@@ -84,8 +84,8 @@ const MediumCalendar: React.FC<CalendarEventsProps> = ({ events, now }) => {
         <Typography sx={{ ...textSx, fontSize: '2.4cqw', mb: '0.5cqw' }}>{formatCalendarDay(day)}</Typography>
       )}
       <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${MEDIUM_CALENDAR_MAX_EVENTS}, 1fr)`, gap: '2cqw' }}>
-        {shownEvents.map((event) => (
-          <CalendarEventCard key={`${event.title}-${event.startTime.getTime()}`} event={event} day={day} />
+        {shownEvents.map((event, i) => (
+          <CalendarEventCard key={`${event.title}-${event.startTime.getTime()}-${i}`} event={event} day={day} />
         ))}
       </Box>
       {hiddenCount > 0 && <Typography sx={{ ...moreSx, mt: '1cqw' }}>+{hiddenCount} more</Typography>}

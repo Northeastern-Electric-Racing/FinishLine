@@ -1,5 +1,14 @@
 import { Event_Status, Organization } from '@prisma/client';
-import { BayDashboardCountdown, PublicBayDashboardCalendarEvent, PublicBayDashboardConfig } from 'shared';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone.js';
+import utc from 'dayjs/plugin/utc.js';
+import {
+  BAY_DASHBOARD_CALENDAR_DAYS_AHEAD,
+  BayDashboardCountdown,
+  EASTERN_TIMEZONE,
+  PublicBayDashboardCalendarEvent,
+  PublicBayDashboardConfig
+} from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
   getBayDashboardCalendarEventQueryArgs,
@@ -13,8 +22,8 @@ import {
 } from '../transformers/bay-dashboard.transformer.js';
 import { DeletedException, NotFoundException } from '../utils/errors.utils.js';
 
-// the medium widget looks this far ahead for the next day that has an event
-const CALENDAR_DAYS_AHEAD = 7;
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export default class BayDashboardService {
   /**
@@ -78,10 +87,10 @@ export default class BayDashboardService {
   static async getBayDashboardCalendarEvents(slug: string): Promise<PublicBayDashboardCalendarEvent[]> {
     const organization = await BayDashboardService.getOrganizationBySlug(slug);
 
-    const windowStart = new Date();
-    windowStart.setUTCHours(0, 0, 0, 0);
-    const windowEnd = new Date(windowStart);
-    windowEnd.setUTCDate(windowEnd.getUTCDate() + CALENDAR_DAYS_AHEAD);
+    const todayEastern = dayjs().tz(EASTERN_TIMEZONE).startOf('day');
+    const windowStart = todayEastern.toDate();
+    // the window ends at the end of the last day shown, which is the day DAYS_AHEAD after today
+    const windowEnd = todayEastern.add(BAY_DASHBOARD_CALENDAR_DAYS_AHEAD + 1, 'day').toDate();
 
     const overlapsWindow = { startTime: { lte: windowEnd }, endTime: { gte: windowStart } };
 

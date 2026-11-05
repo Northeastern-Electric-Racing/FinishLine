@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { PublicBayDashboardCalendarEvent } from 'shared';
+import { BAY_DASHBOARD_CALENDAR_DAYS_AHEAD, PublicBayDashboardCalendarEvent } from 'shared';
 
 export interface CalendarDayEvents {
   day: Date;
@@ -15,7 +15,7 @@ export const CALENDAR_DAYS_SHOWN = 3;
 export const MEDIUM_CALENDAR_MAX_EVENTS = 2;
 
 // when there is room under those days, the large widget adds the next days that have events, up to this many days
-export const LARGE_CALENDAR_MAX_DAYS = 7;
+export const LARGE_CALENDAR_MAX_DAYS = BAY_DASHBOARD_CALENDAR_DAYS_AHEAD + 1;
 
 // the large widget always prioritizes showing every event on this many days, and only what fits on the days after them
 export const FULL_CALENDAR_DAYS = 2;
@@ -110,7 +110,7 @@ export const limitEventsToHeight = (
 export const getNextEventDay = (
   events: PublicBayDashboardCalendarEvent[],
   now: Date,
-  daysToCheck = 14
+  daysToCheck = LARGE_CALENDAR_MAX_DAYS
 ): CalendarDayEvents | undefined =>
   groupEventsByDay(events, getCalendarDays(now, daysToCheck)).find((group) => group.events.length > 0);
 

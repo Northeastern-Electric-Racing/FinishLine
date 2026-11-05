@@ -20,6 +20,9 @@ const widgetBoxSx: SystemStyleObject<Theme> = {
   minWidth: 300
 };
 
+/**
+ * The Bay Dashboard tab in Admin Tools
+ */
 const AdminToolsBayDashConfig: React.FC = () => {
   const [selection, setSelection] = useState<BayDashboardWidgetSelection>({});
   const hasSelection = Object.values(selection).some((type) => type);
