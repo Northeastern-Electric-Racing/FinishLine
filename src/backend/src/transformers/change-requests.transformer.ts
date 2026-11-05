@@ -82,9 +82,18 @@ const triageScoreInputOf = (changeRequest: {
   activationChangeRequest: { startDate: Date } | null;
   wbsProposedChanges: { projectProposedChanges: { budget: number } | null } | null;
 }): TriageScoreInput => {
-  const currentBudget = changeRequest.snapshotBudget ?? undefined;
-  const proposedBudget =
-    changeRequest.budgetChangeRequest?.proposedBudget ?? changeRequest.wbsProposedChanges?.projectProposedChanges?.budget;
+  // budget CRs store cents; project budgets are whole dollars
+  const budgetChange =
+    changeRequest.snapshotBudget === null
+      ? undefined
+      : changeRequest.budgetChangeRequest
+        ? { proposed: changeRequest.budgetChangeRequest.proposedBudget, current: changeRequest.snapshotBudget }
+        : changeRequest.wbsProposedChanges?.projectProposedChanges
+          ? {
+              proposed: changeRequest.wbsProposedChanges.projectProposedChanges.budget * 100,
+              current: changeRequest.snapshotBudget * 100
+            }
+          : undefined;
 
   const msPerDay = 1000 * 60 * 60 * 24;
   const timelineChangeInDays =
@@ -98,9 +107,7 @@ const triageScoreInputOf = (changeRequest: {
     type: changeRequest.type,
     blockingCount: changeRequest.snapshotBlockingCount ?? 0,
     timelineChangeInDays,
-    ...(proposedBudget !== undefined && currentBudget !== undefined
-      ? { budgetChange: { proposed: proposedBudget, current: currentBudget } }
-      : {})
+    ...(budgetChange ? { budgetChange } : {})
   };
 };
 
