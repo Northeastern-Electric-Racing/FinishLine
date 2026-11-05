@@ -4,7 +4,7 @@ import { useEditWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import * as yup from 'yup';
-import { useCreateLeadershipChangeRequest, useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
+import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { routes } from '../../utils/routes';
 
 interface EditWorkPackageFormProps {
@@ -20,9 +20,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, workP
   const { mutateAsync: createWorkPackageScopeCR, isLoading: createStandardChangeRequestIsLoading } =
     useCreateStandardChangeRequest();
 
-  const { mutateAsync: mutateLeadershipCR, isLoading: isLeadershipCRLoading } = useCreateLeadershipChangeRequest();
-
-  if (isLoading || createStandardChangeRequestIsLoading || isLeadershipCRLoading) return <LoadingIndicator />;
+  if (isLoading || createStandardChangeRequestIsLoading) return <LoadingIndicator />;
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
@@ -46,7 +44,6 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, workP
       wbsNum={wbsNum}
       workPackageMutateAsync={editWorkPackage}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
-      createLeadershipCR={mutateLeadershipCR}
       exitActiveMode={() => {
         setPageMode(false);
         history.push(`${history.location.pathname}`);

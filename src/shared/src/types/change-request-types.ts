@@ -128,10 +128,3 @@ export interface WorkPackageProposedChangesCreateArgs extends WBSProposedChanges
   stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
 }
-
-export interface LeadershipChangeCreateArgs {
-  submitterId: string;
-  wbsNum: WbsNumber;
-  leadId?: string;
-  managerId?: string;
-}
