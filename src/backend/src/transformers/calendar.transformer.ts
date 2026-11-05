@@ -84,7 +84,6 @@ export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<Even
     description: eventType.description,
     onlyHeadsOrAboveForEventCreation: eventType.onlyHeadsOrAboveForEventCreation,
     requiresConfirmation: eventType.requiresConfirmation,
-    sendSlackNotifications: eventType.sendSlackNotifications,
     takeAttendance: eventType.takeAttendance
   } as EventType;
 };
@@ -137,7 +136,8 @@ export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>):
     description: event.description ?? undefined,
     status: eventStatusTransformer(event.status),
     initialDateScheduled: event.initialDateScheduled ?? undefined,
-    notificationChannelIds: event.notificationChannelIds
+    notificationChannelIds: event.notificationChannelIds,
+    sendSlackNotifications: event.sendSlackNotifications
   };
 };
 
@@ -182,7 +182,8 @@ export const eventWithMembersTransformer = (event: Prisma.EventGetPayload<EventW
     description: event.description ?? undefined,
     status: eventStatusTransformer(event.status),
     initialDateScheduled: event.initialDateScheduled ?? undefined,
-    notificationChannelIds: event.notificationChannelIds
+    notificationChannelIds: event.notificationChannelIds,
+    sendSlackNotifications: event.sendSlackNotifications
   };
 };
 

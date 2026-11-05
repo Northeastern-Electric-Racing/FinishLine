@@ -71,7 +71,6 @@ const createAttendanceEvent = async (
       description: false,
       onlyHeadsOrAboveForEventCreation: false,
       requiresConfirmation: false,
-      sendSlackNotifications: false,
       takeAttendance
     }
   });
