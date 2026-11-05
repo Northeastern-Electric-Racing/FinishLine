@@ -11,13 +11,11 @@ import {
   Typography,
   useTheme
 } from '@mui/material';
-import { wbsPipe, WorkPackage } from 'shared';
+import { wbsPipe, WorkPackageCard } from 'shared';
 import { datePipe, fullNamePipe, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
-import { useGetManyWorkPackages } from '../../../hooks/work-packages.hooks';
 import { daysOverdue } from '../../../utils/datetime.utils';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 
 export const CircularProgressWithLabel = (props: CircularProgressProps & { value: number }) => {
   return (
@@ -37,11 +35,9 @@ export const CircularProgressWithLabel = (props: CircularProgressProps & { value
   );
 };
 
-const OverdueWorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
+const OverdueWorkPackageCard = ({ wp }: { wp: WorkPackageCard }) => {
   const theme = useTheme();
-  const { data: blockedByWps, isLoading } = useGetManyWorkPackages(wp.blockedBy);
   const numDaysOverdue = daysOverdue(new Date(wp.endDate));
-  if (isLoading || !blockedByWps) return <LoadingIndicator />;
   return (
     <Card
       variant="outlined"
@@ -75,18 +71,18 @@ const OverdueWorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
               Blocked By:
             </Typography>
             <ul style={{ marginTop: 0 }}>
-              {blockedByWps.length === 0 ? (
+              {wp.blockedBy.length === 0 ? (
                 <li>
                   <Typography fontWeight="regular" fontSize={16} variant="h6" noWrap>
                     No Blockers
                   </Typography>
                 </li>
               ) : (
-                blockedByWps.map((wp) => (
-                  <li key={wp.id}>
+                wp.blockedBy.map((blocker) => (
+                  <li key={wbsPipe(blocker.wbsNum)}>
                     <Typography fontWeight={'regular'} variant="subtitle2" noWrap>
-                      <Link component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(wp.wbsNum)}`}>
-                        {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
+                      <Link component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(blocker.wbsNum)}`}>
+                        {projectWbsPipe(blocker.wbsNum)} - {blocker.projectName}
                       </Link>
                     </Typography>
                   </li>

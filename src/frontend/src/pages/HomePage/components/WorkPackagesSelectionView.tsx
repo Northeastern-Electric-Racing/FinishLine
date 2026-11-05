@@ -1,4 +1,4 @@
-import { WorkPackagePreview, WorkPackageSelection } from 'shared';
+import { WorkPackageCard as WorkPackageCardModel, WorkPackageSelection } from 'shared';
 import { Box, Card, CardContent, useTheme } from '@mui/material';
 import {
   getInProgressWorkPackages,
@@ -39,7 +39,7 @@ const WorkPackagesSelectionView: React.FC = () => {
   }, [relevantWPs]);
 
   // options for selection
-  const workPackageOptions: [string, WorkPackagePreview[]][] = [
+  const workPackageOptions: [string, WorkPackageCardModel[]][] = [
     [`Upcoming Work Packages (${upcomingWPs.length})`, upcomingWPs],
     [`In Progress Work Packages (${inProgressWPs.length})`, inProgressWPs],
     [`Overdue Work Packages (${overdueWPs.length})`, overdueWPs]
@@ -57,13 +57,13 @@ const WorkPackagesSelectionView: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<number>();
   const currentDisplayedWPs = selectedOption ?? defaultFirstDisplay;
 
-  if (isLoading || !relevantWPs) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
+  if (isLoading || !relevantWPs) return <LoadingIndicator />;
 
   // destructuring tuple to get wps of selected option
   const [, currentWps] = workPackageOptions[currentDisplayedWPs];
 
-  const WorkPackagesDisplay = (workPackages: WorkPackagePreview[]) => (
+  const WorkPackagesDisplay = (workPackages: WorkPackageCardModel[]) => (
     <Box
       sx={{
         display: 'grid',

@@ -12,7 +12,8 @@ import {
   exampleDesignWorkPackage,
   exampleManufacturingWorkPackage,
   exampleInstallWorkPackage,
-  exampleWorkPackage5
+  exampleWorkPackage5,
+  toWorkPackageDetail
 } from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageDetails from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageDetails';
 import { useAllUsers } from '../../../../hooks/users.hooks';
@@ -41,7 +42,7 @@ const renderComponent = (workPackage = exampleWorkPackage5) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <WorkPackageDetails workPackage={workPackage} dependencies={[]} />
+      <WorkPackageDetails workPackage={toWorkPackageDetail(workPackage)} />
     </RouterWrapper>
   );
 };
@@ -91,7 +92,7 @@ describe('Work Package Details Component', () => {
     it('renders all the fields, example 1', () => {
       mockHook(false, false, users);
       const wp: WorkPackage = exampleResearchWorkPackage;
-      render(<WorkPackageDetails workPackage={wp} dependencies={[]} />);
+      renderComponent(wp);
       expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
       expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${fullNamePipe(wp.lead)}`, { exact: false })).toBeInTheDocument();
@@ -105,7 +106,7 @@ describe('Work Package Details Component', () => {
     it('renders all the fields, example 2', () => {
       mockHook(false, false, users);
       const wp: WorkPackage = exampleDesignWorkPackage;
-      render(<WorkPackageDetails workPackage={wp} dependencies={[]} />);
+      renderComponent(wp);
       expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
       expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${fullNamePipe(wp.lead)}`, { exact: false })).toBeInTheDocument();
@@ -119,7 +120,7 @@ describe('Work Package Details Component', () => {
     it('renders all the fields, example 3', () => {
       mockHook(false, false, users);
       const wp: WorkPackage = exampleManufacturingWorkPackage;
-      render(<WorkPackageDetails workPackage={wp} dependencies={[]} />);
+      renderComponent(wp);
       expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
       expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${fullNamePipe(wp.lead)}`, { exact: false })).toBeInTheDocument();

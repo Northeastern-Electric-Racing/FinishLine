@@ -4,12 +4,14 @@
  */
 
 import { render, screen, routerWrapperBuilder, fireEvent } from '../../../test-support/test-utils';
-import { exampleResearchWorkPackage, exampleDesignWorkPackage } from '../../../test-support/test-data/work-packages.stub';
+import {
+  exampleResearchWorkPackage,
+  exampleDesignWorkPackage,
+  toWorkPackageDetail
+} from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageViewContainer from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageViewContainer';
-import * as wpHooks from '../../../../hooks/work-packages.hooks';
 import AppContextUser from '../../../../app/AppContextUser';
 import * as userHooks from '../../../../hooks/users.hooks';
-import { mockManyWorkPackages } from '../../../test-support/mock-hooks';
 import { exampleAuthenticatedAdminUser } from '../../../test-support/test-data/authenticated-user.stub';
 import ClarityProvider from '../../../../app/ClarityProvider';
 
@@ -27,7 +29,7 @@ const renderComponent = (
       <ClarityProvider>
         <AppContextUser>
           <WorkPackageViewContainer
-            workPackage={workPackage}
+            workPackage={toWorkPackageDetail(workPackage)}
             enterEditMode={() => null}
             allowEdit={allowEdit}
             allowActivate={allowActivate}
@@ -43,7 +45,6 @@ const renderComponent = (
 describe.skip('work package container view', () => {
   beforeEach(() => {
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
-    vi.spyOn(wpHooks, 'useGetManyWorkPackages').mockReturnValue(mockManyWorkPackages([exampleResearchWorkPackage]));
   });
 
   it('renders the project', () => {

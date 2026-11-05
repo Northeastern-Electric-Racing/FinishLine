@@ -1,12 +1,75 @@
 import { Prisma } from '@prisma/client';
-import { calculateEndDate, RetrospectiveWorkPackage, WorkPackage, WorkPackagePreview, WorkPackageStage } from 'shared';
+import {
+  BaseWorkPackage,
+  calculateEndDate,
+  RetrospectiveWorkPackage,
+  WorkPackage,
+  WorkPackageCard,
+  WorkPackageDetail,
+  WorkPackageStage
+} from 'shared';
 import descriptionBulletTransformer from '../transformers/description-bullets.transformer.js';
 import { convertStatus, wbsNumOf } from '../utils/utils.js';
-import { userTransformer } from './user.transformer.js';
-import { WorkPackageQueryArgs, WorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+import { baseUserTransformer, userTransformer } from './user.transformer.js';
+import {
+  BaseWorkPackageQueryArgs,
+  WorkPackageCardQueryArgs,
+  WorkPackageDetailQueryArgs,
+  WorkPackageQueryArgs
+} from '../prisma-query-args/work-packages.query-args.js';
 import { teamTypeTransformer } from './team-types.transformer.js';
 import { eventPreviewTransformer } from './calendar.transformer.js';
 
+export const baseWorkPackageTransformer = (
+  wp: Prisma.Work_PackageGetPayload<BaseWorkPackageQueryArgs>
+): BaseWorkPackage => ({
+  id: wp.workPackageId,
+  wbsElementId: wp.wbsElementId,
+  projectId: wp.projectId,
+  wbsNum: wbsNumOf(wp.wbsElement),
+  name: wp.wbsElement.name,
+  status: convertStatus(wp.wbsElement.status),
+  stage: (wp.stage as WorkPackageStage) ?? undefined,
+  startDate: wp.startDate,
+  duration: wp.duration,
+  endDate: calculateEndDate(wp.startDate, wp.duration),
+  orderInProject: wp.orderInProject,
+  dateCreated: wp.wbsElement.dateCreated,
+  deleted: wp.wbsElement.dateDeleted !== null,
+  lead: wp.wbsElement.lead ? baseUserTransformer(wp.wbsElement.lead) : undefined,
+  manager: wp.wbsElement.manager ? baseUserTransformer(wp.wbsElement.manager) : undefined,
+  projectName: wp.project.wbsElement.name
+});
+
+export const workPackageDetailTransformer = (
+  wp: Prisma.Work_PackageGetPayload<WorkPackageDetailQueryArgs>
+): WorkPackageDetail => ({
+  ...baseWorkPackageTransformer(wp),
+  blockedBy: wp.blockedBy.map((blocker) => ({ wbsNum: wbsNumOf(blocker), name: blocker.name })),
+  descriptionBullets: wp.wbsElement.descriptionBullets.map(descriptionBulletTransformer),
+  changes: wp.wbsElement.changes.map((change) => ({
+    changeId: change.changeId,
+    changeRequestId: change.changeRequestId,
+    changeRequestIdentifier: change.changeRequest.identifier,
+    detail: change.detail,
+    dateImplemented: change.dateImplemented,
+    implementer: baseUserTransformer(change.implementer)
+  }))
+});
+
+export const workPackageCardTransformer = (
+  wp: Prisma.Work_PackageGetPayload<WorkPackageCardQueryArgs>
+): WorkPackageCard => ({
+  ...baseWorkPackageTransformer(wp),
+  blockedBy: wp.blockedBy.map((blocker) => ({
+    wbsNum: wbsNumOf(blocker),
+    name: blocker.name,
+    // blockers are always work packages, but the relation is to any wbs element
+    projectName: blocker.workPackage?.project.wbsElement.name ?? ''
+  }))
+});
+
+/** @deprecated Use baseWorkPackageTransformer or a per-endpoint transformer. Still used by projects.transformer.ts until projects is refactored */
 const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
   const wbsNum = wbsNumOf(wpInput.wbsElement);
   return {
@@ -46,27 +109,7 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
   };
 };
 
-export const workPackagePreviewTransformer = (
-  wpInput: Prisma.Work_PackageGetPayload<WorkPackagePreviewQueryArgs>
-): WorkPackagePreview => {
-  return {
-    ...wpInput,
-    stage: (wpInput.stage as WorkPackageStage) ?? undefined,
-    id: wpInput.workPackageId,
-    status: convertStatus(wpInput.wbsElement.status),
-    projectName: wpInput.project.wbsElement.name,
-    dateCreated: wpInput.wbsElement.dateCreated,
-    name: wpInput.wbsElement.name,
-    wbsNum: { ...wpInput.wbsElement },
-    deleted: wpInput.wbsElement.dateDeleted === null,
-    endDate: calculateEndDate(wpInput.startDate, wpInput.duration),
-    lead: wpInput.wbsElement.lead ?? undefined,
-    manager: wpInput.wbsElement.manager ?? undefined,
-    projectId: wpInput.project.projectId,
-    wbsElementId: wpInput.wbsElement.wbsElementId
-  };
-};
-
+/** @deprecated Still used by projects.transformer.ts (retrospective timelines) until projects is refactored */
 export const retrospectiveWorkPackageTransformer = (
   wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs> & { originalStartDate: Date; originalDuration: number }
 ): RetrospectiveWorkPackage => {

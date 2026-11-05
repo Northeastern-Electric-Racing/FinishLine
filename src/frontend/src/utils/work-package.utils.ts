@@ -1,5 +1,7 @@
-import { addWeeksToDate, WbsElement, WbsElementStatus, wbsPipe, WorkPackagePreview } from 'shared';
+import { addWeeksToDate, BaseWorkPackage, WbsElement, WbsElementStatus, wbsPipe } from 'shared';
 import { WPFormType } from './form';
+
+type WorkPackageTimeline = Pick<BaseWorkPackage, 'status' | 'startDate' | 'endDate'>;
 
 export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElement): string => {
   switch (formType) {
@@ -17,7 +19,7 @@ export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElemen
  * @param wpList a list of work packages.
  * @returns a sub-list of work packages that are not complete, and have end dates before the current date.
  */
-export const getOverdueWorkPackages = (wpList: WorkPackagePreview[]): WorkPackagePreview[] => {
+export const getOverdueWorkPackages = <T extends WorkPackageTimeline>(wpList: T[]): T[] => {
   return wpList.filter((wp) => wp.status !== WbsElementStatus.Complete && new Date(wp.endDate) <= new Date());
 };
 
@@ -26,7 +28,7 @@ export const getOverdueWorkPackages = (wpList: WorkPackagePreview[]): WorkPackag
  * @param wpList a list of work packages.
  * @returns a sub-list of work packages that are active and have a start date within the next 2 weeks.
  */
-export const getUpcomingWorkPackages = (wpList: WorkPackagePreview[]): WorkPackagePreview[] => {
+export const getUpcomingWorkPackages = <T extends WorkPackageTimeline>(wpList: T[]): T[] => {
   return wpList.filter(
     (wp) =>
       wp.status !== WbsElementStatus.Complete &&
@@ -40,7 +42,7 @@ export const getUpcomingWorkPackages = (wpList: WorkPackagePreview[]): WorkPacka
  * @param wpList a list of work packages.
  * @returns a sub-list of work packages that are active, have a start date in the past, and an end date in the future.
  */
-export const getInProgressWorkPackages = (wpList: WorkPackagePreview[]): WorkPackagePreview[] => {
+export const getInProgressWorkPackages = <T extends WorkPackageTimeline>(wpList: T[]): T[] => {
   return wpList.filter(
     (wp) =>
       wp.status === WbsElementStatus.Active && new Date(wp.endDate) >= new Date() && new Date(wp.startDate) <= new Date()

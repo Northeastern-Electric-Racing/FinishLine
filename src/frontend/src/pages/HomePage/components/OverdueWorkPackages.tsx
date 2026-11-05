@@ -10,8 +10,8 @@ const OverdueWorkPackages: React.FC<{}> = () => {
   const theme = useTheme();
   const { data: overdueWPs, isLoading, isError, error } = useHomeScreenWorkPackages(WorkPackageSelection.ALL_OVERDUE);
 
-  if (isLoading || !overdueWPs) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
+  if (isLoading || !overdueWPs) return <LoadingIndicator />;
 
   return <OverdueWorkPackagesView theme={theme} workPackages={overdueWPs} />;
 };

@@ -1,32 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
-import { validateWBS, WbsNumber, WorkPackage, WorkPackagePreview, WorkPackageSelection } from 'shared';
+import { BaseWorkPackage, validateWBS, WbsNumber, WorkPackageCard, WorkPackageDetail, WorkPackageSelection } from 'shared';
 import WorkPackagesService from '../services/work-packages.services.js';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {
-  // Fetch all work packages, optionally filtered by query parameters
-  static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { status, daysUntilDeadline } = req.query as { status?: string; daysUntilDeadline?: string };
-
-      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(
-        { status, daysUntilDeadline },
-        req.organization,
-        req.currentCar?.carId
-      );
-
-      res.status(200).json(outputWorkPackages);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   // Fetch all work packages in preview format (minimal data for dropdowns/lists)
   static async getAllWorkPackagesPreview(req: Request, res: Response, next: NextFunction) {
     try {
       const { status } = req.query as { status?: string };
 
-      const outputWorkPackages: WorkPackagePreview[] = await WorkPackagesService.getAllWorkPackagesPreview(
+      const outputWorkPackages: BaseWorkPackage[] = await WorkPackagesService.getAllWorkPackagesPreview(
         status,
         req.organization,
         req.currentCar?.carId
@@ -53,7 +36,7 @@ export default class WorkPackagesController {
     try {
       const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum as string);
 
-      const wp: WorkPackage = await WorkPackagesService.getSingleWorkPackage(parsedWbs, req.organization);
+      const wp: WorkPackageDetail = await WorkPackagesService.getSingleWorkPackage(parsedWbs, req.organization);
 
       res.status(200).json(wp);
     } catch (error: unknown) {
@@ -65,7 +48,7 @@ export default class WorkPackagesController {
     try {
       const { wbsNums } = req.body;
 
-      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization);
+      const workPackages: BaseWorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization);
       res.status(200).json(workPackages);
     } catch (error: unknown) {
       next(error);
@@ -132,7 +115,7 @@ export default class WorkPackagesController {
         managerId,
         req.organization
       );
-      res.status(200).json({ message: 'Work package updated successfully' });
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -144,7 +127,7 @@ export default class WorkPackagesController {
       const wbsNum = validateWBS(req.params.wbsNum as string);
 
       await WorkPackagesService.deleteWorkPackage(req.currentUser, wbsNum, req.organization);
-      res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum as string}` });
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -155,7 +138,7 @@ export default class WorkPackagesController {
     try {
       const wbsNum = validateWBS(req.params.wbsNum as string);
 
-      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(
+      const blockingWorkPackages: BaseWorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(
         wbsNum,
         req.organization
       );
@@ -167,11 +150,12 @@ export default class WorkPackagesController {
   }
 
   // Send reminder message to project lead of every work package that is due before/on given deadline
-  static async slackMessageUpcomingDeadlines(req: Request, _res: Response, next: NextFunction) {
+  static async slackMessageUpcomingDeadlines(req: Request, res: Response, next: NextFunction) {
     try {
       const { deadline } = req.body;
 
       await WorkPackagesService.slackMessageUpcomingDeadlines(req.currentUser, new Date(deadline), req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -181,7 +165,7 @@ export default class WorkPackagesController {
     try {
       const { selection } = req.params as Record<string, string>;
 
-      const workPackages: WorkPackagePreview[] = await WorkPackagesService.getHomePageWorkPackages(
+      const workPackages: WorkPackageCard[] = await WorkPackagesService.getHomePageWorkPackages(
         req.currentUser,
         req.organization,
         selection as WorkPackageSelection,

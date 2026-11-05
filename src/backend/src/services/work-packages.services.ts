@@ -6,11 +6,12 @@ import {
   isAdmin,
   isGuest,
   isWorkPackageWbs,
+  BaseWorkPackage,
   WbsElementStatus,
   WbsNumber,
   wbsPipe,
-  WorkPackage,
-  WorkPackagePreview,
+  WorkPackageCard,
+  WorkPackageDetail,
   WorkPackageStage,
   User,
   WorkPackageSelection,
@@ -25,9 +26,17 @@ import {
   DeletedException,
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
-import { getWorkPackageQueryArgs, getWorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+import {
+  getBaseWorkPackageQueryArgs,
+  getWorkPackageCardQueryArgs,
+  getWorkPackageDetailQueryArgs
+} from '../prisma-query-args/work-packages.query-args.js';
 import { getWorkPackageDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
-import workPackageTransformer, { workPackagePreviewTransformer } from '../transformers/work-packages.transformer.js';
+import {
+  baseWorkPackageTransformer,
+  workPackageCardTransformer,
+  workPackageDetailTransformer
+} from '../transformers/work-packages.transformer.js';
 import { workPackageDropdownTransformer } from '../transformers/dropdown.transformer.js';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils.js';
@@ -40,49 +49,10 @@ import {
 import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packages.utils.js';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
 import { userHasPermission } from '../utils/users.utils.js';
-import { getUserPreviewQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { getBaseUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
-  /**
-   * Retrieve all work packages, optionally filtered by query parameters.
-   *
-   * @param query the filters on the query
-   * @param organizationId the id of the organization that the user is currently in
-   * @param carId the car number to filter by (only returns work packages from this car when provided)
-   * @returns a list of work packages
-   */
-  static async getAllWorkPackages(
-    query: {
-      status?: WbsElementStatus | string;
-      daysUntilDeadline?: string;
-    },
-    organization: Organization,
-    carId?: string
-  ): Promise<WorkPackage[]> {
-    const workPackages = await prisma.work_Package.findMany({
-      where: {
-        wbsElement: { dateDeleted: null, organizationId: organization.organizationId },
-        ...(carId && { project: { carId } })
-      },
-      ...getWorkPackageQueryArgs(organization.organizationId)
-    });
-
-    const filteredWorkPackages = workPackages.map(workPackageTransformer).filter((wp) => {
-      let passes = true;
-      if (query.status) passes &&= wp.status === query.status;
-      if (query.daysUntilDeadline) {
-        const daysToDeadline = Math.round((wp.endDate.getTime() - new Date().getTime()) / 86400000);
-        passes &&= daysToDeadline <= parseInt(query?.daysUntilDeadline as string);
-      }
-      return passes;
-    });
-
-    filteredWorkPackages.sort((wpA, wpB) => wpA.endDate.getTime() - wpB.endDate.getTime());
-
-    return filteredWorkPackages;
-  }
-
   /**
    * Retrieve all work packages in preview format (minimal data for dropdowns/lists).
    *
@@ -95,7 +65,7 @@ export default class WorkPackagesService {
     status: WbsElementStatus | string | undefined,
     organization: Organization,
     carId?: string
-  ): Promise<WorkPackagePreview[]> {
+  ): Promise<BaseWorkPackage[]> {
     const workPackages = await prisma.work_Package.findMany({
       where: {
         wbsElement: {
@@ -105,10 +75,10 @@ export default class WorkPackagesService {
         },
         ...(carId && { project: { carId } })
       },
-      ...getWorkPackagePreviewQueryArgs()
+      ...getBaseWorkPackageQueryArgs()
     });
 
-    return workPackages.map(workPackagePreviewTransformer);
+    return workPackages.map(baseWorkPackageTransformer);
   }
 
   /**
@@ -132,21 +102,23 @@ export default class WorkPackagesService {
    * @returns the desired work package
    * @throws if the work package with the desired WBS number is not found, is deleted or is not part of the given organization
    */
-  static async getSingleWorkPackage(parsedWbs: WbsNumber, organization: Organization): Promise<WorkPackage> {
+  static async getSingleWorkPackage(parsedWbs: WbsNumber, organization: Organization): Promise<WorkPackageDetail> {
     if (!isWorkPackageWbs(parsedWbs)) {
       throw new HttpException(404, 'WBS Number ' + wbsPipe(parsedWbs) + ' is a not a work package WBS#');
     }
 
+    // wbs numbers are only unique within an organization, so the lookup is scoped to it
     const wp = await prisma.work_Package.findFirst({
       where: {
         wbsElement: {
           dateDeleted: null,
           carNumber: parsedWbs.carNumber,
           projectNumber: parsedWbs.projectNumber,
-          workPackageNumber: parsedWbs.workPackageNumber
+          workPackageNumber: parsedWbs.workPackageNumber,
+          organizationId: organization.organizationId
         }
       },
-      ...getWorkPackageQueryArgs(organization.organizationId)
+      ...getWorkPackageDetailQueryArgs()
     });
 
     if (!wp)
@@ -155,11 +127,7 @@ export default class WorkPackagesService {
         `${parsedWbs.carNumber}.${parsedWbs.projectNumber}.${parsedWbs.workPackageNumber}`
       );
 
-    if (wp.wbsElement.dateDeleted) throw new DeletedException('Work Package', wp.wbsElementId);
-
-    if (wp.wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Work Package');
-
-    return workPackageTransformer(wp);
+    return workPackageDetailTransformer(wp);
   }
 
   /**
@@ -170,7 +138,7 @@ export default class WorkPackagesService {
    * @returns the work packages with the given WBS numbers
    * @throws if any of the work packages are not found or are not part of the organization
    */
-  static async getManyWorkPackages(wbsNums: WbsNumber[], organization: Organization): Promise<WorkPackage[]> {
+  static async getManyWorkPackages(wbsNums: WbsNumber[], organization: Organization): Promise<BaseWorkPackage[]> {
     wbsNums.forEach((wbsNum) => {
       if (!isWorkPackageWbs(wbsNum)) {
         throw new HttpException(
@@ -194,10 +162,10 @@ export default class WorkPackagesService {
       where: {
         OR: whereConditions
       },
-      ...getWorkPackageQueryArgs(organization.organizationId)
+      ...getBaseWorkPackageQueryArgs()
     });
 
-    return workPackages.map(workPackageTransformer);
+    return workPackages.map(baseWorkPackageTransformer);
   }
 
   /**
@@ -207,7 +175,7 @@ export default class WorkPackagesService {
    * @returns the work packages for the given project
    * @throws if the project does not exist or is deleted
    */
-  static async getWorkPackagesByProject(projectWbsNum: WbsNumber, organization: Organization): Promise<WorkPackage[]> {
+  static async getWorkPackagesByProject(projectWbsNum: WbsNumber, organization: Organization): Promise<BaseWorkPackage[]> {
     const project = await prisma.project.findFirst({
       where: {
         wbsElement: {
@@ -217,7 +185,8 @@ export default class WorkPackagesService {
           organizationId: organization.organizationId,
           dateDeleted: null
         }
-      }
+      },
+      select: { projectId: true }
     });
 
     if (!project) throw new NotFoundException('Project', wbsPipe(projectWbsNum));
@@ -227,10 +196,10 @@ export default class WorkPackagesService {
         projectId: project.projectId,
         wbsElement: { dateDeleted: null }
       },
-      ...getWorkPackageQueryArgs(organization.organizationId)
+      ...getBaseWorkPackageQueryArgs()
     });
 
-    return workPackages.map(workPackageTransformer);
+    return workPackages.map(baseWorkPackageTransformer);
   }
 
   /**
@@ -258,7 +227,7 @@ export default class WorkPackagesService {
     descriptionBullets: DescriptionBulletPreview[],
     projectWbsNum: WbsNumber,
     organization: Organization
-  ): Promise<WorkPackage> {
+  ): Promise<BaseWorkPackage> {
     if (await userHasPermission(user.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create work packages');
 
@@ -281,13 +250,10 @@ export default class WorkPackagesService {
           dateDeleted: null
         }
       },
-      include: {
-        workPackages: {
-          include: {
-            wbsElement: true
-          }
-        },
-        wbsElement: true
+      select: {
+        projectId: true,
+        workPackages: { select: { wbsElement: { select: { workPackageNumber: true, dateDeleted: true } } } },
+        wbsElement: { select: { leadId: true, managerId: true } }
       }
     });
 
@@ -338,7 +304,8 @@ export default class WorkPackagesService {
         orderInProject: project.workPackages.filter((wp) => !wp.wbsElement.dateDeleted).length + 1,
         blockedBy: { connect: blockedByElements.map((ele) => ({ wbsElementId: ele.wbsElementId })) }
       },
-      ...getWorkPackageQueryArgs(organization.organizationId)
+      // the project form reads the created wbs number to wire up blockers between new work packages
+      ...getBaseWorkPackageQueryArgs()
     });
 
     const changes = await getWorkPackageChanges(
@@ -367,13 +334,13 @@ export default class WorkPackagesService {
     await addRawDescriptionBullets(
       descriptionBullets,
       DescriptionBulletDestination.WBS_ELEMENT,
-      created.wbsElement.wbsElementId,
-      created.wbsElement.organizationId
+      created.wbsElementId,
+      organization.organizationId
     );
 
     await prisma.change.createMany({ data: changes.changes });
 
-    return workPackageTransformer(created);
+    return baseWorkPackageTransformer(created);
   }
 
   /**
@@ -403,7 +370,7 @@ export default class WorkPackagesService {
     leadId: string | null,
     managerId: string | null,
     organization: Organization
-  ): Promise<WorkPackage> {
+  ): Promise<void> {
     const { userId } = user;
     // verify user is allowed to edit work packages
     if (await userHasPermission(userId, organization.organizationId, isGuest))
@@ -412,9 +379,19 @@ export default class WorkPackagesService {
     // get the original work package so we can compare things
     const originalWorkPackage = await prisma.work_Package.findUnique({
       where: { workPackageId },
-      include: {
+      select: {
+        wbsElementId: true,
+        stage: true,
+        startDate: true,
+        duration: true,
         wbsElement: {
-          include: {
+          select: {
+            name: true,
+            status: true,
+            leadId: true,
+            managerId: true,
+            dateDeleted: true,
+            organizationId: true,
             descriptionBullets: getDescriptionBulletQueryArgs(organization.organizationId)
           }
         },
@@ -445,9 +422,9 @@ export default class WorkPackagesService {
       duration,
       originalWorkPackage.blockedBy,
       blockedByElems,
-      originalWorkPackage.wbsElement.managerId,
-      leadId,
       originalWorkPackage.wbsElement.leadId,
+      leadId,
+      originalWorkPackage.wbsElement.managerId,
       managerId,
       originalWorkPackage.wbsElement.descriptionBullets,
       descriptionBullets,
@@ -463,7 +440,7 @@ export default class WorkPackagesService {
         : originalWorkPackage.wbsElement.status;
 
     // update the work package with the input fields
-    const updatedWorkPackage = await prisma.work_Package.update({
+    await prisma.work_Package.update({
       where: { wbsElementId },
       data: {
         startDate: new Date(startDate),
@@ -481,11 +458,8 @@ export default class WorkPackagesService {
           set: [], // remove all the connections then add all the given ones
           connect: blockedByElems.map((ele) => ({ wbsElementId: ele.wbsElementId }))
         }
-      },
-      ...getWorkPackageQueryArgs(organization.organizationId)
+      }
     });
-
-    // await updateBlocking(updatedWorkPackage, timelineImpact, crId, user);
 
     // Update any deleted description bullets to have their date deleted as right now
     if (changes.deletedDescriptionBullets.length > 0) {
@@ -508,8 +482,6 @@ export default class WorkPackagesService {
 
     // create the changes in prisma
     await prisma.change.createMany({ data: changes.changes });
-
-    return workPackageTransformer(updatedWorkPackage);
   }
 
   /**
@@ -523,9 +495,18 @@ export default class WorkPackagesService {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete work packages');
 
-    const workPackage = await WorkPackagesService.getSingleWorkPackage(wbsNum, organization);
+    if (!isWorkPackageWbs(wbsNum)) {
+      throw new HttpException(404, 'WBS Number ' + wbsPipe(wbsNum) + ' is a not a work package WBS#');
+    }
 
-    const { wbsElementId, id: workPackageId } = workPackage;
+    const workPackage = await prisma.work_Package.findFirst({
+      where: { wbsElement: { ...wbsNum, organizationId: organization.organizationId, dateDeleted: null } },
+      select: { workPackageId: true, wbsElementId: true }
+    });
+
+    if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+
+    const { wbsElementId, workPackageId } = workPackage;
 
     const dateDeleted = new Date();
     const deletedByUserId = submitter.userId;
@@ -586,7 +567,7 @@ export default class WorkPackagesService {
    * @param carId the optional carId to filter work packages by
    * @returns the blocking work packages for the given work package
    */
-  static async getBlockingWorkPackages(wbsNum: WbsNumber, organization: Organization): Promise<WorkPackage[]> {
+  static async getBlockingWorkPackages(wbsNum: WbsNumber, organization: Organization): Promise<BaseWorkPackage[]> {
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 
     // is a project or car so just return empty array until we implement blocking projects/cars
@@ -601,20 +582,19 @@ export default class WorkPackagesService {
           organizationId: organization.organizationId
         }
       },
-      include: {
-        workPackage: getWorkPackageQueryArgs(organization.organizationId)
-      }
+      select: { wbsElementId: true, dateDeleted: true, workPackage: { select: { workPackageId: true } } }
     });
 
-    const workPackage = wbsElement?.workPackage;
+    if (!wbsElement?.workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+    if (wbsElement.dateDeleted) throw new DeletedException('Work Package', wbsElement.wbsElementId);
 
-    if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
-    if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackage.wbsElementId);
-    if (workPackage.wbsElement.organizationId !== organization.organizationId)
-      throw new InvalidOrganizationException('Work Package');
+    const blockingWbsElementIds = await getBlockingWorkPackages(wbsElement.wbsElementId, organization.organizationId);
 
-    const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
-    return blockingWorkPackages.map(workPackageTransformer);
+    const blockingWorkPackages = await prisma.work_Package.findMany({
+      where: { wbsElementId: { in: blockingWbsElementIds } },
+      ...getBaseWorkPackageQueryArgs()
+    });
+    return blockingWorkPackages.map(baseWorkPackageTransformer);
   }
 
   /**
@@ -633,7 +613,21 @@ export default class WorkPackagesService {
       where: {
         wbsElement: { dateDeleted: null, status: WBS_Element_Status.ACTIVE, organizationId: organization.organizationId }
       },
-      ...getWorkPackageQueryArgs(organization.organizationId)
+      select: {
+        startDate: true,
+        duration: true,
+        wbsElement: {
+          select: {
+            carNumber: true,
+            projectNumber: true,
+            workPackageNumber: true,
+            name: true,
+            lead: getBaseUserQueryArgs(),
+            manager: getBaseUserQueryArgs()
+          }
+        },
+        project: { select: { wbsElement: { select: { name: true } }, teams: { select: { slackId: true } } } }
+      }
     });
 
     const upcomingWorkPackages = workPackages
@@ -666,7 +660,17 @@ export default class WorkPackagesService {
     organization: Organization,
     selection: WorkPackageSelection,
     carId?: string
-  ): Promise<WorkPackagePreview[]> {
+  ): Promise<WorkPackageCard[]> {
+    // every work package the home page shows has started (overdue) or starts within two weeks (leading's
+    // upcoming bucket), so anything starting later is never displayed. A day of slack absorbs client/server clock skew
+    const DAY_MS = 24 * 60 * 60 * 1000;
+    const latestStart =
+      selection === WorkPackageSelection.ALL_OVERDUE
+        ? new Date(Date.now() + DAY_MS)
+        : selection === WorkPackageSelection.LEADING
+          ? new Date(Date.now() + 15 * DAY_MS)
+          : undefined;
+
     const selectionArgs =
       selection === WorkPackageSelection.ALL_OVERDUE
         ? {}
@@ -702,30 +706,10 @@ export default class WorkPackagesService {
           organizationId: organization.organizationId,
           status: { not: WBS_Element_Status.COMPLETE }
         },
-        ...(carId && { project: { carId } })
+        ...(carId && { project: { carId } }),
+        ...(latestStart && { startDate: { lte: latestStart } })
       },
-      select: {
-        project: { select: { projectId: true, wbsElement: { select: { name: true } } } },
-        wbsElement: {
-          select: {
-            dateCreated: true,
-            status: true,
-            name: true,
-            carNumber: true,
-            projectNumber: true,
-            workPackageNumber: true,
-            dateDeleted: true,
-            wbsElementId: true,
-            lead: getUserPreviewQueryArgs(),
-            manager: getUserPreviewQueryArgs()
-          }
-        },
-        blockedBy: true,
-        startDate: true,
-        duration: true,
-        workPackageId: true,
-        stage: true
-      }
+      ...getWorkPackageCardQueryArgs()
     });
 
     if (selection === WorkPackageSelection.ALL_OVERDUE) {
@@ -737,6 +721,6 @@ export default class WorkPackagesService {
       });
     }
 
-    return workPackages.map(workPackagePreviewTransformer);
+    return workPackages.map(workPackageCardTransformer);
   }
 }

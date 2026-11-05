@@ -1,8 +1,7 @@
-import { Description_Bullet, Prisma, WBS_Element, Work_Package_Template } from '@prisma/client';
+import { Description_Bullet, WBS_Element, Work_Package_Template } from '@prisma/client';
 import prisma from '../prisma/prisma.js';
 import { HttpException, NotFoundException } from './errors.utils.js';
 import { WbsNumber, User } from 'shared';
-import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 
 export const calculateWorkPackageProgress = (
   deliverables: Description_Bullet[],
@@ -13,48 +12,44 @@ export const calculateWorkPackageProgress = (
 };
 
 /**
- * Gets all the work packages the given work package is blocking
- * @param initialWorkPackage the work package to get the blocking work packages for
- * @returns an array of the blocking work packages
+ * Gets the wbs element ids of every work package transitively blocked by the given work package.
+ * Loads the organization's blocking edges in one query and walks them in memory, rather than one query per node.
+ * @param initialWbsElementId the wbs element id of the work package to start from
+ * @param organizationId the organization the work package belongs to
+ * @returns the wbs element ids of the blocked work packages (deleted ones are skipped)
+ * @throws if the blocking chain loops back to the initial work package
  */
-export const getBlockingWorkPackages = async (initialWorkPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>) => {
-  // track the wbs element ids we've seen so far so we don't update the same one multiple times
-  const seenWbsElementIds: Set<string> = new Set<string>([initialWorkPackage.wbsElement.wbsElementId]);
+export const getBlockingWorkPackages = async (initialWbsElementId: string, organizationId: string): Promise<string[]> => {
+  // the blocking relation only ever points at work packages, so that's all the walk can reach
+  const elements = await prisma.wBS_Element.findMany({
+    where: { organizationId, workPackage: { isNot: null } },
+    select: { wbsElementId: true, dateDeleted: true, blocking: { select: { wbsElementId: true } } }
+  });
+  const elementsById = new Map(elements.map((element) => [element.wbsElementId, element]));
 
-  // blocking ids that still need to be updated
-  const blockingUpdateQueue: string[] = initialWorkPackage.wbsElement.blocking.map((blocking) => blocking.wbsElementId);
-  const blockingWorkPackages: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>[] = [];
-  while (blockingUpdateQueue.length > 0) {
-    const currWbsId = blockingUpdateQueue.pop(); // get the next blocking and remove it from the queue
+  const initial = elementsById.get(initialWbsElementId);
+  if (!initial) throw new NotFoundException('WBS Element', initialWbsElementId);
 
-    if (!currWbsId) break; // this is more of a type check for pop becuase the while loop prevents this from not existing
-    if (seenWbsElementIds.has(currWbsId)) continue; // if we've already seen it we skip it
+  const seenWbsElementIds = new Set<string>([initialWbsElementId]);
+  const queue: string[] = initial.blocking.map((blocking) => blocking.wbsElementId);
+  const blockingWbsElementIds: string[] = [];
 
+  while (queue.length > 0) {
+    const currWbsId = queue.pop();
+    if (!currWbsId) break;
+    if (currWbsId === initialWbsElementId) throw new HttpException(400, 'Circular dependency detected');
+    if (seenWbsElementIds.has(currWbsId)) continue;
     seenWbsElementIds.add(currWbsId);
 
-    // get the current wbs object from prisma
-    const currWbs = await prisma.wBS_Element.findUnique({
-      where: { wbsElementId: currWbsId },
-      include: {
-        blocking: true,
-        workPackage: getWorkPackageQueryArgs(initialWorkPackage.wbsElement.organizationId)
-      }
-    });
-
-    if (currWbs?.wbsElementId === initialWorkPackage.wbsElementId)
-      throw new HttpException(400, 'Circular dependency detected');
-
+    const currWbs = elementsById.get(currWbsId);
     if (!currWbs) throw new NotFoundException('WBS Element', currWbsId);
     if (currWbs.dateDeleted) continue; // this wbs element has been deleted so skip it
-    if (!currWbs.workPackage) continue; // this wbs element is a project so skip it
 
-    // get all the blockings of the current wbs and add them to the queue to update
-    const newBlocking: string[] = currWbs.blocking.map((blocking) => blocking.wbsElementId);
-    blockingUpdateQueue.push(...newBlocking);
-    blockingWorkPackages.push(currWbs.workPackage);
+    queue.push(...currWbs.blocking.map((blocking) => blocking.wbsElementId));
+    blockingWbsElementIds.push(currWbsId);
   }
 
-  return blockingWorkPackages;
+  return blockingWbsElementIds;
 };
 
 interface WorkPackageTemplateWithBlocking extends Work_Package_Template {

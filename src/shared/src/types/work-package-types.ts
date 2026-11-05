@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet } from './project-types.js';
-import { DescriptionBulletPreview } from './change-request-types.js';
+import { DescriptionBullet, WbsElementStatus, WbsNumber } from './project-types.js';
+import { DescriptionBulletPreview, ImplementedChange } from './change-request-types.js';
 import { TeamPreview } from './team-types.js';
-import { User } from './user-types.js';
+import { BaseUser, User } from './user-types.js';
 
 export enum TimelineStatus {
   Ahead = 'AHEAD',
@@ -70,4 +70,48 @@ export enum WorkPackageSelection {
   ALL_OVERDUE = 'allOverdue',
   LEADING = 'leading',
   MEMBER = 'member'
+}
+
+/** The minimum every consumer of a work package needs. Served as-is by pickers, get-many, by-project and blocking */
+export interface BaseWorkPackage {
+  id: string;
+  wbsElementId: string;
+  projectId: string;
+  wbsNum: WbsNumber;
+  name: string;
+  status: WbsElementStatus;
+  stage?: WorkPackageStage;
+  startDate: Date;
+  duration: number;
+  endDate: Date;
+  orderInProject: number;
+  dateCreated: Date;
+  deleted: boolean;
+  lead?: BaseUser;
+  manager?: BaseUser;
+  projectName: string;
+}
+
+/** A work package that blocks another, named so it can be listed without fetching it */
+export interface WorkPackageBlocker {
+  wbsNum: WbsNumber;
+  name: string;
+}
+
+/** A change implemented on a work package, as shown in its changes list */
+export type WorkPackageChange = Pick<
+  ImplementedChange,
+  'changeId' | 'changeRequestId' | 'changeRequestIdentifier' | 'detail' | 'dateImplemented'
+> & { implementer: BaseUser };
+
+/** The work package detail page, edit form, change request diff, and activate / stage gate modals */
+export interface WorkPackageDetail extends BaseWorkPackage {
+  blockedBy: WorkPackageBlocker[];
+  descriptionBullets: DescriptionBullet[];
+  changes: WorkPackageChange[];
+}
+
+/** The home page work package cards (member, leading, and overdue) */
+export interface WorkPackageCard extends BaseWorkPackage {
+  blockedBy: (WorkPackageBlocker & { projectName: string })[];
 }

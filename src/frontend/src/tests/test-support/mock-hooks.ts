@@ -97,9 +97,6 @@ export const mockCheckDescBulletReturnValue = mockUseMutationResult<DescriptionB
 export const mockGetVersionNumberReturnValue = (versionObject: VersionObject) =>
   mockUseQueryResult<VersionObject>(false, false, versionObject);
 
-export const mockUseAllWorkPackagesReturnValue = (workPackages: WorkPackage[]) =>
-  mockUseQueryResult<WorkPackage[]>(false, false, workPackages, new Error());
-
 export const mockUseAllProjectsReturnValue = (projects: Project[]) =>
   mockUseQueryResult<Project[]>(false, false, projects, new Error());
 

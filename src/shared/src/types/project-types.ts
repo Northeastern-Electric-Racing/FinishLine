@@ -90,11 +90,13 @@ export interface ProjectOverview extends ProjectPreview {
   tasksRemaining: number;
 }
 
+/** @deprecated Still used by the retrospective timelines until projects is refactored */
 export interface RetrospectiveWorkPackage extends WorkPackage {
   originalStartDate: Date;
   originalDuration: number;
 }
 
+/** @deprecated Use BaseWorkPackage or a per-endpoint model. Still used by Project / ProjectGantt until projects is refactored */
 export interface WorkPackage extends WbsElement {
   orderInProject: number;
   startDate: Date;
@@ -109,6 +111,7 @@ export interface WorkPackage extends WbsElement {
   events: EventPreview[];
 }
 
+/** @deprecated Use BaseWorkPackage. Still used by ProjectPreview until projects is refactored */
 export interface WorkPackagePreview extends WbsElementPreview {
   projectName: string;
   projectId: string;

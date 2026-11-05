@@ -1,7 +1,7 @@
-import { WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
+import { WbsNumber, WorkPackage, isGuest, isWorkPackageWbs, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
 import { bulletsToObject } from '../../utils/form';
-import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
+import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useAllMembers } from '../../hooks/users.hooks';
@@ -39,26 +39,27 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
     isError: projectIsError,
     error: projectError
   } = useSingleProject({ ...wbsNum, workPackageNumber: 0 });
-  const { data: workPackages, isLoading: wpIsLoading, isError: wpIsError, error: wpError } = useAllWorkPackages();
+  // creating hands in the project's wbs number, so there's only a work package to load when editing
+  const isEdit = isWorkPackageWbs(wbsNum);
+  const {
+    data: workPackage,
+    isLoading: wpIsLoading,
+    isError: wpIsError,
+    error: wpError
+  } = useSingleWorkPackage(wbsNum, isEdit);
 
-  if (wpIsLoading || !workPackages || usersIsLoading || !users || projectIsLoading || !project) return <LoadingIndicator />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;
   if (projectIsError) return <ErrorPage message={projectError.message} />;
-  if (wpIsError) return <ErrorPage message={wpError.message} />;
-
-  const workPackage = workPackages.find(
-    (wp) =>
-      wp.wbsNum.carNumber === wbsNum.carNumber &&
-      wp.wbsNum.projectNumber === wbsNum.projectNumber &&
-      wp.wbsNum.workPackageNumber === wbsNum.workPackageNumber
-  );
+  if (isEdit && wpIsError) return <ErrorPage message={wpError.message} />;
+  if ((isEdit && (wpIsLoading || !workPackage)) || usersIsLoading || !users || projectIsLoading || !project)
+    return <LoadingIndicator />;
 
   const defaultValues: WorkPackageFormViewPayload | undefined = workPackage
     ? {
         ...workPackage,
         workPackageId: workPackage.id,
         stage: workPackage.stage ?? 'NONE',
-        blockedBy: workPackage.blockedBy.map(wbsPipe),
+        blockedBy: workPackage.blockedBy.map((blocker) => wbsPipe(blocker.wbsNum)),
         descriptionBullets: bulletsToObject(workPackage.descriptionBullets)
       }
     : undefined;
@@ -67,7 +68,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
     return { id: wbsPipe(workPackage.wbsNum), label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}` };
   };
 
-  const wbsElement = workPackage ?? project;
+  const wbsElement = isEdit && workPackage ? workPackage : project;
 
   const leadOrManagerOptions = users.filter((user) => !isGuest(user.role));
   const blockedByOptions =
