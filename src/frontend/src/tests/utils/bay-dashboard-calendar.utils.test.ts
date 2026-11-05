@@ -104,15 +104,21 @@ describe('limitEventsToHeight', () => {
   const counts = (limited: ReturnType<typeof limitEventsToHeight>) =>
     limited.map((group) => [group.events.length, group.hiddenCount]);
 
-  it('always shows every event on the first two days, however little height there is', () => {
+  it('shows every event on every day when they all fit', () => {
     // first day: battery, bay time and shakedown, second day: shakedown and cleanup, third day: late and later
     const groups = groupEventsByDay([battery, bayTime, shakedown, cleanup, lateEvent, lateEvent2], getCalendarDays(day(22)));
 
-    expect(counts(limitEventsToHeight(groups, 10))).toEqual([
+    expect(counts(limitEventsToHeight(groups))).toEqual([
       [3, 0],
       [2, 0],
-      [0, 2]
+      [2, 0]
     ]);
+  });
+
+  it('cuts the first day and leaves out the days after it when there is little height', () => {
+    const groups = groupEventsByDay([battery, bayTime, shakedown, cleanup, lateEvent, lateEvent2], getCalendarDays(day(22)));
+
+    expect(counts(limitEventsToHeight(groups, 10))).toEqual([[0, 3]]);
   });
 
   describe('on the third day', () => {
@@ -132,7 +138,7 @@ describe('limitEventsToHeight', () => {
       expect(counts(limitEventsToHeight(groups, 60))[2]).toEqual([3, 0]);
     });
 
-    it('is the only day that is cut when the first two days take all of the height', () => {
+    it('cuts the second day and leaves out the third when the first two days do not fit', () => {
       const meetingOn = (dayOfMonth: number, title: string, hour: number) =>
         event(title, new Date(2026, 10, dayOfMonth, hour), new Date(2026, 10, dayOfMonth, hour + 1));
       // two events today, three tomorrow, and one the day after
@@ -150,8 +156,7 @@ describe('limitEventsToHeight', () => {
 
       expect(counts(limitEventsToHeight(fullGroups, 45))).toEqual([
         [2, 0],
-        [3, 0],
-        [0, 1]
+        [1, 2]
       ]);
       expect(counts(limitEventsToHeight(fullGroups, 90))).toEqual([
         [2, 0],

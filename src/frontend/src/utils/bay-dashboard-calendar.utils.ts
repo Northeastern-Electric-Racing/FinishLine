@@ -10,15 +10,12 @@ export interface LimitedCalendarDayEvents extends CalendarDayEvents {
   hiddenCount: number;
 }
 
-// the large widget always shows this many days, with a "No events" bar on the ones that are empty
+// the large widget shows this many days when there is room, with a "No events" bar on the ones that are empty
 export const CALENDAR_DAYS_SHOWN = 3;
 export const MEDIUM_CALENDAR_MAX_EVENTS = 2;
 
 // when there is room under those days, the large widget adds the next days that have events, up to this many days
 export const LARGE_CALENDAR_MAX_DAYS = BAY_DASHBOARD_CALENDAR_DAYS_AHEAD + 1;
-
-// the large widget always prioritizes showing every event on this many days, and only what fits on the days after them
-export const FULL_CALENDAR_DAYS = 2;
 
 // Heights for the large calendar rendering, used to decide how many events fit on the displayed widget.
 // The room under the widget's title: 100 (widget height) - 8 (padding) - 4.9 (title) - 1 (margin)
@@ -63,11 +60,11 @@ export const groupEventsByDay = (events: PublicBayDashboardCalendarEvent[], days
 
 /**
  * Keeps as many events as fit in `maxHeight` without scrolling, and counts the ones that were left out of each day.
- * The first days always show every event, however much height that takes. The days after them take as many of their
- * events as fit in what is left, with room for their "+N more" when they cut events. A day with no room for even its
- * first event only shows "+N more".
- * Days after the ones that are always shown are left out unless they have events and there is room for their heading
- * and "+N more".
+ * Days are filled in order, so earlier days get the height first. Each day takes as many of its events as fit in what
+ * is left, with room for its "+N more" when it cuts events. A day with no room for even its first event only shows
+ * "+N more".
+ * After the first day, a day is left out when there is no room for its heading and its "No events" bar or "+N more".
+ * Days after the first few are also left out when they have no events.
  */
 export const limitEventsToHeight = (
   groups: CalendarDayEvents[],
@@ -79,7 +76,8 @@ export const limitEventsToHeight = (
   groups.forEach(({ day, events }, i) => {
     const gap = i > 0 ? DAY_GAP : 0;
     const available = remaining - gap - DAY_HEADING_HEIGHT;
-    if (i >= CALENDAR_DAYS_SHOWN && (events.length === 0 || available < MORE_TEXT_HEIGHT)) return;
+    const minHeight = events.length === 0 ? NO_EVENTS_HEIGHT : MORE_TEXT_HEIGHT;
+    if (i > 0 && (available < minHeight || (i >= CALENDAR_DAYS_SHOWN && events.length === 0))) return;
 
     let used = 0;
     let shownCount = 0;
@@ -87,7 +85,7 @@ export const limitEventsToHeight = (
       const cardHeight = getCardHeight(event) + (k > 0 ? CARD_GAP : 0);
       // when events are left out, "+N more" goes under the last one that is shown
       const moreHeight = k < events.length - 1 ? CARD_GAP + MORE_TEXT_HEIGHT : 0;
-      if (i >= FULL_CALENDAR_DAYS && used + cardHeight + moreHeight > available) break;
+      if (used + cardHeight + moreHeight > available) break;
       used += cardHeight;
       shownCount++;
     }
