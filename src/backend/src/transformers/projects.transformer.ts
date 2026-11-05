@@ -11,21 +11,42 @@ import {
   ProjectPreview,
   calculateEndDate,
   WorkPackageStage,
-  ProjectOverview
+  ProjectOverview,
+  ProjectGanttItem
 } from 'shared';
 import { convertStatus, wbsNumOf } from '../utils/utils.js';
-import taskTransformer from './tasks.transformer.js';
+import taskTransformer, { taskGanttItemTransformer } from './tasks.transformer.js';
 import { calculateProjectStatus } from '../utils/projects.utils.js';
 import { descBulletConverter } from '../utils/description-bullets.utils.js';
-import { userTransformer } from './user.transformer.js';
+import { baseUserTransformer, userTransformer } from './user.transformer.js';
 import {
+  ProjectGanttItemQueryArgs,
   ProjectOverviewQueryArgs,
   ProjectPreviewQueryArgs,
   ProjectQueryArgs
 } from '../prisma-query-args/projects.query-args.js';
 import { teamPreviewTransformer } from './teams.transformer.js';
-import workPackageTransformer, { retrospectiveWorkPackageTransformer } from './work-packages.transformer.js';
+import workPackageTransformer, {
+  retrospectiveWorkPackageTransformer,
+  workPackageGanttItemTransformer
+} from './work-packages.transformer.js';
+import { baseProjectTransformer } from './wbs-elements.transformer.js';
 import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+
+export const projectGanttItemTransformer = (
+  project: Prisma.ProjectGetPayload<ProjectGanttItemQueryArgs>
+): ProjectGanttItem => {
+  const { wbsElement } = project;
+  return {
+    ...baseProjectTransformer(project),
+    status: calculateProjectStatus(project),
+    lead: wbsElement.lead ? baseUserTransformer(wbsElement.lead) : undefined,
+    manager: wbsElement.manager ? baseUserTransformer(wbsElement.manager) : undefined,
+    teams: project.teams,
+    workPackages: project.workPackages.map((workPackage) => workPackageGanttItemTransformer(workPackage, wbsElement.name)),
+    tasks: wbsElement.tasks.map(taskGanttItemTransformer)
+  };
+};
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>): Project => {
   const { wbsElement } = project;

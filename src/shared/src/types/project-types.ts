@@ -3,11 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { EventPreview, TeamType } from './calendar-types.js';
+import { EventGanttMarker, EventPreview, TeamType } from './calendar-types.js';
 import { ImplementedChange } from './change-request-types.js';
-import { Task, TaskStatus } from './task-types.js';
-import { TeamPreview } from './team-types.js';
-import { User, UserPreview } from './user-types.js';
+import { Task, TaskGanttItem } from './task-types.js';
+import { BaseTeam, TeamPreview } from './team-types.js';
+import { BaseUser, User, UserPreview } from './user-types.js';
 import { WorkPackageStage } from './work-package-types.js';
 
 export interface WbsNumber {
@@ -61,6 +61,10 @@ export type RetrospectiveProjectPreview = Omit<ProjectGantt, 'workPackages'> & {
   originalEndDate?: Date;
 };
 
+/**
+ * @deprecated Use ProjectGanttItem (or extend BaseProject). Still used by the retrospective (retrospective.services.ts,
+ * RetrospectiveProjectPreview) until retro is refactored
+ */
 export interface ProjectGantt extends WbsElementPreview {
   startDate?: Date;
   endDate?: Date;
@@ -74,40 +78,51 @@ export interface ProjectGantt extends WbsElementPreview {
   manager?: User;
 }
 
-/**
- * The base gantt chart shapes: only what the gantt chart reads. Full ProjectGantt / WorkPackage /
- * RetrospectiveProjectPreview objects also satisfy them, so the gantt helpers serve every gantt view,
- * and views that need more (e.g. retrospective) extend them.
- */
-export type GanttChartEvent = Pick<EventPreview, 'eventId' | 'dateScheduled' | 'status' | 'wbsName'>;
+/** The wbs element fields every project and work package carries. Lead and manager are ids; models that display them add the users */
+export interface BaseWbsElement {
+  wbsElementId: string;
+  wbsNum: WbsNumber;
+  name: string;
+  dateCreated: Date;
+  deleted: boolean;
+  leadId?: string;
+  managerId?: string;
+}
 
-export interface GanttChartWorkPackage extends WbsElementPreview {
+// status is still computed from work packages
+export interface BaseProject extends BaseWbsElement {
+  id: string; // project id
+  budget: number;
+  summary: string;
+  abbreviation?: string;
+  carId: string;
+}
+
+export interface BaseWorkPackage extends BaseWbsElement {
+  id: string; // work package id
   projectId: string;
+  status: WbsElementStatus;
+  orderInProject: number;
   startDate: Date;
+  duration: number;
   endDate: Date;
   stage?: WorkPackageStage;
+}
+
+export interface WorkPackageGanttItem extends BaseWorkPackage {
+  lead?: BaseUser;
+  manager?: BaseUser;
   blocking: WbsNumber[];
-  events: GanttChartEvent[];
+  events: EventGanttMarker[];
 }
 
-// a task bar and its tooltip; saving edits reads everything else from the full project
-export interface GanttChartTask {
-  taskId: string;
-  wbsNum: WbsNumber;
-  title: string;
-  status: TaskStatus;
-  startDate?: Date;
-  deadline?: Date;
-  createdBy: UserPreview;
-  assignees: UserPreview[];
-}
-
-export interface GanttChartProject extends WbsElementPreview {
-  startDate?: Date;
-  endDate?: Date;
+export interface ProjectGanttItem extends BaseProject {
+  status: WbsElementStatus;
+  lead?: BaseUser;
+  manager?: BaseUser;
   teams: { teamId: string }[];
-  workPackages: GanttChartWorkPackage[];
-  tasks: GanttChartTask[];
+  workPackages: WorkPackageGanttItem[];
+  tasks: TaskGanttItem[];
 }
 
 export interface ProjectPreview extends WbsElementPreview {
@@ -199,7 +214,7 @@ export interface WbsProposedChanges {
 export interface ProjectProposedChanges extends WbsProposedChanges {
   summary: string;
   budget: number;
-  teams: TeamPreview[];
+  teams: BaseTeam[];
   carNumber?: number;
   workPackageProposedChanges: WorkPackageProposedChanges[];
 }

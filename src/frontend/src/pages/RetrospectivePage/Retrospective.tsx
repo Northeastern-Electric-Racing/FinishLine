@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom';
 import { useGetAllCars } from '../../hooks/cars.hooks';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { GanttChartTask, RetrospectiveProjectPreview, TeamPreview, TeamType, WbsElementPreview } from 'shared';
+import { TaskGanttItem, RetrospectiveProjectPreview, TeamPreview, TeamType, WbsElementPreview } from 'shared';
 import {
   constructCollectionsFromTeamPreviewAndProjects,
   GanttCollection,
@@ -41,7 +41,7 @@ const RetrospectivePage = () => {
   const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
 
   const [searchText, setSearchText] = useState<string>('');
-  const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | GanttChartTask>[]>([]);
+  const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | TaskGanttItem>[]>([]);
 
   const {
     data: projects,

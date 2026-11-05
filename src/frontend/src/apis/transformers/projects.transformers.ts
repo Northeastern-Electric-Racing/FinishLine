@@ -5,19 +5,20 @@
 
 import {
   dbDateToLocalDate,
+  BaseProject,
   DescriptionBullet,
-  GanttChartProject,
   Project,
   ProjectOverview,
   ProjectGantt,
+  ProjectGanttItem,
   ProjectPreview,
   RetrospectiveProjectPreview
 } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
-import { ganttChartTaskTransformer, taskTransformer } from './tasks.transformers';
+import { taskGanttItemTransformer, taskTransformer } from './tasks.transformers';
 import {
-  ganttChartWorkPackageTransformer,
   retrospectiveWorkPackageTransformer,
+  workPackageGanttItemTransformer,
   workPackageTransformer
 } from './work-packages.transformers';
 
@@ -67,20 +68,28 @@ export const retrospectiveProjectPreviewTransformer = (
 };
 
 /**
- * Transforms a gantt chart project to ensure deep field transformation of date objects.
+ * Transforms any project model that extends BaseProject, converting Base's date fields.
+ *
+ * @param project Incoming project supplied by the HTTP response.
+ * @returns Properly transformed project.
+ */
+export const baseProjectTransformer = <T extends BaseProject>(project: T): T => ({
+  ...project,
+  dateCreated: new Date(project.dateCreated)
+});
+
+/**
+ * Transforms a gantt chart project bar, converting its date fields and those of its work packages and tasks.
  * Generic so re-parsing a richer project (e.g. one created locally on the gantt) keeps its other fields.
  *
- * @param project Incoming gantt chart project object supplied by the HTTP response.
- * @returns Properly transformed gantt chart project object.
+ * @param project Incoming gantt project supplied by the HTTP response.
+ * @returns Properly transformed gantt project.
  */
-export const ganttChartProjectTransformer = <T extends GanttChartProject>(project: T): T => {
+export const projectGanttItemTransformer = <T extends ProjectGanttItem>(project: T): T => {
   return {
-    ...project,
-    dateCreated: new Date(project.dateCreated),
-    startDate: project.startDate ? new Date(project.startDate) : undefined,
-    endDate: project.endDate ? new Date(project.endDate) : undefined,
-    workPackages: project.workPackages.map(ganttChartWorkPackageTransformer),
-    tasks: project.tasks.map(ganttChartTaskTransformer)
+    ...baseProjectTransformer(project),
+    workPackages: project.workPackages.map(workPackageGanttItemTransformer),
+    tasks: project.tasks.map(taskGanttItemTransformer)
   };
 };
 

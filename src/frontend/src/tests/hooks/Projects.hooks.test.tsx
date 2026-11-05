@@ -5,10 +5,10 @@
 
 import { renderHook, waitFor } from '@testing-library/react';
 import { AxiosResponse } from 'axios';
-import { Project } from 'shared';
+import { Project, ProjectGanttItem } from 'shared';
 import AppContextQuery from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
-import { exampleAllProjects, exampleProject1 } from '../test-support/test-data/projects.stub';
+import { exampleAllProjectGanttItems, exampleProject1 } from '../test-support/test-data/projects.stub';
 import { exampleWbsProject1 } from '../test-support/test-data/wbs-numbers.stub';
 import { getAllProjectsGantt, getSingleProject } from '../../apis/projects.api';
 import { useAllProjectsGantt, useSingleProject } from '../../hooks/projects.hooks';
@@ -19,12 +19,12 @@ vi.mock('../../apis/projects.api');
 
 describe('project hooks', () => {
   it('handles getting a list of projects', async () => {
-    const mockedGetAllProjects = getAllProjectsGantt as jest.Mock<Promise<AxiosResponse<Project[]>>>;
-    mockedGetAllProjects.mockReturnValue(mockPromiseAxiosResponse<Project[]>(exampleAllProjects));
+    const mockedGetAllProjects = getAllProjectsGantt as jest.Mock<Promise<AxiosResponse<ProjectGanttItem[]>>>;
+    mockedGetAllProjects.mockReturnValue(mockPromiseAxiosResponse<ProjectGanttItem[]>(exampleAllProjectGanttItems));
 
     const { result } = renderHook(() => useAllProjectsGantt(), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(exampleAllProjects);
+    expect(result.current.data).toEqual(exampleAllProjectGanttItems);
   });
 
   it('handles getting a single project', async () => {

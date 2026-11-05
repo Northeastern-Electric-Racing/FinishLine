@@ -3,7 +3,7 @@ import {
   Link,
   Project,
   ProjectProposedChanges,
-  TeamPreview,
+  TeamNamePreview,
   User,
   WbsElement,
   WbsElementStatus,
@@ -22,7 +22,7 @@ export type ProposedChangeValue =
   | number
   | string[]
   | User
-  | TeamPreview[]
+  | TeamNamePreview[]
   | DescriptionBullet[]
   | Link[]
   | Date
@@ -74,7 +74,7 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
   if (typeof testVal === 'string') {
     return detail as string[];
   } else if ('teamName' in testVal) {
-    return (detail as TeamPreview[]).map((team) => team.teamName);
+    return (detail as TeamNamePreview[]).map((team) => team.teamName);
   } else if ('detail' in testVal && 'type' in testVal) {
     return (detail as DescriptionBullet[]).map((bullet) => bullet.detail);
   } else if ('carNumber' in testVal) {
@@ -233,11 +233,11 @@ export const getChangesForProject = (
       '',
       originalProject
         ? originalProject.teams
-            .map((team) => ({ ...team, value: team.teamName }))
+            .map(({ teamId, teamName }) => ({ teamId, teamName, value: teamName }))
             .sort((a, b) => a.teamName.localeCompare(b.teamName))
         : [],
       proposedChanges.teams
-        .map((team) => ({ ...team, value: team.teamName }))
+        .map(({ teamId, teamName }) => ({ teamId, teamName, value: teamName }))
         .sort((a, b) => a.teamName.localeCompare(b.teamName)),
       (a, b) => a?.teamId !== b?.teamId
     )

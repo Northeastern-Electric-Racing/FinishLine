@@ -5,6 +5,7 @@ import {
   Task,
   TaskBlockerPreview,
   TaskBoardItem,
+  TaskGanttItem,
   TaskHomeCard,
   TaskLabel
 } from 'shared';
@@ -15,6 +16,7 @@ import {
   BaseTaskQueryArgs,
   TaskBoardItemQueryArgs,
   TaskHomeCardQueryArgs,
+  TaskGanttItemQueryArgs,
   BaseTaskLabelQueryArgs,
   TaskQueryArgs,
   TaskBlockedByQueryArgs,
@@ -98,6 +100,17 @@ export const taskBoardItemTransformer = (task: Prisma.TaskGetPayload<TaskBoardIt
 export const taskHomeCardTransformer = (task: Prisma.TaskGetPayload<TaskHomeCardQueryArgs>): TaskHomeCard => ({
   ...baseTaskTransformer(task),
   projectName: taskProjectName(task.wbsElement)
+});
+
+export const taskGanttItemTransformer = (task: Prisma.TaskGetPayload<TaskGanttItemQueryArgs>): TaskGanttItem => ({
+  taskId: task.taskId,
+  wbsNum: wbsNumOf(task.wbsElement),
+  title: task.title,
+  status: convertTaskStatus(task.status),
+  deadline: task.deadline ?? undefined,
+  assignees: task.assignees.map(baseUserTransformer),
+  startDate: task.startDate ?? undefined,
+  createdBy: baseUserTransformer(task.createdBy)
 });
 
 /** @deprecated Use baseTaskTransformer or a per-endpoint model's transformer. Still used by projects.transformer.ts until projects is refactored */

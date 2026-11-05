@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link, LinkType, Project, WbsElementStatus } from 'shared';
+import { Link, LinkType, Project, ProjectGanttItem, WbsElementStatus, WorkPackageStage } from 'shared';
 import { exampleTask1 } from './tasks.stub';
 import { exampleTeam } from './teams.stub';
 import { exampleAdminUser, exampleLeadershipUser, exampleLeadUser, exampleManagerUser } from './users.stub';
@@ -191,3 +191,47 @@ export const exampleAllProjects: Project[] = [
   exampleProject4,
   exampleProject5
 ];
+
+export const exampleProjectGanttItem: ProjectGanttItem = {
+  id: '4',
+  wbsElementId: '4',
+  wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+  name: 'Impact Attenuator',
+  dateCreated: new Date('08/01/20'),
+  deleted: false,
+  leadId: exampleLeadUser.userId,
+  managerId: exampleLeadershipUser.userId,
+  budget: 124,
+  summary: 'Make an impact attenuator',
+  carId: 'car-1',
+  status: WbsElementStatus.Active,
+  lead: { userId: exampleLeadUser.userId, firstName: exampleLeadUser.firstName, lastName: exampleLeadUser.lastName },
+  manager: {
+    userId: exampleLeadershipUser.userId,
+    firstName: exampleLeadershipUser.firstName,
+    lastName: exampleLeadershipUser.lastName
+  },
+  teams: [{ teamId: 'a' }],
+  workPackages: [
+    {
+      id: '1',
+      wbsElementId: '1',
+      wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+      name: 'Bodywork Concept of Design',
+      dateCreated: new Date('05/26/21'),
+      deleted: false,
+      projectId: '4',
+      status: WbsElementStatus.Active,
+      orderInProject: 1,
+      startDate: new Date('01/01/21'),
+      duration: 3,
+      endDate: new Date('01/22/21'),
+      stage: WorkPackageStage.Research,
+      blocking: [],
+      events: []
+    }
+  ],
+  tasks: []
+};
+
+export const exampleAllProjectGanttItems: ProjectGanttItem[] = [exampleProjectGanttItem];

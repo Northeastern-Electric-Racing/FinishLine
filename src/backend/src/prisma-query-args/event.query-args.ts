@@ -5,6 +5,8 @@ export type EventQueryArgs = ReturnType<typeof getEventQueryArgs>;
 
 export type EventWithMembersQueryArgs = ReturnType<typeof getEventWithMembersQueryArgs>;
 
+export type EventGanttMarkerQueryArgs = ReturnType<typeof getEventGanttMarkerQueryArgs>;
+
 export const getEventQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.EventDefaultArgs>()({
     include: {
@@ -119,5 +121,17 @@ export const getEventWithMembersQueryArgs = (organizationId: string) =>
       scheduledTimes: true,
       notificationSlackThreads: true,
       documents: true
+    }
+  });
+
+// exported (only all-gantt uses it) so the transformer can type its input
+export const getEventGanttMarkerQueryArgs = () =>
+  Prisma.validator<Prisma.EventDefaultArgs>()({
+    select: {
+      eventId: true,
+      status: true,
+      initialDateScheduled: true,
+      // the event marker shows one date, so fetch the earliest slot
+      scheduledTimes: { select: { startTime: true }, orderBy: { startTime: 'asc' }, take: 1 }
     }
   });

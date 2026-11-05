@@ -5,7 +5,7 @@
 
 import { DescriptionBullet } from './project-types.js';
 import { DescriptionBulletPreview } from './change-request-types.js';
-import { TeamPreview } from './team-types.js';
+import { BaseTeam } from './team-types.js';
 import { User } from './user-types.js';
 
 export enum TimelineStatus {
@@ -62,7 +62,7 @@ export interface ProjectTemplate extends WbsElementTemplate {
   projectName?: string;
   workPackageTemplates: WorkPackageTemplate[];
   budget?: number;
-  teams: TeamPreview[];
+  teams: BaseTeam[];
   summary?: string;
 }
 

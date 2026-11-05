@@ -1,12 +1,5 @@
 import { Box, TextField, Typography } from '@mui/material';
-import {
-  dateToMidnightUTC,
-  GanttChartProject,
-  GanttChartTask,
-  GanttChartWorkPackage,
-  Task,
-  WbsElementPreview
-} from 'shared';
+import { dateToMidnightUTC, ProjectGanttItem, TaskGanttItem, WorkPackageGanttItem, Task, WbsElementPreview } from 'shared';
 import { isCreatableTask } from '../../../../utils/gantt.utils';
 import { useState } from 'react';
 import dayjs from 'dayjs';
@@ -55,10 +48,10 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`;
   };
 
-  const project = change.element as GanttChartProject;
+  const project = change.element as ProjectGanttItem;
 
-  const editedWorkPackages: GanttChartWorkPackage[] = [];
-  const createdWorkPackages: GanttChartWorkPackage[] = [];
+  const editedWorkPackages: WorkPackageGanttItem[] = [];
+  const createdWorkPackages: WorkPackageGanttItem[] = [];
   project.workPackages.forEach((workPackage) => {
     if (workPackage.wbsElementId === '-1') {
       createdWorkPackages.push(workPackage);
@@ -76,8 +69,8 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
 
   // the gantt can only move or resize an existing task, so only its dates can differ. Saving sends the rest of the task
   // from the freshly fetched project, so an edit made elsewhere since the gantt loaded isn't overwritten
-  const editedTasks: { task: GanttChartTask; existingTask: Task }[] = [];
-  const createdTasks: GanttChartTask[] = [];
+  const editedTasks: { task: TaskGanttItem; existingTask: Task }[] = [];
+  const createdTasks: TaskGanttItem[] = [];
   project.tasks?.forEach((task) => {
     const existingTask = originalProject.tasks.find((t) => t.taskId === task.taskId);
     if (!existingTask) {

@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
-import { Team, TeamPreview, TeamBase, TeamJoinRequest, TeamWithProjects } from 'shared';
+import { BaseTeam, Team, TeamPreview, TeamBase, TeamJoinRequest, TeamWithProjects, WorkPackageStage } from 'shared';
 import {
+  BaseTeamQueryArgs,
   getTeamBaseQueryArgs,
   TeamJoinRequestQueryArgs,
   TeamPreviewQueryArgs,
@@ -8,9 +9,10 @@ import {
   TeamWithProjectsQueryArgs
 } from '../prisma-query-args/teams.query-args.js';
 import { userTransformer } from './user.transformer.js';
-import { ganttChartProjectTransformer } from './gantt-chart.transformer.js';
+import { baseProjectTransformer } from './wbs-elements.transformer.js';
+import { calculateProjectStatus } from '../utils/projects.utils.js';
+import { convertStatus, wbsNumOf } from '../utils/utils.js';
 import { teamTypeTransformer } from './team-types.transformer.js';
-import { wbsNumOf } from '../utils/utils.js';
 
 const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
   return {
@@ -20,7 +22,14 @@ const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
     description: team.description,
     head: userTransformer(team.head),
     members: team.members.map(userTransformer),
-    projects: team.projects.map((project) => ({ ...ganttChartProjectTransformer(project), budget: project.budget })),
+    projects: team.projects.map((project) => ({
+      ...baseProjectTransformer(project),
+      status: calculateProjectStatus(project),
+      workPackages: project.workPackages.map((workPackage) => ({
+        status: convertStatus(workPackage.wbsElement.status),
+        stage: (workPackage.stage as WorkPackageStage) || undefined
+      }))
+    })),
     leads: team.leads.map(userTransformer),
     userArchived: team.userArchived ? userTransformer(team.userArchived) : undefined,
     dateArchived: team.dateArchived ?? undefined,
@@ -28,6 +37,19 @@ const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
   };
 };
 
+export const baseTeamTransformer = (team: Prisma.TeamGetPayload<BaseTeamQueryArgs>): BaseTeam => ({
+  teamId: team.teamId,
+  teamName: team.teamName,
+  slackId: team.slackId,
+  description: team.description,
+  dateArchived: team.dateArchived ?? undefined,
+  financeTeam: team.financeTeam,
+  operationsTeam: team.operationsTeam,
+  teamTypeId: team.teamTypeId ?? undefined,
+  headId: team.headId
+});
+
+/** @deprecated Use baseTeamTransformer. Still used by teams.services.ts (getAllTeamPreviews) until teams is refactored */
 export const teamBaseTransformer = (team: Prisma.TeamGetPayload<ReturnType<typeof getTeamBaseQueryArgs>>): TeamBase => {
   return {
     teamId: team.teamId,

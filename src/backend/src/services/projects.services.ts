@@ -8,7 +8,7 @@ import {
   LinkType,
   Project,
   ProjectOverview,
-  GanttChartProject,
+  ProjectGanttItem,
   ProjectPreview,
   ProjectDropdownItem,
   WbsNumber,
@@ -19,10 +19,10 @@ import prisma from '../prisma/prisma.js';
 import { getProjectDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
 import { projectDropdownTransformer } from '../transformers/dropdown.transformer.js';
 import projectTransformer, {
+  projectGanttItemTransformer,
   projectOverviewTransformer,
   projectPreviewTransformer
 } from '../transformers/projects.transformer.js';
-import { ganttChartProjectTransformer } from '../transformers/gantt-chart.transformer.js';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
@@ -38,11 +38,11 @@ import { wbsNumOf } from '../utils/utils.js';
 import WorkPackagesService from './work-packages.services.js';
 import { userHasPermission } from '../utils/users.utils.js';
 import {
+  getProjectGanttItemQueryArgs,
   getProjectOverviewQueryArgs,
   getProjectPreviewQueryArgs,
   getProjectQueryArgs
 } from '../prisma-query-args/projects.query-args.js';
-import { getGanttChartProjectQueryArgs } from '../prisma-query-args/gantt-chart.query-args.js';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
 
@@ -53,14 +53,14 @@ export default class ProjectsService {
    * @param carId optional car id to filter projects by
    * @returns all the projects, with only the fields the gantt chart uses
    */
-  static async getAllProjectsGantt(organization: Organization, carId?: string): Promise<GanttChartProject[]> {
+  static async getAllProjectsGantt(organization: Organization, carId?: string): Promise<ProjectGanttItem[]> {
     const projects = await prisma.project.findMany({
       where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId }, ...(carId && { carId }) },
       orderBy: [{ wbsElement: { carNumber: 'asc' } }, { wbsElement: { projectNumber: 'asc' } }],
-      ...getGanttChartProjectQueryArgs()
+      ...getProjectGanttItemQueryArgs()
     });
 
-    return projects.map(ganttChartProjectTransformer);
+    return projects.map(projectGanttItemTransformer);
   }
 
   /**

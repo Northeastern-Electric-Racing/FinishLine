@@ -1,11 +1,37 @@
 import { Prisma } from '@prisma/client';
-import { calculateEndDate, RetrospectiveWorkPackage, WorkPackage, WorkPackagePreview, WorkPackageStage } from 'shared';
+import {
+  calculateEndDate,
+  RetrospectiveWorkPackage,
+  WorkPackage,
+  WorkPackageGanttItem,
+  WorkPackagePreview,
+  WorkPackageStage
+} from 'shared';
 import descriptionBulletTransformer from '../transformers/description-bullets.transformer.js';
 import { convertStatus, wbsNumOf } from '../utils/utils.js';
-import { userTransformer } from './user.transformer.js';
-import { WorkPackageQueryArgs, WorkPackagePreviewQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
+import { baseUserTransformer, userTransformer } from './user.transformer.js';
+import {
+  WorkPackageGanttItemQueryArgs,
+  WorkPackageQueryArgs,
+  WorkPackagePreviewQueryArgs
+} from '../prisma-query-args/work-packages.query-args.js';
 import { teamTypeTransformer } from './team-types.transformer.js';
-import { eventPreviewTransformer } from './calendar.transformer.js';
+import { eventGanttMarkerTransformer, eventPreviewTransformer } from './calendar.transformer.js';
+import { baseWorkPackageTransformer } from './wbs-elements.transformer.js';
+
+export const workPackageGanttItemTransformer = (
+  workPackage: Prisma.Work_PackageGetPayload<WorkPackageGanttItemQueryArgs>,
+  projectName: string
+): WorkPackageGanttItem => {
+  const { wbsElement } = workPackage;
+  return {
+    ...baseWorkPackageTransformer(workPackage),
+    lead: wbsElement.lead ? baseUserTransformer(wbsElement.lead) : undefined,
+    manager: wbsElement.manager ? baseUserTransformer(wbsElement.manager) : undefined,
+    blocking: wbsElement.blocking.map((blocked) => wbsNumOf(blocked.wbsElement)),
+    events: workPackage.events.map((event) => eventGanttMarkerTransformer(event, `${projectName} - ${wbsElement.name}`))
+  };
+};
 
 const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
   const wbsNum = wbsNumOf(wpInput.wbsElement);

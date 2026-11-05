@@ -4,6 +4,7 @@ import { getBaseUserQueryArgs, getUserPreviewWithEmailQueryArgs } from './user.q
 export type BaseTaskQueryArgs = ReturnType<typeof getBaseTaskQueryArgs>;
 export type TaskBoardItemQueryArgs = ReturnType<typeof getTaskBoardItemQueryArgs>;
 export type TaskHomeCardQueryArgs = ReturnType<typeof getTaskHomeCardQueryArgs>;
+export type TaskGanttItemQueryArgs = ReturnType<typeof getTaskGanttItemQueryArgs>;
 export type TaskBlockingWorkPackagesQueryArgs = ReturnType<typeof getTaskBlockingWorkPackagesQueryArgs>;
 /** @deprecated Use BaseTaskQueryArgs or a per-endpoint model's query args. Still used by projects.query-args.ts until projects is refactored */
 export type TaskQueryArgs = ReturnType<typeof getTaskQueryArgs>;
@@ -107,6 +108,16 @@ export const getTaskHomeCardQueryArgs = () =>
       }
     }
   });
+
+// exported (only all-gantt uses it) so the transformer can type its input
+// picks from the base instead of spreading it because including labels unnecessarily made
+// all-gantt endpoint 6 times slower due to Postgres JIT-compiling the bigger query
+export const getTaskGanttItemQueryArgs = () => {
+  const { taskId, title, status, deadline, wbsElement, assignees } = getBaseTaskQueryArgs().select;
+  return Prisma.validator<Prisma.TaskDefaultArgs>()({
+    select: { taskId, title, status, deadline, wbsElement, assignees, startDate: true, createdBy: getBaseUserQueryArgs() }
+  });
+};
 
 /**
  * The work package (if any) that this task's own work package is blocked by, along with just enough
