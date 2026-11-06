@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { daysBetween, VehicleDevelopmentProjectSummary } from 'shared';
+import { daysBetween, ExecutiveSummary, RecruitmentCycle, Term, VehicleDevelopmentProjectSummary } from 'shared';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -35,4 +35,51 @@ export const getDaysAxisTicks = (totalDays: number): number[] => {
     if (day >= totalDays) break;
   }
   return ticks;
+};
+
+export interface NewMemberJourneyPoint {
+  label: string;
+  sortKey: number;
+  signUps: number;
+  onboarded: number;
+  newActiveMembers: number;
+}
+
+/**
+ * Builds the new member journey chart data, one point per term+year, summed across executive summaries.
+ */
+export const buildNewMemberJourneyData = (executiveSummaries: ExecutiveSummary[]): NewMemberJourneyPoint[] => {
+  const pointsByLabel = new Map<string, NewMemberJourneyPoint>();
+
+  executiveSummaries.forEach((executiveSummary) => {
+    executiveSummary.recruitmentCycles.forEach((cycle: RecruitmentCycle) => {
+      const seasonDate = cycle.term === Term.FALL ? executiveSummary.seasonStartDate : executiveSummary.seasonEndDate;
+      if (!seasonDate) return;
+
+      const year = new Date(seasonDate).getFullYear();
+      const termLabel = cycle.term === Term.FALL ? 'Fall' : 'Spring';
+      const label = `${termLabel} ${year}`;
+      // sortKey puts Fall before Spring within the same academic year, and orders years ascending
+      const sortKey = year * 10 + (cycle.term === Term.FALL ? 0 : 1);
+
+      const newActiveMembers = cycle.divisionCounts.reduce((sum, division) => sum + (division.newMembers ?? 0), 0);
+
+      const existing = pointsByLabel.get(label);
+      if (existing) {
+        existing.signUps += cycle.signUps ?? 0;
+        existing.onboarded += cycle.onboarded ?? 0;
+        existing.newActiveMembers += newActiveMembers;
+      } else {
+        pointsByLabel.set(label, {
+          label,
+          sortKey,
+          signUps: cycle.signUps ?? 0,
+          onboarded: cycle.onboarded ?? 0,
+          newActiveMembers
+        });
+      }
+    });
+  });
+
+  return Array.from(pointsByLabel.values()).sort((a, b) => a.sortKey - b.sortKey);
 };
