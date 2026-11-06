@@ -49,8 +49,7 @@ export const getBayDashboardConfig = (slug: string) => {
  */
 export const getBayDashboardCalendarEvents = (slug: string) => {
   return axios.get<PublicBayDashboardCalendarEvent[]>(apiUrls.bayDashboardCalendar(slug), {
-    transformResponse: (data) =>
-      (JSON.parse(data) as PublicBayDashboardCalendarEvent[]).map(publicBayDashboardCalendarEventTransformer)
+    transformResponse: (data) => JSON.parse(data).map(publicBayDashboardCalendarEventTransformer)
   });
 };
 

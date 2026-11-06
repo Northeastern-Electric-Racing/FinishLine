@@ -1,11 +1,8 @@
 import { Event_Status, Organization } from '@prisma/client';
 import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone.js';
-import utc from 'dayjs/plugin/utc.js';
 import {
   BAY_DASHBOARD_CALENDAR_DAYS_AHEAD,
   BayDashboardCountdown,
-  EASTERN_TIMEZONE,
   PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig
 } from 'shared';
@@ -21,9 +18,6 @@ import {
   publicBayDashboardConfigTransformer
 } from '../transformers/bay-dashboard.transformer.js';
 import { DeletedException, NotFoundException } from '../utils/errors.utils.js';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 export default class BayDashboardService {
   /**
@@ -82,15 +76,15 @@ export default class BayDashboardService {
    * Gets the scheduled events the TV's calendar widget shows.
    * A multi-day event comes back once, with the full range of its schedule slot, and the TV splits it across its days.
    * @param slug the organization slug from the /bay-dashboard/:slug URL
-   * @returns the organization's scheduled events happening from the start of today to a few days ahead, ordered by start time
+   * @returns the organization's scheduled events happening from a day ago to a few days ahead, ordered by start time
    */
   static async getBayDashboardCalendarEvents(slug: string): Promise<PublicBayDashboardCalendarEvent[]> {
     const organization = await BayDashboardService.getOrganizationBySlug(slug);
 
-    const todayEastern = dayjs().tz(EASTERN_TIMEZONE).startOf('day');
-    const windowStart = todayEastern.toDate();
-    // the window ends at the end of the last day shown, which is the day DAYS_AHEAD after today
-    const windowEnd = todayEastern.add(BAY_DASHBOARD_CALENDAR_DAYS_AHEAD + 1, 'day').toDate();
+    const windowStart = dayjs().subtract(1, 'day').toDate();
+    const windowEnd = dayjs()
+      .add(BAY_DASHBOARD_CALENDAR_DAYS_AHEAD + 2, 'day')
+      .toDate();
 
     const overlapsWindow = { startTime: { lte: windowEnd }, endTime: { gte: windowStart } };
 
