@@ -122,7 +122,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
           );
         }
       }
-      if (createdChangeRequests > 0) toast.success(`Created ${createdChangeRequests} change request(s)`);
+      if (createdChangeRequests > 0) toast.success(`Successfully created ${createdChangeRequests} change request(s)`);
 
       // one at a time, so each new WP gets the next number and the popups are accurate
       let createdWorkPackageCount = 0;
@@ -144,60 +144,60 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
           );
         }
       }
-      if (createdWorkPackageCount > 0) toast.success(`Created ${createdWorkPackageCount} work package(s)`);
+      if (createdWorkPackageCount > 0) toast.success(`Successfully created ${createdWorkPackageCount} work package(s)`);
 
-      if (createdTasks.length > 0) {
-        for (const task of createdTasks) {
-          if (!isCreatableTask(task)) {
-            toast.error(`Failed to create task: ${task.title}`);
-            continue;
-          }
-          const taskPayload: CreateTaskPayload = {
-            wbsNum: task.wbsNum,
-            title: task.title,
-            priority: task.priority,
-            status: task.status,
-            assignees: task.assignees?.map((user) => user.userId) || [],
-            notes: task.notes || '',
-            labelIds: task.labels.map((l) => l.taskLabelId),
-            blockedByIds: task.blockedBy.map((b) => b.taskId),
-            deadline: task.deadline ? dateToMidnightUTC(task.deadline).toISOString() : undefined,
-            startDate: task.startDate ? dateToMidnightUTC(task.startDate).toISOString() : undefined
-          };
+      let createdTaskCount = 0;
+      for (const task of createdTasks) {
+        if (!isCreatableTask(task)) {
+          toast.error(`Failed to create task: ${task.title}`);
+          continue;
+        }
+        const taskPayload: CreateTaskPayload = {
+          wbsNum: task.wbsNum,
+          title: task.title,
+          priority: task.priority,
+          status: task.status,
+          assignees: task.assignees?.map((user) => user.userId) || [],
+          notes: task.notes || '',
+          labelIds: task.labels.map((l) => l.taskLabelId),
+          blockedByIds: task.blockedBy.map((b) => b.taskId),
+          deadline: task.deadline ? dateToMidnightUTC(task.deadline).toISOString() : undefined,
+          startDate: task.startDate ? dateToMidnightUTC(task.startDate).toISOString() : undefined
+        };
 
-          try {
-            await createTask(taskPayload);
-            toast.success(`Successfully created ${createdTasks.length} task(s)`);
-          } catch (error) {
-            console.error('Error creating task:', error);
-            toast.error(`Failed to create task: ${task.title}`);
-          }
+        try {
+          await createTask(taskPayload);
+          createdTaskCount++;
+        } catch (error) {
+          console.error('Error creating task:', error);
+          toast.error(`Failed to create task: ${task.title}`);
         }
       }
+      if (createdTaskCount > 0) toast.success(`Successfully created ${createdTaskCount} task(s)`);
 
-      if (editedTasks.length > 0) {
-        for (const { task, existingTask } of editedTasks) {
-          const taskPayload: TaskPayload = {
-            wbsNum: existingTask.wbsNum,
-            taskId: existingTask.taskId,
-            title: existingTask.title,
-            priority: existingTask.priority,
-            notes: existingTask.notes || '',
-            labelIds: existingTask.labels.map((l) => l.taskLabelId),
-            blockedByIds: existingTask.blockedBy.map((b) => b.taskId),
-            deadline: task.deadline,
-            startDate: task.startDate
-          };
+      let editedTaskCount = 0;
+      for (const { task, existingTask } of editedTasks) {
+        const taskPayload: TaskPayload = {
+          wbsNum: existingTask.wbsNum,
+          taskId: existingTask.taskId,
+          title: existingTask.title,
+          priority: existingTask.priority,
+          notes: existingTask.notes || '',
+          labelIds: existingTask.labels.map((l) => l.taskLabelId),
+          blockedByIds: existingTask.blockedBy.map((b) => b.taskId),
+          deadline: task.deadline,
+          startDate: task.startDate
+        };
 
-          try {
-            await editTask(taskPayload);
-            toast.success(`Successfully updated ${editedTasks.length} task(s)`);
-          } catch (error) {
-            console.error('Error editing task:', error);
-            toast.error(`Failed to edit task: ${task.title}`);
-          }
+        try {
+          await editTask(taskPayload);
+          editedTaskCount++;
+        } catch (error) {
+          console.error('Error editing task:', error);
+          toast.error(`Failed to edit task: ${task.title}`);
         }
       }
+      if (editedTaskCount > 0) toast.success(`Successfully updated ${editedTaskCount} task(s)`);
 
       handleClose(false);
     } catch (e) {
