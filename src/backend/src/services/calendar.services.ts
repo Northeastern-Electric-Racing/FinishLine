@@ -2629,15 +2629,18 @@ export default class CalendarService {
         where: {
           eventTypeId: { in: eventTypeIds },
           organization: { organizationId: organization.organizationId },
-          dateDeleted: null,
-          ...(canCreateAdminEventTypes ? {} : { onlyAdminsOrAboveForEventCreation: false })
+          dateDeleted: null
         },
-        select: { eventTypeId: true }
+        select: { eventTypeId: true, onlyAdminsOrAboveForEventCreation: true }
       });
       if (foundEventTypes.length !== eventTypeIds.length) {
-        const allowedIds = foundEventTypes.map((et) => et.eventTypeId);
-        eventTypeIds.splice(0, eventTypeIds.length, ...allowedIds);
+        const missingIds = eventTypeIds.filter((id) => !foundEventTypes.some((eventType) => eventType.eventTypeId === id));
+        throw new NotFoundException('Event Type', missingIds.join(', '));
       }
+      const allowedIds = foundEventTypes
+        .filter((eventType) => canCreateAdminEventTypes || !eventType.onlyAdminsOrAboveForEventCreation)
+        .map((eventType) => eventType.eventTypeId);
+      eventTypeIds.splice(0, eventTypeIds.length, ...allowedIds);
     }
 
     // validate eventIds

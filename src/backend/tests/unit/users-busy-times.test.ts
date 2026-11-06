@@ -69,6 +69,7 @@ describe('Get User Busy Times', () => {
       false, // documents
       false, // description
       false, // onlyHeadsOrAbove
+      false, // onlyAdminsOrAbove
       false, // requiresConfirmation
       false, // sendSlackNotifications
       false // takeAttendance
