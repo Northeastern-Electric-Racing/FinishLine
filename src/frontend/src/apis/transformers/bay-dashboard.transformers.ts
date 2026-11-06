@@ -1,4 +1,4 @@
-import { BayDashboardConfig, BayDashboardCountdown } from 'shared';
+import { BayDashboardConfig, BayDashboardCountdown, PublicBayDashboardCalendarEvent } from 'shared';
 
 export const bayDashboardConfigTransformer = (config: BayDashboardConfig): BayDashboardConfig => {
   return {
@@ -12,5 +12,15 @@ export const bayDashboardCountdownTransformer = (countdown: BayDashboardCountdow
     ...countdown,
     startDate: new Date(countdown.startDate),
     endDate: countdown.endDate ? new Date(countdown.endDate) : undefined
+  };
+};
+
+export const publicBayDashboardCalendarEventTransformer = (
+  event: PublicBayDashboardCalendarEvent
+): PublicBayDashboardCalendarEvent => {
+  return {
+    ...event,
+    startTime: new Date(event.startTime),
+    endTime: new Date(event.endTime)
   };
 };

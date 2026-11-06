@@ -104,7 +104,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
           overflowY: 'auto'
         }}
       >
-        <WidgetSelection selection={selection} onSelectionChange={setSelection} />
+        <WidgetSelection selection={selection} onSelectionChange={setSelection} slug={organization?.slug} />
       </Box>
     </Box>
   );
