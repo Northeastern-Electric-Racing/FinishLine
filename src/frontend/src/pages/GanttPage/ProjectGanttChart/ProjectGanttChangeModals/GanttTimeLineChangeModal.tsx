@@ -124,19 +124,27 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
       }
       if (createdChangeRequests > 0) toast.success(`Created ${createdChangeRequests} change request(s)`);
 
-      createdWorkPackages.forEach(async (workPackage) => {
-        const duration = dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week');
-        await createSingleWorkPackage({
-          projectWbsNum: project.wbsNum,
-          name: workPackage.name,
-          startDate: dateToMidnightUTC(workPackage.startDate).toISOString(),
-          duration,
-          stage: workPackage.stage ?? 'NONE',
-          blockedBy: [],
-          descriptionBullets: []
-        });
-      });
-      if (createdWorkPackages.length > 0) toast.success('Successfully Created Work Packages');
+      // one at a time, so each new WP gets the next number and the popups are accurate
+      let createdWorkPackageCount = 0;
+      for (const workPackage of createdWorkPackages) {
+        try {
+          await createSingleWorkPackage({
+            projectWbsNum: project.wbsNum,
+            name: workPackage.name,
+            startDate: dateToMidnightUTC(workPackage.startDate).toISOString(),
+            duration: dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week'),
+            stage: workPackage.stage ?? 'NONE',
+            blockedBy: [],
+            descriptionBullets: []
+          });
+          createdWorkPackageCount++;
+        } catch (error) {
+          toast.error(
+            `Failed to create work package ${workPackage.name}: ${error instanceof Error ? error.message : error}`
+          );
+        }
+      }
+      if (createdWorkPackageCount > 0) toast.success(`Created ${createdWorkPackageCount} work package(s)`);
 
       if (createdTasks.length > 0) {
         for (const task of createdTasks) {
