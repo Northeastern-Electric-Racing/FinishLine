@@ -17,7 +17,7 @@ import BayDashboardGrid from '../../BayDashboardPage/components/BayDashboardGrid
 
 interface PreviewDashboardProps {
   selection: BayDashboardWidgetSelection;
-  slug?: string;
+  slug: string;
 }
 
 const frameSx = { border: '2px solid white', borderRadius: '4px', width: '100%', aspectRatio: '16 / 9' };

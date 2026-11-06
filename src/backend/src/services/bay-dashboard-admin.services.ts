@@ -183,6 +183,7 @@ export default class BayDashboardAdminService {
    * @param organization the organization the countdown belongs to
    * @param name the name of the countdown
    * @param startDate the date the countdown starts from
+   * @param isPrimary whether this is the countdown shown in the large gauge, unsets any other primary countdown
    * @param endDate the date the countdown ends, if it has one
    * @returns the created countdown
    */
@@ -191,6 +192,7 @@ export default class BayDashboardAdminService {
     organization: Organization,
     name: string,
     startDate: Date,
+    isPrimary: boolean,
     endDate?: Date
   ): Promise<BayDashboardCountdown> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
@@ -201,15 +203,26 @@ export default class BayDashboardAdminService {
       throw new HttpException(400, 'End date must be after start date');
     }
 
-    const countdown = await prisma.bay_Dashboard_Countdown.create({
-      data: {
-        name,
-        startDate,
-        endDate,
-        organizationId: organization.organizationId,
-        userCreatedId: submitter.userId
-      },
-      ...getBayDashboardCountdownQueryArgs()
+    const countdown = await prisma.$transaction(async (tx) => {
+      // only one countdown per organization can be primary
+      if (isPrimary) {
+        await tx.bay_Dashboard_Countdown.updateMany({
+          where: { organizationId: organization.organizationId, isPrimary: true, dateDeleted: null },
+          data: { isPrimary: false }
+        });
+      }
+
+      return tx.bay_Dashboard_Countdown.create({
+        data: {
+          name,
+          startDate,
+          endDate,
+          isPrimary,
+          organizationId: organization.organizationId,
+          userCreatedId: submitter.userId
+        },
+        ...getBayDashboardCountdownQueryArgs()
+      });
     });
 
     return bayDashboardCountdownTransformer(countdown);
@@ -259,6 +272,7 @@ export default class BayDashboardAdminService {
    * @param organization the organization it belongs to
    * @param name the new name of the countdown
    * @param startDate the new start date of the countdown
+   * @param isPrimary whether this is the countdown shown in the large gauge, unsets any other primary countdown
    * @param endDate the new end date of the countdown, cleared if not given
    * @returns the edited countdown
    */
@@ -268,6 +282,7 @@ export default class BayDashboardAdminService {
     organization: Organization,
     name: string,
     startDate: Date,
+    isPrimary: boolean,
     endDate?: Date
   ): Promise<BayDashboardCountdown> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
@@ -294,10 +309,25 @@ export default class BayDashboardAdminService {
       throw new InvalidOrganizationException('Bay Dashboard Countdown');
     }
 
-    const updatedCountdown = await prisma.bay_Dashboard_Countdown.update({
-      where: { bayDashboardCountdownId: countdownId },
-      data: { name: trimmedName, startDate, endDate: endDate ?? null },
-      ...getBayDashboardCountdownQueryArgs()
+    const updatedCountdown = await prisma.$transaction(async (tx) => {
+      // only one countdown per organization can be primary
+      if (isPrimary) {
+        await tx.bay_Dashboard_Countdown.updateMany({
+          where: {
+            organizationId: organization.organizationId,
+            isPrimary: true,
+            dateDeleted: null,
+            bayDashboardCountdownId: { not: countdownId }
+          },
+          data: { isPrimary: false }
+        });
+      }
+
+      return tx.bay_Dashboard_Countdown.update({
+        where: { bayDashboardCountdownId: countdownId },
+        data: { name: trimmedName, startDate, endDate: endDate ?? null, isPrimary },
+        ...getBayDashboardCountdownQueryArgs()
+      });
     });
 
     return bayDashboardCountdownTransformer(updatedCountdown);

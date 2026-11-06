@@ -7,9 +7,10 @@ import { Box } from '@mui/material';
 import { BayDashboardWidgetSize, PublicBayDashboardSlot } from 'shared';
 import { BAY_DASHBOARD_BACKGROUND, defaultBayDashboardSlots, widgetHeights } from '../../../utils/bay-dashboard.utils';
 import BayDashboardWidgetView from './widgets/BayDashboardWidgetView';
+import CountdownWidget from './widgets/CountdownWidget';
 interface BayDashboardGridProps {
   slots: PublicBayDashboardSlot[];
-  slug?: string;
+  slug: string;
 }
 
 const gridAreas: Record<BayDashboardWidgetSize, string> = {
@@ -42,7 +43,10 @@ const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, slug }) => {
           background: BAY_DASHBOARD_BACKGROUND
         }}
       >
-        {/* weather and date/time go in "header", the countdown widget goes in "countdown" */}
+        {/* weather and date/time go in "header" */}
+        <Box sx={{ gridArea: 'countdown', minWidth: 0, minHeight: 0 }}>
+          <CountdownWidget slug={slug} />
+        </Box>
         {defaultBayDashboardSlots.map(({ size, position, widgets: [defaultWidget] }) => {
           // fall back to the size's default widget when nothing is picked for it or the picked widget can't be shown
           const widget = slots.find((slot) => slot.size === size)?.widgets[0] ?? defaultWidget;

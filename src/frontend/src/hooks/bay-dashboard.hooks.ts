@@ -8,15 +8,19 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   AvailableBayDashboardWidgets,
   BayDashboardConfig,
+  BayDashboardCountdown,
+  BayDashboardCountdownCreateArgs,
   BayDashboardSlotCreateArgs,
   PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig
 } from 'shared';
 import { apiUrls } from '../utils/urls';
 import {
+  createBayDashboardCountdown,
   getAvailableBayDashboardWidgets,
   getBayDashboardCalendarEvents,
   getBayDashboardConfig,
+  getBayDashboardCountdowns,
   getCurrentBayDashboardConfig,
   saveBayDashboardConfig
 } from '../apis/bay-dashboard.api';
@@ -59,6 +63,39 @@ export const useGetBayDashboardCalendarEvents = (slug?: string) => {
       return data;
     },
     { enabled: !!slug, refetchInterval: 5 * 60 * 1000 }
+  );
+};
+
+/**
+ * Custom React Hook to get an organization's bay dashboard countdowns, for the TV, the Admin Tools preview and the countdown table.
+ * The key sits under ['bay-dashboard', slug] so the server's update events refetch it on the TV.
+ * @param slug the organization slug
+ */
+export const useGetBayDashboardCountdowns = (slug: string) => {
+  return useQuery<BayDashboardCountdown[], Error>(['bay-dashboard', slug, 'countdowns'], async () => {
+    const { data } = await getBayDashboardCountdowns(slug);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to create a bay dashboard countdown.
+ * Errors are left to the caller, the create modal's form submit toasts them.
+ * @param slug the organization slug, whose countdowns are refetched after creating
+ */
+export const useCreateBayDashboardCountdown = (slug: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<BayDashboardCountdown, Error, BayDashboardCountdownCreateArgs>(
+    ['bay-dashboard', 'admin', 'countdown', 'create'],
+    async (countdown: BayDashboardCountdownCreateArgs) => {
+      const { data } = await createBayDashboardCountdown(countdown);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['bay-dashboard', slug, 'countdowns']);
+      }
+    }
   );
 };
 
