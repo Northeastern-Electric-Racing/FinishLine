@@ -59,7 +59,8 @@ export const useGetBayDashboardCalendarEvents = (slug?: string) => {
   return useQuery<PublicBayDashboardCalendarEvent[], Error>(
     ['bay-dashboard', slug, 'calendar'],
     async () => {
-      const { data } = await getBayDashboardCalendarEvents(slug!);
+      if (!slug) throw new Error('Cannot get calendar events without an organization');
+      const { data } = await getBayDashboardCalendarEvents(slug);
       return data;
     },
     { enabled: !!slug, refetchInterval: 5 * 60 * 1000 }
