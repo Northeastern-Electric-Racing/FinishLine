@@ -4,9 +4,9 @@
  */
 
 import { Box, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useGetBayDashboardCountdowns } from '../../../../hooks/bay-dashboard.hooks';
+import { useNow } from '../../../../hooks/utils.hooks';
 import { getCountdownDisplay, pickDisplayedCountdowns } from '../../../../utils/bay-dashboard-countdown.utils';
 
 interface CountdownWidgetProps {
@@ -22,20 +22,6 @@ const GAUGE_ARC = 'M 20 100 A 80 80 0 0 1 180 100';
 const CLOCK_TICK_MS = 60 * 1000;
 
 const textSx = { fontFamily: 'Oswald, sans-serif', fontWeight: 400, color: 'white', lineHeight: 1 };
-
-/**
- * The current time, updated every tick. The TV stays open for days, so the day count has to follow the clock.
- */
-const useNow = (tickMs: number): Date => {
-  const [now, setNow] = useState(() => new Date());
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(new Date()), tickMs);
-    return () => clearInterval(interval);
-  }, [tickMs]);
-
-  return now;
-};
 
 const CountdownMessage: React.FC<{ message: string }> = ({ message }) => (
   <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
