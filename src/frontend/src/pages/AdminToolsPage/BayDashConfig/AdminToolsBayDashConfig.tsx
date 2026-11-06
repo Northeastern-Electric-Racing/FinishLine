@@ -3,13 +3,111 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box } from '@mui/material';
+import { Box, Theme, Typography } from '@mui/material';
+import { SystemStyleObject } from '@mui/system';
+import { useState } from 'react';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { NERButton } from '../../../components/NERButton';
+import { useGetCurrentBayDashboardConfig, useSaveBayDashboardConfig } from '../../../hooks/bay-dashboard.hooks';
+import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
+import { applyWidgetSelection, BayDashboardWidgetSelection, toSlotCreateArgs } from '../../../utils/bay-dashboard.utils';
+import ErrorPage from '../../ErrorPage';
+import CountdownTable from './CountdownTable';
+import PreviewDashboard from './PreviewDashboard';
+import WidgetSelection from './WidgetSelection';
+
+const widgetBoxSx: SystemStyleObject<Theme> = {
+  bgcolor: (theme) => (theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[300]),
+  borderRadius: 4,
+  minWidth: 300
+};
 
 /**
  * The Bay Dashboard tab in Admin Tools
  */
 const AdminToolsBayDashConfig: React.FC = () => {
-  return <Box></Box>;
+  const [selection, setSelection] = useState<BayDashboardWidgetSelection>({});
+  const hasSelection = Object.values(selection).some((type) => type);
+  const { data: config, isLoading, isError } = useGetCurrentBayDashboardConfig();
+  const { mutate: save, isLoading: isSaving } = useSaveBayDashboardConfig();
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    isError: organizationIsError,
+    error: organizationError
+  } = useCurrentOrganization();
+
+  const toast = useToast();
+
+  const handleClear = () => {
+    setSelection({});
+    toast.success('Successfully cleared widget selections. The preview matches the current TV display.');
+  };
+
+  const handleSave = () => {
+    save(toSlotCreateArgs(applyWidgetSelection(config?.slots ?? [], selection)), { onSuccess: () => setSelection({}) });
+  };
+
+  if (organizationIsError) return <ErrorPage message={organizationError.message} />;
+  if (organizationIsLoading || !organization) return <LoadingIndicator />;
+
+  return (
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+        gridTemplateRows: { md: 'auto auto 1fr' },
+        gap: 4,
+        rowGap: 2,
+        p: 2,
+        boxSizing: 'border-box',
+        width: '100%',
+        aspectRatio: { md: '16 / 10' }
+      }}
+    >
+      <Box
+        sx={{
+          ...widgetBoxSx,
+          gridColumn: { md: 'span 2' },
+          gridRow: { md: 1 },
+          minHeight: { xs: 240, md: 'auto' },
+          p: 2
+        }}
+      >
+        <Typography variant="h5" gutterBottom pl={1}>
+          Preview
+        </Typography>
+        <PreviewDashboard selection={selection} slug={organization.slug} />
+      </Box>
+      <Box sx={{ gridColumn: { md: 'span 2' }, gridRow: { md: 2 }, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+        <NERButton variant="contained" disabled={!hasSelection} onClick={handleClear}>
+          CLEAR
+        </NERButton>
+        <NERButton variant="contained" disabled={!hasSelection || isLoading || isError || isSaving} onClick={handleSave}>
+          SAVE
+        </NERButton>
+      </Box>
+      <Box sx={{ gridColumn: { md: 'span 2' }, gridRow: { md: 3 } }}>
+        <CountdownTable slug={organization.slug} />
+      </Box>
+      <Box
+        sx={{
+          ...widgetBoxSx,
+          gridColumn: { md: 3 },
+          gridRow: { md: '1 / span 3' },
+          minHeight: { xs: 320, md: 0 },
+          p: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          overflowY: 'auto'
+        }}
+      >
+        <WidgetSelection selection={selection} onSelectionChange={setSelection} />
+      </Box>
+    </Box>
+  );
 };
 
 export default AdminToolsBayDashConfig;
