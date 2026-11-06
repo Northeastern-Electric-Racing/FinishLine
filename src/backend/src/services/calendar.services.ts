@@ -2567,19 +2567,13 @@ export default class CalendarService {
    *
    * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
    */
-  static async getFilteredEvents(
-    filters: FilterArgs,
-    organization: Organization,
-    submitter?: User
-  ): Promise<Event[]> {
+  static async getFilteredEvents(filters: FilterArgs, organization: Organization, submitter?: User): Promise<Event[]> {
     const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalIds, startPeriod, endPeriod, statuses } =
       filters;
     const canSeeLeadCalendars =
-      !!submitter &&
-      (await userHasPermission(submitter.userId, organization.organizationId, isLeadership));
+      !!submitter && (await userHasPermission(submitter.userId, organization.organizationId, isLeadership));
     const canCreateAdminEventTypes =
-      !!submitter &&
-      (await userHasPermission(submitter.userId, organization.organizationId, isAdmin));
+      !!submitter && (await userHasPermission(submitter.userId, organization.organizationId, isAdmin));
 
     // validate memberIds
     if (memberIds?.length) {
@@ -2637,8 +2631,7 @@ export default class CalendarService {
           organization: { organizationId: organization.organizationId },
           dateDeleted: null,
           ...(canCreateAdminEventTypes ? {} : { onlyAdminsOrAboveForEventCreation: false })
-        }
-        ,
+        },
         select: { eventTypeId: true }
       });
       if (foundEventTypes.length !== eventTypeIds.length) {
@@ -2797,11 +2790,7 @@ export default class CalendarService {
   }
 
   static async getAllCalendars(submitter: User, organization: Organization): Promise<Calendar[]> {
-    const canSeeLeadCalendar = await userHasPermission(
-      submitter.userId,
-      organization.organizationId,
-      isLeadership
-    );
+    const canSeeLeadCalendar = await userHasPermission(submitter.userId, organization.organizationId, isLeadership);
     const calendars = await prisma.calendar.findMany({
       where: {
         organizationId: organization.organizationId,

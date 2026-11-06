@@ -66,7 +66,13 @@ const CalendarModal: React.FC<BaseCalendarModalProps> = ({ open, onClose, onSubm
       };
       reset(frozenValuesRef.current);
     } else {
-      frozenValuesRef.current = { name: '', description: '', colorHexCode: '', isNewMemberCalendar: false, isLeadCalendar: false };
+      frozenValuesRef.current = {
+        name: '',
+        description: '',
+        colorHexCode: '',
+        isNewMemberCalendar: false,
+        isLeadCalendar: false
+      };
       reset(frozenValuesRef.current);
     }
   }, [open, initialValues, reset]);
