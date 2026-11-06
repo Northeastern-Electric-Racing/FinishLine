@@ -3,7 +3,6 @@ CREATE TABLE "Date_Marker" (
     "dateMarkerId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "date" DATE NOT NULL,
-    "color" TEXT,
     "userCreatedId" TEXT NOT NULL,
     "userDeletedId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

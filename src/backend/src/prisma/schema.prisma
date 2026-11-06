@@ -1570,7 +1570,6 @@ model Date_Marker {
   dateMarkerId   String       @id @default(uuid())
   name           String
   date           DateTime     @db.Date
-  color          String?
   userCreatedId  String
   userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "dateMarkerCreator")
   userDeletedId  String?
