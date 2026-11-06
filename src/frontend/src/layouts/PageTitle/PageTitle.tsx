@@ -12,6 +12,7 @@ interface PageTitleProps {
   headerRight?: ReactNode;
   tabs?: ReactElement;
   sticky?: boolean;
+  titleColumns?: number;
 }
 
 /**
@@ -21,8 +22,9 @@ interface PageTitleProps {
  * @param tabs The tabs on the page to display.
  * @param sticky whether or not the header should be sticky
  * @param chips Oval next to the title
+ * @param titleColumns how many of the 12 grid columns the title takes up on medium and larger screens
  **/
-const PageTitle: React.FC<PageTitleProps> = ({ title, headerRight, tabs, sticky, chips }) => {
+const PageTitle: React.FC<PageTitleProps> = ({ title, headerRight, tabs, sticky, chips, titleColumns = 4 }) => {
   return (
     <>
       <Box
@@ -36,7 +38,7 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, headerRight, tabs, sticky,
       >
         <Grid container>
           <Grid container item md={12} display="flex" alignItems={'center'}>
-            <Grid md={4} xs={12} display="flex">
+            <Grid md={titleColumns} xs={12} display="flex">
               <Typography
                 flexGrow={1}
                 variant="h4"

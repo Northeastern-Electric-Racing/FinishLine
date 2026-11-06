@@ -13,10 +13,12 @@ import {
   applyChangesToWBSElement,
   constructCollectionsFromTeamPreviewAndProjects,
   constructFinalizedChanges,
+  DEFAULT_GANTT_TIME_WINDOW,
   GanttChange,
   GanttCollection,
   GanttFilters,
   GanttTask,
+  GanttTimeWindow,
   isProjectPreview,
   RequestEventChange,
   transformProjectToGanttTask,
@@ -28,6 +30,7 @@ import PageLayout from '../../../components/PageLayout';
 import { SearchBar } from '../../../components/SearchBar';
 import GanttChartColorLegend from './GanttChartColorLegend';
 import GanttChartFiltersButton from './GanttChartFiltersButton';
+import GanttTimeWindowDropdown from './GanttTimeWindowDropdown';
 import GanttChart from '../GanttChart/GanttChart';
 import {
   ProjectGantt,
@@ -83,6 +86,7 @@ const ProjectGanttChartPage: FC = () => {
   const { selectedCar, allCars, isLoading: carFilterLoading } = useGlobalCarFilter();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
+  const [timeWindow, setTimeWindow] = useState<GanttTimeWindow>(DEFAULT_GANTT_TIME_WINDOW);
   const [addedProjects, setAddedProjects] = useState<ProjectGantt[]>([]);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
@@ -629,6 +633,15 @@ const ProjectGanttChartPage: FC = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
+  const chips = (
+    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mr: 1 }}>
+      <Box sx={{ flexGrow: 1 }}>
+        <SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />
+      </Box>
+      <GanttTimeWindowDropdown timeWindow={timeWindow} onChange={setTimeWindow} />
+    </Box>
+  );
+
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />
@@ -652,13 +665,10 @@ const ProjectGanttChartPage: FC = () => {
       {requestEventChanges.map((change) => (
         <GanttRequestChangeModal change={change} open handleClose={(didCancel) => removeActiveModal(change, didCancel)} />
       ))}
-      <PageLayout
-        title="Gantt Chart"
-        chips={<SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />}
-        headerRight={headerRight}
-      >
+      <PageLayout title="Gantt Chart" chips={chips} headerRight={headerRight} titleColumns={3}>
         <GanttChart
           collections={collections}
+          timeWindow={timeWindow}
           startDate={startDate}
           endDate={endDate}
           editability={{
