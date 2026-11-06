@@ -17,6 +17,7 @@ import {
 import { apiUrls } from '../utils/urls';
 import {
   createBayDashboardCountdown,
+  editBayDashboardCountdown,
   getAvailableBayDashboardWidgets,
   getBayDashboardCalendarEvents,
   getBayDashboardConfig,
@@ -126,6 +127,35 @@ export const useSaveBayDashboardConfig = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['bay-dashboard', 'admin', 'config']);
         toast.success('Successfully saved widget selections. The TV display has been updated.');
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit a bay dashboard countdown, changing the one the TV is showing.
+ * @param slug the organization slug, whose countdowns are refetched after editing
+ */
+export const useEditBayDashboardCountdown = (slug: string) => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  return useMutation<
+    BayDashboardCountdown,
+    Error,
+    { countdownId: string; name: string; startDate: Date; isPrimary: boolean; endDate?: Date }
+  >(
+    ['bay-dashboard', 'admin', 'countdown', 'edit'],
+    async ({ countdownId, name, startDate, isPrimary, endDate }) => {
+      const { data } = await editBayDashboardCountdown(countdownId, name, startDate, isPrimary, endDate);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['bay-dashboard', slug, 'countdowns']);
+        toast.success('Countdown updated successfully!');
       },
       onError: (error) => {
         toast.error(error.message);
