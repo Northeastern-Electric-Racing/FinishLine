@@ -89,7 +89,7 @@ export interface BaseWbsElement {
   managerId?: string;
 }
 
-// status is still computed from work packages
+/** The fields every project model shares. Excludes status as it's computed from the work packages */
 export interface BaseProject extends BaseWbsElement {
   id: string; // project id
   budget: number;
@@ -98,6 +98,7 @@ export interface BaseProject extends BaseWbsElement {
   carId: string;
 }
 
+/** The fields every work package model shares */
 export interface BaseWorkPackage extends BaseWbsElement {
   id: string; // work package id
   projectId: string;
@@ -109,6 +110,7 @@ export interface BaseWorkPackage extends BaseWbsElement {
   stage?: WorkPackageStage;
 }
 
+/** A work package bar on the gantt chart */
 export interface WorkPackageGanttItem extends BaseWorkPackage {
   lead?: BaseUser;
   manager?: BaseUser;
@@ -116,6 +118,7 @@ export interface WorkPackageGanttItem extends BaseWorkPackage {
   events: EventGanttMarker[];
 }
 
+/** A project bar on the gantt chart, with its work packages and tasks */
 export interface ProjectGanttItem extends BaseProject {
   status: WbsElementStatus;
   lead?: BaseUser;
