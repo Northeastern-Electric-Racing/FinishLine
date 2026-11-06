@@ -245,6 +245,9 @@ export type EventPreview = {
   wbsName: string;
 };
 
+/** An event marker on a work package's gantt chart bar */
+export type EventGanttMarker = Pick<EventPreview, 'eventId' | 'dateScheduled' | 'status' | 'wbsName'>;
+
 export interface EventWithMembers {
   eventId: string;
   title: string;

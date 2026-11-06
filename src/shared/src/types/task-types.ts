@@ -47,6 +47,15 @@ export interface TaskBoardItem extends BaseTask {
   projectName: string;
 }
 
+/**
+ * A task bar on the gantt chart, with its tooltip. Picks from BaseTask instead of extending it: the chart never shows
+ * labels, and selecting them alongside assignees made all-gantt ~6x slower (Postgres JIT-compiles the extra join)
+ */
+export type TaskGanttItem = Pick<BaseTask, 'taskId' | 'wbsNum' | 'title' | 'status' | 'deadline' | 'assignees'> & {
+  startDate?: Date;
+  createdBy: BaseUser;
+};
+
 /** One page of a single status column on the global tasks board */
 export interface TaskBoardItemPage {
   tasks: TaskBoardItem[];

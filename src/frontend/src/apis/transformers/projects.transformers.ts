@@ -5,16 +5,22 @@
 
 import {
   dbDateToLocalDate,
+  BaseProject,
   DescriptionBullet,
   Project,
   ProjectOverview,
   ProjectGantt,
+  ProjectGanttItem,
   ProjectPreview,
   RetrospectiveProjectPreview
 } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
-import { taskTransformer } from './tasks.transformers';
-import { retrospectiveWorkPackageTransformer, workPackageTransformer } from './work-packages.transformers';
+import { taskGanttItemTransformer, taskTransformer } from './tasks.transformers';
+import {
+  retrospectiveWorkPackageTransformer,
+  workPackageGanttItemTransformer,
+  workPackageTransformer
+} from './work-packages.transformers';
 
 /**
  * Transforms a description bullet to ensure deep field transformation of date objects.
@@ -58,6 +64,32 @@ export const retrospectiveProjectPreviewTransformer = (
     originalEndDate: project.originalEndDate ? new Date(project.originalEndDate) : undefined,
     originalStartDate: project.originalStartDate ? new Date(project.originalStartDate) : undefined,
     workPackages: project.workPackages.map(retrospectiveWorkPackageTransformer)
+  };
+};
+
+/**
+ * Transforms any project model that extends BaseProject, converting Base's date fields.
+ *
+ * @param project Incoming project supplied by the HTTP response.
+ * @returns Properly transformed project.
+ */
+export const baseProjectTransformer = <T extends BaseProject>(project: T): T => ({
+  ...project,
+  dateCreated: new Date(project.dateCreated)
+});
+
+/**
+ * Transforms a gantt chart project bar, converting its date fields and those of its work packages and tasks.
+ * Generic so re-parsing a richer project (e.g. one created locally on the gantt) keeps its other fields.
+ *
+ * @param project Incoming gantt project supplied by the HTTP response.
+ * @returns Properly transformed gantt project.
+ */
+export const projectGanttItemTransformer = <T extends ProjectGanttItem>(project: T): T => {
+  return {
+    ...baseProjectTransformer(project),
+    workPackages: project.workPackages.map(workPackageGanttItemTransformer),
+    tasks: project.tasks.map(taskGanttItemTransformer)
   };
 };
 

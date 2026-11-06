@@ -5,38 +5,73 @@
 
 import {
   addWeeksToDate,
-  EventPreview,
+  EventGanttMarker,
   EventStatus,
   isWorkPackage,
-  ProjectGantt,
+  ProjectGanttItem,
   RetrospectiveProjectPreview,
   RetrospectiveWorkPackage,
   Task,
+  TaskGanttItem,
   TaskPriority,
   TaskStatus,
   TeamPreview,
-  User,
+  UserPreview,
   validateWBS,
   WbsElementPreview,
   WbsElementStatus,
   WbsNumber,
   wbsPipe,
-  WorkPackage,
+  WorkPackageGanttItem,
   WorkPackageStage
 } from 'shared';
 import { fullNamePipe, projectWbsPipe } from './pipes';
 import dayjs from 'dayjs';
 import { deepOrange, green, grey, indigo, orange, pink } from '@mui/material/colors';
-import { projectGanttTransformer } from '../apis/transformers/projects.transformers';
+import { projectGanttItemTransformer } from '../apis/transformers/projects.transformers';
 import { ReactNode, useEffect, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Typography, useTheme } from '@mui/material';
 import { routes } from './routes';
-import { workPackageTransformer } from '../apis/transformers/work-packages.transformers';
+import { workPackageGanttItemTransformer } from '../apis/transformers/work-packages.transformers';
 import { useHistory } from 'react-router-dom';
 import { useQuery } from '../hooks/utils.hooks';
 
 export const NO_TEAM = 'No Team';
+
+/*
+ * What the shared gantt helpers read from a work package and a project, picked from the all-gantt models so other
+ * gantt views (the retrospective and the project page's work package chart) fit too. Tasks and events need no picks:
+ * TaskGanttItem and EventGanttMarker already hold only what the chart reads.
+ */
+export type GanttWorkPackageInput = Pick<
+  WorkPackageGanttItem,
+  | 'id'
+  | 'wbsElementId'
+  | 'wbsNum'
+  | 'name'
+  | 'status'
+  | 'stage'
+  | 'dateCreated'
+  | 'deleted'
+  | 'startDate'
+  | 'endDate'
+  | 'lead'
+  | 'manager'
+  | 'blocking'
+  | 'events'
+>;
+
+export type GanttProjectInput = Pick<
+  ProjectGanttItem,
+  'id' | 'wbsElementId' | 'wbsNum' | 'name' | 'status' | 'dateCreated' | 'deleted' | 'lead' | 'manager' | 'teams'
+> & {
+  // only retrospective projects carry these; they're the fallback when a project has no dated work packages or tasks
+  startDate?: Date;
+  endDate?: Date;
+  workPackages: GanttWorkPackageInput[];
+  tasks: TaskGanttItem[];
+};
 
 export const GANTT_CHART_GAP_SIZE = '0.75rem';
 
@@ -133,7 +168,7 @@ export type RequestEventChange<T> = {
   type: 'create-task' | 'edit-task';
 };
 
-export const getProjectStartDate = (project: ProjectGantt): Date => {
+export const getProjectStartDate = (project: GanttProjectInput): Date => {
   const candidates: Date[] = [
     ...project.workPackages.map((wp) => wp.startDate),
     ...project.tasks.map((t) => t.startDate).filter((d): d is Date => !!d)
@@ -142,7 +177,7 @@ export const getProjectStartDate = (project: ProjectGantt): Date => {
   return new Date(Math.min(...candidates.map((d) => d.valueOf())));
 };
 
-export const getProjectEndDate = (project: ProjectGantt): Date => {
+export const getProjectEndDate = (project: GanttProjectInput): Date => {
   const candidates: Date[] = [
     ...project.workPackages.map((wp) => wp.endDate),
     ...project.tasks.map((t) => t.deadline).filter((d): d is Date => !!d)
@@ -151,7 +186,7 @@ export const getProjectEndDate = (project: ProjectGantt): Date => {
   return new Date(Math.max(...candidates.map((d) => d.valueOf())));
 };
 
-export const transformDesignReviewEventToGanttEvent = (event: EventPreview): GanttEvent => {
+export const transformDesignReviewEventToGanttEvent = (event: EventGanttMarker): GanttEvent => {
   return {
     date: event.dateScheduled,
     color: ganttDesignReviewEventStatusColorPipe(event.status),
@@ -167,9 +202,9 @@ export const transformDesignReviewEventToGanttEvent = (event: EventPreview): Gan
  * @param changeToApply The change to apply to all the blocked work package
  */
 const applyChangesToBlockedBy = (
-  initialWorkPackage: WorkPackage,
-  totalWorkPackages: WorkPackage[],
-  changeToApply: GanttChange<WbsElementPreview | Task>
+  initialWorkPackage: WorkPackageGanttItem,
+  totalWorkPackages: WorkPackageGanttItem[],
+  changeToApply: GanttChange<WbsElementPreview | TaskGanttItem>
 ) => {
   const updatedBlockingWbsNums: Set<String> = new Set();
 
@@ -212,18 +247,18 @@ const applyChangesToBlockedBy = (
  * @param parentProject The parent project of the wbs element, itself if it is a project
  */
 export const applyChangesToWBSElement = (
-  ganttChanges: GanttChange<WbsElementPreview | Task>[],
-  wbsElement: WbsElementPreview | Task,
-  parentProject: ProjectGantt
-): { updatedProject: ProjectGantt; updatedElement: WbsElementPreview | Task } => {
+  ganttChanges: GanttChange<WbsElementPreview | TaskGanttItem>[],
+  wbsElement: WbsElementPreview | TaskGanttItem,
+  parentProject: ProjectGanttItem
+): { updatedProject: ProjectGanttItem; updatedElement: WbsElementPreview | TaskGanttItem } => {
   const updatedElement = { ...wbsElement };
-  const copiedProject = projectGanttTransformer(JSON.parse(JSON.stringify(parentProject)));
+  const copiedProject: ProjectGanttItem = projectGanttItemTransformer(JSON.parse(JSON.stringify(parentProject)));
 
   // Check if it's a Task
-  if ((updatedElement as Task).taskId !== undefined) {
-    const task = updatedElement as Task;
+  if ((updatedElement as TaskGanttItem).taskId !== undefined) {
+    const task = updatedElement as TaskGanttItem;
     for (const change of ganttChanges) {
-      if ((change.element as Task).taskId === task.taskId) {
+      if ((change.element as TaskGanttItem).taskId === task.taskId) {
         // Apply changes to the task
         if (change.type === 'shift-by-days') {
           // For tasks, we shift the deadline by the specified number of days
@@ -248,7 +283,7 @@ export const applyChangesToWBSElement = (
 
   if ((updatedElement as WbsElementPreview).wbsNum !== undefined && isWorkPackage(updatedElement as WbsElementPreview)) {
     // If its a work package were gonna loop through and see if we need to apply changes
-    const workPackage = workPackageTransformer(JSON.parse(JSON.stringify(updatedElement)));
+    const workPackage: WorkPackageGanttItem = workPackageGanttItemTransformer(JSON.parse(JSON.stringify(updatedElement)));
     for (const change of ganttChanges) {
       if (wbsPipe(change.element.wbsNum) === wbsPipe(wbsElement.wbsNum)) {
         // If the change is for this work package then were gonna apply it
@@ -291,14 +326,14 @@ export interface GanttTask<T> extends GanttTaskData<T> {}
  * @param searchText The search text to apply
  * @param team The team the projects are on
  */
-export const filterGanttProjects = <T extends ProjectGantt>(
+export const filterGanttProjects = <T extends GanttProjectInput>(
   projects: T[],
   ganttFilters: GanttFilters,
   searchText: string,
   team: TeamPreview,
   reparser: (project: T) => T
 ) => {
-  let deepCopy: ProjectGantt[] = JSON.parse(JSON.stringify(projects)).map(reparser);
+  let deepCopy: GanttProjectInput[] = JSON.parse(JSON.stringify(projects)).map(reparser);
 
   // Show only projects on this team
   deepCopy = deepCopy.filter((project) => project.teams.some((projectTeam) => projectTeam.teamId === team.teamId));
@@ -377,7 +412,7 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters, additionalPar
   return newParams;
 };
 
-const UserDisplay = ({ user, label }: { user?: User; label: string }) => {
+const UserDisplay = ({ user, label }: { user?: UserPreview; label: string }) => {
   const theme = useTheme();
   return (
     <Typography color={theme.palette.text.primary}>
@@ -386,7 +421,7 @@ const UserDisplay = ({ user, label }: { user?: User; label: string }) => {
   );
 };
 
-const getBlockingGanttTasks = <T extends WorkPackage>(
+const getBlockingGanttTasks = <T extends GanttWorkPackageInput>(
   workPackage: T,
   allWorkPackages: T[],
   transformation: (wp: T, all: T[]) => GanttTaskData<T>
@@ -402,7 +437,7 @@ const getBlockingGanttTasks = <T extends WorkPackage>(
     .filter((wp) => !!wp);
 };
 
-export const transformTaskToGanttTask = <T extends Task>(task: T, end: Date): GanttTask<T> => {
+export const transformTaskToGanttTask = <T extends TaskGanttItem>(task: T, end: Date): GanttTask<T> => {
   return {
     id: task.taskId,
     element: task,
@@ -429,7 +464,7 @@ export const transformTaskToGanttTask = <T extends Task>(task: T, end: Date): Ga
   };
 };
 
-export const transformWorkPackageToGanttTask = <T extends WorkPackage>(
+export const transformWorkPackageToGanttTask = <T extends GanttWorkPackageInput>(
   workPackage: T,
   allWorkPackages: T[]
 ): GanttTask<T> => {
@@ -460,9 +495,9 @@ export const transformWorkPackageToGanttTask = <T extends WorkPackage>(
 };
 
 export const transformProjectToGanttTask = (
-  project: ProjectGantt,
+  project: GanttProjectInput,
   hideTasks: boolean = false
-): GanttTask<WbsElementPreview | Task> => {
+): GanttTask<WbsElementPreview | TaskGanttItem> => {
   const startDate = getProjectStartDate(project);
 
   const endDate = getProjectEndDate(project);
@@ -498,7 +533,7 @@ export const transformProjectToGanttTask = (
 export const transformRetrospectiveProjectToGanttTask = (
   project: RetrospectiveProjectPreview,
   showTasks: boolean = true
-): GanttTask<WbsElementPreview | Task> => {
+): GanttTask<WbsElementPreview | TaskGanttItem> => {
   return {
     ...transformProjectToGanttTask(project, showTasks),
     children: project.workPackages
@@ -525,15 +560,15 @@ export const transformRetrospectiveWorkPackageToGanttTask = (
   };
 };
 
-export const constructCollectionsFromTeamPreviewAndProjects = <T extends ProjectGantt>(
+export const constructCollectionsFromTeamPreviewAndProjects = <T extends GanttProjectInput>(
   teams: TeamPreview[],
   projects: T[],
   filters: GanttFilters,
   searchText: string,
-  projectTransformation: (project: T, hideTasks?: boolean) => GanttTaskData<WbsElementPreview | Task>,
+  projectTransformation: (project: T, hideTasks?: boolean) => GanttTaskData<WbsElementPreview | TaskGanttItem>,
   reparser: (project: T) => T
-): GanttCollection<TeamPreview, WbsElementPreview | Task>[] => {
-  const projectMap = new Map<string, ProjectGantt[]>();
+): GanttCollection<TeamPreview, WbsElementPreview | TaskGanttItem>[] => {
+  const projectMap = new Map<string, GanttProjectInput[]>();
   projects.forEach((project) => {
     project.teams.forEach((team) => {
       if (projectMap.has(team.teamId)) {
@@ -547,7 +582,7 @@ export const constructCollectionsFromTeamPreviewAndProjects = <T extends Project
   const hideTasks = filters.hideTasks ?? false;
 
   return teams.map((team) => ({
-    id: uuidv4(),
+    id: team.teamId,
     element: team,
     tasks: filterGanttProjects((projectMap.get(team.teamId) ?? []) as T[], filters, searchText, team, reparser).map(
       (project) => projectTransformation(project as T, hideTasks)
@@ -659,9 +694,9 @@ export const isHighlightedChangeOnGanttTask = <T,>(
 };
 
 export const constructFinalizedChanges = (
-  originalProjects: ProjectGantt[],
-  updatedProjects: ProjectGantt[],
-  changes: GanttChange<WbsElementPreview | Task>[]
+  originalProjects: ProjectGanttItem[],
+  updatedProjects: ProjectGanttItem[],
+  changes: GanttChange<WbsElementPreview | TaskGanttItem>[]
 ) => {
   const aggregatedSet: Set<string> = new Set();
 
@@ -701,7 +736,14 @@ export const constructFinalizedChanges = (
   return eventChanges;
 };
 
-export const isProjectPreview = (wbsPreview: WbsElementPreview | Task): wbsPreview is ProjectGantt => {
+/**
+ * Tasks created on the gantt are full Tasks (built in the page's handleAddTaskInfo), while tasks loaded for the gantt
+ * only carry what the chart shows. Creating a task needs its full fields, so this checks they're actually there.
+ */
+export const isCreatableTask = (task: TaskGanttItem | Task): task is Task =>
+  'notes' in task && 'labels' in task && 'blockedBy' in task && 'priority' in task;
+
+export const isProjectPreview = (wbsPreview: WbsElementPreview | TaskGanttItem): wbsPreview is ProjectGanttItem => {
   return 'workPackages' in wbsPreview;
 };
 

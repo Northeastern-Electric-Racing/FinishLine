@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args.js';
 import { getUserQueryArgs } from './user.query-args.js';
-import { getTeamQueryArgs } from './teams.query-args.js';
+import { getBaseTeamQueryArgs } from './teams.query-args.js';
 
 export type WorkPackageTemplateQueryArgs = ReturnType<typeof getWorkPackageTemplateQueryArgs>;
 export type ProjectTemplateQueryArgs = ReturnType<typeof getProjectTemplateQueryArgs>;
@@ -41,8 +41,6 @@ export const getProjectTemplateQueryArgs = (organizationId: string) =>
         orderBy: { wbsElementTemplate: { dateCreated: 'asc' } },
         ...getWorkPackageTemplateQueryArgs(organizationId)
       },
-      teams: {
-        ...getTeamQueryArgs(organizationId)
-      }
+      teams: getBaseTeamQueryArgs()
     }
   });

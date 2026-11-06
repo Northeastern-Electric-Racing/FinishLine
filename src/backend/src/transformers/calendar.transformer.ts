@@ -12,6 +12,7 @@ import {
   Calendar,
   Event,
   ScheduleSlot,
+  EventGanttMarker,
   EventStatus,
   EventPreview,
   DayOfWeek,
@@ -21,7 +22,11 @@ import {
 } from 'shared';
 import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
-import { EventQueryArgs, EventWithMembersQueryArgs } from '../prisma-query-args/event.query-args.js';
+import {
+  EventGanttMarkerQueryArgs,
+  EventQueryArgs,
+  EventWithMembersQueryArgs
+} from '../prisma-query-args/event.query-args.js';
 import { ShopMachineryQueryArgs, MachineryQueryArgs } from '../prisma-query-args/machinery.query-args.js';
 import { ShopQueryArgs } from '../prisma-query-args/shop.query-args.js';
 import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer.js';
@@ -235,3 +240,14 @@ export const eventStatusTransformer = (status: PrismaEventStatus): EventStatus =
   };
   return mapping[status];
 };
+
+export const eventGanttMarkerTransformer = (
+  event: Prisma.EventGetPayload<EventGanttMarkerQueryArgs>,
+  wbsName: string
+): EventGanttMarker => ({
+  eventId: event.eventId,
+  // earliest scheduled slot, or fall back to initialDateScheduled (for confirmation events), or the current date
+  dateScheduled: event.scheduledTimes[0]?.startTime ?? event.initialDateScheduled ?? new Date(),
+  status: eventStatusTransformer(event.status),
+  wbsName
+});

@@ -8,7 +8,7 @@ import {
   LinkType,
   Project,
   ProjectOverview,
-  ProjectGantt,
+  ProjectGanttItem,
   ProjectPreview,
   ProjectDropdownItem,
   WbsNumber,
@@ -19,8 +19,8 @@ import prisma from '../prisma/prisma.js';
 import { getProjectDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
 import { projectDropdownTransformer } from '../transformers/dropdown.transformer.js';
 import projectTransformer, {
+  projectGanttItemTransformer,
   projectOverviewTransformer,
-  projectGanttTransformer,
   projectPreviewTransformer
 } from '../transformers/projects.transformer.js';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
@@ -38,7 +38,7 @@ import { wbsNumOf } from '../utils/utils.js';
 import WorkPackagesService from './work-packages.services.js';
 import { userHasPermission } from '../utils/users.utils.js';
 import {
-  getProjectGanttQueryArgs,
+  getProjectGanttItemQueryArgs,
   getProjectOverviewQueryArgs,
   getProjectPreviewQueryArgs,
   getProjectQueryArgs
@@ -51,15 +51,16 @@ export default class ProjectsService {
    * Get all the non deleted projects in the database for the given organization
    * @param organization the organization the user is currently in
    * @param carId optional car id to filter projects by
-   * @returns all the projects with query args for use in the gantt chart
+   * @returns all the projects, with only the fields the gantt chart uses
    */
-  static async getAllProjectsGantt(organization: Organization, carId?: string): Promise<ProjectGantt[]> {
+  static async getAllProjectsGantt(organization: Organization, carId?: string): Promise<ProjectGanttItem[]> {
     const projects = await prisma.project.findMany({
       where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId }, ...(carId && { carId }) },
-      ...getProjectGanttQueryArgs(organization.organizationId)
+      orderBy: [{ wbsElement: { carNumber: 'asc' } }, { wbsElement: { projectNumber: 'asc' } }],
+      ...getProjectGanttItemQueryArgs()
     });
 
-    return projects.map(projectGanttTransformer);
+    return projects.map(projectGanttItemTransformer);
   }
 
   /**

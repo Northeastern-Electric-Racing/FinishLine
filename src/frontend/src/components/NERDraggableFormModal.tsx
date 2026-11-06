@@ -48,7 +48,8 @@ export const NERDraggableFormModal = ({
               left: '50%',
               backgroundColor: theme.palette.background.paper,
               boxShadow: 24,
-              zIndex: 6,
+              // above page content (the gantt's own layers go up to 6), at MUI's standard modal level
+              zIndex: theme.zIndex.modal,
               width: '40%',
               borderRadius: '8px'
             }}
