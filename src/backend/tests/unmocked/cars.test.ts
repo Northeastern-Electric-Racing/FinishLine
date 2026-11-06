@@ -87,6 +87,21 @@ describe('Cars Tests', () => {
       expect(createdCar.wbsNum.workPackageNumber).toBe(0);
     });
 
+    test('createCar creates an empty executive summary for the car', async () => {
+      const createdCar = await CarsService.createCar(org, adminUser, 'Test Car');
+
+      const executiveSummary = await prisma.executive_Summary.findUnique({ where: { carId: createdCar.id } });
+
+      expect(executiveSummary).not.toBeNull();
+      expect(executiveSummary?.userCreatedId).toBe(adminUser.userId);
+      expect(executiveSummary?.goals).toBe('');
+      expect(executiveSummary?.winsAndImprovements).toBe('');
+      expect(executiveSummary?.budgetNotes).toBe('');
+      expect(executiveSummary?.recruitmentNotes).toBe('');
+      expect(executiveSummary?.seasonStartDate).toBeNull();
+      expect(executiveSummary?.seasonEndDate).toBeNull();
+    });
+
     test('createCar assigns correct car number based on existing cars', async () => {
       // Create first car
       await CarsService.createCar(org, adminUser, 'Car 1');

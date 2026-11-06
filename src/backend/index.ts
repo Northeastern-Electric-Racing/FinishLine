@@ -35,6 +35,7 @@ import agentRouter from './src/routes/agent.routes.js';
 import { mcpNodeHandler } from './src/mcp/handler.js';
 import { attachAuthInfo, requireApiToken } from './src/utils/mcp-auth.utils.js';
 import dashboardsRouter from './src/routes/dashboards.routes.js';
+import execSummaryRouter from './src/routes/exec-summaries.routes.js';
 import { withRequestContext } from './src/utils/request-context.utils.js';
 import { logRequests } from './src/utils/request-logger.utils.js';
 
@@ -148,6 +149,7 @@ app.use('/calendar', calendarRouter);
 app.use('/prospective-sponsors', prospectiveSponsorRouter);
 app.use('/attendance', attendanceRouter);
 app.use('/dashboards', dashboardsRouter);
+app.use('/executive-summaries', execSummaryRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

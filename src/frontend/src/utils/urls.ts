@@ -578,6 +578,13 @@ const dashboardsCreate = () => `${dashboards()}/create`;
 const dashboardEdit = (dashboardId: string) => `${dashboards()}/${dashboardId}/edit`;
 const dashboardDelete = (dashboardId: string) => `${dashboards()}/${dashboardId}/delete`;
 
+/************** Executive Summary Endpoints ***************/
+const executiveSummaries = () => `${API_URL}/executive-summaries`;
+const executiveSummaryById = (id: string) => `${executiveSummaries()}/${id}`;
+const executiveSummaryVehicleDevelopment = (id: string) => `${executiveSummaryById(id)}/vehicle-development`;
+const executiveSummaryBudget = (id: string) => `${executiveSummaryById(id)}/budget`;
+const executiveSummaryEdit = (id: string) => `${executiveSummaries()}/${id}/edit`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -1014,6 +1021,12 @@ export const apiUrls = {
   dashboardsCreate,
   dashboardEdit,
   dashboardDelete,
+
+  executiveSummaries,
+  executiveSummaryById,
+  executiveSummaryVehicleDevelopment,
+  executiveSummaryBudget,
+  executiveSummaryEdit,
 
   version
 };
