@@ -1440,7 +1440,6 @@ model Car {
   linkedGraphs           Graph[]                    @relation(name: "graphCars")
   executiveSummary       Executive_Summary?
   rulesets               Ruleset[]                  @relation(name: "rulesetCar")
-  dateMarkers            Date_Marker[]
 
   @@index([wbsElementId])
 }
@@ -1580,11 +1579,8 @@ model Date_Marker {
   dateDeleted    DateTime?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
-  carId          String?
-  car            Car?         @relation(fields: [carId], references: [carId])
 
   @@index([organizationId])
-  @@index([carId])
 }
 
 model Graph {
