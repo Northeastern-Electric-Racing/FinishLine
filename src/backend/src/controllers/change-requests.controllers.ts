@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import ChangeRequestsService from '../services/change-requests.services.js';
 import { validateWBS, WbsNumber } from 'shared';
+import { broadcastBayDashboardUpdate } from '../utils/bay-dashboard-events.utils.js';
 
 export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
@@ -91,6 +92,8 @@ export default class ChangeRequestsController {
         req.organization,
         reviewNotes
       );
+      broadcastBayDashboardUpdate(req.organization.name);
+
       res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
     } catch (error: unknown) {
       next(error);
