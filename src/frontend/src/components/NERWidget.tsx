@@ -34,7 +34,10 @@ const NERWidget: React.FC<NERWidgetProps> = ({ size, title, children }) => {
           bgcolor: 'rgba(255, 255, 255, 0.2)',
           padding: '4cqw',
           border: '1.5px solid rgba(255,255,255,0.15)',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          // lets a widget's content fill the space under the title
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
         {title && (
