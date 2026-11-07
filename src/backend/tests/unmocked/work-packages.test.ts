@@ -1,7 +1,7 @@
 import { Organization, User } from '@prisma/client';
 import prisma from '../../src/prisma/prisma.js';
-import { WorkPackageSelection } from 'shared';
-import { HttpException, NotFoundException } from '../../src/utils/errors.utils.js';
+import { WbsElementStatus, WorkPackageSelection } from 'shared';
+import { NotFoundException } from '../../src/utils/errors.utils.js';
 import {
   createTestCar,
   createTestOrganization,
@@ -112,7 +112,7 @@ describe('Work Package Tests', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('throws when the blocking chain loops back to the starting work package', async () => {
+    it('stops when the blocking chain loops back to the starting work package', async () => {
       const car1 = await createTestCar(orgId, user.userId, 1);
       const proj1 = await createTestProject(user, orgId, undefined, car1.carId, 1, 1);
       const wpA = await createTestWorkPackage(user, orgId, proj1.projectId, 1, 1, 1);
@@ -120,7 +120,26 @@ describe('Work Package Tests', () => {
       await block(wpA, wpB);
       await block(wpB, wpA);
 
-      await expect(WorkPackagesService.getBlockingWorkPackages(wbs(1), organization)).rejects.toThrow(HttpException);
+      const result = await WorkPackagesService.getBlockingWorkPackages(wbs(1), organization);
+
+      expect(result.map((wp) => wp.wbsNum.workPackageNumber)).toEqual([2]);
+    });
+
+    it('returns the nearest blocked work packages first', async () => {
+      const car1 = await createTestCar(orgId, user.userId, 1);
+      const proj1 = await createTestProject(user, orgId, undefined, car1.carId, 1, 1);
+      const wpA = await createTestWorkPackage(user, orgId, proj1.projectId, 1, 1, 1);
+      const wpB = await createTestWorkPackage(user, orgId, proj1.projectId, 1, 1, 2);
+      const wpC = await createTestWorkPackage(user, orgId, proj1.projectId, 1, 1, 3);
+      const wpD = await createTestWorkPackage(user, orgId, proj1.projectId, 1, 1, 4);
+      // A blocks D directly; D blocks C; C blocks B
+      await block(wpA, wpD);
+      await block(wpD, wpC);
+      await block(wpC, wpB);
+
+      const result = await WorkPackagesService.getBlockingWorkPackages(wbs(1), organization);
+
+      expect(result.map((wp) => wp.wbsNum.workPackageNumber)).toEqual([4, 3, 2]);
     });
   });
 
@@ -203,7 +222,7 @@ describe('Work Package Tests', () => {
   describe('getHomePageWorkPackages', () => {
     const weeksFromNow = (weeks: number) => new Date(Date.now() + weeks * 7 * 24 * 60 * 60 * 1000);
 
-    it('only returns overdue work packages for ALL_OVERDUE, with their blockers named', async () => {
+    it('applies an end-date bound, with blockers named', async () => {
       const car1 = await createTestCar(orgId, user.userId, 1);
       const proj1 = await createTestProject(user, orgId, undefined, car1.carId, 1, 1);
       // starts 2024-01-01 for 4 weeks, so long overdue
@@ -214,26 +233,75 @@ describe('Work Package Tests', () => {
       await setStart(future, weeksFromNow(8));
       await block(inProgress, overdue);
 
-      const result = await WorkPackagesService.getHomePageWorkPackages(user, organization, WorkPackageSelection.ALL_OVERDUE);
+      const result = await WorkPackagesService.getHomePageWorkPackages(user, organization, WorkPackageSelection.ALL, {
+        endsBefore: new Date()
+      });
 
       expect(result.map((wp) => wp.id)).toEqual([overdue.workPackageId]);
       expect(result[0].blockedBy).toEqual([{ wbsNum: wbs(2), name: 'WP 1.1.2', projectName: 'Genesis' }]);
     });
 
-    it('leaves out work packages starting more than two weeks out for LEADING', async () => {
+    it('applies start-date bounds and a status', async () => {
+      const car1 = await createTestCar(orgId, user.userId, 1);
+      const proj1 = await createTestProject(user, orgId, undefined, car1.carId, 1, 1);
+      const upcoming = await createTestWorkPackage(user, orgId, proj1.projectId, 1, 1, 1);
+      const later = await createTestWorkPackage(user, orgId, proj1.projectId, 1, 1, 2);
+      const inactiveInProgress = await createTestWorkPackage(user, orgId, proj1.projectId, 1, 1, 3);
+      const activeInProgress = await createTestWorkPackage(user, orgId, proj1.projectId, 1, 1, 4);
+      await setStart(upcoming, weeksFromNow(1));
+      await setStart(later, weeksFromNow(8));
+      await setStart(inactiveInProgress, weeksFromNow(-1));
+      await setStart(activeInProgress, weeksFromNow(-1));
+      await prisma.wBS_Element.update({
+        where: { wbsElementId: inactiveInProgress.wbsElementId },
+        data: { status: 'INACTIVE' }
+      });
+      const now = new Date();
+
+      const upcomingResult = await WorkPackagesService.getHomePageWorkPackages(
+        user,
+        organization,
+        WorkPackageSelection.ALL,
+        {
+          startsAfter: now,
+          startsBefore: weeksFromNow(2)
+        }
+      );
+      const inProgressResult = await WorkPackagesService.getHomePageWorkPackages(
+        user,
+        organization,
+        WorkPackageSelection.ALL,
+        { status: WbsElementStatus.Active, startsBefore: now, endsAfter: now }
+      );
+
+      expect(upcomingResult.map((wp) => wp.id)).toEqual([upcoming.workPackageId]);
+      expect(inProgressResult.map((wp) => wp.id)).toEqual([activeInProgress.workPackageId]);
+    });
+
+    it('leaves out complete work packages unless a status is asked for', async () => {
+      const car1 = await createTestCar(orgId, user.userId, 1);
+      const proj1 = await createTestProject(user, orgId, undefined, car1.carId, 1, 1);
+      const complete = await createTestWorkPackage(user, orgId, proj1.projectId, 1, 1, 1);
+      await prisma.wBS_Element.update({ where: { wbsElementId: complete.wbsElementId }, data: { status: 'COMPLETE' } });
+
+      const result = await WorkPackagesService.getHomePageWorkPackages(user, organization, WorkPackageSelection.ALL, {});
+
+      expect(result).toHaveLength(0);
+    });
+
+    it('only returns work packages on teams the user leads for LEADING', async () => {
       // createTestTeam would make its own team type in a brand new org, so hand it one in ours
       const teamType = await createTestTeamType('aTeam', orgId);
       const team = await createTestTeam(user.userId, teamType.teamTypeId, orgId);
       const car1 = await createTestCar(orgId, user.userId, 1);
-      const proj1 = await createTestProject(user, orgId, team.teamId, car1.carId, 1, 1);
-      const upcoming = await createTestWorkPackage(user, orgId, proj1.projectId, 1, 1, 1);
-      const later = await createTestWorkPackage(user, orgId, proj1.projectId, 1, 1, 2);
-      await setStart(upcoming, weeksFromNow(1));
-      await setStart(later, weeksFromNow(8));
+      const ledProject = await createTestProject(user, orgId, team.teamId, car1.carId, 1, 1);
+      const otherProject = await createTestProject(user, orgId, undefined, car1.carId, 1, 2);
+      const led = await createTestWorkPackage(user, orgId, ledProject.projectId, 1, 1, 1);
+      await createTestWorkPackage(user, orgId, otherProject.projectId, 1, 2, 1);
 
-      const result = await WorkPackagesService.getHomePageWorkPackages(user, organization, WorkPackageSelection.LEADING);
+      const result = await WorkPackagesService.getHomePageWorkPackages(user, organization, WorkPackageSelection.LEADING, {});
 
-      expect(result.map((wp) => wp.id)).toEqual([upcoming.workPackageId]);
+      expect(result.map((wp) => wp.id)).toEqual([led.workPackageId]);
     });
   });
 

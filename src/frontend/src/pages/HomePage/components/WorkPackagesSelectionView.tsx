@@ -1,10 +1,5 @@
-import { WorkPackageCard as WorkPackageCardModel, WorkPackageSelection } from 'shared';
+import { dateToMidnightUTC, WbsElementStatus, WorkPackageCard as WorkPackageCardModel, WorkPackageSelection } from 'shared';
 import { Box, Card, CardContent, useTheme } from '@mui/material';
-import {
-  getInProgressWorkPackages,
-  getOverdueWorkPackages,
-  getUpcomingWorkPackages
-} from '../../../utils/work-package.utils';
 import WorkPackageCard from './WorkPackageCard';
 import WorkPackageSelect from './WorkPackageSelect';
 import React, { useState } from 'react';
@@ -24,19 +19,48 @@ const NoWorkPackages: React.FC = () => {
   );
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 const WorkPackagesSelectionView: React.FC = () => {
   const theme = useTheme();
 
-  const { data: relevantWPs, isLoading, isError, error } = useHomeScreenWorkPackages(WorkPackageSelection.LEADING);
+  // the user's calendar day, in the same midnight-UTC form work package dates are stored in. Fixed for the life of
+  // the widget so each bucket's query key stays stable
+  const [today] = useState(() => dateToMidnightUTC(new Date()));
+  const daysFromToday = (days: number) => new Date(today.getTime() + days * DAY_MS);
 
-  const [upcomingWPs, inProgressWPs, overdueWPs] = React.useMemo(() => {
-    if (!relevantWPs) return [[], [], []];
-    return [
-      getUpcomingWorkPackages(relevantWPs),
-      getInProgressWorkPackages(relevantWPs),
-      getOverdueWorkPackages(relevantWPs)
-    ];
-  }, [relevantWPs]);
+  // starts after today, within the next two weeks
+  const {
+    data: upcomingData,
+    isLoading: upcomingIsLoading,
+    isError: upcomingIsError,
+    error: upcomingError
+  } = useHomeScreenWorkPackages(WorkPackageSelection.LEADING, {
+    startsAfter: daysFromToday(1),
+    startsBefore: daysFromToday(14)
+  });
+  // active, started by today, and not yet due
+  const {
+    data: inProgressData,
+    isLoading: inProgressIsLoading,
+    isError: inProgressIsError,
+    error: inProgressError
+  } = useHomeScreenWorkPackages(WorkPackageSelection.LEADING, {
+    status: WbsElementStatus.Active,
+    startsBefore: today,
+    endsAfter: daysFromToday(1)
+  });
+  // due today or earlier
+  const {
+    data: overdueData,
+    isLoading: overdueIsLoading,
+    isError: overdueIsError,
+    error: overdueError
+  } = useHomeScreenWorkPackages(WorkPackageSelection.LEADING, { endsBefore: today });
+
+  const upcomingWPs = upcomingData ?? [];
+  const inProgressWPs = inProgressData ?? [];
+  const overdueWPs = overdueData ?? [];
 
   // options for selection
   const workPackageOptions: [string, WorkPackageCardModel[]][] = [
@@ -57,8 +81,10 @@ const WorkPackagesSelectionView: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<number>();
   const currentDisplayedWPs = selectedOption ?? defaultFirstDisplay;
 
-  if (isError) return <ErrorPage message={error.message} />;
-  if (isLoading || !relevantWPs) return <LoadingIndicator />;
+  if (upcomingIsError) return <ErrorPage message={upcomingError.message} />;
+  if (inProgressIsError) return <ErrorPage message={inProgressError.message} />;
+  if (overdueIsError) return <ErrorPage message={overdueError.message} />;
+  if (upcomingIsLoading || inProgressIsLoading || overdueIsLoading) return <LoadingIndicator />;
 
   // destructuring tuple to get wps of selected option
   const [, currentWps] = workPackageOptions[currentDisplayedWPs];

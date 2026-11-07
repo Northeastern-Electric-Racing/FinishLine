@@ -12,41 +12,39 @@ export const calculateWorkPackageProgress = (
 };
 
 /**
- * Gets the wbs element ids of every work package transitively blocked by the given work package.
- * Loads the organization's blocking edges in one query and walks them in memory, rather than one query per node.
+ * Gets the wbs element ids of every work package transitively blocked by the given work package, nearest first.
+ * Walks one level of the blocking chain per query, so the cost follows the chain's depth rather than the org's size.
+ * Deleted work packages are skipped and not walked past. A chain that loops back to the start just stops there.
  * @param initialWbsElementId the wbs element id of the work package to start from
  * @param organizationId the organization the work package belongs to
- * @returns the wbs element ids of the blocked work packages (deleted ones are skipped)
- * @throws if the blocking chain loops back to the initial work package
+ * @returns the wbs element ids of the blocked work packages, in the order the walk reached them
  */
 export const getBlockingWorkPackages = async (initialWbsElementId: string, organizationId: string): Promise<string[]> => {
-  // the blocking relation only ever points at work packages, so that's all the walk can reach
-  const elements = await prisma.wBS_Element.findMany({
-    where: { organizationId, workPackage: { isNot: null } },
-    select: { wbsElementId: true, dateDeleted: true, blocking: { select: { wbsElementId: true } } }
-  });
-  const elementsById = new Map(elements.map((element) => [element.wbsElementId, element]));
-
-  const initial = elementsById.get(initialWbsElementId);
-  if (!initial) throw new NotFoundException('WBS Element', initialWbsElementId);
-
   const seenWbsElementIds = new Set<string>([initialWbsElementId]);
-  const queue: string[] = initial.blocking.map((blocking) => blocking.wbsElementId);
   const blockingWbsElementIds: string[] = [];
+  let level: string[] = [initialWbsElementId];
 
-  while (queue.length > 0) {
-    const currWbsId = queue.pop();
-    if (!currWbsId) break;
-    if (currWbsId === initialWbsElementId) throw new HttpException(400, 'Circular dependency detected');
-    if (seenWbsElementIds.has(currWbsId)) continue;
-    seenWbsElementIds.add(currWbsId);
+  while (level.length > 0) {
+    const elements = await prisma.wBS_Element.findMany({
+      where: { wbsElementId: { in: level }, organizationId },
+      select: { wbsElementId: true, dateDeleted: true, blocking: { select: { wbsElementId: true } } }
+    });
+    // keep the level's order: findMany with `in` doesn't
+    const elementsById = new Map(elements.map((element) => [element.wbsElementId, element]));
 
-    const currWbs = elementsById.get(currWbsId);
-    if (!currWbs) throw new NotFoundException('WBS Element', currWbsId);
-    if (currWbs.dateDeleted) continue; // this wbs element has been deleted so skip it
+    const nextLevel: string[] = [];
+    for (const wbsElementId of level) {
+      const element = elementsById.get(wbsElementId);
+      if (!element || element.dateDeleted) continue;
+      if (wbsElementId !== initialWbsElementId) blockingWbsElementIds.push(wbsElementId);
 
-    queue.push(...currWbs.blocking.map((blocking) => blocking.wbsElementId));
-    blockingWbsElementIds.push(currWbsId);
+      for (const { wbsElementId: blockedId } of element.blocking) {
+        if (seenWbsElementIds.has(blockedId)) continue;
+        seenWbsElementIds.add(blockedId);
+        nextLevel.push(blockedId);
+      }
+    }
+    level = nextLevel;
   }
 
   return blockingWbsElementIds;

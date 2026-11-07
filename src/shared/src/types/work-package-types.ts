@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet, WbsElementStatus, WbsNumber } from './project-types.js';
+import { BaseDescriptionBullet, DescriptionBullet, WbsElementStatus, WbsNumber } from './project-types.js';
 import { DescriptionBulletPreview, ImplementedChange } from './change-request-types.js';
 import { TeamPreview } from './team-types.js';
 import { BaseUser, User } from './user-types.js';
@@ -66,10 +66,23 @@ export interface ProjectTemplate extends WbsElementTemplate {
   summary?: string;
 }
 
+/** Whose work packages the home page asks for. When they run is chosen separately, with WorkPackageTimelineFilters */
 export enum WorkPackageSelection {
-  ALL_OVERDUE = 'allOverdue',
+  ALL = 'all',
   LEADING = 'leading',
   MEMBER = 'member'
+}
+
+/**
+ * Narrows the home page work packages by when they run. Every bound is inclusive and left open when omitted.
+ * Complete work packages are always left out unless a status is asked for.
+ */
+export interface WorkPackageTimelineFilters {
+  startsAfter?: Date;
+  startsBefore?: Date;
+  endsAfter?: Date;
+  endsBefore?: Date;
+  status?: WbsElementStatus;
 }
 
 /** The minimum every consumer of a work package needs. Served as-is by pickers, get-many, by-project and blocking */
@@ -85,8 +98,6 @@ export interface BaseWorkPackage {
   duration: number;
   endDate: Date;
   orderInProject: number;
-  dateCreated: Date;
-  deleted: boolean;
   lead?: BaseUser;
   manager?: BaseUser;
   projectName: string;
@@ -107,7 +118,7 @@ export type WorkPackageChange = Pick<
 /** The work package detail page, edit form, change request diff, and activate / stage gate modals */
 export interface WorkPackageDetail extends BaseWorkPackage {
   blockedBy: WorkPackageBlocker[];
-  descriptionBullets: DescriptionBullet[];
+  descriptionBullets: BaseDescriptionBullet[];
   changes: WorkPackageChange[];
 }
 

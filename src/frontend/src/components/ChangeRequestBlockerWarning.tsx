@@ -40,12 +40,7 @@ const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
 }: BlockerWarningModalProps) => {
   const theme = useTheme();
   // only fetched once the warning actually opens, rather than every time the review modal mounts
-  const {
-    data: blockingWorkPackages,
-    isLoading,
-    isError,
-    error
-  } = useGetBlockingWorkPackages(wbsNum ?? { carNumber: 0, projectNumber: 0, workPackageNumber: 0 }, open && !!wbsNum);
+  const { data: blockingWorkPackages, isLoading, isError, error } = useGetBlockingWorkPackages(wbsNum, open);
   const dialogStyle = {
     '&::-webkit-scrollbar': {
       height: '20px'

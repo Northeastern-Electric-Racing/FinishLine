@@ -122,6 +122,9 @@ export interface WorkPackagePreview extends WbsElementPreview {
   blockedBy: WbsNumber[];
 }
 
+/** A description bullet as a page shows it: deleted bullets are filtered out before they're sent */
+export type BaseDescriptionBullet = Omit<DescriptionBullet, 'dateDeleted'>;
+
 export interface DescriptionBullet {
   id: string;
   detail: string;

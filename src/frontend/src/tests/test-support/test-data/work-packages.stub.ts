@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsElementStatus, WorkPackage, WorkPackageDetail, WorkPackageStage, wbsPipe } from 'shared';
+import { WbsElementStatus, WorkPackage, WorkPackageStage } from 'shared';
 import {
   exampleAdminUser,
   exampleAppAdminUser,
@@ -216,9 +216,3 @@ export const exampleAllWorkPackages: WorkPackage[] = [
   exampleDesignWorkPackage,
   exampleManufacturingWorkPackage
 ];
-
-/** The detail-endpoint shape of one of the work package stubs above: blockers come back named */
-export const toWorkPackageDetail = (workPackage: WorkPackage): WorkPackageDetail => ({
-  ...workPackage,
-  blockedBy: workPackage.blockedBy.map((wbsNum) => ({ wbsNum, name: `Blocker ${wbsPipe(wbsNum)}` }))
-});

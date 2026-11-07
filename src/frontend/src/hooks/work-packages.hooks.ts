@@ -4,7 +4,14 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { BaseWorkPackage, WbsNumber, WorkPackageCard, WorkPackageDetail, WorkPackageSelection } from 'shared';
+import {
+  BaseWorkPackage,
+  WbsNumber,
+  WorkPackageCard,
+  WorkPackageDetail,
+  WorkPackageSelection,
+  WorkPackageTimelineFilters
+} from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import {
   createSingleWorkPackage,
@@ -21,6 +28,10 @@ import {
   getHomePageWorkPackages
 } from '../apis/work-packages.api';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
+
+// kept under 'teams' so team changes (which decide whose work packages the home page shows) still refresh it;
+// work package mutations invalidate it explicitly
+export const HOME_PAGE_WORK_PACKAGES_KEY = ['teams', 'work-packages'];
 
 /**
  * Custom React Hook to supply all work packages in preview format (minimal data).
@@ -85,6 +96,7 @@ export const useCreateSingleWorkPackage = () => {
         queryClient.invalidateQueries(['teams', false]); //invalidations for gantt chart
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['work packages']);
+        queryClient.invalidateQueries(HOME_PAGE_WORK_PACKAGES_KEY);
       }
     }
   );
@@ -105,6 +117,7 @@ export const useEditWorkPackage = (_wbsNum: WbsNumber) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['work packages']);
+        queryClient.invalidateQueries(HOME_PAGE_WORK_PACKAGES_KEY);
       }
     }
   );
@@ -123,6 +136,7 @@ export const useDeleteWorkPackage = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['work packages']);
+        queryClient.invalidateQueries(HOME_PAGE_WORK_PACKAGES_KEY);
       }
     }
   );
@@ -131,14 +145,15 @@ export const useDeleteWorkPackage = () => {
 /**
  * Custom React Hook to get all blocking work packages
  */
-export const useGetBlockingWorkPackages = (wbsNum: WbsNumber, enabled = true) => {
+export const useGetBlockingWorkPackages = (wbsNum: WbsNumber | undefined, enabled = true) => {
   return useQuery<BaseWorkPackage[], Error>(
     ['work packages', 'blocking', wbsNum],
     async () => {
-      const { data } = await getAllBlockingWorkPackages(wbsNum);
+      // only runs when wbsNum is set, per `enabled` below
+      const { data } = await getAllBlockingWorkPackages(wbsNum!);
       return data;
     },
-    { enabled }
+    { enabled: enabled && !!wbsNum }
   );
 };
 
@@ -165,12 +180,23 @@ export const useSlackUpcomingDeadlines = () => {
   });
 };
 
-export const useHomeScreenWorkPackages = (selection: WorkPackageSelection) => {
+/**
+ * Custom React Hook to get the home page work packages
+ * @param selection whose work packages to get
+ * @param filters when they run; pass dates that stay the same between renders (e.g. from useState) so the query
+ * doesn't refetch every render
+ */
+export const useHomeScreenWorkPackages = (selection: WorkPackageSelection, filters: WorkPackageTimelineFilters = {}) => {
   const { selectedCar } = useGlobalCarFilter();
   return useQuery<WorkPackageCard[], Error>(
-    ['teams', 'work-packages', selection, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    [
+      ...HOME_PAGE_WORK_PACKAGES_KEY,
+      selection,
+      JSON.stringify(filters),
+      selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id
+    ],
     async () => {
-      const { data } = await getHomePageWorkPackages(selection);
+      const { data } = await getHomePageWorkPackages(selection, filters);
       return data;
     }
   );

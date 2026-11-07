@@ -1,4 +1,4 @@
-import { Organization, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Organization, Prisma, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   calculateEndDate,
   DescriptionBulletPreview,
@@ -15,7 +15,8 @@ import {
   WorkPackageStage,
   User,
   WorkPackageSelection,
-  WorkPackageDropdownItem
+  WorkPackageDropdownItem,
+  WorkPackageTimelineFilters
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -23,8 +24,7 @@ import {
   HttpException,
   AccessDeniedGuestException,
   AccessDeniedAdminOnlyException,
-  DeletedException,
-  InvalidOrganizationException
+  DeletedException
 } from '../utils/errors.utils.js';
 import {
   getBaseWorkPackageQueryArgs,
@@ -49,7 +49,14 @@ import {
 import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packages.utils.js';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
 import { userHasPermission } from '../utils/users.utils.js';
-import { getBaseUserQueryArgs } from '../prisma-query-args/user.query-args.js';
+
+/**
+ * Throws a 404 unless the wbs number is a work package's (not a car's or project's)
+ * @param wbsNum the wbs number to check
+ */
+const validateWorkPackageWbs = (wbsNum: WbsNumber) => {
+  if (!isWorkPackageWbs(wbsNum)) throw new HttpException(404, `WBS Number ${wbsPipe(wbsNum)} is not a work package WBS#`);
+};
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -103,9 +110,7 @@ export default class WorkPackagesService {
    * @throws if the work package with the desired WBS number is not found, is deleted or is not part of the given organization
    */
   static async getSingleWorkPackage(parsedWbs: WbsNumber, organization: Organization): Promise<WorkPackageDetail> {
-    if (!isWorkPackageWbs(parsedWbs)) {
-      throw new HttpException(404, 'WBS Number ' + wbsPipe(parsedWbs) + ' is a not a work package WBS#');
-    }
+    validateWorkPackageWbs(parsedWbs);
 
     // wbs numbers are only unique within an organization, so the lookup is scoped to it
     const wp = await prisma.work_Package.findFirst({
@@ -139,14 +144,7 @@ export default class WorkPackagesService {
    * @throws if any of the work packages are not found or are not part of the organization
    */
   static async getManyWorkPackages(wbsNums: WbsNumber[], organization: Organization): Promise<BaseWorkPackage[]> {
-    wbsNums.forEach((wbsNum) => {
-      if (!isWorkPackageWbs(wbsNum)) {
-        throw new HttpException(
-          404,
-          `WBS Number ${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber} is not a Work Package WBS#`
-        );
-      }
-    });
+    wbsNums.forEach(validateWorkPackageWbs);
 
     const whereConditions = wbsNums.map((wbsNum) => ({
       wbsElement: {
@@ -377,8 +375,8 @@ export default class WorkPackagesService {
       throw new AccessDeniedGuestException('edit work packages');
 
     // get the original work package so we can compare things
-    const originalWorkPackage = await prisma.work_Package.findUnique({
-      where: { workPackageId },
+    const originalWorkPackage = await prisma.work_Package.findFirst({
+      where: { workPackageId, wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
       select: {
         wbsElementId: true,
         stage: true,
@@ -388,10 +386,9 @@ export default class WorkPackagesService {
           select: {
             name: true,
             status: true,
+            // the old lead and manager go into the change log
             leadId: true,
             managerId: true,
-            dateDeleted: true,
-            organizationId: true,
             descriptionBullets: getDescriptionBulletQueryArgs(organization.organizationId)
           }
         },
@@ -400,9 +397,6 @@ export default class WorkPackagesService {
     });
 
     if (!originalWorkPackage) throw new NotFoundException('Work Package', workPackageId);
-    if (originalWorkPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackageId);
-    if (originalWorkPackage.wbsElement.organizationId !== organization.organizationId)
-      throw new InvalidOrganizationException('Work Package');
 
     // the crId must match a valid approved change request
     await validateChangeRequestAccepted(crId);
@@ -474,11 +468,11 @@ export default class WorkPackagesService {
       changes.addedDescriptionBullets,
       DescriptionBulletDestination.WBS_ELEMENT,
       wbsElementId,
-      originalWorkPackage.wbsElement.organizationId
+      organization.organizationId
     );
 
     // edit the expected changes and deliverables
-    await editDescriptionBullets(changes.editedDescriptionBullets, originalWorkPackage.wbsElement.organizationId);
+    await editDescriptionBullets(changes.editedDescriptionBullets, organization.organizationId);
 
     // create the changes in prisma
     await prisma.change.createMany({ data: changes.changes });
@@ -495,9 +489,7 @@ export default class WorkPackagesService {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete work packages');
 
-    if (!isWorkPackageWbs(wbsNum)) {
-      throw new HttpException(404, 'WBS Number ' + wbsPipe(wbsNum) + ' is a not a work package WBS#');
-    }
+    validateWorkPackageWbs(wbsNum);
 
     const workPackage = await prisma.work_Package.findFirst({
       where: { wbsElement: { ...wbsNum, organizationId: organization.organizationId, dateDeleted: null } },
@@ -594,7 +586,11 @@ export default class WorkPackagesService {
       where: { wbsElementId: { in: blockingWbsElementIds } },
       ...getBaseWorkPackageQueryArgs()
     });
-    return blockingWorkPackages.map(baseWorkPackageTransformer);
+    // nearest blocked first, as the walk found them
+    const walkOrder = new Map(blockingWbsElementIds.map((wbsElementId, index) => [wbsElementId, index]));
+    return blockingWorkPackages
+      .sort((a, b) => (walkOrder.get(a.wbsElementId) ?? 0) - (walkOrder.get(b.wbsElementId) ?? 0))
+      .map(baseWorkPackageTransformer);
   }
 
   /**
@@ -602,10 +598,22 @@ export default class WorkPackagesService {
    * Sends a message for every work package that is due before or on the given deadline (even before today)
    * @param user - the user doing the sending
    * @param deadline - the deadline
-   * @param organizationId - the id of the organization that the user is currently in
-   * @returns void
+   * @param organization - the organization that the user is currently in
+   * @returns void, once every message has been sent
    */
   static async slackMessageUpcomingDeadlines(user: User, deadline: Date, organization: Organization): Promise<void> {
+    const upcomingWorkPackages = await WorkPackagesService.getUpcomingDeadlineWorkPackages(user, deadline, organization);
+    await WorkPackagesService.sendUpcomingDeadlineNotifications(upcomingWorkPackages);
+  }
+
+  /**
+   * Gets the active work packages due on or before the deadline, soonest first. Split from sending so the endpoint
+   * can check access and reply before the slow, rate-limited send loop runs
+   * @param user - the user doing the sending; must be an admin
+   * @param deadline - the deadline
+   * @param organization - the organization that the user is currently in
+   */
+  static async getUpcomingDeadlineWorkPackages(user: User, deadline: Date, organization: Organization) {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages');
 
@@ -614,65 +622,55 @@ export default class WorkPackagesService {
         wbsElement: { dateDeleted: null, status: WBS_Element_Status.ACTIVE, organizationId: organization.organizationId }
       },
       select: {
-        startDate: true,
-        duration: true,
-        wbsElement: {
-          select: {
-            carNumber: true,
-            projectNumber: true,
-            workPackageNumber: true,
-            name: true,
-            lead: getBaseUserQueryArgs(),
-            manager: getBaseUserQueryArgs()
-          }
-        },
+        ...getBaseWorkPackageQueryArgs().select,
+        // each project team's channel gets the reminder
         project: { select: { wbsElement: { select: { name: true } }, teams: { select: { slackId: true } } } }
       }
     });
 
-    const upcomingWorkPackages = workPackages
+    return workPackages
       .filter((wp) => getDay(calculateEndDate(wp.startDate, wp.duration)) <= getDay(deadline))
       .sort(
         (a, b) => calculateEndDate(a.startDate, a.duration).getTime() - calculateEndDate(b.startDate, b.duration).getTime()
       );
-
-    // have to do it like this so it goes sequentially and we can sleep between each because of rate limiting
-    await upcomingWorkPackages.reduce(
-      (previousCall, workPackage) =>
-        previousCall.then(async () => {
-          await sendSlackUpcomingDeadlineNotification(workPackage); // send the slack message for this work package
-          await new Promise((callBack) => setTimeout(callBack, 2000)); // sleep for 2 seconds
-        }),
-      Promise.resolve()
-    );
   }
 
   /**
-   * Gets the current users teams workpackages
+   * Sends the upcoming deadline slack message for each work package, one at a time with a 2 second gap for slack's rate limit
+   * @param workPackages - the work packages from getUpcomingDeadlineWorkPackages
+   */
+  static async sendUpcomingDeadlineNotifications(
+    workPackages: Awaited<ReturnType<typeof WorkPackagesService.getUpcomingDeadlineWorkPackages>>
+  ): Promise<void> {
+    for (const workPackage of workPackages) {
+      await sendSlackUpcomingDeadlineNotification(workPackage);
+      await new Promise((callBack) => setTimeout(callBack, 2000));
+    }
+  }
+
+  /**
+   * Gets the work packages for the home page widgets: whose they are comes from the selection, when they run from the filters
    *
    * @param user The current user
    * @param organization The organization the current user is logged in for
-   * @param selection The selection type for filtering workpackages
+   * @param selection Whose work packages: everyone's, the teams the user leads, or the teams the user is on
+   * @param filters Inclusive start / end date bounds and a status; complete work packages are left out unless a status is given
    * @param carId Optional car number to filter work packages by
    */
   static async getHomePageWorkPackages(
     user: User,
     organization: Organization,
     selection: WorkPackageSelection,
+    filters: WorkPackageTimelineFilters,
     carId?: string
   ): Promise<WorkPackageCard[]> {
-    // every work package the home page shows has started (overdue) or starts within two weeks (leading's
-    // upcoming bucket), so anything starting later is never displayed. A day of slack absorbs client/server clock skew
-    const DAY_MS = 24 * 60 * 60 * 1000;
-    const latestStart =
-      selection === WorkPackageSelection.ALL_OVERDUE
-        ? new Date(Date.now() + DAY_MS)
-        : selection === WorkPackageSelection.LEADING
-          ? new Date(Date.now() + 15 * DAY_MS)
-          : undefined;
+    const { startsAfter, startsBefore, endsAfter, endsBefore, status } = filters;
+    // a work package can't end before it starts, so an end bound also caps the start date the database can filter on
+    const startDateCaps = [startsBefore, endsBefore].filter((date): date is Date => date !== undefined);
+    const latestStart = startDateCaps.length > 0 ? new Date(Math.min(...startDateCaps.map((d) => d.getTime()))) : undefined;
 
     const selectionArgs =
-      selection === WorkPackageSelection.ALL_OVERDUE
+      selection === WorkPackageSelection.ALL
         ? {}
         : selection === WorkPackageSelection.LEADING
           ? {
@@ -698,29 +696,40 @@ export default class WorkPackagesService {
               }
             };
 
-    let workPackages = await prisma.work_Package.findMany({
-      where: {
-        wbsElement: {
-          ...selectionArgs,
-          dateDeleted: null,
-          organizationId: organization.organizationId,
-          status: { not: WBS_Element_Status.COMPLETE }
-        },
-        ...(carId && { project: { carId } }),
-        ...(latestStart && { startDate: { lte: latestStart } })
+    const where: Prisma.Work_PackageWhereInput = {
+      wbsElement: {
+        ...selectionArgs,
+        dateDeleted: null,
+        organizationId: organization.organizationId,
+        status: status ? (status as WBS_Element_Status) : { not: WBS_Element_Status.COMPLETE }
       },
-      ...getWorkPackageCardQueryArgs()
-    });
+      ...(carId && { project: { carId } }),
+      startDate: { gte: startsAfter, lte: latestStart }
+    };
 
-    if (selection === WorkPackageSelection.ALL_OVERDUE) {
-      workPackages = workPackages.filter((wp) => {
-        const endDate = new Date(wp.startDate);
-        endDate.setDate(endDate.getDate() + wp.duration * 7); // Add weeks as days
-
-        return endDate < new Date();
-      });
+    if (!endsAfter && !endsBefore) {
+      const workPackages = await prisma.work_Package.findMany({ where, ...getWorkPackageCardQueryArgs() });
+      return workPackages.map(workPackageCardTransformer);
     }
 
+    // the end date isn't stored (it's start + duration), so the database can't filter on it. Check it against just the
+    // dates first, then fetch the full cards (blockers and all) only for the work packages that make it through
+    const candidates = await prisma.work_Package.findMany({
+      where,
+      select: { workPackageId: true, startDate: true, duration: true }
+    });
+    const matchingIds = candidates
+      .filter(({ startDate, duration }) => {
+        const endDate = calculateEndDate(startDate, duration);
+        return (!endsAfter || endDate >= endsAfter) && (!endsBefore || endDate <= endsBefore);
+      })
+      .map(({ workPackageId }) => workPackageId);
+    if (matchingIds.length === 0) return [];
+
+    const workPackages = await prisma.work_Package.findMany({
+      where: { workPackageId: { in: matchingIds } },
+      ...getWorkPackageCardQueryArgs()
+    });
     return workPackages.map(workPackageCardTransformer);
   }
 }

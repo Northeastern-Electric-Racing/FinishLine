@@ -23,7 +23,8 @@ export const getBaseWorkPackageQueryArgs = () =>
       duration: true,
       stage: true,
       orderInProject: true,
-      // a work package is its wbs element: identity, name, status, and who owns it
+      // a work package is its wbs element: identity, name, status, and who owns it. No dateDeleted: every
+      // query returning this filters deleted work packages out
       wbsElement: {
         select: {
           carNumber: true,
@@ -31,8 +32,6 @@ export const getBaseWorkPackageQueryArgs = () =>
           workPackageNumber: true,
           name: true,
           status: true,
-          dateCreated: true,
-          dateDeleted: true,
           lead: getBaseUserQueryArgs(),
           manager: getBaseUserQueryArgs()
         }

@@ -1,5 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
-import { BaseWorkPackage, validateWBS, WbsNumber, WorkPackageCard, WorkPackageDetail, WorkPackageSelection } from 'shared';
+import {
+  BaseWorkPackage,
+  validateWBS,
+  WbsElementStatus,
+  WbsNumber,
+  WorkPackageCard,
+  WorkPackageDetail,
+  WorkPackageSelection
+} from 'shared';
 import WorkPackagesService from '../services/work-packages.services.js';
 
 /** Controller for operations involving work packages. */
@@ -154,8 +162,17 @@ export default class WorkPackagesController {
     try {
       const { deadline } = req.body;
 
-      await WorkPackagesService.slackMessageUpcomingDeadlines(req.currentUser, new Date(deadline), req.organization);
+      const upcomingWorkPackages = await WorkPackagesService.getUpcomingDeadlineWorkPackages(
+        req.currentUser,
+        new Date(deadline),
+        req.organization
+      );
+      // sending is rate limited to one message every 2 seconds, so reply once access is checked instead of holding the
+      // request open (and risking a client timeout and a duplicate resend) until every message is out
       res.sendStatus(204);
+      WorkPackagesService.sendUpcomingDeadlineNotifications(upcomingWorkPackages).catch((error: unknown) => {
+        console.error('Failed to send upcoming deadline slack notifications', error);
+      });
     } catch (error: unknown) {
       next(error);
     }
@@ -164,11 +181,20 @@ export default class WorkPackagesController {
   static async getHomePageWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { selection } = req.params as Record<string, string>;
+      const { startsAfter, startsBefore, endsAfter, endsBefore, status } = req.query as Record<string, string | undefined>;
+      const toDate = (value?: string) => (value ? new Date(value) : undefined);
 
       const workPackages: WorkPackageCard[] = await WorkPackagesService.getHomePageWorkPackages(
         req.currentUser,
         req.organization,
         selection as WorkPackageSelection,
+        {
+          startsAfter: toDate(startsAfter),
+          startsBefore: toDate(startsBefore),
+          endsAfter: toDate(endsAfter),
+          endsBefore: toDate(endsBefore),
+          status: status as WbsElementStatus | undefined
+        },
         req.currentCar?.carId
       );
 

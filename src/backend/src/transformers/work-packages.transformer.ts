@@ -8,7 +8,9 @@ import {
   WorkPackageDetail,
   WorkPackageStage
 } from 'shared';
-import descriptionBulletTransformer from '../transformers/description-bullets.transformer.js';
+import descriptionBulletTransformer, {
+  baseDescriptionBulletTransformer
+} from '../transformers/description-bullets.transformer.js';
 import { convertStatus, wbsNumOf } from '../utils/utils.js';
 import { baseUserTransformer, userTransformer } from './user.transformer.js';
 import {
@@ -34,8 +36,6 @@ export const baseWorkPackageTransformer = (
   duration: wp.duration,
   endDate: calculateEndDate(wp.startDate, wp.duration),
   orderInProject: wp.orderInProject,
-  dateCreated: wp.wbsElement.dateCreated,
-  deleted: wp.wbsElement.dateDeleted !== null,
   lead: wp.wbsElement.lead ? baseUserTransformer(wp.wbsElement.lead) : undefined,
   manager: wp.wbsElement.manager ? baseUserTransformer(wp.wbsElement.manager) : undefined,
   projectName: wp.project.wbsElement.name
@@ -46,7 +46,7 @@ export const workPackageDetailTransformer = (
 ): WorkPackageDetail => ({
   ...baseWorkPackageTransformer(wp),
   blockedBy: wp.blockedBy.map((blocker) => ({ wbsNum: wbsNumOf(blocker), name: blocker.name })),
-  descriptionBullets: wp.wbsElement.descriptionBullets.map(descriptionBulletTransformer),
+  descriptionBullets: wp.wbsElement.descriptionBullets.map(baseDescriptionBulletTransformer),
   changes: wp.wbsElement.changes.map((change) => ({
     changeId: change.changeId,
     changeRequestId: change.changeRequestId,

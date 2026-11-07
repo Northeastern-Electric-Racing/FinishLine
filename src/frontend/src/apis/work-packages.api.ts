@@ -20,7 +20,7 @@ import {
   workPackageCardTransformer,
   workPackageDetailTransformer
 } from './transformers/work-packages.transformers';
-import { WorkPackageSelection } from 'shared';
+import { WorkPackageSelection, WorkPackageTimelineFilters } from 'shared';
 
 export interface WorkPackageApiInputs {
   name: string;
@@ -128,8 +128,8 @@ export const slackUpcomingDeadlines = (deadline: Date) => {
   });
 };
 
-export const getHomePageWorkPackages = (selection: WorkPackageSelection) => {
-  return axios.get<WorkPackageCard[]>(apiUrls.homePageWorkPackages(selection), {
+export const getHomePageWorkPackages = (selection: WorkPackageSelection, filters: WorkPackageTimelineFilters) => {
+  return axios.get<WorkPackageCard[]>(apiUrls.homePageWorkPackages(selection, filters), {
     transformResponse: (data) => JSON.parse(data).map(workPackageCardTransformer)
   });
 };

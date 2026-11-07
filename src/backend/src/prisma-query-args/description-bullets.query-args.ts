@@ -5,16 +5,16 @@ export type BaseDescriptionBulletQueryArgs = ReturnType<typeof getBaseDescriptio
 /** @deprecated Use BaseDescriptionBulletQueryArgs. Still used by projects, change requests, and wbs templates until they are refactored */
 export type DescriptionBulletQueryArgs = ReturnType<typeof getDescriptionBulletQueryArgs>;
 
-// everything a checklist or diff reads off a bullet, including who checked it off
+// everything a checklist or diff reads off a bullet. No dateDeleted: callers filter deleted bullets out in the query
 export const getBaseDescriptionBulletQueryArgs = () =>
   Prisma.validator<Prisma.Description_BulletDefaultArgs>()({
     select: {
       descriptionId: true,
       detail: true,
       dateAdded: true,
-      dateDeleted: true,
       dateTimeChecked: true,
       descriptionBulletType: { select: { name: true } },
+      // shown in the checklist's "checked by" tooltip
       userChecked: getBaseUserQueryArgs()
     }
   });

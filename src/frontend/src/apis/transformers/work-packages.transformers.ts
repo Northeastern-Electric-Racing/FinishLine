@@ -17,7 +17,6 @@ import { eventPreviewTransformer } from './calendar.transformer';
 
 export const baseWorkPackageTransformer = (workPackage: BaseWorkPackage): BaseWorkPackage => ({
   ...workPackage,
-  dateCreated: new Date(workPackage.dateCreated),
   startDate: dbDateToLocalDate(new Date(workPackage.startDate)),
   endDate: dbDateToLocalDate(new Date(workPackage.endDate))
 });

@@ -6,6 +6,7 @@ import {
   descriptionBulletsValidators,
   intMinZero,
   isDateOnly,
+  isOptionalDate,
   isWorkPackageStageOrNone,
   nonEmptyString,
   validateInputs
@@ -78,6 +79,11 @@ workPackagesRouter.post(
 workPackagesRouter.get(
   '/home-page/:selection',
   param('selection').isIn(Object.values(WorkPackageSelection)),
+  isOptionalDate(query('startsAfter')),
+  isOptionalDate(query('startsBefore')),
+  isOptionalDate(query('endsAfter')),
+  isOptionalDate(query('endsBefore')),
+  query('status').optional().isIn(Object.values(WbsElementStatus)),
   validateInputs,
   WorkPackagesController.getHomePageWorkPackages
 );

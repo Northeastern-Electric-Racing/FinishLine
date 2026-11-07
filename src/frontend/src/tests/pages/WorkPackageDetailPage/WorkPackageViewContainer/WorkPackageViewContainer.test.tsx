@@ -5,10 +5,9 @@
 
 import { render, screen, routerWrapperBuilder, fireEvent } from '../../../test-support/test-utils';
 import {
-  exampleResearchWorkPackage,
-  exampleDesignWorkPackage,
-  toWorkPackageDetail
-} from '../../../test-support/test-data/work-packages.stub';
+  exampleResearchWorkPackageDetail,
+  exampleDesignWorkPackageDetail
+} from '../../../test-support/test-data/work-package-details.stub';
 import WorkPackageViewContainer from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageViewContainer';
 import AppContextUser from '../../../../app/AppContextUser';
 import * as userHooks from '../../../../hooks/users.hooks';
@@ -17,7 +16,7 @@ import ClarityProvider from '../../../../app/ClarityProvider';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = (
-  workPackage = exampleDesignWorkPackage,
+  workPackage = exampleDesignWorkPackageDetail,
   allowEdit = true,
   allowActivate = true,
   allowStageGate = true,
@@ -29,7 +28,7 @@ const renderComponent = (
       <ClarityProvider>
         <AppContextUser>
           <WorkPackageViewContainer
-            workPackage={toWorkPackageDetail(workPackage)}
+            workPackage={workPackage}
             enterEditMode={() => null}
             allowEdit={allowEdit}
             allowActivate={allowActivate}
@@ -69,7 +68,7 @@ describe.skip('work package container view', () => {
   });
 
   it('renders action menu buttons for active work package', () => {
-    renderComponent(exampleResearchWorkPackage);
+    renderComponent(exampleResearchWorkPackageDetail);
 
     expect(screen.getByText('Actions')).toBeInTheDocument();
 
@@ -81,7 +80,7 @@ describe.skip('work package container view', () => {
   });
 
   it('disables edit button when not allowed', () => {
-    renderComponent(exampleDesignWorkPackage, false);
+    renderComponent(exampleDesignWorkPackageDetail, false);
 
     fireEvent.click(screen.getByText('Actions'));
 
@@ -89,7 +88,7 @@ describe.skip('work package container view', () => {
   });
 
   it('disables activate button when not allowed', () => {
-    renderComponent(exampleDesignWorkPackage, true, false);
+    renderComponent(exampleDesignWorkPackageDetail, true, false);
 
     fireEvent.click(screen.getByText('Actions'));
 
@@ -97,7 +96,7 @@ describe.skip('work package container view', () => {
   });
 
   it('disables stage gate button when not allowed', () => {
-    renderComponent(exampleResearchWorkPackage, true, true, false);
+    renderComponent(exampleResearchWorkPackageDetail, true, true, false);
 
     fireEvent.click(screen.getByText('Actions'));
 
@@ -105,7 +104,7 @@ describe.skip('work package container view', () => {
   });
 
   it('disables request change button when not allowed', () => {
-    renderComponent(exampleResearchWorkPackage, true, true, true, false);
+    renderComponent(exampleResearchWorkPackageDetail, true, true, true, false);
 
     fireEvent.click(screen.getByText(/Actions/));
 

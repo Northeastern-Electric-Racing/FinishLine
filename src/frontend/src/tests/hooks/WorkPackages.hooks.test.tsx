@@ -9,7 +9,7 @@ import { WorkPackageDetail } from 'shared';
 import AppContextQuery from '../../app/AppContextQuery';
 import { GlobalCarFilterProvider } from '../../app/AppGlobalCarFilterContext';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
-import { exampleResearchWorkPackage, toWorkPackageDetail } from '../test-support/test-data/work-packages.stub';
+import { exampleResearchWorkPackageDetail } from '../test-support/test-data/work-package-details.stub';
 import { exampleWbsWorkPackage1 } from '../test-support/test-data/wbs-numbers.stub';
 import { getSingleWorkPackage } from '../../apis/work-packages.api';
 import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
@@ -31,7 +31,7 @@ beforeEach(() => {
 
 describe('work package hooks', () => {
   it('handles getting a single work package', async () => {
-    const workPackage = toWorkPackageDetail(exampleResearchWorkPackage);
+    const workPackage = exampleResearchWorkPackageDetail;
     const mockedGetSingleWorkPackage = getSingleWorkPackage as unknown as jest.Mock<
       Promise<AxiosResponse<WorkPackageDetail>>
     >;
