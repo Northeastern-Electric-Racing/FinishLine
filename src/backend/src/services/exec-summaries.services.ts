@@ -4,15 +4,7 @@
  */
 
 import { Organization } from '@prisma/client';
-import {
-  BudgetHighlight,
-  calculateProjectEndDate,
-  calculateProjectStartDate,
-  isAdmin,
-  notGuest,
-  User,
-  wbsPipe
-} from 'shared';
+import { calculateProjectEndDate, calculateProjectStartDate, isAdmin, notGuest, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedException,
@@ -23,14 +15,13 @@ import {
 } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
 import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
-import { isUserOnOpsTeam } from '../utils/exec-summaries.utils.js';
+import { calculateBudgetSummary, isUserOnOpsTeam } from '../utils/exec-summaries.utils.js';
 import {
   getBaseCompetitionDocumentsSummaryQueryArgs,
   getBaseCompetitionPerformanceQueryArgs,
   getBaseExecutiveSummaryQueryArgs,
   getBaseRecruitmentCycleQueryArgs,
   getBaseRecruitmentDivisionCountQueryArgs,
-  getBudgetProjectQueryArgs,
   getVehicleDevelopmentProjectQueryArgs
 } from '../prisma-query-args/executive-summary.query-args.js';
 import {
@@ -38,9 +29,6 @@ import {
   vehicleDevelopmentSummaryTransformer,
   competitionPerformanceTransformer
 } from '../transformers/executive-summary.transformer.js';
-
-// rounds a dollar amount to the nearest cent so that splitting across divisions doesn't leave floating point noise
-const roundToCents = (amount: number): number => Math.round(amount * 100) / 100;
 
 export default class ExecSummaryServices {
   /**
@@ -304,13 +292,15 @@ export default class ExecSummaryServices {
    * @param organization the organization the executive summary belongs to
    * @param executiveSummaryId the id of the executive summary
    * @param viewer the user requesting the data
-   * @returns the total project budget per division for the executive summary's car and season
+   * @param teamTypeId optional id of a team type (division) to filter the budget down to
+   * @returns the total project budget per division for the executive summary's car and season, plus the total spent
+   * on the previous car's season (if any) for comparison
    * @throws AccessDeniedException if the viewer is a guest
    * @throws NotFoundException if the executive summary does not exist
    * @throws InvalidOrganizationException if the executive summary belongs to a different organization
    * @throws DeletedException if the executive summary has been deleted
    */
-  static async getBudgetSummary(organization: Organization, executiveSummaryId: string, viewer: User) {
+  static async getBudgetSummary(organization: Organization, executiveSummaryId: string, viewer: User, teamTypeId?: string) {
     const hasPermission = await userHasPermission(viewer.userId, organization.organizationId, notGuest);
     if (!hasPermission) {
       throw new AccessDeniedException('Only members can view executive summaries');
@@ -331,101 +321,40 @@ export default class ExecSummaryServices {
       throw new DeletedException('Executive Summary', executiveSummaryId);
     }
 
-    const { carId, seasonStartDate, seasonEndDate } = executiveSummary;
-
-    const [divisions, projects] = await Promise.all([
-      prisma.team_Type.findMany({ where: { organizationId: organization.organizationId }, orderBy: { name: 'asc' } }),
-      prisma.project.findMany({
-        where: {
-          carId,
-          wbsElement: { organizationId: organization.organizationId, dateDeleted: null }
-        },
-        orderBy: { wbsElement: { name: 'asc' } },
-        ...getBudgetProjectQueryArgs()
-      })
-    ]);
-
-    // a project is in the season if its work (first work package start to last work package end) overlaps the season
-    const projectsInSeason = projects.filter((project) => {
-      const start = calculateProjectStartDate(project.workPackages);
-      const end = calculateProjectEndDate(project.workPackages);
-      if (!start || !end) return false;
-      if (seasonStartDate && end < seasonStartDate) return false;
-      if (seasonEndDate && start > seasonEndDate) return false;
-      return true;
-    });
-
-    // each project's budget (and reimbursed spending) is split evenly across the distinct divisions of its active
-    // teams so that it is never counted more than once; projects with no active team are reported as unassigned
-    const UNASSIGNED_LABEL = 'Unassigned';
-    const buckets = new Map<string, { label: string; budget: number; spent: number }>(
-      divisions.map((division) => [division.teamTypeId, { label: division.name, budget: 0, spent: 0 }])
-    );
-    const unassigned = { label: UNASSIGNED_LABEL, budget: 0, spent: 0 };
-    let mostOverbudgetProject: BudgetHighlight | undefined;
-    projectsInSeason.forEach((project) => {
-      // spending is charged to the project itself or to any of its work packages
-      // reimbursement product costs are stored in cents
-      const reasons = [
-        ...project.wbsElement.reimbursementProductReasons,
-        ...project.workPackages.flatMap((wp) => wp.wbsElement.reimbursementProductReasons)
-      ];
-      const spent = reasons.reduce((sum, reason) => sum + (reason.reimbursementProduct?.cost ?? 0), 0) / 100;
-
-      const projectOverage = roundToCents(spent - project.budget);
-      if (projectOverage > (mostOverbudgetProject?.amount ?? 0)) {
-        mostOverbudgetProject = {
-          label: `${wbsPipe(project.wbsElement)} - ${project.wbsElement.name}`,
-          amount: projectOverage
-        };
+    if (teamTypeId) {
+      const teamType = await prisma.team_Type.findUnique({ where: { teamTypeId } });
+      if (!teamType) {
+        throw new NotFoundException('Team Type', teamTypeId);
       }
-
-      const divisionIds = new Set<string>();
-      project.teams.forEach((team) => {
-        if (!team.dateArchived && team.teamTypeId && buckets.has(team.teamTypeId)) {
-          divisionIds.add(team.teamTypeId);
-        }
-      });
-      const targets = divisionIds.size === 0 ? [unassigned] : [...divisionIds].map((id) => buckets.get(id)!);
-      targets.forEach((bucket) => {
-        bucket.budget += project.budget / targets.length;
-        bucket.spent += spent / targets.length;
-      });
-    });
-
-    const allBuckets = [...buckets.values()];
-    if (unassigned.budget > 0 || unassigned.spent > 0) allBuckets.push(unassigned);
-
-    const budgetByDivision = {
-      tipLabel: 'Dollars',
-      values: allBuckets.map(({ label, budget }) => ({ label, value: roundToCents(budget) }))
-    };
-
-    // strict comparisons so that ties go to the first bucket (divisions are ordered by name)
-    let mostExpensiveDivision: BudgetHighlight | undefined;
-    let mostOverbudgetDivision: BudgetHighlight | undefined;
-    allBuckets.forEach(({ label, budget, spent }) => {
-      const roundedSpent = roundToCents(spent);
-      const overage = roundToCents(spent - budget);
-      if (roundedSpent > (mostExpensiveDivision?.amount ?? 0)) {
-        mostExpensiveDivision = { label, amount: roundedSpent };
+      if (teamType.organizationId !== organization.organizationId) {
+        throw new InvalidOrganizationException('Team Type');
       }
-      if (overage > (mostOverbudgetDivision?.amount ?? 0)) {
-        mostOverbudgetDivision = { label, amount: overage };
-      }
-    });
+    }
 
-    const totalBudget = roundToCents(allBuckets.reduce((sum, { budget }) => sum + budget, 0));
-    const totalSpent = roundToCents(allBuckets.reduce((sum, { spent }) => sum + spent, 0));
+    const budget = await calculateBudgetSummary(organization, executiveSummary, teamTypeId);
+
+    // the previous car is the most recent other executive summary whose season started before this one
+    const previousExecutiveSummary = executiveSummary.seasonStartDate
+      ? await prisma.executive_Summary.findFirst({
+          where: {
+            executiveSummaryId: { not: executiveSummaryId },
+            dateDeleted: null,
+            car: { wbsElement: { organizationId: organization.organizationId } },
+            seasonStartDate: { lt: executiveSummary.seasonStartDate }
+          },
+          orderBy: { seasonStartDate: 'desc' },
+          ...getBaseExecutiveSummaryQueryArgs()
+        })
+      : null;
+
+    const previousBudget = previousExecutiveSummary
+      ? await calculateBudgetSummary(organization, previousExecutiveSummary, teamTypeId)
+      : undefined;
 
     return {
-      executiveSummaryId,
-      budgetByDivision,
-      totalBudget,
-      totalSpent,
-      mostExpensiveDivision,
-      mostOverbudgetDivision,
-      mostOverbudgetProject
+      ...budget,
+      previousCarName: previousExecutiveSummary?.car.wbsElement.name,
+      previousTotalSpent: previousBudget?.totalSpent
     };
   }
 

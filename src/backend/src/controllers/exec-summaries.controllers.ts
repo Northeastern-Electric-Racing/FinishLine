@@ -70,7 +70,14 @@ export default class ExecSummaryController {
     try {
       const { execSummaryId } = req.params as Record<string, string>;
 
-      const summary = await ExecSummaryServices.getBudgetSummary(req.organization, execSummaryId, req.currentUser);
+      const { teamTypeId } = req.query as Record<string, string | undefined>;
+
+      const summary = await ExecSummaryServices.getBudgetSummary(
+        req.organization,
+        execSummaryId,
+        req.currentUser,
+        teamTypeId
+      );
       res.status(200).json(summary);
     } catch (error: unknown) {
       next(error);
