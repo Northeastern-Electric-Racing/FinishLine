@@ -109,24 +109,27 @@ export const calculateBudgetSummary = async (
       };
     }
 
-    // when filtering to one division, split it up by that division's individual teams instead
-    if (teamTypeId) {
-      const typeTeams = project.teams.filter((team) => !team.dateArchived && team.teamTypeId === teamTypeId);
-      typeTeams.forEach((team) => {
-        const bucket = teamBuckets.get(team.teamId) ?? { label: team.teamName, budget: 0, spent: 0 };
-        bucket.budget += project.budget / typeTeams.length;
-        bucket.spent += spent / typeTeams.length;
-        teamBuckets.set(team.teamId, bucket);
-      });
-      return;
-    }
-
     const divisionIds = new Set<string>();
     project.teams.forEach((team) => {
       if (!team.dateArchived && team.teamTypeId && buckets.has(team.teamTypeId)) {
         divisionIds.add(team.teamTypeId);
       }
     });
+
+    // when filtering to one division, split it up by that division's individual teams instead; the division's share
+    // is the project's budget split across all of its distinct divisions, then split across that division's teams
+    if (teamTypeId) {
+      const typeTeams = project.teams.filter((team) => !team.dateArchived && team.teamTypeId === teamTypeId);
+      const divisionCount = Math.max(divisionIds.size, 1);
+      typeTeams.forEach((team) => {
+        const bucket = teamBuckets.get(team.teamId) ?? { label: team.teamName, budget: 0, spent: 0 };
+        bucket.budget += project.budget / divisionCount / typeTeams.length;
+        bucket.spent += spent / divisionCount / typeTeams.length;
+        teamBuckets.set(team.teamId, bucket);
+      });
+      return;
+    }
+
     const targets = divisionIds.size === 0 ? [unassigned] : [...divisionIds].map((id) => buckets.get(id)!);
     targets.forEach((bucket) => {
       bucket.budget += project.budget / targets.length;

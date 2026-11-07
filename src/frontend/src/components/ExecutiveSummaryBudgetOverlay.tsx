@@ -49,7 +49,12 @@ const ExecutiveSummaryBudgetOverlay: React.FC = () => {
   const [teamTypeId, setTeamTypeId] = useState<string>(ALL_TEAM_TYPES);
   // index (newest car first) of the first car shown; the next two older cars are shown with it
   const [startIndex, setStartIndex] = useState(0);
-  const { data: teamTypes } = useAllTeamTypes();
+  const {
+    data: teamTypes,
+    isLoading: teamTypesLoading,
+    isError: teamTypesIsError,
+    error: teamTypesError
+  } = useAllTeamTypes();
   const { data: allSummaries, isLoading, isError, error } = useGetAllExecutiveSummaries();
 
   // a car can have several summaries, so only keep the newest for each, newest car first
@@ -74,9 +79,10 @@ const ExecutiveSummaryBudgetOverlay: React.FC = () => {
   );
 
   if (isError) return <ErrorPage message={error?.message} />;
+  if (teamTypesIsError) return <ErrorPage message={teamTypesError?.message} />;
   const failedQuery = budgetQueries.find((q) => q.isError);
   if (failedQuery) return <ErrorPage message={(failedQuery.error as Error | null)?.message} />;
-  if (isLoading || !allSummaries) return <LoadingIndicator />;
+  if (isLoading || teamTypesLoading || !allSummaries) return <LoadingIndicator />;
   if (summaries.length === 0)
     return (
       <Typography textAlign="center" mt={4}>
@@ -114,7 +120,7 @@ const ExecutiveSummaryBudgetOverlay: React.FC = () => {
                 <Button
                   key={summary.executiveSummaryId}
                   size="small"
-                  onClick={() => setStartIndex(idx)}
+                  onClick={() => setStartIndex(Math.max(0, Math.min(idx, summaries.length - CARS_SHOWN)))}
                   sx={{
                     color: inRange ? accent : 'white',
                     border: inRange ? `1px solid ${accent}` : '1px solid transparent'
