@@ -36,7 +36,7 @@ import {
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllMembers, useCurrentUser, useUserScheduleSettings } from '../../../hooks/users.hooks';
-import { useAllWorkPackagesPreview } from '../../../hooks/work-packages.hooks';
+import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
 import { useAllTeamPreviews } from '../../../hooks/teams.hooks';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
 import ErrorPage from '../../ErrorPage';
@@ -284,7 +284,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     isError: workPackagesError,
     error: workPackagesErrorMsg,
     data: activeWorkPackages
-  } = useAllWorkPackagesPreview(WbsElementStatus.Active);
+  } = useAllWorkPackages(WbsElementStatus.Active);
   const { isLoading: teamsLoading, isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamPreviews();
   const { isError: teamTypesError, error: teamTypesErrorMsg, data: teamTypes } = useAllTeamTypes();
   const {

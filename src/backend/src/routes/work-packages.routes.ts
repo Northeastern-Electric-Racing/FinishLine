@@ -16,10 +16,10 @@ const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/dropdown', WorkPackagesController.getAllWorkPackagesDropdown);
 workPackagesRouter.get(
-  '/all-preview',
+  '/',
   query('status').optional().isIn(Object.values(WbsElementStatus)),
   validateInputs,
-  WorkPackagesController.getAllWorkPackagesPreview
+  WorkPackagesController.getAllWorkPackages
 );
 workPackagesRouter.post(
   '/get-many',

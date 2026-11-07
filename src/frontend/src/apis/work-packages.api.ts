@@ -135,10 +135,10 @@ export const getHomePageWorkPackages = (selection: WorkPackageSelection, filters
 };
 
 /**
- * Fetch all work packages in preview format (minimal data for dropdowns/lists).
+ * Fetch all work packages as the base model (enough for dropdowns and lists).
  */
-export const getAllWorkPackagesPreview = (status?: string) => {
-  return axios.get<BaseWorkPackage[]>(apiUrls.workPackagesAllPreview(status), {
+export const getAllWorkPackages = (status?: string) => {
+  return axios.get<BaseWorkPackage[]>(apiUrls.workPackagesAll(status), {
     transformResponse: (data) => JSON.parse(data).map(baseWorkPackageTransformer)
   });
 };

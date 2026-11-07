@@ -61,14 +61,14 @@ const validateWorkPackageWbs = (wbsNum: WbsNumber) => {
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
   /**
-   * Retrieve all work packages in preview format (minimal data for dropdowns/lists).
+   * Retrieve all work packages as the base model (enough for dropdowns and lists).
    *
    * @param status Optional status filter
    * @param organization the organization
    * @param carId the car number to filter by (only returns work packages from this car when provided)
-   * @returns a list of work package previews
+   * @returns the work packages, as the base model
    */
-  static async getAllWorkPackagesPreview(
+  static async getAllWorkPackages(
     status: WbsElementStatus | string | undefined,
     organization: Organization,
     carId?: string

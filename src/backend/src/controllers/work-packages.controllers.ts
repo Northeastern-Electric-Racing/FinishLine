@@ -12,12 +12,12 @@ import WorkPackagesService from '../services/work-packages.services.js';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {
-  // Fetch all work packages in preview format (minimal data for dropdowns/lists)
-  static async getAllWorkPackagesPreview(req: Request, res: Response, next: NextFunction) {
+  // Fetch all work packages as the base model (enough for dropdowns and lists)
+  static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { status } = req.query as { status?: string };
 
-      const outputWorkPackages: BaseWorkPackage[] = await WorkPackagesService.getAllWorkPackagesPreview(
+      const outputWorkPackages: BaseWorkPackage[] = await WorkPackagesService.getAllWorkPackages(
         status,
         req.organization,
         req.currentCar?.carId

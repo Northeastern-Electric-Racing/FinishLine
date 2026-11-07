@@ -18,7 +18,7 @@ import {
   deleteWorkPackage,
   editWorkPackage,
   getAllBlockingWorkPackages,
-  getAllWorkPackagesPreview,
+  getAllWorkPackages,
   getManyWorkPackages,
   getSingleWorkPackage,
   getWorkPackagesByProject,
@@ -34,14 +34,14 @@ import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 export const HOME_PAGE_WORK_PACKAGES_KEY = ['teams', 'work-packages'];
 
 /**
- * Custom React Hook to supply all work packages in preview format (minimal data).
+ * Custom React Hook to supply all work packages as the base model (enough for dropdowns and lists).
  */
-export const useAllWorkPackagesPreview = (status?: string) => {
+export const useAllWorkPackages = (status?: string) => {
   const { selectedCar } = useGlobalCarFilter();
   return useQuery<BaseWorkPackage[], Error>(
-    ['work packages', 'preview', status, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    ['work packages', 'all', status, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
     async () => {
-      const { data } = await getAllWorkPackagesPreview(status);
+      const { data } = await getAllWorkPackages(status);
       return data;
     }
   );
