@@ -37,24 +37,6 @@ vi.mock('../../../pages/HomePage/components/UsefulLinks', () => {
   };
 });
 
-vi.mock('../../../pages/HomePage/components/UpcomingDeadlines', () => {
-  return {
-    __esModule: true,
-    default: () => {
-      return <div>upcoming-deadlines</div>;
-    }
-  };
-});
-
-vi.mock('../../../pages/HomePage/components/WorkPackagesByTimelineStatus', () => {
-  return {
-    __esModule: true,
-    default: () => {
-      return <div>work-packages-by-timeline-status</div>;
-    }
-  };
-});
-
 vi.mock('../../../pages/HomePage/NewMemberHomePage', () => {
   return {
     __esModule: true,

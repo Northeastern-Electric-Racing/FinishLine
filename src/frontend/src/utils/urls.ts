@@ -4,7 +4,7 @@
  */
 
 import { WbsNumber, wbsPipe } from 'shared';
-import { WorkPackageSelection } from 'shared';
+import { WorkPackageSelection, WorkPackageTimelineFilters } from 'shared';
 
 /**
  * This file centralizes URLs used to query the API.
@@ -124,7 +124,16 @@ const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcomi
 const workPackagesMany = () => `${workPackages()}/get-many`;
 const workPackagesAllPreview = (status?: string) =>
   `${API_URL}/work-packages/all-preview${status ? `?status=${status}` : ''}`;
-const homePageWorkPackages = (selection: WorkPackageSelection) => `${workPackages()}/home-page/${selection}`;
+const homePageWorkPackages = (selection: WorkPackageSelection, filters: WorkPackageTimelineFilters) => {
+  const params = new URLSearchParams();
+  (['startsAfter', 'startsBefore', 'endsAfter', 'endsBefore'] as const).forEach((bound) => {
+    const date = filters[bound];
+    if (date) params.set(bound, date.toISOString());
+  });
+  if (filters.status) params.set('status', filters.status);
+  const queryString = params.toString();
+  return `${workPackages()}/home-page/${selection}${queryString ? `?${queryString}` : ''}`;
+};
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;

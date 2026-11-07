@@ -5,14 +5,14 @@
 
 import { renderHook, waitFor } from '@testing-library/react';
 import { AxiosResponse } from 'axios';
-import { WorkPackage } from 'shared';
+import { WorkPackageDetail } from 'shared';
 import AppContextQuery from '../../app/AppContextQuery';
 import { GlobalCarFilterProvider } from '../../app/AppGlobalCarFilterContext';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
-import { exampleAllWorkPackages, exampleResearchWorkPackage } from '../test-support/test-data/work-packages.stub';
+import { exampleResearchWorkPackageDetail } from '../test-support/test-data/work-package-details.stub';
 import { exampleWbsWorkPackage1 } from '../test-support/test-data/wbs-numbers.stub';
-import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
-import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/work-packages.hooks';
+import { getSingleWorkPackage } from '../../apis/work-packages.api';
+import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import * as carsHooks from '../../hooks/cars.hooks';
 import { exampleAllCars } from '../test-support/test-data/cars.stub';
 
@@ -30,23 +30,17 @@ beforeEach(() => {
 });
 
 describe('work package hooks', () => {
-  it('handles getting a list of work packages', async () => {
-    const mockedGetAllWorkPackages = getAllWorkPackages as jest.Mock<Promise<AxiosResponse<WorkPackage[]>>>;
-    mockedGetAllWorkPackages.mockReturnValue(mockPromiseAxiosResponse<WorkPackage[]>(exampleAllWorkPackages));
-
-    const { result } = renderHook(() => useAllWorkPackages(), { wrapper });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(exampleAllWorkPackages);
-  });
-
   it('handles getting a single work package', async () => {
-    const mockedGetSingleWorkPackage = getSingleWorkPackage as jest.Mock<Promise<AxiosResponse<WorkPackage>>>;
-    mockedGetSingleWorkPackage.mockReturnValue(mockPromiseAxiosResponse<WorkPackage>(exampleResearchWorkPackage));
+    const workPackage = exampleResearchWorkPackageDetail;
+    const mockedGetSingleWorkPackage = getSingleWorkPackage as unknown as jest.Mock<
+      Promise<AxiosResponse<WorkPackageDetail>>
+    >;
+    mockedGetSingleWorkPackage.mockReturnValue(mockPromiseAxiosResponse<WorkPackageDetail>(workPackage));
 
     const { result } = renderHook(() => useSingleWorkPackage(exampleWbsWorkPackage1), {
       wrapper
     });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(exampleResearchWorkPackage);
+    expect(result.current.data).toEqual(workPackage);
   });
 });

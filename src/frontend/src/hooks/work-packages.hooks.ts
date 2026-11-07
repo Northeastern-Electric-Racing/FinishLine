@@ -4,14 +4,20 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { WorkPackage, WorkPackagePreview, WbsNumber, WorkPackageSelection } from 'shared';
+import {
+  BaseWorkPackage,
+  WbsNumber,
+  WorkPackageCard,
+  WorkPackageDetail,
+  WorkPackageSelection,
+  WorkPackageTimelineFilters
+} from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import {
   createSingleWorkPackage,
   deleteWorkPackage,
   editWorkPackage,
   getAllBlockingWorkPackages,
-  getAllWorkPackages,
   getAllWorkPackagesPreview,
   getManyWorkPackages,
   getSingleWorkPackage,
@@ -23,26 +29,16 @@ import {
 } from '../apis/work-packages.api';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
-/**
- * Custom React Hook to supply all work packages.
- */
-export const useAllWorkPackages = (queryParams?: { [field: string]: string }) => {
-  const { selectedCar } = useGlobalCarFilter();
-  return useQuery<WorkPackage[], Error>(
-    ['work packages', queryParams, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
-    async () => {
-      const { data } = await getAllWorkPackages(queryParams);
-      return data;
-    }
-  );
-};
+// kept under 'teams' so team changes (which decide whose work packages the home page shows) still refresh it;
+// work package mutations invalidate it explicitly
+export const HOME_PAGE_WORK_PACKAGES_KEY = ['teams', 'work-packages'];
 
 /**
  * Custom React Hook to supply all work packages in preview format (minimal data).
  */
 export const useAllWorkPackagesPreview = (status?: string) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<WorkPackagePreview[], Error>(
+  return useQuery<BaseWorkPackage[], Error>(
     ['work packages', 'preview', status, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
     async () => {
       const { data } = await getAllWorkPackagesPreview(status);
@@ -56,11 +52,15 @@ export const useAllWorkPackagesPreview = (status?: string) => {
  *
  * @param wbsNum WBS number of the requested work package.
  */
-export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
-  return useQuery<WorkPackage, Error>(['work packages', wbsNum], async () => {
-    const { data } = await getSingleWorkPackage(wbsNum);
-    return data;
-  });
+export const useSingleWorkPackage = (wbsNum: WbsNumber, enabled = true) => {
+  return useQuery<WorkPackageDetail, Error>(
+    ['work packages', wbsNum],
+    async () => {
+      const { data } = await getSingleWorkPackage(wbsNum);
+      return data;
+    },
+    { enabled }
+  );
 };
 
 /**
@@ -68,8 +68,8 @@ export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
  * @param projectWbsNum the wbs number of the project
  */
 export const useWorkPackagesByProject = (projectWbsNum: WbsNumber, enabled = true) => {
-  return useQuery<WorkPackage[], Error>(
-    ['work-packages', 'by-project', wbsPipe(projectWbsNum)],
+  return useQuery<BaseWorkPackage[], Error>(
+    ['work packages', 'by-project', wbsPipe(projectWbsNum)],
     async () => {
       const { data } = await getWorkPackagesByProject(projectWbsNum);
       return data;
@@ -85,7 +85,7 @@ export const useWorkPackagesByProject = (projectWbsNum: WbsNumber, enabled = tru
  */
 export const useCreateSingleWorkPackage = () => {
   const queryClient = useQueryClient();
-  return useMutation<WorkPackage, Error, WorkPackageCreateArgs>(
+  return useMutation<BaseWorkPackage, Error, WorkPackageCreateArgs>(
     ['work packages', 'create'],
     async (wpPayload: WorkPackageCreateArgs) => {
       const { data } = await createSingleWorkPackage(wpPayload);
@@ -95,6 +95,8 @@ export const useCreateSingleWorkPackage = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['teams', false]); //invalidations for gantt chart
         queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['work packages']);
+        queryClient.invalidateQueries(HOME_PAGE_WORK_PACKAGES_KEY);
       }
     }
   );
@@ -107,15 +109,15 @@ export const useCreateSingleWorkPackage = () => {
  */
 export const useEditWorkPackage = (_wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, WorkPackageEditArgs>(
+  return useMutation<void, Error, WorkPackageEditArgs>(
     ['work packages', 'edit'],
     async (wpPayload: WorkPackageEditArgs) => {
-      const { data } = await editWorkPackage(wpPayload);
-      return data;
+      await editWorkPackage(wpPayload);
     },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['work packages']);
+        queryClient.invalidateQueries(HOME_PAGE_WORK_PACKAGES_KEY);
       }
     }
   );
@@ -126,15 +128,15 @@ export const useEditWorkPackage = (_wbsNum: WbsNumber) => {
  */
 export const useDeleteWorkPackage = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, WbsNumber>(
+  return useMutation<void, Error, WbsNumber>(
     ['work packages', 'delete'],
     async (wbsNum: WbsNumber) => {
-      const { data } = await deleteWorkPackage(wbsNum);
-      return data;
+      await deleteWorkPackage(wbsNum);
     },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['work packages']);
+        queryClient.invalidateQueries(HOME_PAGE_WORK_PACKAGES_KEY);
       }
     }
   );
@@ -143,11 +145,16 @@ export const useDeleteWorkPackage = () => {
 /**
  * Custom React Hook to get all blocking work packages
  */
-export const useGetBlockingWorkPackages = (wbsNum: WbsNumber) => {
-  return useQuery<WorkPackage[], Error>(['work packages', 'blocking', wbsNum], async () => {
-    const { data } = await getAllBlockingWorkPackages(wbsNum);
-    return data;
-  });
+export const useGetBlockingWorkPackages = (wbsNum: WbsNumber | undefined, enabled = true) => {
+  return useQuery<BaseWorkPackage[], Error>(
+    ['work packages', 'blocking', wbsNum],
+    async () => {
+      // only runs when wbsNum is set, per `enabled` below
+      const { data } = await getAllBlockingWorkPackages(wbsNum!);
+      return data;
+    },
+    { enabled: enabled && !!wbsNum }
+  );
 };
 
 /**
@@ -158,7 +165,7 @@ export const useGetManyWorkPackages = (wbsNums: WbsNumber[]) => {
   const filteredWbsNums =
     selectedCar === 'all-cars' ? wbsNums : wbsNums.filter((wbsNum) => wbsNum.carNumber === selectedCar.wbsNum.carNumber);
   const carKey = selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id;
-  return useQuery<WorkPackage[], Error>(['work packages', 'many', filteredWbsNums, carKey], async () => {
+  return useQuery<BaseWorkPackage[], Error>(['work packages', 'many', filteredWbsNums, carKey], async () => {
     const { data } = await getManyWorkPackages(filteredWbsNums);
     return data;
   });
@@ -168,18 +175,28 @@ export const useGetManyWorkPackages = (wbsNums: WbsNumber[]) => {
  * Custom React Hook to slack upcoming deadlines.
  */
 export const useSlackUpcomingDeadlines = () => {
-  return useMutation<{ message: string }, Error, Date>(['slack upcoming deadlines'], async (deadline: Date) => {
-    const { data } = await slackUpcomingDeadlines(deadline);
-    return data;
+  return useMutation<void, Error, Date>(['slack upcoming deadlines'], async (deadline: Date) => {
+    await slackUpcomingDeadlines(deadline);
   });
 };
 
-export const useHomeScreenWorkPackages = (selection: WorkPackageSelection) => {
+/**
+ * Custom React Hook to get the home page work packages
+ * @param selection whose work packages to get
+ * @param filters when they run; pass dates that stay the same between renders (e.g. from useState) so the query
+ * doesn't refetch every render
+ */
+export const useHomeScreenWorkPackages = (selection: WorkPackageSelection, filters: WorkPackageTimelineFilters = {}) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<WorkPackage[], Error>(
-    ['teams', 'work-packages', selection, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+  return useQuery<WorkPackageCard[], Error>(
+    [
+      ...HOME_PAGE_WORK_PACKAGES_KEY,
+      selection,
+      JSON.stringify(filters),
+      selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id
+    ],
     async () => {
-      const { data } = await getHomePageWorkPackages(selection);
+      const { data } = await getHomePageWorkPackages(selection, filters);
       return data;
     }
   );

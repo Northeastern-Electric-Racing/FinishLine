@@ -283,8 +283,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     isLoading: workPackagesLoading,
     isError: workPackagesError,
     error: workPackagesErrorMsg,
-    data: allWorkPackages
-  } = useAllWorkPackagesPreview();
+    data: activeWorkPackages
+  } = useAllWorkPackagesPreview(WbsElementStatus.Active);
   const { isLoading: teamsLoading, isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamPreviews();
   const { isError: teamTypesError, error: teamTypesErrorMsg, data: teamTypes } = useAllTeamTypes();
   const {
@@ -714,8 +714,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
 
   const workPackageOptions = workPackagesLoading
     ? [{ id: 'loading', label: 'Loading work packages...' }]
-    : (allWorkPackages || [])
-        .filter((wp) => wp.status === WbsElementStatus.Active)
+    : (activeWorkPackages || [])
         .map((wp) => ({
           label: wbsNamePipe(wp),
           id: wp.id,

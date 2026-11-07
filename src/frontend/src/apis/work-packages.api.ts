@@ -5,17 +5,22 @@
 
 import axios from '../utils/axios';
 import {
+  BaseWorkPackage,
   dateToMidnightUTC,
   DescriptionBulletPreview,
   WbsNumber,
-  WorkPackage,
-  WorkPackagePreview,
+  WorkPackageCard,
+  WorkPackageDetail,
   WorkPackageStage
 } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
-import { workPackagePreviewTransformer, workPackageTransformer } from './transformers/work-packages.transformers';
-import { WorkPackageSelection } from 'shared';
+import {
+  baseWorkPackageTransformer,
+  workPackageCardTransformer,
+  workPackageDetailTransformer
+} from './transformers/work-packages.transformers';
+import { WorkPackageSelection, WorkPackageTimelineFilters } from 'shared';
 
 export interface WorkPackageApiInputs {
   name: string;
@@ -36,22 +41,13 @@ export interface WorkPackageEditArgs extends WorkPackageApiInputs {
 }
 
 /**
- * Fetch all work packages.
- */
-export const getAllWorkPackages = (queryParams?: { [field: string]: string }) => {
-  return axios.get<WorkPackage[]>(apiUrls.workPackages(queryParams), {
-    transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
-  });
-};
-
-/**
  * Fetch a single work package.
  *
  * @param wbsNum Work Package WBS number of the requested work package.
  */
 export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
-  return axios.get<WorkPackage>(apiUrls.workPackagesByWbsNum(wbsPipe(wbsNum)), {
-    transformResponse: (data) => workPackageTransformer(JSON.parse(data))
+  return axios.get<WorkPackageDetail>(apiUrls.workPackagesByWbsNum(wbsPipe(wbsNum)), {
+    transformResponse: (data) => workPackageDetailTransformer(JSON.parse(data))
   });
 };
 
@@ -61,8 +57,8 @@ export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
  * @returns the work packages for the given project
  */
 export const getWorkPackagesByProject = (projectWbsNum: WbsNumber) => {
-  return axios.get<WorkPackage[]>(apiUrls.workPackagesByProject(wbsPipe(projectWbsNum)), {
-    transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
+  return axios.get<BaseWorkPackage[]>(apiUrls.workPackagesByProject(wbsPipe(projectWbsNum)), {
+    transformResponse: (data) => JSON.parse(data).map(baseWorkPackageTransformer)
   });
 };
 
@@ -72,19 +68,20 @@ export const getWorkPackagesByProject = (projectWbsNum: WbsNumber) => {
  * @param payload Payload containing all the necessary data to create a work package.
  */
 export const createSingleWorkPackage = (payload: WorkPackageCreateArgs) => {
-  return axios.post<WorkPackage>(apiUrls.workPackagesCreate(), {
-    ...payload
-  });
+  return axios.post<BaseWorkPackage>(
+    apiUrls.workPackagesCreate(),
+    { ...payload },
+    { transformResponse: (data) => baseWorkPackageTransformer(JSON.parse(data)) }
+  );
 };
 
 /**
  * Edit a work package.
  *
  * @param payload Object containing required key-value pairs for backend function to edit work package
- * @returns Promise that will resolve to either a success status code or a fail status code.
  */
 export const editWorkPackage = (payload: WorkPackageEditArgs) => {
-  return axios.post<{ message: string }>(apiUrls.workPackagesEdit(), {
+  return axios.post<void>(apiUrls.workPackagesEdit(), {
     ...payload
   });
 };
@@ -95,7 +92,7 @@ export const editWorkPackage = (payload: WorkPackageEditArgs) => {
  * @param wbsNum The WBS Number of the work package being deleted.
  */
 export const deleteWorkPackage = (wbsNum: WbsNumber) => {
-  return axios.delete<{ message: string }>(apiUrls.workPackagesDelete(wbsPipe(wbsNum)));
+  return axios.delete<void>(apiUrls.workPackagesDelete(wbsPipe(wbsNum)));
 };
 
 /**
@@ -103,8 +100,8 @@ export const deleteWorkPackage = (wbsNum: WbsNumber) => {
  * @param wbsNum The WBS Number of the work package being changed.
  */
 export const getAllBlockingWorkPackages = (wbsNum: WbsNumber) => {
-  return axios.get<WorkPackage[]>(apiUrls.workPackagesBlocking(wbsPipe(wbsNum)), {
-    transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
+  return axios.get<BaseWorkPackage[]>(apiUrls.workPackagesBlocking(wbsPipe(wbsNum)), {
+    transformResponse: (data) => JSON.parse(data).map(baseWorkPackageTransformer)
   });
 };
 
@@ -113,11 +110,11 @@ export const getAllBlockingWorkPackages = (wbsNum: WbsNumber) => {
  * @param wbsNums the WBS Numbers of the work packages being fetched.
  */
 export const getManyWorkPackages = (wbsNums: WbsNumber[]) => {
-  return axios.post<WorkPackage[]>(
+  return axios.post<BaseWorkPackage[]>(
     apiUrls.workPackagesMany(),
     { wbsNums },
     {
-      transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
+      transformResponse: (data) => JSON.parse(data).map(baseWorkPackageTransformer)
     }
   );
 };
@@ -126,14 +123,14 @@ export const getManyWorkPackages = (wbsNums: WbsNumber[]) => {
  * Slack upcoming deadlines.
  */
 export const slackUpcomingDeadlines = (deadline: Date) => {
-  return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
+  return axios.post<void>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
     deadline: dateToMidnightUTC(deadline)
   });
 };
 
-export const getHomePageWorkPackages = (selection: WorkPackageSelection) => {
-  return axios.get<WorkPackage[]>(apiUrls.homePageWorkPackages(selection), {
-    transformResponse: (data) => JSON.parse(data).map(workPackagePreviewTransformer)
+export const getHomePageWorkPackages = (selection: WorkPackageSelection, filters: WorkPackageTimelineFilters) => {
+  return axios.get<WorkPackageCard[]>(apiUrls.homePageWorkPackages(selection, filters), {
+    transformResponse: (data) => JSON.parse(data).map(workPackageCardTransformer)
   });
 };
 
@@ -141,7 +138,7 @@ export const getHomePageWorkPackages = (selection: WorkPackageSelection) => {
  * Fetch all work packages in preview format (minimal data for dropdowns/lists).
  */
 export const getAllWorkPackagesPreview = (status?: string) => {
-  return axios.get<WorkPackagePreview[]>(apiUrls.workPackagesAllPreview(status), {
-    transformResponse: (data) => JSON.parse(data).map(workPackagePreviewTransformer)
+  return axios.get<BaseWorkPackage[]>(apiUrls.workPackagesAllPreview(status), {
+    transformResponse: (data) => JSON.parse(data).map(baseWorkPackageTransformer)
   });
 };
