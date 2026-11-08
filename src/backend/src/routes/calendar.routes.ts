@@ -42,6 +42,7 @@ calendarRouter.post(
   nonEmptyString(body('description')),
   nonEmptyString(body('colorHexCode')),
   body('isNewMemberCalendar').isBoolean(),
+  body('isLeadCalendar').isBoolean(),
   validateInputs,
   CalendarController.createCalendar
 );
@@ -64,6 +65,7 @@ calendarRouter.post(
   body('documents').isBoolean(),
   body('description').isBoolean(),
   body('onlyHeadsOrAbove').isBoolean(),
+  body('onlyAdminsOrAbove').isBoolean(),
   body('requiresConfirmation').isBoolean(),
   body('sendSlackNotifications').isBoolean(),
   body('takeAttendance').isBoolean(),
@@ -89,6 +91,7 @@ calendarRouter.post(
   body('documents').isBoolean(),
   body('description').isBoolean(),
   body('onlyHeadsOrAbove').isBoolean(),
+  body('onlyAdminsOrAbove').isBoolean(),
   body('requiresConfirmation').isBoolean(),
   body('sendSlackNotifications').isBoolean(),
   body('takeAttendance').isBoolean(),
@@ -254,6 +257,7 @@ calendarRouter.post(
   nonEmptyString(body('description')),
   nonEmptyString(body('colorHexCode')),
   body('isNewMemberCalendar').isBoolean(),
+  body('isLeadCalendar').isBoolean(),
   validateInputs,
   CalendarController.editCalendar
 );

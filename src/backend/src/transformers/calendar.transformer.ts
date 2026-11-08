@@ -83,6 +83,7 @@ export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<Even
     documents: eventType.documents,
     description: eventType.description,
     onlyHeadsOrAboveForEventCreation: eventType.onlyHeadsOrAboveForEventCreation,
+    onlyAdminsOrAboveForEventCreation: eventType.onlyAdminsOrAboveForEventCreation,
     requiresConfirmation: eventType.requiresConfirmation,
     sendSlackNotifications: eventType.sendSlackNotifications,
     takeAttendance: eventType.takeAttendance
@@ -98,7 +99,8 @@ export const calendarTransformer = (calendar: Prisma.CalendarGetPayload<Calendar
     userCreated: userTransformer(calendar.userCreated),
     dateCreated: calendar.dateCreated,
     eventTypes: calendar.eventTypes.map(eventTypeTransformer),
-    isNewMemberCalendar: calendar.isNewMemberCalendar
+    isNewMemberCalendar: calendar.isNewMemberCalendar,
+    isLeadCalendar: calendar.isLeadCalendar
   };
 };
 

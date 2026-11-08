@@ -1258,37 +1258,39 @@ model Calendar {
   organizationId      String
   organization        Organization @relation(fields: [organizationId], references: [organizationId])
   isNewMemberCalendar Boolean      @default(false)
+  isLeadCalendar      Boolean      @default(false)
 }
 
 model Event_Type {
-  eventTypeId                      String       @id @default(uuid())
-  name                             String
-  dateCreated                      DateTime     @default(now())
-  dateDeleted                      DateTime?
-  userCreatedId                    String
-  userCreated                      User         @relation(name: "eventTypeCreator", fields: [userCreatedId], references: [userId])
-  userDeletedId                    String?
-  userDeleted                      User?        @relation(fields: [userDeletedId], references: [userId], name: "eventTypeDeleter")
-  calendars                        Calendar[]
-  requiredMembers                  Boolean
-  optionalMembers                  Boolean
-  teams                            Boolean
-  teamType                         Boolean
-  location                         Boolean
-  zoomLink                         Boolean
-  shop                             Boolean
-  machinery                        Boolean
-  workPackage                      Boolean
-  questionDocument                 Boolean
-  documents                        Boolean
-  description                      Boolean
-  onlyHeadsOrAboveForEventCreation Boolean
-  requiresConfirmation             Boolean
-  sendSlackNotifications           Boolean
-  takeAttendance                   Boolean
-  events                           Event[]
-  organizationId                   String
-  organization                     Organization @relation(fields: [organizationId], references: [organizationId])
+  eventTypeId                       String       @id @default(uuid())
+  name                              String
+  dateCreated                       DateTime     @default(now())
+  dateDeleted                       DateTime?
+  userCreatedId                     String
+  userCreated                       User         @relation(name: "eventTypeCreator", fields: [userCreatedId], references: [userId])
+  userDeletedId                     String?
+  userDeleted                       User?        @relation(fields: [userDeletedId], references: [userId], name: "eventTypeDeleter")
+  calendars                         Calendar[]
+  requiredMembers                   Boolean
+  optionalMembers                   Boolean
+  teams                             Boolean
+  teamType                          Boolean
+  location                          Boolean
+  zoomLink                          Boolean
+  shop                              Boolean
+  machinery                         Boolean
+  workPackage                       Boolean
+  questionDocument                  Boolean
+  documents                         Boolean
+  description                       Boolean
+  onlyHeadsOrAboveForEventCreation  Boolean
+  onlyAdminsOrAboveForEventCreation Boolean      @default(false)
+  requiresConfirmation              Boolean
+  sendSlackNotifications            Boolean
+  takeAttendance                    Boolean
+  events                            Event[]
+  organizationId                    String
+  organization                      Organization @relation(fields: [organizationId], references: [organizationId])
 }
 
 model Team_Type {
