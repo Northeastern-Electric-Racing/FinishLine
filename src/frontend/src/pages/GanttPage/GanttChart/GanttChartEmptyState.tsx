@@ -18,8 +18,6 @@ const GanttChartEmptyState = ({ activeFilters, onReset }: GanttChartEmptyStatePr
   return (
     <Box
       sx={{
-        position: 'sticky',
-        left: 0,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
