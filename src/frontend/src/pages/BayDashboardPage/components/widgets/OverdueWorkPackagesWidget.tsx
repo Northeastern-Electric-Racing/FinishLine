@@ -99,6 +99,15 @@ const InfoPill: React.FC<{ icon: React.ReactNode; label: string }> = ({ icon, la
   </Box>
 );
 
+const BlockerLine: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <Box component="li" sx={{ display: 'flex', alignItems: 'center', gap: '1cqw', minWidth: 0 }}>
+    <Box sx={{ width: '0.7cqw', height: '0.7cqw', borderRadius: '50%', bgcolor: 'white', flexShrink: 0 }} />
+    <Typography noWrap sx={{ fontSize: '2.1cqw', lineHeight: 1.2, minWidth: 0 }}>
+      {children}
+    </Typography>
+  </Box>
+);
+
 const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = ({ wp }) => {
   const numDaysOverdue = daysOverdue(new Date(wp.endDate));
   const hiddenBlockers = wp.blockedBy.length - MAX_BLOCKERS;
@@ -114,38 +123,33 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = (
         gap: '2cqw',
         p: '2cqw',
         borderRadius: '2.5cqw',
-        bgcolor: 'rgba(0, 0, 0, 0.35)',
+        bgcolor: '#000000',
         border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderLeft: `0.8cqw solid ${NER_RED}`,
         color: 'white',
         overflow: 'hidden'
       }}
     >
       <Box sx={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
-        <Typography noWrap sx={{ fontSize: '2.3cqw', opacity: 0.75 }}>
+        <Typography noWrap sx={{ fontSize: '2.3cqw', lineHeight: 1.2, mb: '1cqw', color: NER_RED, fontWeight: 'bold' }}>
           {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
         </Typography>
         <Typography noWrap sx={{ fontSize: '3.6cqw', fontWeight: 'bold', lineHeight: 1.2 }}>
           {wbsPipe(wp.wbsNum)} - {wp.name}
         </Typography>
-        <Typography sx={{ fontSize: '2.1cqw', mt: '0.6cqw', textDecoration: 'underline' }}>Blocked By:</Typography>
-        <Box component="ul" sx={{ m: 0, pl: '3cqw' }}>
+        <Typography sx={{ fontSize: '2.1cqw', lineHeight: 1.2, mt: '1.5cqw', textDecoration: 'underline' }}>
+          Blocked By:
+        </Typography>
+        <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }}>
           {wp.blockedBy.length === 0 ? (
-            <li>
-              <Typography noWrap sx={{ fontSize: '2.1cqw' }}>
-                No Blockers
-              </Typography>
-            </li>
+            <BlockerLine>No Blockers</BlockerLine>
           ) : (
             wp.blockedBy.slice(0, MAX_BLOCKERS).map((blocker) => (
-              <li key={wbsPipe(blocker.wbsNum)}>
-                <Typography noWrap sx={{ fontSize: '2.1cqw' }}>
-                  {wbsPipe(blocker.wbsNum)} - {blocker.name}
-                  {blocker === wp.blockedBy[MAX_BLOCKERS - 1] && hiddenBlockers > 0 && (
-                    <Box component="span" sx={{ opacity: 0.7 }}>{` +${hiddenBlockers} more`}</Box>
-                  )}
-                </Typography>
-              </li>
+              <BlockerLine key={wbsPipe(blocker.wbsNum)}>
+                {wbsPipe(blocker.wbsNum)} - {blocker.name}
+                {blocker === wp.blockedBy[MAX_BLOCKERS - 1] && hiddenBlockers > 0 && (
+                  <Box component="span" sx={{ opacity: 0.7, ml: '2cqw' }}>+{hiddenBlockers} more</Box>
+                )}
+              </BlockerLine>
             ))
           )}
         </Box>
