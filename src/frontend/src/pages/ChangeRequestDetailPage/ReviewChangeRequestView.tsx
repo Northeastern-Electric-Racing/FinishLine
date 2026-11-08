@@ -7,7 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { FormInput } from './ReviewChangeRequest';
-import { ChangeRequest, WorkPackage } from 'shared';
+import { ChangeRequest } from 'shared';
 import { useState } from 'react';
 import {
   Dialog,
@@ -29,7 +29,6 @@ interface ReviewChangeRequestViewProps {
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
-  blockingWorkPackages: WorkPackage[];
 }
 
 const schema = yup.object().shape({
@@ -41,8 +40,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   cr,
   modalShow,
   onHide,
-  onSubmit,
-  blockingWorkPackages
+  onSubmit
 }: ReviewChangeRequestViewProps) => {
   const [selectedTimelineImpact] = useState(-1);
   const [showWarning, setShowWarning] = useState(false);
@@ -132,7 +130,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
           onHide={() => setShowWarning(false)}
           open={showWarning}
           onSubmit={() => onSubmitWrapper(getValues())}
-          blockingWorkPackages={blockingWorkPackages}
+          wbsNum={cr.wbsNum}
         />
       }
     </>

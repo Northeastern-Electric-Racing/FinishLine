@@ -1,17 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import OverdueWorkPackagesView from './OverdueWorkPackageView';
 import { useHomeScreenWorkPackages } from '../../../hooks/work-packages.hooks';
 import { useTheme } from '@mui/material';
-import { WorkPackageSelection } from 'shared';
+import { dateToMidnightUTC, WorkPackageSelection } from 'shared';
 
 const OverdueWorkPackages: React.FC<{}> = () => {
   const theme = useTheme();
-  const { data: overdueWPs, isLoading, isError, error } = useHomeScreenWorkPackages(WorkPackageSelection.ALL_OVERDUE);
+  // the user's calendar day, in the same midnight-UTC form work package dates are stored in
+  const [today] = useState(() => dateToMidnightUTC(new Date()));
+  const {
+    data: overdueWPs,
+    isLoading,
+    isError,
+    error
+  } = useHomeScreenWorkPackages(WorkPackageSelection.ALL, {
+    endsBefore: today
+  });
 
-  if (isLoading || !overdueWPs) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
+  if (isLoading || !overdueWPs) return <LoadingIndicator />;
 
   return <OverdueWorkPackagesView theme={theme} workPackages={overdueWPs} />;
 };

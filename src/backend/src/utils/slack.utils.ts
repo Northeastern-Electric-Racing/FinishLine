@@ -1,7 +1,7 @@
 import {
   ChangeRequest,
   daysBetween,
-  Task,
+  BaseTask,
   wbsPipe,
   calculateEndDate,
   CreateSponsorTask,
@@ -29,9 +29,6 @@ import { HttpException } from './errors.utils.js';
 import { Change_Request, Team, WBS_Element } from '@prisma/client';
 import { UserWithSettings } from './auth.utils.js';
 import { usersToSlackPings, userToSlackPing } from './notifications.utils.js';
-import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
-import { Prisma } from '@prisma/client';
-import { userTransformer } from '../transformers/user.transformer.js';
 import { SlackRichTextBlock } from '../services/slack.services.js';
 import UsersService from '../services/users.services.js';
 
@@ -60,16 +57,28 @@ export const buildDueString = (daysUntilDeadline: number): string => {
 };
 
 // build the "user" string for the upcoming deadlines slack message
-const buildUserString = (lead?: User, slackId?: string): string => {
+const buildUserString = (lead?: Pick<User, 'firstName' | 'lastName'>, slackId?: string): string => {
   if (lead && slackId) return `<@${slackId}>`;
   if (lead && !slackId)
     return `${lead.firstName} ${lead.lastName} (<https://finishlinebyner.com/settings|set your slack id here>)`;
   return '(no project lead)';
 };
 
-export const sendSlackUpcomingDeadlineNotification = async (
-  workPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>
-): Promise<void> => {
+type WbsOwner = Pick<User, 'userId' | 'firstName' | 'lastName'>;
+
+export const sendSlackUpcomingDeadlineNotification = async (workPackage: {
+  startDate: Date;
+  duration: number;
+  wbsElement: {
+    carNumber: number;
+    projectNumber: number;
+    workPackageNumber: number;
+    name: string;
+    lead: WbsOwner | null;
+    manager: WbsOwner | null;
+  };
+  project: { wbsElement: { name: string }; teams: Pick<Team, 'slackId'>[] };
+}): Promise<void> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
 
@@ -77,10 +86,8 @@ export const sendSlackUpcomingDeadlineNotification = async (
   const slackId = lead ? await getUserSlackId(lead?.userId) : undefined;
   const daysUntilDeadline = daysBetween(endDate, new Date());
 
-  const userString = lead ? buildUserString(userTransformer(lead), slackId) : 'No Lead Set';
-  const managerString = manager
-    ? buildUserString(userTransformer(manager), await getUserSlackId(manager.userId))
-    : 'No Manager Set';
+  const userString = lead ? buildUserString(lead, slackId) : 'No Lead Set';
+  const managerString = manager ? buildUserString(manager, await getUserSlackId(manager.userId)) : 'No Manager Set';
   const dueString = buildDueString(daysUntilDeadline);
 
   const wbsNumber: string = wbsPipe(workPackage.wbsElement);
@@ -124,7 +131,7 @@ export const sendSlackRequestedReviewNotification = async (
  */
 export const sendSlackTaskAssignedNotification = async (
   slackId: string,
-  task: Task,
+  task: Pick<BaseTask, 'wbsNum' | 'title'>,
   organizationId: string
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
@@ -352,7 +359,7 @@ export const sendSlackEventConfirmNotification = async (
  * @returns the channelId and timestamp of the messages sent in slack
  */
 export const sendSlackChangeRequestNotification = async (
-  team: Team,
+  team: Pick<Team, 'slackId'>,
   message: string,
   crId: string,
   identifier: number
@@ -369,7 +376,7 @@ export const sendSlackChangeRequestNotification = async (
 };
 
 export const sendAndGetSlackCRNotifications = async (
-  teams: Team[],
+  teams: Pick<Team, 'slackId'>[],
   changeRequest: Change_Request,
   submitter: User,
   wbsElement?: WBS_Element,

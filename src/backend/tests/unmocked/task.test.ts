@@ -1,4 +1,4 @@
-import { financeMember, flashAdmin, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data.js';
+import { financeMember, flashAdmin, member, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data.js';
 import {
   AccessDeniedException,
   HttpException,
@@ -14,7 +14,9 @@ import {
   resetUsers,
   createTestCar,
   createTestProject,
-  createTestWorkPackage
+  createTestWorkPackage,
+  createTestTeamType,
+  createTestTaskLabel
 } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import TasksService from '../../src/services/tasks.services.js';
@@ -59,7 +61,7 @@ describe('Task Tests', () => {
         workPackageNumber: newWbsElement.workPackageNumber
       };
 
-      const updatedTask = await TasksService.editTask(
+      await TasksService.editTask(
         user,
         organizationId,
         task.taskId,
@@ -73,27 +75,26 @@ describe('Task Tests', () => {
         newWbsNum
       );
 
-      expect(updatedTask.taskId).toBe(task.taskId);
-      expect(updatedTask.wbsNum).toBeDefined();
+      const updatedTask = await prisma.task.findUnique({
+        where: { taskId: task.taskId },
+        select: { taskId: true, wbsElement: { select: { carNumber: true, projectNumber: true, workPackageNumber: true } } }
+      });
+      expect(updatedTask?.taskId).toBe(task.taskId);
+      expect(updatedTask?.wbsElement).toBeDefined();
     });
 
     it('does not update wbs element when wbsNum is not provided', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
 
-      const updatedTask = await TasksService.editTask(
-        user,
-        organizationId,
-        task.taskId,
-        'Updated Title',
-        '',
-        'HIGH',
-        [],
-        []
-      );
+      await TasksService.editTask(user, organizationId, task.taskId, 'Updated Title', '', 'HIGH', [], []);
 
-      expect(updatedTask.taskId).toBe(task.taskId);
-      expect(updatedTask.title).toBe('Updated Title');
+      const updatedTask = await prisma.task.findUnique({
+        where: { taskId: task.taskId },
+        select: { taskId: true, title: true }
+      });
+      expect(updatedTask?.taskId).toBe(task.taskId);
+      expect(updatedTask?.title).toBe('Updated Title');
     });
 
     it('throws NotFoundException when wbsNum does not exist', async () => {
@@ -164,21 +165,16 @@ describe('Task Tests', () => {
     it('successfully sets labels on a task', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
-      const label = await TasksService.createTaskLabel(user, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(user, organizationId, 'Test Label', '#3B82F6');
 
-      const updatedTask = await TasksService.editTask(
-        user,
-        organizationId,
-        task.taskId,
-        'Test Task',
-        '',
-        'HIGH',
-        [label.taskLabelId],
-        []
-      );
+      await TasksService.editTask(user, organizationId, task.taskId, 'Test Task', '', 'HIGH', [label.taskLabelId], []);
 
-      expect(updatedTask.labels).toHaveLength(1);
-      expect(updatedTask.labels[0].taskLabelId).toBe(label.taskLabelId);
+      const updatedTask = await prisma.task.findUnique({
+        where: { taskId: task.taskId },
+        select: { labels: { select: { taskLabelId: true } } }
+      });
+      expect(updatedTask?.labels).toHaveLength(1);
+      expect(updatedTask?.labels[0].taskLabelId).toBe(label.taskLabelId);
     });
 
     it('throws NotFoundException when a label id does not exist', async () => {
@@ -193,7 +189,7 @@ describe('Task Tests', () => {
     it('throws DeletedException when a label is deleted', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const task = await createTestTask(user, 'Test Task', '', [], 'HIGH', 'IN_BACKLOG', organizationId);
-      const label = await TasksService.createTaskLabel(user, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(user, organizationId, 'Test Label', '#3B82F6');
       await prisma.task_Label.update({ where: { taskLabelId: label.taskLabelId }, data: { dateDeleted: new Date() } });
 
       await expect(async () =>
@@ -211,7 +207,7 @@ describe('Task Tests', () => {
         }
       });
       const otherUser = await createTestUser(flashAdmin, otherOrg.organizationId);
-      const label = await TasksService.createTaskLabel(otherUser, 'Test Label', '#3B82F6', otherOrg);
+      const label = await createTestTaskLabel(otherUser, otherOrg.organizationId, 'Test Label', '#3B82F6');
 
       await expect(async () =>
         TasksService.editTask(user, organizationId, task.taskId, 'Test Task', '', 'HIGH', [label.taskLabelId], [])
@@ -260,6 +256,103 @@ describe('Task Tests', () => {
           [blockerTask.taskId]
         )
       ).rejects.toThrow(new HttpException(400, `Cannot create task as done: blocked by ${blockerTask.title}`));
+    });
+
+    it('does not let guests create tasks', async () => {
+      const admin = await createTestUser(supermanAdmin, organizationId);
+      // sets up project 0.1.0 with a team, so validation gets as far as the guest check
+      const { organization: org } = await createTestTaskWithOrganization(admin, organization);
+      const guest = await createTestUser(theVisitorGuest, organizationId);
+
+      await expect(async () =>
+        TasksService.createTask(
+          guest,
+          { carNumber: 0, projectNumber: 1, workPackageNumber: 0 },
+          'New Task',
+          '',
+          'HIGH',
+          'IN_BACKLOG',
+          [],
+          org,
+          [],
+          []
+        )
+      ).rejects.toThrow(new AccessDeniedException('Guests cannot create tasks'));
+    });
+  });
+
+  describe('Edit task assignees', () => {
+    it('throws InvalidOrganizationException when the task belongs to a different organization', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const otherOrg = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          userCreated: { connect: { userId: user.userId } }
+        }
+      });
+      const otherUser = await createTestUser(flashAdmin, otherOrg.organizationId);
+      const otherOrgTask = await createTestTask(
+        otherUser,
+        'Test Task',
+        '',
+        [],
+        'HIGH',
+        'IN_BACKLOG',
+        otherOrg.organizationId
+      );
+
+      await expect(async () =>
+        TasksService.editTaskAssignees(user, otherOrgTask.taskId, [user.userId], organization)
+      ).rejects.toThrow(new InvalidOrganizationException('Task'));
+    });
+  });
+
+  describe('Get overdue tasks by team leadership', () => {
+    it("returns every overdue, unfinished task on the user's teams' projects and work packages", async () => {
+      const head = await createTestUser(supermanAdmin, organizationId);
+      const teamMember = await createTestUser(member, organizationId);
+      const teamType = await createTestTeamType('aTeam', organizationId);
+      const team = await prisma.team.create({
+        data: {
+          teamName: 'Overdue Team',
+          slackId: 'aSlackId',
+          description: 'aDescription',
+          financeTeam: false,
+          headId: head.userId,
+          teamTypeId: teamType.teamTypeId,
+          organizationId
+        }
+      });
+      const project = await createTestProject(head, organizationId, team.teamId);
+      const workPackage = await createTestWorkPackage(head, organizationId, project.projectId);
+
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const createTask = (title: string, wbsElementId: string, status: 'IN_PROGRESS' | 'DONE', deadline: Date) =>
+        prisma.task.create({
+          data: {
+            title,
+            notes: '',
+            priority: 'HIGH',
+            status,
+            deadline,
+            dateCreated: new Date(),
+            createdBy: { connect: { userId: head.userId } },
+            // assigned to a member rather than the head, who must still see it
+            assignees: { connect: { userId: teamMember.userId } },
+            wbsElement: { connect: { wbsElementId } }
+          }
+        });
+
+      const projectTask = await createTask('Project task', project.wbsElementId, 'IN_PROGRESS', yesterday);
+      const workPackageTask = await createTask('WP task', workPackage.wbsElementId, 'IN_PROGRESS', yesterday);
+      await createTask('Done task', project.wbsElementId, 'DONE', yesterday);
+      await createTask('Future task', project.wbsElementId, 'IN_PROGRESS', nextWeek);
+
+      const overdueTasks = await TasksService.getOverdueTasksByTeamLeadership(head.userId, organization);
+
+      expect(overdueTasks.map((task) => task.taskId).sort()).toEqual([projectTask.taskId, workPackageTask.taskId].sort());
+      overdueTasks.forEach((task) => expect(task.projectName).toBe('Genesis'));
     });
   });
 
@@ -435,6 +528,83 @@ describe('Task Tests', () => {
     });
   });
 
+  describe('Get filtered tasks page', () => {
+    it("pages one status column in the board's order: soonest deadline first, none last, then highest priority", async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const project = await createTestProject(user, organizationId);
+      const day = (n: number) => new Date(Date.UTC(2030, 0, n));
+
+      // 21 backlog tasks (these plus 'Earliest high' below): one more than a page. Within a deadline, HIGH sorts first
+      const backlogTasks = [
+        ...Array.from({ length: 18 }, (_, i) => ({ title: `Dated ${i}`, priority: 'LOW' as const, deadline: day(i + 2) })),
+        { title: 'Earliest low', priority: 'LOW' as const, deadline: day(1) },
+        { title: 'Undated', priority: 'HIGH' as const, deadline: null }
+      ];
+      await prisma.task.createMany({
+        data: [
+          ...backlogTasks.map((task) => ({
+            ...task,
+            notes: '',
+            status: 'IN_BACKLOG' as const,
+            createdByUserId: user.userId,
+            wbsElementId: project.wbsElementId
+          })),
+          {
+            title: 'Earliest high',
+            notes: '',
+            priority: 'HIGH',
+            status: 'IN_BACKLOG',
+            deadline: day(1),
+            createdByUserId: user.userId,
+            wbsElementId: project.wbsElementId
+          },
+          // other columns never show up in this one
+          {
+            title: 'In progress',
+            notes: '',
+            priority: 'HIGH',
+            status: 'IN_PROGRESS',
+            deadline: day(1),
+            createdByUserId: user.userId,
+            wbsElementId: project.wbsElementId
+          }
+        ]
+      });
+
+      const firstPage = await TasksService.getFilteredTasksPage({}, 'IN_BACKLOG', 0, organization);
+      const secondPage = await TasksService.getFilteredTasksPage({}, 'IN_BACKLOG', 20, organization);
+
+      expect(firstPage.tasks).toHaveLength(20);
+      expect(firstPage.nextOffset).toBe(20);
+      expect(firstPage.tasks.slice(0, 3).map((task) => task.title)).toEqual(['Earliest high', 'Earliest low', 'Dated 0']);
+      expect(secondPage.tasks.map((task) => task.title)).toEqual(['Undated']);
+      expect(secondPage.nextOffset).toBeUndefined();
+      const allTitles = [...firstPage.tasks, ...secondPage.tasks].map((task) => task.title);
+      expect(new Set(allTitles).size).toBe(21);
+      expect(allTitles).not.toContain('In progress');
+    });
+
+    it('applies the same filters as the full filter endpoint', async () => {
+      const user = await createTestUser(supermanAdmin, organizationId);
+      const project = await createTestProject(user, organizationId);
+      await prisma.task.createMany({
+        data: ['Wire the harness', 'Order bolts'].map((title) => ({
+          title,
+          notes: '',
+          priority: 'HIGH' as const,
+          status: 'IN_BACKLOG' as const,
+          createdByUserId: user.userId,
+          wbsElementId: project.wbsElementId
+        }))
+      });
+
+      const page = await TasksService.getFilteredTasksPage({ search: 'HARNESS' }, 'IN_BACKLOG', 0, organization);
+
+      expect(page.tasks.map((task) => task.title)).toEqual(['Wire the harness']);
+      expect(page.nextOffset).toBeUndefined();
+    });
+  });
+
   describe('Get filtered tasks', () => {
     it('returns project tasks and all WP tasks when given a project wbs number', async () => {
       const user = await createTestUser(supermanAdmin, organizationId);
@@ -577,7 +747,7 @@ describe('Task Tests', () => {
       const user = await createTestUser(supermanAdmin, organizationId);
       const car = await createTestCar(organizationId, user.userId);
       const project = await createTestProject(user, organizationId, undefined, car.carId);
-      const label = await TasksService.createTaskLabel(user, 'Bug', '#EF4444', organization);
+      const label = await createTestTaskLabel(user, organizationId, 'Bug', '#EF4444');
 
       await prisma.task.create({
         data: {
@@ -913,10 +1083,13 @@ describe('Task Tests', () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
 
-      const label = await TasksService.createTaskLabel(admin, 'Bug', '#EF4444', organization);
+      await TasksService.createTaskLabel(admin, 'Bug', '#EF4444', organization);
 
-      expect(label.name).toBe('Bug');
-      expect(label.colorHexCode).toBe('#EF4444');
+      const label = await prisma.task_Label.findFirst({
+        where: { organizationId, name: 'Bug' },
+        select: { colorHexCode: true }
+      });
+      expect(label?.colorHexCode).toBe('#EF4444');
     });
 
     it('throws AccessDeniedException when non-admin tries to create a task label', async () => {
@@ -933,19 +1106,23 @@ describe('Task Tests', () => {
     it('successfully edits a task label as admin', async () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
-      const label = await TasksService.createTaskLabel(admin, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(admin, organizationId, 'Test Label', '#3B82F6');
 
-      const updated = await TasksService.editTaskLabel(admin, label.taskLabelId, 'New Name', '#22C55E', organization);
+      await TasksService.editTaskLabel(admin, label.taskLabelId, 'New Name', '#22C55E', organization);
 
-      expect(updated.name).toBe('New Name');
-      expect(updated.colorHexCode).toBe('#22C55E');
+      const updated = await prisma.task_Label.findUnique({
+        where: { taskLabelId: label.taskLabelId },
+        select: { name: true, colorHexCode: true }
+      });
+      expect(updated?.name).toBe('New Name');
+      expect(updated?.colorHexCode).toBe('#22C55E');
     });
 
     it('throws AccessDeniedException when non-admin tries to edit a task label', async () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const member = await createTestUser(financeMember, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
-      const label = await TasksService.createTaskLabel(admin, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(admin, organizationId, 'Test Label', '#3B82F6');
 
       await expect(async () =>
         TasksService.editTaskLabel(member, label.taskLabelId, 'New Name', '#22C55E', organization)
@@ -964,7 +1141,7 @@ describe('Task Tests', () => {
     it('throws DeletedException when label is already deleted', async () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
-      const label = await TasksService.createTaskLabel(admin, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(admin, organizationId, 'Test Label', '#3B82F6');
       await prisma.task_Label.update({ where: { taskLabelId: label.taskLabelId }, data: { dateDeleted: new Date() } });
 
       await expect(async () =>
@@ -982,7 +1159,7 @@ describe('Task Tests', () => {
         }
       });
       const otherUser = await createTestUser(flashAdmin, otherOrg.organizationId);
-      const label = await TasksService.createTaskLabel(otherUser, 'Test Label', '#3B82F6', otherOrg);
+      const label = await createTestTaskLabel(otherUser, otherOrg.organizationId, 'Test Label', '#3B82F6');
 
       await expect(async () =>
         TasksService.editTaskLabel(admin, label.taskLabelId, 'New Name', '#22C55E', organization)
@@ -994,12 +1171,15 @@ describe('Task Tests', () => {
     it('successfully deletes a task label as admin', async () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
-      const label = await TasksService.createTaskLabel(admin, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(admin, organizationId, 'Test Label', '#3B82F6');
 
-      const deletedId = await TasksService.deleteTaskLabel(admin, label.taskLabelId, organization);
+      await TasksService.deleteTaskLabel(admin, label.taskLabelId, organization);
 
-      expect(deletedId).toBe(label.taskLabelId);
-      const inDb = await prisma.task_Label.findUnique({ where: { taskLabelId: label.taskLabelId } });
+      const inDb = await prisma.task_Label.findUnique({
+        where: { taskLabelId: label.taskLabelId },
+        select: { taskLabelId: true, dateDeleted: true }
+      });
+      expect(inDb?.taskLabelId).toBe(label.taskLabelId);
       expect(inDb?.dateDeleted).not.toBeNull();
     });
 
@@ -1007,7 +1187,7 @@ describe('Task Tests', () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const member = await createTestUser(financeMember, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
-      const label = await TasksService.createTaskLabel(admin, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(admin, organizationId, 'Test Label', '#3B82F6');
 
       await expect(async () => TasksService.deleteTaskLabel(member, label.taskLabelId, organization)).rejects.toThrow(
         AccessDeniedException
@@ -1026,7 +1206,7 @@ describe('Task Tests', () => {
     it('throws DeletedException when label is already deleted', async () => {
       const admin = await createTestUser(supermanAdmin, organizationId);
       const organization = await prisma.organization.findUniqueOrThrow({ where: { organizationId } });
-      const label = await TasksService.createTaskLabel(admin, 'Test Label', '#3B82F6', organization);
+      const label = await createTestTaskLabel(admin, organizationId, 'Test Label', '#3B82F6');
       await prisma.task_Label.update({ where: { taskLabelId: label.taskLabelId }, data: { dateDeleted: new Date() } });
 
       await expect(async () => TasksService.deleteTaskLabel(admin, label.taskLabelId, organization)).rejects.toThrow(
@@ -1044,7 +1224,7 @@ describe('Task Tests', () => {
         }
       });
       const otherUser = await createTestUser(flashAdmin, otherOrg.organizationId);
-      const label = await TasksService.createTaskLabel(otherUser, 'Test Label', '#3B82F6', otherOrg);
+      const label = await createTestTaskLabel(otherUser, otherOrg.organizationId, 'Test Label', '#3B82F6');
 
       await expect(async () => TasksService.deleteTaskLabel(admin, label.taskLabelId, organization)).rejects.toThrow(
         InvalidOrganizationException

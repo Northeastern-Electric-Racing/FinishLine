@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args.js';
-import { getWorkPackageQueryArgs } from './work-packages.query-args.js';
+import { getBaseWorkPackageQueryArgs } from './work-packages.query-args.js';
 import { getReimbursementProductOtherReasonQueryArgs } from './reimbursement-product-other-reason.query-args.js';
 import { getAccountCodeQueryArgs } from './account-code.query-args.js';
 import { getTeamQueryArgs } from './teams.query-args.js';
@@ -224,7 +224,18 @@ export const getChangeRequestWithProjectAndWorkPackageQueryArgs = (organizationI
       submitter: getUserQueryArgs(organizationId),
       wbsElement: {
         include: {
-          workPackage: getWorkPackageQueryArgs(organizationId),
+          workPackage: {
+            select: {
+              ...getBaseWorkPackageQueryArgs().select,
+              // teams are notified on slack and named by team type on the change request
+              project: {
+                select: {
+                  wbsElement: { select: { name: true } },
+                  teams: { select: { slackId: true, teamType: { select: { name: true } } } }
+                }
+              }
+            }
+          },
           project: { include: { teams: true } },
           descriptionBullets: { where: { dateDeleted: null } },
           links: { where: { dateDeleted: null } }

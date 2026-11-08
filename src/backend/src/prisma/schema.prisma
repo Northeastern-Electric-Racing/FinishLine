@@ -261,6 +261,8 @@ model User {
   deletedFrequentlyAskedQuestions         FrequentlyAskedQuestion[]            @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones                       Milestone[]                          @relation(name: "milestoneCreator")
   deletedMilestones                       Milestone[]                          @relation(name: "milestoneDeleter")
+  createdDateMarkers                      Date_Marker[]                        @relation(name: "dateMarkerCreator")
+  deletedDateMarkers                      Date_Marker[]                        @relation(name: "dateMarkerDeleter")
   createdGraphCollections                 Graph_Collection[]                   @relation(name: "graphCollectionsCreator")
   deletedGraphCollections                 Graph_Collection[]                   @relation(name: "graphCollectionDeleter")
   createdGraphs                           Graph[]                              @relation(name: "graphCreator")
@@ -1486,6 +1488,7 @@ model Organization {
   usefulLinks              Link[]
   frequentlyAskedQuestions FrequentlyAskedQuestion[]
   milestones               Milestone[]
+  dateMarkers              Date_Marker[]
   graphCollections         Graph_Collection[]
   graphs                   Graph[]
   featuredProjects         Project[]
@@ -1559,6 +1562,22 @@ model Milestone {
   organization            Organization @relation(fields: [organizationId], references: [organizationId])
   isOnRecruitingDashboard Boolean      @default(false)
   isOnNewMemberDashboard  Boolean      @default(false)
+
+  @@index([organizationId])
+}
+
+model Date_Marker {
+  dateMarkerId   String       @id @default(uuid())
+  name           String
+  date           DateTime     @db.Date
+  userCreatedId  String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "dateMarkerCreator")
+  userDeletedId  String?
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "dateMarkerDeleter")
+  createdAt      DateTime     @default(now())
+  dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
 
   @@index([organizationId])
 }

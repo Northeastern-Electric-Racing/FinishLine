@@ -4,7 +4,7 @@
  */
 
 import { WbsNumber, wbsPipe } from 'shared';
-import { WorkPackageSelection } from 'shared';
+import { WorkPackageSelection, WorkPackageTimelineFilters } from 'shared';
 
 /**
  * This file centralizes URLs used to query the API.
@@ -31,7 +31,6 @@ const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings
 const userScheduleSettingsBusyTimes = (id: string) => `${usersById(id)}/schedule-settings/busy-times`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
-const manyUserTasks = () => `${users()}/tasks/get-many`;
 const currentUser = () => `${users()}/auth/current`;
 const logUserOut = () => `${users()}/auth/log-out`;
 const manyUsersWithScheduleSettings = () => `${users()}/scheduleSettings`;
@@ -99,6 +98,7 @@ const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
+const tasksFilterPaginated = () => `${tasks()}/filter-paginated`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
 const taskLabels = () => `${tasks()}/task-labels`;
 const taskLabelCreate = () => `${taskLabels()}/create`;
@@ -122,9 +122,17 @@ const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
 const workPackagesMany = () => `${workPackages()}/get-many`;
-const workPackagesAllPreview = (status?: string) =>
-  `${API_URL}/work-packages/all-preview${status ? `?status=${status}` : ''}`;
-const homePageWorkPackages = (selection: WorkPackageSelection) => `${workPackages()}/home-page/${selection}`;
+const workPackagesAll = (status?: string) => `${workPackages()}${status ? `?status=${status}` : ''}`;
+const homePageWorkPackages = (selection: WorkPackageSelection, filters: WorkPackageTimelineFilters) => {
+  const params = new URLSearchParams();
+  (['startsAfter', 'startsBefore', 'endsAfter', 'endsBefore'] as const).forEach((bound) => {
+    const date = filters[bound];
+    if (date) params.set(bound, date.toISOString());
+  });
+  if (filters.status) params.set('status', filters.status);
+  const queryString = params.toString();
+  return `${workPackages()}/home-page/${selection}${queryString ? `?${queryString}` : ''}`;
+};
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
@@ -604,7 +612,6 @@ export const apiUrls = {
   userScheduleSettingsBusyTimes,
   userScheduleSettingsSet,
   userTasks,
-  manyUserTasks,
   currentUser,
   logUserOut,
   manyUsersWithScheduleSettings,
@@ -665,6 +672,7 @@ export const apiUrls = {
   tasksCreate,
   tasks,
   tasksFilter,
+  tasksFilterPaginated,
   editTaskById,
   taskEditStatus,
   editTaskAssignees,
@@ -684,7 +692,7 @@ export const apiUrls = {
   workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
   workPackagesMany,
-  workPackagesAllPreview,
+  workPackagesAll,
   homePageWorkPackages,
 
   changeRequests,
