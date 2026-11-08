@@ -15,6 +15,8 @@ import { daysOverdue } from '../../../../utils/datetime.utils';
 const NER_RED = '#ef4244';
 const MAX_CARDS = 4;
 const MAX_BLOCKERS = 2;
+// the medium widget shows two cards side by side, like the medium calendar's events
+const MEDIUM_MAX_CARDS = 2;
 
 /**
  * Only what the widget needs to display an overdue work package
@@ -43,7 +45,7 @@ const sampleOverdueWorkPackages: OverdueWorkPackageWidgetItem[] = [
     ],
     lead: { userId: '1', firstName: 'Joe', lastName: 'Shmoe' },
     manager: { userId: '2', firstName: 'Jane', lastName: 'Doe' },
-    endDate: daysAgo(12)
+    endDate: daysAgo(25)
   },
   {
     wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 5 },
@@ -138,8 +140,8 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = (
     <Box
       sx={{
         flex: 1,
-        minHeight: 0,
-        maxHeight: '24cqw',
+        minHeight: '10cqw',
+        maxHeight: '30cqw',
         display: 'flex',
         flexDirection: 'column',
         p: '2.5cqw',
@@ -201,10 +203,69 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = (
   );
 };
 
+/**
+ * One overdue work package in the medium widget, shown beside the others the way the medium calendar shows its events.
+ * It has no blocked by list, the rest of the large card's details are kept.
+ */
+const MediumOverdueWorkPackage: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = ({ wp }) => {
+  const numDaysOverdue = daysOverdue(new Date(wp.endDate));
+
+  return (
+    <Box
+      sx={{
+        minWidth: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.5cqw',
+        px: '2.5cqw',
+        py: '1cqw',
+        borderRadius: '2.5cqw',
+        bgcolor: '#000000',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        color: 'white',
+        overflow: 'hidden'
+      }}
+    >
+      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: '1cqw', minWidth: 0 }}>
+        <Typography noWrap sx={{ fontSize: '2cqw', lineHeight: 1.2, color: NER_RED, fontWeight: 'bold', minWidth: 0 }}>
+          {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
+        </Typography>
+        <InfoPill icon={<CalendarMonth />} label={datePipe(new Date(wp.endDate))} />
+      </Stack>
+      <Typography noWrap sx={{ fontSize: '2.4cqw', fontWeight: 'bold', lineHeight: 1.2 }}>
+        {wbsPipe(wp.wbsNum)} - {wp.name}
+      </Typography>
+      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: '1cqw' }}>
+        <Stack direction="row" sx={{ gap: '0.8cqw', flexWrap: 'wrap', minWidth: 0 }}>
+          <InfoPill icon={<Construction />} label={fullNamePipe(wp.lead)} />
+        </Stack>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.8cqw',
+            color: NER_RED,
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+            mr: '-1cqw'
+          }}
+        >
+          <Typography sx={{ fontSize: '5.2cqw', fontWeight: 'bold', lineHeight: 1 }}>{numDaysOverdue}</Typography>
+          <Stack>
+            <Typography sx={{ fontSize: '2.2cqw', lineHeight: 1.1 }}>{numDaysOverdue === 1 ? 'Day' : 'Days'}</Typography>
+            <Typography sx={{ fontSize: '2.2cqw', lineHeight: 1.1 }}>Overdue</Typography>
+          </Stack>
+        </Box>
+      </Stack>
+    </Box>
+  );
+};
+
 interface OverdueWorkPackagesWidgetViewProps {
   workPackages?: OverdueWorkPackageWidgetItem[];
   isLoading?: boolean;
   isError?: boolean;
+  size?: BayDashboardWidgetSize;
 }
 
 /**
@@ -214,7 +275,8 @@ interface OverdueWorkPackagesWidgetViewProps {
 export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetViewProps> = ({
   workPackages,
   isLoading,
-  isError
+  isError,
+  size
 }) => {
   if (isError) {
     return (
@@ -245,6 +307,26 @@ export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetVi
   }
 
   const sorted = [...workPackages].sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime());
+
+  if (size === BayDashboardWidgetSize.MEDIUM) {
+    const shown = sorted.slice(0, MEDIUM_MAX_CARDS);
+    const hidden = sorted.length - shown.length;
+    return (
+      <Box sx={{ mt: '1cqw' }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${MEDIUM_MAX_CARDS}, 1fr)`, gap: '2cqw' }}>
+          {shown.map((wp) => (
+            <MediumOverdueWorkPackage key={wbsPipe(wp.wbsNum)} wp={wp} />
+          ))}
+        </Box>
+        {hidden > 0 && (
+          <Typography sx={{ fontSize: '2.2cqw', color: 'white', opacity: 0.8, mt: '0cqw', textAlign: 'center' }}>
+            +{hidden} more
+          </Typography>
+        )}
+      </Box>
+    );
+  }
+
   const hiddenCount = sorted.length - MAX_CARDS;
 
   return (
@@ -254,7 +336,7 @@ export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetVi
       ))}
       {hiddenCount > 0 && (
         <Typography sx={{ fontSize: '2.4cqw', color: 'white', opacity: 0.8, textAlign: 'center' }}>
-          +{hiddenCount} more overdue
+          +{hiddenCount} more
         </Typography>
       )}
     </Stack>
@@ -262,12 +344,14 @@ export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetVi
 };
 
 /**
- * Overdue work packages on the bay dashboard. Only the large size is built so far, the others are still a placeholder frame
+ * Overdue work packages on the bay dashboard. The large and medium sizes are built, the small one is still a placeholder frame
  */
 const OverdueWorkPackagesWidget: React.FC<BayDashboardWidgetProps> = ({ size }) => {
   return (
     <NERWidget size={size} title={bayDashboardWidgetDisplayNames[BayDashboardWidgetType.OVERDUE_WORK_PACKAGES]}>
-      {size === BayDashboardWidgetSize.LARGE && <OverdueWorkPackagesWidgetView workPackages={sampleOverdueWorkPackages} />}
+      {(size === BayDashboardWidgetSize.LARGE || size === BayDashboardWidgetSize.MEDIUM) && (
+        <OverdueWorkPackagesWidgetView workPackages={sampleOverdueWorkPackages} size={size} />
+      )}
     </NERWidget>
   );
 };
