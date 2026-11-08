@@ -10,6 +10,8 @@ export type PublicBayDashboardConfigQueryArgs = ReturnType<typeof getPublicBayDa
 
 export type BayDashboardCountdownQueryArgs = ReturnType<typeof getBayDashboardCountdownQueryArgs>;
 
+export type BayDashboardCalendarEventQueryArgs = ReturnType<typeof getBayDashboardCalendarEventQueryArgs>;
+
 export const getBayDashboardWidgetQueryArgs = () =>
   Prisma.validator<Prisma.Bay_Dashboard_WidgetDefaultArgs>()({
     select: {
@@ -64,6 +66,33 @@ export const getBayDashboardCountdownQueryArgs = () =>
       bayDashboardCountdownId: true,
       name: true,
       startDate: true,
-      endDate: true
+      endDate: true,
+      isPrimary: true
+    }
+  });
+
+/**
+ * Only calendar information that the public TV shows.
+ * @param scheduledTimeFilter limits the schedule slots that are loaded
+ */
+export const getBayDashboardCalendarEventQueryArgs = (scheduledTimeFilter: Prisma.Schedule_SlotWhereInput) =>
+  Prisma.validator<Prisma.EventDefaultArgs>()({
+    select: {
+      title: true,
+      location: true,
+      scheduledTimes: {
+        where: scheduledTimeFilter,
+        select: { startTime: true, endTime: true, allDay: true }
+      },
+      eventType: {
+        select: {
+          calendars: {
+            where: { dateDeleted: null },
+            orderBy: { dateCreated: 'asc' },
+            take: 1,
+            select: { colorHexCode: true }
+          }
+        }
+      }
     }
   });

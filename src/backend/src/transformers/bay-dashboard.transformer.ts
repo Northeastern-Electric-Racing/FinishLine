@@ -10,9 +10,11 @@ import {
   BayDashboardWidget,
   BayDashboardWidgetSize,
   BayDashboardWidgetType,
+  PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig
 } from 'shared';
 import {
+  BayDashboardCalendarEventQueryArgs,
   BayDashboardConfigQueryArgs,
   BayDashboardCountdownQueryArgs,
   BayDashboardSlotQueryArgs,
@@ -99,6 +101,26 @@ export const bayDashboardCountdownTransformer = (
     bayDashboardCountdownId: countdown.bayDashboardCountdownId,
     name: countdown.name,
     startDate: countdown.startDate,
-    endDate: countdown.endDate ?? undefined
+    endDate: countdown.endDate ?? undefined,
+    isPrimary: countdown.isPrimary
   };
+};
+
+/**
+ * Turns an event into one public calendar event per schedule slot.
+ */
+export const publicBayDashboardCalendarEventsTransformer = (
+  event: Prisma.EventGetPayload<BayDashboardCalendarEventQueryArgs>
+): PublicBayDashboardCalendarEvent[] => {
+  const [calendar] = event.eventType.calendars;
+  if (!calendar) return [];
+
+  return event.scheduledTimes.map((slot) => ({
+    title: event.title,
+    startTime: slot.startTime,
+    endTime: slot.endTime,
+    allDay: slot.allDay,
+    location: event.location ?? undefined,
+    colorHexCode: calendar.colorHexCode
+  }));
 };

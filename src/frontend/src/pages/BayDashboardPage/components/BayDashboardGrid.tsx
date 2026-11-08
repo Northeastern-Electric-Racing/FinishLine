@@ -6,9 +6,12 @@
 import { Box } from '@mui/material';
 import { BayDashboardWidgetSize, PublicBayDashboardSlot } from 'shared';
 import { BAY_DASHBOARD_BACKGROUND, defaultBayDashboardSlots, widgetHeights } from '../../../utils/bay-dashboard.utils';
+import BayDashboardHeader from './BayDashboardHeader';
 import BayDashboardWidgetView from './widgets/BayDashboardWidgetView';
+import CountdownWidget from './widgets/CountdownWidget';
 interface BayDashboardGridProps {
   slots: PublicBayDashboardSlot[];
+  slug: string;
 }
 
 const gridAreas: Record<BayDashboardWidgetSize, string> = {
@@ -26,7 +29,7 @@ const gridRows = `60fr 380fr ${MEDIUM_HEIGHT}fr ${SMALL_HEIGHT}fr`;
  * The Big/Medium/Small widget grid the TV renders. Fills the width of its parent at the TV's 16:9 shape,
  * so the preview is a scaled down copy of the TV.
  */
-const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots }) => {
+const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, slug }) => {
   return (
     <Box sx={{ containerType: 'inline-size', width: '100%' }}>
       <Box
@@ -41,14 +44,19 @@ const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots }) => {
           background: BAY_DASHBOARD_BACKGROUND
         }}
       >
-        {/* weather and date/time go in "header", the countdown widget goes in "countdown" */}
+        <Box sx={{ gridArea: 'header', minWidth: 0, minHeight: 0 }}>
+          <BayDashboardHeader />
+        </Box>
+        <Box sx={{ gridArea: 'countdown', minWidth: 0, minHeight: 0 }}>
+          <CountdownWidget slug={slug} />
+        </Box>
         {defaultBayDashboardSlots.map(({ size, position, widgets: [defaultWidget] }) => {
           // fall back to the size's default widget when nothing is picked for it or the picked widget can't be shown
           const widget = slots.find((slot) => slot.size === size)?.widgets[0] ?? defaultWidget;
 
           return (
             <Box key={position} sx={{ gridArea: gridAreas[size], minWidth: 0, minHeight: 0 }}>
-              <BayDashboardWidgetView widget={widget} size={size} fallbackWidget={defaultWidget} />
+              <BayDashboardWidgetView widget={widget} size={size} slug={slug} fallbackWidget={defaultWidget} />
             </Box>
           );
         })}

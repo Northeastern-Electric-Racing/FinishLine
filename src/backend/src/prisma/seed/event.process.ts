@@ -8,6 +8,8 @@ import { ProjectOutput, ProjectProcess } from './project.process.js';
 import { CarOutput } from '../context.js';
 import { CarProcess } from './car.process.js';
 import {
+  calendarEventConfigs,
+  calendarEventCreateInput,
   DAYS_AFTER_NO_EVENT,
   documentCreateInput,
   eventCreateInput,
@@ -85,6 +87,19 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
         })
       );
     }
+
+    // the bay dashboard calendar widget's events, relative to today so we have seed data for the next few days
+    await Promise.all(
+      calendarEventConfigs.map((calendarEventConfig) => {
+        const eventType = eventTypes.find((type) => type.name === calendarEventConfig.eventTypeName);
+        if (!eventType) throw new Error(`Missing event type for calendar event: ${calendarEventConfig.eventTypeName}`);
+
+        const creator = this.faker.helpers.arrayElement(creators);
+        return this.prisma.event.create({
+          data: calendarEventCreateInput(creator.userId, eventType.eventTypeId, calendarEventConfig, now)
+        });
+      })
+    );
 
     return {};
   }

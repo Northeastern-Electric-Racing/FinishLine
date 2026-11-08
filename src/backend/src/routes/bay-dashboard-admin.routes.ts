@@ -4,8 +4,8 @@ import BayDashboardAdminController from '../controllers/bay-dashboard-admin.cont
 import {
   intMinZero,
   isBayDashboardWidgetSize,
-  isDate,
-  isOptionalDate,
+  isDateOnly,
+  isOptionalDateOnly,
   nonEmptyString,
   validateInputs
 } from '../utils/validation.utils.js';
@@ -34,8 +34,9 @@ bayDashboardAdminRouter.post(
 bayDashboardAdminRouter.post(
   '/admin/countdown/create',
   nonEmptyString(body('name')),
-  isDate(body('startDate')),
-  isOptionalDate(body('endDate')),
+  isDateOnly(body('startDate')),
+  isOptionalDateOnly(body('endDate')),
+  body('isPrimary').isBoolean(),
   validateInputs,
   BayDashboardAdminController.createBayDashboardCountdown
 );
@@ -43,6 +44,16 @@ bayDashboardAdminRouter.post(
 bayDashboardAdminRouter.post(
   '/admin/countdown/:countdownId/delete',
   BayDashboardAdminController.deleteBayDashboardCountdown
+);
+
+bayDashboardAdminRouter.post(
+  '/admin/countdown/:countdownId/edit',
+  nonEmptyString(body('name')),
+  isDateOnly(body('startDate')),
+  isOptionalDateOnly(body('endDate')),
+  body('isPrimary').isBoolean(),
+  validateInputs,
+  BayDashboardAdminController.editBayDashboardCountdown
 );
 
 export default bayDashboardAdminRouter;
