@@ -273,7 +273,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />
       )}
       {assignToTeamsModalShow && (
-        <AssignToTeams modalShow={assignToTeamsModalShow} handleClose={handleAssignToTeamsClose} onSubmit={handleSaveTeams} project={project} />
+        <AssignToTeams
+          modalShow={assignToTeamsModalShow}
+          handleClose={handleAssignToTeamsClose}
+          onSubmit={handleSaveTeams}
+          project={project}
+        />
       )}
     </PageLayout>
   );
