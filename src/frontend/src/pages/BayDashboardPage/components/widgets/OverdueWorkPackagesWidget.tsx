@@ -13,7 +13,7 @@ import { daysOverdue } from '../../../../utils/datetime.utils';
 
 // everything is sized in cqw so the widget scales the same on the TV and in the Admin Tools preview
 const NER_RED = '#ef4244';
-const MAX_CARDS = 5;
+const MAX_CARDS = 4;
 const MAX_BLOCKERS = 2;
 
 /**
@@ -139,10 +139,11 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = (
       sx={{
         flex: 1,
         minHeight: 0,
-        maxHeight: '19cqw',
+        maxHeight: '24cqw',
         display: 'flex',
         flexDirection: 'column',
-        p: '1.5cqw',
+        p: '2.5cqw',
+        pt: '1.5cqw',
         borderRadius: '2.5cqw',
         bgcolor: '#000000',
         border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -161,11 +162,11 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = (
         </Stack>
       </Stack>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '2cqw', flex: 1, minHeight: 0 }}>
-        <Box sx={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
+        <Box sx={{ minWidth: 0, flex: 1, overflow: 'hidden', mt: '0.5cqw' }}>
           <Typography noWrap sx={{ fontSize: '3.2cqw', fontWeight: 'bold', lineHeight: 1.2 }}>
             {wbsPipe(wp.wbsNum)} - {wp.name}
           </Typography>
-          <Typography sx={{ fontSize: '1.9cqw', lineHeight: 1.2, mt: '0.5cqw', mb: '0.5cqw', textDecoration: 'underline' }}>
+          <Typography sx={{ fontSize: '1.9cqw', lineHeight: 1.2, mt: '1cqw', mb: '0.5cqw', textDecoration: 'underline' }}>
             Blocked By:
           </Typography>
           <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }}>
