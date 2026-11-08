@@ -13,7 +13,7 @@ import { daysOverdue } from '../../../../utils/datetime.utils';
 
 // everything is sized in cqw so the widget scales the same on the TV and in the Admin Tools preview
 const NER_RED = '#ef4244';
-const MAX_CARDS = 4;
+const MAX_CARDS = 5;
 const MAX_BLOCKERS = 2;
 
 /**
@@ -62,6 +62,28 @@ const sampleOverdueWorkPackages: OverdueWorkPackageWidgetItem[] = [
     lead: { userId: '5', firstName: 'Taylor', lastName: 'Nguyen' },
     manager: { userId: '6', firstName: 'Jordan', lastName: 'Lee' },
     endDate: daysAgo(1)
+  },
+  {
+    wbsNum: { carNumber: 1, projectNumber: 5, workPackageNumber: 3 },
+    name: 'Motor Controller Integration',
+    projectName: 'Powertrain',
+    blockedBy: [{ wbsNum: { carNumber: 1, projectNumber: 5, workPackageNumber: 2 }, name: 'Inverter Bench Testing' }],
+    lead: { userId: '7', firstName: 'Morgan', lastName: 'Patel' },
+    manager: { userId: '8', firstName: 'Casey', lastName: 'Brooks' },
+    endDate: daysAgo(20)
+  },
+  {
+    wbsNum: { carNumber: 1, projectNumber: 3, workPackageNumber: 6 },
+    name: 'Brake Pedal Bracket Redesign',
+    projectName: 'Brakes',
+    blockedBy: [
+      { wbsNum: { carNumber: 1, projectNumber: 3, workPackageNumber: 5 }, name: 'Pedal Box Mounting' },
+      { wbsNum: { carNumber: 1, projectNumber: 3, workPackageNumber: 2 }, name: 'Master Cylinder Selection' },
+      { wbsNum: { carNumber: 1, projectNumber: 6, workPackageNumber: 1 }, name: 'Firewall Clearance Check' }
+    ],
+    lead: { userId: '9', firstName: 'Riley', lastName: 'Chen' },
+    manager: { userId: '10', firstName: 'Avery', lastName: 'Okafor' },
+    endDate: daysAgo(8)
   }
 ];
 
@@ -102,7 +124,7 @@ const InfoPill: React.FC<{ icon: React.ReactNode; label: string }> = ({ icon, la
 const BlockerLine: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <Box component="li" sx={{ display: 'flex', alignItems: 'center', gap: '1cqw', minWidth: 0 }}>
     <Box sx={{ width: '0.7cqw', height: '0.7cqw', borderRadius: '50%', bgcolor: 'white', flexShrink: 0 }} />
-    <Typography noWrap sx={{ fontSize: '2.1cqw', lineHeight: 1.2, minWidth: 0 }}>
+    <Typography noWrap sx={{ fontSize: '1.9cqw', lineHeight: 1.2, minWidth: 0 }}>
       {children}
     </Typography>
   </Box>
@@ -117,11 +139,10 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = (
       sx={{
         flex: 1,
         minHeight: 0,
-        maxHeight: '24cqw',
+        maxHeight: '19cqw',
         display: 'flex',
-        justifyContent: 'space-between',
-        gap: '2cqw',
-        p: '2cqw',
+        flexDirection: 'column',
+        p: '1.5cqw',
         borderRadius: '2.5cqw',
         bgcolor: '#000000',
         border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -129,46 +150,52 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = (
         overflow: 'hidden'
       }}
     >
-      <Box sx={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
-        <Typography noWrap sx={{ fontSize: '2.3cqw', lineHeight: 1.2, mb: '1cqw', color: NER_RED, fontWeight: 'bold' }}>
+      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: '1cqw', mb: '0.2cqw' }}>
+        <Typography noWrap sx={{ fontSize: '2.1cqw', lineHeight: 1.2, color: NER_RED, fontWeight: 'bold', minWidth: 0 }}>
           {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
         </Typography>
-        <Typography noWrap sx={{ fontSize: '3.6cqw', fontWeight: 'bold', lineHeight: 1.2 }}>
-          {wbsPipe(wp.wbsNum)} - {wp.name}
-        </Typography>
-        <Typography sx={{ fontSize: '2.1cqw', lineHeight: 1.2, mt: '1.5cqw', textDecoration: 'underline' }}>
-          Blocked By:
-        </Typography>
-        <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }}>
-          {wp.blockedBy.length === 0 ? (
-            <BlockerLine>No Blockers</BlockerLine>
-          ) : (
-            wp.blockedBy.slice(0, MAX_BLOCKERS).map((blocker) => (
-              <BlockerLine key={wbsPipe(blocker.wbsNum)}>
-                {wbsPipe(blocker.wbsNum)} - {blocker.name}
-                {blocker === wp.blockedBy[MAX_BLOCKERS - 1] && hiddenBlockers > 0 && (
-                  <Box component="span" sx={{ opacity: 0.7, ml: '2cqw' }}>+{hiddenBlockers} more</Box>
-                )}
-              </BlockerLine>
-            ))
-          )}
-        </Box>
-      </Box>
-
-      <Stack sx={{ alignItems: 'flex-end', justifyContent: 'space-between', flexShrink: 0, maxWidth: '45%' }}>
-        <Stack direction="row" sx={{ gap: '0.8cqw', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <Stack direction="row" sx={{ gap: '0.8cqw', flexShrink: 0 }}>
           <InfoPill icon={<Construction />} label={fullNamePipe(wp.lead)} />
           <InfoPill icon={<Work />} label={fullNamePipe(wp.manager)} />
           <InfoPill icon={<CalendarMonth />} label={datePipe(new Date(wp.endDate))} />
         </Stack>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '1cqw', color: NER_RED, whiteSpace: 'nowrap' }}>
-          <Typography sx={{ fontSize: '8cqw', fontWeight: 'bold', lineHeight: 1 }}>{numDaysOverdue}</Typography>
-          <Stack>
-            <Typography sx={{ fontSize: '2.8cqw', lineHeight: 1.1 }}>{numDaysOverdue === 1 ? 'Day' : 'Days'}</Typography>
-            <Typography sx={{ fontSize: '2.8cqw', lineHeight: 1.1 }}>Overdue</Typography>
-          </Stack>
-        </Box>
       </Stack>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '2cqw', flex: 1, minHeight: 0 }}>
+        <Box sx={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
+          <Typography noWrap sx={{ fontSize: '3.2cqw', fontWeight: 'bold', lineHeight: 1.2 }}>
+            {wbsPipe(wp.wbsNum)} - {wp.name}
+          </Typography>
+          <Typography sx={{ fontSize: '1.9cqw', lineHeight: 1.2, mt: '0.5cqw', mb: '0.5cqw', textDecoration: 'underline' }}>
+            Blocked By:
+          </Typography>
+          <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }}>
+            {wp.blockedBy.length === 0 ? (
+              <BlockerLine>No Blockers</BlockerLine>
+            ) : (
+              wp.blockedBy.slice(0, MAX_BLOCKERS).map((blocker) => (
+                <BlockerLine key={wbsPipe(blocker.wbsNum)}>
+                  {wbsPipe(blocker.wbsNum)} - {blocker.name}
+                  {blocker === wp.blockedBy[MAX_BLOCKERS - 1] && hiddenBlockers > 0 && (
+                    <Box component="span" sx={{ opacity: 0.7, ml: '2cqw' }}>
+                      +{hiddenBlockers} more
+                    </Box>
+                  )}
+                </BlockerLine>
+              ))
+            )}
+          </Box>
+        </Box>
+
+        <Stack sx={{ alignItems: 'flex-end', justifyContent: 'flex-end', flexShrink: 0, maxWidth: '45%' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '1cqw', color: NER_RED, whiteSpace: 'nowrap' }}>
+            <Typography sx={{ fontSize: '6.5cqw', fontWeight: 'bold', lineHeight: 1 }}>{numDaysOverdue}</Typography>
+            <Stack>
+              <Typography sx={{ fontSize: '2.8cqw', lineHeight: 1.1 }}>{numDaysOverdue === 1 ? 'Day' : 'Days'}</Typography>
+              <Typography sx={{ fontSize: '2.8cqw', lineHeight: 1.1 }}>Overdue</Typography>
+            </Stack>
+          </Box>
+        </Stack>
+      </Box>
     </Box>
   );
 };
@@ -220,7 +247,7 @@ export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetVi
   const hiddenCount = sorted.length - MAX_CARDS;
 
   return (
-    <Stack sx={{ flex: 1, minHeight: 0, gap: '2cqw', mt: '2cqw' }}>
+    <Stack sx={{ flex: 1, minHeight: 0, gap: '1.2cqw', mt: '1cqw' }}>
       {sorted.slice(0, MAX_CARDS).map((wp) => (
         <OverdueWorkPackageItem key={wbsPipe(wp.wbsNum)} wp={wp} />
       ))}
