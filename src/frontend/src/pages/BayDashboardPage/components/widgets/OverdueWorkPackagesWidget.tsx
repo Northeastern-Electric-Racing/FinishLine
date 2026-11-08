@@ -10,9 +10,8 @@ import NERWidget from '../../../../components/NERWidget';
 import { BayDashboardWidgetProps, bayDashboardWidgetDisplayNames } from '../../../../utils/bay-dashboard.utils';
 import { datePipe, fullNamePipe, projectWbsPipe } from '../../../../utils/pipes';
 import { daysOverdue } from '../../../../utils/datetime.utils';
+import OverdueWorkPackageCard, { InfoPill, NER_RED } from './OverdueWorkPackageCard';
 
-// everything is sized in cqw so the widget scales the same on the TV and in the Admin Tools preview
-const NER_RED = '#ef4244';
 const MAX_CARDS = 4;
 const MAX_BLOCKERS = 2;
 // the medium widget shows two cards side by side, like the medium calendar's events
@@ -103,26 +102,6 @@ const StateMessage: React.FC<{ icon: React.ReactNode; heading: string; message?:
   </Stack>
 );
 
-const InfoPill: React.FC<{ icon: React.ReactNode; label: string }> = ({ icon, label }) => (
-  <Box
-    sx={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.6cqw',
-      px: '1.2cqw',
-      py: '0.4cqw',
-      borderRadius: '2cqw',
-      bgcolor: 'rgba(255, 255, 255, 0.15)',
-      color: 'white',
-      whiteSpace: 'nowrap',
-      '& svg': { fontSize: '2.2cqw' }
-    }}
-  >
-    {icon}
-    <Typography sx={{ fontSize: '1.8cqw' }}>{label}</Typography>
-  </Box>
-);
-
 const BlockerLine: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <Box component="li" sx={{ display: 'flex', alignItems: 'center', gap: '1cqw', minWidth: 0 }}>
     <Box sx={{ width: '0.7cqw', height: '0.7cqw', borderRadius: '50%', bgcolor: 'white', flexShrink: 0 }} />
@@ -132,9 +111,13 @@ const BlockerLine: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </Box>
 );
 
-const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = ({ wp }) => {
+const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem; maxBlockers?: number; compact?: boolean }> = ({
+  wp,
+  maxBlockers = MAX_BLOCKERS,
+  compact = false
+}) => {
   const numDaysOverdue = daysOverdue(new Date(wp.endDate));
-  const hiddenBlockers = wp.blockedBy.length - MAX_BLOCKERS;
+  const hiddenBlockers = wp.blockedBy.length - maxBlockers;
 
   return (
     <Box
@@ -146,6 +129,7 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = (
         flexDirection: 'column',
         p: '2.5cqw',
         pt: '1.5cqw',
+        pb: compact ? '1.5cqw' : '2.5cqw',
         borderRadius: '2.5cqw',
         bgcolor: '#000000',
         border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -168,17 +152,17 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = (
           <Typography noWrap sx={{ fontSize: '3.2cqw', fontWeight: 'bold', lineHeight: 1.2 }}>
             {wbsPipe(wp.wbsNum)} - {wp.name}
           </Typography>
-          <Typography sx={{ fontSize: '1.9cqw', lineHeight: 1.2, mt: '1cqw', mb: '0.5cqw', textDecoration: 'underline' }}>
+          <Typography sx={{ fontSize: '1.9cqw', lineHeight: 1.2, mt: '1cqw', mb: '1cqw', textDecoration: 'underline' }}>
             Blocked By:
           </Typography>
           <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }}>
             {wp.blockedBy.length === 0 ? (
               <BlockerLine>No Blockers</BlockerLine>
             ) : (
-              wp.blockedBy.slice(0, MAX_BLOCKERS).map((blocker) => (
+              wp.blockedBy.slice(0, maxBlockers).map((blocker) => (
                 <BlockerLine key={wbsPipe(blocker.wbsNum)}>
                   {wbsPipe(blocker.wbsNum)} - {blocker.name}
-                  {blocker === wp.blockedBy[MAX_BLOCKERS - 1] && hiddenBlockers > 0 && (
+                  {blocker === wp.blockedBy[maxBlockers - 1] && hiddenBlockers > 0 && (
                     <Box component="span" sx={{ opacity: 0.7, ml: '2cqw' }}>
                       +{hiddenBlockers} more
                     </Box>
@@ -199,64 +183,6 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = (
           </Box>
         </Stack>
       </Box>
-    </Box>
-  );
-};
-
-/**
- * One overdue work package in the medium widget, shown beside the others the way the medium calendar shows its events.
- * It has no blocked by list, the rest of the large card's details are kept.
- */
-const MediumOverdueWorkPackage: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = ({ wp }) => {
-  const numDaysOverdue = daysOverdue(new Date(wp.endDate));
-
-  return (
-    <Box
-      sx={{
-        minWidth: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.5cqw',
-        px: '2.5cqw',
-        py: '1cqw',
-        borderRadius: '2.5cqw',
-        bgcolor: '#000000',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        color: 'white',
-        overflow: 'hidden'
-      }}
-    >
-      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: '1cqw', minWidth: 0 }}>
-        <Typography noWrap sx={{ fontSize: '2cqw', lineHeight: 1.2, color: NER_RED, fontWeight: 'bold', minWidth: 0 }}>
-          {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
-        </Typography>
-        <InfoPill icon={<CalendarMonth />} label={datePipe(new Date(wp.endDate))} />
-      </Stack>
-      <Typography noWrap sx={{ fontSize: '2.4cqw', fontWeight: 'bold', lineHeight: 1.2 }}>
-        {wbsPipe(wp.wbsNum)} - {wp.name}
-      </Typography>
-      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: '1cqw' }}>
-        <Stack direction="row" sx={{ gap: '0.8cqw', flexWrap: 'wrap', minWidth: 0 }}>
-          <InfoPill icon={<Construction />} label={fullNamePipe(wp.lead)} />
-        </Stack>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.8cqw',
-            color: NER_RED,
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-            mr: '-1cqw'
-          }}
-        >
-          <Typography sx={{ fontSize: '5.2cqw', fontWeight: 'bold', lineHeight: 1 }}>{numDaysOverdue}</Typography>
-          <Stack>
-            <Typography sx={{ fontSize: '2.2cqw', lineHeight: 1.1 }}>{numDaysOverdue === 1 ? 'Day' : 'Days'}</Typography>
-            <Typography sx={{ fontSize: '2.2cqw', lineHeight: 1.1 }}>Overdue</Typography>
-          </Stack>
-        </Box>
-      </Stack>
     </Box>
   );
 };
@@ -313,10 +239,12 @@ export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetVi
     const hidden = sorted.length - shown.length;
     return (
       <Box sx={{ mt: '1cqw' }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${MEDIUM_MAX_CARDS}, 1fr)`, gap: '2cqw' }}>
-          {shown.map((wp) => (
-            <MediumOverdueWorkPackage key={wbsPipe(wp.wbsNum)} wp={wp} />
-          ))}
+        <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${shown.length}, 1fr)`, gap: '2cqw' }}>
+          {shown.length === 1 ? (
+            <OverdueWorkPackageItem wp={shown[0]} maxBlockers={1} compact />
+          ) : (
+            shown.map((wp) => <OverdueWorkPackageCard key={wbsPipe(wp.wbsNum)} wp={wp} />)
+          )}
         </Box>
         {hidden > 0 && (
           <Typography sx={{ fontSize: '2.2cqw', color: 'white', opacity: 0.8, mt: '0cqw', textAlign: 'center' }}>
