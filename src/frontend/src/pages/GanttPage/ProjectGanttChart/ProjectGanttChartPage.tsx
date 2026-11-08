@@ -29,6 +29,7 @@ import { SearchBar } from '../../../components/SearchBar';
 import GanttChartColorLegend from './GanttChartColorLegend';
 import GanttChartFiltersButton from './GanttChartFiltersButton';
 import GanttChart from '../GanttChart/GanttChart';
+import GanttChartEmptyState, { GanttActiveFilter } from '../GanttChart/GanttChartEmptyState';
 import {
   ProjectGantt,
   Task,
@@ -237,8 +238,23 @@ const ProjectGanttChartPage: FC = () => {
 
   const resetHandler = () => {
     history.push(routes.GANTT);
-    localStorage.removeItem('ganttURL');
+    localStorage.removeItem('project-gantt');
     setShowCars(selectedCar === 'all-cars' ? allCars.map((car) => car.wbsNum.carNumber) : [selectedCar.wbsNum.carNumber]);
+  };
+
+  const activeFilters: GanttActiveFilter[] = [
+    ...(showCars.length < allCars.length
+      ? allCars.filter((car) => showCars.includes(car.wbsNum.carNumber)).map((car) => ({ label: 'Car', value: car.name }))
+      : []),
+    ...filters.showTeamTypes.map((teamType) => ({ label: 'Division', value: teamType })),
+    ...filters.showTeams.map((team) => ({ label: 'Team', value: team })),
+    ...(filters.showOnlyOverdue ? [{ label: 'Overdue', value: 'only' }] : []),
+    ...(searchText ? [{ label: 'Search', value: searchText }] : [])
+  ];
+
+  const resetAllFilters = () => {
+    resetHandler();
+    setSearchText('');
   };
 
   /* **************************************************** */
@@ -673,6 +689,7 @@ const ProjectGanttChartPage: FC = () => {
             highlightSubtaskComparator: highlightWorkPackageComparator,
             highlightTaskComparator: highlightProjectComparator
           }}
+          emptyState={<GanttChartEmptyState activeFilters={activeFilters} onReset={resetAllFilters} />}
         />
       </PageLayout>
     </>

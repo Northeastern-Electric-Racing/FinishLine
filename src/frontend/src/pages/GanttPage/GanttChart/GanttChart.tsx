@@ -12,7 +12,7 @@ import { eachDayOfInterval, isMonday, differenceInDays } from 'date-fns';
 import { getMonday } from '../../../utils/datetime.utils';
 import { toDateString } from 'shared';
 import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../utils/gantt.utils';
-import { useCallback, useState } from 'react';
+import { ReactNode, useCallback, useState } from 'react';
 export interface GanttEditability<E, T> {
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
@@ -31,9 +31,11 @@ interface GanttChartProps<E, T> {
   endDate: Date;
   collections: GanttCollection<E, T>[];
   editability?: GanttEditability<E, T>;
+  /** Rendered instead of the rows when collections exist but every one of them has no tasks */
+  emptyState?: ReactNode;
 }
 
-const GanttChart = <E, T>({ startDate, endDate, collections, editability }: GanttChartProps<E, T>) => {
+const GanttChart = <E, T>({ startDate, endDate, collections, editability, emptyState }: GanttChartProps<E, T>) => {
   const theme = useTheme();
   const days = eachDayOfInterval({ start: startDate, end: endDate }).filter((day) => isMonday(day));
 
@@ -41,6 +43,8 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
   const currentWeekCol = days.findIndex((day) => toDateString(day) === toDateString(getMonday(today))) + 1;
   const daysIntoWeek = differenceInDays(today, getMonday(today));
   const dailyOffset = daysIntoWeek * (parseFloat(GANTT_CHART_CELL_SIZE) / 7);
+
+  const isFilteredToEmpty = collections.length > 0 && collections.every((collection) => collection.tasks.length === 0);
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const toggleExpanded = useCallback((id: string) => {
@@ -67,6 +71,7 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
     >
       <GanttChartTimeline start={startDate} end={endDate} />
       <Box sx={{ position: 'relative' }}>
+        {isFilteredToEmpty && emptyState}
         {collections.map((collection) => {
           return collection.tasks ? (
             <GanttChartCollectionSection
