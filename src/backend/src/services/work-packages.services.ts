@@ -53,6 +53,14 @@ import { userHasPermission } from '../utils/users.utils.js';
 import { getUserPreviewQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { sendMessage } from '../integrations/slack.js';
 
+/**
+ * Throws a 404 unless the wbs number is a work package's (not a car's or project's)
+ * @param wbsNum the wbs number to check
+ */
+const validateWorkPackageWbs = (wbsNum: WbsNumber) => {
+  if (!isWorkPackageWbs(wbsNum)) throw new HttpException(404, `WBS Number ${wbsPipe(wbsNum)} is not a work package WBS#`);
+};
+
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
   /**
