@@ -17,11 +17,6 @@ const MAX_BLOCKERS = 2;
 // the medium widget shows two cards side by side, like the medium calendar's events
 const MEDIUM_MAX_CARDS = 2;
 
-/**
- * Only what the widget needs to display an overdue work package
- */
-export type OverdueWorkPackageWidgetItem = PublicBayDashboardOverdueWorkPackage;
-
 const StateMessage: React.FC<{ icon: React.ReactNode; heading: string; message?: string }> = ({
   icon,
   heading,
@@ -45,11 +40,11 @@ const BlockerLine: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </Box>
 );
 
-const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem; maxBlockers?: number; compact?: boolean }> = ({
-  wp,
-  maxBlockers = MAX_BLOCKERS,
-  compact = false
-}) => {
+const OverdueWorkPackageItem: React.FC<{
+  wp: PublicBayDashboardOverdueWorkPackage;
+  maxBlockers?: number;
+  compact?: boolean;
+}> = ({ wp, maxBlockers = MAX_BLOCKERS, compact = false }) => {
   const numDaysOverdue = wp.daysOverdue;
   const hiddenBlockers = wp.blockedBy.length - maxBlockers;
 
@@ -78,7 +73,7 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem; maxBl
         <Stack direction="row" sx={{ gap: '0.8cqw', flexShrink: 0 }}>
           <InfoPill icon={<Construction />} label={fullNamePipe(wp.lead)} />
           <InfoPill icon={<Work />} label={fullNamePipe(wp.manager)} />
-          <InfoPill icon={<CalendarMonth />} label={datePipe(new Date(wp.endDate))} />
+          <InfoPill icon={<CalendarMonth />} label={datePipe(wp.endDate)} />
         </Stack>
       </Stack>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '2cqw', flex: 1, minHeight: 0 }}>
@@ -122,7 +117,7 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem; maxBl
 };
 
 interface OverdueWorkPackagesWidgetViewProps {
-  workPackages?: OverdueWorkPackageWidgetItem[];
+  workPackages?: PublicBayDashboardOverdueWorkPackage[];
   isLoading?: boolean;
   isError?: boolean;
   size?: BayDashboardWidgetSize;
@@ -166,7 +161,7 @@ export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetVi
     );
   }
 
-  const sorted = [...workPackages].sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime());
+  const sorted = [...workPackages].sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
 
   if (size === BayDashboardWidgetSize.MEDIUM) {
     const shown = sorted.slice(0, MEDIUM_MAX_CARDS);
@@ -206,7 +201,7 @@ export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetVi
 };
 
 /**
- * Overdue work packages on the bay dashboard. The large and medium sizes are built, the small one is still a placeholder frame
+ * Overdue work packages on the bay dashboard.
  */
 const OverdueWorkPackagesWidget: React.FC<BayDashboardWidgetProps> = ({ size, slug }) => {
   const { data: workPackages, isLoading, isError } = useGetBayDashboardOverdueWorkPackages(slug);

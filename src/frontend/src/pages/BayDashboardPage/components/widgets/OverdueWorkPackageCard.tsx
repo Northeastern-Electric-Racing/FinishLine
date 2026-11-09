@@ -5,9 +5,8 @@
 
 import { Box, Stack, Typography } from '@mui/material';
 import { CalendarMonth, Construction } from '@mui/icons-material';
-import { wbsPipe } from 'shared';
+import { PublicBayDashboardOverdueWorkPackage, wbsPipe } from 'shared';
 import { datePipe, fullNamePipe, projectWbsPipe } from '../../../../utils/pipes';
-import type { OverdueWorkPackageWidgetItem } from './OverdueWorkPackagesWidget';
 
 // everything is sized in cqw so the widget scales the same on the TV and in the Admin Tools preview
 export const NER_RED = '#ef4244';
@@ -36,7 +35,7 @@ export const InfoPill: React.FC<{ icon: React.ReactNode; label: string }> = ({ i
  * One overdue work package in the medium widget, shown beside the others the way the medium calendar shows its events.
  * It has no blocked by list, the rest of the large card's details are kept.
  */
-const OverdueWorkPackageCard: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = ({ wp }) => {
+const OverdueWorkPackageCard: React.FC<{ wp: PublicBayDashboardOverdueWorkPackage }> = ({ wp }) => {
   const numDaysOverdue = wp.daysOverdue;
 
   return (
@@ -59,7 +58,7 @@ const OverdueWorkPackageCard: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = (
         <Typography noWrap sx={{ fontSize: '2cqw', lineHeight: 1.2, color: NER_RED, fontWeight: 'bold', minWidth: 0 }}>
           {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
         </Typography>
-        <InfoPill icon={<CalendarMonth />} label={datePipe(new Date(wp.endDate))} />
+        <InfoPill icon={<CalendarMonth />} label={datePipe(wp.endDate)} />
       </Stack>
       <Typography noWrap sx={{ fontSize: '2.4cqw', fontWeight: 'bold', lineHeight: 1.2 }}>
         {wbsPipe(wp.wbsNum)} - {wp.name}
