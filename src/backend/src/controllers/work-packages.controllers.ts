@@ -104,7 +104,7 @@ export default class WorkPackagesController {
         projectWbsNum,
         req.organization
       );
-      broadcastBayDashboardUpdate(req.organization.name);
+      broadcastBayDashboardUpdate(req.organization.slug);
 
       res.status(200).json(workPackage);
     } catch (error: unknown) {
@@ -134,7 +134,7 @@ export default class WorkPackagesController {
         managerId,
         req.organization
       );
-      broadcastBayDashboardUpdate(req.organization.name);
+      broadcastBayDashboardUpdate(req.organization.slug);
 
       res.status(200).json({ message: 'Work package updated successfully' });
     } catch (error: unknown) {
@@ -148,7 +148,7 @@ export default class WorkPackagesController {
       const wbsNum = validateWBS(req.params.wbsNum as string);
 
       await WorkPackagesService.deleteWorkPackage(req.currentUser, wbsNum, req.organization);
-      broadcastBayDashboardUpdate(req.organization.name);
+      broadcastBayDashboardUpdate(req.organization.slug);
 
       res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum as string}` });
     } catch (error: unknown) {

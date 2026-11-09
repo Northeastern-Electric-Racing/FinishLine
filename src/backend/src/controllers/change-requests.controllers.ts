@@ -92,7 +92,7 @@ export default class ChangeRequestsController {
         req.organization,
         reviewNotes
       );
-      broadcastBayDashboardUpdate(req.organization.name);
+      broadcastBayDashboardUpdate(req.organization.slug);
 
       res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
     } catch (error: unknown) {

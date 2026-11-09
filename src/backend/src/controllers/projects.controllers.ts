@@ -131,6 +131,7 @@ export default class ProjectsController {
         managerId || null,
         req.organization
       );
+      broadcastBayDashboardUpdate(req.organization.slug);
 
       res.status(200).json(editedProject);
     } catch (error: unknown) {
@@ -155,7 +156,7 @@ export default class ProjectsController {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
       const deletedProject: Project = await ProjectsService.deleteProject(req.currentUser, wbsNumber, req.organization);
-      broadcastBayDashboardUpdate(req.organization.name);
+      broadcastBayDashboardUpdate(req.organization.slug);
 
       res.status(200).json(deletedProject);
     } catch (error: unknown) {
