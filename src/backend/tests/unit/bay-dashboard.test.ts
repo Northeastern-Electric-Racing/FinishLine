@@ -327,7 +327,6 @@ describe('Bay Dashboard Overdue Work Packages Tests', () => {
     options: { startDate?: Date; status?: WBS_Element_Status; dateDeleted?: Date } = {}
   ): Promise<Work_Package> => {
     const workPackage = await createTestWorkPackage(user, organization.organizationId, projectId, 0, 1, workPackageNumber);
-    // undefined fields are left unchanged by prisma
     return prisma.work_Package.update({
       where: { workPackageId: workPackage.workPackageId },
       data: {

@@ -144,10 +144,8 @@ export const publicBayDashboardOverdueWorkPackageTransformer = (
   return {
     wbsNum: base.wbsNum,
     name: base.name,
-    // the project shares the work package's car and project numbers
     projectWbsNum: { ...base.wbsNum, workPackageNumber: 0 },
     projectName: base.projectName,
-    // names only: the public TV is unauthenticated, so user ids stay out of the response
     lead: base.lead && { firstName: base.lead.firstName, lastName: base.lead.lastName },
     manager: base.manager && { firstName: base.manager.firstName, lastName: base.manager.lastName },
     endDate: base.endDate,
