@@ -48,7 +48,6 @@ export default class CalendarController {
         requiresConfirmation,
         sendSlackNotifications
       );
-      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(eventType);
     } catch (error: unknown) {
       next(error);
@@ -152,7 +151,6 @@ export default class CalendarController {
         req.organization
       );
 
-      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(calendar);
     } catch (error: unknown) {
       next(error);
@@ -469,7 +467,6 @@ export default class CalendarController {
       const { eventId } = req.params as Record<string, string>;
 
       const event = await CalendarService.approveEvent(req.currentUser, eventId, req.organization);
-      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(event);
     } catch (error: unknown) {
       next(error);
@@ -481,7 +478,6 @@ export default class CalendarController {
       const { eventId } = req.params as Record<string, string>;
 
       const event = await CalendarService.denyEvent(req.currentUser, eventId, req.organization);
-      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(event);
     } catch (error: unknown) {
       next(error);
@@ -496,7 +492,6 @@ export default class CalendarController {
       const user = await getCurrentUserWithUserSettings(res);
 
       const updatedEvent = await CalendarService.markUserConfirmed(eventId, availability, user, req.organization);
-      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(updatedEvent);
     } catch (error: unknown) {
       next(error);
