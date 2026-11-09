@@ -6,7 +6,7 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { CalendarMonth, Construction } from '@mui/icons-material';
 import { PublicBayDashboardOverdueWorkPackage, wbsPipe } from 'shared';
-import { datePipe, fullNamePipe, projectWbsPipe } from '../../../../utils/pipes';
+import { datePipe, projectWbsPipe } from '../../../../utils/pipes';
 
 // everything is sized in cqw so the widget scales the same on the TV and in the Admin Tools preview
 export const NER_RED = '#ef4244';
@@ -30,6 +30,13 @@ export const InfoPill: React.FC<{ icon: React.ReactNode; label: string }> = ({ i
     <Typography sx={{ fontSize: '1.8cqw' }}>{label}</Typography>
   </Box>
 );
+
+/**
+ * Shows a lead or manager's name, or an em dash when there is none.
+ * Names only, the public response carries no user ids.
+ */
+export const fullNameOrDash = (user: PublicBayDashboardOverdueWorkPackage['lead']) =>
+  user ? `${user.firstName} ${user.lastName}` : '—';
 
 /**
  * One overdue work package in the medium widget, shown beside the others the way the medium calendar shows its events.
@@ -65,7 +72,7 @@ const OverdueWorkPackageCard: React.FC<{ wp: PublicBayDashboardOverdueWorkPackag
       </Typography>
       <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: '1cqw' }}>
         <Stack direction="row" sx={{ gap: '0.8cqw', flexWrap: 'wrap', minWidth: 0 }}>
-          <InfoPill icon={<Construction />} label={fullNamePipe(wp.lead)} />
+          <InfoPill icon={<Construction />} label={fullNameOrDash(wp.lead)} />
         </Stack>
         <Box
           sx={{

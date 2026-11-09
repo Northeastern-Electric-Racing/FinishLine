@@ -9,8 +9,8 @@ import { BayDashboardWidgetSize, BayDashboardWidgetType, PublicBayDashboardOverd
 import NERWidget from '../../../../components/NERWidget';
 import { useGetBayDashboardOverdueWorkPackages } from '../../../../hooks/bay-dashboard.hooks';
 import { BayDashboardWidgetProps, bayDashboardWidgetDisplayNames } from '../../../../utils/bay-dashboard.utils';
-import { datePipe, fullNamePipe, projectWbsPipe } from '../../../../utils/pipes';
-import OverdueWorkPackageCard, { InfoPill, NER_RED } from './OverdueWorkPackageCard';
+import { datePipe, projectWbsPipe } from '../../../../utils/pipes';
+import OverdueWorkPackageCard, { fullNameOrDash, InfoPill, NER_RED } from './OverdueWorkPackageCard';
 
 const MAX_CARDS = 4;
 const MAX_BLOCKERS = 2;
@@ -71,8 +71,8 @@ const OverdueWorkPackageItem: React.FC<{
           {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
         </Typography>
         <Stack direction="row" sx={{ gap: '0.8cqw', flexShrink: 0 }}>
-          <InfoPill icon={<Construction />} label={fullNamePipe(wp.lead)} />
-          <InfoPill icon={<Work />} label={fullNamePipe(wp.manager)} />
+          <InfoPill icon={<Construction />} label={fullNameOrDash(wp.lead)} />
+          <InfoPill icon={<Work />} label={fullNameOrDash(wp.manager)} />
           <InfoPill icon={<CalendarMonth />} label={datePipe(wp.endDate)} />
         </Stack>
       </Stack>
