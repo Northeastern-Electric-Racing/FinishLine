@@ -543,9 +543,12 @@ const dashboardDelete = (dashboardId: string) => `${dashboards()}/${dashboardId}
 const bayDashboard = () => `${API_URL}/bay-dashboard`;
 const bayDashboardEvents = (slug: string) => `${bayDashboard()}/${slug}/events`;
 const bayDashboardConfig = (slug: string) => `${bayDashboard()}/${slug}/config`;
+const bayDashboardCountdowns = (slug: string) => `${bayDashboard()}/${slug}/countdowns`;
+const bayDashboardCalendar = (slug: string) => `${bayDashboard()}/${slug}/calendar`;
 const bayDashboardAdmin = () => `${bayDashboard()}/admin`;
 const bayDashboardAdminWidgets = () => `${bayDashboardAdmin()}/widgets`;
 const bayDashboardAdminSave = () => `${bayDashboardAdmin()}/save`;
+const bayDashboardAdminCountdownCreate = () => `${bayDashboardAdmin()}/countdown/create`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -952,9 +955,12 @@ export const apiUrls = {
 
   bayDashboardEvents,
   bayDashboardConfig,
+  bayDashboardCountdowns,
+  bayDashboardCalendar,
   bayDashboardAdmin,
   bayDashboardAdminWidgets,
   bayDashboardAdminSave,
+  bayDashboardAdminCountdownCreate,
 
   version
 };

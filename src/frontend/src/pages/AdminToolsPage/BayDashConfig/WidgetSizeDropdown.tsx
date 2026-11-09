@@ -15,6 +15,7 @@ interface WidgetSizeDropdownProps {
   selectedType?: BayDashboardWidgetType;
   text?: string;
   onSelect: (type: BayDashboardWidgetType) => void;
+  slug?: string;
   onEditText: () => void;
 }
 
@@ -29,6 +30,7 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({
   selectedType,
   text,
   onSelect,
+  slug,
   onEditText
 }) => {
   const [expanded, setExpanded] = useState(true);
@@ -98,6 +100,7 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({
                       order: 0,
                       text: widget.type === BayDashboardWidgetType.TEXT_FIELD ? text : undefined
                     }}
+                    slug={slug}
                   />
                 </Box>
                 <Box

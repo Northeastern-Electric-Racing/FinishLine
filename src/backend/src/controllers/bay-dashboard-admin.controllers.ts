@@ -46,7 +46,7 @@ export default class BayDashboardAdminController {
 
   static async createBayDashboardCountdown(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, startDate, endDate } = req.body;
+      const { name, startDate, endDate, isPrimary } = req.body;
       const { currentUser, organization } = req;
 
       const countdown = await BayDashboardAdminService.createBayDashboardCountdown(
@@ -54,8 +54,10 @@ export default class BayDashboardAdminController {
         organization,
         name,
         new Date(startDate),
+        isPrimary,
         endDate ? new Date(endDate) : undefined
       );
+      broadcastBayDashboardUpdate(organization.slug);
       res.status(201).json(countdown);
     } catch (error: unknown) {
       next(error);
@@ -68,6 +70,7 @@ export default class BayDashboardAdminController {
       const { currentUser, organization } = req;
 
       const countdown = await BayDashboardAdminService.deleteBayDashboardCountdown(currentUser, countdownId, organization);
+      broadcastBayDashboardUpdate(organization.slug);
       res.status(200).json(countdown);
     } catch (error: unknown) {
       next(error);
@@ -77,7 +80,7 @@ export default class BayDashboardAdminController {
   static async editBayDashboardCountdown(req: Request, res: Response, next: NextFunction) {
     try {
       const { countdownId } = req.params as Record<string, string>;
-      const { name, startDate, endDate } = req.body;
+      const { name, startDate, endDate, isPrimary } = req.body;
       const { currentUser, organization } = req;
 
       const countdown = await BayDashboardAdminService.editBayDashboardCountdown(
@@ -86,8 +89,10 @@ export default class BayDashboardAdminController {
         organization,
         name,
         new Date(startDate),
+        isPrimary,
         endDate ? new Date(endDate) : undefined
       );
+      broadcastBayDashboardUpdate(organization.slug);
       res.status(200).json(countdown);
     } catch (error: unknown) {
       next(error);

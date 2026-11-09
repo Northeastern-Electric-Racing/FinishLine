@@ -14,6 +14,8 @@ import {
 export interface BayDashboardWidgetProps {
   size: BayDashboardWidgetSize;
   widget: PublicBayDashboardWidget;
+  // the organization's slug, for widgets that load their own data
+  slug?: string;
 }
 
 export const bayDashboardWidgetDisplayNames: Record<BayDashboardWidgetType, string> = {

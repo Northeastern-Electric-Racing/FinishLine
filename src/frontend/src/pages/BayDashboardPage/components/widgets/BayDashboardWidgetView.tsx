@@ -29,7 +29,7 @@ const BayDashboardWidgetView: React.FC<BayDashboardWidgetViewProps> = ({ fallbac
 
   if (!fallbackWidget) return null;
   const FallbackComponent = widgetComponents[fallbackWidget.type];
-  return FallbackComponent ? <FallbackComponent size={props.size} widget={fallbackWidget} /> : null;
+  return FallbackComponent ? <FallbackComponent size={props.size} widget={fallbackWidget} slug={props.slug} /> : null;
 };
 
 export default BayDashboardWidgetView;

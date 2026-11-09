@@ -19,6 +19,7 @@ interface WidgetSelectionProps {
   // highlighted widget per size, only one per size (until phase 3 widget rotations)
   selection: BayDashboardWidgetSelection;
   onSelectionChange: (selection: BayDashboardWidgetSelection) => void;
+  slug?: string;
   // the text a size's text field widget shows
   getText: (size: BayDashboardWidgetSize) => string | undefined;
   onEditText: (size: BayDashboardWidgetSize) => void;
@@ -29,7 +30,7 @@ interface WidgetSelectionProps {
  * Clicking a widget highlights it, one per size, and clicking it again unselects it.
  * A text field widget can only be highlighted once it has text.
  */
-const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectionChange, getText, onEditText }) => {
+const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectionChange, slug, getText, onEditText }) => {
   const { data: availableWidgets, isLoading, isError, error } = useAvailableBayDashboardWidgets();
   const toast = useToast();
 
@@ -62,6 +63,7 @@ const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectio
           key={size}
           size={size}
           widgets={availableWidgets.widgets.filter((widget) => widget.sizes.includes(size))}
+          slug={slug}
           selectedType={selection[size]?.type}
           text={getText(size)}
           onSelect={(type) => handleSelect(size, type)}

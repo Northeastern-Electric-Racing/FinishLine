@@ -19,6 +19,7 @@ import BayDashboardGrid from '../../BayDashboardPage/components/BayDashboardGrid
 
 interface PreviewDashboardProps {
   selection: BayDashboardWidgetSelection;
+  slug: string;
   onEditText: (size: BayDashboardWidgetSize) => void;
 }
 
@@ -29,7 +30,7 @@ const frameSx = { border: '2px solid white', borderRadius: '4px', width: '100%',
  * size in the right column swapped in. A size with nothing picked shows what the TV has.
  * Text field widgets have an edit button for changing their text.
  */
-const PreviewDashboard: React.FC<PreviewDashboardProps> = ({ selection, onEditText }) => {
+const PreviewDashboard: React.FC<PreviewDashboardProps> = ({ selection, slug, onEditText }) => {
   const { data: config, isLoading, isError, error } = useGetCurrentBayDashboardConfig();
 
   if (isError || isLoading || config === undefined) {
@@ -54,6 +55,7 @@ const PreviewDashboard: React.FC<PreviewDashboardProps> = ({ selection, onEditTe
     <Box sx={frameSx}>
       <BayDashboardGrid
         slots={applyWidgetSelection(config?.slots ?? defaultBayDashboardSlots, selection)}
+        slug={slug}
         renderSlotAction={(size, widget) =>
           widget.type === BayDashboardWidgetType.TEXT_FIELD && (
             <IconButton

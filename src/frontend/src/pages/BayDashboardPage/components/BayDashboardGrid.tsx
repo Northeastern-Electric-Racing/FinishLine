@@ -6,10 +6,13 @@
 import { Box } from '@mui/material';
 import { BayDashboardWidgetSize, PublicBayDashboardSlot, PublicBayDashboardWidget } from 'shared';
 import { BAY_DASHBOARD_BACKGROUND, defaultBayDashboardSlots, widgetHeights } from '../../../utils/bay-dashboard.utils';
+import BayDashboardHeader from './BayDashboardHeader';
 import BayDashboardWidgetView from './widgets/BayDashboardWidgetView';
+import CountdownWidget from './widgets/CountdownWidget';
 
 interface BayDashboardGridProps {
   slots: PublicBayDashboardSlot[];
+  slug: string;
   // optional content drawn over a slot's widget, such as an edit button, shown in admin tools but not on TV display
   renderSlotAction?: (size: BayDashboardWidgetSize, widget: PublicBayDashboardWidget) => React.ReactNode;
 }
@@ -29,7 +32,7 @@ const gridRows = `60fr 380fr ${MEDIUM_HEIGHT}fr ${SMALL_HEIGHT}fr`;
  * The Big/Medium/Small widget grid the TV renders. Fills the width of its parent at the TV's 16:9 shape,
  * so the preview is a scaled down copy of the TV.
  */
-const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, renderSlotAction }) => {
+const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, slug, renderSlotAction }) => {
   return (
     <Box sx={{ containerType: 'inline-size', width: '100%' }}>
       <Box
@@ -44,14 +47,19 @@ const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, renderSlotAc
           background: BAY_DASHBOARD_BACKGROUND
         }}
       >
-        {/* weather and date/time go in "header", the countdown widget goes in "countdown" */}
+        <Box sx={{ gridArea: 'header', minWidth: 0, minHeight: 0 }}>
+          <BayDashboardHeader />
+        </Box>
+        <Box sx={{ gridArea: 'countdown', minWidth: 0, minHeight: 0 }}>
+          <CountdownWidget slug={slug} />
+        </Box>
         {defaultBayDashboardSlots.map(({ size, position, widgets: [defaultWidget] }) => {
           // fall back to the size's default widget when nothing is picked for it or the picked widget can't be shown
           const widget = slots.find((slot) => slot.size === size)?.widgets[0] ?? defaultWidget;
 
           return (
             <Box key={position} sx={{ gridArea: gridAreas[size], minWidth: 0, minHeight: 0, position: 'relative' }}>
-              <BayDashboardWidgetView widget={widget} size={size} fallbackWidget={defaultWidget} />
+              <BayDashboardWidgetView widget={widget} size={size} slug={slug} fallbackWidget={defaultWidget} />
               {renderSlotAction?.(size, widget)}
             </Box>
           );
