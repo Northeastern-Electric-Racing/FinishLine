@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { WbsElementStatus, WorkPackage } from 'shared';
+import { WbsElementStatus, WorkPackageDetail } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
@@ -16,17 +16,14 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import Delete from '@mui/icons-material/Delete';
 import DeleteWorkPackage from '../DeleteWorkPackageModalContainer/DeleteWorkPackage';
-import { useGetManyWorkPackages } from '../../../hooks/work-packages.hooks';
 import PageLayout from '../../../components/PageLayout';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
 import FullPageTabs from '../../../components/FullPageTabs';
 import ChangeRequestTab from '../../../components/ChangeRequestTab';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import { TaskListContent } from '../../ProjectDetailPage/ProjectViewContainer/TaskList/v2/TaskListContent';
 
 interface WorkPackageViewContainerProps {
-  workPackage: WorkPackage;
+  workPackage: WorkPackageDetail;
   enterEditMode: () => void;
   allowEdit: boolean;
   allowActivate: boolean;
@@ -46,12 +43,8 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { data: dependencies, isError, isLoading, error } = useGetManyWorkPackages(workPackage.blockedBy);
   const wbsNum = wbsPipe(workPackage.wbsNum);
   const [tabValue, setTabValue] = useState<number>(0);
-
-  if (!dependencies || isLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
 
   const handleDropdownClose = () => {
     setAnchorEl(null);
@@ -141,7 +134,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       }
     >
       {tabValue === 0 ? (
-        <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
+        <WorkPackageDetails workPackage={workPackage} />
       ) : tabValue === 1 ? (
         !allowEdit ? null : (
           <TaskListContent context="workPackage" wbsNum={workPackage.wbsNum} />

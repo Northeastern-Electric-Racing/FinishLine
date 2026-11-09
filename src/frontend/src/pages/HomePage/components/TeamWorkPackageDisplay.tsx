@@ -22,12 +22,16 @@ const NoTeamWorkPackagesDisplay: React.FC = () => {
 const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = () => {
   const { isLoading, isError, data: workPackages, error } = useHomeScreenWorkPackages(WorkPackageSelection.MEMBER);
 
-  if (isLoading || !workPackages) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
+  if (isLoading || !workPackages) return <LoadingIndicator />;
 
   return (
     <ScrollablePageBlock title={`My Team's Work Packages (${workPackages.length})`}>
-      {workPackages.length === 0 ? <NoTeamWorkPackagesDisplay /> : workPackages.map((wp) => <WorkPackageCard wp={wp} />)}
+      {workPackages.length === 0 ? (
+        <NoTeamWorkPackagesDisplay />
+      ) : (
+        workPackages.map((wp) => <WorkPackageCard key={wp.id} wp={wp} />)
+      )}
     </ScrollablePageBlock>
   );
 };
