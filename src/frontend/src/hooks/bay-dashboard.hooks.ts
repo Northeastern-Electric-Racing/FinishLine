@@ -17,6 +17,7 @@ import {
 import { apiUrls } from '../utils/urls';
 import {
   createBayDashboardCountdown,
+  deleteBayDashboardCountdown,
   getAvailableBayDashboardWidgets,
   getBayDashboardCalendarEvents,
   getBayDashboardConfig,
@@ -95,6 +96,31 @@ export const useCreateBayDashboardCountdown = (slug: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['bay-dashboard', slug, 'countdowns']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a bay dashboard countdown.
+ * @param slug the organization slug, whose countdowns are refetched after deleting
+ */
+export const useDeleteBayDashboardCountdown = (slug: string) => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  return useMutation<BayDashboardCountdown, Error, string>(
+    ['bay-dashboard', 'admin', 'countdown', 'delete'],
+    async (countdownId: string) => {
+      const { data } = await deleteBayDashboardCountdown(countdownId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['bay-dashboard', slug, 'countdowns']);
+        toast.success('Successfully deleted countdown. The TV display has been updated.');
+      },
+      onError: (error) => {
+        toast.error(error.message);
       }
     }
   );

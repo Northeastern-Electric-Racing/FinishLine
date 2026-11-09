@@ -3,15 +3,21 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, IconButton, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { useState } from 'react';
 import { BayDashboardCountdown, BayDashboardCountdownCreateArgs, formatDateOnly } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { NERButton } from '../../../components/NERButton';
-import { useCreateBayDashboardCountdown, useGetBayDashboardCountdowns } from '../../../hooks/bay-dashboard.hooks';
+import {
+  useCreateBayDashboardCountdown,
+  useDeleteBayDashboardCountdown,
+  useGetBayDashboardCountdowns
+} from '../../../hooks/bay-dashboard.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { pickDisplayedCountdowns } from '../../../utils/bay-dashboard-countdown.utils';
 import ErrorPage from '../../ErrorPage';
+import CountdownDeleteModal from './CountdownDeleteModal';
 import CountdownFormModal from './CountdownFormModal';
 
 interface CountdownTableProps {
@@ -38,13 +44,40 @@ const displayLabel = (
   return '-';
 };
 
+interface CountdownDeleteButtonProps {
+  name: string;
+  onDelete: () => void;
+}
+
+const CountdownDeleteButton: React.FC<CountdownDeleteButtonProps> = ({ name, onDelete }) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const handleDeleteSubmit = () => {
+    onDelete();
+    setShowDeleteModal(false);
+  };
+
+  return (
+    <>
+      <IconButton type="button" onClick={() => setShowDeleteModal(true)}>
+        <DeleteIcon />
+      </IconButton>
+      {showDeleteModal && (
+        <CountdownDeleteModal name={name} onDelete={handleDeleteSubmit} onHide={() => setShowDeleteModal(false)} />
+      )}
+    </>
+  );
+};
+
 /**
- * The bay dashboard's countdowns in the Admin Tools, with a button to add a new one
+ * The bay dashboard's countdowns in the Admin Tools, with a button to add a new one and a trash icon to delete each
  */
 const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { data: countdowns, isLoading, isError, error } = useGetBayDashboardCountdowns(slug);
   const { mutateAsync: createCountdown } = useCreateBayDashboardCountdown(slug);
+  // the delete hook toasts the result itself, so the table only needs to trigger it
+  const { mutate: deleteCountdown } = useDeleteBayDashboardCountdown(slug);
   const toast = useToast();
 
   if (isError) return <ErrorPage message={error.message} />;
@@ -56,6 +89,10 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
   const handleCreate = async (countdown: BayDashboardCountdownCreateArgs) => {
     await createCountdown(countdown);
     toast.success('Successfully created countdown. The TV display has been updated.');
+  };
+
+  const handleDelete = (countdownId: string) => {
+    deleteCountdown(countdownId);
   };
 
   return (
@@ -73,15 +110,16 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
             <TableCell align="center" sx={headerCellSx}>
               End Date
             </TableCell>
-            <TableCell align="center" sx={{ ...headerCellSx, borderRadius: '0px 10px 0px 0px' }}>
+            <TableCell align="center" sx={headerCellSx}>
               Display
             </TableCell>
+            <TableCell align="center" sx={{ ...headerCellSx, borderRadius: '0px 10px 0px 0px' }} />
           </TableRow>
         </TableHead>
         <TableBody>
           {sortedCountdowns.length === 0 && (
             <TableRow>
-              <TableCell colSpan={4} align="center">
+              <TableCell colSpan={5} align="center">
                 No countdowns yet
               </TableCell>
             </TableRow>
@@ -92,6 +130,12 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
               <TableCell align="center">{formatDateOnly(countdown.startDate)}</TableCell>
               <TableCell align="center">{countdown.endDate ? formatDateOnly(countdown.endDate) : '-'}</TableCell>
               <TableCell align="center">{displayLabel(countdown, displayed)}</TableCell>
+              <TableCell align="center">
+                <CountdownDeleteButton
+                  name={countdown.name}
+                  onDelete={() => handleDelete(countdown.bayDashboardCountdownId)}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
