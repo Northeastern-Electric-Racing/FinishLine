@@ -1,5 +1,4 @@
 import { Prisma, WBS_Element_Status } from '@prisma/client';
-import { getUserPreviewQueryArgs } from './user.query-args.js';
 
 export type BayDashboardWidgetQueryArgs = ReturnType<typeof getBayDashboardWidgetQueryArgs>;
 
@@ -114,8 +113,8 @@ export const getBayDashboardOverdueWorkPackageQueryArgs = () =>
           projectNumber: true,
           workPackageNumber: true,
           name: true,
-          lead: getUserPreviewQueryArgs(),
-          manager: getUserPreviewQueryArgs()
+          lead: { select: { firstName: true, lastName: true } },
+          manager: { select: { firstName: true, lastName: true } }
         }
       },
       project: {
