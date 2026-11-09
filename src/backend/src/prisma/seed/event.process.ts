@@ -13,7 +13,6 @@ import {
   DAYS_AFTER_NO_EVENT,
   documentCreateInput,
   eventCreateInput,
-  generateAttendeeCount,
   generateConflictStatus,
   generateEventCount,
   generateEventDateCreated,
@@ -23,6 +22,7 @@ import {
   generateInitialDateOffset,
   generateLocation,
   generateQuestionDocumentLink,
+  generateRosterAttendeeCount,
   generateScheduleSlotCount,
   generateScheduleSlotTimes,
   generateZoomLink,
@@ -32,8 +32,9 @@ import {
   shouldCreateMeetingAttendance
 } from '../factories/event.factory.js';
 import { addDaysToDate } from 'shared';
-import { clampDate, DAY_MS, daysBetween } from '../dates.js';
+import { clampDate, daysBetween } from '../dates.js';
 import { Event_Status } from '@prisma/client';
+import { DAY_MS } from '../../utils/time.utils.js';
 
 type EventInput = OrganizationOutput & UsersOutput & ConfigDataOutput & TeamOutput & CarOutput & ProjectOutput;
 
@@ -67,7 +68,20 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
     const creators = [...leadership, ...heads, ...admins, ...appAdmins];
     const allUsers = [...members, ...leadership, ...heads, ...admins, ...appAdmins];
 
-    const now = new Date();
+    // Preload each team's roster (members + leads + head) once so meeting-attendance seeding can
+    // draw attendees from the real roster without an extra query per meeting.
+    const teamRosters = await this.prisma.team.findMany({
+      where: { teamId: { in: teams.map((team) => team.teamId) } },
+      select: { teamId: true, headId: true, members: { select: { userId: true } }, leads: { select: { userId: true } } }
+    });
+    const rosterIdsByTeamId = new Map<string, string[]>(
+      teamRosters.map((team) => [
+        team.teamId,
+        [team.headId, ...team.members.map((m) => m.userId), ...team.leads.map((l) => l.userId)]
+      ])
+    );
+
+    const { now } = this;
 
     const BATCH_SIZE = 20;
     for (let i = 0; i < projects.length; i += BATCH_SIZE) {
@@ -81,6 +95,7 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
             creators,
             allUsers,
             teams,
+            rosterIdsByTeamId,
             eventTypes,
             now
           );
@@ -111,6 +126,7 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
     creators: UsersOutput['leadership'],
     allUsers: UsersOutput['members'],
     teams: TeamOutput['teams'],
+    rosterIdsByTeamId: Map<string, string[]>,
     eventTypes: ConfigDataOutput['eventTypes'],
     now: Date
   ) {
@@ -128,7 +144,7 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
       const availableDays = daysBetween(timeline);
       const offsetDays = generateInitialDateOffset(this.faker, availableDays, timeline.end > now);
       const initialDateScheduled = addDaysToDate(timeline.start, offsetDays);
-      const status = generateEventStatus(this.faker, eventType.requiresConfirmation, initialDateScheduled);
+      const status = generateEventStatus(this.faker, eventType.requiresConfirmation, initialDateScheduled, now);
 
       const location = generateLocation(this.faker);
       const zoomLink = generateZoomLink(this.faker);
@@ -205,19 +221,26 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
 
       if (shouldCreateMeetingAttendance(this.faker)) {
         const team = this.faker.helpers.arrayElement(teams);
-        const attendeeCount = generateAttendeeCount(this.faker, allUsers.length);
-        const attendees = this.faker.helpers.arrayElements(allUsers, attendeeCount);
 
-        await this.prisma.meeting_Attendance.create({
-          data: meetingAttendanceCreateInput(
-            this.faker,
-            organizationId,
-            team.teamId,
-            creator.userId,
-            attendees.map((u) => u.userId),
-            initialDateScheduled
-          )
-        });
+        // Draw attendees from the team's own roster (members + leads + head) so the
+        // attendance-percentage statistics graphs report meaningful values.
+        const rosterIds = rosterIdsByTeamId.get(team.teamId) ?? [];
+
+        if (rosterIds.length > 0) {
+          const attendeeCount = generateRosterAttendeeCount(this.faker, rosterIds.length);
+          const attendees = this.faker.helpers.arrayElements(rosterIds, Math.min(attendeeCount, rosterIds.length));
+
+          await this.prisma.meeting_Attendance.create({
+            data: meetingAttendanceCreateInput(
+              this.faker,
+              organizationId,
+              team.teamId,
+              creator.userId,
+              attendees,
+              initialDateScheduled
+            )
+          });
+        }
       }
     }
   }

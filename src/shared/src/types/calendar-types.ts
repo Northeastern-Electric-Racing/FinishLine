@@ -155,6 +155,7 @@ export interface EventType {
   onlyHeadsOrAboveForEventCreation: boolean;
   requiresConfirmation: boolean;
   sendSlackNotifications: boolean;
+  takeAttendance: boolean;
 }
 
 export interface EventTypeCreateArgs {
@@ -175,6 +176,7 @@ export interface EventTypeCreateArgs {
   onlyHeadsOrAbove: boolean;
   requiresConfirmation: boolean;
   sendSlackNotifications: boolean;
+  takeAttendance: boolean;
 }
 
 export interface Shop {

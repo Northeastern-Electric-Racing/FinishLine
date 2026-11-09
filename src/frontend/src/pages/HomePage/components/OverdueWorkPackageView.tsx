@@ -1,12 +1,13 @@
 import { Box, Card, CardContent, Theme, Typography } from '@mui/material';
-import { WorkPackage } from 'shared';
+import { WorkPackageCard } from 'shared';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import OverdueWorkPackageCard from './OverdueWorkPackageCard';
+import { daysOverdue } from '../../../utils/datetime.utils';
 
 interface OverdueWorkPackagesViewProps {
   theme: Theme;
-  workPackages: WorkPackage[];
+  workPackages: WorkPackageCard[];
 }
 
 const NoOverdueWPsDisplay: React.FC = () => {
@@ -21,6 +22,9 @@ const NoOverdueWPsDisplay: React.FC = () => {
 
 const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ theme, workPackages }) => {
   const isEmpty = workPackages.length === 0;
+
+  workPackages = workPackages.sort((a, b) => daysOverdue(new Date(b.endDate)) - daysOverdue(new Date(a.endDate)));
+
   return (
     <Box sx={{ position: 'relative', mt: 5, height: '90%' }}>
       <Box
@@ -85,7 +89,7 @@ const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ theme
               scrollbarColor: `${theme.palette.primary.main} transparent`
             }}
           >
-            {isEmpty ? <NoOverdueWPsDisplay /> : workPackages.map((wp) => <OverdueWorkPackageCard wp={wp} />)}
+            {isEmpty ? <NoOverdueWPsDisplay /> : workPackages.map((wp) => <OverdueWorkPackageCard key={wp.id} wp={wp} />)}
           </Box>
         </CardContent>
       </Card>

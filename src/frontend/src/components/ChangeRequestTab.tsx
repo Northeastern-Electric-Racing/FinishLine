@@ -9,7 +9,7 @@ import ErrorPage from '../pages/ErrorPage';
 import LoadingIndicator from './LoadingIndicator';
 import ChangeRequestRow from './ChangeRequestRow';
 
-const ChangeRequestTab = ({ wbsElement }: { wbsElement: WbsElement }) => {
+const ChangeRequestTab = ({ wbsElement }: { wbsElement: Pick<WbsElement, 'wbsNum'> }) => {
   const {
     data: unreviewedChangeRequests,
     isError: unreviewedCRIsError,

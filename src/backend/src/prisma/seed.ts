@@ -27,6 +27,12 @@ import { SponsorProcess } from './seed/sponsor.process.js';
 import { PartProcess } from './seed/parts.process.js';
 import { OrganizationContentProcess } from './seed/organization-content.process.js';
 import { GraphProcess } from './seed/graphs.process.js';
+import { ExecutiveSummaryProcess } from './seed/executive-summary.process.js';
+import { CompetitionPerformanceProcess } from './seed/competition-performance.process.js';
+import { CompetitionDocumentsSummaryProcess } from './seed/competition-documents-summary.process.js';
+import { RecruitmentCycleProcess } from './seed/recruitment-cycle.process.js';
+import { RecruitmentDivisionCountProcess } from './seed/recruitment-division-count.process.js';
+import { RulesProcess } from './seed/rules.process.js';
 import { BayDashboardProcess } from './seed/bay-dashboard.process.js';
 
 const prisma = new PrismaClient();
@@ -53,6 +59,13 @@ await new SeedRunner()
     new PartProcess(),
     new SponsorProcess(),
     new OrganizationContentProcess(),
+    new GraphProcess(),
+    new ExecutiveSummaryProcess(),
+    new CompetitionPerformanceProcess(),
+    new CompetitionDocumentsSummaryProcess(),
+    new RecruitmentCycleProcess(),
+    new RecruitmentDivisionCountProcess(),
+    new RulesProcess()
     new GraphProcess(),
     new BayDashboardProcess()
   )

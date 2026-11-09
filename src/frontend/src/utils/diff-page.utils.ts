@@ -1,4 +1,6 @@
 import {
+  BaseUser,
+  BaseWorkPackage,
   DescriptionBullet,
   Link,
   Project,
@@ -8,7 +10,6 @@ import {
   WbsElement,
   WbsElementStatus,
   WbsNumber,
-  WorkPackage,
   WorkPackageProposedChanges,
   WorkPackageStage,
   equalsWbsNumber,
@@ -150,8 +151,19 @@ export const genListChange = <T extends DisplayableObejct>(
   };
 };
 
+/** The fields of a project or work package that a change request can change. Work packages don't carry links */
+type DiffableWbsElement = Pick<WbsElement, 'name' | 'descriptionBullets'> & {
+  lead?: BaseUser;
+  manager?: BaseUser;
+  links?: Link[];
+};
+
+/** A work package as the diff reads it: blockers are compared by wbs number only */
+export type DiffableWorkPackage = DiffableWbsElement &
+  Pick<BaseWorkPackage, 'startDate' | 'duration' | 'status' | 'endDate' | 'stage'> & { blockedBy: WbsNumber[] };
+
 export const getWbsChanges = (
-  originalElement?: WbsElement,
+  originalElement?: DiffableWbsElement,
   proposedChanges?: ProjectProposedChanges | WorkPackageProposedChanges
 ) => {
   const lines: ComparableLine[] = [];
@@ -171,7 +183,7 @@ export const getWbsChanges = (
     genListChange(
       'Links',
       '',
-      (originalElement?.links.map((link) => ({ ...link, value: link.linkType.name + ' - ' + link.url })) ?? []).sort(
+      (originalElement?.links?.map((link) => ({ ...link, value: link.linkType.name + ' - ' + link.url })) ?? []).sort(
         (a, b) => a.value.localeCompare(b.value)
       ),
       (proposedChanges?.links.map((link) => ({ ...link, value: link.linkType.name + ' - ' + link.url })) ?? []).sort(
@@ -264,7 +276,7 @@ export const getChangesForProject = (
 };
 
 export const getChangesForWorkPackage = (
-  originalWorkPackage?: WorkPackage,
+  originalWorkPackage?: DiffableWorkPackage,
   proposedChanges?: WorkPackageProposedChanges
 ): ComparableCollection => {
   const lines: ComparableLine[] = [];

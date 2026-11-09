@@ -1,0 +1,77 @@
+import { useState } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { ExecutiveSummary, isAdmin } from 'shared';
+import { useEditExecutiveSummary } from '../hooks/exec-summaries.hooks';
+import { useToast } from '../hooks/toasts.hooks';
+import { useCurrentUser } from '../hooks/users.hooks';
+import EditableTextField from './EditableTextField';
+
+interface ExecSummaryOverviewProps {
+  executiveSummary: ExecutiveSummary;
+}
+
+type EditableSection = 'goals' | 'winsAndImprovements';
+
+const ExecSummaryOverview: React.FC<ExecSummaryOverviewProps> = ({ executiveSummary }) => {
+  const { mutateAsync: editExecutiveSummary, isLoading: isSaving } = useEditExecutiveSummary(
+    executiveSummary.executiveSummaryId
+  );
+  const toast = useToast();
+  const user = useCurrentUser();
+  const canEdit = isAdmin(user.role) || !!user.isOperations;
+  const [editingSection, setEditingSection] = useState<EditableSection>();
+
+  const saveSection = async (section: EditableSection, newText: string) => {
+    try {
+      await editExecutiveSummary({
+        seasonStartDate: executiveSummary.seasonStartDate,
+        seasonEndDate: executiveSummary.seasonEndDate,
+        goals: executiveSummary.goals,
+        winsAndImprovements: executiveSummary.winsAndImprovements,
+        budgetNotes: executiveSummary.budgetNotes,
+        recruitmentNotes: executiveSummary.recruitmentNotes,
+        [section]: newText
+      });
+      setEditingSection(undefined);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to save executive summary');
+    }
+  };
+
+  return (
+    <Box display="flex" flexDirection="column" gap={2}>
+      <Box>
+        <Typography variant="h5" fontWeight="bold" textAlign="center" mb={1}>
+          Overview
+        </Typography>
+      </Box>
+      <EditableTextField
+        label="Goals"
+        value={executiveSummary.goals}
+        emptyPlaceholder="No goals have been added yet."
+        editPlaceholder="What did the team set out to accomplish this season?"
+        isEditing={editingSection === 'goals'}
+        isSaving={isSaving}
+        canEdit={canEdit}
+        onEditStart={() => setEditingSection('goals')}
+        onCancel={() => setEditingSection(undefined)}
+        onSave={(text) => saveSection('goals', text)}
+      />
+      <EditableTextField
+        label="Wins + What to Improve"
+        value={executiveSummary.winsAndImprovements}
+        emptyPlaceholder="No wins or improvements have been added yet."
+        editPlaceholder="What went well, and what should the team do better next season?"
+        isEditing={editingSection === 'winsAndImprovements'}
+        isSaving={isSaving}
+        canEdit={canEdit}
+        onEditStart={() => setEditingSection('winsAndImprovements')}
+        onCancel={() => setEditingSection(undefined)}
+        onSave={(text) => saveSection('winsAndImprovements', text)}
+      />
+    </Box>
+  );
+};
+
+export default ExecSummaryOverview;

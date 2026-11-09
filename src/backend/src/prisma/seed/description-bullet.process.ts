@@ -23,7 +23,7 @@ export class DescriptionBulletProcess extends SeedProcess<DescriptionBulletInput
     descriptionBulletTypes
   }: DescriptionBulletInput): Promise<Record<string, never>> {
     const [bulletType] = descriptionBulletTypes;
-    const now = new Date();
+    const { now } = this;
 
     await Promise.all([
       ...projectsWithTimeline.map(({ project, timeline }) =>

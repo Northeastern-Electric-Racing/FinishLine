@@ -1,9 +1,11 @@
-import { getChannelName, getUserName } from '../integrations/slack.js';
+import { Organization } from '@prisma/client';
+import { getChannelInfo, getChannelName, getUserName, getWorkspaceId, postMessageToChannel } from '../integrations/slack.js';
 import AnnouncementService from './announcement.services.js';
 import { Announcement, ReimbursementStatusType } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { blockToMentionedUsers, blockToString } from '../utils/slack.utils.js';
 import {
+  AccessDeniedAdminOnlyException,
   AccessDeniedException,
   HttpException,
   InvalidOrganizationException,
@@ -14,7 +16,8 @@ import ChangeRequestsService from './change-requests.services.js';
 import TeamsService from './teams.services.js';
 import { userTransformer } from '../transformers/user.transformer.js';
 import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
-import { User } from 'shared';
+import { isAdmin, User } from 'shared';
+import { userHasPermission } from '../utils/users.utils.js';
 
 /**
  * Represents a slack event for a message in a channel.
@@ -411,6 +414,8 @@ export default class SlackServices {
         case 'message_deleted':
           //delete the message using the client_msg_id
           eventMessage = (event as SlackDeletedMessage).previous_message;
+          // bot and API posted messages have no client_msg_id, so they were never stored as announcements
+          if (!eventMessage.client_msg_id) return;
           return AnnouncementService.deleteAnnouncement(eventMessage.client_msg_id, organizationId);
         case 'message_changed':
           eventMessage = (event as SlackUpdatedMessage).message;
@@ -489,5 +494,48 @@ export default class SlackServices {
       slackChannelName,
       organizationId
     );
+  }
+
+  /**
+   * Sends a plain text message from the bot to a slack channel on behalf of an admin.
+   * Slack's control characters are escaped so the message is posted as written, meaning it
+   * cannot ping @channel/@here, mention users, or embed formatted links.
+   *
+   * @param userId the id of the user sending the message
+   * @param organization the organization the user is sending the message from
+   * @param channelId the id of the slack channel to send the message to
+   * @param message the text of the message
+   * @returns the id and name of the channel and the timestamp of the sent message
+   * @throws if the user is not an admin, the organization is not linked to the bot's workspace, or the channel is missing, archived, or does not contain the bot
+   */
+  static async sendMessageToChannel(
+    userId: string,
+    organization: Organization,
+    channelId: string,
+    message: string
+  ): Promise<{ channelId: string; channelName: string; ts: string }> {
+    if (!(await userHasPermission(userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('send slack messages');
+    }
+
+    // the bot lives in a single workspace, so only the organization linked to it may post there
+    if (!organization.slackWorkspaceId || organization.slackWorkspaceId !== (await getWorkspaceId())) {
+      throw new AccessDeniedException("this organization is not linked to the bot's slack workspace");
+    }
+
+    const channel = await getChannelInfo(channelId);
+    if (!channel) throw new NotFoundException('Slack Channel', channelId);
+    if (channel.isArchived) throw new HttpException(400, `Slack channel #${channel.name} is archived`);
+    if (!channel.isMember) {
+      throw new HttpException(
+        400,
+        `The FinishLine bot is not a member of #${channel.name}, add it to the channel before sending messages there`
+      );
+    }
+
+    const escapedMessage = message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const { ts } = await postMessageToChannel(channelId, escapedMessage);
+
+    return { channelId, channelName: channel.name, ts };
   }
 }
