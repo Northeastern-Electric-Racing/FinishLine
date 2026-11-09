@@ -1,4 +1,4 @@
-import { Organization, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Organization, Prisma, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   calculateEndDate,
   DescriptionBulletPreview,
@@ -16,6 +16,7 @@ import {
   User,
   WorkPackageSelection,
   WorkPackageDropdownItem,
+  WorkPackageTimelineFilters,
   isWithinBuffer
 } from 'shared';
 import prisma from '../prisma/prisma.js';
