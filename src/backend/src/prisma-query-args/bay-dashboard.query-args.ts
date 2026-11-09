@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { getUserPreviewQueryArgs } from './user.query-args.js';
 
 export type BayDashboardWidgetQueryArgs = ReturnType<typeof getBayDashboardWidgetQueryArgs>;
 
@@ -11,6 +12,8 @@ export type PublicBayDashboardConfigQueryArgs = ReturnType<typeof getPublicBayDa
 export type BayDashboardCountdownQueryArgs = ReturnType<typeof getBayDashboardCountdownQueryArgs>;
 
 export type BayDashboardCalendarEventQueryArgs = ReturnType<typeof getBayDashboardCalendarEventQueryArgs>;
+
+export type BayDashboardOverdueWorkPackageQueryArgs = ReturnType<typeof getBayDashboardOverdueWorkPackageQueryArgs>;
 
 export const getBayDashboardWidgetQueryArgs = () =>
   Prisma.validator<Prisma.Bay_Dashboard_WidgetDefaultArgs>()({
@@ -93,6 +96,38 @@ export const getBayDashboardCalendarEventQueryArgs = (scheduledTimeFilter: Prism
             select: { colorHexCode: true }
           }
         }
+      }
+    }
+  });
+
+/**
+ * Only the work package information the public TV's overdue widget shows.
+ */
+export const getBayDashboardOverdueWorkPackageQueryArgs = () =>
+  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
+    select: {
+      startDate: true,
+      duration: true,
+      wbsElement: {
+        select: {
+          carNumber: true,
+          projectNumber: true,
+          workPackageNumber: true,
+          name: true,
+          lead: getUserPreviewQueryArgs(),
+          manager: getUserPreviewQueryArgs()
+        }
+      },
+      project: {
+        select: {
+          wbsElement: {
+            select: { carNumber: true, projectNumber: true, name: true }
+          }
+        }
+      },
+      blockedBy: {
+        where: { dateDeleted: null },
+        select: { carNumber: true, projectNumber: true, workPackageNumber: true, name: true }
       }
     }
   });

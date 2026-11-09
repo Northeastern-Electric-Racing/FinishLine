@@ -1,21 +1,25 @@
-import { Event_Status, Organization } from '@prisma/client';
+import { Event_Status, Organization, WBS_Element_Status } from '@prisma/client';
 import dayjs from 'dayjs';
 import {
   BAY_DASHBOARD_CALENDAR_DAYS_AHEAD,
   BayDashboardCountdown,
+  calculateEndDate,
   PublicBayDashboardCalendarEvent,
-  PublicBayDashboardConfig
+  PublicBayDashboardConfig,
+  PublicBayDashboardOverdueWorkPackage
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
   getBayDashboardCalendarEventQueryArgs,
   getBayDashboardCountdownQueryArgs,
+  getBayDashboardOverdueWorkPackageQueryArgs,
   getPublicBayDashboardConfigQueryArgs
 } from '../prisma-query-args/bay-dashboard.query-args.js';
 import {
   bayDashboardCountdownTransformer,
   publicBayDashboardCalendarEventsTransformer,
-  publicBayDashboardConfigTransformer
+  publicBayDashboardConfigTransformer,
+  publicBayDashboardOverdueWorkPackageTransformer
 } from '../transformers/bay-dashboard.transformer.js';
 import { DeletedException, NotFoundException } from '../utils/errors.utils.js';
 
@@ -101,5 +105,32 @@ export default class BayDashboardService {
     return events
       .flatMap(publicBayDashboardCalendarEventsTransformer)
       .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+  }
+
+  /**
+   * Gets the overdue work packages the TV's overdue widget shows.
+   * @param slug the organization slug from the /bay-dashboard/:slug URL
+   * @returns the organization's incomplete, non-deleted work packages whose end date has passed, most overdue first
+   */
+  static async getBayDashboardOverdueWorkPackages(slug: string): Promise<PublicBayDashboardOverdueWorkPackage[]> {
+    const organization = await BayDashboardService.getOrganizationBySlug(slug);
+    const now = new Date();
+
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null,
+          status: { not: WBS_Element_Status.COMPLETE }
+        }
+      },
+      ...getBayDashboardOverdueWorkPackageQueryArgs()
+    });
+
+    // end date is derived from start date and duration
+    return workPackages
+      .filter((wp) => calculateEndDate(wp.startDate, wp.duration) < now)
+      .map((wp) => publicBayDashboardOverdueWorkPackageTransformer(wp, now))
+      .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
   }
 }

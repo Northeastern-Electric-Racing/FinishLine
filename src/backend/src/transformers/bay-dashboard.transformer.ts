@@ -10,13 +10,16 @@ import {
   BayDashboardWidget,
   BayDashboardWidgetSize,
   BayDashboardWidgetType,
+  calculateEndDate,
   PublicBayDashboardCalendarEvent,
-  PublicBayDashboardConfig
+  PublicBayDashboardConfig,
+  PublicBayDashboardOverdueWorkPackage
 } from 'shared';
 import {
   BayDashboardCalendarEventQueryArgs,
   BayDashboardConfigQueryArgs,
   BayDashboardCountdownQueryArgs,
+  BayDashboardOverdueWorkPackageQueryArgs,
   BayDashboardSlotQueryArgs,
   BayDashboardWidgetQueryArgs,
   PublicBayDashboardConfigQueryArgs
@@ -123,4 +126,44 @@ export const publicBayDashboardCalendarEventsTransformer = (
     location: event.location ?? undefined,
     colorHexCode: calendar.colorHexCode
   }));
+};
+
+/**
+ * Transforms an overdue work package into what the public TV's overdue widget displays.
+ * @param workPackage the work package, with its blockers that are not deleted
+ * @param now the time the overdue calculation is made against
+ */
+export const publicBayDashboardOverdueWorkPackageTransformer = (
+  workPackage: Prisma.Work_PackageGetPayload<BayDashboardOverdueWorkPackageQueryArgs>,
+  now: Date
+): PublicBayDashboardOverdueWorkPackage => {
+  const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
+  const { wbsElement, project } = workPackage;
+
+  return {
+    wbsNum: {
+      carNumber: wbsElement.carNumber,
+      projectNumber: wbsElement.projectNumber,
+      workPackageNumber: wbsElement.workPackageNumber
+    },
+    name: wbsElement.name,
+    projectWbsNum: {
+      carNumber: project.wbsElement.carNumber,
+      projectNumber: project.wbsElement.projectNumber,
+      workPackageNumber: 0
+    },
+    projectName: project.wbsElement.name,
+    lead: wbsElement.lead ?? undefined,
+    manager: wbsElement.manager ?? undefined,
+    endDate,
+    daysOverdue: Math.round((now.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24)),
+    blockedBy: workPackage.blockedBy.map((blocker) => ({
+      wbsNum: {
+        carNumber: blocker.carNumber,
+        projectNumber: blocker.projectNumber,
+        workPackageNumber: blocker.workPackageNumber
+      },
+      name: blocker.name
+    }))
+  };
 };

@@ -11,5 +11,6 @@ bayDashboardRouter.get('/:slug/events', BayDashboardController.streamBayDashboar
 bayDashboardRouter.get('/:slug/config', BayDashboardController.getBayDashboardConfig);
 bayDashboardRouter.get('/:slug/countdowns', BayDashboardController.getBayDashboardCountdowns);
 bayDashboardRouter.get('/:slug/calendar', BayDashboardController.getBayDashboardCalendarEvents);
+bayDashboardRouter.get('/:slug/overdue-work-packages', BayDashboardController.getBayDashboardOverdueWorkPackages);
 
 export default bayDashboardRouter;
