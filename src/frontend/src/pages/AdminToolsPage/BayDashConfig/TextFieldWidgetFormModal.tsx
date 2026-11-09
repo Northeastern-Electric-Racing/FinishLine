@@ -63,19 +63,18 @@ const TextFieldWidgetFormModal: React.FC<TextFieldWidgetFormModalProps> = ({
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId="edit-text-field-widget-form"
+      paperProps={{ width: '500px' }}
       showCloseButton
     >
       <FormControl fullWidth>
-        <Typography color="#EF4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20 }}>
-          Text:*
+        <Typography color="#EF4345" variant="h5" sx={{ fontWeight: 'bold', fontSize: 20, mb: 2 }}>
+          Text:
         </Typography>
         <ReactHookTextField
           name="text"
           control={control}
           placeholder="Enter the text to show on the bay dashboard"
           fullWidth
-          multiline
-          rows={3}
         />
         <FormHelperText error>{errors.text?.message}</FormHelperText>
       </FormControl>

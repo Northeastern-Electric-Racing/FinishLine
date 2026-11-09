@@ -18,13 +18,14 @@ const TextFieldWidget: React.FC<BayDashboardWidgetProps> = ({ size, widget }) =>
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          height: '100%'
+          height: '100%',
+          p: '4cqw'
         }}
       >
         <Typography
           variant="h6"
           sx={{
-            fontSize: '7cqw',
+            fontSize: '5cqw',
             fontWeight: 700,
             textAlign: 'center',
             color: 'white',

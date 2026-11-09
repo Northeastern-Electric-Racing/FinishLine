@@ -84,17 +84,11 @@ const AdminToolsBayDashConfig: React.FC = () => {
           </Typography>
           <PreviewDashboard selection={selection} onEditText={setEditingSize} />
         </Box>
-        <Box
-          sx={{ gridColumn: { md: 'span 2' }, gridRow: { md: 2 }, display: 'flex', justifyContent: 'flex-end', gap: 2 }}
-        >
+        <Box sx={{ gridColumn: { md: 'span 2' }, gridRow: { md: 2 }, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
           <NERButton variant="contained" disabled={!hasSelection} onClick={handleClear}>
             CLEAR
           </NERButton>
-          <NERButton
-            variant="contained"
-            disabled={!hasSelection || isLoading || isError || isSaving}
-            onClick={handleSave}
-          >
+          <NERButton variant="contained" disabled={!hasSelection || isLoading || isError || isSaving} onClick={handleSave}>
             SAVE
           </NERButton>
         </Box>
@@ -120,13 +114,13 @@ const AdminToolsBayDashConfig: React.FC = () => {
         </Box>
       </Box>
       {editingSize && (
-      <TextFieldWidgetFormModal
-        key={editingSize}
-        showModal
-        handleClose={() => setEditingSize(undefined)}
-        defaultValues={{ text: getText(editingSize) ?? '' }}
-        onSubmit={(data) => handleTextSubmit(data.text, editingSize)}
-      />
+        <TextFieldWidgetFormModal
+          key={editingSize}
+          showModal
+          handleClose={() => setEditingSize(undefined)}
+          defaultValues={{ text: getText(editingSize) ?? '' }}
+          onSubmit={(data) => handleTextSubmit(data.text, editingSize)}
+        />
       )}
     </>
   );

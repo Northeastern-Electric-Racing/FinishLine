@@ -57,7 +57,7 @@ const defaultSlot = (size: BayDashboardWidgetSize, type: BayDashboardWidgetType)
   widgets: [{ bayDashboardWidgetId: `default-${slotPositions[size]}-0`, type, order: 0 }]
 });
 
-// A widget picked for a size in the Admin Tools. 
+// A widget picked for a size in the Admin Tools.
 // Only text field widgets carry text.
 export interface BayDashboardWidgetChoice {
   type: BayDashboardWidgetType;
@@ -97,7 +97,7 @@ export const applyWidgetSelection = (
 
 /**
  * The text a size's text field widget displays.
- * The text selected in the selection for that size, 
+ * The text selected in the selection for that size,
  * otherwise the text the TV is showing for that size.
  */
 export const getTextFieldText = (

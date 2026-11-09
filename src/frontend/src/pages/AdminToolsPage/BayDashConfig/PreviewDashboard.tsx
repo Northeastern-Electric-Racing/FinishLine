@@ -62,8 +62,8 @@ const PreviewDashboard: React.FC<PreviewDashboardProps> = ({ selection, onEditTe
               onClick={() => onEditText(size)}
               sx={{
                 position: 'absolute',
-                top: 0,
-                right: 0,
+                top: 8,
+                right: 8,
                 color: 'white',
                 bgcolor: 'rgba(0, 0, 0, 0.4)',
                 '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
