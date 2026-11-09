@@ -99,3 +99,13 @@ export const createBayDashboardCountdown = (countdown: BayDashboardCountdownCrea
     transformResponse: (data) => bayDashboardCountdownTransformer(JSON.parse(data))
   });
 };
+
+/**
+ * Soft deletes a countdown from the current organization's bay dashboard
+ * @param countdownId the id of the countdown to delete
+ */
+export const deleteBayDashboardCountdown = (countdownId: string) => {
+  return axios.post<BayDashboardCountdown>(apiUrls.bayDashboardAdminCountdownDelete(countdownId), undefined, {
+    transformResponse: (data) => bayDashboardCountdownTransformer(JSON.parse(data))
+  });
+};
