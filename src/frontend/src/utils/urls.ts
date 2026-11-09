@@ -549,6 +549,7 @@ const bayDashboardAdmin = () => `${bayDashboard()}/admin`;
 const bayDashboardAdminWidgets = () => `${bayDashboardAdmin()}/widgets`;
 const bayDashboardAdminSave = () => `${bayDashboardAdmin()}/save`;
 const bayDashboardAdminCountdownCreate = () => `${bayDashboardAdmin()}/countdown/create`;
+const bayDashboardAdminCountdownDelete = (countdownId: string) => `${bayDashboardAdmin()}/countdown/${countdownId}/delete`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -961,6 +962,7 @@ export const apiUrls = {
   bayDashboardAdminWidgets,
   bayDashboardAdminSave,
   bayDashboardAdminCountdownCreate,
+  bayDashboardAdminCountdownDelete,
 
   version
 };
