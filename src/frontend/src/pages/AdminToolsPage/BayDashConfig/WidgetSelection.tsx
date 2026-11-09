@@ -19,13 +19,14 @@ interface WidgetSelectionProps {
   // highlighted widget per size, only one per size (until phase 3 widget rotations)
   selection: BayDashboardWidgetSelection;
   onSelectionChange: (selection: BayDashboardWidgetSelection) => void;
+  slug?: string;
 }
 
 /**
  * Dropdowns listing the widgets available for each slot size.
  * Clicking a widget highlights it, one per size, and clicking it again unselects it.
  */
-const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectionChange }) => {
+const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectionChange, slug }) => {
   const { data: availableWidgets, isLoading, isError, error } = useAvailableBayDashboardWidgets();
   const toast = useToast();
 
@@ -52,6 +53,7 @@ const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectio
           size={size}
           widgets={availableWidgets.widgets.filter((widget) => widget.sizes.includes(size))}
           selectedType={selection[size]}
+          slug={slug}
           onSelect={(type) => handleSelect(size, type)}
         />
       ))}

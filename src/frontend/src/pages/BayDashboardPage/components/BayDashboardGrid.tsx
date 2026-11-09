@@ -6,6 +6,7 @@
 import { Box } from '@mui/material';
 import { BayDashboardWidgetSize, PublicBayDashboardSlot } from 'shared';
 import { BAY_DASHBOARD_BACKGROUND, defaultBayDashboardSlots, widgetHeights } from '../../../utils/bay-dashboard.utils';
+import BayDashboardHeader from './BayDashboardHeader';
 import BayDashboardWidgetView from './widgets/BayDashboardWidgetView';
 import CountdownWidget from './widgets/CountdownWidget';
 interface BayDashboardGridProps {
@@ -43,7 +44,9 @@ const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, slug }) => {
           background: BAY_DASHBOARD_BACKGROUND
         }}
       >
-        {/* weather and date/time go in "header" */}
+        <Box sx={{ gridArea: 'header', minWidth: 0, minHeight: 0 }}>
+          <BayDashboardHeader />
+        </Box>
         <Box sx={{ gridArea: 'countdown', minWidth: 0, minHeight: 0 }}>
           <CountdownWidget slug={slug} />
         </Box>

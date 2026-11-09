@@ -91,3 +91,21 @@ export interface AvailableBayDashboardWidget {
 export interface AvailableBayDashboardWidgets {
   widgets: AvailableBayDashboardWidget[];
 }
+
+/**
+ * How many days after today the calendar widgets look ahead, so on a Tuesday they show through next Tuesday
+ */
+export const BAY_DASHBOARD_CALENDAR_DAYS_AHEAD = 7;
+
+/**
+ * A scheduled event the unauthenticated TV can show.
+ * An event with several schedule slots is returned once per slot.
+ */
+export interface PublicBayDashboardCalendarEvent {
+  title: string;
+  startTime: Date;
+  endTime: Date;
+  allDay: boolean;
+  location?: string;
+  colorHexCode: string;
+}

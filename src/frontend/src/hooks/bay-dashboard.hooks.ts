@@ -11,12 +11,14 @@ import {
   BayDashboardCountdown,
   BayDashboardCountdownCreateArgs,
   BayDashboardSlotCreateArgs,
+  PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig
 } from 'shared';
 import { apiUrls } from '../utils/urls';
 import {
   createBayDashboardCountdown,
   getAvailableBayDashboardWidgets,
+  getBayDashboardCalendarEvents,
   getBayDashboardConfig,
   getBayDashboardCountdowns,
   getCurrentBayDashboardConfig,
@@ -46,6 +48,23 @@ export const useGetBayDashboardConfig = (slug: string) => {
     const { data } = await getBayDashboardConfig(slug);
     return data;
   });
+};
+
+/**
+ * Custom React Hook to get the upcoming calendar events the public TV display shows.
+ * Server's update events refetch it ['bay-dashboard', slug] and also refetches every few minutes.
+ * @param slug the organization slug (example: ner)
+ */
+export const useGetBayDashboardCalendarEvents = (slug?: string) => {
+  return useQuery<PublicBayDashboardCalendarEvent[], Error>(
+    ['bay-dashboard', slug, 'calendar'],
+    async () => {
+      if (!slug) throw new Error('Cannot get calendar events without an organization');
+      const { data } = await getBayDashboardCalendarEvents(slug);
+      return data;
+    },
+    { enabled: !!slug, refetchInterval: 5 * 60 * 1000 }
+  );
 };
 
 /**

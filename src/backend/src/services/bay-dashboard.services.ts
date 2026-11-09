@@ -1,12 +1,20 @@
-import { Organization } from '@prisma/client';
-import { BayDashboardCountdown, PublicBayDashboardConfig } from 'shared';
+import { Event_Status, Organization } from '@prisma/client';
+import dayjs from 'dayjs';
+import {
+  BAY_DASHBOARD_CALENDAR_DAYS_AHEAD,
+  BayDashboardCountdown,
+  PublicBayDashboardCalendarEvent,
+  PublicBayDashboardConfig
+} from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
+  getBayDashboardCalendarEventQueryArgs,
   getBayDashboardCountdownQueryArgs,
   getPublicBayDashboardConfigQueryArgs
 } from '../prisma-query-args/bay-dashboard.query-args.js';
 import {
   bayDashboardCountdownTransformer,
+  publicBayDashboardCalendarEventsTransformer,
   publicBayDashboardConfigTransformer
 } from '../transformers/bay-dashboard.transformer.js';
 import { DeletedException, NotFoundException } from '../utils/errors.utils.js';
@@ -62,5 +70,36 @@ export default class BayDashboardService {
     });
 
     return countdowns.map(bayDashboardCountdownTransformer);
+  }
+
+  /**
+   * Gets the scheduled events the TV's calendar widget shows.
+   * A multi-day event comes back once, with the full range of its schedule slot, and the TV splits it across its days.
+   * @param slug the organization slug from the /bay-dashboard/:slug URL
+   * @returns the organization's scheduled events happening from a day ago to a few days ahead, ordered by start time
+   */
+  static async getBayDashboardCalendarEvents(slug: string): Promise<PublicBayDashboardCalendarEvent[]> {
+    const organization = await BayDashboardService.getOrganizationBySlug(slug);
+
+    const windowStart = dayjs().subtract(1, 'day').toDate();
+    const windowEnd = dayjs()
+      .add(BAY_DASHBOARD_CALENDAR_DAYS_AHEAD + 2, 'day')
+      .toDate();
+
+    const overlapsWindow = { startTime: { lte: windowEnd }, endTime: { gte: windowStart } };
+
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        status: Event_Status.SCHEDULED,
+        eventType: { organizationId: organization.organizationId, calendars: { some: { dateDeleted: null } } },
+        scheduledTimes: { some: overlapsWindow }
+      },
+      ...getBayDashboardCalendarEventQueryArgs(overlapsWindow)
+    });
+
+    return events
+      .flatMap(publicBayDashboardCalendarEventsTransformer)
+      .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
   }
 }

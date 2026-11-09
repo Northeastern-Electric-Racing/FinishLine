@@ -43,7 +43,8 @@ const NERWidget: React.FC<NERWidgetProps> = ({ size, title, children }) => {
             sx={{
               fontSize: '4cqw',
               fontWeight: '100',
-              color: 'white'
+              color: 'white',
+              mt: '-1.5cqw'
             }}
           >
             {title}
