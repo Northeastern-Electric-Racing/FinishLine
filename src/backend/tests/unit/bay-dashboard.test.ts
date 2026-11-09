@@ -344,8 +344,8 @@ describe('Bay Dashboard Overdue Work Packages Tests', () => {
   beforeEach(async () => {
     organization = await createTestOrganization();
     user = await createTestUser(batmanAppAdmin, organization.organizationId);
-    const project = await createTestProject(user, organization.organizationId);
-    projectId = project.projectId;
+    const { projectId: createdProjectId } = await createTestProject(user, organization.organizationId);
+    projectId = createdProjectId;
   });
 
   afterEach(async () => {
