@@ -4,10 +4,11 @@
  */
 
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, IconButton, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { Box, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import { useState } from 'react';
 import { BayDashboardCountdown, BayDashboardCountdownCreateArgs, formatDateOnly } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import NERDeleteModal from '../../../components/NERDeleteModal';
 import { NERButton } from '../../../components/NERButton';
 import {
   useCreateBayDashboardCountdown,
@@ -17,7 +18,6 @@ import {
 import { useToast } from '../../../hooks/toasts.hooks';
 import { pickDisplayedCountdowns } from '../../../utils/bay-dashboard-countdown.utils';
 import ErrorPage from '../../ErrorPage';
-import CountdownDeleteModal from './CountdownDeleteModal';
 import CountdownFormModal from './CountdownFormModal';
 
 interface CountdownTableProps {
@@ -44,40 +44,22 @@ const displayLabel = (
   return '-';
 };
 
-interface CountdownDeleteButtonProps {
-  name: string;
-  onDelete: () => void;
-}
-
-const CountdownDeleteButton: React.FC<CountdownDeleteButtonProps> = ({ name, onDelete }) => {
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  const handleDeleteSubmit = () => {
-    onDelete();
-    setShowDeleteModal(false);
-  };
-
-  return (
-    <>
-      <IconButton type="button" onClick={() => setShowDeleteModal(true)}>
-        <DeleteIcon />
-      </IconButton>
-      {showDeleteModal && (
-        <CountdownDeleteModal name={name} onDelete={handleDeleteSubmit} onHide={() => setShowDeleteModal(false)} />
-      )}
-    </>
-  );
-};
-
 /**
  * The bay dashboard's countdowns in the Admin Tools, with a button to add a new one and a trash icon to delete each
  */
 const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [countdownToDelete, setCountdownToDelete] = useState<BayDashboardCountdown | undefined>(undefined);
   const { data: countdowns, isLoading, isError, error } = useGetBayDashboardCountdowns(slug);
   const { mutateAsync: createCountdown } = useCreateBayDashboardCountdown(slug);
   // the delete hook toasts the result itself, so the table only needs to trigger it
-  const { mutate: deleteCountdown } = useDeleteBayDashboardCountdown(slug);
+  const {
+    mutate: deleteCountdown,
+    isLoading: isDeleting,
+    isError: isDeleteError,
+    error: deleteError,
+    variables: deletingCountdownId
+  } = useDeleteBayDashboardCountdown(slug);
   const toast = useToast();
 
   if (isError) return <ErrorPage message={error.message} />;
@@ -92,12 +74,26 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
   };
 
   const handleDelete = (countdownId: string) => {
+    setCountdownToDelete(undefined);
     deleteCountdown(countdownId);
   };
 
   return (
     <Box>
       <CountdownFormModal open={showCreateModal} handleClose={() => setShowCreateModal(false)} onSubmit={handleCreate} />
+      <NERDeleteModal
+        open={!!countdownToDelete}
+        onHide={() => setCountdownToDelete(undefined)}
+        dataType={countdownToDelete ? `countdown ${countdownToDelete.name}` : 'countdown'}
+        onFormSubmit={() => {
+          if (countdownToDelete) {
+            handleDelete(countdownToDelete.bayDashboardCountdownId);
+          }
+        }}
+      />
+      {isDeleteError && (
+        <Typography sx={{ color: 'error.main', mb: 1 }}>Couldn't delete countdown: {deleteError?.message}</Typography>
+      )}
       <Table sx={{ '& td': { borderBottom: 'none' } }}>
         <TableHead>
           <TableRow>
@@ -131,10 +127,13 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
               <TableCell align="center">{countdown.endDate ? formatDateOnly(countdown.endDate) : '-'}</TableCell>
               <TableCell align="center">{displayLabel(countdown, displayed)}</TableCell>
               <TableCell align="center">
-                <CountdownDeleteButton
-                  name={countdown.name}
-                  onDelete={() => handleDelete(countdown.bayDashboardCountdownId)}
-                />
+                <IconButton
+                  type="button"
+                  disabled={isDeleting && deletingCountdownId === countdown.bayDashboardCountdownId}
+                  onClick={() => setCountdownToDelete(countdown)}
+                >
+                  <DeleteIcon />
+                </IconButton>
               </TableCell>
             </TableRow>
           ))}
