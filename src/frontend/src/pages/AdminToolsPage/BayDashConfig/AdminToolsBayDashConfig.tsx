@@ -134,6 +134,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
         <TextFieldWidgetFormModal
           key={editingSize}
           showModal
+          size={editingSize}
           handleClose={() => setEditingSize(undefined)}
           defaultValues={{ text: getText(editingSize) ?? '' }}
           onSubmit={(data) => handleTextSubmit(data.text, editingSize)}

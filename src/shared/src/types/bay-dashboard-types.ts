@@ -14,8 +14,11 @@ export enum BayDashboardWidgetType {
   SLACK_MENTIONS = 'SLACK_MENTIONS'
 }
 
-// the most characters a text field widget can display
-export const TEXT_FIELD_MAX_LENGTH = 100;
+// the most characters a text field widget can display, by the size it's shown at
+export const TEXT_FIELD_MAX_LENGTH: Partial<Record<BayDashboardWidgetSize, number>> = {
+  [BayDashboardWidgetSize.SMALL]: 90,
+  [BayDashboardWidgetSize.MEDIUM]: 160
+};
 
 /**
  * Only what the TV needs to render a widget

@@ -7,7 +7,7 @@ import { FormControl, FormHelperText, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { TEXT_FIELD_MAX_LENGTH } from 'shared';
+import { BayDashboardWidgetSize, TEXT_FIELD_MAX_LENGTH } from 'shared';
 import NERFormModal from '../../../components/NERFormModal';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 
@@ -15,17 +15,22 @@ interface TextFieldWidgetFormValues {
   text: string;
 }
 
-const schema = yup.object().shape({
-  text: yup
-    .string()
-    .trim()
-    .required('Text is required')
-    .max(TEXT_FIELD_MAX_LENGTH, `Text must be ${TEXT_FIELD_MAX_LENGTH} characters or fewer`)
-});
+// the text can be as long as the size of the widget it's shown in allows
+const buildTextFieldSchema = (size: BayDashboardWidgetSize) => {
+  const maxLength = TEXT_FIELD_MAX_LENGTH[size] ?? 0;
+  return yup.object().shape({
+    text: yup
+      .string()
+      .trim()
+      .required('Text is required')
+      .max(maxLength, `Text must be ${maxLength} characters or fewer`)
+  });
+};
 
 interface TextFieldWidgetFormModalProps {
   showModal: boolean;
   handleClose: () => void;
+  size: BayDashboardWidgetSize;
   defaultValues?: TextFieldWidgetFormValues;
   onSubmit: (data: TextFieldWidgetFormValues) => void;
 }
@@ -36,6 +41,7 @@ interface TextFieldWidgetFormModalProps {
 const TextFieldWidgetFormModal: React.FC<TextFieldWidgetFormModalProps> = ({
   showModal,
   handleClose,
+  size,
   defaultValues,
   onSubmit
 }) => {
@@ -45,7 +51,7 @@ const TextFieldWidgetFormModal: React.FC<TextFieldWidgetFormModalProps> = ({
     reset,
     formState: { errors }
   } = useForm<TextFieldWidgetFormValues>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(buildTextFieldSchema(size)),
     defaultValues: { text: defaultValues?.text ?? '' }
   });
 
@@ -73,7 +79,7 @@ const TextFieldWidgetFormModal: React.FC<TextFieldWidgetFormModalProps> = ({
         <ReactHookTextField
           name="text"
           control={control}
-          placeholder="Enter the text to show on the bay dashboard"
+          placeholder="Enter text to display on the bay dashboard"
           fullWidth
         />
         <FormHelperText error>{errors.text?.message}</FormHelperText>

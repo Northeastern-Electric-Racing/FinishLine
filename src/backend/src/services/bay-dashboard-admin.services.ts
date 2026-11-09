@@ -129,10 +129,11 @@ export default class BayDashboardAdminService {
         if (slot.widget.type === BayDashboardWidgetType.TEXT_FIELD && !text) {
           throw new HttpException(400, `Slot position ${slot.position}: text field widgets must have text`);
         }
-        if (text && text.length > TEXT_FIELD_MAX_LENGTH) {
+        const maxLength = TEXT_FIELD_MAX_LENGTH[slot.size] ?? 0;
+        if (text && text.length > maxLength) {
           throw new HttpException(
             400,
-            `Slot position ${slot.position}: text field widgets can have at most ${TEXT_FIELD_MAX_LENGTH} characters`
+            `Slot position ${slot.position}: text field widgets at ${slot.size} size can have at most ${maxLength} characters`
           );
         }
         if (slot.widget.type !== BayDashboardWidgetType.TEXT_FIELD && slot.widget.text) {
