@@ -84,7 +84,8 @@ export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<Even
     description: eventType.description,
     onlyHeadsOrAboveForEventCreation: eventType.onlyHeadsOrAboveForEventCreation,
     requiresConfirmation: eventType.requiresConfirmation,
-    sendSlackNotifications: eventType.sendSlackNotifications
+    sendSlackNotifications: eventType.sendSlackNotifications,
+    takeAttendance: eventType.takeAttendance
   } as EventType;
 };
 

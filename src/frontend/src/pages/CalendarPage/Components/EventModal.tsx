@@ -36,7 +36,7 @@ import {
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllMembers, useCurrentUser, useUserScheduleSettings } from '../../../hooks/users.hooks';
-import { useAllWorkPackagesPreview } from '../../../hooks/work-packages.hooks';
+import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
 import { useAllTeamPreviews } from '../../../hooks/teams.hooks';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
 import ErrorPage from '../../ErrorPage';
@@ -60,6 +60,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { convertDayToInt, convertIntToDay } from '../../../utils/calendar.utils';
 import EditSeriesConfirmationModal from './EditSeriesConfirmationModal';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import HowToRegIcon from '@mui/icons-material/HowToReg';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 
@@ -282,8 +283,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     isLoading: workPackagesLoading,
     isError: workPackagesError,
     error: workPackagesErrorMsg,
-    data: allWorkPackages
-  } = useAllWorkPackagesPreview();
+    data: activeWorkPackages
+  } = useAllWorkPackages(WbsElementStatus.Active);
   const { isLoading: teamsLoading, isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamPreviews();
   const { isError: teamTypesError, error: teamTypesErrorMsg, data: teamTypes } = useAllTeamTypes();
   const {
@@ -419,10 +420,10 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   // made it so it only fills when the field is empty, that way doesn't overwrite a link or anythingi me
   useEffect(() => {
     if (!open || isEditMode) return;
-    if (scheduleSettings?.personalZoomLink && !getValues('zoomLink')) {
+    if (scheduleSettings?.personalZoomLink && selectedEventType?.zoomLink && !getValues('zoomLink')) {
       setValue('zoomLink', scheduleSettings.personalZoomLink);
     }
-  }, [open, isEditMode, scheduleSettings, getValues, setValue]);
+  }, [open, isEditMode, scheduleSettings, getValues, setValue, selectedEventType]);
 
   const computedTitle = isEditMode ? 'Edit Event' : 'Add Event';
 
@@ -713,8 +714,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
 
   const workPackageOptions = workPackagesLoading
     ? [{ id: 'loading', label: 'Loading work packages...' }]
-    : (allWorkPackages || [])
-        .filter((wp) => wp.status === WbsElementStatus.Active)
+    : (activeWorkPackages || [])
         .map((wp) => ({
           label: wbsNamePipe(wp),
           id: wp.id,
@@ -1238,7 +1238,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 placement="right"
                 title={
                   !selectedEventType.sendSlackNotifications
-                    ? 'Slack notifications are disabled for this event type.'
+                    ? selectedEventType.takeAttendance
+                      ? 'Slack notifications are disabled for this event type. Attendance messages are still posted.'
+                      : 'Slack notifications are disabled for this event type.'
                     : selectedTeams.length || workPackageIds.length || selectedNotificationChannels.length
                       ? 'Slack notifications will be sent for this event.'
                       : ''
@@ -1251,7 +1253,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                     fontWeight={500}
                     sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
                   >
-                    {selectedEventType.sendSlackNotifications ? 'On' : 'Off'}
+                    {selectedEventType.sendSlackNotifications ? 'Notifications on' : 'Notifications off'}
                   </Typography>
                   {selectedEventType.sendSlackNotifications &&
                     !selectedTeams.length &&
@@ -1319,6 +1321,25 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                   />
                 </Box>
               )}
+            </Box>
+          )}
+          {/* Attendance Section */}
+          {selectedEventType?.takeAttendance && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <HowToRegIcon sx={{ color: 'text.secondary', flexShrink: 0 }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', minWidth: 0 }}>
+                <Typography variant="body2" color={'text.disabled'} fontWeight={500}>
+                  Attendance will be taken in each team's Slack channel when the meeting starts
+                </Typography>
+                {selectedTeams.length === 0 && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+                    <WarningAmberIcon sx={{ color: 'error.main', fontSize: 18, flexShrink: 0 }} />
+                    <Typography variant="body2" color="error.main">
+                      Add a team to take attendance
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
             </Box>
           )}
           {/* Required Members Section */}

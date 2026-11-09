@@ -24,7 +24,8 @@ export default class CalendarController {
         description,
         onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications
+        sendSlackNotifications,
+        takeAttendance
       } = req.body;
 
       const eventType = await CalendarService.createEventType(
@@ -46,7 +47,8 @@ export default class CalendarController {
         description,
         onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications
+        sendSlackNotifications,
+        takeAttendance
       );
       res.status(200).json(eventType);
     } catch (error: unknown) {
@@ -221,7 +223,8 @@ export default class CalendarController {
         description,
         onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications
+        sendSlackNotifications,
+        takeAttendance
       } = req.body;
 
       const eventType = await CalendarService.editEventType(
@@ -244,7 +247,8 @@ export default class CalendarController {
         description,
         onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications
+        sendSlackNotifications,
+        takeAttendance
       );
       broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(eventType);
