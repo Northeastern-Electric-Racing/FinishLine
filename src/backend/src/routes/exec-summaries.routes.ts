@@ -6,7 +6,7 @@
 import express from 'express';
 import { DataSource } from 'shared';
 import { body, query } from 'express-validator';
-import { isOptionalDate, validateInputs } from '../utils/validation.utils.js';
+import { intMinZero, isOptionalDate, validateInputs } from '../utils/validation.utils.js';
 import ExecSummaryController from '../controllers/exec-summaries.controllers.js';
 
 const execSummaryRouter = express.Router();
@@ -58,8 +58,8 @@ execSummaryRouter.post(
 
 execSummaryRouter.post(
   '/:executiveSummaryId/competition-documents-summary/edit',
-  body('submittedOnTimeCount').optional().isInt({ min: 0 }),
-  body('firstSubmissionRejectedCount').optional().isInt({ min: 0 }),
+  intMinZero(body('submittedOnTimeCount')).optional(),
+  intMinZero(body('firstSubmissionRejectedCount')).optional(),
   body('source').optional().isIn(Object.values(DataSource)),
   isOptionalDate(body('dateSynced')),
   validateInputs,
