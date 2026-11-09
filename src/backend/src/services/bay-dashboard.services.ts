@@ -3,7 +3,6 @@ import dayjs from 'dayjs';
 import {
   BAY_DASHBOARD_CALENDAR_DAYS_AHEAD,
   BayDashboardCountdown,
-  calculateEndDate,
   PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig,
   PublicBayDashboardOverdueWorkPackage
@@ -129,9 +128,8 @@ export default class BayDashboardService {
     });
 
     return workPackages
-      .map((wp) => ({ wp, endDate: calculateEndDate(wp.startDate, wp.duration) }))
+      .map((wp) => publicBayDashboardOverdueWorkPackageTransformer(wp, now))
       .filter(({ endDate }) => endDate < now)
-      .map(({ wp, endDate }) => publicBayDashboardOverdueWorkPackageTransformer(wp, endDate, now))
       .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
   }
 }

@@ -1,4 +1,5 @@
 import { Prisma, WBS_Element_Status } from '@prisma/client';
+import { getBaseWorkPackageQueryArgs } from './work-packages.query-args.js';
 
 export type BayDashboardWidgetQueryArgs = ReturnType<typeof getBayDashboardWidgetQueryArgs>;
 
@@ -105,25 +106,7 @@ export const getBayDashboardCalendarEventQueryArgs = (scheduledTimeFilter: Prism
 export const getBayDashboardOverdueWorkPackageQueryArgs = () =>
   Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
     select: {
-      startDate: true,
-      duration: true,
-      wbsElement: {
-        select: {
-          carNumber: true,
-          projectNumber: true,
-          workPackageNumber: true,
-          name: true,
-          lead: { select: { firstName: true, lastName: true } },
-          manager: { select: { firstName: true, lastName: true } }
-        }
-      },
-      project: {
-        select: {
-          wbsElement: {
-            select: { carNumber: true, projectNumber: true, name: true }
-          }
-        }
-      },
+      ...getBaseWorkPackageQueryArgs().select,
       blockedBy: {
         where: { dateDeleted: null, status: { not: WBS_Element_Status.COMPLETE } },
         select: { carNumber: true, projectNumber: true, workPackageNumber: true, name: true }

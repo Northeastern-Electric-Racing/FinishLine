@@ -24,6 +24,8 @@ import {
   BayDashboardWidgetQueryArgs,
   PublicBayDashboardConfigQueryArgs
 } from '../prisma-query-args/bay-dashboard.query-args.js';
+import { baseWorkPackageTransformer } from './work-packages.transformer.js';
+import { wbsNumOf } from '../utils/utils.js';
 
 export const bayDashboardWidgetSizeTransformer = (size: PrismaBayDashboardWidgetSize): BayDashboardWidgetSize => {
   const mapping: Record<PrismaBayDashboardWidgetSize, BayDashboardWidgetSize> = {
@@ -130,41 +132,26 @@ export const publicBayDashboardCalendarEventsTransformer = (
 
 /**
  * Transforms an overdue work package into what the public TV's overdue widget displays.
- * @param workPackage the work package, with its blockers that are not deleted
- * @param endDate the work package's end date, calculated by the caller
+ * @param workPackage the work package, with its blockers that are not deleted and not complete
  * @param now the time the overdue calculation is made against
  */
 export const publicBayDashboardOverdueWorkPackageTransformer = (
   workPackage: Prisma.Work_PackageGetPayload<BayDashboardOverdueWorkPackageQueryArgs>,
-  endDate: Date,
   now: Date
 ): PublicBayDashboardOverdueWorkPackage => {
-  const { wbsElement, project } = workPackage;
+  const base = baseWorkPackageTransformer(workPackage);
 
   return {
-    wbsNum: {
-      carNumber: wbsElement.carNumber,
-      projectNumber: wbsElement.projectNumber,
-      workPackageNumber: wbsElement.workPackageNumber
-    },
-    name: wbsElement.name,
-    projectWbsNum: {
-      carNumber: project.wbsElement.carNumber,
-      projectNumber: project.wbsElement.projectNumber,
-      workPackageNumber: 0
-    },
-    projectName: project.wbsElement.name,
-    lead: wbsElement.lead ?? undefined,
-    manager: wbsElement.manager ?? undefined,
-    endDate,
-    daysOverdue: daysBetween(now, endDate),
-    blockedBy: workPackage.blockedBy.map((blocker) => ({
-      wbsNum: {
-        carNumber: blocker.carNumber,
-        projectNumber: blocker.projectNumber,
-        workPackageNumber: blocker.workPackageNumber
-      },
-      name: blocker.name
-    }))
+    wbsNum: base.wbsNum,
+    name: base.name,
+    // the project shares the work package's car and project numbers
+    projectWbsNum: { ...base.wbsNum, workPackageNumber: 0 },
+    projectName: base.projectName,
+    // names only: the public TV is unauthenticated, so user ids stay out of the response
+    lead: base.lead && { firstName: base.lead.firstName, lastName: base.lead.lastName },
+    manager: base.manager && { firstName: base.manager.firstName, lastName: base.manager.lastName },
+    endDate: base.endDate,
+    daysOverdue: daysBetween(now, base.endDate),
+    blockedBy: workPackage.blockedBy.map((blocker) => ({ wbsNum: wbsNumOf(blocker), name: blocker.name }))
   };
 };

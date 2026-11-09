@@ -127,8 +127,8 @@ export interface PublicBayDashboardOverdueWorkPackage {
   name: string;
   projectWbsNum: WbsNumber;
   projectName: string;
-  lead?: UserPreview;
-  manager?: UserPreview;
+  lead?: Pick<UserPreview, 'firstName' | 'lastName'>;
+  manager?: Pick<UserPreview, 'firstName' | 'lastName'>;
   endDate: Date;
   daysOverdue: number;
   blockedBy: { wbsNum: WbsNumber; name: string }[];
