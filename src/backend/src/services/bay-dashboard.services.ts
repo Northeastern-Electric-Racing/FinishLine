@@ -127,10 +127,11 @@ export default class BayDashboardService {
       ...getBayDashboardOverdueWorkPackageQueryArgs()
     });
 
-    // end date is derived from start date and duration
+    // end date is derived from start date and duration, so it's calculated once and shared by the filter and the transformer
     return workPackages
-      .filter((wp) => calculateEndDate(wp.startDate, wp.duration) < now)
-      .map((wp) => publicBayDashboardOverdueWorkPackageTransformer(wp, now))
+      .map((wp) => ({ wp, endDate: calculateEndDate(wp.startDate, wp.duration) }))
+      .filter(({ endDate }) => endDate < now)
+      .map(({ wp, endDate }) => publicBayDashboardOverdueWorkPackageTransformer(wp, endDate, now))
       .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
   }
 }

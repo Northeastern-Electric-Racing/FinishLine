@@ -10,7 +10,6 @@ import {
   BayDashboardWidget,
   BayDashboardWidgetSize,
   BayDashboardWidgetType,
-  calculateEndDate,
   PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig,
   PublicBayDashboardOverdueWorkPackage
@@ -131,13 +130,14 @@ export const publicBayDashboardCalendarEventsTransformer = (
 /**
  * Transforms an overdue work package into what the public TV's overdue widget displays.
  * @param workPackage the work package, with its blockers that are not deleted
+ * @param endDate the work package's end date, calculated by the caller
  * @param now the time the overdue calculation is made against
  */
 export const publicBayDashboardOverdueWorkPackageTransformer = (
   workPackage: Prisma.Work_PackageGetPayload<BayDashboardOverdueWorkPackageQueryArgs>,
+  endDate: Date,
   now: Date
 ): PublicBayDashboardOverdueWorkPackage => {
-  const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
   const { wbsElement, project } = workPackage;
 
   return {

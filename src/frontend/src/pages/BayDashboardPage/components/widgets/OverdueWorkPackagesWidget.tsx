@@ -161,11 +161,9 @@ export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetVi
     );
   }
 
-  const sorted = [...workPackages].sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
-
   if (size === BayDashboardWidgetSize.MEDIUM) {
-    const shown = sorted.slice(0, MEDIUM_MAX_CARDS);
-    const hidden = sorted.length - shown.length;
+    const shown = workPackages.slice(0, MEDIUM_MAX_CARDS);
+    const hidden = workPackages.length - shown.length;
     return (
       <Box sx={{ mt: '1cqw' }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${shown.length}, 1fr)`, gap: '2cqw' }}>
@@ -184,11 +182,11 @@ export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetVi
     );
   }
 
-  const hiddenCount = sorted.length - MAX_CARDS;
+  const hiddenCount = workPackages.length - MAX_CARDS;
 
   return (
     <Stack sx={{ flex: 1, minHeight: 0, gap: '1.2cqw', mt: '1cqw' }}>
-      {sorted.slice(0, MAX_CARDS).map((wp) => (
+      {workPackages.slice(0, MAX_CARDS).map((wp) => (
         <OverdueWorkPackageItem key={wbsPipe(wp.wbsNum)} wp={wp} />
       ))}
       {hiddenCount > 0 && (
@@ -208,7 +206,7 @@ const OverdueWorkPackagesWidget: React.FC<BayDashboardWidgetProps> = ({ size, sl
 
   return (
     <NERWidget size={size} title={bayDashboardWidgetDisplayNames[BayDashboardWidgetType.OVERDUE_WORK_PACKAGES]}>
-      {(size === BayDashboardWidgetSize.LARGE || size === BayDashboardWidgetSize.MEDIUM) && slug && (
+      {slug && (
         <OverdueWorkPackagesWidgetView
           workPackages={workPackages}
           isLoading={isLoading}

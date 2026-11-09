@@ -9,7 +9,7 @@ export const widgetDetails: Record<Bay_Dashboard_Widget_Type, { displayName: str
     },
     OVERDUE_WORK_PACKAGES: {
       displayName: 'Overdue Work Packages',
-      sizes: [Bay_Dashboard_Widget_Size.LARGE, Bay_Dashboard_Widget_Size.MEDIUM, Bay_Dashboard_Widget_Size.SMALL]
+      sizes: [Bay_Dashboard_Widget_Size.LARGE, Bay_Dashboard_Widget_Size.MEDIUM]
     },
     TEXT_FIELD: {
       displayName: 'Text Field',
