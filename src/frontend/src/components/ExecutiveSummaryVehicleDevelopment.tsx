@@ -11,15 +11,13 @@ import { Bar } from 'react-chartjs-2';
 import { daysBetween, ExecutiveSummary, VehicleDevelopmentProjectSummary } from 'shared';
 import { useVehicleDevelopmentSummary } from '../hooks/exec-summaries.hooks';
 import { useAllTeams } from '../hooks/teams.hooks';
-import { getDaysAxisTicks, getElapsedDays } from '../utils/exec-summary.utils';
+import { EXEC_SUMMARY_BACKGROUND, getDaysAxisTicks, getElapsedDays } from '../utils/exec-summary.utils';
 import { datePipe } from '../utils/pipes';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
 
 Chart.register(BarElement, CategoryScale, LinearScale, Legend, Tooltip);
 
-// the executive panel is always a dark card, regardless of the app theme
-const BACKGROUND = '#121212';
 const ROW_HEIGHT = 34;
 const ALL_TEAMS = 'all';
 const ELAPSED_COLOR = '#ef4345';
@@ -33,7 +31,7 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
   const accent = useTheme().palette.primary.main;
   const today = new Date();
   const [teamId, setTeamId] = useState<string>(ALL_TEAMS);
-  const { data: teams, isLoading: teamsIsLoading, isError: teamsIsError } = useAllTeams();
+  const { data: teams, isLoading: teamsIsLoading, isError: teamsIsError, error: teamsError } = useAllTeams();
   const {
     data: summary,
     isLoading,
@@ -41,6 +39,7 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
     error
   } = useVehicleDevelopmentSummary(executiveSummary.executiveSummaryId, teamId === ALL_TEAMS ? undefined : teamId);
 
+  if (teamsIsError) return <ErrorPage message={teamsError?.message} />;
   if (isError) return <ErrorPage message={error?.message} />;
 
   const projects: VehicleDevelopmentProjectSummary[] = summary?.projects ?? [];
@@ -140,7 +139,7 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
   };
 
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: BACKGROUND, color: 'white', width: '100%', height: '100%' }}>
+    <Card sx={{ borderRadius: 5, backgroundColor: EXEC_SUMMARY_BACKGROUND, color: 'white', width: '100%', height: '100%' }}>
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2} mb={1}>
           <Typography variant="h5" fontWeight="bold" sx={{ flexGrow: 1, textAlign: 'center' }}>
@@ -150,7 +149,7 @@ const ExecutiveSummaryVehicleDevelopment: React.FC<ExecutiveSummaryVehicleDevelo
             select
             size="small"
             inputProps={{ 'aria-label': 'Team' }}
-            disabled={teamsIsLoading || teamsIsError}
+            disabled={teamsIsLoading}
             value={teamId}
             onChange={(e) => setTeamId(e.target.value)}
             sx={{

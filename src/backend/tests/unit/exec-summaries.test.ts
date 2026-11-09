@@ -9,6 +9,7 @@ import { executiveSummaryTransformer } from '../../src/transformers/executive-su
 import {
   AccessDeniedException,
   DeletedException,
+  HttpException,
   InvalidOrganizationException,
   NotFoundException
 } from '../../src/utils/errors.utils.js';
@@ -184,6 +185,109 @@ describe('Executive Summary Tests', () => {
       );
 
       expect(edited.goals).toBe('new goals');
+    });
+
+    it('Leaves the season dates unchanged when they are not provided', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+
+      const edited = await ExecSummaryServices.editExecutiveSummary(
+        admin,
+        organization,
+        'new goals',
+        'new wins',
+        'new budget notes',
+        'new recruitment notes',
+        undefined,
+        undefined,
+        executiveSummary.executiveSummaryId
+      );
+
+      expect(edited.goals).toBe('new goals');
+      expect(edited.seasonStartDate).toEqual(executiveSummary.seasonStartDate);
+      expect(edited.seasonEndDate).toEqual(executiveSummary.seasonEndDate);
+    });
+    it('Clears a season date when null is passed', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+
+      const edited = await ExecSummaryServices.editExecutiveSummary(
+        admin,
+        organization,
+        'new goals',
+        'new wins',
+        'new budget notes',
+        'new recruitment notes',
+        null,
+        undefined,
+        executiveSummary.executiveSummaryId
+      );
+
+      expect(edited.seasonStartDate).toBeUndefined();
+      expect(edited.seasonEndDate).toEqual(executiveSummary.seasonEndDate);
+    });
+
+    it('Fails if only the end date is changed to before the stored start date', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editExecutiveSummary(
+            admin,
+            organization,
+            'new goals',
+            'new wins',
+            'new budget notes',
+            'new recruitment notes',
+            undefined,
+            new Date('01/01/2023'),
+            executiveSummary.executiveSummaryId
+          )
+      ).rejects.toThrow(new HttpException(400, 'Season end date cannot be before season start date'));
+    });
+    it('Allows an end date before the old start date when the start date is cleared in the same edit', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+
+      const edited = await ExecSummaryServices.editExecutiveSummary(
+        admin,
+        organization,
+        'new goals',
+        'new wins',
+        'new budget notes',
+        'new recruitment notes',
+        null,
+        new Date('01/01/2023'),
+        executiveSummary.executiveSummaryId
+      );
+
+      expect(edited.seasonStartDate).toBeUndefined();
+      expect(edited.seasonEndDate).toEqual(new Date('01/01/2023'));
+    });
+
+    it('Fails for a member of an archived ops team', async () => {
+      const opsMember = await createOpsTeamAndMember(organization);
+      await prisma.team.updateMany({
+        where: { organizationId: orgId, operationsTeam: true },
+        data: { dateArchived: new Date() }
+      });
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editExecutiveSummary(
+            opsMember,
+            organization,
+            'new goals',
+            'new wins',
+            'new budget notes',
+            'new recruitment notes',
+            undefined,
+            undefined,
+            executiveSummary.executiveSummaryId
+          )
+      ).rejects.toThrow(new AccessDeniedException('edit an executive summary'));
     });
   });
 
@@ -776,7 +880,6 @@ describe('Executive Summary Tests', () => {
 
       expect(edited.finalPlace).toBe(1);
     });
-
     it('Succeeds clearing optional fields by passing null', async () => {
       const admin = await createTestUser(batmanAppAdmin, orgId);
       const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
@@ -802,6 +905,38 @@ describe('Executive Summary Tests', () => {
 
       expect(edited.finalPlace).toBeUndefined();
       expect(edited.totalPointsEarned).toBeUndefined();
+    });
+
+    it('Leaves fields that are not provided unchanged', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const competitionPerformance = await createTestCompetitionPerformance(executiveSummary.executiveSummaryId);
+      await prisma.competition_Performance.update({
+        where: { competitionPerformanceId: competitionPerformance.competitionPerformanceId },
+        data: { finalPlace: 3, maxPoints: 1000 }
+      });
+
+      const edited = await ExecSummaryServices.editCompetitionPerformance(
+        admin,
+        organization,
+        undefined,
+        500,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        competitionPerformance.competitionPerformanceId
+      );
+
+      expect(edited.totalPointsEarned).toBe(500);
+      expect(edited.finalPlace).toBe(3);
+      expect(edited.maxPoints).toBe(1000);
     });
   });
 });

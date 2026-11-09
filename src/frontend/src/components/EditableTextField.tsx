@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Box, IconButton, TextField, Typography } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import NERSuccessButton from './NERSuccessButton';
@@ -31,11 +31,10 @@ const EditableTextField: React.FC<EditableTextFieldProps> = ({
 }) => {
   const [draft, setDraft] = useState(value);
 
-  useEffect(() => {
-    if (isEditing) {
-      setDraft(value);
-    }
-  }, [isEditing, value]);
+  const handleEditStart = () => {
+    setDraft(value);
+    onEditStart();
+  };
 
   if (!isEditing) {
     return (
@@ -43,7 +42,7 @@ const EditableTextField: React.FC<EditableTextFieldProps> = ({
         <Box display="flex" alignItems="center">
           <Typography variant="h6">{label}</Typography>
           {canEdit && (
-            <IconButton onClick={onEditStart} aria-label={`Edit ${label}`}>
+            <IconButton onClick={handleEditStart} aria-label={`Edit ${label}`}>
               <EditOutlinedIcon />
             </IconButton>
           )}

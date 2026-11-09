@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -8,28 +8,18 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
-import { ArcElement, Chart, ChartOptions, Legend, Tooltip } from 'chart.js';
-import { Doughnut } from 'react-chartjs-2';
 import { BudgetHighlight, ExecutiveSummary, isAdmin } from 'shared';
-import { useBudgetSummary, useEditExecutiveSummary, useSingleExecutiveSummary } from '../hooks/exec-summaries.hooks';
+import { useBudgetSummary, useEditExecutiveSummary } from '../hooks/exec-summaries.hooks';
 import { useToast } from '../hooks/toasts.hooks';
 import { useCurrentUser } from '../hooks/users.hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
-
-Chart.register(ArcElement, Tooltip, Legend);
-
-// the executive panel is always a dark card, regardless of the app theme
-const BACKGROUND = '#121212';
-
-// accent shades first, then greys, so that adjacent divisions are easy to tell apart
-const CHART_COLORS = ['#ef4345', '#9B3425', '#5E1A10', '#B3B3B3', '#808080', '#5C5C5C', '#3D3D3D', '#2A2A2A'];
+import BudgetDonut from './BudgetDonut';
+import { EXEC_SUMMARY_BACKGROUND, formatDollars } from '../utils/exec-summary.utils';
 
 interface ExecutiveSummaryBudgetProps {
   executiveSummary: ExecutiveSummary;
 }
-
-const formatDollars = (amount: number): string => `$${amount.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 
 interface UnderlinedLabelProps {
   label: string;
@@ -48,8 +38,8 @@ const UnderlinedLabel: React.FC<UnderlinedLabelProps> = ({ label, highlight, sho
   </Box>
 );
 
-const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executiveSummary: initialSummary }) => {
-  const { executiveSummaryId } = initialSummary;
+const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executiveSummary }) => {
+  const { executiveSummaryId } = executiveSummary;
   const theme = useTheme();
   const accent = theme.palette.primary.main;
   const {
@@ -58,29 +48,15 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
     isError: budgetIsError,
     error: budgetError
   } = useBudgetSummary(executiveSummaryId);
-  // prefer the live copy of the summary so that notes and the edit payload never go stale
-  const {
-    data: latestSummary,
-    isLoading: summaryIsLoading,
-    isError: summaryIsError,
-    error: summaryError
-  } = useSingleExecutiveSummary(executiveSummaryId);
-  const executiveSummary = latestSummary ?? initialSummary;
   const { mutateAsync: editExecutiveSummary, isLoading: isSaving } = useEditExecutiveSummary(executiveSummaryId);
   const toast = useToast();
   const user = useCurrentUser();
   const canEdit = isAdmin(user.role) || !!user.isOperations;
   const [isEditingNotes, setIsEditingNotes] = useState(false);
-  const [notesDraft, setNotesDraft] = useState(executiveSummary.budgetNotes);
-
-  // keep the draft in sync with the saved notes whenever the user isn't mid-edit
-  useEffect(() => {
-    if (!isEditingNotes) setNotesDraft(executiveSummary.budgetNotes);
-  }, [executiveSummary.budgetNotes, isEditingNotes]);
+  const [notesDraft, setNotesDraft] = useState('');
 
   if (budgetIsError) return <ErrorPage message={budgetError?.message} />;
-  if (summaryIsError) return <ErrorPage message={summaryError?.message} />;
-  if (budgetIsLoading || summaryIsLoading || !budgetSummary) return <LoadingIndicator />;
+  if (budgetIsLoading || !budgetSummary) return <LoadingIndicator />;
 
   const { budgetByDivision, totalBudget, totalSpent } = budgetSummary;
   const overage = totalSpent - totalBudget;
@@ -106,28 +82,6 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
     }
   };
 
-  const chartData = {
-    labels: budgetByDivision.values.map((v) => v.label),
-    datasets: [
-      {
-        data: budgetByDivision.values.map((v) => v.value),
-        backgroundColor: budgetByDivision.values.map((_, idx) => CHART_COLORS[idx % CHART_COLORS.length]),
-        borderColor: BACKGROUND,
-        borderWidth: 2
-      }
-    ]
-  };
-
-  const chartOptions: ChartOptions<'doughnut'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    cutout: '70%',
-    plugins: {
-      legend: { display: false },
-      tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${formatDollars(ctx.parsed)} budgeted` } }
-    }
-  };
-
   const noteLines = executiveSummary.budgetNotes.split('\n').filter((line) => line.trim() !== '');
 
   const bannerText =
@@ -138,38 +92,14 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
         : 'Exactly on budget';
 
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: BACKGROUND, color: 'white', width: '100%', height: '100%' }}>
+    <Card sx={{ borderRadius: 5, backgroundColor: EXEC_SUMMARY_BACKGROUND, color: 'white', width: '100%', height: '100%' }}>
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Typography variant="h5" fontWeight="bold" textAlign="center" mb={1}>
           Budget
         </Typography>
 
         <Box display="flex" flexWrap="wrap" justifyContent="center" alignItems="center" gap={2}>
-          <Box sx={{ position: 'relative', width: '100%', maxWidth: 160, aspectRatio: '1 / 1', flexShrink: 0 }}>
-            {/* absolutely positioned so the canvas can't feed back into the box's height and distort the square */}
-            <Box sx={{ position: 'absolute', inset: 0 }}>
-              <Doughnut data={chartData} options={chartOptions} />
-            </Box>
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '62%',
-                height: '62%',
-                borderRadius: '50%',
-                border: `10px solid ${accent}`,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'none'
-              }}
-            >
-              <Typography variant="h5">{formatDollars(totalSpent)}</Typography>
-            </Box>
-          </Box>
+          <BudgetDonut values={budgetByDivision.values} centerText={formatDollars(totalSpent)} />
 
           <Box flex="1 1 190px" minWidth={0}>
             <Box
@@ -215,13 +145,7 @@ const ExecutiveSummaryBudget: React.FC<ExecutiveSummaryBudgetProps> = ({ executi
               >
                 Cancel
               </Button>
-              <Button
-                color="success"
-                variant="contained"
-                size="small"
-                onClick={saveNotes}
-                disabled={isSaving || !latestSummary}
-              >
+              <Button color="success" variant="contained" size="small" onClick={saveNotes} disabled={isSaving}>
                 Save
               </Button>
             </>

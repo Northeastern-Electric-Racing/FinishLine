@@ -6,9 +6,6 @@
 import { Organization, Prisma } from '@prisma/client';
 import { BudgetHighlight, calculateProjectEndDate, calculateProjectStartDate, User, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma.js';
-import { HttpException } from './errors.utils.js';
-import { isUserOnTeam } from './teams.utils.js';
-import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 import {
   getBaseExecutiveSummaryQueryArgs,
   getBudgetProjectQueryArgs
@@ -17,32 +14,28 @@ import {
 // rounds a dollar amount to the nearest cent so that splitting across divisions doesn't leave floating point noise
 const roundToCents = (amount: number): number => Math.round(amount * 100) / 100;
 
-const getOpsTeam = async (organizationId: string) => {
-  const opsTeam = await prisma.team.findFirst({
-    where: { operationsTeam: true, organizationId },
-    include: {
-      head: getUserQueryArgs(organizationId),
-      leads: getUserQueryArgs(organizationId),
-      members: getUserQueryArgs(organizationId)
-    }
-  });
-
-  if (!opsTeam) throw new HttpException(500, 'Ops team does not exist!');
-  return opsTeam;
-};
-
 /**
- * Determines if a user is part of the ops team.
- *
- * Modeled after isUserOnFinanceTeam in reimbursement-requests.utils.ts as requested
+ * Determines if a user is part of the organization's (non-archived) ops team, as its head, a lead, or a member.
  *
  * @param user the user to authenticate
  * @param organizationId the organization id to check if the user is on the ops team
- * @returns whether the user is on the ops team
- * @throws {HttpException} if the ops team is not found in the database
+ * @returns whether the user is on the ops team; false if the organization has no ops team
  */
 export const isUserOnOpsTeam = async (user: User, organizationId: string): Promise<boolean> => {
-  return isUserOnTeam(await getOpsTeam(organizationId), user);
+  const opsTeam = await prisma.team.findFirst({
+    where: {
+      operationsTeam: true,
+      organizationId,
+      dateArchived: null,
+      OR: [
+        { headId: user.userId },
+        { leads: { some: { userId: user.userId } } },
+        { members: { some: { userId: user.userId } } }
+      ]
+    },
+    select: { teamId: true }
+  });
+  return opsTeam !== null;
 };
 
 /**

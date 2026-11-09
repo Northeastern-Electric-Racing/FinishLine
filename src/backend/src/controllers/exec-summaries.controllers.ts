@@ -19,8 +19,8 @@ export default class ExecSummaryController {
         winsAndImprovements,
         budgetNotes,
         recruitmentNotes,
-        seasonStartDate ? new Date(seasonStartDate) : null,
-        seasonEndDate ? new Date(seasonEndDate) : null,
+        seasonStartDate === undefined || seasonStartDate === null ? seasonStartDate : new Date(seasonStartDate),
+        seasonEndDate === undefined || seasonEndDate === null ? seasonEndDate : new Date(seasonEndDate),
         executiveSummaryId
       );
       res.status(200).json(executiveSummary);
@@ -105,18 +105,18 @@ export default class ExecSummaryController {
       const competitionPerformance = await ExecSummaryServices.editCompetitionPerformance(
         req.currentUser,
         req.organization,
-        finalPlace ?? null,
-        totalPointsEarned ?? null,
-        maxPoints ?? null,
-        bestStaticEvent ?? null,
-        worstStaticEvent ?? null,
-        bestDynamicEvent ?? null,
-        worstDynamicEvent ?? null,
-        accelerationTopTimeSeconds ?? null,
-        autocrossTopTimeSeconds ?? null,
-        enduranceLapsCompleted ?? null,
-        maxLaps ?? null,
-        enduranceAvgLapTimeSeconds ?? null,
+        finalPlace,
+        totalPointsEarned,
+        maxPoints,
+        bestStaticEvent,
+        worstStaticEvent,
+        bestDynamicEvent,
+        worstDynamicEvent,
+        accelerationTopTimeSeconds,
+        autocrossTopTimeSeconds,
+        enduranceLapsCompleted,
+        maxLaps,
+        enduranceAvgLapTimeSeconds,
         competitionPerformanceId
       );
       res.status(200).json(competitionPerformance);

@@ -20,7 +20,7 @@ const ExecSummaryOverview: React.FC<ExecSummaryOverviewProps> = ({ executiveSumm
   const toast = useToast();
   const user = useCurrentUser();
   const canEdit = isAdmin(user.role) || !!user.isOperations;
-  const [editingSection, setEditingSection] = useState<EditableSection | null>(null);
+  const [editingSection, setEditingSection] = useState<EditableSection>();
 
   const saveSection = async (section: EditableSection, newText: string) => {
     try {
@@ -33,7 +33,7 @@ const ExecSummaryOverview: React.FC<ExecSummaryOverviewProps> = ({ executiveSumm
         recruitmentNotes: executiveSummary.recruitmentNotes,
         [section]: newText
       });
-      setEditingSection(null);
+      setEditingSection(undefined);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to save executive summary');
     }
@@ -55,7 +55,7 @@ const ExecSummaryOverview: React.FC<ExecSummaryOverviewProps> = ({ executiveSumm
         isSaving={isSaving}
         canEdit={canEdit}
         onEditStart={() => setEditingSection('goals')}
-        onCancel={() => setEditingSection(null)}
+        onCancel={() => setEditingSection(undefined)}
         onSave={(text) => saveSection('goals', text)}
       />
       <EditableTextField
@@ -67,7 +67,7 @@ const ExecSummaryOverview: React.FC<ExecSummaryOverviewProps> = ({ executiveSumm
         isSaving={isSaving}
         canEdit={canEdit}
         onEditStart={() => setEditingSection('winsAndImprovements')}
-        onCancel={() => setEditingSection(null)}
+        onCancel={() => setEditingSection(undefined)}
         onSave={(text) => saveSection('winsAndImprovements', text)}
       />
     </Box>

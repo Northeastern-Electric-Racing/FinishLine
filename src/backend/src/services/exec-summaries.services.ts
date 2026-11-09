@@ -39,8 +39,8 @@ export default class ExecSummaryServices {
    * @param winsAndImprovements the updated wins and improvements
    * @param budgetNotes the updated budget notes
    * @param recruitmentNotes the updated recruitment notes
-   * @param seasonStartDate the updated season start date, or null to leave/clear it
-   * @param seasonEndDate the updated season end date, or null to leave/clear it
+   * @param seasonStartDate the updated season start date, null to clear it, or undefined to leave it unchanged
+   * @param seasonEndDate the updated season end date, null to clear it, or undefined to leave it unchanged
    * @param executiveSummaryId the id of the executive summary being edited
    * @returns the updated executive summary
    * @throws AccessDeniedException if the submitter is not an admin and not on the ops team
@@ -56,20 +56,14 @@ export default class ExecSummaryServices {
     winsAndImprovements: string,
     budgetNotes: string,
     recruitmentNotes: string,
-    seasonStartDate: Date | null,
-    seasonEndDate: Date | null,
+    seasonStartDate: Date | null | undefined,
+    seasonEndDate: Date | null | undefined,
     executiveSummaryId: string
   ) {
     const isAdminUser = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
 
-    if (!isAdminUser) {
-      let isOpsTeamMember = false;
-      try {
-        isOpsTeamMember = await isUserOnOpsTeam(submitter, organization.organizationId);
-      } catch {
-        // Ops team may not exist yet
-      }
-      if (!isOpsTeamMember) throw new AccessDeniedException('edit an executive summary');
+    if (!isAdminUser && !(await isUserOnOpsTeam(submitter, organization.organizationId))) {
+      throw new AccessDeniedException('edit an executive summary');
     }
 
     const currentExecutiveSummary = await prisma.executive_Summary.findUnique({
@@ -89,10 +83,10 @@ export default class ExecSummaryServices {
       throw new DeletedException('Executive Summary', executiveSummaryId);
     }
 
-    // Compare the resolved dates (new value if provided, otherwise whatever's already stored)
+    // Compare the dates as they will be after the update (undefined keeps the stored date, null clears it)
     // so this still catches a bad ordering even if only one of the two dates is being changed.
-    const resolvedStartDate = seasonStartDate ?? currentExecutiveSummary.seasonStartDate;
-    const resolvedEndDate = seasonEndDate ?? currentExecutiveSummary.seasonEndDate;
+    const resolvedStartDate = seasonStartDate === undefined ? currentExecutiveSummary.seasonStartDate : seasonStartDate;
+    const resolvedEndDate = seasonEndDate === undefined ? currentExecutiveSummary.seasonEndDate : seasonEndDate;
 
     if (resolvedStartDate && resolvedEndDate && resolvedEndDate < resolvedStartDate) {
       throw new HttpException(400, 'Season end date cannot be before season start date');
@@ -190,7 +184,7 @@ export default class ExecSummaryServices {
     }
 
     const executiveSummaries = await prisma.executive_Summary.findMany({
-      where: { car: { wbsElement: { organizationId: organization.organizationId } }, dateDeleted: null },
+      where: { car: { wbsElement: { organizationId: organization.organizationId, dateDeleted: null } }, dateDeleted: null },
       select: {
         ...getBaseExecutiveSummaryQueryArgs().select,
         goals: true,
@@ -339,7 +333,7 @@ export default class ExecSummaryServices {
           where: {
             executiveSummaryId: { not: executiveSummaryId },
             dateDeleted: null,
-            car: { wbsElement: { organizationId: organization.organizationId } },
+            car: { wbsElement: { organizationId: organization.organizationId, dateDeleted: null } },
             seasonStartDate: { lt: executiveSummary.seasonStartDate }
           },
           orderBy: { seasonStartDate: 'desc' },
@@ -360,20 +354,21 @@ export default class ExecSummaryServices {
 
   /**
    * Edits an existing competition performance entry.
+   * Only the fields that are provided are changed; undefined leaves a field as it is and null clears it.
    * @param submitter the user editing the competition performance
    * @param organization the organization the competition performance belongs to
-   * @param finalPlace the updated final place, or null to clear it
-   * @param totalPointsEarned the updated total points earned, or null to clear it
-   * @param maxPoints the updated max points, or null to clear it
-   * @param bestStaticEvent the updated best static event, or null to clear it
-   * @param worstStaticEvent the updated worst static event, or null to clear it
-   * @param bestDynamicEvent the updated best dynamic event, or null to clear it
-   * @param worstDynamicEvent the updated worst dynamic event, or null to clear it
-   * @param accelerationTopTimeSeconds the updated acceleration top time, or null to clear it
-   * @param autocrossTopTimeSeconds the updated autocross top time, or null to clear it
-   * @param enduranceLapsCompleted the updated endurance laps completed, or null to clear it
-   * @param maxLaps the updated max laps, or null to clear it
-   * @param enduranceAvgLapTimeSeconds the updated endurance average lap time, or null to clear it
+   * @param finalPlace the updated final place, null to clear it, or undefined to leave it unchanged
+   * @param totalPointsEarned the updated total points earned, null to clear it, or undefined to leave it unchanged
+   * @param maxPoints the updated max points, null to clear it, or undefined to leave it unchanged
+   * @param bestStaticEvent the updated best static event, null to clear it, or undefined to leave it unchanged
+   * @param worstStaticEvent the updated worst static event, null to clear it, or undefined to leave it unchanged
+   * @param bestDynamicEvent the updated best dynamic event, null to clear it, or undefined to leave it unchanged
+   * @param worstDynamicEvent the updated worst dynamic event, null to clear it, or undefined to leave it unchanged
+   * @param accelerationTopTimeSeconds the updated acceleration top time, null to clear it, or undefined to leave it unchanged
+   * @param autocrossTopTimeSeconds the updated autocross top time, null to clear it, or undefined to leave it unchanged
+   * @param enduranceLapsCompleted the updated endurance laps completed, null to clear it, or undefined to leave it unchanged
+   * @param maxLaps the updated max laps, null to clear it, or undefined to leave it unchanged
+   * @param enduranceAvgLapTimeSeconds the updated endurance average lap time, null to clear it, or undefined to leave it unchanged
    * @param competitionPerformanceId the id of the competition performance being edited
    * @returns the updated competition performance
    * @throws AccessDeniedException if the submitter is not an admin and not on the ops team
@@ -384,30 +379,24 @@ export default class ExecSummaryServices {
   static async editCompetitionPerformance(
     submitter: User,
     organization: Organization,
-    finalPlace: number | null,
-    totalPointsEarned: number | null,
-    maxPoints: number | null,
-    bestStaticEvent: string | null,
-    worstStaticEvent: string | null,
-    bestDynamicEvent: string | null,
-    worstDynamicEvent: string | null,
-    accelerationTopTimeSeconds: number | null,
-    autocrossTopTimeSeconds: number | null,
-    enduranceLapsCompleted: number | null,
-    maxLaps: number | null,
-    enduranceAvgLapTimeSeconds: number | null,
+    finalPlace: number | null | undefined,
+    totalPointsEarned: number | null | undefined,
+    maxPoints: number | null | undefined,
+    bestStaticEvent: string | null | undefined,
+    worstStaticEvent: string | null | undefined,
+    bestDynamicEvent: string | null | undefined,
+    worstDynamicEvent: string | null | undefined,
+    accelerationTopTimeSeconds: number | null | undefined,
+    autocrossTopTimeSeconds: number | null | undefined,
+    enduranceLapsCompleted: number | null | undefined,
+    maxLaps: number | null | undefined,
+    enduranceAvgLapTimeSeconds: number | null | undefined,
     competitionPerformanceId: string
   ) {
     const isAdminUser = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
 
-    if (!isAdminUser) {
-      let isOpsTeamMember = false;
-      try {
-        isOpsTeamMember = await isUserOnOpsTeam(submitter, organization.organizationId);
-      } catch {
-        // Ops team may not exist yet
-      }
-      if (!isOpsTeamMember) throw new AccessDeniedException('edit a competition performance');
+    if (!isAdminUser && !(await isUserOnOpsTeam(submitter, organization.organizationId))) {
+      throw new AccessDeniedException('edit a competition performance');
     }
 
     const currentCompetitionPerformance = await prisma.competition_Performance.findUnique({
@@ -424,6 +413,7 @@ export default class ExecSummaryServices {
     if (currentCompetitionPerformance.executiveSummary.dateDeleted) {
       throw new DeletedException('Executive Summary', currentCompetitionPerformance.executiveSummary.executiveSummaryId);
     }
+
     const updatedCompetitionPerformance = await prisma.competition_Performance.update({
       where: { competitionPerformanceId },
       data: {

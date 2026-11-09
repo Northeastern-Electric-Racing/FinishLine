@@ -8,21 +8,27 @@ export const getAuthUserQueryArgs = (organizationId: string) =>
       userSettings: true,
       organizations: true,
       teamsAsHead: {
+        where: { organizationId },
         select: {
+          dateArchived: true,
           teamId: true,
           financeTeam: true,
           operationsTeam: true
         }
       },
       teamsAsLead: {
+        where: { organizationId },
         select: {
+          dateArchived: true,
           financeTeam: true,
           operationsTeam: true,
           teamId: true
         }
       },
       teamsAsMember: {
+        where: { organizationId },
         select: {
+          dateArchived: true,
           financeTeam: true,
           operationsTeam: true,
           teamId: true
