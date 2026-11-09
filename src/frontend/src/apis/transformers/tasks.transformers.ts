@@ -1,4 +1,4 @@
-import { BaseTask, dbDateToLocalDate, Task, TaskBoardItem, TaskLabel } from 'shared';
+import { BaseTask, dbDateToLocalDate, TaskBoardItem, TaskLabel } from 'shared';
 
 /**
  * Transforms any task model that extends BaseTask, converting Base's date fields.
@@ -22,24 +22,6 @@ export const taskBoardItemTransformer = (task: TaskBoardItem): TaskBoardItem => 
   ...baseTaskTransformer(task),
   startDate: task.startDate ? dbDateToLocalDate(new Date(task.startDate)) : undefined
 });
-
-/**
- * Transforms a task to ensure deep field transformation of date objects.
- *
- * @deprecated Use baseTaskTransformer or a per-endpoint model's transformer. Still used by projects.transformers.ts until projects is refactored
- * @param task Incoming task object supplied by the HTTP response.
- * @returns Properly transformed task object.
- */
-export const taskTransformer = (task: Task): Task => {
-  return {
-    ...task,
-    dateCreated: new Date(task.dateCreated),
-    dateDeleted: task.dateDeleted ? new Date(task.dateDeleted) : undefined,
-    deadline: task.deadline ? dbDateToLocalDate(new Date(task.deadline)) : undefined,
-    startDate: task.startDate ? dbDateToLocalDate(new Date(task.startDate)) : undefined,
-    labels: task.labels.map(taskLabelTransformer)
-  };
-};
 
 /**
  * Transforms a task label to ensure deep field transformation of date objects.

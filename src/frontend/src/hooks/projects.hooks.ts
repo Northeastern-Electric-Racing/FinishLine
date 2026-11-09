@@ -9,10 +9,11 @@ import {
   LinkCreateArgs,
   LinkType,
   LinkTypeCreatePayload,
-  Project,
-  ProjectOverview,
-  ProjectGantt,
-  ProjectPreview,
+  BaseProject,
+  ProjectDetail,
+  ProjectGanttItem,
+  ProjectListItem,
+  ProjectOverviewCard,
   WbsNumber,
   WorkPackageTemplate
 } from 'shared';
@@ -46,7 +47,7 @@ import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
  * Custom React Hook to supply all projects with Gantt querry args
  */
 export const useAllProjectsGantt = () => {
-  return useQuery<ProjectGantt[], Error>(['projects', 'gantt-all'], async () => {
+  return useQuery<ProjectGanttItem[], Error>(['projects', 'gantt-all'], async () => {
     const { data } = await getAllProjectsGantt();
     return data;
   });
@@ -57,7 +58,7 @@ export const useAllProjectsGantt = () => {
  */
 export const useAllProjects = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ProjectPreview[], Error>(
+  return useQuery<ProjectListItem[], Error>(
     ['projects', 'previews', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
     async () => {
       const { data } = await getAllProjects();
@@ -72,7 +73,7 @@ export const useAllProjects = () => {
  * globally selected car and does its own frontend filtering by car.
  */
 export const useAllProjectsCopyBOM = () => {
-  return useQuery<ProjectPreview[], Error>(['projects', 'previews', 'all-cars'], async () => {
+  return useQuery<ProjectListItem[], Error>(['projects', 'previews', 'all-cars'], async () => {
     const { data } = await getAllProjectsCopyBOM();
     return data;
   });
@@ -83,7 +84,7 @@ export const useAllProjectsCopyBOM = () => {
  */
 export const useGetUsersTeamsProjects = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ProjectOverview[], Error>(
+  return useQuery<ProjectOverviewCard[], Error>(
     ['projects', 'teams', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
     async () => {
       const { data } = await getUsersTeamsProjects();
@@ -97,7 +98,7 @@ export const useGetUsersTeamsProjects = () => {
  */
 export const useGetUsersLeadingProjects = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ProjectOverview[], Error>(
+  return useQuery<ProjectOverviewCard[], Error>(
     ['projects', 'leading', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
     async () => {
       const { data } = await getUsersLeadingProjects();
@@ -111,7 +112,7 @@ export const useGetUsersLeadingProjects = () => {
  */
 export const useGetTeamsProjects = (teamId: string) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<Project[], Error>(
+  return useQuery<BaseProject[], Error>(
     ['projects', 'teams', teamId, selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
     async () => {
       const { data } = await getTeamsProjects(teamId);
@@ -124,12 +125,17 @@ export const useGetTeamsProjects = (teamId: string) => {
  * Custom React Hook to supply a single project.
  *
  * @param wbsNum WBS number of the requested project.
+ * @param enabled whether to fetch yet; it also waits until there is a wbs number, e.g. until a project has been picked
  */
-export const useSingleProject = (wbsNum: WbsNumber) => {
-  return useQuery<Project, Error>(['projects', wbsNum], async () => {
-    const { data } = await getSingleProject(wbsNum);
-    return data;
-  });
+export const useSingleProject = (wbsNum: WbsNumber | undefined, enabled = true) => {
+  return useQuery<ProjectDetail, Error>(
+    ['projects', wbsNum],
+    async () => {
+      const { data } = await getSingleProject(wbsNum!);
+      return data;
+    },
+    { enabled: enabled && !!wbsNum }
+  );
 };
 
 /**
@@ -138,7 +144,7 @@ export const useSingleProject = (wbsNum: WbsNumber) => {
  */
 export const useCreateSingleProject = () => {
   const queryClient = useQueryClient();
-  return useMutation<Project, Error, CreateSingleProjectPayload>(
+  return useMutation<BaseProject, Error, CreateSingleProjectPayload>(
     ['projects', 'create'],
     async (projectPayload: CreateSingleProjectPayload) => {
       const { data } = await createSingleProject(projectPayload);
@@ -158,11 +164,10 @@ export const useCreateSingleProject = () => {
  */
 export const useEditSingleProject = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, EditSingleProjectPayload>(
+  return useMutation<void, Error, EditSingleProjectPayload>(
     ['projects', 'edit'],
     async (projectPayload: EditSingleProjectPayload) => {
-      const { data } = await editSingleProject(projectPayload);
-      return data;
+      await editSingleProject(projectPayload);
     },
     {
       onSuccess: () => {
@@ -179,11 +184,10 @@ export const useEditSingleProject = (wbsNum: WbsNumber) => {
  */
 export const useSetProjectTeam = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<void, Error, string>(
     ['projects', 'edit', 'teams'],
     async (teamId: string) => {
-      const { data } = await setProjectTeam(wbsNum, teamId);
-      return data;
+      await setProjectTeam(wbsNum, teamId);
     },
     {
       onSuccess: () => {
@@ -199,11 +203,10 @@ export const useSetProjectTeam = (wbsNum: WbsNumber) => {
  */
 export const useDeleteProject = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<void, Error, WbsNumber>(
     ['projects', 'delete'],
     async (wbsNumber: WbsNumber) => {
-      const { data } = await deleteProject(wbsNumber);
-      return data;
+      await deleteProject(wbsNumber);
     },
     {
       onSuccess: () => {
@@ -220,11 +223,10 @@ export const useToggleProjectFavorite = (wbsNumber: WbsNumber) => {
   const queryClient = useQueryClient();
   const user = useCurrentUser();
 
-  return useMutation<{ message: string }, Error>(
+  return useMutation<void, Error>(
     ['projects', 'edit', 'favorite'],
     async () => {
-      const { data } = await toggleProjectFavorite(wbsNumber);
-      return data;
+      await toggleProjectFavorite(wbsNumber);
     },
     {
       onSuccess: () => {
@@ -355,11 +357,10 @@ export const useSetUsefulLinks = () => {
  */
 export const useSetProjectAbbreviation = () => {
   const queryClient = useQueryClient();
-  return useMutation<Project, Error, any>(
+  return useMutation<void, Error, { wbsNum: string; abbreviation: string }>(
     ['projects', 'abbreviation', 'set'],
     async (payload: { wbsNum: string; abbreviation: string }) => {
-      const { data } = await setAbbreviation(payload);
-      return data;
+      await setAbbreviation(payload);
     },
     {
       onSuccess: () => {
@@ -374,11 +375,10 @@ export const useSetProjectAbbreviation = () => {
  */
 export const useDeleteProjectAbbreviation = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<void, Error, string>(
     ['projects', 'abbreviation', 'delete'],
     async (wbsNumber: string) => {
-      const { data } = await deleteAbbreviation(wbsNumber);
-      return data;
+      await deleteAbbreviation(wbsNumber);
     },
     {
       onSuccess: () => {

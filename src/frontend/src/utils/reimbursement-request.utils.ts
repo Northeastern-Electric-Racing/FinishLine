@@ -1,6 +1,5 @@
 import {
   OtherProductReason,
-  Project,
   Reimbursement,
   ReimbursementProduct,
   ReimbursementRequest,
@@ -10,7 +9,6 @@ import {
   User,
   Vendor,
   WBSElementData,
-  WbsNumber,
   wbsPipe
 } from 'shared';
 
@@ -90,26 +88,6 @@ export const submitterDescendingComparator = (a: User, b: User) => {
     return 1;
   }
   return 0;
-};
-
-export const getAllWbsElements = (projects: Project[]): { wbsNum: WbsNumber; wbsName: string }[] => {
-  return projects
-    .map((project) => {
-      return {
-        wbsNum: project.wbsNum,
-        wbsName: project.name
-      };
-    })
-    .concat(
-      projects.flatMap((project) =>
-        project.workPackages.map((workPackage) => {
-          return {
-            wbsNum: workPackage.wbsNum,
-            wbsName: workPackage.projectName + ' - ' + workPackage.name
-          };
-        })
-      )
-    );
 };
 
 export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType) => {

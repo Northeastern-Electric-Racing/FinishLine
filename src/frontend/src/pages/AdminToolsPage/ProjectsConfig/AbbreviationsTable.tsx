@@ -6,7 +6,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import SetAbbreviationModal from './SetAbbreviationModal';
 import { useState } from 'react';
-import { ProjectPreview, wbsPipe } from 'shared';
+import { ProjectListItem, wbsPipe } from 'shared';
 import { Delete } from '@mui/icons-material';
 import NERModal from '../../../components/NERModal';
 
@@ -14,7 +14,7 @@ const AbbreviationsTable: React.FC = () => {
   const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
   const { mutateAsync } = useDeleteProjectAbbreviation();
   const [openModal, setOpenModal] = useState(false);
-  const [abbreviationToDelete, setAbbreviationToDelete] = useState<ProjectPreview>();
+  const [abbreviationToDelete, setAbbreviationToDelete] = useState<ProjectListItem>();
 
   if (!projects || projectsIsLoading) {
     return <LoadingIndicator />;

@@ -472,11 +472,12 @@ const removeGraphFromGraphCollection = (graphCollectionId: string, graphId: stri
 const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete`;
 
 /************** Retrospective Endpoints ***************/
-const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
-  `${API_URL}/retrospective/timelines?` +
-  (startDate ? `start=${encodeURIComponent(new Date(startDate).toISOString())}` : '') +
-  (endDate ? `end=${encodeURIComponent(new Date(endDate).toISOString())}` : '');
-const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
+const retrospectiveTimelines = (startDate?: Date, endDate?: Date) => {
+  const params = new URLSearchParams();
+  if (startDate) params.set('start', new Date(startDate).toISOString());
+  if (endDate) params.set('end', new Date(endDate).toISOString());
+  return `${API_URL}/retrospective/timelines?${params.toString()}`;
+};
 
 /**************** Rules Endpoints ****************/
 const rules = () => `${API_URL}/rules`;
@@ -943,7 +944,6 @@ export const apiUrls = {
   checklistDelete,
 
   retrospectiveTimelines,
-  retrospectiveBudgets,
 
   rules,
   rulesTopLevel,

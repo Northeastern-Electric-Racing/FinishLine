@@ -1,16 +1,12 @@
 import { Prisma } from '@prisma/client';
-import { getBaseUserQueryArgs, getUserPreviewWithEmailQueryArgs } from './user.query-args.js';
+import { getBaseUserQueryArgs } from './user.query-args.js';
 
 export type BaseTaskQueryArgs = ReturnType<typeof getBaseTaskQueryArgs>;
 export type TaskBoardItemQueryArgs = ReturnType<typeof getTaskBoardItemQueryArgs>;
 export type TaskHomeCardQueryArgs = ReturnType<typeof getTaskHomeCardQueryArgs>;
 export type TaskBlockingWorkPackagesQueryArgs = ReturnType<typeof getTaskBlockingWorkPackagesQueryArgs>;
-/** @deprecated Use BaseTaskQueryArgs or a per-endpoint model's query args. Still used by projects.query-args.ts until projects is refactored */
-export type TaskQueryArgs = ReturnType<typeof getTaskQueryArgs>;
 export type BaseTaskLabelQueryArgs = ReturnType<typeof getBaseTaskLabelQueryArgs>;
 export type TaskBlockedByQueryArgs = ReturnType<typeof getTaskBlockedByQueryArgs>;
-/** @deprecated Use TaskBlockingWorkPackagesQueryArgs. Still used by getTaskQueryArgs until projects is refactored */
-export type BlockingWorkPackagesQueryArgs = ReturnType<typeof getBlockingWorkPackagesArgs>;
 
 export const getBaseTaskLabelQueryArgs = () =>
   Prisma.validator<Prisma.Task_LabelDefaultArgs>()({
@@ -105,42 +101,5 @@ export const getTaskHomeCardQueryArgs = () =>
           workPackage: { select: { project: { select: { wbsElement: { select: { name: true } } } } } }
         }
       }
-    }
-  });
-
-/**
- * The work package (if any) that this task's own work package is blocked by, along with just enough
- * of its tasks to tell whether it's still incomplete
- * @deprecated Use getTaskBlockingWorkPackagesQueryArgs. Still used by getTaskQueryArgs until projects is refactored
- */
-export const getBlockingWorkPackagesArgs = () =>
-  Prisma.validator<Prisma.WBS_ElementDefaultArgs>()({
-    include: {
-      workPackage: {
-        select: {
-          blockedBy: {
-            select: {
-              carNumber: true,
-              projectNumber: true,
-              workPackageNumber: true,
-              name: true,
-              tasks: { where: { dateDeleted: null }, select: { status: true } }
-            }
-          }
-        }
-      }
-    }
-  });
-
-/** @deprecated Use getBaseTaskQueryArgs or a per-endpoint model's query args. Still used by projects.query-args.ts (Project, ProjectGantt) until projects is refactored */
-export const getTaskQueryArgs = () =>
-  Prisma.validator<Prisma.TaskDefaultArgs>()({
-    include: {
-      wbsElement: getBlockingWorkPackagesArgs(),
-      createdBy: getUserPreviewWithEmailQueryArgs(),
-      deletedBy: getUserPreviewWithEmailQueryArgs(),
-      assignees: getUserPreviewWithEmailQueryArgs(),
-      labels: getBaseTaskLabelQueryArgs(),
-      blockedBy: getTaskBlockedByQueryArgs()
     }
   });

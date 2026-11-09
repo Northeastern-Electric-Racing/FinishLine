@@ -4,7 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { Project, isGuest, isAdmin, isLeadership } from 'shared';
+import { ProjectDetail, isGuest, isAdmin, isLeadership } from 'shared';
 import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
 import ProjectDetails from './ProjectDetails';
 import { routes } from '../../../utils/routes';
@@ -18,7 +18,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ProjectGantt from './ProjectGantt';
-import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
@@ -37,7 +37,7 @@ import { useMyTeamAsHead } from '../../../hooks/teams.hooks';
 import { ProjectRulesTab } from './ProjectRules/ProjectRulesTab';
 
 interface ProjectViewContainerProps {
-  project: Project;
+  project: ProjectDetail;
   enterEditMode: () => void;
 }
 
@@ -46,12 +46,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const toast = useToast();
   const history = useHistory();
   const { mutateAsync: mutateAsyncSetProjectTeam } = useSetProjectTeam(project.wbsNum);
-  const {
-    data: favoriteProjects,
-    isLoading: favoriteProjectsIsLoading,
-    isError: favoriteProjectsIsError,
-    error: favoriteProjectsError
-  } = useUsersFavoriteProjects(user.userId);
   const {
     data: materials,
     isLoading: materialsIsLoading,
@@ -72,16 +66,17 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const [, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tab, setTab] = useState(0);
 
-  if (favoriteProjectsIsError) return <ErrorPage message={favoriteProjectsError.message} />;
   if (materialsIsError) return <ErrorPage message={materialsError.message} />;
   if (teamAsHeadIdIsError) return <ErrorPage message={teamAsHeadIdError.message} />;
 
-  if (favoriteProjectsIsLoading || teamAsHeadIdIsLoading || !favoriteProjects || !materials || materialsIsLoading)
-    return <LoadingIndicator />;
+  if (teamAsHeadIdIsLoading || !materials || materialsIsLoading) return <LoadingIndicator />;
 
-  project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-
-  const projectIsFavorited = favoriteProjects.map((favoriteProject) => favoriteProject.id).includes(project.id);
+  // the tabs list work packages by start date; sorted on a copy because the project is react-query's cached data
+  const projectWithSortedWorkPackages = {
+    ...project,
+    workPackages: [...project.workPackages].sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
+  };
+  const projectIsFavorited = project.isFavorited;
 
   const handleDropdownClose = () => {
     setAnchorEl(null);
@@ -94,8 +89,9 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
 
   const handleAssignToMyTeam = async () => {
     try {
-      const successMessage = await mutateAsyncSetProjectTeam(teamAsHeadId);
-      toast.success(successMessage.message);
+      if (!teamAsHeadId) return;
+      await mutateAsyncSetProjectTeam(teamAsHeadId);
+      toast.success(`Project ${wbsPipe(project.wbsNum)}'s teams successfully updated.`);
       handleDropdownClose();
     } catch (e) {
       if (e instanceof Error) {
@@ -191,7 +187,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
       >
         {tab === 0 ? (
-          <ProjectDetails project={project} />
+          <ProjectDetails project={projectWithSortedWorkPackages} />
         ) : tab === 1 ? (
           <TaskList project={project} isGuest={true} />
         ) : (
@@ -226,7 +222,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
     >
       {tab === 0 ? (
-        <ProjectDetails project={project} />
+        <ProjectDetails project={projectWithSortedWorkPackages} />
       ) : tab === 1 ? (
         <TaskList project={project} isGuest={false} />
       ) : tab === 2 ? (
@@ -234,7 +230,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       ) : tab === 3 ? (
         <ChangesList changes={project.changes} />
       ) : tab === 4 ? (
-        <ProjectGantt workPackages={project.workPackages} />
+        <ProjectGantt workPackages={projectWithSortedWorkPackages.workPackages} />
       ) : tab === 5 ? (
         <ChangeRequestTab wbsElement={project} />
       ) : tab === 6 ? (

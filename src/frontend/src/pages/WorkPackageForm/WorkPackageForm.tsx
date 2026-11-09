@@ -1,4 +1,4 @@
-import { WbsNumber, WorkPackage, isGuest, isWorkPackageWbs, wbsPipe } from 'shared';
+import { WbsNumber, isGuest, isWorkPackageWbs, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
 import { bulletsToObject } from '../../utils/form';
 import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
@@ -64,7 +64,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
       }
     : undefined;
 
-  const blockedByToAutocompleteOption = (workPackage: WorkPackage) => {
+  const blockedByToAutocompleteOption = (workPackage: { wbsNum: WbsNumber; name: string }) => {
     return { id: wbsPipe(workPackage.wbsNum), label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}` };
   };
 

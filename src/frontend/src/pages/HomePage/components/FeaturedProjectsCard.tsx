@@ -1,9 +1,9 @@
 import { alpha, Box, Card, CardContent, Chip, Stack, Typography, useTheme, useMediaQuery } from '@mui/material';
-import { wbsNamePipe, ProjectPreview } from 'shared';
+import { wbsNamePipe, ProjectListItem } from 'shared';
 import { datePipe } from '../../../utils/pipes';
 
 interface ProjectCardProps {
-  project: ProjectPreview;
+  project: ProjectListItem;
 }
 
 const FeaturedProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {

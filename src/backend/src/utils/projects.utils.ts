@@ -11,7 +11,6 @@ import {
 import { linkToChangeListValue, updateLinks } from './links.utils.js';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
-import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args.js';
 
 export type ProjectWithId = {
   projectId: String;
@@ -209,7 +208,7 @@ export const updateProjectAndCreateChanges = async (
   }
 
   // update the project with the input fields
-  const updatedProject = await prisma.project.update({
+  await prisma.project.update({
     where: {
       wbsElementId
     },
@@ -224,7 +223,7 @@ export const updateProjectAndCreateChanges = async (
         }
       }
     },
-    ...getProjectQueryArgs(organizationId)
+    select: { projectId: true }
   });
 
   // Update any deleted description bullets to have their date deleted as right now
@@ -261,7 +260,7 @@ export const updateProjectAndCreateChanges = async (
     data: changesJson
   });
 
-  return { project: updatedProject, wbsElementId };
+  return { wbsElementId };
 };
 /**
  * Check if given assembly, material type, manufacturer, and unit exist in the app database
@@ -308,7 +307,7 @@ export const checkMaterialInputs = async (
 export const getProjects = async (projectIds: string[], organizationId: string) => {
   const projects = await prisma.project.findMany({
     where: { projectId: { in: projectIds }, wbsElement: { organizationId, dateDeleted: null } },
-    ...getProjectQueryArgs(organizationId)
+    select: { projectId: true }
   });
 
   validateFoundProjects(projects, projectIds);
@@ -321,7 +320,7 @@ export const getProjects = async (projectIds: string[], organizationId: string) 
  * @param projects the projects found in the database
  * @param projectIds the requested projectIds to retrieve
  */
-const validateFoundProjects = (projects: Project[], projectIds: string[]) => {
+const validateFoundProjects = (projects: Pick<Project, 'projectId'>[], projectIds: string[]) => {
   if (projects.length !== projectIds.length) {
     const primsaProjectIds = projects.map((project) => project.projectId);
     const missingProjectIds = projectIds.filter((id) => !primsaProjectIds.includes(id));

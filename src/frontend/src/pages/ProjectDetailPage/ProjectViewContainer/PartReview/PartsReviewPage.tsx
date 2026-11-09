@@ -2,7 +2,7 @@ import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { Grid, Box, FormControlLabel, Autocomplete, TextField, Button, Chip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useAllMembers, useCurrentUser } from '../../../../hooks/users.hooks';
-import { isAtLeastRank, Project, rankUserRole, Review_Status, wbsPipe } from 'shared';
+import { isAtLeastRank, ProjectDetail, rankUserRole, Review_Status, wbsPipe } from 'shared';
 import NERSwitch from '../../../../components/NERSwitch';
 import { useGetAllPartTags, usePartsFromProject } from '../../../../hooks/part-review.hooks';
 import ErrorPage from '../../../ErrorPage';
@@ -13,7 +13,7 @@ import { PartPreviewCard } from './PartReviewComponents/PartPreviewCard';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 
-const PartsReviewPage = ({ project }: { project: Project }) => {
+const PartsReviewPage = ({ project }: { project: ProjectDetail }) => {
   const currentUser = useCurrentUser();
   const [showSubmissionGuide, setShowSubmissionGuide] = useState(() => {
     const userRole = currentUser.role;

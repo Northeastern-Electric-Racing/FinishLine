@@ -1,4 +1,4 @@
-import { WbsElement } from 'shared';
+import { WbsNumber } from 'shared';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import ErrorPage from '../../../../ErrorPage';
@@ -8,7 +8,7 @@ import { useCreateAssembly } from '../../../../../hooks/bom.hooks';
 export interface CreateAssemblyModalProps {
   open: boolean;
   onHide: () => void;
-  wbsElement: WbsElement;
+  wbsElement: { wbsNum: WbsNumber };
 }
 
 const CreateAssemblyModal: React.FC<CreateAssemblyModalProps> = ({ open, onHide, wbsElement }) => {

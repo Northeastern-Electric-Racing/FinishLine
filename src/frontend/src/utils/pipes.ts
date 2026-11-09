@@ -9,8 +9,6 @@ import {
   isProject,
   IndexCode,
   AccountCode,
-  WorkPackagePreview,
-  WbsElementPreview,
   UserPreview,
   ScheduleSlot,
   Event,
@@ -153,11 +151,14 @@ export const centsToDollar = (cents: number) => {
   return (cents / 100.0).toFixed(2);
 };
 
-export const projectNamePipe = (wbsElement: WbsElementPreview) => {
-  return isProject(wbsElement) ? wbsElement.name : (wbsElement as WorkPackagePreview).projectName;
+// a work package carries its project's name; a project is its own
+type NamedWbsElement = { wbsNum: WbsNumber; name: string; projectName?: string };
+
+export const projectNamePipe = (wbsElement: NamedWbsElement) => {
+  return isProject(wbsElement) ? wbsElement.name : (wbsElement.projectName ?? '');
 };
 
-export const projectWbsNamePipe = (wbsElement: WbsElementPreview) => {
+export const projectWbsNamePipe = (wbsElement: NamedWbsElement) => {
   return `${projectWbsPipe(wbsElement.wbsNum)} - ${projectNamePipe(wbsElement)}`;
 };
 

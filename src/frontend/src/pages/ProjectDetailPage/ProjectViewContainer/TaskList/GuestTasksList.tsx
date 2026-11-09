@@ -1,8 +1,11 @@
 import { Typography } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
-import { Project, TaskPriority, TaskStatus } from 'shared';
+import { BaseTask, TaskPriority, TaskStatus, WbsNumber } from 'shared';
+import { useFilterTasks } from '../../../../hooks/tasks.hooks';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
+import ErrorPage from '../../../ErrorPage';
 
-const TaskCard = ({ task }: { task: any }) => {
+const TaskCard = ({ task }: { task: Pick<BaseTask, 'title' | 'priority'> }) => {
   const theme = useTheme();
   const getPriorityColor = (priority: TaskPriority) => {
     switch (priority) {
@@ -42,10 +45,16 @@ const TaskCard = ({ task }: { task: any }) => {
   );
 };
 
-export const GuestsTasksList = ({ project }: { project: Project }) => {
-  const backLogTasks = project.tasks.filter((task) => task.status === TaskStatus.IN_BACKLOG);
-  const inProgressTasks = project.tasks.filter((task) => task.status === TaskStatus.IN_PROGRESS);
-  const doneTasks = project.tasks.filter((task) => task.status === TaskStatus.DONE);
+// the same tasks the desktop board shows for the project (its own and its work packages')
+export const GuestsTasksList = ({ wbsNum }: { wbsNum: WbsNumber }) => {
+  const { data: tasks, isLoading, isError, error } = useFilterTasks({ wbsNum, andMemberTeam: true });
+
+  if (isError) return <ErrorPage message={error.message} />;
+  if (isLoading || !tasks) return <LoadingIndicator />;
+
+  const backLogTasks = tasks.filter((task) => task.status === TaskStatus.IN_BACKLOG);
+  const inProgressTasks = tasks.filter((task) => task.status === TaskStatus.IN_PROGRESS);
+  const doneTasks = tasks.filter((task) => task.status === TaskStatus.DONE);
 
   return (
     <Box justifyContent="space-between" mt={3}>
@@ -61,7 +70,7 @@ export const GuestsTasksList = ({ project }: { project: Project }) => {
                 Back Log
               </Typography>
               {backLogTasks.map((task) => (
-                <TaskCard task={task} />
+                <TaskCard key={task.taskId} task={task} />
               ))}
             </>
           )}
@@ -71,7 +80,7 @@ export const GuestsTasksList = ({ project }: { project: Project }) => {
                 In Progress
               </Typography>
               {inProgressTasks.map((task) => (
-                <TaskCard task={task} />
+                <TaskCard key={task.taskId} task={task} />
               ))}
             </>
           )}
@@ -81,7 +90,7 @@ export const GuestsTasksList = ({ project }: { project: Project }) => {
                 Done
               </Typography>
               {doneTasks.map((task) => (
-                <TaskCard task={task} />
+                <TaskCard key={task.taskId} task={task} />
               ))}
             </>
           )}

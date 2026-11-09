@@ -3,14 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WorkPackage } from 'shared';
+import { GanttWorkPackage } from 'shared';
 import { Box } from '@mui/material';
 import { add, sub } from 'date-fns';
 import GanttChart from '../../GanttPage/GanttChart/GanttChart';
 import { GanttCollection, transformWorkPackageToGanttTask } from '../../../utils/gantt.utils';
 
 interface ProjectGanttProps {
-  workPackages: WorkPackage[];
+  workPackages: GanttWorkPackage[];
 }
 
 const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
@@ -25,7 +25,7 @@ const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
     { months: 6 }
   );
 
-  const collection: GanttCollection<string, WorkPackage> = {
+  const collection: GanttCollection<string, GanttWorkPackage> = {
     id: 'project-gantt',
     element: 'Work Packages',
     title: 'Work Packages',

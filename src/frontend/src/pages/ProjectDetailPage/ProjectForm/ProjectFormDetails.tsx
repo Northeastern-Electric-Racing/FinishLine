@@ -1,4 +1,4 @@
-import { Project, User } from 'shared';
+import { ProjectDetail, User } from 'shared';
 import { Box, FormControl, FormHelperText, FormLabel, Grid, MenuItem, TextField, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { fullNamePipe } from '../../../utils/pipes';
@@ -14,7 +14,7 @@ interface ProjectEditDetailsProps {
   users: User[];
   control: Control<ProjectFormInput>;
   errors: FieldErrorsImpl<ProjectFormInput>;
-  project?: Project;
+  project?: ProjectDetail;
   managerId?: string;
   leadId?: string;
   setManagerId: (id?: string) => void;

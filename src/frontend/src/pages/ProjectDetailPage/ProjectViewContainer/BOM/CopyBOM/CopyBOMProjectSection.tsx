@@ -2,13 +2,13 @@ import React from 'react';
 import { Typography } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { useState } from 'react';
-import { ProjectPreview } from 'shared';
+import { ProjectListItem } from 'shared';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import { useGetAssembliesForWbsElement, useGetMaterialsForWbsElement } from '../../../../../hooks/bom.hooks';
 import ErrorPage from '../../../../ErrorPage';
 
 interface CopyBOMProjectSectionProps {
-  selectedProject: ProjectPreview;
+  selectedProject: ProjectListItem;
   onSelectionChange: (materialIds: string[]) => void;
 }
 

@@ -6,7 +6,6 @@ import {
   isLeadership,
   PartReviewCommonMistake,
   PartTag,
-  Project,
   WbsNumber,
   isAtLeastRank,
   RoleEnum,
@@ -76,14 +75,14 @@ export default class PartReviewService {
    * @returns a single Part
    */
   static async getPart(organization: Organization, user: User, wbsNumber: WbsNumber, indexNum: string) {
-    const project: Project = await ProjectsService.getSingleProject(wbsNumber, organization);
+    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
     const index = parseInt(indexNum);
     const part = await prisma.part.findUnique({
-      where: { ProjectId_and_index: { projectId: project.id, index } },
+      where: { ProjectId_and_index: { projectId: project.projectId, index } },
       ...getPartQueryArgs(organization.organizationId, user.userId)
     });
 
-    if (!part) throw new NotFoundException('Part', `projectId: ${project.id} and index number: ${indexNum}`);
+    if (!part) throw new NotFoundException('Part', `projectId: ${project.projectId} and index number: ${indexNum}`);
 
     if (part.dateDeleted) throw new DeletedException('Part', part.partId);
 
@@ -102,10 +101,10 @@ export default class PartReviewService {
    * @returns all the parts from the given project
    */
   static async getAllPartsForProject(wbsNumber: WbsNumber, organization: Organization, user: User) {
-    const project: Project = await ProjectsService.getSingleProject(wbsNumber, organization);
+    const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
 
     const parts = await prisma.part.findMany({
-      where: { projectId: project.id, dateDeleted: null },
+      where: { projectId: project.projectId, dateDeleted: null },
       ...getPartQueryArgs(organization.organizationId, user.userId)
     });
 

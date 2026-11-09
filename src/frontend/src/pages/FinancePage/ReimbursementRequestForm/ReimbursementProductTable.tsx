@@ -27,7 +27,7 @@ import {
   IndexCode,
   CreateRefundSourceArgs,
   Material,
-  ProjectPreview
+  ProjectListItem
 } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
@@ -59,7 +59,7 @@ interface ReimbursementProductTableProps {
   secondRefundSourceIndexCode?: IndexCode;
   firstRefundSourceName?: string;
   secondRefundSourceName?: string;
-  allProjects: ProjectPreview[];
+  allProjects: ProjectListItem[];
   applySplitShippingToProducts: (totalShipping?: number) => void;
   isEditing?: boolean;
 }
@@ -173,7 +173,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   const [showCreateMaterialModal, setShowCreateMaterialModal] = useState(false);
   const [currentProductIndex, setCurrentProductIndex] = useState<number | null>(null);
-  const [currentProject, setCurrentProject] = useState<ProjectPreview | null>(null);
+  const [currentProject, setCurrentProject] = useState<ProjectListItem | null>(null);
   const [pendingMaterialIndices, setPendingMaterialIndices] = useState<Set<number>>(new Set());
 
   const onCostBlurHandler = (value: number, index: number) => {

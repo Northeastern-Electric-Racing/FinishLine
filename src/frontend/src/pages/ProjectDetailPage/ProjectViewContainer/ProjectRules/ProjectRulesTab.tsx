@@ -19,7 +19,7 @@ import {
   IconButton,
   Tooltip
 } from '@mui/material';
-import { isHead, Project, ProjectRule, Rule, RuleStatus, isLeadership } from 'shared';
+import { isHead, ProjectDetail, ProjectRule, Rule, RuleStatus, isLeadership } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import RuleRow from '../../../RulesPage/RuleRow';
@@ -46,10 +46,9 @@ import { routes } from '../../../../utils/routes';
 import RuleStatusTag from '../../../RulesPage/components/RuleStatusTag';
 import { NERButton } from '../../../../components/NERButton';
 import { compareRuleCodes } from '../../../../utils/rules.utils';
-import { isUserOnTeam } from '../../../../utils/teams.utils';
 
 interface ProjectRulesTabProps {
-  project: Project;
+  project: ProjectDetail;
 }
 
 export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
@@ -106,7 +105,7 @@ export const ProjectRulesTab = ({ project }: ProjectRulesTabProps) => {
   const teamNames = project.teams.map((team) => team.teamName);
 
   // leadership can update status anywhere; members can only update it for projects whose team they're on
-  const canUpdateStatus = isLeadership(user.role) || project.teams.some((team) => isUserOnTeam(team, user));
+  const canUpdateStatus = isLeadership(user.role) || project.isOnProjectTeam;
 
   // Convert project rules to rules for display, merging in each rule's local status for this project
   // Sorted by rule code so both top-level rows and their children render in stable numeric order

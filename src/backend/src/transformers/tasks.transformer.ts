@@ -1,25 +1,15 @@
 import { Prisma } from '@prisma/client';
-import {
-  BaseTask,
-  BlockingWorkPackagePreview,
-  Task,
-  TaskBlockerPreview,
-  TaskBoardItem,
-  TaskHomeCard,
-  TaskLabel
-} from 'shared';
+import { BaseTask, BlockingWorkPackagePreview, TaskBlockerPreview, TaskBoardItem, TaskHomeCard, TaskLabel } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
 import { convertTaskPriority, convertTaskStatus } from '../utils/tasks.utils.js';
-import { baseUserTransformer, userPreviewWithEmailTransformer } from './user.transformer.js';
+import { baseUserTransformer } from './user.transformer.js';
 import {
   BaseTaskQueryArgs,
   TaskBoardItemQueryArgs,
   TaskHomeCardQueryArgs,
   BaseTaskLabelQueryArgs,
-  TaskQueryArgs,
   TaskBlockedByQueryArgs,
-  TaskBlockingWorkPackagesQueryArgs,
-  BlockingWorkPackagesQueryArgs
+  TaskBlockingWorkPackagesQueryArgs
 } from '../prisma-query-args/tasks.query-args.js';
 
 export const taskBlockedByTransformer = (task: Prisma.TaskGetPayload<TaskBlockedByQueryArgs>): TaskBlockerPreview => ({
@@ -35,20 +25,6 @@ export const taskBlockingWorkPackagesTransformer = (
 ): BlockingWorkPackagePreview[] =>
   (workPackage?.blockedBy ?? [])
     .filter((blocker) => blocker._count.tasks > 0)
-    .map((blocker) => ({
-      wbsNum: wbsNumOf(blocker),
-      name: blocker.name
-    }));
-
-/**
- * Only surfaces a blocking work package if it still has at least one non-done task
- * @deprecated Use taskBlockingWorkPackagesTransformer. Still used by taskTransformer until projects is refactored
- */
-export const getBlockingWorkPackagePreviews = (
-  wbsElement: Pick<Prisma.WBS_ElementGetPayload<BlockingWorkPackagesQueryArgs>, 'workPackage'>
-): BlockingWorkPackagePreview[] =>
-  (wbsElement.workPackage?.blockedBy ?? [])
-    .filter((blocker) => blocker.tasks.some((t) => t.status !== 'DONE'))
     .map((blocker) => ({
       wbsNum: wbsNumOf(blocker),
       name: blocker.name
@@ -100,34 +76,8 @@ export const taskHomeCardTransformer = (task: Prisma.TaskGetPayload<TaskHomeCard
   projectName: taskProjectName(task.wbsElement)
 });
 
-/** @deprecated Use baseTaskTransformer or a per-endpoint model's transformer. Still used by projects.transformer.ts until projects is refactored */
-export const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
-  const wbsNum = wbsNumOf(task.wbsElement);
-  return {
-    taskId: task.taskId,
-    wbsNum,
-    wbsName: task.wbsElement.name,
-    title: task.title,
-    notes: task.notes,
-    deadline: task.deadline ?? undefined,
-    startDate: task.startDate ?? undefined,
-    priority: convertTaskPriority(task.priority),
-    status: convertTaskStatus(task.status),
-    createdBy: userPreviewWithEmailTransformer(task.createdBy),
-    assignees: task.assignees.map(userPreviewWithEmailTransformer),
-    labels: task.labels.map(baseTaskLabelTransformer),
-    blockedBy: task.blockedBy.map(taskBlockedByTransformer),
-    blockedByWorkPackages: getBlockingWorkPackagePreviews(task.wbsElement),
-    dateDeleted: task.dateDeleted ?? undefined,
-    dateCreated: task.dateCreated,
-    deletedBy: task.deletedBy ? userPreviewWithEmailTransformer(task.deletedBy) : undefined
-  };
-};
-
 export const baseTaskLabelTransformer = (label: Prisma.Task_LabelGetPayload<BaseTaskLabelQueryArgs>): TaskLabel => ({
   taskLabelId: label.taskLabelId,
   name: label.name,
   colorHexCode: label.colorHexCode
 });
-
-export default taskTransformer;

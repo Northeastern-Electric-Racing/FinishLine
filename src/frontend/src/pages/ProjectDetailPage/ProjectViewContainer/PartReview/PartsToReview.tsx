@@ -1,11 +1,11 @@
-import { Project, PartPreview } from 'shared';
+import { ProjectDetail, PartPreview } from 'shared';
 import { Box } from '@mui/system';
 import { Grid, Typography } from '@mui/material';
 import { wbsPipe } from 'shared';
 import PartDisplay from '../../../PartPage/PartPageComponents/PartDisplay';
 
 interface PartsToReviewProps {
-  project: Project;
+  project: ProjectDetail;
   parts: PartPreview[];
   formatStyle: 'compact' | 'standard' | 'full';
   title: string;

@@ -8,7 +8,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import { Box, Card, CardContent, Link, Typography, Grid } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { calculateDaysLeftInProject, daysBetween, ProjectOverview, WbsElementStatus, wbsPipe } from 'shared';
+import { calculateDaysLeftInProject, daysBetween, ProjectOverviewCard, WbsElementStatus, wbsPipe } from 'shared';
 import { daysOrWeeksLeftOrLate, emDashPipe, fullNamePipe } from '../utils/pipes';
 import WorkPackageStageChip from './WorkPackageStageChip';
 import FavoriteProjectButton from './FavoriteProjectButton';
@@ -17,12 +17,12 @@ import DoneIcon from '@mui/icons-material/Done';
 import LinkView from './Link/LinkView';
 
 interface ProjectDetailCardProps {
-  project: ProjectOverview;
+  project: ProjectOverviewCard;
   projectIsFavorited: boolean;
 }
 
 const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectIsFavorited }) => {
-  const containsActiveWorkPackages = project.workPackages.filter((wp) => wp.status === WbsElementStatus.Active).length;
+  const containsActiveWorkPackages = project.activeWorkPackages.length > 0;
 
   const ProjectDetailCardTitle = () => (
     <Grid container alignItems="center">
@@ -41,7 +41,7 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
 
   const daysLeft = calculateDaysLeftInProject(project);
 
-  const confluenceLink = project.links.find((link) => link.linkType.name === 'Confluence');
+  const { confluenceLink } = project;
 
   const ProjectDetailCardDetails = () => (
     <Grid container sx={{ marginTop: '0.5rem' }}>
@@ -83,8 +83,7 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
     <Box sx={{ marginTop: 2 }}>
       <Typography variant="h6">Active Work Packages:</Typography>
       {containsActiveWorkPackages ? (
-        project.workPackages
-          .filter((workPackage) => workPackage.status === WbsElementStatus.Active)
+        [...project.activeWorkPackages]
           .sort((a, b) => a.endDate.getTime() - b.endDate.getTime())
           .map((workPackage) => {
             const workPackageDaysLeft = daysBetween(workPackage.endDate, new Date());
