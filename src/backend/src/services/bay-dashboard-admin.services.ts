@@ -7,6 +7,7 @@ import {
   BayDashboardWidgetSize,
   BayDashboardWidgetType,
   isHead,
+  TEXT_FIELD_MAX_LENGTH,
   User
 } from 'shared';
 import prisma from '../prisma/prisma.js';
@@ -124,9 +125,15 @@ export default class BayDashboardAdminService {
         }
 
         // only text field widgets carry text
-        const hasText = !!slot.widget.text?.trim();
-        if (slot.widget.type === BayDashboardWidgetType.TEXT_FIELD && !hasText) {
+        const text = slot.widget.text?.trim();
+        if (slot.widget.type === BayDashboardWidgetType.TEXT_FIELD && !text) {
           throw new HttpException(400, `Slot position ${slot.position}: text field widgets must have text`);
+        }
+        if (text && text.length > TEXT_FIELD_MAX_LENGTH) {
+          throw new HttpException(
+            400,
+            `Slot position ${slot.position}: text field widgets can have at most ${TEXT_FIELD_MAX_LENGTH} characters`
+          );
         }
         if (slot.widget.type !== BayDashboardWidgetType.TEXT_FIELD && slot.widget.text) {
           throw new HttpException(400, `Slot position ${slot.position}: only text field widgets can have text`);
@@ -147,7 +154,9 @@ export default class BayDashboardAdminService {
       return {
         position,
         size: SLOT_SIZE_BY_POSITION[position],
-        widget: submitted?.widget ?? { type: DEFAULT_WIDGET_TYPE_BY_POSITION[position], text: undefined }
+        widget: submitted?.widget
+          ? { type: submitted.widget.type, text: submitted.widget.text?.trim() }
+          : { type: DEFAULT_WIDGET_TYPE_BY_POSITION[position], text: undefined }
       };
     });
 

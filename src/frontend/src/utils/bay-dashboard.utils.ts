@@ -57,8 +57,15 @@ const defaultSlot = (size: BayDashboardWidgetSize, type: BayDashboardWidgetType)
   widgets: [{ bayDashboardWidgetId: `default-${slotPositions[size]}-0`, type, order: 0 }]
 });
 
+// A widget picked for a size in the Admin Tools. 
+// Only text field widgets carry text.
+export interface BayDashboardWidgetChoice {
+  type: BayDashboardWidgetType;
+  text?: string;
+}
+
 // the widget picked for each size in the Admin Tools
-export type BayDashboardWidgetSelection = Partial<Record<BayDashboardWidgetSize, BayDashboardWidgetType>>;
+export type BayDashboardWidgetSelection = Partial<Record<BayDashboardWidgetSize, BayDashboardWidgetChoice>>;
 
 /**
  * Puts the widget picked for each size into that size's slot
@@ -72,8 +79,8 @@ export const applyWidgetSelection = (
 
   const selectedSlots: BayDashboardSlot[] = [];
   for (const size of bayDashboardWidgetSizes) {
-    const type = selection[size];
-    if (!type) continue;
+    const choice = selection[size];
+    if (!choice) continue;
 
     const existingSlot = slots.find((slot) => slot.size === size);
     selectedSlots.push({
@@ -81,11 +88,28 @@ export const applyWidgetSelection = (
       size,
       position: slotPositions[size],
       rotationSeconds: existingSlot?.rotationSeconds ?? 30,
-      widgets: [{ bayDashboardWidgetId: `preview-${size}-0`, type, order: 0 }]
+      widgets: [{ bayDashboardWidgetId: `preview-${size}-0`, type: choice.type, order: 0, text: choice.text }]
     });
   }
 
   return [...untouchedSlots, ...selectedSlots].sort((a, b) => a.position - b.position);
+};
+
+/**
+ * The text a size's text field widget displays.
+ * The text selected in the selection for that size, 
+ * otherwise the text the TV is showing for that size.
+ */
+export const getTextFieldText = (
+  slots: BayDashboardSlot[],
+  selection: BayDashboardWidgetSelection,
+  size: BayDashboardWidgetSize
+): string | undefined => {
+  const choice = selection[size];
+  if (choice) return choice.type === BayDashboardWidgetType.TEXT_FIELD ? choice.text : undefined;
+
+  const widget = slots.find((slot) => slot.size === size)?.widgets[0];
+  return widget?.type === BayDashboardWidgetType.TEXT_FIELD ? widget.text : undefined;
 };
 
 /**

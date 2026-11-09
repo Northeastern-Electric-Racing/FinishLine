@@ -7,10 +7,9 @@ import { FormControl, FormHelperText, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { TEXT_FIELD_MAX_LENGTH } from 'shared';
 import NERFormModal from '../../../components/NERFormModal';
 import ReactHookTextField from '../../../components/ReactHookTextField';
-
-export const TEXT_FIELD_MAX_LENGTH = 100;
 
 interface TextFieldWidgetFormValues {
   text: string;
