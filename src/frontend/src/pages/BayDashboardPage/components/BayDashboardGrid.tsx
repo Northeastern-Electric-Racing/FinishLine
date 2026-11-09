@@ -4,14 +4,17 @@
  */
 
 import { Box } from '@mui/material';
-import { BayDashboardWidgetSize, PublicBayDashboardSlot } from 'shared';
+import { BayDashboardWidgetSize, PublicBayDashboardSlot, PublicBayDashboardWidget } from 'shared';
 import { BAY_DASHBOARD_BACKGROUND, defaultBayDashboardSlots, widgetHeights } from '../../../utils/bay-dashboard.utils';
 import BayDashboardHeader from './BayDashboardHeader';
 import BayDashboardWidgetView from './widgets/BayDashboardWidgetView';
 import CountdownWidget from './widgets/CountdownWidget';
+
 interface BayDashboardGridProps {
   slots: PublicBayDashboardSlot[];
   slug: string;
+  // optional content drawn over a slot's widget, such as an edit button, shown in admin tools but not on TV display
+  renderSlotAction?: (size: BayDashboardWidgetSize, widget: PublicBayDashboardWidget) => React.ReactNode;
 }
 
 const gridAreas: Record<BayDashboardWidgetSize, string> = {
@@ -29,7 +32,7 @@ const gridRows = `60fr 380fr ${MEDIUM_HEIGHT}fr ${SMALL_HEIGHT}fr`;
  * The Big/Medium/Small widget grid the TV renders. Fills the width of its parent at the TV's 16:9 shape,
  * so the preview is a scaled down copy of the TV.
  */
-const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, slug }) => {
+const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, slug, renderSlotAction }) => {
   return (
     <Box sx={{ containerType: 'inline-size', width: '100%' }}>
       <Box
@@ -55,8 +58,9 @@ const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, slug }) => {
           const widget = slots.find((slot) => slot.size === size)?.widgets[0] ?? defaultWidget;
 
           return (
-            <Box key={position} sx={{ gridArea: gridAreas[size], minWidth: 0, minHeight: 0 }}>
+            <Box key={position} sx={{ gridArea: gridAreas[size], minWidth: 0, minHeight: 0, position: 'relative' }}>
               <BayDashboardWidgetView widget={widget} size={size} slug={slug} fallbackWidget={defaultWidget} />
+              {renderSlotAction?.(size, widget)}
             </Box>
           );
         })}

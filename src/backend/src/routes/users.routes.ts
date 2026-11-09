@@ -69,12 +69,5 @@ userRouter.get(
   UsersController.getUserBusyTimes
 );
 userRouter.get('/:userId/tasks', UsersController.getUserTasks);
-userRouter.post(
-  '/tasks/get-many',
-  body('userIds').isArray(),
-  nonEmptyString(body('userIds.*')),
-  validateInputs,
-  UsersController.getManyUserTasks
-);
 
 export default userRouter;

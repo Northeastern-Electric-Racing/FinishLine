@@ -3,12 +3,18 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, IconButton, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { useState } from 'react';
 import { BayDashboardCountdown, BayDashboardCountdownCreateArgs, formatDateOnly } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import NERDeleteModal from '../../../components/NERDeleteModal';
 import { NERButton } from '../../../components/NERButton';
-import { useCreateBayDashboardCountdown, useGetBayDashboardCountdowns } from '../../../hooks/bay-dashboard.hooks';
+import {
+  useCreateBayDashboardCountdown,
+  useDeleteBayDashboardCountdown,
+  useGetBayDashboardCountdowns
+} from '../../../hooks/bay-dashboard.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { pickDisplayedCountdowns } from '../../../utils/bay-dashboard-countdown.utils';
 import ErrorPage from '../../ErrorPage';
@@ -39,12 +45,18 @@ const displayLabel = (
 };
 
 /**
- * The bay dashboard's countdowns in the Admin Tools, with a button to add a new one
+ * The bay dashboard's countdowns in the Admin Tools, with a button to add a new one and a trash icon to delete each
  */
 const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [countdownToDelete, setCountdownToDelete] = useState<BayDashboardCountdown | undefined>(undefined);
   const { data: countdowns, isLoading, isError, error } = useGetBayDashboardCountdowns(slug);
   const { mutateAsync: createCountdown } = useCreateBayDashboardCountdown(slug);
+  const {
+    mutate: deleteCountdown,
+    isLoading: isDeleting,
+    variables: deletingCountdownId
+  } = useDeleteBayDashboardCountdown(slug);
   const toast = useToast();
 
   if (isError) return <ErrorPage message={error.message} />;
@@ -58,9 +70,24 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
     toast.success('Successfully created countdown. The TV display has been updated.');
   };
 
+  const handleDelete = (countdownId: string) => {
+    setCountdownToDelete(undefined);
+    deleteCountdown(countdownId);
+  };
+
   return (
     <Box>
       <CountdownFormModal open={showCreateModal} handleClose={() => setShowCreateModal(false)} onSubmit={handleCreate} />
+      <NERDeleteModal
+        open={!!countdownToDelete}
+        onHide={() => setCountdownToDelete(undefined)}
+        dataType={countdownToDelete ? `countdown ${countdownToDelete.name}` : 'countdown'}
+        onFormSubmit={() => {
+          if (countdownToDelete) {
+            handleDelete(countdownToDelete.bayDashboardCountdownId);
+          }
+        }}
+      />
       <Table sx={{ '& td': { borderBottom: 'none' } }}>
         <TableHead>
           <TableRow>
@@ -73,15 +100,16 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
             <TableCell align="center" sx={headerCellSx}>
               End Date
             </TableCell>
-            <TableCell align="center" sx={{ ...headerCellSx, borderRadius: '0px 10px 0px 0px' }}>
+            <TableCell align="center" sx={headerCellSx}>
               Display
             </TableCell>
+            <TableCell align="center" sx={{ ...headerCellSx, borderRadius: '0px 10px 0px 0px' }} />
           </TableRow>
         </TableHead>
         <TableBody>
           {sortedCountdowns.length === 0 && (
             <TableRow>
-              <TableCell colSpan={4} align="center">
+              <TableCell colSpan={5} align="center">
                 No countdowns yet
               </TableCell>
             </TableRow>
@@ -92,6 +120,15 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
               <TableCell align="center">{formatDateOnly(countdown.startDate)}</TableCell>
               <TableCell align="center">{countdown.endDate ? formatDateOnly(countdown.endDate) : '-'}</TableCell>
               <TableCell align="center">{displayLabel(countdown, displayed)}</TableCell>
+              <TableCell align="center">
+                <IconButton
+                  type="button"
+                  disabled={isDeleting && deletingCountdownId === countdown.bayDashboardCountdownId}
+                  onClick={() => setCountdownToDelete(countdown)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

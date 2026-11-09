@@ -9,9 +9,12 @@ import { User } from 'shared';
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
+// how long a login lasts, shared by the jwt and the cookie it's stored in so the two can't drift apart
+export const AUTH_TOKEN_LIFETIME_DAYS = 30;
+
 // generate a jwt using the user's first and last name
 export const generateAccessToken = (user: { userId: string; firstName: string; lastName: string }) => {
-  return jwt.sign(user, TOKEN_SECRET, { expiresIn: '7d' });
+  return jwt.sign(user, TOKEN_SECRET, { expiresIn: `${AUTH_TOKEN_LIFETIME_DAYS}d` });
 };
 
 // headers needed for production

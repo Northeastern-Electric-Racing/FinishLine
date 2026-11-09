@@ -13,7 +13,7 @@ export const widgetDetails: Record<Bay_Dashboard_Widget_Type, { displayName: str
     },
     TEXT_FIELD: {
       displayName: 'Text Field',
-      sizes: [Bay_Dashboard_Widget_Size.LARGE, Bay_Dashboard_Widget_Size.MEDIUM, Bay_Dashboard_Widget_Size.SMALL]
+      sizes: [Bay_Dashboard_Widget_Size.MEDIUM, Bay_Dashboard_Widget_Size.SMALL]
     },
     TIER_LIST: { displayName: 'Tier List', sizes: [] },
     MBTA_TRACKER: { displayName: 'MBTA Tracker', sizes: [] },

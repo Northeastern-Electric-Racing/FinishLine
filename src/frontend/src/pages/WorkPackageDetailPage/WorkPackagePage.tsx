@@ -23,8 +23,8 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
   const [editMode, setEditMode] = useState<boolean>(query.get('edit') === 'true');
   const auth = useAuth();
 
-  if (isLoading || !auth.user || !data) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
+  if (isLoading || !auth.user || !data) return <LoadingIndicator />;
 
   if (editMode) {
     return <EditWorkPackageForm wbsNum={wbsNum} workPackageName={data?.name} setPageMode={setEditMode} />;

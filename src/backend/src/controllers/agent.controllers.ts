@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { getRoleInOrganization } from '../utils/mcp-auth.utils.js';
 import McpService from '../services/mcp.services.js';
+import SlackServices from '../services/slack.services.js';
 
 export default class AgentController {
   /**
@@ -82,6 +83,22 @@ export default class AgentController {
       const events = await McpService.getEvents(new Date(startDate), new Date(endDate), req.organization);
 
       res.status(200).json(events);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async sendSlackMessage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { channelId, message } = req.body;
+      const sentMessage = await SlackServices.sendMessageToChannel(
+        req.currentUser.userId,
+        req.organization,
+        channelId,
+        message
+      );
+
+      res.status(200).json(sentMessage);
     } catch (error: unknown) {
       next(error);
     }

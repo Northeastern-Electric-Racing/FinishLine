@@ -10,7 +10,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import { Link as RouterLink } from 'react-router-dom';
-import { calculateEndDate, WorkPackage } from 'shared';
+import { BaseWorkPackage, calculateEndDate, WorkPackage } from 'shared';
 import { weeksPipe, wbsPipe, datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import WbsStatus from '../../../components/WbsStatus';
@@ -30,8 +30,8 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   const { data: dependencies, isError, isLoading, error } = useGetManyWorkPackages(workPackage.blockedBy);
   const theme = useTheme();
 
-  if (!dependencies || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
+  if (!dependencies || isLoading) return <LoadingIndicator />;
 
   const numMoreDescriptionBullets = workPackage.descriptionBullets.length - 3;
   const descriptionBulletList = (
@@ -46,7 +46,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
 
   const DependencyList = () => (
     <Box sx={{ fontWeight: 'normal', display: 'inline' }}>
-      {dependencies.map((wp: WorkPackage, idx) => (
+      {dependencies.map((wp: BaseWorkPackage, idx) => (
         <Typography display="inline" key={idx}>
           <Link component={RouterLink} fontWeight="bold" to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}>
             {`${wbsPipe(wp.wbsNum)} - ${wp.name}`}
