@@ -13,6 +13,9 @@ export interface User {
   role?: Role;
 }
 
+/** The minimum every consumer of a user needs: who they are and what to call them */
+export type BaseUser = Pick<User, 'userId' | 'firstName' | 'lastName'>;
+
 export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName'>;
 
 export type UserPreviewWithEmail = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email'>;
@@ -52,6 +55,7 @@ export type OrganizationPreview = Pick<
   | 'applicationLink'
   | 'platformDescription'
   | 'platformLogoImageId'
+  | 'activationBufferDays'
 >;
 
 export interface Organization {
@@ -72,6 +76,7 @@ export interface Organization {
   sponsorshipNotificationsSlackChannelId?: string;
   platformDescription: string;
   platformLogoImageId?: string;
+  activationBufferDays: number;
 }
 
 /**
@@ -86,6 +91,7 @@ export interface AuthenticatedUser {
   defaultTheme?: ThemeName;
   isFinance?: boolean;
   isAtLeastFinanceLead?: boolean;
+  isOperations?: boolean;
   organizations: string[];
   onboardingTeamTypeIds: string[];
   onboardedTeamTypeIds: string[];

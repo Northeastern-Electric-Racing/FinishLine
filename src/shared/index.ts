@@ -24,6 +24,7 @@ export * from './src/types/dashboard-types.js';
 export * from './src/types/api-token-types.js';
 export * from './src/types/mcp-types.js';
 export * from './src/types/exec-summary-shared-types.js';
+export * from './src/change-request-utils.js';
 
 export * from './src/validate-wbs.js';
 export * from './src/validate-slack-id.js';
@@ -36,6 +37,7 @@ export * from './src/word-count.js';
 export * from './src/permission-utils.js';
 export * from './src/types/bom-types.js';
 export * from './src/types/statistics-types.js';
+export * from './src/types/rules-types.js';
 
 export * from './src/utils.js';
 export * from './src/utils/task-filters.utils.js';

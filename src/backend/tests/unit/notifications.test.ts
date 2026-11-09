@@ -4,10 +4,17 @@ import prisma from '../../src/prisma/prisma.js';
 import { sendMessage } from '../../src/integrations/slack.js';
 import { getFrontendBaseUrl } from '../../src/utils/urls.utils.js';
 import { splitSlackMessage } from '../../src/utils/slack.utils.js';
+import { getEventChannelIds } from '../../src/utils/notifications.utils.js';
 
 vi.mock('../../src/integrations/slack.js', () => ({
   sendMessage: vi.fn()
 }));
+
+const makeEvent = (teamSlackIds: string[], wpTeamSlackIds: string[][], notificationChannelIds: string[] = []) => ({
+  notificationChannelIds,
+  teams: teamSlackIds.map((slackId) => ({ slackId })),
+  workPackages: wpTeamSlackIds.map((ids) => ({ project: { teams: ids.map((slackId) => ({ slackId })) } }))
+});
 
 const assignee = { userId: 'user-1', firstName: 'Bruce', lastName: 'Wayne', userSettings: { slackId: 'U123' } };
 
@@ -110,6 +117,27 @@ describe('Notifications Service Tests', () => {
     it('truncates a single line that is too long on its own', () => {
       const messages = splitSlackMessage(header, ['short', 'y'.repeat(5000)], '\n\n');
       expect(messages).toEqual(['HEADER\nshort', 'y'.repeat(3000)]);
+    });
+  });
+
+  describe('getEventChannelIds', () => {
+    it('collects event teams and work package project teams', () => {
+      const ids = getEventChannelIds(makeEvent(['C1'], [['C2'], ['C3']]));
+      expect([...ids].sort()).toEqual(['C1', 'C2', 'C3']);
+    });
+
+    it('includes standalone notification channels', () => {
+      const ids = getEventChannelIds(makeEvent([], [], ['C_NOTIFY']));
+      expect([...ids]).toEqual(['C_NOTIFY']);
+    });
+
+    it('dedupes a channel that is both a team and a notification channel', () => {
+      const ids = getEventChannelIds(makeEvent(['C1'], [['C1', 'C2']], ['C1', 'C3']));
+      expect([...ids].sort()).toEqual(['C1', 'C2', 'C3']);
+    });
+
+    it('skips empty ids', () => {
+      expect(getEventChannelIds(makeEvent([''], [['']], [''])).size).toBe(0);
     });
   });
 });

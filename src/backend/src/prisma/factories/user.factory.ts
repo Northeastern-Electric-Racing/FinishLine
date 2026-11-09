@@ -54,7 +54,7 @@ export const memberLikeCreateInput = (
     userSettings: {
       create: {
         defaultTheme: theme,
-        slackId: faker.string.alphanumeric(6)
+        slackId: process.env.SLACK_ID ?? faker.string.alphanumeric(6)
       }
     },
     userSecureSettings: {

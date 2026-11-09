@@ -83,7 +83,17 @@ const GRAPH_COLLECTION_BY_ID = '/statistics/graph-collections/:graphCollectionId
 /**************** Retrospective ****************/
 const RETROSPECTIVE = `/retrospective`;
 
+/**************** Executive Summaries ****************/
+const EXECUTIVE_SUMMARIES = `/executive-summaries`;
+
+/**************** Rules ****************/
+const RULES = `/rules`;
+const RULESET_BY_ID = RULES + `/:rulesetTypeId`;
+const RULESET_VIEW = RULES + `/ruleset/:rulesetId/view`;
+const RULESET_EDIT = RULES + `/ruleset/:rulesetId/edit`;
+
 export const routes = {
+  EXECUTIVE_SUMMARIES,
   BASE,
   LOGIN,
   INFO,
@@ -152,5 +162,10 @@ export const routes = {
 
   SPONSORS,
 
-  RETROSPECTIVE
+  RETROSPECTIVE,
+
+  RULES,
+  RULESET_BY_ID,
+  RULESET_VIEW,
+  RULESET_EDIT
 };
