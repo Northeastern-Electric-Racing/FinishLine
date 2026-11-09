@@ -19,11 +19,7 @@ interface TextFieldWidgetFormValues {
 const buildTextFieldSchema = (size: BayDashboardWidgetSize) => {
   const maxLength = TEXT_FIELD_MAX_LENGTH[size] ?? 0;
   return yup.object().shape({
-    text: yup
-      .string()
-      .trim()
-      .required('Text is required')
-      .max(maxLength, `Text must be ${maxLength} characters or fewer`)
+    text: yup.string().trim().required('Text is required').max(maxLength, `Text must be ${maxLength} characters or fewer`)
   });
 };
 
