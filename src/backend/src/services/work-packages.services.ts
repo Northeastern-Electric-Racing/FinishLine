@@ -50,7 +50,6 @@ import {
 import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packages.utils.js';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
 import { userHasPermission } from '../utils/users.utils.js';
-import { getUserPreviewQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { sendMessage } from '../integrations/slack.js';
 
 /**
