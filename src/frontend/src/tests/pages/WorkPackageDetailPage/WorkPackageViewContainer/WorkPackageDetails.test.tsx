@@ -5,15 +5,15 @@
  */
 
 import { render, routerWrapperBuilder, screen } from '../../../test-support/test-utils';
-import { WorkPackage } from 'shared';
+import { WorkPackageDetail } from 'shared';
 import { datePipe, fullNamePipe, weeksPipe } from '../../../../utils/pipes';
 import {
-  exampleResearchWorkPackage,
-  exampleDesignWorkPackage,
-  exampleManufacturingWorkPackage,
-  exampleInstallWorkPackage,
-  exampleWorkPackage5
-} from '../../../test-support/test-data/work-packages.stub';
+  exampleResearchWorkPackageDetail,
+  exampleDesignWorkPackageDetail,
+  exampleManufacturingWorkPackageDetail,
+  exampleInstallWorkPackageDetail,
+  exampleWorkPackage5Detail
+} from '../../../test-support/test-data/work-package-details.stub';
 import WorkPackageDetails from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageDetails';
 import { useAllUsers } from '../../../../hooks/users.hooks';
 import { useAuth } from '../../../../hooks/auth.hooks';
@@ -37,11 +37,11 @@ const mockHook = (isLoading: boolean, isError: boolean, data?: User[], error?: E
 
 const users = [exampleAdminUser, exampleAppAdminUser, exampleLeadershipUser];
 
-const renderComponent = (workPackage = exampleWorkPackage5) => {
+const renderComponent = (workPackage = exampleWorkPackage5Detail) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <WorkPackageDetails workPackage={workPackage} dependencies={[]} />
+      <WorkPackageDetails workPackage={workPackage} />
     </RouterWrapper>
   );
 };
@@ -56,7 +56,7 @@ describe('Work Package Details Component', () => {
 
     it('renders work package research stage label', () => {
       mockHook(false, false, users);
-      const { container } = renderComponent(exampleResearchWorkPackage);
+      const { container } = renderComponent(exampleResearchWorkPackageDetail);
       const chips = Array.from(container.getElementsByClassName('MuiChip-label'));
       expect(chips.length).toBe(2);
       expect(chips[0]).toHaveTextContent('Research');
@@ -64,7 +64,7 @@ describe('Work Package Details Component', () => {
 
     it('renders work package design stage label', () => {
       mockHook(false, false, users);
-      const { container } = renderComponent(exampleDesignWorkPackage);
+      const { container } = renderComponent(exampleDesignWorkPackageDetail);
       const chips = Array.from(container.getElementsByClassName('MuiChip-label'));
       expect(chips.length).toBe(2);
       expect(chips[0]).toHaveTextContent('Design');
@@ -72,7 +72,7 @@ describe('Work Package Details Component', () => {
 
     it('renders work package manufacturing stage label', () => {
       mockHook(false, false, users);
-      const { container } = renderComponent(exampleManufacturingWorkPackage);
+      const { container } = renderComponent(exampleManufacturingWorkPackageDetail);
       const chips = Array.from(container.getElementsByClassName('MuiChip-label'));
       expect(chips.length).toBe(2);
       expect(chips[0]).toHaveTextContent('Manufacturing');
@@ -80,7 +80,7 @@ describe('Work Package Details Component', () => {
 
     it('renders work package install stage label', () => {
       mockHook(false, false, users);
-      const { container } = renderComponent(exampleInstallWorkPackage);
+      const { container } = renderComponent(exampleInstallWorkPackageDetail);
       const chips = Array.from(container.getElementsByClassName('MuiChip-label'));
       expect(chips.length).toBe(2);
       expect(chips[0]).toHaveTextContent('Install');
@@ -90,8 +90,8 @@ describe('Work Package Details Component', () => {
   describe('Work Package Detail Fields', () => {
     it('renders all the fields, example 1', () => {
       mockHook(false, false, users);
-      const wp: WorkPackage = exampleResearchWorkPackage;
-      render(<WorkPackageDetails workPackage={wp} dependencies={[]} />);
+      const wp: WorkPackageDetail = exampleResearchWorkPackageDetail;
+      renderComponent(wp);
       expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
       expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${fullNamePipe(wp.lead)}`, { exact: false })).toBeInTheDocument();
@@ -104,8 +104,8 @@ describe('Work Package Details Component', () => {
 
     it('renders all the fields, example 2', () => {
       mockHook(false, false, users);
-      const wp: WorkPackage = exampleDesignWorkPackage;
-      render(<WorkPackageDetails workPackage={wp} dependencies={[]} />);
+      const wp: WorkPackageDetail = exampleDesignWorkPackageDetail;
+      renderComponent(wp);
       expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
       expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${fullNamePipe(wp.lead)}`, { exact: false })).toBeInTheDocument();
@@ -118,8 +118,8 @@ describe('Work Package Details Component', () => {
 
     it('renders all the fields, example 3', () => {
       mockHook(false, false, users);
-      const wp: WorkPackage = exampleManufacturingWorkPackage;
-      render(<WorkPackageDetails workPackage={wp} dependencies={[]} />);
+      const wp: WorkPackageDetail = exampleManufacturingWorkPackageDetail;
+      renderComponent(wp);
       expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
       expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${fullNamePipe(wp.lead)}`, { exact: false })).toBeInTheDocument();

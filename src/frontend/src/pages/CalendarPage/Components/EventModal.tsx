@@ -36,7 +36,7 @@ import {
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllMembers, useCurrentUser, useUserScheduleSettings } from '../../../hooks/users.hooks';
-import { useAllWorkPackagesPreview } from '../../../hooks/work-packages.hooks';
+import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
 import { useAllTeamPreviews } from '../../../hooks/teams.hooks';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
 import ErrorPage from '../../ErrorPage';
@@ -283,8 +283,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     isLoading: workPackagesLoading,
     isError: workPackagesError,
     error: workPackagesErrorMsg,
-    data: allWorkPackages
-  } = useAllWorkPackagesPreview();
+    data: activeWorkPackages
+  } = useAllWorkPackages(WbsElementStatus.Active);
   const { isLoading: teamsLoading, isError: teamsError, error: teamsErrorMsg, data: teams } = useAllTeamPreviews();
   const { isError: teamTypesError, error: teamTypesErrorMsg, data: teamTypes } = useAllTeamTypes();
   const {
@@ -714,8 +714,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
 
   const workPackageOptions = workPackagesLoading
     ? [{ id: 'loading', label: 'Loading work packages...' }]
-    : (allWorkPackages || [])
-        .filter((wp) => wp.status === WbsElementStatus.Active)
+    : (activeWorkPackages || [])
         .map((wp) => ({
           label: wbsNamePipe(wp),
           id: wp.id,
