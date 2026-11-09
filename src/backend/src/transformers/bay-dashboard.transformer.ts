@@ -10,6 +10,7 @@ import {
   BayDashboardWidget,
   BayDashboardWidgetSize,
   BayDashboardWidgetType,
+  daysBetween,
   PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig,
   PublicBayDashboardOverdueWorkPackage
@@ -156,7 +157,7 @@ export const publicBayDashboardOverdueWorkPackageTransformer = (
     lead: wbsElement.lead ?? undefined,
     manager: wbsElement.manager ?? undefined,
     endDate,
-    daysOverdue: Math.round((now.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24)),
+    daysOverdue: daysBetween(now, endDate),
     blockedBy: workPackage.blockedBy.map((blocker) => ({
       wbsNum: {
         carNumber: blocker.carNumber,

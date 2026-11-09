@@ -118,6 +118,7 @@ export default class BayDashboardService {
 
     const workPackages = await prisma.work_Package.findMany({
       where: {
+        startDate: { lt: now },
         wbsElement: {
           organizationId: organization.organizationId,
           dateDeleted: null,
@@ -127,7 +128,6 @@ export default class BayDashboardService {
       ...getBayDashboardOverdueWorkPackageQueryArgs()
     });
 
-    // end date is derived from start date and duration, so it's calculated once and shared by the filter and the transformer
     return workPackages
       .map((wp) => ({ wp, endDate: calculateEndDate(wp.startDate, wp.duration) }))
       .filter(({ endDate }) => endDate < now)
