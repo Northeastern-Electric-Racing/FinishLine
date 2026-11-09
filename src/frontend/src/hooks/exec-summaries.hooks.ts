@@ -60,11 +60,12 @@ export const useVehicleDevelopmentSummary = (id: string, teamId?: string) => {
  * Custom react hook to get the budget summary of an executive summary
  *
  * @param id Id of the executive summary
+ * @param teamTypeId optional id of a team type to filter the budget down to
  * @returns the budget summary
  */
-export const useBudgetSummary = (id: string) => {
-  return useQuery<BudgetSummary, Error>(['executive-summaries', id, 'budget'], async () => {
-    const { data } = await getBudgetSummary(id);
+export const useBudgetSummary = (id: string, teamTypeId?: string) => {
+  return useQuery<BudgetSummary, Error>(['executive-summaries', id, 'budget', teamTypeId], async () => {
+    const { data } = await getBudgetSummary(id, teamTypeId);
     return data;
   });
 };

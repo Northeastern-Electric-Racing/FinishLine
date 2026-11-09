@@ -166,9 +166,13 @@ export interface BudgetHighlight {
 export interface BudgetSummary {
   executiveSummaryId: string;
   budgetByDivision: GraphData;
+  spentByDivision: GraphData;
   totalBudget: number;
   totalSpent: number;
   mostExpensiveDivision?: BudgetHighlight;
   mostOverbudgetDivision?: BudgetHighlight;
+  overbudgetDivisions: BudgetHighlight[];
   mostOverbudgetProject?: BudgetHighlight;
+  previousCarName?: string;
+  previousTotalSpent?: number;
 }

@@ -18,7 +18,12 @@ execSummaryRouter.get(
   validateInputs,
   ExecSummaryController.getVehicleDevelopmentSummary
 );
-execSummaryRouter.get('/:execSummaryId/budget', ExecSummaryController.getBudgetSummary);
+execSummaryRouter.get(
+  '/:execSummaryId/budget',
+  query('teamTypeId').optional().isString(),
+  validateInputs,
+  ExecSummaryController.getBudgetSummary
+);
 
 execSummaryRouter.post(
   '/:executiveSummaryId/edit',
