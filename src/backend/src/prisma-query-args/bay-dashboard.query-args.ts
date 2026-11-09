@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, WBS_Element_Status } from '@prisma/client';
 import { getUserPreviewQueryArgs } from './user.query-args.js';
 
 export type BayDashboardWidgetQueryArgs = ReturnType<typeof getBayDashboardWidgetQueryArgs>;
@@ -126,7 +126,7 @@ export const getBayDashboardOverdueWorkPackageQueryArgs = () =>
         }
       },
       blockedBy: {
-        where: { dateDeleted: null },
+        where: { dateDeleted: null, status: { not: WBS_Element_Status.COMPLETE } },
         select: { carNumber: true, projectNumber: true, workPackageNumber: true, name: true }
       }
     }
