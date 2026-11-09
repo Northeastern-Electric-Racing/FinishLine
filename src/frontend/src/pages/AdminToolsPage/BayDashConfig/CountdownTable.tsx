@@ -4,7 +4,7 @@
  */
 
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
+import { Box, IconButton, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { useState } from 'react';
 import { BayDashboardCountdown, BayDashboardCountdownCreateArgs, formatDateOnly } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -52,12 +52,9 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
   const [countdownToDelete, setCountdownToDelete] = useState<BayDashboardCountdown | undefined>(undefined);
   const { data: countdowns, isLoading, isError, error } = useGetBayDashboardCountdowns(slug);
   const { mutateAsync: createCountdown } = useCreateBayDashboardCountdown(slug);
-  // the delete hook toasts the result itself, so the table only needs to trigger it
   const {
     mutate: deleteCountdown,
     isLoading: isDeleting,
-    isError: isDeleteError,
-    error: deleteError,
     variables: deletingCountdownId
   } = useDeleteBayDashboardCountdown(slug);
   const toast = useToast();
@@ -91,9 +88,6 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
           }
         }}
       />
-      {isDeleteError && (
-        <Typography sx={{ color: 'error.main', mb: 1 }}>Couldn't delete countdown: {deleteError?.message}</Typography>
-      )}
       <Table sx={{ '& td': { borderBottom: 'none' } }}>
         <TableHead>
           <TableRow>
