@@ -1,4 +1,9 @@
-import { BayDashboardConfig, BayDashboardCountdown, PublicBayDashboardCalendarEvent } from 'shared';
+import {
+  BayDashboardConfig,
+  BayDashboardCountdown,
+  PublicBayDashboardCalendarEvent,
+  PublicBayDashboardOverdueWorkPackage
+} from 'shared';
 
 export const bayDashboardConfigTransformer = (config: BayDashboardConfig): BayDashboardConfig => {
   return {
@@ -22,5 +27,14 @@ export const publicBayDashboardCalendarEventTransformer = (
     ...event,
     startTime: new Date(event.startTime),
     endTime: new Date(event.endTime)
+  };
+};
+
+export const publicBayDashboardOverdueWorkPackageTransformer = (
+  workPackage: PublicBayDashboardOverdueWorkPackage
+): PublicBayDashboardOverdueWorkPackage => {
+  return {
+    ...workPackage,
+    endDate: new Date(workPackage.endDate)
   };
 };

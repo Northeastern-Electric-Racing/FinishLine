@@ -12,7 +12,8 @@ import {
   BayDashboardCountdownCreateArgs,
   BayDashboardSlotCreateArgs,
   PublicBayDashboardCalendarEvent,
-  PublicBayDashboardConfig
+  PublicBayDashboardConfig,
+  PublicBayDashboardOverdueWorkPackage
 } from 'shared';
 import { apiUrls } from '../utils/urls';
 import {
@@ -21,6 +22,7 @@ import {
   getBayDashboardCalendarEvents,
   getBayDashboardConfig,
   getBayDashboardCountdowns,
+  getBayDashboardOverdueWorkPackages,
   getCurrentBayDashboardConfig,
   saveBayDashboardConfig
 } from '../apis/bay-dashboard.api';
@@ -61,6 +63,23 @@ export const useGetBayDashboardCalendarEvents = (slug?: string) => {
     async () => {
       if (!slug) throw new Error('Cannot get calendar events without an organization');
       const { data } = await getBayDashboardCalendarEvents(slug);
+      return data;
+    },
+    { enabled: !!slug, refetchInterval: 5 * 60 * 1000 }
+  );
+};
+
+/**
+ * Custom React Hook to get the overdue work packages the public TV display shows.
+ * Server's update events refetch it and it refetches every few minutes
+ * @param slug the organization slug from the /bay-dashboard/:slug route
+ */
+export const useGetBayDashboardOverdueWorkPackages = (slug?: string) => {
+  return useQuery<PublicBayDashboardOverdueWorkPackage[], Error>(
+    ['bay-dashboard', slug, 'overdue-work-packages'],
+    async () => {
+      if (!slug) throw new Error('Cannot get overdue work packages without an organization');
+      const { data } = await getBayDashboardOverdueWorkPackages(slug);
       return data;
     },
     { enabled: !!slug, refetchInterval: 5 * 60 * 1000 }

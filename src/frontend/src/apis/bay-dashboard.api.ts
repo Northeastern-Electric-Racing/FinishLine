@@ -13,12 +13,14 @@ import {
   BayDashboardSlotCreateArgs,
   dateToMidnightUTC,
   PublicBayDashboardCalendarEvent,
-  PublicBayDashboardConfig
+  PublicBayDashboardConfig,
+  PublicBayDashboardOverdueWorkPackage
 } from 'shared';
 import {
   bayDashboardConfigTransformer,
   bayDashboardCountdownTransformer,
-  publicBayDashboardCalendarEventTransformer
+  publicBayDashboardCalendarEventTransformer,
+  publicBayDashboardOverdueWorkPackageTransformer
 } from './transformers/bay-dashboard.transformers';
 
 /**
@@ -50,6 +52,16 @@ export const getBayDashboardConfig = (slug: string) => {
 export const getBayDashboardCalendarEvents = (slug: string) => {
   return axios.get<PublicBayDashboardCalendarEvent[]>(apiUrls.bayDashboardCalendar(slug), {
     transformResponse: (data) => JSON.parse(data).map(publicBayDashboardCalendarEventTransformer)
+  });
+};
+
+/**
+ * Gets the overdue work packages the TV's overdue widget shows for an organization
+ * @param slug the organization's slug
+ */
+export const getBayDashboardOverdueWorkPackages = (slug: string) => {
+  return axios.get<PublicBayDashboardOverdueWorkPackage[]>(apiUrls.bayDashboardOverdueWorkPackages(slug), {
+    transformResponse: (data) => JSON.parse(data).map(publicBayDashboardOverdueWorkPackageTransformer)
   });
 };
 
