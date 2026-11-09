@@ -33,12 +33,13 @@ export class NewMemberEventProcess extends SeedProcess<NewMemberEventInput, Reco
     const creators = [...leadership, ...heads, ...admins];
 
     // Walk backwards from the current term: spring of this year (or fall of last year) and so on.
-    const year = this.now.getFullYear();
+    // termYear is the calendar year of the term itself, so fall -> spring stays in the same year
+    // and only the spring -> fall step goes back a year.
     const terms: { year: number; isFall: boolean }[] = [];
-    let termYear = this.now.getMonth() >= 7 ? year : year - 1;
+    let termYear = this.now.getFullYear();
     let isFall = this.now.getMonth() >= 7;
     for (let i = 0; i < NEW_MEMBER_TERMS_SEEDED; i++) {
-      terms.push({ year: isFall ? termYear : termYear + 1, isFall });
+      terms.push({ year: termYear, isFall });
       if (!isFall) termYear -= 1;
       isFall = !isFall;
     }
