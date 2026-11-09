@@ -98,7 +98,7 @@ const MediumCalendar: React.FC<CalendarEventsProps> = ({ events, now }) => {
           <CalendarEventCard key={`${event.title}-${event.startTime.getTime()}-${i}`} event={event} day={day} />
         ))}
       </Box>
-      {hiddenCount > 0 && <Typography sx={{ ...moreSx, mt: '1cqw' }}>+{hiddenCount} more</Typography>}
+      {hiddenCount > 0 && <Typography sx={{ ...moreSx, mt: '1cqw', textAlign: 'center' }}>+{hiddenCount} more</Typography>}
     </Box>
   );
 };
