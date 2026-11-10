@@ -6,7 +6,7 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import { Box, Card, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { Calendar, CalendarTask, ConflictStatus, EventInstance, EventStatus, EventType, isGuest } from 'shared';
+import { Calendar, TaskBoardItem, ConflictStatus, EventInstance, EventStatus, EventType, isGuest } from 'shared';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { EventClickContent } from './EventClickPopup';
 import EditEventModal from './Components/EditEventModal';
@@ -130,7 +130,7 @@ interface CalendarWeekViewProps {
   displayWeek: Date; // Sunday of the displayed week
   onNavigateWeek: (offset: -1 | 1) => void;
   onCreateEventClick: (date: Date, startTime?: Date, endTime?: Date) => void;
-  tasks?: CalendarTask[];
+  tasks?: TaskBoardItem[];
   selectedEventId?: string;
 }
 
@@ -237,7 +237,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   // Build per-day task lists (tasks appear on their deadline day)
   // Task deadlines are date-only values normalized to local midnight by dbDateToLocalDate
   // in the transformer, so compare local components on both sides.
-  const tasksByDay: CalendarTask[][] = weekDays.map((day) =>
+  const tasksByDay: TaskBoardItem[][] = weekDays.map((day) =>
     tasks.filter((t) => {
       if (!t.deadline) return false;
       return isSameDay(new Date(t.deadline), day);
@@ -601,7 +601,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
     );
   };
 
-  const AllDayTaskBlock = ({ task }: { task: CalendarTask }) => {
+  const AllDayTaskBlock = ({ task }: { task: TaskBoardItem }) => {
     const [blockHovered, setBlockHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const tooltipHoveredRef = useRef(false);

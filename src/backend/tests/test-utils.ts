@@ -17,7 +17,7 @@ import {
 import prisma from '../src/prisma/prisma.js';
 import TeamsService from '../src/services/teams.services.js';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services.js';
-import { RoleEnum, TaskPriority, TaskStatus } from 'shared';
+import { RoleEnum, TaskPriority, TaskStatus, Competition } from 'shared';
 import {
   batmanAppAdmin,
   batmanScheduleSettings,
@@ -133,6 +133,7 @@ export const resetUsers = async () => {
   await prisma.user_Secure_Settings.deleteMany();
   await prisma.receipt.deleteMany();
   await prisma.reimbursement_Product.deleteMany();
+  await prisma.reimbursement_Product_Reason.deleteMany();
   await prisma.reimbursement_Status.deleteMany();
   await prisma.reimbursement_Request_Comment.deleteMany();
   await prisma.reimbursement_Request.deleteMany();
@@ -142,6 +143,11 @@ export const resetUsers = async () => {
   await prisma.rule.deleteMany();
   await prisma.ruleset.deleteMany();
   await prisma.ruleset_Type.deleteMany();
+  await prisma.recruitment_Division_Count.deleteMany();
+  await prisma.recruitment_Cycle.deleteMany();
+  await prisma.competition_Performance.deleteMany();
+  await prisma.competition_Documents_Summary.deleteMany();
+  await prisma.executive_Summary.deleteMany();
   await prisma.car.deleteMany();
   await prisma.task_Label.deleteMany();
   await prisma.task.deleteMany();
@@ -174,6 +180,7 @@ export const resetUsers = async () => {
   await prisma.sponsor_Task.deleteMany();
   await prisma.prospective_Sponsor.deleteMany();
   await prisma.sponsor.deleteMany();
+  await prisma.sponsor_Contact.deleteMany();
   await prisma.sponsor_Tier.deleteMany();
   await prisma.reimbursement_Product_Other_Reason.deleteMany();
   await prisma.account_Code.deleteMany();
@@ -636,7 +643,8 @@ export const createTestDesignReviewEvent = async () => {
     true, // documents
     false, // description
     true, // onlyHeadsOrAbove
-    true // requiresConfirmation
+    true, // requiresConfirmation
+    false // takeAttendance
   );
 
   const testWorkPackage = await prisma.work_Package.findFirst({
@@ -776,6 +784,17 @@ export const createTestTask = async (
     }
   });
   return task;
+};
+
+export const createTestTaskLabel = async (user: User, organizationId: string, name: string, colorHexCode: string) => {
+  return await prisma.task_Label.create({
+    data: {
+      name,
+      colorHexCode,
+      userCreated: { connect: { userId: user.userId } },
+      organization: { connect: { organizationId } }
+    }
+  });
 };
 
 export const createTestTaskWithOrganization = async (user: User, organization?: Organization) => {
@@ -1010,4 +1029,65 @@ export const createTestGuestDefinition = async (user: User, organizationId: stri
   });
 
   return def;
+};
+
+export const createOpsTeamAndMember = async (organization?: Organization) => {
+  if (!organization) organization = await createTestOrganization();
+  const head = await createTestUser(
+    { ...batmanAppAdmin, googleAuthId: 'opsHead', email: 'opshead@ner.com' },
+    organization.organizationId
+  );
+
+  const opsMember = await createTestUser(
+    {
+      firstName: 'John',
+      lastName: 'Test',
+      email: 'test.j@northeastern.edu',
+      googleAuthId: 'opsMember',
+      role: RoleEnum.MEMBER
+    },
+    organization.organizationId
+  );
+
+  const team = await TeamsService.createTeam(head, 'Ops Team', head.userId, 'Ops Team', '', false, organization);
+
+  await prisma.team.update({
+    where: { teamId: team.teamId },
+    data: { operationsTeam: true }
+  });
+
+  await TeamsService.setTeamMembers(head, team.teamId, [opsMember.userId], organization);
+
+  return opsMember;
+};
+
+export const createTestExecutiveSummary = async (organization?: Organization, carId?: string, userCreatedId?: string) => {
+  if (!organization) organization = await createTestOrganization();
+  if (!userCreatedId) userCreatedId = (await createTestUser(supermanAdmin, organization.organizationId)).userId;
+  if (!carId) carId = (await createTestCar(organization.organizationId, userCreatedId)).carId;
+
+  return prisma.executive_Summary.create({
+    data: {
+      car: { connect: { carId } },
+      goals: 'goals',
+      winsAndImprovements: 'wins and improvements',
+      budgetNotes: 'budget notes',
+      recruitmentNotes: 'recruitment notes',
+      seasonStartDate: new Date('01/01/2024'),
+      seasonEndDate: new Date('06/01/2024'),
+      userCreated: { connect: { userId: userCreatedId } }
+    }
+  });
+};
+
+export const createTestCompetitionPerformance = async (
+  executiveSummaryId: string,
+  competition: Competition = Competition.FSAE
+) => {
+  return prisma.competition_Performance.create({
+    data: {
+      executiveSummaryId,
+      competition
+    }
+  });
 };

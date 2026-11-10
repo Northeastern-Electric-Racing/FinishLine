@@ -1,8 +1,7 @@
 import { GraphData } from './statistics-types.js';
 import { TeamType } from './calendar-types.js';
-import { TeamPreview } from './team-types.js';
+import { TeamBase } from './team-types.js';
 import { User } from './user-types.js';
-import { Car } from './project-types.js';
 
 export enum Competition {
   FSAE = 'FSAE',
@@ -19,9 +18,13 @@ export enum DataSource {
   MANUAL = 'MANUAL'
 }
 
+export interface ExecutiveSummaryCar {
+  name: string;
+}
+
 export interface ExecutiveSummary {
   executiveSummaryId: string;
-  car: Car;
+  car: ExecutiveSummaryCar;
   seasonStartDate?: Date;
   seasonEndDate?: Date;
   goals: string;
@@ -43,6 +46,7 @@ export interface CompetitionPerformance {
   competition: Competition;
   finalPlace?: number;
   totalPointsEarned?: number;
+  maxPoints?: number;
   bestStaticEvent?: string;
   worstStaticEvent?: string;
   bestDynamicEvent?: string;
@@ -50,6 +54,7 @@ export interface CompetitionPerformance {
   accelerationTopTimeSeconds?: number;
   autocrossTopTimeSeconds?: number;
   enduranceLapsCompleted?: number;
+  maxLaps?: number;
   enduranceAvgLapTimeSeconds?: number;
 }
 
@@ -98,6 +103,7 @@ export interface CreateCompetitionPerformanceArgs {
   competition: Competition;
   finalPlace?: number;
   totalPointsEarned?: number;
+  maxPoints?: number;
   bestStaticEvent?: string;
   worstStaticEvent?: string;
   bestDynamicEvent?: string;
@@ -105,6 +111,7 @@ export interface CreateCompetitionPerformanceArgs {
   accelerationTopTimeSeconds?: number;
   autocrossTopTimeSeconds?: number;
   enduranceLapsCompleted?: number;
+  maxLaps?: number;
   enduranceAvgLapTimeSeconds?: number;
 }
 
@@ -141,7 +148,7 @@ export type EditRecruitmentCycleArgs = Omit<CreateRecruitmentCycleArgs, 'executi
 export interface VehicleDevelopmentProjectSummary {
   wbsElementId: string;
   name: string;
-  team: TeamPreview;
+  teams: TeamBase[];
   startDate: Date;
   plannedEndDate: Date;
 }
@@ -151,7 +158,21 @@ export interface VehicleDevelopmentSummary {
   projects: VehicleDevelopmentProjectSummary[];
 }
 
+export interface BudgetHighlight {
+  label: string;
+  amount: number;
+}
+
 export interface BudgetSummary {
   executiveSummaryId: string;
   budgetByDivision: GraphData;
+  spentByDivision: GraphData;
+  totalBudget: number;
+  totalSpent: number;
+  mostExpensiveDivision?: BudgetHighlight;
+  mostOverbudgetDivision?: BudgetHighlight;
+  overbudgetDivisions: BudgetHighlight[];
+  mostOverbudgetProject?: BudgetHighlight;
+  previousCarName?: string;
+  previousTotalSpent?: number;
 }

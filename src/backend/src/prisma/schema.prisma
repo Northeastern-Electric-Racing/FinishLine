@@ -261,6 +261,8 @@ model User {
   deletedFrequentlyAskedQuestions         FrequentlyAskedQuestion[]            @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones                       Milestone[]                          @relation(name: "milestoneCreator")
   deletedMilestones                       Milestone[]                          @relation(name: "milestoneDeleter")
+  createdDateMarkers                      Date_Marker[]                        @relation(name: "dateMarkerCreator")
+  deletedDateMarkers                      Date_Marker[]                        @relation(name: "dateMarkerDeleter")
   createdGraphCollections                 Graph_Collection[]                   @relation(name: "graphCollectionsCreator")
   deletedGraphCollections                 Graph_Collection[]                   @relation(name: "graphCollectionDeleter")
   createdGraphs                           Graph[]                              @relation(name: "graphCreator")
@@ -1204,26 +1206,26 @@ model Document {
 }
 
 model Event {
-  eventId                    String          @id @default(uuid())
-  dateCreated                DateTime        @default(now())
+  eventId                    String               @id @default(uuid())
+  dateCreated                DateTime             @default(now())
   dateDeleted                DateTime?
   title                      String
   userCreatedId              String
-  userCreated                User            @relation(name: "eventCreator", fields: [userCreatedId], references: [userId])
+  userCreated                User                 @relation(name: "eventCreator", fields: [userCreatedId], references: [userId])
   userDeletedId              String?
-  userDeleted                User?           @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
+  userDeleted                User?                @relation(fields: [userDeletedId], references: [userId], name: "eventDeleter")
   eventTypeId                String
-  eventType                  Event_Type      @relation(fields: [eventTypeId], references: [eventTypeId])
+  eventType                  Event_Type           @relation(fields: [eventTypeId], references: [eventTypeId])
   approved                   Conflict_Status
   approvalRequiredFromUserId String?
-  approvalRequiredBy         User?           @relation(fields: [approvalRequiredFromUserId], references: [userId], name: "eventApprovalRequiredBy")
+  approvalRequiredBy         User?                @relation(fields: [approvalRequiredFromUserId], references: [userId], name: "eventApprovalRequiredBy")
   scheduledTimes             Schedule_Slot[]
-  requiredMembers            User[]          @relation(name: "requiredEventAttendee")
-  optionalMembers            User[]          @relation(name: "optionalEventAttendee")
-  confirmedMembers           User[]          @relation(name: "confirmedEventAttendee")
-  deniedMembers              User[]          @relation(name: "deniedEventAttendee")
-  teams                      Team[]          @relation(name: "affiliatedTeam")
-  teamType                   Team_Type?      @relation(fields: [teamTypeId], references: [teamTypeId])
+  requiredMembers            User[]               @relation(name: "requiredEventAttendee")
+  optionalMembers            User[]               @relation(name: "optionalEventAttendee")
+  confirmedMembers           User[]               @relation(name: "confirmedEventAttendee")
+  deniedMembers              User[]               @relation(name: "deniedEventAttendee")
+  teams                      Team[]               @relation(name: "affiliatedTeam")
+  teamType                   Team_Type?           @relation(fields: [teamTypeId], references: [teamTypeId])
   teamTypeId                 String?
   location                   String?
   zoomLink                   String?
@@ -1237,7 +1239,8 @@ model Event {
   description                String?
   notificationSlackThreads   Message_Info[]
   calendarEventIds           String[]
-  notificationChannelIds     String[]        @default([])
+  notificationChannelIds     String[]             @default([])
+  meetingAttendances         Meeting_Attendance[]
 }
 
 model Calendar {
@@ -1282,6 +1285,7 @@ model Event_Type {
   onlyHeadsOrAboveForEventCreation Boolean
   requiresConfirmation             Boolean
   sendSlackNotifications           Boolean
+  takeAttendance                   Boolean
   events                           Event[]
   organizationId                   String
   organization                     Organization @relation(fields: [organizationId], references: [organizationId])
@@ -1484,6 +1488,7 @@ model Organization {
   usefulLinks              Link[]
   frequentlyAskedQuestions FrequentlyAskedQuestion[]
   milestones               Milestone[]
+  dateMarkers              Date_Marker[]
   graphCollections         Graph_Collection[]
   graphs                   Graph[]
   featuredProjects         Project[]
@@ -1557,6 +1562,22 @@ model Milestone {
   organization            Organization @relation(fields: [organizationId], references: [organizationId])
   isOnRecruitingDashboard Boolean      @default(false)
   isOnNewMemberDashboard  Boolean      @default(false)
+
+  @@index([organizationId])
+}
+
+model Date_Marker {
+  dateMarkerId   String       @id @default(uuid())
+  name           String
+  date           DateTime     @db.Date
+  userCreatedId  String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "dateMarkerCreator")
+  userDeletedId  String?
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "dateMarkerDeleter")
+  createdAt      DateTime     @default(now())
+  dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
 
   @@index([organizationId])
 }
@@ -2007,7 +2028,10 @@ model Meeting_Attendance {
   slackChannelId        String
   slackMessageTimestamp String
   attendees             User[]       @relation(name: "meetingAttendees")
+  eventId               String?
+  event                 Event?       @relation(fields: [eventId], references: [eventId])
 
+  @@index([eventId])
   @@index([organizationId])
   @@index([teamId])
 }
@@ -2044,6 +2068,7 @@ model Competition_Performance {
 
   finalPlace                 Int?
   totalPointsEarned          Int?
+  maxPoints                  Int?
   bestStaticEvent            String?
   worstStaticEvent           String?
   bestDynamicEvent           String?
@@ -2051,6 +2076,7 @@ model Competition_Performance {
   accelerationTopTimeSeconds Int?
   autocrossTopTimeSeconds    Int?
   enduranceLapsCompleted     Int?
+  maxLaps                    Int?
   enduranceAvgLapTimeSeconds Int?
 
   @@unique([executiveSummaryId, competition], name: "uniqueExecSummaryCompetition")

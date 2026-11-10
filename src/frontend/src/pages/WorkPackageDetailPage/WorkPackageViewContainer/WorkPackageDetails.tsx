@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { DescriptionBullet, WbsElementStatus, WorkPackage, isGuest, wbsPipe } from 'shared';
+import { DescriptionBullet, WbsElementStatus, WorkPackageDetail, isGuest, wbsPipe } from 'shared';
 import { fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
 import { Box, Divider, Grid, Link, Stack, Typography } from '@mui/material';
@@ -16,16 +16,15 @@ import CheckList, { CheckListItem } from '../../../components/CheckList';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface WorkPackageDetailsProps {
-  workPackage: WorkPackage;
-  dependencies: WorkPackage[];
+  workPackage: WorkPackageDetail;
 }
 
-const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, dependencies }) => {
+const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
   const user = useCurrentUser();
   const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(user?.role);
   const descriptionBulletsSplitByType = new Map<string, DescriptionBullet[]>();
+  // deleted bullets are already filtered out by the query
   for (const bullet of workPackage.descriptionBullets) {
-    if (bullet.dateDeleted) continue;
     if (!descriptionBulletsSplitByType.has(bullet.type)) {
       descriptionBulletsSplitByType.set(bullet.type, []);
     }
@@ -67,10 +66,10 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
         Blocked By
       </Typography>
       <Stack direction="row" alignItems="center" divider={<Divider orientation="vertical" flexItem />} spacing={2}>
-        {dependencies.length === 0 ? (
+        {workPackage.blockedBy.length === 0 ? (
           <Typography>No Blockers</Typography>
         ) : (
-          dependencies.map((dep, idx) => (
+          workPackage.blockedBy.map((dep, idx) => (
             <Link
               key={`${dep.name}-${idx}`}
               component={RouterLink}

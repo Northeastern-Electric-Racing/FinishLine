@@ -113,8 +113,9 @@ const OnboardingHomePageContent = () => {
     try {
       await completeOnboarding();
       // the logged-in user object is plain client state, not refetched automatically,
-      // so it needs to be refreshed here for Home.tsx's routing to see the completed onboarding status
-      await auth.signInCurrent();
+      // so it needs to be refreshed here for Home.tsx's routing to see the completed onboarding status.
+      // don't retry until the backend is back, so a failure reaches the toast below instead of hanging
+      await auth.signInCurrent(false);
       history.push(routes.HOME);
     } catch (error: unknown) {
       if (error instanceof Error) {

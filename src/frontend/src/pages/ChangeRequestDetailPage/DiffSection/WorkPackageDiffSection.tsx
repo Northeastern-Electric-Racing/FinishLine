@@ -18,7 +18,12 @@ const WorkPackageDiffSection = ({
 
   useEffect(() => {
     if (originalWorkPackage) {
-      setCollections([getChangesForWorkPackage(originalWorkPackage, workPackageProposedChanges)]);
+      setCollections([
+        getChangesForWorkPackage(
+          { ...originalWorkPackage, blockedBy: originalWorkPackage.blockedBy.map((blocker) => blocker.wbsNum) },
+          workPackageProposedChanges
+        )
+      ]);
     }
   }, [originalWorkPackage, workPackageProposedChanges, setCollections]);
 

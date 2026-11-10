@@ -228,4 +228,6 @@ export type ExceptionObjectNames =
   | 'Notification Channel'
   | 'Dashboard'
   | 'Team Join Request'
+  | 'Executive Summary'
+  | 'Competition Performance'
   | 'Slack Channel';
