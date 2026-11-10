@@ -4,7 +4,7 @@ import { McpProjectDetailQueryArgs, McpProjectSummaryQueryArgs } from '../../pri
 import { calculateProjectStatus } from '../../utils/projects.utils.js';
 import { wbsNumOf } from '../../utils/utils.js';
 import { wbsElementUrl } from '../../utils/urls.utils.js';
-import { fullName } from './shared.js';
+import { optionalMcpUser } from './shared.js';
 
 export const mcpProjectSummaryTransformer = (
   project: Prisma.ProjectGetPayload<McpProjectSummaryQueryArgs>
@@ -31,8 +31,8 @@ export const mcpProjectDetailTransformer = (
     // derived from the work packages rather than read off the project
     status: calculateProjectStatus(project),
     budget: project.budget,
-    lead: fullName(project.wbsElement.lead),
-    manager: fullName(project.wbsElement.manager),
+    lead: optionalMcpUser(project.wbsElement.lead),
+    manager: optionalMcpUser(project.wbsElement.manager),
     teams: project.teams.map((team) => team.teamName),
     links: project.wbsElement.links.map((link) => ({ type: link.linkType.name, url: link.url })),
     startDate: calculateProjectStartDate(project.workPackages),
