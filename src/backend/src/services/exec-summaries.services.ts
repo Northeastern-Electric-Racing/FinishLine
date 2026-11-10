@@ -4,7 +4,15 @@
  */
 
 import { Organization } from '@prisma/client';
-import { calculateProjectEndDate, calculateProjectStartDate, isAdmin, NewMemberSignUpEvent, notGuest, User } from 'shared';
+import {
+  calculateProjectEndDate,
+  calculateProjectStartDate,
+  EditCompetitionDocumentsSummaryArgs,
+  isAdmin,
+  NewMemberSignUpEvent,
+  notGuest,
+  User
+} from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedException,
