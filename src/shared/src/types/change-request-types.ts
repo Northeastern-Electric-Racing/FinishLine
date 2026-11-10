@@ -34,7 +34,8 @@ export const ChangeRequestType = {
   StageGate: 'STAGE_GATE',
   Activation: 'ACTIVATION',
   Budget: 'BUDGET',
-  Leadership: 'LEADERSHIP'
+  Leadership: 'LEADERSHIP',
+  NonMeaningful: 'NON_MEANINGFUL'
 } as const;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type ChangeRequestType = (typeof ChangeRequestType)[keyof typeof ChangeRequestType];

@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { DescriptionBulletPreview, LinkCreateArgs, Project, ProjectTemplate, projectEditNeedsCR } from 'shared';
+import { DescriptionBulletPreview, LinkCreateArgs, Project, ProjectTemplate, projectEditNeedsReview } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -129,7 +129,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 
   // budget and description bullets need a change request (same predicate the backend uses)
   const meaningfulFieldsChanged = project
-    ? projectEditNeedsCR(
+    ? projectEditNeedsReview(
         project.budget,
         watchedBudget,
         bulletsToObject(project.descriptionBullets),

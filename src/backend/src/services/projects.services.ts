@@ -14,7 +14,7 @@ import {
   WbsNumber,
   wbsPipe,
   User,
-  projectEditNeedsCR
+  projectEditNeedsReview
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { getProjectDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
@@ -24,7 +24,7 @@ import projectTransformer, {
   projectGanttTransformer,
   projectPreviewTransformer
 } from '../transformers/projects.transformer.js';
-import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import { createNonMeaningfulChangeRequest, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
@@ -407,7 +407,7 @@ export default class ProjectsService {
       throw new InvalidOrganizationException('Project');
 
     // only budget and description bullet changes require a change request
-    const needsCR = projectEditNeedsCR(
+    const needsCR = projectEditNeedsReview(
       originalProject.budget,
       budget,
       originalProject.wbsElement.descriptionBullets.map((bullet) => ({
@@ -422,9 +422,14 @@ export default class ProjectsService {
       await validateChangeRequestAccepted(crId);
     }
 
+    // CR approval passes the approved CR's id; a direct edit that doesn't need review
+    // gets its own auto-approved change request so it still shows up in change history
+    const changeRequestId =
+      crId ?? (await createNonMeaningfulChangeRequest(user, originalProject.wbsElementId, organization.organizationId));
+
     const { project: updatedProject } = await updateProjectAndCreateChanges(
       originalProject.projectId,
-      crId,
+      changeRequestId,
       userId,
       name,
       budget,
