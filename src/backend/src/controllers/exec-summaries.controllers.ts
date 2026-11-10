@@ -71,6 +71,15 @@ export default class ExecSummaryController {
     }
   }
 
+  static async getNewMemberSignUpEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const events = await ExecSummaryServices.getNewMemberSignUpEvents(req.organization, req.currentUser);
+      res.status(200).json(events);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getVehicleDevelopmentSummary(req: Request, res: Response, next: NextFunction) {
     try {
       const { execSummaryId } = req.params as Record<string, string>;

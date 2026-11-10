@@ -30,6 +30,7 @@ import { GraphProcess } from './seed/graphs.process.js';
 import { ExecutiveSummaryProcess } from './seed/executive-summary.process.js';
 import { CompetitionPerformanceProcess } from './seed/competition-performance.process.js';
 import { CompetitionDocumentsSummaryProcess } from './seed/competition-documents-summary.process.js';
+import { NewMemberEventProcess } from './seed/new-member-event.process.js';
 import { RecruitmentCycleProcess } from './seed/recruitment-cycle.process.js';
 import { RecruitmentDivisionCountProcess } from './seed/recruitment-division-count.process.js';
 import { RulesProcess } from './seed/rules.process.js';
@@ -62,6 +63,7 @@ await new SeedRunner()
     new ExecutiveSummaryProcess(),
     new CompetitionPerformanceProcess(),
     new CompetitionDocumentsSummaryProcess(),
+    new NewMemberEventProcess(),
     new RecruitmentCycleProcess(),
     new RecruitmentDivisionCountProcess(),
     new RulesProcess()

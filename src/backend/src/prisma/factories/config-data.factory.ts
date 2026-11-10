@@ -615,6 +615,26 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     requiresConfirmation: false,
     sendSlackNotifications: true,
     takeAttendance: false
+  },
+  {
+    name: 'New Member Event',
+    calendarNames: ['New Member Events'],
+    requiredMembers: false,
+    optionalMembers: true,
+    teams: false,
+    teamType: false,
+    location: true,
+    zoomLink: false,
+    shop: false,
+    machinery: false,
+    workPackage: false,
+    questionDocument: false,
+    documents: false,
+    description: true,
+    onlyHeadsOrAboveForEventCreation: false,
+    requiresConfirmation: false,
+    sendSlackNotifications: false,
+    takeAttendance: false
   }
 ];
 

@@ -1241,6 +1241,7 @@ model Event {
   calendarEventIds           String[]
   notificationChannelIds     String[]             @default([])
   meetingAttendances         Meeting_Attendance[]
+  newMemberSignUps           Int?
 }
 
 model Calendar {

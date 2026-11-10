@@ -12,6 +12,7 @@ import ExecSummaryController from '../controllers/exec-summaries.controllers.js'
 const execSummaryRouter = express.Router();
 
 execSummaryRouter.get('/', ExecSummaryController.getAllExecutiveSummaries);
+execSummaryRouter.get('/new-member-sign-ups', ExecSummaryController.getNewMemberSignUpEvents);
 execSummaryRouter.get('/:execSummaryId', ExecSummaryController.getSingleExecutiveSummary);
 execSummaryRouter.get(
   '/:execSummaryId/vehicle-development',
