@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link } from '@mui/material';
+import { FormControlLabel, Link, Switch } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
 import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
@@ -29,6 +29,8 @@ const ChangeRequestsTable: React.FC = () => {
   }
 
   const [pageSize, setPageSize] = useState(Number(localStorage.getItem('cr-table-row-count')));
+  // non-meaningful CRs are auto-approved small edits, hidden by default so they don't flood the table
+  const [showNonMeaningful, setShowNonMeaningful] = useState(false);
 
   const baseColDef: GridColDefStyle = {
     flex: 1,
@@ -56,19 +58,21 @@ const ChangeRequestsTable: React.FC = () => {
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const rows = data.map((v) => ({
-    ...v,
-    carNumber: v.wbsNum ? v.wbsNum.carNumber : undefined,
-    wbsOrCategoryOrAccountCode: v.wbsNum
-      ? { wbsNum: v.wbsNum, name: v.wbsName }
-      : v.category
-        ? { category: v.category, name: v.category.name }
-        : v.accountCode
-          ? { accountCode: v.accountCode, name: v.accountCode.name }
-          : undefined,
-    submitter: fullNamePipe(v.submitter),
-    reviewer: fullNamePipe(v.reviewer)
-  }));
+  const rows = data
+    .filter((v) => showNonMeaningful || v.type !== ChangeRequestType.NonMeaningful)
+    .map((v) => ({
+      ...v,
+      carNumber: v.wbsNum ? v.wbsNum.carNumber : undefined,
+      wbsOrCategoryOrAccountCode: v.wbsNum
+        ? { wbsNum: v.wbsNum, name: v.wbsName }
+        : v.category
+          ? { category: v.category, name: v.category.name }
+          : v.accountCode
+            ? { accountCode: v.accountCode, name: v.accountCode.name }
+            : undefined,
+      submitter: fullNamePipe(v.submitter),
+      reviewer: fullNamePipe(v.reviewer)
+    }));
 
   const wbsOrCategoryOrAccountCodeById = new Map(rows.map((row) => [row.crId, row.wbsOrCategoryOrAccountCode]));
 
@@ -234,6 +238,11 @@ const ChangeRequestsTable: React.FC = () => {
       }}
       data-testid={'Change Request Table'}
     >
+      <FormControlLabel
+        control={<Switch checked={showNonMeaningful} onChange={(e) => setShowNonMeaningful(e.target.checked)} />}
+        label="Show non-meaningful change requests"
+        sx={{ mb: 1 }}
+      />
       <DataGrid
         autoHeight
         disableSelectionOnClick
