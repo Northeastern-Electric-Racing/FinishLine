@@ -82,6 +82,23 @@ export const shouldCreateMeetingAttendance = (faker: Faker): boolean =>
 export const generateRosterAttendeeCount = (faker: Faker, rosterSize: number): number =>
   Math.max(1, Math.round(rosterSize * faker.number.float({ min: 0.4, max: 1 })));
 
+export const generateNewMemberSignUps = (faker: Faker): number => faker.number.int({ min: 5, max: 80 });
+
+export const NEW_MEMBER_EVENT_TYPE_NAME = 'New Member Event';
+export const NEW_MEMBER_EVENT_TITLES = ['Club Fair', 'Member Mixer', 'Info Session', 'Open House', 'Shop Tour'];
+export const NEW_MEMBER_TERMS_SEEDED = 6;
+
+/**
+ * Plans the date of one new member event inside a recruitment term. Fall events land in
+ * September/October and spring events in January/February, matching when sign-ups happen.
+ */
+export const generateNewMemberEventDate = (faker: Faker, year: number, isFall: boolean): Date =>
+  new Date(
+    year,
+    isFall ? faker.number.int({ min: 8, max: 9 }) : faker.number.int({ min: 0, max: 1 }),
+    faker.number.int({ min: 1, max: 28 })
+  );
+
 export const generateLocation = (faker: Faker): string | null => arrayOrNull(faker, EVENT_LOCATIONS, 0.5);
 
 export const generateEventDescription = (faker: Faker): string | null => arrayOrNull(faker, EVENT_DESCRIPTIONS, 0.5);
@@ -209,7 +226,8 @@ export const eventCreateInput = (
   confirmedMemberIds: string[],
   deniedMemberIds: string[],
   dateCreated: Date,
-  approvalRequiredFromUserId?: string
+  approvalRequiredFromUserId?: string,
+  newMemberSignUps?: number
 ): Prisma.EventCreateInput => ({
   title,
   status,
@@ -230,6 +248,7 @@ export const eventCreateInput = (
     : {}),
   confirmedMembers: { connect: confirmedMemberIds.map((userId) => ({ userId })) },
   deniedMembers: { connect: deniedMemberIds.map((userId) => ({ userId })) },
+  ...(newMemberSignUps !== undefined ? { newMemberSignUps } : {}),
   ...(eventType.location && location ? { location } : {}),
   ...(eventType.zoomLink && zoomLink ? { zoomLink } : {}),
   ...(eventType.description && description ? { description } : {}),

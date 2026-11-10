@@ -4,7 +4,7 @@
  */
 
 import { Organization } from '@prisma/client';
-import { calculateProjectEndDate, calculateProjectStartDate, isAdmin, notGuest, User } from 'shared';
+import { calculateProjectEndDate, calculateProjectStartDate, isAdmin, NewMemberSignUpEvent, notGuest, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedException,
@@ -175,6 +175,49 @@ export default class ExecSummaryServices {
     }
 
     return executiveSummaryTransformer(executiveSummary);
+  }
+
+  /**
+   * Gets every event on a new member calendar that has a recorded new member sign up count
+   *
+   * @param organization the organization to get the events for
+   * @param viewer the user making the request
+   * @returns the events with their sign up counts, oldest first
+   */
+  static async getNewMemberSignUpEvents(organization: Organization, viewer: User): Promise<NewMemberSignUpEvent[]> {
+    const hasPermission = await userHasPermission(viewer.userId, organization.organizationId, notGuest);
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only members can view new member sign ups');
+    }
+
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        newMemberSignUps: { not: null },
+        eventType: {
+          calendars: {
+            some: { isNewMemberCalendar: true, dateDeleted: null, organizationId: organization.organizationId }
+          }
+        }
+      },
+      select: {
+        eventId: true,
+        title: true,
+        newMemberSignUps: true,
+        initialDateScheduled: true,
+        dateCreated: true,
+        scheduledTimes: { select: { startTime: true }, orderBy: { startTime: 'asc' }, take: 1 }
+      }
+    });
+
+    return events
+      .map((event) => ({
+        eventId: event.eventId,
+        title: event.title,
+        date: event.scheduledTimes[0]?.startTime ?? event.initialDateScheduled ?? event.dateCreated,
+        signUps: event.newMemberSignUps ?? 0
+      }))
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
   }
 
   static async getAllExecutiveSummaries(organization: Organization, viewer: User) {

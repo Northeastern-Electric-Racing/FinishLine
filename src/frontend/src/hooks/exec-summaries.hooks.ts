@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { BudgetSummary, ExecutiveSummary, VehicleDevelopmentSummary } from 'shared';
+import { BudgetSummary, ExecutiveSummary, NewMemberSignUpEvent, VehicleDevelopmentSummary } from 'shared';
 import {
   editExecutiveSummary,
   getAllExecutiveSummaries,
   getBudgetSummary,
+  getNewMemberSignUpEvents,
   getSingleExecutiveSummary,
   getVehicleDevelopmentSummary
 } from '../apis/exec-summaries.api';
@@ -87,4 +88,16 @@ export const useEditExecutiveSummary = (executiveSummaryId: string) => {
       return data;
     }
   );
+};
+
+/**
+ * Custom react hook to get all new member events with their sign up counts
+ *
+ * @returns the new member sign up events
+ */
+export const useGetNewMemberSignUpEvents = () => {
+  return useQuery<NewMemberSignUpEvent[], Error>(['executive-summaries', 'new-member-sign-ups'], async () => {
+    const { data } = await getNewMemberSignUpEvents();
+    return data;
+  });
 };
