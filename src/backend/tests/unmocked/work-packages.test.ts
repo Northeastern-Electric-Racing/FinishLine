@@ -146,7 +146,13 @@ describe('Work Package Tests', () => {
   describe('getSingleWorkPackage', () => {
     it('returns the work package from the requesting organization when another org has the same wbs number', async () => {
       const otherOrg = await prisma.organization.create({
-        data: { name: 'Other org', description: '', applicationLink: '', userCreated: { connect: { userId: user.userId } } }
+        data: {
+          name: 'Other org',
+          slug: 'wp-other-org',
+          description: '',
+          applicationLink: '',
+          userCreated: { connect: { userId: user.userId } }
+        }
       });
       const otherCar = await createTestCar(otherOrg.organizationId, user.userId, 1);
       const otherProj = await createTestProject(user, otherOrg.organizationId, undefined, otherCar.carId, 1, 1);

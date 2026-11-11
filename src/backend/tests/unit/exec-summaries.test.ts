@@ -781,6 +781,7 @@ describe('Executive Summary Tests', () => {
       const dummyOrganization = await prisma.organization.create({
         data: {
           name: 'Dummy Org',
+          slug: 'dummy-org',
           description: 'Dummy org for cross-organization test',
           applicationLink: '',
           userCreated: { connect: { userId: superman.userId } }

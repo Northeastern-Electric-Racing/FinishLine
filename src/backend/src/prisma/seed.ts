@@ -65,8 +65,7 @@ await new SeedRunner()
     new CompetitionDocumentsSummaryProcess(),
     new RecruitmentCycleProcess(),
     new RecruitmentDivisionCountProcess(),
-    new RulesProcess()
-    new GraphProcess(),
+    new RulesProcess(),
     new BayDashboardProcess()
   )
   .run();
