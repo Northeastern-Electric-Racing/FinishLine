@@ -10,7 +10,6 @@ import {
   WorkPackageStage,
   BudgetChangeRequest,
   isWorkPackageWbs,
-  LeadershipChangeRequest,
   ChangeRequestStatus
 } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
@@ -113,13 +112,7 @@ const triageScoreInputOf = (changeRequest: {
 
 export const changeRequestManyTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestManyQueryArgs>
-):
-  | ChangeRequest
-  | StandardChangeRequest
-  | ActivationChangeRequest
-  | StageGateChangeRequest
-  | BudgetChangeRequest
-  | LeadershipChangeRequest => {
+): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
   return {
@@ -166,13 +159,7 @@ export const changeRequestManyTransformer = (
 
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>
-):
-  | ChangeRequest
-  | StandardChangeRequest
-  | ActivationChangeRequest
-  | StageGateChangeRequest
-  | BudgetChangeRequest
-  | LeadershipChangeRequest => {
+): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
   const wbsName = changeRequest.wbsElement

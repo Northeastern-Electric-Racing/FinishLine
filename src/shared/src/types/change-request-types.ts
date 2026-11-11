@@ -76,11 +76,6 @@ export interface BudgetChangeRequest extends ChangeRequest {
   proposedBudget: number;
 }
 
-export interface LeadershipChangeRequest extends ChangeRequest {
-  lead?: User;
-  manager?: User;
-}
-
 export enum ChangeRequestStatus {
   Implemented = 'Implemented',
   Accepted = 'Accepted',
