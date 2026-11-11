@@ -1,13 +1,14 @@
 import { Draggable } from '@hello-pangea/dnd';
-import { Construction, Folder, Delete, Schedule } from '@mui/icons-material';
+import { Construction, Folder, Delete, Schedule, ContentCopy } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, Grid, Typography, IconButton } from '@mui/material';
 import { useState } from 'react';
-import { notGuest, TaskBoardItem, TaskStatus, WbsNumber } from 'shared';
-import { useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../../../hooks/tasks.hooks';
+import { notGuest, TaskBoardItem, TaskStatus, toDateString, WbsNumber } from 'shared';
+import { useDeleteTask, useCreateTask, useEditTask, useEditTaskAssignees } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
 import { datePipe, fullNamePipe, listPipe } from '../../../../../utils/pipes';
 import { EditTaskFormInput } from '../TaskFormModal';
+import TaskFormModal from '../TaskFormModal';
 import TaskModal from '../TaskModal';
 import NERModal from '../../../../../components/NERModal';
 import { Link as RouterLink, useHistory, useLocation } from 'react-router-dom';
@@ -46,6 +47,7 @@ export const TaskCard = ({
 }) => {
   const { mutateAsync: deleteTask } = useDeleteTask();
   const { mutateAsync: editTask } = useEditTask();
+  const { mutateAsync: createTask } = useCreateTask();
   const { mutateAsync: editTaskAssignees } = useEditTaskAssignees();
 
   const projectName = showProjectName ? task.projectName : undefined;
@@ -55,6 +57,7 @@ export const TaskCard = ({
   const toast = useToast();
   const history = useHistory();
   const location = useLocation();
+  const [showCopyCard, setShowCopyCard] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // the open task is encoded in the url (?task=<taskId>) so a task modal can be linked to and shared directly
@@ -74,9 +77,63 @@ export const TaskCard = ({
     history.push(search ? `${location.pathname}?${search}` : location.pathname);
   };
 
+  const hideMakeFromModal = () => {
+    setShowCopyCard(false);
+  };
+
+  const showMakeFromModal = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowCopyCard(true);
+  };
+
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowDeleteConfirm(true);
+  };
+
+  const handleCopyTask = async ({
+    taskId,
+    notes,
+    title,
+    deadline,
+    assignees,
+    labels,
+    blockedBy,
+    priority,
+    startDate,
+    wpWbsNum
+  }: EditTaskFormInput) => {
+    try {
+      const targetWbsNum = wpWbsNum ?? task.wbsNum;
+      const formatDeadline = deadline ? toDateString(deadline) : undefined;
+      const formatStartDate = startDate ? toDateString(startDate) : undefined;
+      await createTask({
+        wbsNum: targetWbsNum,
+        title,
+        priority,
+        assignees,
+        status: task.status,
+        notes,
+        deadline: formatDeadline,
+        startDate: formatStartDate,
+        labelIds: labels.map((l) => l.taskLabelId),
+        blockedByIds: blockedBy.map((b) => b.taskId)
+      });
+
+      const newTask = await editTaskAssignees({
+        taskId,
+        assignees
+      });
+
+      onEditTask(newTask);
+      toast.success('Task copied successfully!');
+      closeTask();
+      setShowCopyCard(false);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
   };
 
   const confirmDelete = async () => {
@@ -154,6 +211,15 @@ export const TaskCard = ({
         context={context}
         onOpenTask={openTask}
       />
+      <TaskFormModal
+        modalShow={showCopyCard}
+        task={task}
+        onHide={hideMakeFromModal}
+        onSubmit={handleCopyTask}
+        wbsNum={wbsNum ?? task.wbsNum}
+        context={context}
+        isCopy={true}
+      />
       <NERModal
         open={showDeleteConfirm}
         onHide={() => setShowDeleteConfirm(false)}
@@ -189,10 +255,15 @@ export const TaskCard = ({
                     </Typography>
                   )}
                   <Grid container>
-                    <Grid item xs={11}>
+                    <Grid item xs={10}>
                       <Typography variant="h5" component="div">
                         {task.title}
                       </Typography>
+                    </Grid>
+                    <Grid item xs={1}>
+                      <IconButton onClick={showMakeFromModal} size="small">
+                        <ContentCopy />
+                      </IconButton>
                     </Grid>
                     <Grid item xs={1}>
                       <IconButton onClick={handleDelete} size="small">
