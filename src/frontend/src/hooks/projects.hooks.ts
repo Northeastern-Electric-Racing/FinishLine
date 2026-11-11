@@ -400,6 +400,7 @@ export const useEditProjectTeams = (wbsNum: WbsNumber) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects', wbsNum]);
+        queryClient.invalidateQueries(['teams']);
       }
     }
   );

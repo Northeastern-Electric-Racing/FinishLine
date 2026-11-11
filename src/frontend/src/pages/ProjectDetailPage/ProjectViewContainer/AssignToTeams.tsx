@@ -3,15 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
-  Button,
+  Alert,
   Checkbox,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   List,
   ListItem,
   ListItemButton,
@@ -20,79 +16,85 @@ import {
 } from '@mui/material';
 import { Project } from 'shared';
 import { useAllTeams } from '../../../hooks/teams.hooks';
+import { useEditProjectTeams } from '../../../hooks/projects.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
+import NERModal from '../../../components/NERModal';
 
 interface AssignToTeamsProps {
   modalShow: boolean;
   handleClose: () => void;
-  onSubmit?: (checkedIds: string[]) => Promise<void>;
   project: Project;
 }
 
-const AssignToTeams: React.FC<AssignToTeamsProps> = ({ modalShow, handleClose, onSubmit, project }) => {
-  const { data: allTeams, isLoading: allTeamsIsLoading } = useAllTeams();
-  const [checked, setChecked] = useState<string[]>([]);
+const AssignToTeams: React.FC<AssignToTeamsProps> = ({ modalShow, handleClose, project }) => {
+  const { mutateAsync: mutateAsyncEditProjectTeams } = useEditProjectTeams(project.wbsNum);
+  const { data: allTeams, isLoading: allTeamsIsLoading, isError: teamsIsError, error: teamsError } = useAllTeams();
+  const [checked, setChecked] = useState<string[]>(() => project.teams.map((team) => team.teamId));
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    if (modalShow) {
-      setChecked(project.teams.map((team) => team.teamId));
-    }
-  }, [modalShow, project.teams]);
-
-  const handleToggle = (id: string) => {
-    setChecked((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
-  };
+  const toast = useToast();
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await onSubmit?.(checked);
+      const res = await mutateAsyncEditProjectTeams(checked);
+      toast.success(res.message);
       handleClose();
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
     } finally {
       setIsSaving(false);
     }
   };
 
-  return (
-    <Dialog open={modalShow} onClose={isSaving ? undefined : handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Assign to Teams</DialogTitle>
-      <DialogContent dividers>
-        {allTeamsIsLoading || !allTeams ? (
-          <CircularProgress size={24} sx={{ display: 'block', mx: 'auto', my: 2 }} />
-        ) : (
-          <List disablePadding>
-            {allTeams.map((team) => {
-              const labelId = `assign-team-label-${team.teamId}`;
+  const handleHide = () => {
+    if (!isSaving) handleClose();
+  };
 
-              return (
-                <ListItem key={team.teamId} disablePadding>
-                  <ListItemButton onClick={() => handleToggle(team.teamId)} disabled={isSaving} dense>
-                    <ListItemIcon>
-                      <Checkbox
-                        edge="start"
-                        checked={checked.includes(team.teamId)}
-                        tabIndex={-1}
-                        disableRipple
-                        inputProps={{ 'aria-labelledby': labelId }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText id={labelId} primary={team.teamName} secondary={team.teamType?.name} />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} disabled={isSaving}>
-          Cancel
-        </Button>
-        <Button variant="contained" onClick={handleSave} disabled={isSaving || allTeamsIsLoading}>
-          Save
-        </Button>
-      </DialogActions>
-    </Dialog>
+  const handleToggle = (id: string) => {
+    setChecked((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
+  };
+
+  return (
+    <NERModal
+      open={modalShow}
+      title="Assign to Teams"
+      onHide={handleHide}
+      onSubmit={handleSave}
+      submitText="Save"
+      disabled={isSaving || allTeamsIsLoading || teamsIsError}
+      paperProps={{ width: '33vw', maxWidth: 'none' }}
+    >
+      {teamsIsError ? (
+        <Alert severity="error">{teamsError?.message ?? 'Failed to load teams.'}</Alert>
+      ) : allTeamsIsLoading || !allTeams ? (
+        <CircularProgress size={24} sx={{ display: 'block', mx: 'auto', my: 2 }} />
+      ) : (
+        <List disablePadding>
+          {allTeams.map((team) => {
+            const labelId = `assign-team-label-${team.teamId}`;
+
+            return (
+              <ListItem key={team.teamId} disablePadding>
+                <ListItemButton onClick={() => handleToggle(team.teamId)} disabled={isSaving} dense>
+                  <ListItemIcon>
+                    <Checkbox
+                      edge="start"
+                      checked={checked.includes(team.teamId)}
+                      tabIndex={-1}
+                      disableRipple
+                      inputProps={{ 'aria-labelledby': labelId }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText id={labelId} primary={team.teamName} secondary={team.teamType?.name} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </List>
+      )}
+    </NERModal>
   );
 };
 

@@ -48,7 +48,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const toast = useToast();
   const history = useHistory();
   const { mutateAsync: mutateAsyncSetProjectTeam } = useSetProjectTeam(project.wbsNum);
-  const { mutateAsync: mutateAsyncEditProjectTeams } = useEditProjectTeams(project.wbsNum);
   const {
     data: favoriteProjects,
     isLoading: favoriteProjectsIsLoading,
@@ -112,17 +111,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     }
   };
 
-  const handleSaveTeams = async (teamIds: string[]) => {
-    try {
-      const successMessage = await mutateAsyncEditProjectTeams(teamIds);
-      toast.success(successMessage.message);
-    } catch (e) {
-      if (e instanceof Error) {
-        toast.error(e.message);
-      }
-    }
-  };
-
   const budgetIncrease = materials.reduce(addMaterialCosts, 0) - project.budget;
   const assignToTeamText = project.teams.map((team) => team.teamId).includes(teamAsHeadId!)
     ? 'Unassign from My Team'
@@ -167,7 +155,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             icon: <ContentPasteIcon fontSize="small" />
           },
           {
-            title: 'Assign to Teams',
+            title: 'Edit Teams',
             onClick: handleClickAssignToTeams,
             disabled: !isAdmin(user.role),
             icon: <AssignmentIcon fontSize="small" />
@@ -276,7 +264,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <AssignToTeams
           modalShow={assignToTeamsModalShow}
           handleClose={handleAssignToTeamsClose}
-          onSubmit={handleSaveTeams}
           project={project}
         />
       )}

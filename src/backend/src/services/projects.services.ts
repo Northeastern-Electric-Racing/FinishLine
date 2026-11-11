@@ -453,8 +453,7 @@ export default class ProjectsService {
         dateDeleted: true,
         project: {
           select: {
-            projectId: true,
-            teams: { select: { teamId: true, headId: true } }
+            projectId: true
           }
         }
       }
@@ -467,14 +466,12 @@ export default class ProjectsService {
     const uniqueTeamIds = [...new Set(teamIds)];
 
     const teams = await prisma.team.findMany({
-      where: { teamId: { in: uniqueTeamIds } },
-      select: { teamId: true, headId: true, organizationId: true }
+      where: { teamId: { in: uniqueTeamIds }, organizationId: organization.organizationId },
+      select: { teamId: true }
     });
 
     const missingTeamId = uniqueTeamIds.find((teamId) => !teams.some((team) => team.teamId === teamId));
     if (missingTeamId) throw new NotFoundException('Team', missingTeamId);
-    if (teams.some((team) => team.organizationId !== organization.organizationId))
-      throw new InvalidOrganizationException('Team');
 
     await prisma.project.update({
       where: { projectId: project.projectId },
