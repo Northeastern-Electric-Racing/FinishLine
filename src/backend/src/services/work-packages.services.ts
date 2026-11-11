@@ -227,15 +227,19 @@ export default class WorkPackagesService {
       const leadIdString = workPackage.wbsElement.leadId || '';
       const managerIdString = workPackage.wbsElement.managerId || '';
 
-      const link = `https://finishlinebyner.com/wp/${workPackage}`;
-      const linkButtonText = `View WP#${workPackage.projectId}`;
+      const link = `<https://finishlinebyner.com/projects/${workPackage.wbsElement}|${workPackage.wbsElement}>`;
+      const linkButtonText = `View WP#${wbsPipe(workPackage.wbsElement)}`;
 
       const { teams } = workPackage.project;
 
       if (startDateInactive) {
         const dateRelation = WorkPackagesService.GetBeforeNowOrAfter(currDay, workPackage.startDate);
         const startDateMessage =
-          'The work package, ' + workPackage.projectId + ' , is still inactive ' + dateRelation + ' the start date';
+          'The work package, ' +
+          wbsPipe(workPackage.wbsElement) +
+          ' , is still inactive ' +
+          dateRelation +
+          ' the start date';
         const message = leadIdString + ' ' + managerIdString + ' ' + startDateMessage;
         teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText));
       }
