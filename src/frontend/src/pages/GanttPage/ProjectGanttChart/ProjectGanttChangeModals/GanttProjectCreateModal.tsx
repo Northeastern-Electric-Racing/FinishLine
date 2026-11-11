@@ -48,7 +48,6 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
       name: workPackage.name,
       startDate: dateToMidnightUTC(workPackage.startDate).toISOString(),
       duration: dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week'),
-      crId: undefined,
       blockedBy: workPackage.blockedBy,
       descriptionBullets: workPackage.descriptionBullets,
       stage: workPackage.stage ?? 'NONE'

@@ -22,7 +22,6 @@ export interface WorkPackageApiInputs {
   startDate: string;
   duration: number;
   stage: WorkPackageStage | 'NONE';
-  crId?: string;
   blockedBy: WbsNumber[];
   descriptionBullets: DescriptionBulletPreview[];
 }
