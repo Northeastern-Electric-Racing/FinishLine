@@ -128,12 +128,12 @@ export const TaskCard = ({
       onEditTask(newTask);
       toast.success('Task copied successfully!');
       closeTask();
+      setShowCopyCard(false);
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    setShowCopyCard(false);
   };
 
   const confirmDelete = async () => {
