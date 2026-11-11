@@ -72,7 +72,6 @@ interface WorkPackageFormViewProps {
   wbsElement: WbsElement;
   leadOrManagerOptions: User[];
   blockedByOptions: { id: string; label: string }[];
-  crId?: string;
   schema: ObjectSchema<any>;
   breadcrumbs: { name: string; route: string }[];
 }
@@ -96,7 +95,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   wbsElement,
   leadOrManagerOptions,
   blockedByOptions,
-  crId,
   schema,
   breadcrumbs
 }) => {
@@ -286,7 +284,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         toast.success('Change request submitted successfully');
         history.push(routes.CHANGE_REQUESTS_OVERVIEW);
       } else {
-        await workPackageMutateAsync({ ...payload, crId });
+        await workPackageMutateAsync(payload);
         toast.success('Work package updated successfully');
         exitActiveMode();
       }

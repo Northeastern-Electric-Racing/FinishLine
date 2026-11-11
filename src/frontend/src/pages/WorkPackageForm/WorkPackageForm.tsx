@@ -14,7 +14,6 @@ import { LeadershipChangeCreateArgs } from '../../../../shared';
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
   exitActiveMode: () => void;
-  crId?: string;
   workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
   createLeadershipCR: (data: LeadershipChangeCreateArgs) => void;
@@ -28,7 +27,6 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   createWorkPackageScopeCR,
   createLeadershipCR,
   exitActiveMode,
-  crId,
   schema,
   breadcrumbs
 }) => {
@@ -83,7 +81,6 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
       wbsElement={wbsElement}
       leadOrManagerOptions={leadOrManagerOptions}
       blockedByOptions={blockedByOptions}
-      crId={crId}
       schema={schema}
       breadcrumbs={breadcrumbs}
     />
