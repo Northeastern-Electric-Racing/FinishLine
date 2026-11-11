@@ -27,7 +27,7 @@ import { projectPreviewTransformer } from '../transformers/projects.transformer.
 import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { userTransformer } from '../transformers/user.transformer.js';
 import { organizationTransformer } from '../transformers/organizationTransformer.js';
-import { getBotChannels } from '../integrations/slack.js';
+import { getBotChannels, getChannelName } from '../integrations/slack.js';
 import { isSlackChannelMember } from '../utils/slack.utils.js';
 
 export default class OrganizationsService {
@@ -467,18 +467,28 @@ export default class OrganizationsService {
    * @returns every channel the bot can see, each with its Slack channel id, current name, and the user's access
    */
   static async getAvailableNotificationChannelsForUser(userId: string): Promise<NotificationChannelPreview[]> {
+    const devChannelId = process.env.NODE_ENV === 'development' ? process.env.SLACK_DEV_CHANNEL_ID : undefined;
     const slackId = await getUserSlackId(userId);
     const botChannels = await getBotChannels();
 
-    return Promise.all(
+    const channels = await Promise.all(
       botChannels.map(async (channel) => ({
         slackChannelId: channel.id,
         name: channel.name,
-        hasAccess: await isSlackChannelMember(slackId, channel.id)
+        hasAccess: channel.id === devChannelId || (await isSlackChannelMember(slackId, channel.id))
       }))
     );
-  }
 
+    if (devChannelId && !channels.some((channel) => channel.slackChannelId === devChannelId)) {
+      channels.push({
+        slackChannelId: devChannelId,
+        name: (await getChannelName(devChannelId)) ?? 'slackbot_land',
+        hasAccess: true
+      });
+    }
+
+    return channels;
+  }
   /**
    * Gets the finance delegates for the given organization
    * @param organizationId the organization to get the finance delegates for
