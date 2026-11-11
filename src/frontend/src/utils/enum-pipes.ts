@@ -49,8 +49,6 @@ export const ChangeRequestTypeTextPipe: (type: ChangeRequestType) => string = (t
       return 'Stage Gate';
     case ChangeRequestType.Budget:
       return 'Budget';
-    case ChangeRequestType.Leadership:
-      return 'Leadership';
     case ChangeRequestType.Standard:
       return 'Standard';
     case ChangeRequestType.NonMeaningful:

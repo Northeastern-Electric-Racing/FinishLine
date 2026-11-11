@@ -145,17 +145,13 @@ export const changeRequestManyTransformer = (
     workPackageProposedChanges: undefined,
     originalProjectData: undefined,
     originalWorkPackageData: undefined,
-    // activation + leadership cr fields
-    lead: changeRequest.leadershipChangeRequest?.lead
-      ? userTransformer(changeRequest.leadershipChangeRequest.lead)
-      : changeRequest.activationChangeRequest?.lead
-        ? userTransformer(changeRequest.activationChangeRequest.lead)
-        : undefined,
-    manager: changeRequest.leadershipChangeRequest?.manager
-      ? userTransformer(changeRequest.leadershipChangeRequest.manager)
-      : changeRequest.activationChangeRequest?.manager
-        ? userTransformer(changeRequest.activationChangeRequest.manager)
-        : undefined,
+    // activation cr fields
+    lead: changeRequest.activationChangeRequest?.lead
+      ? userTransformer(changeRequest.activationChangeRequest.lead)
+      : undefined,
+    manager: changeRequest.activationChangeRequest?.manager
+      ? userTransformer(changeRequest.activationChangeRequest.manager)
+      : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields
@@ -222,17 +218,13 @@ const changeRequestTransformer = (
       : undefined,
     originalProjectData: undefined,
     originalWorkPackageData: undefined,
-    // activation + leadership cr fields
-    lead: changeRequest.leadershipChangeRequest?.lead
-      ? userTransformer(changeRequest.leadershipChangeRequest.lead)
-      : changeRequest.activationChangeRequest?.lead
-        ? userTransformer(changeRequest.activationChangeRequest.lead)
-        : undefined,
-    manager: changeRequest.leadershipChangeRequest?.manager
-      ? userTransformer(changeRequest.leadershipChangeRequest.manager)
-      : changeRequest.activationChangeRequest?.manager
-        ? userTransformer(changeRequest.activationChangeRequest.manager)
-        : undefined,
+    // activation cr fields
+    lead: changeRequest.activationChangeRequest?.lead
+      ? userTransformer(changeRequest.activationChangeRequest.lead)
+      : undefined,
+    manager: changeRequest.activationChangeRequest?.manager
+      ? userTransformer(changeRequest.activationChangeRequest.manager)
+      : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields

@@ -38,8 +38,6 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
       return <></>;
     case ChangeRequestType.Budget:
       return <BudgetDetails budgetChangeRequest={cr as BudgetChangeRequest} />;
-    case ChangeRequestType.Leadership:
-      return <></>;
     case ChangeRequestType.NonMeaningful:
       return <></>;
     default:
