@@ -43,7 +43,6 @@ import { validateBlockedBys } from './work-packages.utils.js';
  */
 export const validateChangeRequestAccepted = async (crId: string) => {
   const changeRequest = await prisma.change_Request.findUnique({ where: { crId }, include: { changes: true } });
-  const currentDate = new Date();
 
   if (!changeRequest) throw new NotFoundException('Change Request', crId);
   if (changeRequest.dateDeleted) throw new HttpException(400, 'Cannot use a deleted change request!');
@@ -52,8 +51,6 @@ export const validateChangeRequestAccepted = async (crId: string) => {
   const dateImplemented = getDateImplemented(changeRequest);
   if (!dateImplemented && !changeRequest.dateReviewed)
     throw new HttpException(400, 'Cannot use an unreviewed and unimplemented change request');
-  if (dateImplemented && currentDate.getTime() - dateImplemented.getTime() > 1000 * 60 * 60 * 24 * 5)
-    throw new HttpException(400, 'Cannot tie changes to outdated change request');
 
   return changeRequest;
 };
