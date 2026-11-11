@@ -124,17 +124,16 @@ export const useGetTeamsProjects = (teamId: string) => {
 /**
  * Custom React Hook to supply a single project.
  *
- * @param wbsNum WBS number of the requested project.
- * @param enabled whether to fetch yet; it also waits until there is a wbs number, e.g. until a project has been picked
+ * @param wbsNum WBS number of the requested project; nothing is fetched until there is one, e.g. until a project is picked
  */
-export const useSingleProject = (wbsNum: WbsNumber | undefined, enabled = true) => {
+export const useSingleProject = (wbsNum: WbsNumber | undefined) => {
   return useQuery<ProjectDetail, Error>(
     ['projects', wbsNum],
     async () => {
       const { data } = await getSingleProject(wbsNum!);
       return data;
     },
-    { enabled: enabled && !!wbsNum }
+    { enabled: !!wbsNum }
   );
 };
 

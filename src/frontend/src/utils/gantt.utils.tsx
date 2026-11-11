@@ -172,6 +172,12 @@ export const transformDesignReviewEventToGanttEvent = (event: DesignReviewMarker
 const reviveDate = (date: Date) => new Date(date);
 const reviveOptionalDate = (date?: Date) => (date ? new Date(date) : undefined);
 
+const reviveGanttProjectTask = (task: GanttProjectTask): GanttProjectTask => ({
+  ...task,
+  startDate: reviveOptionalDate(task.startDate),
+  deadline: reviveOptionalDate(task.deadline)
+});
+
 const reviveGanttWorkPackage = <T extends GanttWorkPackage>(workPackage: T): T => ({
   ...workPackage,
   startDate: reviveDate(workPackage.startDate),
@@ -184,11 +190,7 @@ export const reviveProjectGanttItem = (project: ProjectGanttItem): ProjectGanttI
   startDate: reviveOptionalDate(project.startDate),
   endDate: reviveOptionalDate(project.endDate),
   workPackages: project.workPackages.map(reviveGanttWorkPackage),
-  tasks: project.tasks.map((task) => ({
-    ...task,
-    startDate: reviveOptionalDate(task.startDate),
-    deadline: reviveOptionalDate(task.deadline)
-  }))
+  tasks: project.tasks.map(reviveGanttProjectTask)
 });
 
 export const reviveRetrospectiveProject = (project: RetrospectiveProject): RetrospectiveProject => ({
@@ -201,10 +203,7 @@ export const reviveRetrospectiveProject = (project: RetrospectiveProject): Retro
     ...reviveGanttWorkPackage(workPackage),
     originalStartDate: reviveDate(workPackage.originalStartDate)
   })),
-  tasks: project.tasks.map((task) => ({
-    startDate: reviveOptionalDate(task.startDate),
-    deadline: reviveOptionalDate(task.deadline)
-  }))
+  tasks: project.tasks.map(reviveGanttProjectTask)
 });
 
 /**
@@ -502,8 +501,9 @@ export const transformWorkPackageToGanttTask = <T extends GanttWorkPackage>(
   };
 };
 
+/** The project bar both gantt charts draw: its work packages and tasks as rows, and as overlays when it's collapsed */
 export const transformProjectToGanttTask = (
-  project: ProjectGanttItem,
+  project: BaseProject & { workPackages: GanttWorkPackage[]; tasks: GanttProjectTask[] },
   hideTasks: boolean = false
 ): GanttTask<BaseWbsElement | GanttProjectTask> => {
   const startDate = getProjectStartDate(project);
@@ -538,29 +538,16 @@ export const transformProjectToGanttTask = (
   };
 };
 
-// tasks only widen a retrospective project's bar; its rows are dependency trees starting from unblocked work packages
+// a retrospective project's work package rows are dependency trees starting from its unblocked work packages
 export const transformRetrospectiveProjectToGanttTask = (
-  project: RetrospectiveProject
+  project: RetrospectiveProject,
+  hideTasks: boolean = false
 ): GanttTask<BaseWbsElement | GanttProjectTask> => {
   return {
-    id: project.id,
-    element: project,
-
-    name: project.name,
-    start: getProjectStartDate(project),
-    end: getProjectEndDate(project),
-    blocking: [],
+    ...transformProjectToGanttTask(project, hideTasks),
     children: project.workPackages
       .filter((wp) => !wp.isBlocked)
       .map((wp) => transformRetrospectiveWorkPackageToGanttTask(wp, project.workPackages)),
-    overlays: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, project.workPackages)),
-    events: [],
-    tooltip: {
-      upperRightDisplay: <UserDisplay user={project.lead} label="Lead" />,
-      lowerRightDisplay: <UserDisplay user={project.manager} label="Manager" />
-    },
-    onClick: () => window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank'),
-    root: true,
     retro: {
       comparativeEnd: project.originalEndDate,
       comparativeStart: project.originalStartDate

@@ -303,10 +303,14 @@ const ProjectGanttChartPage: FC = () => {
     setSelectedProject(undefined);
   };
 
+  // a placeholder until the project is created: the chart leaves complete projects out, so counting them would reuse a
+  // number already on the chart. The backend assigns the real one
   const getNewProjectNumber = (carNumber: number) => {
-    const existingCarProjects = allProjects.filter((project) => project.wbsNum.carNumber === carNumber).length;
+    const carProjectNumbers = allProjects
+      .filter((project) => project.wbsNum.carNumber === carNumber)
+      .map((project) => project.wbsNum.projectNumber);
 
-    return existingCarProjects + 1;
+    return Math.max(0, ...carProjectNumbers) + 1;
   };
 
   const handleWorkPackageSelected = () => {

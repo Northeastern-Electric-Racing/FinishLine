@@ -68,7 +68,8 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
         for (const task of project.tasks) {
           try {
             await createSingleTask({
-              wbsNum: task.wbsNum,
+              // the task was added under the chart's placeholder project number
+              wbsNum: { ...task.wbsNum, projectNumber: createdProject.wbsNum.projectNumber },
               title: task.title,
               priority: task.priority,
               status: task.status,

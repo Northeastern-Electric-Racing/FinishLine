@@ -77,10 +77,7 @@ export const retrospectiveProjectTransformer = (project: RetrospectiveProject): 
   ...baseProjectTransformer(project),
   originalStartDate: optionalDbDate(project.originalStartDate),
   originalEndDate: optionalDbDate(project.originalEndDate),
-  tasks: project.tasks.map((task) => ({
-    startDate: optionalDbDate(task.startDate),
-    deadline: optionalDbDate(task.deadline)
-  })),
+  tasks: project.tasks.map((task) => ({ ...baseTaskTransformer(task), startDate: optionalDbDate(task.startDate) })),
   workPackages: project.workPackages.map((workPackage) => ({
     ...ganttWorkPackageTransformer(workPackage),
     originalStartDate: dbDateToLocalDate(new Date(workPackage.originalStartDate))

@@ -78,6 +78,7 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
   // the change request resends the project's bullets and links, so they're fetched once a project is picked
   const {
     data: selectedProjectDetail,
+    isLoading: selectedProjectIsLoading,
     isError: selectedProjectIsError,
     error: selectedProjectError
   } = useSingleProject(selectedProject?.wbsNum);
@@ -149,6 +150,8 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
       onFormSubmit={onSubmit}
       cancelText="Cancel"
       submitText="Create Change Request"
+      // the change request is built from the picked project's details
+      disabled={selectedProjectIsLoading}
       showCloseButton
     >
       <Box display="flex" flexDirection={'column'} minWidth={400}>

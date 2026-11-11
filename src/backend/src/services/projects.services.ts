@@ -110,7 +110,9 @@ export default class ProjectsService {
       workPackages: project.workPackages.map((wp) => ({
         ...baseWorkPackageTransformer(wp),
         blocking: wp.wbsElement.blocking.map(({ wbsElement }) => wbsNumOf(wbsElement)),
-        events: wp.events.map((event) => designReviewMarkerTransformer(event, wp.wbsElement.name))
+        events: wp.events.map((event) =>
+          designReviewMarkerTransformer(event, `${project.wbsElement.name} - ${wp.wbsElement.name}`)
+        )
       })),
       tasks: project.wbsElement.tasks.map((task) => ({
         ...baseTaskTransformer(task),
@@ -264,11 +266,20 @@ export default class ProjectsService {
    * @throws if the wbsNumber is invalid, the project is not found, or the project is deleted
    */
   static async getSingleProject(wbsNumber: WbsNumber, user: User, organization: Organization): Promise<ProjectDetail> {
-    const { projectId } = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
+    if (!isProjectWbs(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+    const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
     const { userId } = user;
 
-    const project = await prisma.project.findUniqueOrThrow({
-      where: { projectId },
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber,
+          organizationId: organization.organizationId,
+          dateDeleted: null
+        }
+      },
       select: {
         ...getBaseProjectQueryArgs().select,
         wbsElement: {
@@ -334,6 +345,8 @@ export default class ProjectsService {
       }
     });
 
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
+
     return {
       ...baseProjectTransformer(project),
       links: project.wbsElement.links,
@@ -349,7 +362,9 @@ export default class ProjectsService {
       workPackages: project.workPackages.map((wp) => ({
         ...baseWorkPackageTransformer(wp),
         blocking: wp.wbsElement.blocking.map(({ wbsElement }) => wbsNumOf(wbsElement)),
-        events: wp.events.map((event) => designReviewMarkerTransformer(event, wp.wbsElement.name)),
+        events: wp.events.map((event) =>
+          designReviewMarkerTransformer(event, `${project.wbsElement.name} - ${wp.wbsElement.name}`)
+        ),
         blockedBy: wp.blockedBy.map((blocker) => ({ wbsNum: wbsNumOf(blocker), name: blocker.name })),
         descriptionBullets: wp.wbsElement.descriptionBullets.map((bullet) => ({
           id: bullet.descriptionId,

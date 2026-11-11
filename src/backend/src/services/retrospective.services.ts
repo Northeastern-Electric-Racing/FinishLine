@@ -13,6 +13,10 @@ import {
 import { getBaseWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
 import { baseProjectTransformer, designReviewMarkerTransformer } from '../transformers/projects.transformer.js';
 import { baseWorkPackageTransformer } from '../transformers/work-packages.transformer.js';
+import { getBaseTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
+import { getBaseUserQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { baseTaskTransformer } from '../transformers/tasks.transformer.js';
+import { baseUserTransformer } from '../transformers/user.transformer.js';
 import { wbsNumOf } from '../utils/utils.js';
 
 type ScheduleChange = { detail: string; dateImplemented: Date };
@@ -70,8 +74,16 @@ export default class RetrospectiveService {
         wbsElement: {
           select: {
             ...getBaseProjectQueryArgs().select.wbsElement.select,
-            // only their dates widen the project's bar
-            tasks: { where: { dateDeleted: null }, select: { startDate: true, deadline: true } }
+            // drawn as task bars, the same as on the projects gantt
+            tasks: {
+              where: { dateDeleted: null },
+              select: {
+                ...getBaseTaskQueryArgs().select,
+                startDate: true,
+                createdBy: getBaseUserQueryArgs(),
+                blockedBy: { select: { taskId: true } }
+              }
+            }
           }
         },
         workPackages: {
@@ -118,7 +130,9 @@ export default class RetrospectiveService {
       const retrospectiveWorkPackages: RetrospectiveWorkPackage[] = workPackages.map((wp) => ({
         ...baseWorkPackageTransformer(wp),
         blocking: wp.wbsElement.blocking.map(({ wbsElement }) => wbsNumOf(wbsElement)),
-        events: wp.events.map((event) => designReviewMarkerTransformer(event, wp.wbsElement.name)),
+        events: wp.events.map((event) =>
+          designReviewMarkerTransformer(event, `${project.wbsElement.name} - ${wp.wbsElement.name}`)
+        ),
         isBlocked: wp._count.blockedBy > 0,
         originalStartDate: wp.originalStartDate,
         originalDuration: wp.originalDuration
@@ -129,8 +143,10 @@ export default class RetrospectiveService {
         originalStartDate: calculateProjectOriginalStartDate(workPackages),
         originalEndDate: calculateProjectOriginalEndDate(workPackages),
         tasks: project.wbsElement.tasks.map((task) => ({
+          ...baseTaskTransformer(task),
           startDate: task.startDate ?? undefined,
-          deadline: task.deadline ?? undefined
+          createdBy: baseUserTransformer(task.createdBy),
+          blockedBy: task.blockedBy
         })),
         workPackages: retrospectiveWorkPackages
       };

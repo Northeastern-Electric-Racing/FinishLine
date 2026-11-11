@@ -9,8 +9,7 @@ import Grid from '@mui/material/Grid';
 import { FormControl, FormLabel } from '@mui/material';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import NERAutocomplete from '../../components/NERAutocomplete';
-import { useAllProjects } from '../../hooks/projects.hooks';
-import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
+import { useProjectsDropdown, useWorkPackagesDropdown } from '../../hooks/dropdowns.hooks';
 import { useAllMembers } from '../../hooks/users.hooks';
 import { userToAutocompleteOption } from '../../utils/teams.utils';
 import ErrorPage from '../ErrorPage';
@@ -58,13 +57,14 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     formState: { errors }
   } = changeRequestFormReturn;
 
-  const { isLoading, isError, error, data: projects } = useAllProjects();
+  // the picker only needs names and wbs numbers
+  const { isLoading, isError, error, data: projects } = useProjectsDropdown();
   const {
     isLoading: workPackagesIsLoading,
     isError: workPackagesIsError,
     error: workPackagesError,
     data: workPackages
-  } = useAllWorkPackages();
+  } = useWorkPackagesDropdown();
   const { isLoading: membersIsLoading, isError: membersIsError, error: membersError, data: members } = useAllMembers();
 
   if (isError) return <ErrorPage message={error?.message} />;

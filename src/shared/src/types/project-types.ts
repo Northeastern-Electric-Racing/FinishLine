@@ -148,8 +148,7 @@ export interface RetrospectiveWorkPackage extends GanttWorkPackage {
 export interface RetrospectiveProject extends BaseProject {
   originalStartDate?: Date;
   originalEndDate?: Date;
-  // only their dates widen the project's bar
-  tasks: { startDate?: Date; deadline?: Date }[];
+  tasks: GanttProjectTask[];
   workPackages: RetrospectiveWorkPackage[];
 }
 
