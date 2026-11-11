@@ -2744,4 +2744,166 @@ describe('Calendar Tests', () => {
       await expect(CalendarService.remindUnconfirmed(event.eventId, adminUser, organization)).resolves.toBeUndefined();
     });
   });
+
+  describe('On/Off Calendar Notifications', () => {
+    let event: Event;
+    let offEvent: Event;
+    let member: User;
+
+    beforeEach(async () => {
+      member = await createTestUser(wonderwomanGuest, orgId);
+      const scheduleSlots = [
+        {
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          allDay: false
+        }
+      ];
+
+      event = await CalendarService.createEvent(
+        adminUser,
+        'Notification Test Event',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [],
+        [],
+        [],
+        [],
+        scheduleSlots,
+        undefined, // initialDateScheduled
+        [], // notificationChannelIds
+        undefined, // teamTypeId
+        undefined, // questionDocumentLink
+        'Conference Room A' // location
+      );
+
+      offEvent = await CalendarService.createEvent(
+        adminUser,
+        'Notification Off Test Event',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [],
+        [],
+        [],
+        [],
+        scheduleSlots,
+        undefined, // initialDateScheduled
+        [], // notificationChannelIds
+        undefined, // teamTypeId
+        undefined, // questionDocumentLink
+        'Conference Room A', // location
+        undefined, // zoomLink
+        undefined, // description
+        undefined, // mention
+        false // sendSlackNotifications
+      );
+    });
+
+    it('defaults to notifications on when the flag is omitted', async () => {
+      expect(event.sendSlackNotifications).toBe(true);
+    });
+
+    it('sends notifications when turned on', async () => {
+      // createEvent only sends the event pop-up when notifications are on
+      const popUps = await prisma.popUp.findMany({
+        where: { eventLink: `/settings/preferences?eventId=${event.eventId}` }
+      });
+
+      expect(popUps).toHaveLength(1);
+    });
+
+    it('succeeds when created with notifications off', async () => {
+      expect(offEvent.sendSlackNotifications).toBe(false);
+    });
+
+    it('does not send notifications when turned off', async () => {
+      const popUps = await prisma.popUp.findMany({
+        where: { eventLink: `/settings/preferences?eventId=${offEvent.eventId}` }
+      });
+
+      expect(popUps).toHaveLength(0);
+    });
+
+    it('succeeds turning notifications off through editEvent', async () => {
+      const result = await CalendarService.editEvent(
+        adminUser,
+        event.eventId,
+        event.title,
+        organization,
+        [member.userId],
+        [],
+        event.status,
+        [],
+        [],
+        [],
+        [],
+        [],
+        [], // notificationChannelIds
+        undefined, // teamTypeId
+        undefined, // questionDocumentLink
+        'Conference Room A', // location
+        undefined, // zoomLink
+        undefined, // description
+        false // sendSlackNotifications
+      );
+
+      expect(result.sendSlackNotifications).toBe(false);
+    });
+
+    it('succeeds turning notifications back on through editEvent', async () => {
+      const result = await CalendarService.editEvent(
+        adminUser,
+        offEvent.eventId,
+        offEvent.title,
+        organization,
+        [member.userId],
+        [],
+        offEvent.status,
+        [],
+        [],
+        [],
+        [],
+        [],
+        [], // notificationChannelIds
+        undefined, // teamTypeId
+        undefined, // questionDocumentLink
+        'Conference Room A', // location
+        undefined, // zoomLink
+        undefined, // description
+        true // sendSlackNotifications
+      );
+
+      expect(result.sendSlackNotifications).toBe(true);
+    });
+
+    it('fails if event does not exist', async () => {
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          'non-existent-id',
+          event.title,
+          organization,
+          [member.userId],
+          [],
+          event.status,
+          [],
+          [],
+          [],
+          [],
+          [],
+          [], // notificationChannelIds
+          undefined, // teamTypeId
+          undefined, // questionDocumentLink
+          'Conference Room A', // location
+          undefined, // zoomLink
+          undefined, // description
+          false // sendSlackNotifications
+        )
+      ).rejects.toThrow(new NotFoundException('Event', 'non-existent-id'));
+    });
+  });
 });
