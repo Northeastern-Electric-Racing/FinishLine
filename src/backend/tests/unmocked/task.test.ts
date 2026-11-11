@@ -288,6 +288,7 @@ describe('Task Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org',
+          slug: 'task-other-org',
           userCreated: { connect: { userId: user.userId } }
         }
       });
