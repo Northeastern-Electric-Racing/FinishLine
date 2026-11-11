@@ -81,7 +81,6 @@ describe('Calendar Tests', () => {
       true, // description
       true, // onlyHeadsOrAbove
       false, // requiresConfirmation - changed to false so tests don't need initialDateScheduled
-      true, // sendSlackNotifications
       false // takeAttendance
     );
   });
@@ -270,7 +269,6 @@ describe('Calendar Tests', () => {
             false,
             true,
             false,
-            false,
             false
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create event type'));
@@ -296,7 +294,6 @@ describe('Calendar Tests', () => {
         false,
         true,
         false,
-        false,
         false
       );
 
@@ -315,7 +312,6 @@ describe('Calendar Tests', () => {
       expect(result.description).toBe(false);
       expect(result.onlyHeadsOrAboveForEventCreation).toBe(true);
       expect(result.requiresConfirmation).toBe(false);
-      expect(result.sendSlackNotifications).toBe(false);
       expect(result.takeAttendance).toBe(false);
     });
 
@@ -339,7 +335,6 @@ describe('Calendar Tests', () => {
           false,
           false,
           true,
-          false,
           false,
           true // takeAttendance
         )
@@ -700,7 +695,6 @@ describe('Calendar Tests', () => {
         false,
         true,
         true,
-        false,
         false
       );
     });
@@ -714,7 +708,6 @@ describe('Calendar Tests', () => {
           [calendar.calendarId],
           organization,
           'Initial Event Type',
-          false,
           false,
           false,
           false,
@@ -743,7 +736,6 @@ describe('Calendar Tests', () => {
           [invalidCalendarId],
           organization,
           'Initial Event Type 2',
-          true,
           true,
           true,
           true,
@@ -804,7 +796,6 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
-          false,
           false
         )
       ).rejects.toThrow(new InvalidOrganizationException('Calendar'));
@@ -833,7 +824,6 @@ describe('Calendar Tests', () => {
           false,
           false,
           true,
-          false,
           false
         )
       ).rejects.toThrow(new NotFoundException('Event Type', nonExistentId));
@@ -860,7 +850,6 @@ describe('Calendar Tests', () => {
         false,
         false,
         false,
-        false,
         false
       );
 
@@ -880,7 +869,6 @@ describe('Calendar Tests', () => {
       expect(result.description).toBe(false);
       expect(result.onlyHeadsOrAboveForEventCreation).toBe(false);
       expect(result.requiresConfirmation).toBe(false);
-      expect(result.sendSlackNotifications).toBe(false);
       expect(result.takeAttendance).toBe(false);
     });
 
@@ -906,7 +894,6 @@ describe('Calendar Tests', () => {
           false,
           true,
           true,
-          false,
           true // takeAttendance
         )
       ).rejects.toThrow(new HttpException(400, 'Event types that take attendance must have teams enabled'));
@@ -2106,7 +2093,6 @@ describe('Calendar Tests', () => {
         false,
         false,
         true,
-        false,
         false
       );
     });
@@ -2165,7 +2151,6 @@ describe('Calendar Tests', () => {
         false,
         false,
         true,
-        false,
         false
       );
 
@@ -2757,6 +2742,168 @@ describe('Calendar Tests', () => {
         data: { confirmedMembers: { connect: { userId: member.userId } } }
       });
       await expect(CalendarService.remindUnconfirmed(event.eventId, adminUser, organization)).resolves.toBeUndefined();
+    });
+  });
+
+  describe('On/Off Calendar Notifications', () => {
+    let event: Event;
+    let offEvent: Event;
+    let member: User;
+
+    beforeEach(async () => {
+      member = await createTestUser(wonderwomanGuest, orgId);
+      const scheduleSlots = [
+        {
+          startTime: new Date('2025-10-13T09:00:00Z'),
+          endTime: new Date('2025-10-13T10:00:00Z'),
+          allDay: false
+        }
+      ];
+
+      event = await CalendarService.createEvent(
+        adminUser,
+        'Notification Test Event',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [],
+        [],
+        [],
+        [],
+        scheduleSlots,
+        undefined, // initialDateScheduled
+        [], // notificationChannelIds
+        undefined, // teamTypeId
+        undefined, // questionDocumentLink
+        'Conference Room A' // location
+      );
+
+      offEvent = await CalendarService.createEvent(
+        adminUser,
+        'Notification Off Test Event',
+        eventType.eventTypeId,
+        organization,
+        [member.userId],
+        [],
+        [],
+        [],
+        [],
+        [],
+        scheduleSlots,
+        undefined, // initialDateScheduled
+        [], // notificationChannelIds
+        undefined, // teamTypeId
+        undefined, // questionDocumentLink
+        'Conference Room A', // location
+        undefined, // zoomLink
+        undefined, // description
+        undefined, // mention
+        false // sendSlackNotifications
+      );
+    });
+
+    it('defaults to notifications on when the flag is omitted', async () => {
+      expect(event.sendSlackNotifications).toBe(true);
+    });
+
+    it('sends notifications when turned on', async () => {
+      // createEvent only sends the event pop-up when notifications are on
+      const popUps = await prisma.popUp.findMany({
+        where: { eventLink: `/settings/preferences?eventId=${event.eventId}` }
+      });
+
+      expect(popUps).toHaveLength(1);
+    });
+
+    it('succeeds when created with notifications off', async () => {
+      expect(offEvent.sendSlackNotifications).toBe(false);
+    });
+
+    it('does not send notifications when turned off', async () => {
+      const popUps = await prisma.popUp.findMany({
+        where: { eventLink: `/settings/preferences?eventId=${offEvent.eventId}` }
+      });
+
+      expect(popUps).toHaveLength(0);
+    });
+
+    it('succeeds turning notifications off through editEvent', async () => {
+      const result = await CalendarService.editEvent(
+        adminUser,
+        event.eventId,
+        event.title,
+        organization,
+        [member.userId],
+        [],
+        event.status,
+        [],
+        [],
+        [],
+        [],
+        [],
+        [], // notificationChannelIds
+        undefined, // teamTypeId
+        undefined, // questionDocumentLink
+        'Conference Room A', // location
+        undefined, // zoomLink
+        undefined, // description
+        false // sendSlackNotifications
+      );
+
+      expect(result.sendSlackNotifications).toBe(false);
+    });
+
+    it('succeeds turning notifications back on through editEvent', async () => {
+      const result = await CalendarService.editEvent(
+        adminUser,
+        offEvent.eventId,
+        offEvent.title,
+        organization,
+        [member.userId],
+        [],
+        offEvent.status,
+        [],
+        [],
+        [],
+        [],
+        [],
+        [], // notificationChannelIds
+        undefined, // teamTypeId
+        undefined, // questionDocumentLink
+        'Conference Room A', // location
+        undefined, // zoomLink
+        undefined, // description
+        true // sendSlackNotifications
+      );
+
+      expect(result.sendSlackNotifications).toBe(true);
+    });
+
+    it('fails if event does not exist', async () => {
+      await expect(
+        CalendarService.editEvent(
+          adminUser,
+          'non-existent-id',
+          event.title,
+          organization,
+          [member.userId],
+          [],
+          event.status,
+          [],
+          [],
+          [],
+          [],
+          [],
+          [], // notificationChannelIds
+          undefined, // teamTypeId
+          undefined, // questionDocumentLink
+          'Conference Room A', // location
+          undefined, // zoomLink
+          undefined, // description
+          false // sendSlackNotifications
+        )
+      ).rejects.toThrow(new NotFoundException('Event', 'non-existent-id'));
     });
   });
 });

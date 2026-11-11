@@ -23,7 +23,6 @@ export default class CalendarController {
         description,
         onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications,
         takeAttendance
       } = req.body;
 
@@ -46,7 +45,6 @@ export default class CalendarController {
         description,
         onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications,
         takeAttendance
       );
       res.status(200).json(eventType);
@@ -220,7 +218,6 @@ export default class CalendarController {
         description,
         onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications,
         takeAttendance
       } = req.body;
 
@@ -244,7 +241,6 @@ export default class CalendarController {
         description,
         onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications,
         takeAttendance
       );
       res.status(200).json(eventType);
@@ -296,7 +292,8 @@ export default class CalendarController {
         location,
         zoomLink,
         description,
-        mention
+        mention,
+        sendSlackNotifications
       } = req.body;
 
       const parsedScheduleSlots = scheduleSlots.map((slot: { allDay: boolean; startTime?: string; endTime?: string }) => ({
@@ -326,7 +323,8 @@ export default class CalendarController {
         location,
         zoomLink,
         description,
-        mention
+        mention,
+        sendSlackNotifications
       );
       res.status(200).json(event);
     } catch (error: unknown) {
@@ -353,7 +351,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        sendSlackNotifications
       } = req.body;
 
       const event = await CalendarService.editEvent(
@@ -374,7 +373,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        sendSlackNotifications
       );
       res.status(200).json(event);
     } catch (error: unknown) {

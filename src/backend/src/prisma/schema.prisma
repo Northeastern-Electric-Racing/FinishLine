@@ -1241,6 +1241,7 @@ model Event {
   calendarEventIds           String[]
   notificationChannelIds     String[]             @default([])
   meetingAttendances         Meeting_Attendance[]
+  sendSlackNotifications     Boolean              @default(true)
 }
 
 model Calendar {
@@ -1284,7 +1285,6 @@ model Event_Type {
   description                      Boolean
   onlyHeadsOrAboveForEventCreation Boolean
   requiresConfirmation             Boolean
-  sendSlackNotifications           Boolean
   takeAttendance                   Boolean
   events                           Event[]
   organizationId                   String

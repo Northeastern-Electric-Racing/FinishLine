@@ -41,7 +41,6 @@ const EditEventTypeModal = ({ open, onClose, eventType }: EditEventTypeModalProp
     description: eventType.description,
     onlyHeadsOrAbove: eventType.onlyHeadsOrAboveForEventCreation,
     requiresConfirmation: eventType.requiresConfirmation || false,
-    sendSlackNotifications: eventType.sendSlackNotifications || false,
     takeAttendance: eventType.takeAttendance
   };
 

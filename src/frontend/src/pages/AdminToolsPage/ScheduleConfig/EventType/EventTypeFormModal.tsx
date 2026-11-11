@@ -5,7 +5,7 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { EventType } from 'shared';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../../utils/form';
@@ -24,7 +24,6 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 
 export interface EventTypeFormValues {
@@ -44,7 +43,6 @@ export interface EventTypeFormValues {
   description: boolean;
   onlyHeadsOrAbove: boolean;
   requiresConfirmation: boolean;
-  sendSlackNotifications: boolean;
   takeAttendance: boolean;
 }
 
@@ -65,7 +63,6 @@ const eventTypeSchema = yup.object({
   description: yup.boolean().required(),
   onlyHeadsOrAbove: yup.boolean().required(),
   requiresConfirmation: yup.boolean().required(),
-  sendSlackNotifications: yup.boolean().required(),
   takeAttendance: yup.boolean().required()
 });
 
@@ -97,7 +94,6 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
     description: true,
     onlyHeadsOrAbove: false,
     requiresConfirmation: false,
-    sendSlackNotifications: false,
     takeAttendance: false
   };
 
@@ -121,14 +117,6 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
   });
 
   const watchTeams = watch('teams');
-  const watchWorkPackage = watch('workPackage');
-  const notificationsDisabled = !watchTeams && !watchWorkPackage;
-
-  useEffect(() => {
-    if (notificationsDisabled) {
-      setValue('sendSlackNotifications', false);
-    }
-  }, [notificationsDisabled, setValue]);
 
   // Attendance is posted in the event's team channels, so it requires teams to be enabled
   const attendanceDisabled = !watchTeams;
@@ -868,33 +856,6 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2" sx={{ color: 'white' }}>
               Requires Confirmation
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Send Slack Notifications Field */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Controller
-            control={control}
-            name="sendSlackNotifications"
-            render={({ field: { onChange, value } }) => (
-              <Checkbox
-                checked={value}
-                onChange={onChange}
-                disabled={notificationsDisabled}
-                sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }}
-              />
-            )}
-          />
-          <Tooltip
-            title={notificationsDisabled ? 'Slack notifications cannot be sent without teams or work packages enabled' : ''}
-            placement="right"
-          >
-            <NotificationsIcon sx={{ color: notificationsDisabled ? 'rgba(255,255,255,0.3)' : 'white', mr: 1 }} />
-          </Tooltip>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="body2" sx={{ color: notificationsDisabled ? 'rgba(255,255,255,0.3)' : 'white' }}>
-              Send Slack Notifications
             </Typography>
           </Box>
         </Box>
