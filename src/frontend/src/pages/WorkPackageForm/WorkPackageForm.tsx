@@ -9,7 +9,6 @@ import { useSingleProject } from '../../hooks/projects.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { ObjectSchema } from 'yup';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
-import { LeadershipChangeCreateArgs } from '../../../../shared';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
@@ -17,7 +16,6 @@ interface WorkPackageFormProps {
   crId?: string;
   workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
-  createLeadershipCR: (data: LeadershipChangeCreateArgs) => void;
   schema: ObjectSchema<any>;
   breadcrumbs: { name: string; route: string }[];
 }
@@ -26,7 +24,6 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   wbsNum,
   workPackageMutateAsync,
   createWorkPackageScopeCR,
-  createLeadershipCR,
   exitActiveMode,
   crId,
   schema,
@@ -78,7 +75,6 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
       exitActiveMode={exitActiveMode}
       workPackageMutateAsync={workPackageMutateAsync}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
-      createLeadershipCR={createLeadershipCR}
       defaultValues={defaultValues}
       wbsElement={wbsElement}
       leadOrManagerOptions={leadOrManagerOptions}

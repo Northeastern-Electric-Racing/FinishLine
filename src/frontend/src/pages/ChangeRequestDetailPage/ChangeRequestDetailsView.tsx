@@ -38,7 +38,7 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
       return <></>;
     case ChangeRequestType.Budget:
       return <BudgetDetails budgetChangeRequest={cr as BudgetChangeRequest} />;
-    case ChangeRequestType.Leadership:
+    case ChangeRequestType.NonMeaningful:
       return <></>;
     default:
       return <StandardDetails cr={cr as StandardChangeRequest} />;
@@ -64,11 +64,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleDeleteOpen = () => setDeleteModalShow(true);
 
-  const isStandard =
-    changeRequest.type !== ChangeRequestType.Activation &&
-    changeRequest.type !== ChangeRequestType.StageGate &&
-    changeRequest.type !== ChangeRequestType.Budget &&
-    changeRequest.type !== ChangeRequestType.Leadership;
+  const isStandard = changeRequest.type === ChangeRequestType.Standard;
 
   const isActivation = changeRequest.type === ChangeRequestType.Activation;
 

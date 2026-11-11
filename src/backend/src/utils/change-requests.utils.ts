@@ -8,7 +8,8 @@ import {
   Project,
   Work_Package,
   WBS_Element,
-  Organization
+  Organization,
+  CR_Type
 } from '@prisma/client';
 import {
   DescriptionBulletPreview,
@@ -546,4 +547,36 @@ export const validateWbsElement = async (wbsNum: WbsNumber, organization: Organi
   if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
   if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
   return wbsElement;
+};
+
+/**
+ * Creates an auto-approved change request for an edit that doesn't need review,
+ * so the edit's changes can still be recorded in change history
+ * @param submitter the user making the edit, also recorded as the reviewer
+ * @param wbsElementId the wbs element being edited
+ * @param organizationId the organization the user is currently in
+ * @returns the id of the created change request
+ */
+export const createNonMeaningfulChangeRequest = async (
+  submitter: User,
+  wbsElementId: string,
+  organizationId: string
+): Promise<string> => {
+  const numChangeRequests = await prisma.change_Request.count({ where: { organizationId } });
+
+  const changeRequest = await prisma.change_Request.create({
+    data: {
+      submitter: { connect: { userId: submitter.userId } },
+      wbsElement: { connect: { wbsElementId } },
+      type: CR_Type.NON_MEANINGFUL,
+      organization: { connect: { organizationId } },
+      identifier: numChangeRequests + 1,
+      reviewer: { connect: { userId: submitter.userId } },
+      accepted: true,
+      dateReviewed: new Date(),
+      reviewNotes: 'Auto-approved: this change does not need review'
+    }
+  });
+
+  return changeRequest.crId;
 };

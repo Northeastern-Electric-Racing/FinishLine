@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsElement } from 'shared';
+import { ChangeRequestType, WbsElement } from 'shared';
 import { useGetApprovedChangeRequests, useGetUnreviewedChangeRequests } from '../hooks/change-requests.hooks';
 import ErrorPage from '../pages/ErrorPage';
 import LoadingIndicator from './LoadingIndicator';
@@ -29,6 +29,9 @@ const ChangeRequestTab = ({ wbsElement }: { wbsElement: WbsElement }) => {
   if (unreviewedCRIsLoading || !unreviewedChangeRequests || approvedCRIsLoading || !approvedChangeRequests)
     return <LoadingIndicator />;
 
+  // auto-approved non-meaningful CRs would flood this list; they're still in the change requests table
+  const visibleApprovedChangeRequests = approvedChangeRequests.filter((cr) => cr.type !== ChangeRequestType.NonMeaningful);
+
   return (
     <>
       <ChangeRequestRow
@@ -38,7 +41,7 @@ const ChangeRequestTab = ({ wbsElement }: { wbsElement: WbsElement }) => {
       />
       <ChangeRequestRow
         title="Approved Change Requests"
-        changeRequests={approvedChangeRequests}
+        changeRequests={visibleApprovedChangeRequests}
         noChangeRequestsMessage="No recently approved change requests"
       />
     </>

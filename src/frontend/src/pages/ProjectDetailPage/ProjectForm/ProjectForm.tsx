@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { DescriptionBulletPreview, LinkCreateArgs, Project, ProjectTemplate, projectEditNeedsCR } from 'shared';
+import { DescriptionBulletPreview, LinkCreateArgs, Project, ProjectTemplate, projectEditNeedsReview } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -129,7 +129,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 
   // budget and description bullets need a change request (same predicate the backend uses)
   const meaningfulFieldsChanged = project
-    ? projectEditNeedsCR(
+    ? projectEditNeedsReview(
         project.budget,
         watchedBudget,
         bulletsToObject(project.descriptionBullets),
@@ -137,21 +137,19 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       )
     : false;
 
+  // lead and manager apply directly now, same as name, summary and links
   const nonMeaningfulFieldsChanged = project
-    ? watchedName !== project.name ||
+    ? leadershipChanged ||
+      watchedName !== project.name ||
       watchedSummary !== project.summary ||
       JSON.stringify((watchedLinks ?? []).map((l) => `${l.linkTypeName}:${l.url}`).sort()) !==
         JSON.stringify(project.links.map((l) => `${l.linkType.name}:${l.url}`).sort())
     : false;
 
-  const otherFieldsChanged = meaningfulFieldsChanged || nonMeaningfulFieldsChanged;
-
-  const liveOnlyLeadershipChanged = leadershipChanged && !otherFieldsChanged;
-  const anyChangesMade = leadershipChanged || otherFieldsChanged;
+  const anyChangesMade = meaningfulFieldsChanged || nonMeaningfulFieldsChanged;
 
   const getButtonLabel = () => {
     if (!project) return 'Create Project';
-    if (liveOnlyLeadershipChanged) return 'Submit & Implement';
     if (meaningfulFieldsChanged) return 'Submit Change Request';
     return 'Save Changes';
   };

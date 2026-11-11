@@ -31,17 +31,17 @@ describe('computeTriageScore', () => {
     });
 
     it('gives leadership change requests no bump', () => {
-      expect(computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP })).toBe(0);
+      expect(computeTriageScore({ ...baseInput, type: CR_Type.NON_MEANINGFUL })).toBe(0);
     });
   });
 
   describe('blocking count', () => {
     it('adds nothing when the work package blocks nothing', () => {
-      expect(computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP, blockingCount: 0 })).toBe(0);
+      expect(computeTriageScore({ ...baseInput, type: CR_Type.NON_MEANINGFUL, blockingCount: 0 })).toBe(0);
     });
 
     it('adds two points per blocked work package', () => {
-      expect(computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP, blockingCount: 3 })).toBe(6);
+      expect(computeTriageScore({ ...baseInput, type: CR_Type.NON_MEANINGFUL, blockingCount: 3 })).toBe(6);
     });
 
     it('scores a work package blocking more others higher', () => {
@@ -54,11 +54,11 @@ describe('computeTriageScore', () => {
 
   describe('timeline change', () => {
     it('adds 1.5 points per day when pushing the timeline later', () => {
-      expect(computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP, timelineChangeInDays: 10 })).toBe(15);
+      expect(computeTriageScore({ ...baseInput, type: CR_Type.NON_MEANINGFUL, timelineChangeInDays: 10 })).toBe(15);
     });
 
     it('adds 0.5 points per day when pulling the timeline earlier', () => {
-      expect(computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP, timelineChangeInDays: -10 })).toBe(5);
+      expect(computeTriageScore({ ...baseInput, type: CR_Type.NON_MEANINGFUL, timelineChangeInDays: -10 })).toBe(5);
     });
 
     it('scores pushing later higher than pulling earlier by the same amount', () => {
@@ -69,20 +69,20 @@ describe('computeTriageScore', () => {
     });
 
     it('adds nothing when the timeline is unchanged', () => {
-      expect(computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP, timelineChangeInDays: 0 })).toBe(0);
+      expect(computeTriageScore({ ...baseInput, type: CR_Type.NON_MEANINGFUL, timelineChangeInDays: 0 })).toBe(0);
     });
   });
 
   describe('budget change magnitude', () => {
     it('adds nothing when no budget change is given', () => {
-      expect(computeTriageScore({ ...baseInput, type: CR_Type.LEADERSHIP })).toBe(0);
+      expect(computeTriageScore({ ...baseInput, type: CR_Type.NON_MEANINGFUL })).toBe(0);
     });
 
     it('adds nothing when the budget is unchanged', () => {
       expect(
         computeTriageScore({
           ...baseInput,
-          type: CR_Type.LEADERSHIP,
+          type: CR_Type.NON_MEANINGFUL,
           budgetChange: { proposed: 5000000, current: 5000000 }
         })
       ).toBe(0);
@@ -92,12 +92,12 @@ describe('computeTriageScore', () => {
       // a $1k change on a $50k budget vs the same $1k change on a $2k budget
       const changeOnLargeBudget = computeTriageScore({
         ...baseInput,
-        type: CR_Type.LEADERSHIP,
+        type: CR_Type.NON_MEANINGFUL,
         budgetChange: { proposed: 5100000, current: 5000000 }
       });
       const changeOnSmallBudget = computeTriageScore({
         ...baseInput,
-        type: CR_Type.LEADERSHIP,
+        type: CR_Type.NON_MEANINGFUL,
         budgetChange: { proposed: 300000, current: 200000 }
       });
 
@@ -107,12 +107,12 @@ describe('computeTriageScore', () => {
     it('scores a large budget change above a small one', () => {
       const smallChange = computeTriageScore({
         ...baseInput,
-        type: CR_Type.LEADERSHIP,
+        type: CR_Type.NON_MEANINGFUL,
         budgetChange: { proposed: 1100000, current: 1000000 }
       });
       const largeChange = computeTriageScore({
         ...baseInput,
-        type: CR_Type.LEADERSHIP,
+        type: CR_Type.NON_MEANINGFUL,
         budgetChange: { proposed: 3000000, current: 1000000 }
       });
 
@@ -122,12 +122,12 @@ describe('computeTriageScore', () => {
     it('scores a budget decrease the same as an equal increase', () => {
       const increase = computeTriageScore({
         ...baseInput,
-        type: CR_Type.LEADERSHIP,
+        type: CR_Type.NON_MEANINGFUL,
         budgetChange: { proposed: 2000000, current: 1000000 }
       });
       const decrease = computeTriageScore({
         ...baseInput,
-        type: CR_Type.LEADERSHIP,
+        type: CR_Type.NON_MEANINGFUL,
         budgetChange: { proposed: 1000000, current: 2000000 }
       });
 
@@ -138,17 +138,17 @@ describe('computeTriageScore', () => {
       // budgets are in cents, so these are changes of $1k, $10k and $100k from a zero budget
       const thousand = computeTriageScore({
         ...baseInput,
-        type: CR_Type.LEADERSHIP,
+        type: CR_Type.NON_MEANINGFUL,
         budgetChange: { proposed: 100000, current: 0 }
       });
       const tenThousand = computeTriageScore({
         ...baseInput,
-        type: CR_Type.LEADERSHIP,
+        type: CR_Type.NON_MEANINGFUL,
         budgetChange: { proposed: 1000000, current: 0 }
       });
       const hundredThousand = computeTriageScore({
         ...baseInput,
-        type: CR_Type.LEADERSHIP,
+        type: CR_Type.NON_MEANINGFUL,
         budgetChange: { proposed: 10000000, current: 0 }
       });
 
@@ -160,12 +160,12 @@ describe('computeTriageScore', () => {
     it('does not let a large budget change dominate the other factors', () => {
       const hugeChange = computeTriageScore({
         ...baseInput,
-        type: CR_Type.LEADERSHIP,
+        type: CR_Type.NON_MEANINGFUL,
         budgetChange: { proposed: 10000000, current: 0 }
       });
       const blocksSixWorkPackages = computeTriageScore({
         ...baseInput,
-        type: CR_Type.LEADERSHIP,
+        type: CR_Type.NON_MEANINGFUL,
         blockingCount: 6
       });
 

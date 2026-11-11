@@ -45,7 +45,6 @@ const changeRequestInclude = {
   activationChangeRequest: true,
   stageGateChangeRequest: true,
   budgetChangeRequest: true,
-  leadershipChangeRequest: true,
   wbsProposedChanges: { include: { projectProposedChanges: true, workPackageProposedChanges: true } },
   wbsElement: { include: { workPackage: true, project: true } }
 } satisfies Prisma.Change_RequestInclude;
@@ -194,9 +193,7 @@ export class ChangeRequestProcess extends SeedProcess<ChangeRequestInput, Change
     for (const cr of changeRequests) {
       if (!cr.accepted) continue;
 
-      if (cr.type === CR_Type.LEADERSHIP && cr.leadershipChangeRequest) {
-        consider(cr.wbsElementId, cr.dateSubmitted, cr.leadershipChangeRequest.leadId, cr.leadershipChangeRequest.managerId);
-      } else if (cr.type === CR_Type.STANDARD && cr.wbsProposedChanges && !cr.wbsElement?.workPackage) {
+      if (cr.type === CR_Type.STANDARD && cr.wbsProposedChanges && !cr.wbsElement?.workPackage) {
         consider(cr.wbsElementId, cr.dateSubmitted, cr.wbsProposedChanges.leadId, cr.wbsProposedChanges.managerId);
       }
     }
