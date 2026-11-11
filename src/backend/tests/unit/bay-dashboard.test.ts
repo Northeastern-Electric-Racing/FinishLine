@@ -45,6 +45,7 @@ describe('Bay Dashboard Calendar Tests', () => {
     const eventType = await prisma.event_Type.create({
       data: {
         name: 'Meeting',
+        takeAttendance: false,
         requiredMembers: false,
         optionalMembers: false,
         teams: false,

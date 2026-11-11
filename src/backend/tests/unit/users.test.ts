@@ -71,7 +71,7 @@ describe('User Tests', () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       const { task } = await createTestTaskWithOrganization(testBatman, organization);
       const otherOrg = await prisma.organization.create({
-        data: { name: 'Other Org', userCreated: { connect: { userId: testBatman.userId } } }
+        data: { name: 'Other Org', slug: 'users-other-org', userCreated: { connect: { userId: testBatman.userId } } }
       });
       await prisma.user.update({
         where: { userId: testBatman.userId },
