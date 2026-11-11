@@ -11,7 +11,7 @@ import { routes } from '../../../utils/routes';
 import EditIcon from '@mui/icons-material/Edit';
 import { Box } from '@mui/material';
 import { useState } from 'react';
-import { useEditProjectTeams, useSetProjectTeam } from '../../../hooks/projects.hooks';
+import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
@@ -261,11 +261,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />
       )}
       {assignToTeamsModalShow && (
-        <AssignToTeams
-          modalShow={assignToTeamsModalShow}
-          handleClose={handleAssignToTeamsClose}
-          project={project}
-        />
+        <AssignToTeams modalShow={assignToTeamsModalShow} handleClose={handleAssignToTeamsClose} project={project} />
       )}
     </PageLayout>
   );
