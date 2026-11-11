@@ -21,6 +21,8 @@ import {
 import { userHasPermission } from '../utils/users.utils.js';
 import { calculateTeamMemberAttendancePercent } from '../utils/attendance.utils.js';
 
+const ATTENDANCE_DURATION_MS = 2 * 60 * 60 * 1000;
+
 export default class AttendanceService {
   static async takeAttendance(
     submitter: User,
@@ -72,7 +74,7 @@ export default class AttendanceService {
       ...getMeetingAttendanceQueryArgs(organization.organizationId)
     });
 
-    setTimeout(() => AttendanceService.closeAttendance(attendance.meetingAttendanceId), 3600000);
+    setTimeout(() => AttendanceService.closeAttendance(attendance.meetingAttendanceId), ATTENDANCE_DURATION_MS);
 
     return meetingAttendanceTransformer(attendance);
   }
