@@ -1,6 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { BudgetSummary, ExecutiveSummary, VehicleDevelopmentSummary } from 'shared';
 import {
+  BudgetSummary,
+  ExecutiveSummary,
+  VehicleDevelopmentSummary,
+  CompetitionDocumentsSummary,
+  EditCompetitionDocumentsSummaryArgs
+} from 'shared';
+import {
+  editCompetitionDocumentsSummary,
   editExecutiveSummary,
   getAllExecutiveSummaries,
   getBudgetSummary,
@@ -84,6 +91,24 @@ export const useEditExecutiveSummary = (executiveSummaryId: string) => {
       const { data } = await editExecutiveSummary(executiveSummaryId, formData);
       queryClient.setQueryData(['executive-summaries', executiveSummaryId], data);
       queryClient.invalidateQueries(['executive-summaries']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit the competition documents summary of an executive summary.
+ *
+ * @param executiveSummaryId The id of the executive summary whose documents summary is being edited
+ * @returns the edited competition documents summary
+ */
+export const useEditCompetitionDocumentsSummary = (executiveSummaryId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<CompetitionDocumentsSummary, Error, EditCompetitionDocumentsSummaryArgs>(
+    ['executive-summaries', 'competition-documents-summary', 'edit'],
+    async (payload: EditCompetitionDocumentsSummaryArgs) => {
+      const { data } = await editCompetitionDocumentsSummary(executiveSummaryId, payload);
+      queryClient.invalidateQueries(['executive-summaries', executiveSummaryId]);
       return data;
     }
   );
