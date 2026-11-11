@@ -1,2 +1,0 @@
--- AlterEnum
-ALTER TYPE "CR_Type" ADD VALUE 'NON_MEANINGFUL';
