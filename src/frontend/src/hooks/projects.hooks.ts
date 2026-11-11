@@ -36,7 +36,8 @@ import {
   deleteAbbreviation,
   getTeamsProjects,
   getAllProjects,
-  getAllProjectsCopyBOM
+  getAllProjectsCopyBOM,
+  editProjectTeams
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
@@ -383,6 +384,23 @@ export const useDeleteProjectAbbreviation = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+export const useEditProjectTeams = (wbsNum: WbsNumber) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, string[]>(
+    ['projects', 'edit-teams'],
+    async (teamIds: string[]) => {
+      const { data } = await editProjectTeams(wbsNum, teamIds);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects', wbsNum]);
+        queryClient.invalidateQueries(['teams']);
       }
     }
   );

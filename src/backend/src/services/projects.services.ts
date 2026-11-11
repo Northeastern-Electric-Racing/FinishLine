@@ -423,6 +423,64 @@ export default class ProjectsService {
   }
 
   /**
+   * Replaces the project's teams with the given list of teams.
+   *
+   * @param user the user editing the teams
+   * @param wbsNumber the wbsNumber of the project
+   * @param teamIds the ids of the teams the project should be assigned to
+   * @param organization the organization the user is currently in
+   * @throws if the project isn't found, any team isn't found or is in another organization, or the user doesn't have access
+   */
+  static async editProjectTeams(
+    user: User,
+    wbsNumber: WbsNumber,
+    teamIds: string[],
+    organization: Organization
+  ): Promise<void> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('edit project teams');
+    }
+
+    if (!isProjectWbs(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+
+    const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
+
+    const wbsElement = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsNumber: { carNumber, projectNumber, workPackageNumber, organizationId: organization.organizationId }
+      },
+      select: {
+        dateDeleted: true,
+        project: {
+          select: {
+            projectId: true
+          }
+        }
+      }
+    });
+
+    const project = wbsElement?.project;
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
+    if (wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
+
+    const uniqueTeamIds = [...new Set(teamIds)];
+
+    const teams = await prisma.team.findMany({
+      where: { teamId: { in: uniqueTeamIds }, organizationId: organization.organizationId },
+      select: { teamId: true }
+    });
+
+    const missingTeamId = uniqueTeamIds.find((teamId) => !teams.some((team) => team.teamId === teamId));
+    if (missingTeamId) throw new NotFoundException('Team', missingTeamId);
+
+    await prisma.project.update({
+      where: { projectId: project.projectId },
+      data: { teams: { set: uniqueTeamIds.map((teamId) => ({ teamId })) } },
+      select: { projectId: true }
+    });
+  }
+
+  /**
    * Adds or removes the given team to the projects teams depending if it is already assigned to the project or not.
    *
    * @param user the user doing the setting
