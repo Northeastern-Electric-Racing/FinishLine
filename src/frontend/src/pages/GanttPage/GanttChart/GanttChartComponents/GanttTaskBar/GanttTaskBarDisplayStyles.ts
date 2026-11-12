@@ -1,16 +1,24 @@
 import { CSSProperties } from 'react';
-import { GanttTask, GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../../../utils/gantt.utils';
+import { GanttTask } from '../../../../../utils/gantt.utils';
 
-export const ganttTaskBarBackgroundStyles = (numDays: number): CSSProperties => {
+// A single grid cell the width of the chart; everything in the row stacks in that cell at its own offset
+export const ganttTaskBarBackgroundStyles = (chartWidthPx: number): CSSProperties => {
   return {
-    width: '100%',
+    width: chartWidthPx,
     display: 'grid',
-    gap: GANTT_CHART_GAP_SIZE,
     gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
-    gridTemplateColumns: `repeat(${numDays}, minmax(${GANTT_CHART_CELL_SIZE}, 1fr))`
-    //  position: 'absolute', // These will make it so that the bar stays on top of the drop points, i kind of like it going to a new line though
-    //  top: 0,
-    //  left: 0
+    gridTemplateColumns: `${chartWidthPx}px`
+  };
+};
+
+// Places an element inside the row at its pixel position on the chart
+export const ganttElementPositionStyles = ({ left, width }: { left: number; width: number }): CSSProperties => {
+  return {
+    gridRow: 1,
+    gridColumn: 1,
+    justifySelf: 'start',
+    marginLeft: left,
+    width
   };
 };
 

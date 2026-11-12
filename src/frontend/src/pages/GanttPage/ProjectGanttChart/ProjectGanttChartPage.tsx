@@ -7,7 +7,6 @@ import React, { ChangeEvent, FC, useEffect, useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAllProjectsGantt } from '../../../hooks/projects.hooks';
 import ErrorPage from '../../ErrorPage';
-import { add, sub } from 'date-fns';
 import { useHistory } from 'react-router-dom';
 import {
   applyChangesToWBSElement,
@@ -19,6 +18,8 @@ import {
   GanttFilters,
   GanttTask,
   GanttTimeWindow,
+  GANTT_TIME_WINDOWS,
+  getGanttDateBounds,
   isProjectPreview,
   RequestEventChange,
   transformProjectToGanttTask,
@@ -141,7 +142,9 @@ const ProjectGanttChartPage: FC = () => {
     };
 
     if (projects && teams) {
-      requestRefresh(projects, teams, editedProjects, addedProjects, { ...filters, showCars }, searchText);
+      // some windows (Year) never show tasks, regardless of the filter
+      const hideTasks = (filters.hideTasks ?? false) || !GANTT_TIME_WINDOWS[timeWindow].showTasks;
+      requestRefresh(projects, teams, editedProjects, addedProjects, { ...filters, showCars, hideTasks }, searchText);
     }
   }, [
     teams,
@@ -153,7 +156,8 @@ const ProjectGanttChartPage: FC = () => {
     filters,
     showCars,
     searchText,
-    history
+    history,
+    timeWindow
   ]);
 
   const handleSetGanttFilters = (newFilters: GanttFilters) => {
@@ -607,35 +611,11 @@ const ProjectGanttChartPage: FC = () => {
 
   const allWorkPackages = projects.concat(addedProjects).flatMap((project) => project.workPackages);
 
-  // find the earliest start date and subtract 2 weeks to use as the first date on calendar
-  const startDate =
-    allWorkPackages.length !== 0
-      ? sub(
-          allWorkPackages
-            .map((wp) => wp.startDate)
-            .reduce((previous, current) => {
-              return previous < current ? previous : current;
-            }, new Date(8.64e15)),
-          { weeks: 2 }
-        )
-      : sub(Date.now(), { weeks: 15 });
-
-  // find the latest end date and add 6 months to use as the last date on calendar
-  const endDate =
-    allWorkPackages.length !== 0
-      ? add(
-          allWorkPackages
-            .map((wp) => wp.endDate)
-            .reduce((previous, current) => {
-              return previous > current ? previous : current;
-            }, new Date(-8.64e15)),
-          { months: 6 }
-        )
-      : add(Date.now(), { weeks: 15 });
+  const { start: startDate, end: endDate } = getGanttDateBounds(allWorkPackages);
 
   const chips = (
-    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mr: 1 }}>
-      <Box sx={{ flexGrow: 1 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, mr: 2 }}>
+      <Box sx={{ flexGrow: 1, '& > div': { width: 'auto', mr: 0 } }}>
         <SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />
       </Box>
       <GanttTimeWindowDropdown timeWindow={timeWindow} onChange={setTimeWindow} />

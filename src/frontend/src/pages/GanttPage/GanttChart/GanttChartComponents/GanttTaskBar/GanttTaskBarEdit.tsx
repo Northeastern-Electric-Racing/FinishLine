@@ -1,40 +1,27 @@
-import { GanttTask, GanttChange } from '../../../../../utils/gantt.utils';
+import { GanttTask, GanttChange, GanttScale } from '../../../../../utils/gantt.utils';
 import { GanttTaskBarEditView } from './GanttTaskBarEditView';
 
 const GanttTaskBarEdit = <T,>({
-  days,
+  scale,
   task,
   createChange,
-  getStartCol,
-  getEndCol,
   onAddTaskPressed
 }: {
-  days: Date[];
+  scale: GanttScale;
   task: GanttTask<T>;
   createChange: (change: GanttChange<T>) => void;
-  getStartCol: (start: Date) => number;
-  getEndCol: (end: Date) => number;
   onAddTaskPressed: (parent: GanttTask<T>) => void;
 }) => {
   return (
     <>
-      <GanttTaskBarEditView
-        days={days}
-        task={task}
-        createChange={createChange}
-        getStartCol={getStartCol}
-        getEndCol={getEndCol}
-        onAddTaskPressed={onAddTaskPressed}
-      />
+      <GanttTaskBarEditView scale={scale} task={task} createChange={createChange} onAddTaskPressed={onAddTaskPressed} />
       {task.children.map((child) => {
         return (
           <GanttTaskBarEdit
             key={child.id}
-            days={days}
+            scale={scale}
             task={child}
             createChange={createChange}
-            getStartCol={getStartCol}
-            getEndCol={getEndCol}
             onAddTaskPressed={onAddTaskPressed}
           />
         );
@@ -43,11 +30,9 @@ const GanttTaskBarEdit = <T,>({
         return (
           <GanttTaskBarEdit
             key={blocking.id}
-            days={days}
+            scale={scale}
             task={blocking}
             createChange={createChange}
-            getStartCol={getStartCol}
-            getEndCol={getEndCol}
             onAddTaskPressed={onAddTaskPressed}
           />
         );

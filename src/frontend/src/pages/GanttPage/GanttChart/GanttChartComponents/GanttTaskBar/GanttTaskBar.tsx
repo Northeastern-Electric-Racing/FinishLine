@@ -7,6 +7,7 @@ import GanttTaskBarEdit from './GanttTaskBarEdit';
 import GanttTaskBarView from './GanttTaskBarView';
 import {
   GanttChange,
+  GanttScale,
   GanttTask,
   HighlightTaskComparator,
   OnMouseOverOptions,
@@ -14,7 +15,7 @@ import {
 } from '../../../../../utils/gantt.utils';
 
 interface GanttTaskBarProps<T> {
-  days: Date[];
+  scale: GanttScale;
   task: GanttTask<T>;
   createChange: (change: GanttChange<T>) => void;
   isEditMode: boolean;
@@ -28,12 +29,10 @@ interface GanttTaskBarProps<T> {
   toggleExpanded: (id: string) => void;
   isExpanded: boolean;
   expanded: Set<string>;
-  getStartCol: (start: Date) => number;
-  getEndCol: (end: Date) => number;
 }
 
 const GanttTaskBar = <T,>({
-  days,
+  scale,
   task,
   createChange,
   isEditMode,
@@ -46,27 +45,16 @@ const GanttTaskBar = <T,>({
   onToggle,
   toggleExpanded,
   isExpanded,
-  expanded,
-  getStartCol,
-  getEndCol
+  expanded
 }: GanttTaskBarProps<T>) => {
   return (
     <div id={`gantt-task-${task.id}`}>
       {isEditMode ? (
-        <GanttTaskBarEdit
-          days={days}
-          task={task}
-          createChange={createChange}
-          getStartCol={getStartCol}
-          getEndCol={getEndCol}
-          onAddTaskPressed={onAddTaskPressed}
-        />
+        <GanttTaskBarEdit scale={scale} task={task} createChange={createChange} onAddTaskPressed={onAddTaskPressed} />
       ) : (
         <GanttTaskBarView
-          days={days}
+          scale={scale}
           task={task}
-          getStartCol={getStartCol}
-          getEndCol={getEndCol}
           handleOnMouseOver={handleOnMouseOver}
           handleOnMouseLeave={handleOnMouseLeave}
           highlightedChange={highlightedChange}

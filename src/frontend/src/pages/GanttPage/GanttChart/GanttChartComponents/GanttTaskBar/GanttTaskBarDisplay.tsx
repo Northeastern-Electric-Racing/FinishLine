@@ -8,11 +8,12 @@ import {
   isHighlightedChangeOnGanttTask,
   OnMouseOverOptions,
   RequestEventChange,
-  GANTT_CHART_CELL_SIZE,
-  GANTT_CHART_GAP_SIZE
+  GanttScale,
+  getElementPositionPx
 } from '../../../../../utils/gantt.utils';
 import { addWeeksToDate } from 'shared';
 import {
+  ganttElementPositionStyles,
   ganttTaskBarBackgroundStyles,
   ganttTaskBarContainerStyles,
   taskNameContainerStyles,
@@ -23,51 +24,44 @@ import { CSSProperties } from 'react';
 import { ArcherElement } from 'react-archer';
 
 interface GanttTaskBarDisplayProps<T> {
-  days: Date[];
+  scale: GanttScale;
   task: GanttTask<T>;
   handleOnMouseOver: (e: React.MouseEvent, task: OnMouseOverOptions) => void;
   handleOnMouseLeave: () => void;
   onShowChildrenToggle: () => void;
   highlightedChange?: RequestEventChange<T>;
   isExpanded: boolean;
-  getStartCol: (start: Date) => number;
-  getEndCol: (end: Date) => number;
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
 }
 
 const GanttTaskBarDisplay = <T,>({
-  days,
+  scale,
   task,
   handleOnMouseOver,
   handleOnMouseLeave,
   onShowChildrenToggle,
   isExpanded,
   highlightedChange,
-  getStartCol,
-  getEndCol,
   highlightSubtaskComparator,
   highlightTaskComparator
 }: GanttTaskBarDisplayProps<T>) => {
   const theme = useTheme();
   const hasOverlays = task.overlays.length > 0;
 
+  const taskPosition = getElementPositionPx(task.start, task.end, scale);
+
   const ganttTaskBarHoverDetectionBoxStyles: CSSProperties = {
-    gridColumnStart: getStartCol(task.start),
-    gridColumnEnd: getEndCol(task.end),
+    ...ganttElementPositionStyles(taskPosition),
     height: '2rem',
     border: highlightedChange ? `1px solid ${theme.palette.text.primary}` : `1px solid ${theme.palette.divider}`,
     borderRadius: '0.25rem',
     backgroundColor: task.styles ? task.styles.backgroundColor : theme.palette.background.paper,
-    cursor: 'pointer',
-    gridRow: 1
+    cursor: 'pointer'
   };
 
   const ganttTaskBarDetailsBoxStyles: CSSProperties = {
-    gridRow: 1,
     zIndex: 3,
-    gridColumnStart: getStartCol(task.start),
-    gridColumnEnd: getEndCol(task.end),
     display: 'flex',
     alignItems: 'center',
     marginTop: hasOverlays ? '-10px' : undefined,
@@ -79,30 +73,28 @@ const GanttTaskBarDisplay = <T,>({
   };
 
   const ganttTaskBarChildOverlayStyles = (child: GanttTask<T>): CSSProperties => {
+    const { left, width } = getElementPositionPx(child.start, child.end, scale);
     return {
       position: 'absolute',
-      left: `calc(${getStartCol(child.start) - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}))`,
-      width: `calc(${getEndCol(child.end) - getStartCol(child.start)} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) - ${GANTT_CHART_GAP_SIZE})`,
+      left,
+      width,
       height: '2rem',
       border: `1px solid ${theme.palette.divider}`,
       borderRadius: '0.25rem',
       backgroundColor: child.styles ? child.styles.backgroundColor : grey[700],
       cursor: 'pointer',
-      gridRow: 1,
       zIndex: 2
     };
   };
 
   const ganttTaskBarEventOverlayStyles = (event: GanttEvent): CSSProperties => {
     return {
-      gridColumnStart: getStartCol(event.date),
-      gridColumnEnd: getEndCol(addWeeksToDate(event.date, 1)),
+      ...ganttElementPositionStyles(getElementPositionPx(event.date, addWeeksToDate(event.date, 1), scale)),
       height: '2rem',
       border: `1px solid ${theme.palette.divider}`,
       borderRadius: '0.25rem',
       backgroundColor: event.color,
       cursor: 'pointer',
-      gridRow: 1,
       zIndex: 5
     };
   };
@@ -111,14 +103,12 @@ const GanttTaskBarDisplay = <T,>({
     return {
       paddingTop: '2px',
       paddingLeft: '5px',
-      gridColumnStart: getStartCol(highlightedChange.newStart),
-      gridColumnEnd: getEndCol(highlightedChange.newEnd),
+      ...ganttElementPositionStyles(getElementPositionPx(highlightedChange.newStart, highlightedChange.newEnd, scale)),
       height: '2rem',
       border: `1px solid ${theme.palette.text.primary}`,
       borderRadius: '0.25rem',
       backgroundColor: '#ef4345',
       cursor: 'pointer',
-      gridRow: 1,
       zIndex: 6
     };
   };
@@ -131,8 +121,7 @@ const GanttTaskBarDisplay = <T,>({
     return {
       paddingTop: '2px',
       paddingLeft: '5px',
-      gridColumnStart: getStartCol(retro.comparativeStart),
-      gridColumnEnd: getEndCol(retro.comparativeEnd),
+      ...ganttElementPositionStyles(getElementPositionPx(retro.comparativeStart, retro.comparativeEnd, scale)),
       height: '2rem',
       border: `1px solid ${theme.palette.text.primary}`,
       borderRadius: '0.25rem',
@@ -142,14 +131,13 @@ const GanttTaskBarDisplay = <T,>({
       backgroundColor: grey[100],
       opacity: 0.3,
       cursor: 'pointer',
-      gridRow: 1,
       zIndex: 1
     };
   };
 
   return (
     <div style={ganttTaskBarContainerStyles()}>
-      <Box sx={ganttTaskBarBackgroundStyles(days.length)}>
+      <Box sx={ganttTaskBarBackgroundStyles(scale.widthPx)}>
         <ArcherElement
           id={task.id}
           relations={task.blocking.map((blocking) => {
