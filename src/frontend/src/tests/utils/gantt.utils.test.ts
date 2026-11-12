@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { sortWbs } from '../../utils/gantt.utils';
+import { buildGanttSearchParams, sortWbs } from '../../utils/gantt.utils';
 import { WbsNumber } from 'shared';
 
 const exampleWBS1: WbsNumber = {
@@ -79,5 +79,23 @@ describe('Sort WBS Numbers', () => {
 
   it('a.workPackageNumber > b.workPackageNumber', () => {
     expect(sortWbs({ wbsNum: exampleWBS7 }, { wbsNum: exampleWBS6 })).toBeGreaterThan(0);
+  });
+});
+
+describe('buildGanttSearchParams', () => {
+  const specialNames = ['R&D', 'C++', 'Team #1', 'a=b', '100%', 'Plain Team'];
+
+  it('round-trips team, team type and car values through URLSearchParams', () => {
+    const params = new URLSearchParams(
+      buildGanttSearchParams({
+        showCars: [0, 1],
+        showTeamTypes: specialNames,
+        showTeams: specialNames
+      })
+    );
+
+    expect(params.getAll('team')).toEqual(specialNames);
+    expect(params.getAll('teamType')).toEqual(specialNames);
+    expect(params.getAll('car')).toEqual(['0', '1']);
   });
 });

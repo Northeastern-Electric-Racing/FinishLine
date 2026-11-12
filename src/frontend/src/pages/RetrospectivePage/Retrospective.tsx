@@ -18,6 +18,7 @@ import { routes } from '../../utils/routes';
 import PageLayout from '../../components/PageLayout';
 import { SearchBar } from '../../components/SearchBar';
 import GanttChart from '../GanttPage/GanttChart/GanttChart';
+import GanttChartEmptyState, { GanttActiveFilter } from '../GanttPage/GanttChart/GanttChartEmptyState';
 import GanttChartColorLegend from '../GanttPage/ProjectGanttChart/GanttChartColorLegend';
 import GanttChartFiltersButton from '../GanttPage/ProjectGanttChart/GanttChartFiltersButton';
 import { Box } from '@mui/system';
@@ -170,6 +171,18 @@ const RetrospectivePage = () => {
     localStorage.removeItem('retro-gantt');
   };
 
+  const activeFilters: GanttActiveFilter[] = [
+    ...filters.showCars.map((car) => ({ label: 'Car', value: car === 0 ? 'None' : `Car ${car}` })),
+    ...filters.showTeamTypes.map((teamType) => ({ label: 'Division', value: teamType })),
+    ...filters.showTeams.map((team) => ({ label: 'Team', value: team })),
+    ...(searchText ? [{ label: 'Search', value: searchText }] : [])
+  ];
+
+  const resetAllFilters = () => {
+    resetHandler();
+    setSearchText('');
+  };
+
   /***************************************************** */
 
   const allWorkPackages = projects.flatMap((project) => project.workPackages);
@@ -225,7 +238,12 @@ const RetrospectivePage = () => {
         chips={<SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />}
         headerRight={headerRight}
       >
-        <GanttChart collections={collections} startDate={startDate} endDate={endDate} />
+        <GanttChart
+          collections={collections}
+          startDate={startDate}
+          endDate={endDate}
+          emptyState={<GanttChartEmptyState activeFilters={activeFilters} onReset={resetAllFilters} />}
+        />
       </PageLayout>
     </>
   );

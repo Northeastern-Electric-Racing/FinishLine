@@ -354,15 +354,15 @@ export const buildRetroGanttParams = (ganttFilters: RetroGanttFilters) => {
 
 export const buildGanttSearchParams = (ganttFilters: GanttFilters, additionalParams?: string): string => {
   const carFormat = (name: string) => {
-    return `&car=${name}`;
+    return `&car=${encodeURIComponent(name)}`;
   };
 
   const teamTypeFormat = (name: string) => {
-    return `&teamType=${name}`;
+    return `&teamType=${encodeURIComponent(name)}`;
   };
 
   const teamFormat = (name: string) => {
-    return `&team=${name}`;
+    return `&team=${encodeURIComponent(name)}`;
   };
 
   const newParams =
