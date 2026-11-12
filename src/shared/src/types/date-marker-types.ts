@@ -10,14 +10,8 @@ export interface BaseDateMarker {
   date: Date;
 }
 
-/** What the frontend sends to create a date marker */
-export interface DateMarkerCreateArgs {
-  name: string;
-  date: Date;
-}
-
-/** What the frontend sends to edit a date marker */
-export interface DateMarkerEditArgs {
+/** What the frontend sends to create or edit a date marker */
+export interface DateMarkerArgs {
   name: string;
   date: Date;
 }

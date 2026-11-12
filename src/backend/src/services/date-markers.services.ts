@@ -21,7 +21,7 @@ export default class DateMarkersService {
   static async getAllDateMarkers(organization: Organization): Promise<BaseDateMarker[]> {
     const dateMarkers = await prisma.date_Marker.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null },
-      orderBy: { date: 'asc' },
+      orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
       ...getBaseDateMarkerQueryArgs()
     });
 
