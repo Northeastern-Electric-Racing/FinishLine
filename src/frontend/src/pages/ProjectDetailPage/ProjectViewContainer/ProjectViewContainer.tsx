@@ -17,6 +17,7 @@ import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import ProjectGantt from './ProjectGantt';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -35,6 +36,7 @@ import ActionsMenu from '../../../components/ActionsMenu';
 import ProjectSpendingHistory from '../../ProjectPage/ProjectSpendingHistory';
 import { useMyTeamAsHead } from '../../../hooks/teams.hooks';
 import { ProjectRulesTab } from './ProjectRules/ProjectRulesTab';
+import AssignToTeams from './AssignToTeams';
 
 interface ProjectViewContainerProps {
   project: ProjectDetail;
@@ -59,9 +61,14 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     error: teamAsHeadIdError
   } = useMyTeamAsHead();
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
+  const [assignToTeamsModalShow, setAssignToTeamsModalShow] = useState<boolean>(false);
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleClickDelete = () => {
     setDeleteModalShow(true);
+  };
+  const handleAssignToTeamsClose = () => setAssignToTeamsModalShow(false);
+  const handleClickAssignToTeams = () => {
+    setAssignToTeamsModalShow(true);
   };
   const [, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tab, setTab] = useState(0);
@@ -142,6 +149,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             },
             disabled: isGuest(user.role),
             icon: <ContentPasteIcon fontSize="small" />
+          },
+          {
+            title: 'Edit Teams',
+            onClick: handleClickAssignToTeams,
+            disabled: !isAdmin(user.role),
+            icon: <AssignmentIcon fontSize="small" />
           },
           {
             title: 'Delete',
@@ -242,6 +255,9 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />
+      )}
+      {assignToTeamsModalShow && (
+        <AssignToTeams modalShow={assignToTeamsModalShow} handleClose={handleAssignToTeamsClose} project={project} />
       )}
     </PageLayout>
   );

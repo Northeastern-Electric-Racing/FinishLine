@@ -144,6 +144,19 @@ export default class ProjectsController {
     }
   }
 
+  static async editProjectTeams(req: Request, res: Response, next: NextFunction) {
+    try {
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
+      const { teamIds } = req.body;
+
+      await ProjectsService.editProjectTeams(req.currentUser, wbsNumber, teamIds, req.organization);
+
+      res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)}'s teams successfully updated.` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async setProjectTeam(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
