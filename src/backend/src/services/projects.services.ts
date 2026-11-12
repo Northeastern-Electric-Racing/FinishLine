@@ -383,7 +383,7 @@ export default class ProjectsService {
    * Looks up a project for validation: it must be a project wbs number, exist in the organization, and not be deleted
    * @param wbsNumber the wbs number of the project
    * @param organization the organization the user is currently in
-   * @returns the project's ids and its teams' members, for permission checks
+   * @returns the project's ids, its organization, and its teams' members, for permission checks
    */
   static async getSingleProjectWithQueryArgs(wbsNumber: WbsNumber, organization: Organization) {
     if (!isProjectWbs(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
@@ -405,6 +405,8 @@ export default class ProjectsService {
           select: {
             projectId: true,
             wbsElementId: true,
+            // permission checks run against the organization the project is in, not the one the request names
+            wbsElement: { select: { organizationId: true, organization: true } },
             teams: {
               select: {
                 teamId: true,

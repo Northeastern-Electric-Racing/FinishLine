@@ -48,6 +48,9 @@ export const getProjectListItemQueryArgs = () =>
     }
   });
 
+// a task that still needs doing
+const remainingTaskWhere: Prisma.TaskWhereInput = { dateDeleted: null, status: { not: Task_Status.DONE } };
+
 // the projects page overview cards: leading, my teams, and favorites
 export const getProjectOverviewCardQueryArgs = () =>
   Prisma.validator<Prisma.ProjectDefaultArgs>()({
@@ -56,17 +59,27 @@ export const getProjectOverviewCardQueryArgs = () =>
       wbsElement: {
         select: {
           ...getBaseProjectQueryArgs().select.wbsElement.select,
-          // the card only links to the project's confluence page
           links: {
-            where: { dateDeleted: null, linkType: { name: 'Confluence' } },
-            select: { url: true, linkType: { select: { name: true, iconName: true } } },
-            take: 1
+            where: { dateDeleted: null },
+            select: { linkId: true, url: true, linkType: { select: { name: true, iconName: true } } }
           },
-          _count: { select: { tasks: { where: { dateDeleted: null, status: { not: Task_Status.DONE } } } } }
+          _count: { select: { tasks: { where: remainingTaskWhere } } }
         }
       },
       // the card lists the active ones; all of them are still needed for the project's status and dates
-      workPackages: { where: { wbsElement: { dateDeleted: null } }, ...getBaseWorkPackageQueryArgs() }
+      workPackages: {
+        where: { wbsElement: { dateDeleted: null } },
+        select: {
+          ...getBaseWorkPackageQueryArgs().select,
+          wbsElement: {
+            select: {
+              ...getBaseWorkPackageQueryArgs().select.wbsElement.select,
+              // tasks on a work package count toward the project's tasks left too
+              _count: { select: { tasks: { where: remainingTaskWhere } } }
+            }
+          }
+        }
+      }
     }
   });
 
@@ -77,7 +90,7 @@ export const getDesignReviewMarkerQueryArgs = () =>
       eventId: true,
       status: true,
       initialDateScheduled: true,
-      scheduledTimes: { select: { startTime: true }, orderBy: { startTime: 'asc' }, take: 1 }
+      scheduledTimes: { select: { startTime: true }, orderBy: { startTime: 'asc' } }
     }
   });
 

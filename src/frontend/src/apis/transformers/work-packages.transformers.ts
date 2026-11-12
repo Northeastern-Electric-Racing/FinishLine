@@ -4,7 +4,7 @@
  */
 
 import { BaseWorkPackage, dbDateToLocalDate, WorkPackageCard, WorkPackageDetail } from 'shared';
-import { descriptionBulletTransformer } from './projects.transformers';
+import { baseDescriptionBulletTransformer } from './projects.transformers';
 
 /** Converts the dates on any work package model; extended models spread it and convert what they add */
 export const baseWorkPackageTransformer = <T extends BaseWorkPackage>(workPackage: T): T => ({
@@ -15,7 +15,7 @@ export const baseWorkPackageTransformer = <T extends BaseWorkPackage>(workPackag
 
 export const workPackageDetailTransformer = (workPackage: WorkPackageDetail): WorkPackageDetail => ({
   ...baseWorkPackageTransformer(workPackage),
-  descriptionBullets: workPackage.descriptionBullets.map(descriptionBulletTransformer),
+  descriptionBullets: workPackage.descriptionBullets.map(baseDescriptionBulletTransformer),
   changes: workPackage.changes.map((change) => ({ ...change, dateImplemented: new Date(change.dateImplemented) }))
 });
 

@@ -61,11 +61,13 @@ export const projectListItemTransformer = (project: Prisma.ProjectGetPayload<Pro
 export const projectOverviewCardTransformer = (
   project: Prisma.ProjectGetPayload<ProjectOverviewCardQueryArgs>
 ): ProjectOverviewCard => {
-  const [confluenceLink] = project.wbsElement.links;
   return {
     ...baseProjectTransformer(project),
-    tasksRemaining: project.wbsElement._count.tasks,
-    confluenceLink,
+    tasksRemaining: project.workPackages.reduce(
+      (total, wp) => total + wp.wbsElement._count.tasks,
+      project.wbsElement._count.tasks
+    ),
+    links: project.wbsElement.links,
     activeWorkPackages: project.workPackages
       .filter((wp) => wp.wbsElement.status === WbsElementStatus.Active)
       .map(baseWorkPackageTransformer)

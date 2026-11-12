@@ -87,7 +87,7 @@ export interface ProjectLink {
 /** Projects page overview cards: leading, my teams, and favorites */
 export interface ProjectOverviewCard extends BaseProject {
   tasksRemaining: number;
-  confluenceLink?: Omit<ProjectLink, 'linkId'>;
+  links: ProjectLink[];
   activeWorkPackages: BaseWorkPackage[];
 }
 

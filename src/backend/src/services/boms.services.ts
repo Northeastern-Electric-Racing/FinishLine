@@ -457,7 +457,7 @@ export default class BillOfMaterialsService {
     // Permission: leadership and up, anyone on project team
     if (
       !(
-        (await userHasPermission(submitter.userId, organization.organizationId, isLeadership)) ||
+        (await userHasPermission(submitter.userId, project.wbsElement.organizationId, isLeadership)) ||
         isUserPartOfTeams(project.teams, submitter)
       )
     )
@@ -641,13 +641,16 @@ export default class BillOfMaterialsService {
     const project = await ProjectsService.getSingleProjectWithQueryArgs(material.wbsElement, organization);
 
     const perms =
-      (await userHasPermission(submitter.userId, organization.organizationId, isLeadership)) ||
+      (await userHasPermission(submitter.userId, project.wbsElement.organizationId, isLeadership)) ||
       isUserPartOfTeams(project.teams, submitter);
 
     if (!perms) throw new AccessDeniedException('update material');
 
     if (assemblyId) {
-      const assembly = await BillOfMaterialsService.getSingleAssemblyWithQueryArgs(assemblyId, organization);
+      const assembly = await BillOfMaterialsService.getSingleAssemblyWithQueryArgs(
+        assemblyId,
+        project.wbsElement.organization
+      );
       if (assembly.wbsElementId !== project.wbsElementId) throw new HttpException(400, 'Assembly not found on this project');
     }
 
@@ -656,7 +659,7 @@ export default class BillOfMaterialsService {
     let unit = null;
     if (unitName) {
       unit = await prisma.unit.findUnique({
-        where: { uniqueUnit: { name: unitName, organizationId: organization.organizationId } }
+        where: { uniqueUnit: { name: unitName, organizationId: project.wbsElement.organizationId } }
       });
       if (!unit) throw new NotFoundException('Unit', unitName);
     }

@@ -4,6 +4,7 @@
  */
 
 import {
+  BaseDescriptionBullet,
   BaseProject,
   dbDateToLocalDate,
   DescriptionBullet,
@@ -18,22 +19,27 @@ import { baseTaskTransformer } from './tasks.transformers';
 import { baseWorkPackageTransformer } from './work-packages.transformers';
 
 /**
- * Transforms a description bullet to ensure deep field transformation of date objects.
+ * Converts the dates on a description bullet from a page model, which filters deleted bullets out before sending them.
  *
  * @param bullet Incoming description bullet object supplied by the HTTP response.
  * @returns Properly transformed description bullet object.
  */
-export const descriptionBulletTransformer = <T extends Omit<DescriptionBullet, 'dateDeleted'> & { dateDeleted?: Date }>(
-  bullet: T
-): T => {
-  return {
-    ...bullet,
-    dateAdded: new Date(bullet.dateAdded),
-    // change requests still send it; models built from the base filter deleted bullets out instead
-    dateDeleted: bullet.dateDeleted ? new Date(bullet.dateDeleted) : bullet.dateDeleted,
-    dateChecked: bullet.dateChecked ? new Date(bullet.dateChecked) : bullet.dateChecked
-  };
-};
+export const baseDescriptionBulletTransformer = (bullet: BaseDescriptionBullet): BaseDescriptionBullet => ({
+  ...bullet,
+  dateAdded: new Date(bullet.dateAdded),
+  dateChecked: bullet.dateChecked ? new Date(bullet.dateChecked) : undefined
+});
+
+/**
+ * Converts the dates on a full description bullet, which still has dateDeleted (e.g. on templates).
+ *
+ * @param bullet Incoming description bullet object supplied by the HTTP response.
+ * @returns Properly transformed description bullet object.
+ */
+export const descriptionBulletTransformer = (bullet: DescriptionBullet): DescriptionBullet => ({
+  ...baseDescriptionBulletTransformer(bullet),
+  dateDeleted: bullet.dateDeleted ? new Date(bullet.dateDeleted) : undefined
+});
 
 // project start and end dates are date-only values, stored as midnight UTC
 const optionalDbDate = (date?: Date) => (date ? dbDateToLocalDate(new Date(date)) : undefined);
@@ -68,7 +74,7 @@ export const projectGanttItemTransformer = (project: ProjectGanttItem): ProjectG
 
 export const projectDetailTransformer = (project: ProjectDetail): ProjectDetail => ({
   ...baseProjectTransformer(project),
-  descriptionBullets: project.descriptionBullets.map(descriptionBulletTransformer),
+  descriptionBullets: project.descriptionBullets.map(baseDescriptionBulletTransformer),
   changes: project.changes.map((change) => ({ ...change, dateImplemented: new Date(change.dateImplemented) })),
   workPackages: project.workPackages.map(ganttWorkPackageTransformer)
 });

@@ -1,4 +1,4 @@
-import { Project, WBS_Element_Status } from '@prisma/client';
+import { WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma.js';
 import { DescriptionBulletPreview, LinkCreateArgs, WbsElementStatus } from 'shared';
 import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
@@ -310,20 +310,22 @@ export const getProjects = async (projectIds: string[], organizationId: string) 
     select: { projectId: true }
   });
 
-  validateFoundProjects(projects, projectIds);
+  validateFoundProjects(
+    projects.map((project) => project.projectId),
+    projectIds
+  );
 
   return projects;
 };
 
 /**
  * Validates that the projects found in the database match the given projectIds
- * @param projects the projects found in the database
+ * @param foundProjectIds the ids of the projects found in the database
  * @param projectIds the requested projectIds to retrieve
  */
-const validateFoundProjects = (projects: Pick<Project, 'projectId'>[], projectIds: string[]) => {
-  if (projects.length !== projectIds.length) {
-    const primsaProjectIds = projects.map((project) => project.projectId);
-    const missingProjectIds = projectIds.filter((id) => !primsaProjectIds.includes(id));
+const validateFoundProjects = (foundProjectIds: string[], projectIds: string[]) => {
+  if (foundProjectIds.length !== projectIds.length) {
+    const missingProjectIds = projectIds.filter((id) => !foundProjectIds.includes(id));
     throw new HttpException(404, `Projects(s) with the following ids not found: ${missingProjectIds.join(', ')}`);
   }
 };

@@ -41,7 +41,7 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
 
   const daysLeft = calculateDaysLeftInProject(project);
 
-  const { confluenceLink } = project;
+  const confluenceLink = project.links.find((link) => link.linkType.name === 'Confluence');
 
   const ProjectDetailCardDetails = () => (
     <Grid container sx={{ marginTop: '0.5rem' }}>

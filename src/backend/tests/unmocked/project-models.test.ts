@@ -105,6 +105,32 @@ describe('Project models', () => {
     });
   });
 
+  describe('getUsersLeadingProjects', () => {
+    test('counts the remaining tasks on the project and on its work packages', async () => {
+      const project = await createTestProject(user, orgId, undefined, carId, 1, 1);
+      const wp = await createTestWorkPackage(user, orgId, project.projectId, 1, 1, 1);
+      const deletedWp = await createTestWorkPackage(user, orgId, project.projectId, 1, 1, 2);
+      await prisma.wBS_Element.update({
+        where: { wbsElementId: deletedWp.wbsElementId },
+        data: { dateDeleted: new Date() }
+      });
+      const addTask = (wbsElementId: string, status: 'IN_PROGRESS' | 'DONE') =>
+        prisma.task.create({
+          data: { title: 'Task', notes: '', status, priority: 'HIGH', wbsElementId, createdByUserId: user.userId }
+        });
+      await addTask(project.wbsElementId, 'IN_PROGRESS');
+      await addTask(wp.wbsElementId, 'IN_PROGRESS');
+      await addTask(wp.wbsElementId, 'IN_PROGRESS');
+      // done, or on a deleted work package, so not left
+      await addTask(wp.wbsElementId, 'DONE');
+      await addTask(deletedWp.wbsElementId, 'IN_PROGRESS');
+
+      const [card] = await ProjectsService.getUsersLeadingProjects(user, organization);
+
+      expect(card.tasksRemaining).toEqual(3);
+    });
+  });
+
   describe('getSingleProject', () => {
     test('names blockers and leaves out deleted work packages', async () => {
       const project = await createTestProject(user, orgId, undefined, carId, 1, 1);
