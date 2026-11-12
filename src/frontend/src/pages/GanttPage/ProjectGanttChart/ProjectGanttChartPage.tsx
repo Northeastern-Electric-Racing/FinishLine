@@ -614,8 +614,8 @@ const ProjectGanttChartPage: FC = () => {
   const { start: startDate, end: endDate } = getGanttDateBounds(allWorkPackages);
 
   const chips = (
-    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mr: 1 }}>
-      <Box sx={{ flexGrow: 1 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2, mr: 2 }}>
+      <Box sx={{ flexGrow: 1, '& > div': { width: '100%', mr: 0 } }}>
         <SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />
       </Box>
       <GanttTimeWindowDropdown timeWindow={timeWindow} onChange={setTimeWindow} />
