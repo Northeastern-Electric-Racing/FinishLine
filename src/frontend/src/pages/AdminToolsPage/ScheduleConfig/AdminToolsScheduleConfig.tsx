@@ -28,6 +28,10 @@ import EditEventTypeModal from './EventType/EditEventTypeModal';
 import { Shop, EventType, Calendar } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERDeleteModal from '../../../components/NERDeleteModal';
+import CreateDateMarkerModal from './DateMarker/CreateDateMarkerModal';
+import EditDateMarkerModal from './DateMarker/EditDateMarkerModal';
+import { DateMarker } from './DateMarker/DateMarkerModal';
+import { datePipe } from '../../../utils/pipes';
 
 const AdminToolsScheduleConfig: React.FC = () => {
   const { data: shops, isLoading: shopsLoading, isError: shopsError, error: shopsErrorMsg } = useAllShops();
@@ -127,6 +131,17 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [openCreateCalendar, setOpenCreateCalendar] = useState(false);
   const [openEditCalendar, setOpenEditCalendar] = useState(false);
   const [editingCalendar, setEditingCalendar] = useState<Calendar | undefined>(undefined);
+  const [openCreateDateMarker, setOpenCreateDateMarker] = useState(false);
+  const [editingDateMarker, setEditingDateMarker] = useState<DateMarker | null>(null);
+  const [dateMarkerToDelete, setDateMarkerToDelete] = useState<DateMarker | undefined>(undefined);
+
+  // TODO: replace with the get all date markers query once the endpoint is available
+  const dateMarkers: DateMarker[] = [];
+
+  // TODO: wire up to the delete date marker endpoint once it is available
+  const handleDateMarkerDelete = () => {
+    setDateMarkerToDelete(undefined);
+  };
 
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
   if (machinesError) return <ErrorPage message={(machinesErrorMsg as Error).message} />;
@@ -303,7 +318,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
         </Grid>
 
         {/* Shops Table */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
               <Typography variant="h6">Shops</Typography>
@@ -360,6 +375,72 @@ const AdminToolsScheduleConfig: React.FC = () => {
                                 onClick={() => {
                                   setShopToDelete(shop);
                                 }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </Paper>
+
+          {/* Date Markers Table */}
+          <Paper sx={{ p: 2, backgroundColor: 'transparent' }}>
+            <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+              <Typography variant="h6">Date Markers</Typography>
+              <Button variant="contained" onClick={() => setOpenCreateDateMarker(true)}>
+                Add Date Marker
+              </Button>
+            </Box>
+
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 600, width: 160 }} align="center">
+                    Actions
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {dateMarkers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} align="center">
+                      No date markers yet.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  dateMarkers.map((dateMarker) => (
+                    <TableRow key={dateMarker.dateMarkerId} hover>
+                      <TableCell>{dateMarker.name}</TableCell>
+                      <TableCell>{datePipe(dateMarker.date)}</TableCell>
+                      <TableCell align="center">
+                        <Box display="flex" gap={1} justifyContent="center">
+                          <Tooltip title="Edit" arrow>
+                            <span>
+                              <IconButton
+                                size="small"
+                                aria-label="edit date marker"
+                                onClick={() => setEditingDateMarker(dateMarker)}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+
+                          <Tooltip title="Delete" arrow>
+                            <span>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                aria-label="delete date marker"
+                                onClick={() => setDateMarkerToDelete(dateMarker)}
                               >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
@@ -458,6 +539,23 @@ const AdminToolsScheduleConfig: React.FC = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Create Date Marker Modal */}
+      <CreateDateMarkerModal open={openCreateDateMarker} onClose={() => setOpenCreateDateMarker(false)} />
+
+      {/* Edit Date Marker Modal */}
+      {editingDateMarker && (
+        <EditDateMarkerModal open={true} onClose={() => setEditingDateMarker(null)} dateMarker={editingDateMarker} />
+      )}
+
+      {/* Delete Date Marker Modal */}
+      <NERDeleteModal
+        open={!!dateMarkerToDelete}
+        onHide={() => setDateMarkerToDelete(undefined)}
+        formId="delete-date-marker-form"
+        dataType={`date marker "${dateMarkerToDelete?.name || ''}"`}
+        onFormSubmit={handleDateMarkerDelete}
+      />
 
       {/* Delete Calendars Modal */}
       <NERDeleteModal
