@@ -1,5 +1,5 @@
 import { Box } from '@mui/system';
-import { MaterialPreview, Project, isGuest } from 'shared';
+import { MaterialPreview, ProjectDetail, isGuest } from 'shared';
 import { NERButton } from '../../../components/NERButton';
 import WarningIcon from '@mui/icons-material/Warning';
 import React, { useState } from 'react';
@@ -24,7 +24,7 @@ import ImportBOMModal from './BOM/ImportBOMModal';
 export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialPreview) =>
   (currentMaterial.subtotal ?? 0) + accumulator;
 
-const BOMTab = ({ project }: { project: Project }) => {
+const BOMTab = ({ project }: { project: ProjectDetail }) => {
   const initialHideColumn = new Array(12).fill(false);
   const [hideColumn, setHideColumn] = useState<boolean[]>(initialHideColumn);
   const [showAddMaterial, setShowAddMaterial] = useState(false);

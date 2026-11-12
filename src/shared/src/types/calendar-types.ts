@@ -236,15 +236,6 @@ export type EventInstance = Omit<Event, 'scheduledTimes'> &
     totalScheduledSlots: number;
   };
 
-export type EventPreview = {
-  eventId: string;
-  title: string;
-  dateScheduled: Date;
-  status: EventStatus;
-  userCreated: User;
-  wbsName: string;
-};
-
 export interface EventWithMembers {
   eventId: string;
   title: string;

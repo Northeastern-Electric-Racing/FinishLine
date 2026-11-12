@@ -7,7 +7,7 @@ import {
   countWords,
   dateToMidnightUTC,
   isUnderWordCount,
-  ProjectPreview,
+  ProjectListItem,
   TaskLabel,
   TaskPriority,
   TaskStatus,
@@ -24,7 +24,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
 const schema = yup.object().shape({
-  project: yup.mixed<ProjectPreview>().required('Project is required'),
+  project: yup.mixed<ProjectListItem>().required('Project is required'),
   title: yup.string().required('Title is required'),
   priority: yup.mixed<TaskPriority>().oneOf(Object.values(TaskPriority)).required(),
   status: yup.mixed<TaskStatus>().oneOf(Object.values(TaskStatus)).required(),
@@ -43,7 +43,7 @@ const schema = yup.object().shape({
 });
 
 interface CreateTaskFormInput {
-  project: ProjectPreview | null;
+  project: ProjectListItem | null;
   title: string;
   priority: TaskPriority;
   status: TaskStatus;

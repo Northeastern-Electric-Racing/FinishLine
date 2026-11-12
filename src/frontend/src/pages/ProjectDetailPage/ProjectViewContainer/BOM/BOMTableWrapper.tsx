@@ -1,7 +1,7 @@
 import { Box } from '@mui/system';
 import { GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
-import { Assembly, Material, Project, isLeadership } from 'shared';
+import { Assembly, Material, ProjectDetail, isLeadership } from 'shared';
 import Decimal from 'decimal.js';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -32,7 +32,7 @@ import { routes } from '../../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 
 interface BOMTableWrapperProps {
-  project: Project;
+  project: ProjectDetail;
   hideColumn: boolean[];
   setHideColumn: React.Dispatch<React.SetStateAction<boolean[]>>;
   assemblies: Assembly[];
@@ -136,11 +136,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({
     }
   };
 
-  const editPerms =
-    isLeadership(user.role) ||
-    project.teams.some((team) => team.head.userId === user.userId) ||
-    project.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId)) ||
-    project.teams.some((team) => team.members.map((member) => member.userId).includes(user.userId));
+  const editPerms = isLeadership(user.role) || project.isOnProjectTeam;
 
   const processRowUpdate = async (newRow: BomRow, oldRow: BomRow): Promise<BomRow> => {
     // assemblies are not editable

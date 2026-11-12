@@ -1,4 +1,4 @@
-import { WbsElementPreview } from 'shared';
+import { WbsNumber } from 'shared';
 import MaterialForm, { MaterialDataSubmission } from './MaterialForm';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCreateMaterial, useGetAssembliesForWbsElement } from '../../../../../hooks/bom.hooks';
@@ -7,7 +7,7 @@ import ErrorPage from '../../../../ErrorPage';
 export interface CreateMaterialModalProps {
   open: boolean;
   onHide: () => void;
-  wbsElement: WbsElementPreview;
+  wbsElement: { wbsNum: WbsNumber };
   onSuccess?: (materialName: string) => void;
   fromRRForm?: boolean;
 }

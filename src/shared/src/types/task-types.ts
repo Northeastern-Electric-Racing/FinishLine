@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { BaseUser, UserPreviewWithEmail } from './user-types.js';
+import { BaseUser } from './user-types.js';
 import { WbsNumber } from './project-types.js';
 
 export enum TaskPriority {
@@ -57,27 +57,6 @@ export interface TaskBoardItemPage {
 /** My Tasks and My Team's Overdue Tasks on the home page */
 export interface TaskHomeCard extends BaseTask {
   projectName: string;
-}
-
-/** @deprecated Use BaseTask or a per-endpoint model. Still used by project-types.ts (Project.tasks, ProjectGantt.tasks) until projects is refactored */
-export interface Task {
-  taskId: string;
-  wbsNum: WbsNumber;
-  wbsName: string;
-  title: string;
-  notes: string;
-  dateDeleted?: Date;
-  dateCreated: Date;
-  createdBy: UserPreviewWithEmail;
-  deletedBy?: UserPreviewWithEmail;
-  assignees: UserPreviewWithEmail[];
-  labels: TaskLabel[];
-  startDate?: Date;
-  deadline?: Date;
-  priority: TaskPriority;
-  status: TaskStatus;
-  blockedBy: TaskBlockerPreview[];
-  blockedByWorkPackages: BlockingWorkPackagePreview[];
 }
 
 // never give this a wbsNum: TaskCard tells blocking tasks from blocking work packages with `'wbsNum' in blocker`

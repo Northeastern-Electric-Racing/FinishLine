@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { dateToMidnightUTC, ProjectGantt } from 'shared';
+import { dateToMidnightUTC, ProjectGanttItem } from 'shared';
 import dayjs from 'dayjs';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useToast } from '../../../../hooks/toasts.hooks';
@@ -19,7 +19,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
   const { isLoading, mutateAsync: createProject } = useCreateSingleProject();
   const { isLoading: workPackageIsLoading, mutateAsync: createWorkPackage } = useCreateSingleWorkPackage();
   const { isLoading: isLoadingTaskCreate, mutateAsync: createSingleTask } = useCreateTask();
-  const project = change.element as ProjectGantt;
+  const project = change.element as ProjectGanttItem;
   const startDate = getProjectStartDate(project);
   const latestEndDate = getProjectEndDate(project);
 
@@ -49,8 +49,9 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
       startDate: dateToMidnightUTC(workPackage.startDate).toISOString(),
       duration: dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week'),
       crId: undefined,
-      blockedBy: workPackage.blockedBy,
-      descriptionBullets: workPackage.descriptionBullets,
+      // work packages added on the chart start with no dependencies or bullets
+      blockedBy: [],
+      descriptionBullets: [],
       stage: workPackage.stage ?? 'NONE'
     }));
 
@@ -67,7 +68,8 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
         for (const task of project.tasks) {
           try {
             await createSingleTask({
-              wbsNum: task.wbsNum,
+              // the task was added under the chart's placeholder project number
+              wbsNum: { ...task.wbsNum, projectNumber: createdProject.wbsNum.projectNumber },
               title: task.title,
               priority: task.priority,
               status: task.status,

@@ -1,3 +1,4 @@
+import { wbsNumOf } from './utils.js';
 import prisma from '../prisma/prisma.js';
 import {
   Prisma,
@@ -313,7 +314,7 @@ export const applyProjectProposedChanges = async (
         linkId: existingLinkIdByType.get(link.linkTypeName) ?? '-1'
       }));
 
-      const proj = await ProjectsService.editProject(
+      await ProjectsService.editProject(
         reviewer,
         associatedProject.projectId,
         crId,
@@ -327,7 +328,8 @@ export const applyProjectProposedChanges = async (
         organization
       );
 
-      projectWbsNum = proj.wbsNum;
+      // editProject throws when the project doesn't exist, so it's here
+      projectWbsNum = currentProject ? wbsNumOf(currentProject.wbsElement) : null;
     }
 
     for (const proposedChange of projectProposedChanges.workPackageProposedChanges) {

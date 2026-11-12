@@ -4,6 +4,5 @@ import RetrospectiveController from '../controllers/retrospectives.controllers.j
 const retrospectiveRouter = Router();
 
 retrospectiveRouter.get('/timelines', RetrospectiveController.getRetrospectiveTimelines);
-retrospectiveRouter.get('/budgets', RetrospectiveController.getRetrospectiveBudgets);
 
 export default retrospectiveRouter;

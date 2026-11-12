@@ -1,23 +1,15 @@
 import { alpha, Box, Card, CardContent, Chip, Stack, Typography, useTheme, Link } from '@mui/material';
-import { wbsNamePipe, ProjectPreview, wbsPipe, WbsElementStatus } from 'shared';
+import { wbsNamePipe, ProjectListItem, wbsPipe } from 'shared';
 import { datePipe } from '../../utils/pipes';
 import { NERButton } from '../../components/NERButton';
-import { useSingleProject } from '../../hooks/projects.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
 import { Link as RouterLink } from 'react-router-dom';
 
 interface ProjectCardProps {
-  project: ProjectPreview;
+  project: ProjectListItem;
 }
 
 const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
   const theme = useTheme();
-  const { data: singleProject, isLoading, isError, error } = useSingleProject(project.wbsNum);
-  if (isError) return <ErrorPage message={error.message} />;
-  if (isLoading || !singleProject) return <LoadingIndicator />;
-
-  const activeWorkPackages = project.workPackages.filter((wp) => wp.status === WbsElementStatus.Active);
 
   return (
     <Card
@@ -40,9 +32,9 @@ const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
                 variant="h5"
                 sx={{ marginBottom: '0.3rem', fontSize: { xs: '1.15rem', sm: '1.5rem' }, flexGrow: 1 }}
               >
-                {wbsNamePipe(singleProject)}
+                {wbsNamePipe(project)}
               </Typography>
-              {activeWorkPackages[0]?.stage ? (
+              {project.activeStage ? (
                 <Chip
                   size="medium"
                   variant="filled"
@@ -52,27 +44,23 @@ const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
                     bgcolor: alpha(theme.palette.primary.main, 0.45),
                     color: theme.palette.primary.light
                   }}
-                  label={activeWorkPackages[0].stage}
+                  label={project.activeStage}
                 />
               ) : null}
             </Box>
             <Typography fontSize={12} color="text.secondary">
               Project Lead:{' '}
-              {singleProject.lead?.firstName && singleProject.lead?.lastName
-                ? `${singleProject.lead.firstName} ${singleProject.lead.lastName}`
+              {project.lead?.firstName && project.lead?.lastName
+                ? `${project.lead.firstName} ${project.lead.lastName}`
                 : 'N/A'}
               {' • '}
               Project Manager:{' '}
-              {singleProject.manager?.firstName && singleProject.manager?.lastName
-                ? `${singleProject.manager.firstName} ${singleProject.manager.lastName}`
+              {project.manager?.firstName && project.manager?.lastName
+                ? `${project.manager.firstName} ${project.manager.lastName}`
                 : 'N/A'}
             </Typography>
             <Typography fontWeight={'regular'} fontSize={{ xs: 14, sm: 16 }}>
-              {datePipe(singleProject.startDate) +
-                ' ⟝ ' +
-                singleProject.duration +
-                ' wks ⟞ ' +
-                datePipe(singleProject.endDate)}
+              {datePipe(project.startDate) + ' ⟝ ' + project.duration + ' wks ⟞ ' + datePipe(project.endDate)}
             </Typography>
           </Box>
         </Stack>
@@ -88,7 +76,7 @@ const GuestProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
             WebkitBoxOrient: 'vertical'
           }}
         >
-          {singleProject.summary}
+          {project.summary}
         </Typography>
         <Link
           component={RouterLink}

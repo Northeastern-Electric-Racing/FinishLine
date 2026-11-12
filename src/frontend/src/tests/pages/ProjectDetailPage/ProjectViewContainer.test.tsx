@@ -11,16 +11,13 @@ import { WorkPackageStage } from 'shared';
 import * as userHooks from '../../../hooks/users.hooks';
 import * as financeHooks from '../../../hooks/finance.hooks';
 import * as authHooks from '../../../hooks/auth.hooks';
-import * as wpHooks from '../../../hooks/work-packages.hooks';
 import * as bomHooks from '../../../hooks/bom.hooks';
 import * as teamHooks from '../../../hooks/teams.hooks';
 import {
   mockManyMaterials,
-  mockManyWorkPackages,
   mockUseGetReimbursementRequestProjectData,
   mockUseMyTeamAsHead
 } from '../../test-support/mock-hooks';
-import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 import { exampleRRData } from '../../test-support/test-data/finance.stubs';
 import {
   exampleAuthenticatedAdminUser,
@@ -63,24 +60,11 @@ describe('Rendering Project View Container', () => {
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue({
       ...exampleAuthenticatedAdminUser
     });
-    vi.spyOn(wpHooks, 'useGetManyWorkPackages').mockReturnValue(mockManyWorkPackages(exampleAllWorkPackages));
     vi.spyOn(bomHooks, 'useGetMaterialsForWbsElement').mockReturnValue(mockManyMaterials([]));
     vi.spyOn(financeHooks, 'useGetReimbursementRequestProjectData').mockReturnValue(
       mockUseGetReimbursementRequestProjectData(exampleRRData)
     );
     vi.spyOn(teamHooks, 'useMyTeamAsHead').mockReturnValue(mockUseMyTeamAsHead());
-    vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue({
-      data: [
-        {
-          ...exampleProject1,
-          workPackages: exampleProject1.workPackages,
-          teams: exampleProject1.teams
-        }
-      ],
-      isLoading: false,
-      isError: false,
-      error: undefined
-    } as any);
   });
 
   it('renders the provided project', async () => {

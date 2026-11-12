@@ -3,18 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsElementStatus, WorkPackage, WorkPackageStage } from 'shared';
+import { ProjectDetailWorkPackage, WbsElementStatus, WorkPackageStage } from 'shared';
+import { exampleAdminUser, exampleLeadershipUser, exampleLeadUser, exampleManagerUser } from './users.stub';
 import {
-  exampleAdminUser,
-  exampleAppAdminUser,
-  exampleGuestUser,
-  exampleLeadershipUser,
-  exampleLeadUser,
-  exampleManagerUser
-} from './users.stub';
-import {
-  exampleWbsProject1,
-  exampleWbsProject2,
   exampleWbsWorkPackage1,
   exampleWbsWorkPackage2,
   exampleWbsWorkPackage3,
@@ -22,13 +13,13 @@ import {
   exampleWbsWorkPackage5
 } from './wbs-numbers.stub';
 
-export const exampleResearchWorkPackage: WorkPackage = {
+// work packages as GET /projects/:wbsNum returns them: blockers come back named, with a preview of their bullets
+
+export const exampleResearchWorkPackage: ProjectDetailWorkPackage = {
   id: '1',
   wbsElementId: '1',
   projectId: '1',
-  deleted: false,
   wbsNum: exampleWbsWorkPackage1,
-  dateCreated: new Date('11/15/20'),
   name: 'Bodywork Concept of Design',
   status: WbsElementStatus.Active,
   lead: exampleAdminUser,
@@ -37,34 +28,19 @@ export const exampleResearchWorkPackage: WorkPackage = {
   startDate: new Date('01/01/21'),
   endDate: new Date('01/22/21'),
   duration: 3,
-  blockedBy: [],
-  links: [],
-  descriptionBullets: [],
-  changes: [
-    {
-      changeId: '1',
-      changeRequestId: '33',
-      changeRequestIdentifier: 1,
-      wbsNum: exampleWbsWorkPackage3,
-      implementer: exampleGuestUser,
-      detail: 'Increased funding by $500.',
-      dateImplemented: new Date('11/15/2003')
-    }
-  ],
   projectName: 'project1',
   stage: WorkPackageStage.Research,
-  blocking: [],
-  teamTypes: [],
+  blockedBy: [],
+  blocking: [exampleWbsWorkPackage2],
+  descriptionBullets: [],
   events: []
 };
 
-export const exampleDesignWorkPackage: WorkPackage = {
+export const exampleDesignWorkPackage: ProjectDetailWorkPackage = {
   id: '2',
   wbsElementId: '2',
   projectId: '1',
-  deleted: false,
   wbsNum: exampleWbsWorkPackage2,
-  dateCreated: new Date('10/02/20'),
   name: 'Adhesive Shear Strength Test',
   status: WbsElementStatus.Inactive,
   lead: exampleLeadUser,
@@ -73,44 +49,19 @@ export const exampleDesignWorkPackage: WorkPackage = {
   startDate: new Date('01/22/21'),
   endDate: new Date('02/26/21'),
   duration: 5,
-  blockedBy: [exampleWbsWorkPackage1],
-  links: [],
-  descriptionBullets: [],
-  changes: [
-    {
-      changeId: '2',
-      changeRequestId: 'some id',
-      changeRequestIdentifier: 1,
-      wbsNum: exampleWbsWorkPackage3,
-      implementer: exampleAppAdminUser,
-      detail: 'Decreased duration from 10 weeks to 7 weeks.',
-      dateImplemented: new Date('03/24/21')
-    },
-
-    {
-      changeId: '13',
-      changeRequestId: 'another id',
-      changeRequestIdentifier: 54,
-      wbsNum: exampleWbsWorkPackage1,
-      implementer: exampleLeadUser,
-      detail: 'Added "jet fuel burns hot" bullet.',
-      dateImplemented: new Date('03/24/21')
-    }
-  ],
   projectName: 'project2',
   stage: WorkPackageStage.Design,
+  blockedBy: [{ wbsNum: exampleWbsWorkPackage1, name: 'Bodywork Concept of Design' }],
   blocking: [],
-  teamTypes: [],
+  descriptionBullets: [],
   events: []
 };
 
-export const exampleManufacturingWorkPackage: WorkPackage = {
+export const exampleManufacturingWorkPackage: ProjectDetailWorkPackage = {
   id: '3',
   wbsElementId: '3',
   projectId: '1',
-  deleted: false,
   wbsNum: exampleWbsWorkPackage3,
-  dateCreated: new Date('09/27/20'),
   name: 'Manufacture Wiring Harness',
   status: WbsElementStatus.Complete,
   lead: exampleLeadershipUser,
@@ -119,33 +70,19 @@ export const exampleManufacturingWorkPackage: WorkPackage = {
   startDate: new Date('01/01/21'),
   endDate: new Date('01/15/21'),
   duration: 2,
-  blockedBy: [exampleWbsProject1, exampleWbsProject2],
-  links: [],
-  descriptionBullets: [],
-  changes: [
-    {
-      changeId: '7',
-      changeRequestId: '14',
-      changeRequestIdentifier: 1,
-      wbsNum: exampleWbsWorkPackage1,
-      implementer: exampleAdminUser,
-      detail: 'Increased budget from $10 to $200.',
-      dateImplemented: new Date('03/24/21')
-    }
-  ],
   projectName: 'project3',
   stage: WorkPackageStage.Manufacturing,
-  blocking: [],
-  teamTypes: [],
+  blockedBy: [],
+  blocking: [exampleWbsWorkPackage4],
+  descriptionBullets: [],
   events: []
 };
 
-export const exampleInstallWorkPackage: WorkPackage = {
+export const exampleInstallWorkPackage: ProjectDetailWorkPackage = {
   id: '4',
   wbsElementId: '4',
   projectId: '1',
   wbsNum: exampleWbsWorkPackage4,
-  dateCreated: new Date('2022-02-20'),
   name: 'Install Wiring Harness',
   status: WbsElementStatus.Complete,
   lead: exampleLeadershipUser,
@@ -154,65 +91,30 @@ export const exampleInstallWorkPackage: WorkPackage = {
   startDate: new Date('2022-02-20'),
   endDate: new Date('2022-02-27'),
   duration: 1,
-  blockedBy: [exampleWbsWorkPackage3],
-  links: [],
-  descriptionBullets: [],
-  changes: [
-    {
-      changeId: '8',
-      changeRequestIdentifier: 1,
-      changeRequestId: '15',
-      wbsNum: exampleWbsWorkPackage1,
-      implementer: exampleAdminUser,
-      detail: 'New Work Package Created',
-      dateImplemented: new Date('2022-02-20')
-    }
-  ],
   projectName: 'project3',
   stage: WorkPackageStage.Install,
+  blockedBy: [{ wbsNum: exampleWbsWorkPackage3, name: 'Manufacture Wiring Harness' }],
   blocking: [],
-  teamTypes: [],
-  events: [],
-  deleted: false
+  descriptionBullets: [],
+  events: []
 };
 
-export const exampleWorkPackage5: WorkPackage = {
+export const exampleWorkPackage5: ProjectDetailWorkPackage = {
   id: '5',
   wbsElementId: '5',
   projectId: '1',
   wbsNum: exampleWbsWorkPackage5,
-  dateCreated: new Date('2022-02-20'),
   name: 'Party In Celebration',
   status: WbsElementStatus.Complete,
-  lead: exampleLeadershipUser,
+  lead: exampleAdminUser,
   manager: exampleManagerUser,
   orderInProject: 5,
   startDate: new Date('2022-02-21'),
   endDate: new Date('2022-02-28'),
   duration: 1,
-  blockedBy: [],
-  links: [],
-  descriptionBullets: [],
-  deleted: false,
-  changes: [
-    {
-      changeId: '9',
-      changeRequestId: '16',
-      changeRequestIdentifier: 1,
-      wbsNum: exampleWbsWorkPackage1,
-      implementer: exampleAdminUser,
-      detail: 'New Work Package Created',
-      dateImplemented: new Date('2022-02-21')
-    }
-  ],
   projectName: 'project3',
+  blockedBy: [],
   blocking: [],
-  teamTypes: [],
+  descriptionBullets: [],
   events: []
 };
-
-export const exampleAllWorkPackages: WorkPackage[] = [
-  exampleResearchWorkPackage,
-  exampleDesignWorkPackage,
-  exampleManufacturingWorkPackage
-];

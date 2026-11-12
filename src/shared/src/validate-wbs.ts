@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ProjectGantt, WbsElementPreview, WbsNumber, WorkPackagePreview } from './types/project-types.js';
+import { WbsNumber } from './types/project-types.js';
 
 /**
  * Compares two wbs numbers in ascending order
@@ -65,7 +65,7 @@ export const validateWBS = (wbsNum: string): WbsNumber => {
  *
  * @param wbsElement WBS element to check
  */
-export const isProject = (wbsElement: WbsElementPreview): wbsElement is ProjectGantt => {
+export const isProject = (wbsElement: { wbsNum: WbsNumber }): boolean => {
   return wbsElement.wbsNum.workPackageNumber === 0 && wbsElement.wbsNum.projectNumber !== 0;
 };
 
@@ -73,7 +73,7 @@ export const isProjectWbs = (wbsNum: WbsNumber) => {
   return wbsNum.workPackageNumber === 0 && wbsNum.projectNumber !== 0;
 };
 
-export const isWorkPackage = (wbsElement: WbsElementPreview): wbsElement is WorkPackagePreview => {
+export const isWorkPackage = (wbsElement: { wbsNum: WbsNumber }): boolean => {
   return wbsElement.wbsNum.workPackageNumber !== 0;
 };
 

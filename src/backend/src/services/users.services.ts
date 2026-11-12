@@ -11,7 +11,7 @@ import {
   AuthenticatedUser,
   AvailabilityCreateArgs,
   UserWithScheduleSettings,
-  ProjectOverview,
+  ProjectOverviewCard,
   isAtLeastRank,
   BusySlots,
   IcsBusyInterval,
@@ -26,8 +26,8 @@ import { AccessDeniedException, HttpException, NotFoundException } from '../util
 import { busyIntervalsToSlots, fetchIcsBusyTimes, validateIcsUrl } from '../utils/ics.utils.js';
 import CalendarService from './calendar.services.js';
 import { generateAccessToken } from '../utils/auth.utils.js';
-import { projectOverviewTransformer } from '../transformers/projects.transformer.js';
-import { getProjectOverviewQueryArgs } from '../prisma-query-args/projects.query-args.js';
+import { projectOverviewCardTransformer } from '../transformers/projects.transformer.js';
+import { getProjectOverviewCardQueryArgs } from '../prisma-query-args/projects.query-args.js';
 import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer.js';
 import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer.js';
 import { userTransformer, userWithScheduleSettingsTransformer } from '../transformers/user.transformer.js';
@@ -191,7 +191,7 @@ export default class UsersService {
     userId: string,
     organization: Organization,
     carId?: string
-  ): Promise<ProjectOverview[]> {
+  ): Promise<ProjectOverviewCard[]> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
     if (!requestedUser) throw new NotFoundException('User', userId);
 
@@ -208,10 +208,10 @@ export default class UsersService {
         },
         ...(carId && { carId })
       },
-      ...getProjectOverviewQueryArgs(organization.organizationId)
+      ...getProjectOverviewCardQueryArgs()
     });
 
-    return projects.map(projectOverviewTransformer);
+    return projects.map(projectOverviewCardTransformer);
   }
 
   /**

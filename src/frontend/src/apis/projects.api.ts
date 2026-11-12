@@ -5,24 +5,25 @@
 
 import axios from '../utils/axios';
 import {
+  BaseProject,
   Link,
   LinkType,
   LinkCreateArgs,
   LinkTypeCreatePayload,
-  Project,
+  ProjectDetail,
+  ProjectGanttItem,
+  ProjectListItem,
+  ProjectOverviewCard,
   WbsNumber,
-  WorkPackageTemplate,
-  ProjectGantt,
-  ProjectPreview,
-  ProjectOverview
+  WorkPackageTemplate
 } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import {
-  projectPreviewTransformer,
-  projectTransformer,
-  projectOverviewTransformer,
-  projectGanttTransformer
+  baseProjectTransformer,
+  projectDetailTransformer,
+  projectGanttItemTransformer,
+  projectOverviewCardTransformer
 } from './transformers/projects.transformers';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 
@@ -32,8 +33,8 @@ import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/t
  * so we bypass the global car filter using overrideCarId: 'all-cars'
  */
 export const getAllProjectsGantt = () => {
-  return axios.get<ProjectGantt[]>(apiUrls.allProjectsGantt(), {
-    transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer),
+  return axios.get<ProjectGanttItem[]>(apiUrls.allProjectsGantt(), {
+    transformResponse: (data) => JSON.parse(data).map(projectGanttItemTransformer),
     overrideCarId: 'all-cars'
   });
 };
@@ -42,8 +43,8 @@ export const getAllProjectsGantt = () => {
  * Fetches all projects with preview querry args
  */
 export const getAllProjects = () => {
-  return axios.get<ProjectPreview[]>(apiUrls.allProjectPreviews(), {
-    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer)
+  return axios.get<ProjectListItem[]>(apiUrls.allProjectPreviews(), {
+    transformResponse: (data) => JSON.parse(data).map(baseProjectTransformer)
   });
 };
 
@@ -53,8 +54,8 @@ export const getAllProjects = () => {
  * frontend filtering, so we bypass the global car filter using overrideCarId: 'all-cars'
  */
 export const getAllProjectsCopyBOM = () => {
-  return axios.get<ProjectPreview[]>(apiUrls.allProjectPreviews(), {
-    transformResponse: (data) => JSON.parse(data).map(projectPreviewTransformer),
+  return axios.get<ProjectListItem[]>(apiUrls.allProjectPreviews(), {
+    transformResponse: (data) => JSON.parse(data).map(baseProjectTransformer),
     overrideCarId: 'all-cars'
   });
 };
@@ -63,8 +64,8 @@ export const getAllProjectsCopyBOM = () => {
  * Fetches all the projects that are on the users teams
  */
 export const getUsersTeamsProjects = () => {
-  return axios.get<ProjectOverview[]>(apiUrls.usersTeamsProjects(), {
-    transformResponse: (data) => JSON.parse(data).map(projectOverviewTransformer)
+  return axios.get<ProjectOverviewCard[]>(apiUrls.usersTeamsProjects(), {
+    transformResponse: (data) => JSON.parse(data).map(projectOverviewCardTransformer)
   });
 };
 
@@ -72,8 +73,8 @@ export const getUsersTeamsProjects = () => {
  * Fetches all projects that the user is the manager or lead of.
  */
 export const getUsersLeadingProjects = () => {
-  return axios.get<ProjectOverview[]>(apiUrls.usersLeadingProjects(), {
-    transformResponse: (data) => JSON.parse(data).map(projectOverviewTransformer)
+  return axios.get<ProjectOverviewCard[]>(apiUrls.usersLeadingProjects(), {
+    transformResponse: (data) => JSON.parse(data).map(projectOverviewCardTransformer)
   });
 };
 
@@ -81,8 +82,8 @@ export const getUsersLeadingProjects = () => {
  * Fetches all projects that are on that team.
  */
 export const getTeamsProjects = (teamId: string) => {
-  return axios.get<Project[]>(apiUrls.teamsProjects(teamId), {
-    transformResponse: (data) => JSON.parse(data).map(projectGanttTransformer)
+  return axios.get<BaseProject[]>(apiUrls.teamsProjects(teamId), {
+    transformResponse: (data) => JSON.parse(data).map(baseProjectTransformer)
   });
 };
 
@@ -92,8 +93,8 @@ export const getTeamsProjects = (teamId: string) => {
  * @param wbsNum Project WBS number of the requested project.
  */
 export const getSingleProject = (wbsNum: WbsNumber) => {
-  return axios.get<Project>(apiUrls.projectsByWbsNum(wbsPipe(wbsNum)), {
-    transformResponse: (data) => projectTransformer(JSON.parse(data))
+  return axios.get<ProjectDetail>(apiUrls.projectsByWbsNum(wbsPipe(wbsNum)), {
+    transformResponse: (data) => projectDetailTransformer(JSON.parse(data))
   });
 };
 
@@ -103,9 +104,11 @@ export const getSingleProject = (wbsNum: WbsNumber) => {
  * @param payload Payload containing all information needed to create a project.
  */
 export const createSingleProject = (payload: CreateSingleProjectPayload) => {
-  return axios.post<Project>(apiUrls.projectsCreate(), {
-    ...payload
-  });
+  return axios.post<BaseProject>(
+    apiUrls.projectsCreate(),
+    { ...payload },
+    { transformResponse: (data) => baseProjectTransformer(JSON.parse(data)) }
+  );
 };
 
 /**
@@ -114,7 +117,7 @@ export const createSingleProject = (payload: CreateSingleProjectPayload) => {
  * @param payload Payload containing all information needed to edit a project.
  */
 export const editSingleProject = (payload: EditSingleProjectPayload) => {
-  return axios.post<{ message: string }>(apiUrls.projectsEdit(), {
+  return axios.post<void>(apiUrls.projectsEdit(), {
     ...payload
   });
 };
@@ -125,7 +128,7 @@ export const editSingleProject = (payload: EditSingleProjectPayload) => {
  * @param teamId the id of the team the project is being assigned to
  */
 export const setProjectTeam = (wbsNum: WbsNumber, teamId: string) => {
-  return axios.post<{ message: string }>(apiUrls.projectsSetTeam(wbsPipe(wbsNum)), {
+  return axios.post<void>(apiUrls.projectsSetTeam(wbsPipe(wbsNum)), {
     teamId
   });
 };
@@ -136,7 +139,7 @@ export const setProjectTeam = (wbsNum: WbsNumber, teamId: string) => {
  * @param wbsNum The WBS Number of the Project being deleted.
  */
 export const deleteProject = (wbsNumber: WbsNumber) => {
-  return axios.delete<{ message: string }>(apiUrls.projectsDelete(wbsPipe(wbsNumber)));
+  return axios.delete<void>(apiUrls.projectsDelete(wbsPipe(wbsNumber)));
 };
 
 /**
@@ -144,7 +147,7 @@ export const deleteProject = (wbsNumber: WbsNumber) => {
  * @param wbsNum Project WBS number of the requested project to toggle favorite for.
  */
 export const toggleProjectFavorite = (wbsNum: WbsNumber) => {
-  return axios.post<{ message: string }>(apiUrls.projectsToggleFavorite(wbsPipe(wbsNum)));
+  return axios.post<void>(apiUrls.projectsToggleFavorite(wbsPipe(wbsNum)));
 };
 
 /**
@@ -208,7 +211,7 @@ export const setUsefulLinks = (linksObject: { links: LinkCreateArgs[] }) => {
  * Set the abbreviation of a project
  */
 export const setAbbreviation = (payload: { wbsNum: string; abbreviation: string }) => {
-  return axios.post<Project>(apiUrls.projectsSetAbbreviation(), {
+  return axios.post<void>(apiUrls.projectsSetAbbreviation(), {
     ...payload
   });
 };
@@ -217,7 +220,7 @@ export const setAbbreviation = (payload: { wbsNum: string; abbreviation: string 
  * Delete the abbreviation of a project
  */
 export const deleteAbbreviation = (wbsNum: string) => {
-  return axios.post<{ message: string }>(apiUrls.projectsDeleteAbbreviation(wbsNum));
+  return axios.post<void>(apiUrls.projectsDeleteAbbreviation(wbsNum));
 };
 
 /**

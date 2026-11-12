@@ -9,8 +9,8 @@ import { useGetAllIndexCodes } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
-import { Project } from 'shared';
-import { useGetTeamsProjects } from '../../../hooks/projects.hooks';
+import { useGetTeamsProjects, useSingleProject } from '../../../hooks/projects.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const schema = yup.object().shape({
   project: yup.string().required('Project is required'),
@@ -32,27 +32,27 @@ interface EditProjectBudgetModalProps {
   showModal: boolean;
   handleClose: () => void;
   teamId: string;
-  project?: Project;
 }
 
 export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
   showModal,
   handleClose,
-  teamId,
-  project
+  teamId
 }: EditProjectBudgetModalProps) => {
+  const toast = useToast();
   const {
     watch,
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors }
   } = useForm<EditProjectBudgetModalInputs>({
     resolver: yupResolver(schema),
     defaultValues: {
-      project: project?.id || '',
+      project: '',
       account: '',
-      budget: project?.budget || 0
+      budget: 0
     }
   });
 
@@ -74,6 +74,15 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
     error: projectsError
   } = useGetTeamsProjects(teamId);
 
+  const selectedProject = projects?.find((project) => project.id === currentProjectId);
+  // the change request resends the project's bullets and links, so they're fetched once a project is picked
+  const {
+    data: selectedProjectDetail,
+    isLoading: selectedProjectIsLoading,
+    isError: selectedProjectIsError,
+    error: selectedProjectError
+  } = useSingleProject(selectedProject?.wbsNum);
+
   if (!indexCodes || indexCodesIsLoading || crIsLoading) {
     return <LoadingIndicator />;
   }
@@ -87,11 +96,16 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
   if (projectsIsError) {
     return <ErrorPage message={projectsError.message} />;
   }
+  if (selectedProjectIsError) {
+    return <ErrorPage message={selectedProjectError.message} />;
+  }
 
   const onSubmit = async (data: EditProjectBudgetModalInputs) => {
-    if (!currentProjectId) return;
-    const currentProject = projects.find((project) => project.id === currentProjectId);
-    if (!currentProject) return;
+    const currentProject = selectedProjectDetail;
+    if (!currentProject || currentProject.id !== currentProjectId) {
+      toast.error('Still loading the selected project, please try again');
+      return;
+    }
 
     const payload: CreateStandardChangeRequestPayload = {
       wbsNum: currentProject.wbsNum,
@@ -117,9 +131,12 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
       }
     };
 
-    await createCR(payload);
-
-    handleClose();
+    try {
+      await createCR(payload);
+      handleClose();
+    } catch (e) {
+      if (e instanceof Error) toast.error(e.message);
+    }
   };
 
   return (
@@ -133,6 +150,8 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
       onFormSubmit={onSubmit}
       cancelText="Cancel"
       submitText="Create Change Request"
+      // the change request is built from the picked project's details
+      disabled={selectedProjectIsLoading}
       showCloseButton
     >
       <Box display="flex" flexDirection={'column'} minWidth={400}>
@@ -145,7 +164,11 @@ export const EditProjectBudgetModal: React.FC<EditProjectBudgetModalProps> = ({
               <Select
                 displayEmpty
                 value={value !== undefined ? value : ''}
-                onChange={onChange}
+                onChange={(event) => {
+                  onChange(event);
+                  // start from the project's current budget
+                  setValue('budget', projects.find((project) => project.id === event.target.value)?.budget ?? 0);
+                }}
                 onBlur={onBlur}
                 inputRef={ref}
                 error={!!errors.project}

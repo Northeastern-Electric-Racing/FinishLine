@@ -4,7 +4,7 @@
  */
 
 import { addWeeksToDate, daysBetween } from '../date-utils.js';
-import { ProjectPreview, WbsElementStatus } from '../types/project-types.js';
+import { WbsElementStatus } from '../types/project-types.js';
 import { TimelineStatus } from '../types/work-package-types.js';
 
 /**
@@ -118,11 +118,10 @@ const calculateProjectOriginalStartDate = (wps: { originalDuration: number; orig
   return minDate;
 };
 
-const calculateDaysLeftInProject = (project: ProjectPreview): number | null => {
-  const endDate = calculateProjectEndDate(project.workPackages);
-  if (!endDate) return null;
+const calculateDaysLeftInProject = (project: { endDate?: Date }): number | null => {
+  if (!project.endDate) return null;
 
-  return daysBetween(endDate, new Date());
+  return daysBetween(project.endDate, new Date());
 };
 
 export {

@@ -1,4 +1,4 @@
-import { Shop, Event, EventPreview, EventWithMembers } from 'shared';
+import { Shop, Event, EventWithMembers } from 'shared';
 import { userTransformer } from './users.transformers';
 
 export const shopTransformer = (shop: Shop): Shop => {
@@ -57,16 +57,5 @@ export const eventWithMembersTransformer = (event: EventWithMembers): EventWithM
       startTime: new Date(slot.startTime),
       endTime: new Date(slot.endTime)
     }))
-  };
-};
-
-export const eventPreviewTransformer = (event: EventPreview): EventPreview => {
-  return {
-    eventId: event.eventId,
-    title: event.title,
-    dateScheduled: new Date(event.dateScheduled),
-    status: event.status,
-    userCreated: userTransformer(event.userCreated),
-    wbsName: event.wbsName
   };
 };

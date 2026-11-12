@@ -13,7 +13,6 @@ import {
   Event,
   ScheduleSlot,
   EventStatus,
-  EventPreview,
   DayOfWeek,
   ConflictStatus,
   Document,
@@ -183,23 +182,6 @@ export const eventWithMembersTransformer = (event: Prisma.EventGetPayload<EventW
     status: eventStatusTransformer(event.status),
     initialDateScheduled: event.initialDateScheduled ?? undefined,
     notificationChannelIds: event.notificationChannelIds
-  };
-};
-
-export const eventPreviewTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>, wbsName: string): EventPreview => {
-  // Use first scheduled time's startTime, or fall back to initialDateScheduled (for confirmation events), or current date
-  const dateScheduled =
-    (event.scheduledTimes.length > 0 && event.scheduledTimes[0].startTime ? event.scheduledTimes[0].startTime : null) ??
-    event.initialDateScheduled ??
-    new Date();
-
-  return {
-    eventId: event.eventId,
-    title: event.title,
-    dateScheduled,
-    status: event.status as EventStatus,
-    userCreated: userTransformer(event.userCreated),
-    wbsName
   };
 };
 

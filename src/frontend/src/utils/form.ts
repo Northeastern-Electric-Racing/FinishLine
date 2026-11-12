@@ -9,7 +9,9 @@ import { DescriptionBullet, DescriptionBulletPreview, validateWBS } from 'shared
  * maps a description bullet list to the object needed for forms
  * can't use `id` instead of `bulletId` because react-hook-forms uses id built in for arrays of objects
  */
-export const bulletsToObject = (bullets: DescriptionBullet[]): DescriptionBulletPreview[] =>
+export const bulletsToObject = (
+  bullets: (Pick<DescriptionBullet, 'id' | 'detail' | 'type'> & { dateDeleted?: Date })[]
+): DescriptionBulletPreview[] =>
   bullets
     .filter((bullet) => !bullet.dateDeleted)
     .map((bullet) => {

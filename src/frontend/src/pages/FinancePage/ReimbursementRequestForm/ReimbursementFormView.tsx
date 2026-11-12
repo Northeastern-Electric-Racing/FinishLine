@@ -34,7 +34,7 @@ import {
   IndexCode,
   isHead,
   MAX_FILE_SIZE,
-  ProjectPreview,
+  ProjectListItem,
   ReimbursementReceiptUploadArgs,
   Vendor
 } from 'shared';
@@ -61,7 +61,7 @@ interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
   allAccountCodes: AccountCode[];
   receiptFiles: ReimbursementReceiptUploadArgs[];
-  allProjects: ProjectPreview[];
+  allProjects: ProjectListItem[];
   projectAutocompleteOptions: {
     label: string;
     id: string;

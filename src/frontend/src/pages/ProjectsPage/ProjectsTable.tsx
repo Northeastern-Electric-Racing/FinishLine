@@ -7,7 +7,7 @@ import { Box, Link, useTheme } from '@mui/material';
 import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Project, WbsElementStatus, WbsNumber, WorkPackage } from 'shared';
+import { ProjectListItem, WbsElementStatus, WbsNumber } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
@@ -126,11 +126,10 @@ const ProjectsTable: React.FC = () => {
     budgetColumn,
     {
       ...baseColDef,
-      field: 'workPackages',
+      field: 'numWorkPackages',
       headerName: '# Work Packages',
       filterable: false,
-      maxWidth: 150,
-      valueFormatter: (params: { value: WorkPackage[] }) => params.value.length
+      maxWidth: 150
     },
     statusColumn
   ];
@@ -209,7 +208,7 @@ const ProjectsTable: React.FC = () => {
         getRowClassName={(params) => (params.indexRelativeToCurrentPage % 2 === 0 ? 'Mui-even' : 'Mui-odd')}
         components={{
           Toolbar: TableCustomToolbar,
-          Row: (props: GridRowProps & { row: Project }) => {
+          Row: (props: GridRowProps & { row: ProjectListItem }) => {
             const { wbsNum } = props.row;
             return (
               <Link
