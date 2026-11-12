@@ -7,7 +7,8 @@ import {
   ProjectListItem,
   ProjectOverviewCard,
   validateWBS,
-  WbsNumber
+  WbsNumber,
+  wbsPipe
 } from 'shared';
 import { NextFunction, Request, Response } from 'express';
 import ProjectsService from '../services/projects.services.js';

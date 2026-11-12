@@ -14,7 +14,7 @@ import {
   ListItemIcon,
   ListItemText
 } from '@mui/material';
-import { Project } from 'shared';
+import { ProjectDetail } from 'shared';
 import { useAllTeams } from '../../../hooks/teams.hooks';
 import { useEditProjectTeams } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -23,7 +23,7 @@ import NERModal from '../../../components/NERModal';
 interface AssignToTeamsProps {
   modalShow: boolean;
   handleClose: () => void;
-  project: Project;
+  project: ProjectDetail;
 }
 
 const AssignToTeams: React.FC<AssignToTeamsProps> = ({ modalShow, handleClose, project }) => {
