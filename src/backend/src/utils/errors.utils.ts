@@ -230,4 +230,5 @@ export type ExceptionObjectNames =
   | 'Team Join Request'
   | 'Executive Summary'
   | 'Competition Performance'
-  | 'Slack Channel';
+  | 'Slack Channel'
+  | 'Competition Documents Summary';

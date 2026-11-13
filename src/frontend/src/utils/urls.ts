@@ -590,6 +590,7 @@ const dashboardDelete = (dashboardId: string) => `${dashboards()}/${dashboardId}
 const executiveSummaries = () => `${API_URL}/executive-summaries`;
 const executiveSummaryById = (id: string) => `${executiveSummaries()}/${id}`;
 const executiveSummaryVehicleDevelopment = (id: string) => `${executiveSummaryById(id)}/vehicle-development`;
+const executiveSummaryNewMemberSignUps = () => `${executiveSummaries()}/new-member-sign-ups`;
 const executiveSummaryBudget = (id: string) => `${executiveSummaryById(id)}/budget`;
 const executiveSummaryEdit = (id: string) => `${executiveSummaries()}/${id}/edit`;
 const executiveSummaryCompetitionDocumentsSummaryEdit = (id: string) =>
@@ -1037,6 +1038,7 @@ export const apiUrls = {
   executiveSummaryVehicleDevelopment,
   executiveSummaryCompetitionDocumentsSummaryEdit,
   executiveSummaryBudget,
+  executiveSummaryNewMemberSignUps,
   executiveSummaryEdit,
 
   version

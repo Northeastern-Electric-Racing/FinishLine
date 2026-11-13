@@ -4,13 +4,15 @@
  */
 
 import express from 'express';
+import { DataSource } from 'shared';
 import { body, query } from 'express-validator';
-import { isOptionalDate, validateInputs } from '../utils/validation.utils.js';
+import { intMinZero, isOptionalDate, validateInputs } from '../utils/validation.utils.js';
 import ExecSummaryController from '../controllers/exec-summaries.controllers.js';
 
 const execSummaryRouter = express.Router();
 
 execSummaryRouter.get('/', ExecSummaryController.getAllExecutiveSummaries);
+execSummaryRouter.get('/new-member-sign-ups', ExecSummaryController.getNewMemberSignUpEvents);
 execSummaryRouter.get('/:execSummaryId', ExecSummaryController.getSingleExecutiveSummary);
 execSummaryRouter.get(
   '/:execSummaryId/vehicle-development',
@@ -53,6 +55,16 @@ execSummaryRouter.post(
   body('enduranceAvgLapTimeSeconds').optional({ nullable: true }).isInt(),
   validateInputs,
   ExecSummaryController.editCompetitionPerformance
+);
+
+execSummaryRouter.post(
+  '/:executiveSummaryId/competition-documents-summary/edit',
+  intMinZero(body('submittedOnTimeCount')).optional(),
+  intMinZero(body('firstSubmissionRejectedCount')).optional(),
+  body('source').optional().isIn(Object.values(DataSource)),
+  isOptionalDate(body('dateSynced')),
+  validateInputs,
+  ExecSummaryController.editCompetitionDocumentsSummary
 );
 
 export default execSummaryRouter;

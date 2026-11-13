@@ -29,6 +29,28 @@ export default class ExecSummaryController {
     }
   }
 
+  static async editCompetitionDocumentsSummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { executiveSummaryId } = req.params as Record<string, string>;
+      const { submittedOnTimeCount, firstSubmissionRejectedCount, source, dateSynced } = req.body;
+
+      const competitionDocumentsSummary = await ExecSummaryServices.editCompetitionDocumentsSummary(
+        req.currentUser,
+        req.organization,
+        executiveSummaryId,
+        {
+          submittedOnTimeCount,
+          firstSubmissionRejectedCount,
+          source,
+          dateSynced: dateSynced ? new Date(dateSynced) : undefined
+        }
+      );
+      res.status(200).json(competitionDocumentsSummary);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getSingleExecutiveSummary(req: Request, res: Response, next: NextFunction) {
     try {
       const { execSummaryId } = req.params as Record<string, string>;
@@ -44,6 +66,15 @@ export default class ExecSummaryController {
     try {
       const summaries = await ExecSummaryServices.getAllExecutiveSummaries(req.organization, req.currentUser);
       res.status(200).json(summaries);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getNewMemberSignUpEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const events = await ExecSummaryServices.getNewMemberSignUpEvents(req.organization, req.currentUser);
+      res.status(200).json(events);
     } catch (error: unknown) {
       next(error);
     }

@@ -3,6 +3,7 @@ import {
   CompetitionDocumentsSummary,
   EditCompetitionDocumentsSummaryArgs,
   ExecutiveSummary,
+  NewMemberSignUpEvent,
   VehicleDevelopmentSummary
 } from 'shared';
 import axios from '../utils/axios';
@@ -74,6 +75,18 @@ export const getBudgetSummary = (id: string, teamTypeId?: string) => {
 export const editExecutiveSummary = (id: string, execSummaryData: EditExecSummaryPayload) => {
   return axios.post<ExecutiveSummary>(apiUrls.executiveSummaryEdit(id), execSummaryData, {
     transformResponse: (data) => executiveSummaryTransformer(JSON.parse(data))
+  });
+};
+
+/**
+ * Gets all new member events along with how many new members signed up at each
+ *
+ * @returns the new member sign up events, with dates as Date objects
+ */
+export const getNewMemberSignUpEvents = () => {
+  return axios.get<NewMemberSignUpEvent[]>(apiUrls.executiveSummaryNewMemberSignUps(), {
+    transformResponse: (data) =>
+      (JSON.parse(data) as NewMemberSignUpEvent[]).map((event) => ({ ...event, date: new Date(event.date) }))
   });
 };
 

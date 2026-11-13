@@ -176,3 +176,10 @@ export interface BudgetSummary {
   previousCarName?: string;
   previousTotalSpent?: number;
 }
+
+export interface NewMemberSignUpEvent {
+  eventId: string;
+  title: string;
+  date: Date;
+  signUps: number;
+}

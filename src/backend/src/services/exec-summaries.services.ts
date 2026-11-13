@@ -4,7 +4,15 @@
  */
 
 import { Organization } from '@prisma/client';
-import { calculateProjectEndDate, calculateProjectStartDate, isAdmin, notGuest, User } from 'shared';
+import {
+  calculateProjectEndDate,
+  calculateProjectStartDate,
+  EditCompetitionDocumentsSummaryArgs,
+  isAdmin,
+  NewMemberSignUpEvent,
+  notGuest,
+  User
+} from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedException,
@@ -25,6 +33,7 @@ import {
   getVehicleDevelopmentProjectQueryArgs
 } from '../prisma-query-args/executive-summary.query-args.js';
 import {
+  competitionDocumentsSummaryTransformer,
   executiveSummaryTransformer,
   vehicleDevelopmentSummaryTransformer,
   competitionPerformanceTransformer
@@ -126,6 +135,80 @@ export default class ExecSummaryServices {
   }
 
   /**
+   * Edits the competition documents summary of an executive summary. Fields that are omitted are left unchanged.
+   * @param submitter the user editing the competition documents summary
+   * @param organization the organization the executive summary belongs to
+   * @param executiveSummaryId the id of the executive summary that owns the competition documents summary
+   * @param args the fields to update
+   * @returns the updated competition documents summary
+   * @throws AccessDeniedException if the submitter is not an admin and not on the ops team
+   * @throws NotFoundException if the executive summary or its competition documents summary does not exist
+   * @throws InvalidOrganizationException if the executive summary belongs to a different organization
+   * @throws DeletedException if the executive summary has been deleted
+   */
+  static async editCompetitionDocumentsSummary(
+    submitter: User,
+    organization: Organization,
+    executiveSummaryId: string,
+    { submittedOnTimeCount, firstSubmissionRejectedCount, source, dateSynced }: EditCompetitionDocumentsSummaryArgs
+  ) {
+    const isAdminUser = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+
+    if (!isAdminUser) {
+      let isOpsTeamMember = false;
+      try {
+        isOpsTeamMember = await isUserOnOpsTeam(submitter, organization.organizationId);
+      } catch {
+        // Ops team may not exist yet
+      }
+      if (!isOpsTeamMember) throw new AccessDeniedException('edit a competition documents summary');
+    }
+
+    const currentExecutiveSummary = await prisma.executive_Summary.findUnique({
+      where: { executiveSummaryId },
+      select: {
+        ...getBaseExecutiveSummaryQueryArgs().select,
+        competitionDocumentsSummary: getBaseCompetitionDocumentsSummaryQueryArgs()
+      }
+    });
+
+    if (!currentExecutiveSummary) {
+      throw new NotFoundException('Executive Summary', executiveSummaryId);
+    }
+
+    if (currentExecutiveSummary.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Executive Summary');
+    }
+
+    if (currentExecutiveSummary.dateDeleted) {
+      throw new DeletedException('Executive Summary', executiveSummaryId);
+    }
+
+    if (!currentExecutiveSummary.competitionDocumentsSummary) {
+      throw new NotFoundException('Competition Documents Summary', executiveSummaryId);
+    }
+
+    if (submittedOnTimeCount !== undefined && (!Number.isInteger(submittedOnTimeCount) || submittedOnTimeCount < 0)) {
+      throw new HttpException(400, 'Submitted on time count must be a non-negative integer');
+    }
+
+    if (
+      firstSubmissionRejectedCount !== undefined &&
+      (!Number.isInteger(firstSubmissionRejectedCount) || firstSubmissionRejectedCount < 0)
+    ) {
+      throw new HttpException(400, 'First submission rejected count must be a non-negative integer');
+    }
+
+    const updatedCompetitionDocumentsSummary = await prisma.competition_Documents_Summary.update({
+      where: { executiveSummaryId },
+      data: { submittedOnTimeCount, firstSubmissionRejectedCount, source, dateSynced },
+      ...getBaseCompetitionDocumentsSummaryQueryArgs()
+    });
+
+    return competitionDocumentsSummaryTransformer(updatedCompetitionDocumentsSummary);
+  }
+
+  /**
    * Gets a single executive summary by id.
    * @param organization the organization the executive summary belongs to
    * @param executiveSummaryId the id of the executive summary to retrieve
@@ -175,6 +258,49 @@ export default class ExecSummaryServices {
     }
 
     return executiveSummaryTransformer(executiveSummary);
+  }
+
+  /**
+   * Gets every event on a new member calendar that has a recorded new member sign up count
+   *
+   * @param organization the organization to get the events for
+   * @param viewer the user making the request
+   * @returns the events with their sign up counts, oldest first
+   */
+  static async getNewMemberSignUpEvents(organization: Organization, viewer: User): Promise<NewMemberSignUpEvent[]> {
+    const hasPermission = await userHasPermission(viewer.userId, organization.organizationId, notGuest);
+    if (!hasPermission) {
+      throw new AccessDeniedException('Only members can view new member sign ups');
+    }
+
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        newMemberSignUps: { not: null },
+        eventType: {
+          calendars: {
+            some: { isNewMemberCalendar: true, dateDeleted: null, organizationId: organization.organizationId }
+          }
+        }
+      },
+      select: {
+        eventId: true,
+        title: true,
+        newMemberSignUps: true,
+        initialDateScheduled: true,
+        dateCreated: true,
+        scheduledTimes: { select: { startTime: true }, orderBy: { startTime: 'asc' }, take: 1 }
+      }
+    });
+
+    return events
+      .map((event) => ({
+        eventId: event.eventId,
+        title: event.title,
+        date: event.scheduledTimes[0]?.startTime ?? event.initialDateScheduled ?? event.dateCreated,
+        signUps: event.newMemberSignUps ?? 0
+      }))
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
   }
 
   static async getAllExecutiveSummaries(organization: Organization, viewer: User) {
