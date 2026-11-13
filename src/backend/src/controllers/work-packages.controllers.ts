@@ -6,7 +6,8 @@ import {
   WbsNumber,
   WorkPackageCard,
   WorkPackageDetail,
-  WorkPackageSelection
+  WorkPackageSelection,
+  wbsPipe
 } from 'shared';
 import WorkPackagesService from '../services/work-packages.services.js';
 import { broadcastBayDashboardUpdate } from '../utils/bay-dashboard-events.utils.js';
@@ -141,7 +142,7 @@ export default class WorkPackagesController {
       await WorkPackagesService.deleteWorkPackage(req.currentUser, wbsNum, req.organization);
       broadcastBayDashboardUpdate(req.organization.slug);
 
-      res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum as string}` });
+      res.status(200).json({ message: `Successfully deleted work package #${wbsPipe(wbsNum)}` });
     } catch (error: unknown) {
       next(error);
     }
