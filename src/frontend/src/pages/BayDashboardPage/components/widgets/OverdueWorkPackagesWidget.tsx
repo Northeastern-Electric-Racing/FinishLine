@@ -5,88 +5,17 @@
 
 import { Box, CircularProgress, Stack, Typography } from '@mui/material';
 import { CalendarMonth, CheckCircleOutlineOutlined, Construction, ErrorOutline, Work } from '@mui/icons-material';
-import { BayDashboardWidgetSize, BayDashboardWidgetType, UserPreview, WbsNumber, wbsPipe } from 'shared';
+import { BayDashboardWidgetSize, BayDashboardWidgetType, PublicBayDashboardOverdueWorkPackage, wbsPipe } from 'shared';
 import NERWidget from '../../../../components/NERWidget';
+import { useGetBayDashboardOverdueWorkPackages } from '../../../../hooks/bay-dashboard.hooks';
 import { BayDashboardWidgetProps, bayDashboardWidgetDisplayNames } from '../../../../utils/bay-dashboard.utils';
-import { datePipe, fullNamePipe, projectWbsPipe } from '../../../../utils/pipes';
-import { daysOverdue } from '../../../../utils/datetime.utils';
-import OverdueWorkPackageCard, { InfoPill, NER_RED } from './OverdueWorkPackageCard';
+import { datePipe, projectWbsPipe } from '../../../../utils/pipes';
+import OverdueWorkPackageCard, { fullNameOrDash, InfoPill, NER_RED } from './OverdueWorkPackageCard';
 
 const MAX_CARDS = 4;
 const MAX_BLOCKERS = 2;
 // the medium widget shows two cards side by side, like the medium calendar's events
 const MEDIUM_MAX_CARDS = 2;
-
-/**
- * Only what the widget needs to display an overdue work package
- */
-export interface OverdueWorkPackageWidgetItem {
-  wbsNum: WbsNumber;
-  name: string;
-  projectName: string;
-  blockedBy: { wbsNum: WbsNumber; name: string }[];
-  lead?: UserPreview;
-  manager?: UserPreview;
-  endDate: Date;
-}
-
-// TODO: replace with the public overdue work packages endpoint once the backend has it
-const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-const sampleOverdueWorkPackages: OverdueWorkPackageWidgetItem[] = [
-  {
-    wbsNum: { carNumber: 1, projectNumber: 4, workPackageNumber: 2 },
-    name: 'Battery Box Machining',
-    projectName: 'Accumulator',
-    blockedBy: [
-      { wbsNum: { carNumber: 1, projectNumber: 4, workPackageNumber: 1 }, name: 'Battery Box Design Review' },
-      { wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }, name: 'Frame Mounting Points' },
-      { wbsNum: { carNumber: 1, projectNumber: 7, workPackageNumber: 1 }, name: 'Cell Procurement' }
-    ],
-    lead: { userId: '1', firstName: 'Joe', lastName: 'Shmoe' },
-    manager: { userId: '2', firstName: 'Jane', lastName: 'Doe' },
-    endDate: daysAgo(25)
-  },
-  {
-    wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 5 },
-    name: 'Rear Suspension Assembly',
-    projectName: 'Suspension',
-    blockedBy: [{ wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 4 }, name: 'Upright Manufacturing' }],
-    lead: { userId: '3', firstName: 'Alex', lastName: 'Kim' },
-    manager: { userId: '4', firstName: 'Sam', lastName: 'Rivera' },
-    endDate: daysAgo(5)
-  },
-  {
-    wbsNum: { carNumber: 1, projectNumber: 9, workPackageNumber: 1 },
-    name: 'Wiring Harness Layout',
-    projectName: 'Low Voltage',
-    blockedBy: [],
-    lead: { userId: '5', firstName: 'Taylor', lastName: 'Nguyen' },
-    manager: { userId: '6', firstName: 'Jordan', lastName: 'Lee' },
-    endDate: daysAgo(1)
-  },
-  {
-    wbsNum: { carNumber: 1, projectNumber: 5, workPackageNumber: 3 },
-    name: 'Motor Controller Integration',
-    projectName: 'Powertrain',
-    blockedBy: [{ wbsNum: { carNumber: 1, projectNumber: 5, workPackageNumber: 2 }, name: 'Inverter Bench Testing' }],
-    lead: { userId: '7', firstName: 'Morgan', lastName: 'Patel' },
-    manager: { userId: '8', firstName: 'Casey', lastName: 'Brooks' },
-    endDate: daysAgo(20)
-  },
-  {
-    wbsNum: { carNumber: 1, projectNumber: 3, workPackageNumber: 6 },
-    name: 'Brake Pedal Bracket Redesign',
-    projectName: 'Brakes',
-    blockedBy: [
-      { wbsNum: { carNumber: 1, projectNumber: 3, workPackageNumber: 5 }, name: 'Pedal Box Mounting' },
-      { wbsNum: { carNumber: 1, projectNumber: 3, workPackageNumber: 2 }, name: 'Master Cylinder Selection' },
-      { wbsNum: { carNumber: 1, projectNumber: 6, workPackageNumber: 1 }, name: 'Firewall Clearance Check' }
-    ],
-    lead: { userId: '9', firstName: 'Riley', lastName: 'Chen' },
-    manager: { userId: '10', firstName: 'Avery', lastName: 'Okafor' },
-    endDate: daysAgo(8)
-  }
-];
 
 const StateMessage: React.FC<{ icon: React.ReactNode; heading: string; message?: string }> = ({
   icon,
@@ -111,12 +40,12 @@ const BlockerLine: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </Box>
 );
 
-const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem; maxBlockers?: number; compact?: boolean }> = ({
-  wp,
-  maxBlockers = MAX_BLOCKERS,
-  compact = false
-}) => {
-  const numDaysOverdue = daysOverdue(new Date(wp.endDate));
+const OverdueWorkPackageItem: React.FC<{
+  wp: PublicBayDashboardOverdueWorkPackage;
+  maxBlockers?: number;
+  compact?: boolean;
+}> = ({ wp, maxBlockers = MAX_BLOCKERS, compact = false }) => {
+  const numDaysOverdue = wp.daysOverdue;
   const hiddenBlockers = wp.blockedBy.length - maxBlockers;
 
   return (
@@ -142,9 +71,9 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem; maxBl
           {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
         </Typography>
         <Stack direction="row" sx={{ gap: '0.8cqw', flexShrink: 0 }}>
-          <InfoPill icon={<Construction />} label={fullNamePipe(wp.lead)} />
-          <InfoPill icon={<Work />} label={fullNamePipe(wp.manager)} />
-          <InfoPill icon={<CalendarMonth />} label={datePipe(new Date(wp.endDate))} />
+          <InfoPill icon={<Construction />} label={fullNameOrDash(wp.lead)} />
+          <InfoPill icon={<Work />} label={fullNameOrDash(wp.manager)} />
+          <InfoPill icon={<CalendarMonth />} label={datePipe(wp.endDate)} />
         </Stack>
       </Stack>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '2cqw', flex: 1, minHeight: 0 }}>
@@ -188,7 +117,7 @@ const OverdueWorkPackageItem: React.FC<{ wp: OverdueWorkPackageWidgetItem; maxBl
 };
 
 interface OverdueWorkPackagesWidgetViewProps {
-  workPackages?: OverdueWorkPackageWidgetItem[];
+  workPackages?: PublicBayDashboardOverdueWorkPackage[];
   isLoading?: boolean;
   isError?: boolean;
   size?: BayDashboardWidgetSize;
@@ -232,11 +161,9 @@ export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetVi
     );
   }
 
-  const sorted = [...workPackages].sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime());
-
   if (size === BayDashboardWidgetSize.MEDIUM) {
-    const shown = sorted.slice(0, MEDIUM_MAX_CARDS);
-    const hidden = sorted.length - shown.length;
+    const shown = workPackages.slice(0, MEDIUM_MAX_CARDS);
+    const hidden = workPackages.length - shown.length;
     return (
       <Box sx={{ mt: '1cqw' }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${shown.length}, 1fr)`, gap: '2cqw' }}>
@@ -255,11 +182,11 @@ export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetVi
     );
   }
 
-  const hiddenCount = sorted.length - MAX_CARDS;
+  const hiddenCount = workPackages.length - MAX_CARDS;
 
   return (
     <Stack sx={{ flex: 1, minHeight: 0, gap: '1.2cqw', mt: '1cqw' }}>
-      {sorted.slice(0, MAX_CARDS).map((wp) => (
+      {workPackages.slice(0, MAX_CARDS).map((wp) => (
         <OverdueWorkPackageItem key={wbsPipe(wp.wbsNum)} wp={wp} />
       ))}
       {hiddenCount > 0 && (
@@ -272,13 +199,20 @@ export const OverdueWorkPackagesWidgetView: React.FC<OverdueWorkPackagesWidgetVi
 };
 
 /**
- * Overdue work packages on the bay dashboard. The large and medium sizes are built, the small one is still a placeholder frame
+ * Overdue work packages on the bay dashboard.
  */
-const OverdueWorkPackagesWidget: React.FC<BayDashboardWidgetProps> = ({ size }) => {
+const OverdueWorkPackagesWidget: React.FC<BayDashboardWidgetProps> = ({ size, slug }) => {
+  const { data: workPackages, isLoading, isError } = useGetBayDashboardOverdueWorkPackages(slug);
+
   return (
     <NERWidget size={size} title={bayDashboardWidgetDisplayNames[BayDashboardWidgetType.OVERDUE_WORK_PACKAGES]}>
-      {(size === BayDashboardWidgetSize.LARGE || size === BayDashboardWidgetSize.MEDIUM) && (
-        <OverdueWorkPackagesWidgetView workPackages={sampleOverdueWorkPackages} size={size} />
+      {slug && (
+        <OverdueWorkPackagesWidgetView
+          workPackages={workPackages}
+          isLoading={isLoading}
+          isError={isError && workPackages === undefined}
+          size={size}
+        />
       )}
     </NERWidget>
   );

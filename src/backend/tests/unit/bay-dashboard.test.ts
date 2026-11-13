@@ -1,5 +1,11 @@
-import { Conflict_Status, Event_Status, Organization, User } from '@prisma/client';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
+import { Conflict_Status, Event_Status, Organization, User, WBS_Element_Status, Work_Package } from '@prisma/client';
+import {
+  createTestOrganization,
+  createTestProject,
+  createTestUser,
+  createTestWorkPackage,
+  resetUsers
+} from '../test-utils.js';
 import { batmanAppAdmin } from '../test-data/users.test-data.js';
 import BayDashboardService from '../../src/services/bay-dashboard.services.js';
 import { DeletedException, NotFoundException } from '../../src/utils/errors.utils.js';
@@ -307,6 +313,173 @@ describe('Bay Dashboard Calendar Tests', () => {
 
         expect(event.colorHexCode).toBe('#4caf50');
       });
+    });
+  });
+});
+
+describe('Bay Dashboard Overdue Work Packages Tests', () => {
+  let organization: Organization;
+  let user: User;
+  let projectId: string;
+
+  // every work package is on project 0.1, so its wbs number is 0.1.<workPackageNumber>
+  const createWorkPackage = async (
+    workPackageNumber: number,
+    options: { startDate?: Date; status?: WBS_Element_Status; dateDeleted?: Date } = {}
+  ): Promise<Work_Package> => {
+    const workPackage = await createTestWorkPackage(user, organization.organizationId, projectId, 0, 1, workPackageNumber);
+    return prisma.work_Package.update({
+      where: { workPackageId: workPackage.workPackageId },
+      data: {
+        startDate: options.startDate,
+        wbsElement: { update: { status: options.status, dateDeleted: options.dateDeleted } }
+      }
+    });
+  };
+
+  const daysAgo = (days: number) => new Date(Date.now() - days * DAY_MS);
+
+  const getOverdue = () => BayDashboardService.getBayDashboardOverdueWorkPackages(organization.slug);
+
+  beforeEach(async () => {
+    organization = await createTestOrganization();
+    user = await createTestUser(batmanAppAdmin, organization.organizationId);
+    const { projectId: createdProjectId } = await createTestProject(user, organization.organizationId);
+    projectId = createdProjectId;
+  });
+
+  afterEach(async () => {
+    await resetUsers();
+  });
+
+  describe('Get Bay Dashboard Overdue Work Packages', () => {
+    it('fails for a slug that does not belong to an organization', async () => {
+      await expect(BayDashboardService.getBayDashboardOverdueWorkPackages('missing')).rejects.toThrow(
+        new NotFoundException('Organization', 'missing')
+      );
+    });
+
+    it('fails for a deleted organization', async () => {
+      await prisma.organization.update({
+        where: { organizationId: organization.organizationId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(getOverdue()).rejects.toThrow(new DeletedException('Organization', organization.slug));
+    });
+
+    it('returns nothing when there are no work packages', async () => {
+      expect(await getOverdue()).toEqual([]);
+    });
+
+    it('returns the wbs numbers, names, leads, managers, end date and days overdue', async () => {
+      await createWorkPackage(2);
+
+      const [workPackage] = await getOverdue();
+
+      expect(workPackage).toEqual({
+        wbsNum: { carNumber: 0, projectNumber: 1, workPackageNumber: 2 },
+        name: 'WP 0.1.2',
+        projectWbsNum: { carNumber: 0, projectNumber: 1, workPackageNumber: 0 },
+        projectName: 'Genesis',
+        lead: { firstName: user.firstName, lastName: user.lastName },
+        manager: { firstName: user.firstName, lastName: user.lastName },
+        // default start 2024-01-01 with a 4 week duration
+        endDate: new Date('2024-01-29'),
+        daysOverdue: expect.any(Number),
+        blockedBy: []
+      });
+    });
+
+    it('counts the whole days since the end date', async () => {
+      // ends 10 days ago
+      await createWorkPackage(1, { startDate: daysAgo(28 + 10) });
+
+      const [workPackage] = await getOverdue();
+
+      expect(workPackage.daysOverdue).toBe(10);
+    });
+
+    describe('which work packages are returned', () => {
+      it('leaves out work packages that are not overdue yet', async () => {
+        // started a week ago with a 4 week duration, so it ends in 3 weeks
+        await createWorkPackage(1, { startDate: daysAgo(7) });
+
+        expect(await getOverdue()).toEqual([]);
+      });
+
+      it('leaves out completed work packages', async () => {
+        await createWorkPackage(1, { status: WBS_Element_Status.COMPLETE });
+        await createWorkPackage(2);
+
+        const overdue = await getOverdue();
+
+        expect(overdue.map((workPackage) => workPackage.name)).toEqual(['WP 0.1.2']);
+      });
+
+      it('leaves out deleted work packages', async () => {
+        await createWorkPackage(1, { dateDeleted: new Date() });
+        await createWorkPackage(2);
+
+        const overdue = await getOverdue();
+
+        expect(overdue.map((workPackage) => workPackage.name)).toEqual(['WP 0.1.2']);
+      });
+
+      it('leaves out work packages from other organizations', async () => {
+        const otherOrganization = await prisma.organization.create({
+          data: {
+            name: 'Other organization',
+            slug: 'other-org',
+            description: 'Another organization',
+            applicationLink: '',
+            userCreated: { connect: { userId: user.userId } }
+          }
+        });
+        const otherProject = await createTestProject(user, otherOrganization.organizationId);
+        await createTestWorkPackage(user, otherOrganization.organizationId, otherProject.projectId, 0, 1, 1);
+        await createWorkPackage(2);
+
+        const overdue = await getOverdue();
+        const otherOverdue = await BayDashboardService.getBayDashboardOverdueWorkPackages(otherOrganization.slug);
+
+        expect(overdue.map((workPackage) => workPackage.name)).toEqual(['WP 0.1.2']);
+        expect(otherOverdue.map((workPackage) => workPackage.name)).toEqual(['WP 0.1.1']);
+      });
+    });
+
+    describe('blockers', () => {
+      it('lists the blockers that are not deleted', async () => {
+        const workPackage = await createWorkPackage(1);
+        const blocker = await createWorkPackage(2);
+        const deletedBlocker = await createWorkPackage(3, { dateDeleted: new Date() });
+        await prisma.work_Package.update({
+          where: { workPackageId: workPackage.workPackageId },
+          data: {
+            blockedBy: {
+              connect: [{ wbsElementId: blocker.wbsElementId }, { wbsElementId: deletedBlocker.wbsElementId }]
+            }
+          }
+        });
+
+        const overdue = await getOverdue();
+        const blocked = overdue.find((item) => item.name === 'WP 0.1.1');
+
+        expect(blocked?.blockedBy).toEqual([
+          { wbsNum: { carNumber: 0, projectNumber: 1, workPackageNumber: 2 }, name: 'WP 0.1.2' }
+        ]);
+      });
+    });
+
+    it('sorts the most overdue work package first', async () => {
+      // ends 2 weeks ago
+      await createWorkPackage(1, { startDate: daysAgo(6 * 7) });
+      // ends 6 weeks ago
+      await createWorkPackage(2, { startDate: daysAgo(10 * 7) });
+
+      const overdue = await getOverdue();
+
+      expect(overdue.map((workPackage) => workPackage.name)).toEqual(['WP 0.1.2', 'WP 0.1.1']);
     });
   });
 });

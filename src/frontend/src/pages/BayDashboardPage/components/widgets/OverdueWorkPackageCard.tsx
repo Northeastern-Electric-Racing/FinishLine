@@ -5,10 +5,8 @@
 
 import { Box, Stack, Typography } from '@mui/material';
 import { CalendarMonth, Construction } from '@mui/icons-material';
-import { wbsPipe } from 'shared';
-import { datePipe, fullNamePipe, projectWbsPipe } from '../../../../utils/pipes';
-import { daysOverdue } from '../../../../utils/datetime.utils';
-import type { OverdueWorkPackageWidgetItem } from './OverdueWorkPackagesWidget';
+import { PublicBayDashboardOverdueWorkPackage, wbsPipe } from 'shared';
+import { datePipe, projectWbsPipe } from '../../../../utils/pipes';
 
 // everything is sized in cqw so the widget scales the same on the TV and in the Admin Tools preview
 export const NER_RED = '#ef4244';
@@ -34,11 +32,18 @@ export const InfoPill: React.FC<{ icon: React.ReactNode; label: string }> = ({ i
 );
 
 /**
+ * Shows a lead or manager's name, or an em dash when there is none.
+ * Names only, the public response carries no user ids.
+ */
+export const fullNameOrDash = (user: PublicBayDashboardOverdueWorkPackage['lead']) =>
+  user ? `${user.firstName} ${user.lastName}` : '—';
+
+/**
  * One overdue work package in the medium widget, shown beside the others the way the medium calendar shows its events.
  * It has no blocked by list, the rest of the large card's details are kept.
  */
-const OverdueWorkPackageCard: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = ({ wp }) => {
-  const numDaysOverdue = daysOverdue(new Date(wp.endDate));
+const OverdueWorkPackageCard: React.FC<{ wp: PublicBayDashboardOverdueWorkPackage }> = ({ wp }) => {
+  const numDaysOverdue = wp.daysOverdue;
 
   return (
     <Box
@@ -60,14 +65,14 @@ const OverdueWorkPackageCard: React.FC<{ wp: OverdueWorkPackageWidgetItem }> = (
         <Typography noWrap sx={{ fontSize: '2cqw', lineHeight: 1.2, color: NER_RED, fontWeight: 'bold', minWidth: 0 }}>
           {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
         </Typography>
-        <InfoPill icon={<CalendarMonth />} label={datePipe(new Date(wp.endDate))} />
+        <InfoPill icon={<CalendarMonth />} label={datePipe(wp.endDate)} />
       </Stack>
       <Typography noWrap sx={{ fontSize: '2.4cqw', fontWeight: 'bold', lineHeight: 1.2 }}>
         {wbsPipe(wp.wbsNum)} - {wp.name}
       </Typography>
       <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: '1cqw' }}>
         <Stack direction="row" sx={{ gap: '0.8cqw', flexWrap: 'wrap', minWidth: 0 }}>
-          <InfoPill icon={<Construction />} label={fullNamePipe(wp.lead)} />
+          <InfoPill icon={<Construction />} label={fullNameOrDash(wp.lead)} />
         </Stack>
         <Box
           sx={{

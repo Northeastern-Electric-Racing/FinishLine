@@ -1,3 +1,6 @@
+import { UserPreview } from './user-types.js';
+import { WbsNumber } from './project-types.js';
+
 export enum BayDashboardWidgetSize {
   SMALL = 'SMALL',
   MEDIUM = 'MEDIUM',
@@ -114,4 +117,19 @@ export interface PublicBayDashboardCalendarEvent {
   allDay: boolean;
   location?: string;
   colorHexCode: string;
+}
+
+/**
+ * An overdue work package the unauthenticated TV can show.
+ */
+export interface PublicBayDashboardOverdueWorkPackage {
+  wbsNum: WbsNumber;
+  name: string;
+  projectWbsNum: WbsNumber;
+  projectName: string;
+  lead?: Pick<UserPreview, 'firstName' | 'lastName'>;
+  manager?: Pick<UserPreview, 'firstName' | 'lastName'>;
+  endDate: Date;
+  daysOverdue: number;
+  blockedBy: { wbsNum: WbsNumber; name: string }[];
 }

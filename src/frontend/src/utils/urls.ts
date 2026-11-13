@@ -599,6 +599,7 @@ const bayDashboardEvents = (slug: string) => `${bayDashboard()}/${slug}/events`;
 const bayDashboardConfig = (slug: string) => `${bayDashboard()}/${slug}/config`;
 const bayDashboardCountdowns = (slug: string) => `${bayDashboard()}/${slug}/countdowns`;
 const bayDashboardCalendar = (slug: string) => `${bayDashboard()}/${slug}/calendar`;
+const bayDashboardOverdueWorkPackages = (slug: string) => `${bayDashboard()}/${slug}/overdue-work-packages`;
 const bayDashboardAdmin = () => `${bayDashboard()}/admin`;
 const bayDashboardAdminWidgets = () => `${bayDashboardAdmin()}/widgets`;
 const bayDashboardAdminSave = () => `${bayDashboardAdmin()}/save`;
@@ -1052,6 +1053,7 @@ export const apiUrls = {
   bayDashboardConfig,
   bayDashboardCountdowns,
   bayDashboardCalendar,
+  bayDashboardOverdueWorkPackages,
   bayDashboardAdmin,
   bayDashboardAdminWidgets,
   bayDashboardAdminSave,

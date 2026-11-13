@@ -10,17 +10,22 @@ import {
   BayDashboardWidget,
   BayDashboardWidgetSize,
   BayDashboardWidgetType,
+  daysBetween,
   PublicBayDashboardCalendarEvent,
-  PublicBayDashboardConfig
+  PublicBayDashboardConfig,
+  PublicBayDashboardOverdueWorkPackage
 } from 'shared';
 import {
   BayDashboardCalendarEventQueryArgs,
   BayDashboardConfigQueryArgs,
   BayDashboardCountdownQueryArgs,
+  BayDashboardOverdueWorkPackageQueryArgs,
   BayDashboardSlotQueryArgs,
   BayDashboardWidgetQueryArgs,
   PublicBayDashboardConfigQueryArgs
 } from '../prisma-query-args/bay-dashboard.query-args.js';
+import { baseWorkPackageTransformer } from './work-packages.transformer.js';
+import { wbsNumOf } from '../utils/utils.js';
 
 export const bayDashboardWidgetSizeTransformer = (size: PrismaBayDashboardWidgetSize): BayDashboardWidgetSize => {
   const mapping: Record<PrismaBayDashboardWidgetSize, BayDashboardWidgetSize> = {
@@ -123,4 +128,28 @@ export const publicBayDashboardCalendarEventsTransformer = (
     location: event.location ?? undefined,
     colorHexCode: calendar.colorHexCode
   }));
+};
+
+/**
+ * Transforms an overdue work package into what the public TV's overdue widget displays.
+ * @param workPackage the work package, with its blockers that are not deleted and not complete
+ * @param now the time the overdue calculation is made against
+ */
+export const publicBayDashboardOverdueWorkPackageTransformer = (
+  workPackage: Prisma.Work_PackageGetPayload<BayDashboardOverdueWorkPackageQueryArgs>,
+  now: Date
+): PublicBayDashboardOverdueWorkPackage => {
+  const base = baseWorkPackageTransformer(workPackage);
+
+  return {
+    wbsNum: base.wbsNum,
+    name: base.name,
+    projectWbsNum: { ...base.wbsNum, workPackageNumber: 0 },
+    projectName: base.projectName,
+    lead: base.lead && { firstName: base.lead.firstName, lastName: base.lead.lastName },
+    manager: base.manager && { firstName: base.manager.firstName, lastName: base.manager.lastName },
+    endDate: base.endDate,
+    daysOverdue: daysBetween(now, base.endDate),
+    blockedBy: workPackage.blockedBy.map((blocker) => ({ wbsNum: wbsNumOf(blocker), name: blocker.name }))
+  };
 };
