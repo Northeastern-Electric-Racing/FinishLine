@@ -29,7 +29,7 @@ import {
 } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useFilterEvents, useMyConflicts, useUpcomingEvents } from '../../hooks/calendar.hooks';
+import { useCalendarViewEvents, useMyConflicts, useMyUpcomingEvents } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -204,7 +204,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
         calendarIds: selectedCalendarIds
       };
 
-  const { isLoading, isError, error, data: allEvents } = useFilterEvents(filterArgs);
+  const { isLoading, isError, error, data: allEvents } = useCalendarViewEvents(filterArgs);
 
   // Task filtering - uses same date range and member/team filters as events
   const taskFilterArgs: FilterTaskArgs | null = showTasks
@@ -230,7 +230,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     data: ownPendingEvents,
     isError: ownPendingIsError,
     error: ownPendingError
-  } = useFilterEvents({
+  } = useCalendarViewEvents({
     startPeriod,
     endPeriod,
     memberIds: [user.userId],
@@ -252,7 +252,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   const reviewConflicts = (myConflicts ?? []).filter((conflict) => conflict.isCurrentUserApprover);
 
   // Upcoming meetings is independent of filters - shows events where user is creator, member, or on associated team
-  const { data: upcomingEvents } = useUpcomingEvents(7, true);
+  const { data: upcomingEvents } = useMyUpcomingEvents(7, true);
 
   const upcomingOccurences = eventsToNextEventInstance(upcomingEvents ?? []).sort(
     (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()

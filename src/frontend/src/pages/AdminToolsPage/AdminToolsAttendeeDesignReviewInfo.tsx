@@ -5,7 +5,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
 import { useAllMembers } from '../../hooks/users.hooks';
-import { useEventAttendance } from '../../hooks/calendar.hooks';
+import { useDesignReviewAttendance } from '../../hooks/calendar.hooks';
 
 const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,7 +16,7 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
     isLoading: attendanceIsLoading,
     isError: eventsIsError,
     error: eventsError
-  } = useEventAttendance();
+  } = useDesignReviewAttendance();
 
   if (!allMembers || usersIsLoading || !attendance || attendanceIsLoading) return <LoadingIndicator />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;

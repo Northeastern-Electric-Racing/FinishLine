@@ -1432,7 +1432,7 @@ describe('Calendar Tests', () => {
         'Weekly team synchronization meeting'
       );
 
-      const result = await CalendarService.getFilteredEvents(
+      const result = await CalendarService.getCalendarViewEvents(
         {
           startPeriod: new Date('2020-10-01T09:00:00Z'),
           endPeriod: new Date('2027-11-01T09:00:00Z'),
@@ -1527,7 +1527,7 @@ describe('Calendar Tests', () => {
         'Weekly team synchronization meeting'
       );
 
-      const result = await CalendarService.getFilteredEvents(
+      const result = await CalendarService.getCalendarViewEvents(
         {
           startPeriod: new Date('2025-10-01T09:00:00Z'),
           endPeriod: new Date('2025-11-01T09:00:00Z'),
@@ -1623,7 +1623,7 @@ describe('Calendar Tests', () => {
         'Weekly team synchronization meeting'
       );
 
-      const result = await CalendarService.getFilteredEvents(
+      const result = await CalendarService.getCalendarViewEvents(
         {
           startPeriod: new Date('2020-10-01T09:00:00Z'),
           endPeriod: new Date('2027-11-01T09:00:00Z'),
@@ -1638,7 +1638,7 @@ describe('Calendar Tests', () => {
 
   it('fails if memberIds do not exist', async () => {
     await expect(
-      CalendarService.getFilteredEvents(
+      CalendarService.getCalendarViewEvents(
         {
           startPeriod: new Date('2020-10-01T09:00:00Z'),
           endPeriod: new Date('2027-11-01T09:00:00Z'),
@@ -1651,7 +1651,7 @@ describe('Calendar Tests', () => {
 
   it('fails if eventTypeIds do not exist', async () => {
     await expect(
-      CalendarService.getFilteredEvents(
+      CalendarService.getCalendarViewEvents(
         {
           startPeriod: new Date('2020-10-01T09:00:00Z'),
           endPeriod: new Date('2027-11-01T09:00:00Z'),
@@ -1664,7 +1664,7 @@ describe('Calendar Tests', () => {
 
   it('fails if eventIds do not exist', async () => {
     await expect(
-      CalendarService.getFilteredEvents(
+      CalendarService.getCalendarViewEvents(
         { startPeriod: new Date('2020-10-01T09:00:00Z'), endPeriod: new Date('2027-11-01T09:00:00Z'), eventIds: ['fakeId'] },
         organization
       )
@@ -1673,7 +1673,7 @@ describe('Calendar Tests', () => {
 
   it('fails if calendarIds do not exist', async () => {
     await expect(
-      CalendarService.getFilteredEvents(
+      CalendarService.getCalendarViewEvents(
         {
           startPeriod: new Date('2020-10-01T09:00:00Z'),
           endPeriod: new Date('2027-11-01T09:00:00Z'),
@@ -1686,7 +1686,7 @@ describe('Calendar Tests', () => {
 
   it('fails if teamIds do not exist', async () => {
     await expect(
-      CalendarService.getFilteredEvents(
+      CalendarService.getCalendarViewEvents(
         { startPeriod: new Date('2020-10-01T09:00:00Z'), endPeriod: new Date('2027-11-01T09:00:00Z'), teamIds: ['fakeId'] },
         organization
       )

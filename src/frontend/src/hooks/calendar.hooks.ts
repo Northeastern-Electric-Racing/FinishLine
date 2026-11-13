@@ -39,14 +39,14 @@ import {
   markUserConfirmed,
   getSingleEvent,
   getNewMemberEvents,
-  getReviewEvents,
-  getUpcomingEvents,
+  getReviewBookingEvents,
+  getMyUpcomingEvents,
   getMyConflicts,
-  getEventAttendance,
+  getDesignReviewAttendance,
   deleteEvent,
   setEventStatus,
   getAllEventTypes,
-  postFilterEvents,
+  postCalendarViewEvents,
   approveEvent,
   denyEvent,
   postCreateEvent,
@@ -57,7 +57,7 @@ import {
   previewScheduleSlotRecurringEdits,
   postDeleteScheduleSlot,
   scheduleEvent,
-  getAllEventsPaginated,
+  getGuestEventFeed,
   getIcsToken,
   remindUnconfirmed
 } from '../apis/calendar.api';
@@ -409,11 +409,11 @@ export const useMyConflicts = () => {
  *
  * @param startPeriod when given, only events happening on or after it
  */
-export const useReviewEvents = (startPeriod?: Date, enabled: boolean = true) => {
+export const useReviewBookingEvents = (startPeriod?: Date, enabled: boolean = true) => {
   return useQuery<CalendarEvent[], Error>(
     ['filter-events', 'reviews', startPeriod?.toISOString()],
     async () => {
-      const { data } = await getReviewEvents(startPeriod);
+      const { data } = await getReviewBookingEvents(startPeriod);
       return data;
     },
     { enabled }
@@ -425,16 +425,16 @@ export const useReviewEvents = (startPeriod?: Date, enabled: boolean = true) => 
  *
  * @param includeTeamEvents whether to include events the user is only on through one of their teams
  */
-export const useUpcomingEvents = (days: number, includeTeamEvents: boolean) => {
+export const useMyUpcomingEvents = (days: number, includeTeamEvents: boolean) => {
   return useQuery<UpcomingEvent[], Error>(['events', 'upcoming', days, includeTeamEvents], async () => {
-    const { data } = await getUpcomingEvents(days, includeTeamEvents);
+    const { data } = await getMyUpcomingEvents(days, includeTeamEvents);
     return data;
   });
 };
 
-export const useEventAttendance = () => {
+export const useDesignReviewAttendance = () => {
   return useQuery<UserEventAttendance[], Error>(['events', 'attendance'], async () => {
-    const { data } = await getEventAttendance();
+    const { data } = await getDesignReviewAttendance();
     return data;
   });
 };
@@ -446,11 +446,11 @@ export const useNewMemberEvents = () => {
   });
 };
 
-export const useFilterEvents = (filterArgs: FilterArgs, enabled: boolean = true) => {
+export const useCalendarViewEvents = (filterArgs: FilterArgs, enabled: boolean = true) => {
   return useQuery<CalendarEvent[], Error>(
     ['filter-events', filterArgs],
     async () => {
-      const { data } = await postFilterEvents(filterArgs);
+      const { data } = await postCalendarViewEvents(filterArgs);
       return data;
     },
     {
@@ -713,20 +713,20 @@ export const combinePdfsAndDownload = async (blobData: Blob[], filename: string)
   saveAs(pdfBlob, filename);
 };
 
-const useEventsPaginated = (direction: 'future' | 'past') => {
+const useGuestEventFeed = (direction: 'future' | 'past') => {
   return useInfiniteQuery<{ instances: GuestEventInstance[]; nextCursor: string | null }, Error>(
-    ['events', direction, 'paginated'],
+    ['events', 'guest-feed', direction],
     async ({ pageParam }: { pageParam?: string }) => {
-      const { data } = await getAllEventsPaginated(direction, pageParam);
+      const { data } = await getGuestEventFeed(direction, pageParam);
       return data;
     },
     { getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined }
   );
 };
 
-export const useFutureEventsPaginated = () => useEventsPaginated('future');
+export const useFutureGuestEventFeed = () => useGuestEventFeed('future');
 
-export const usePastEventsPaginated = () => useEventsPaginated('past');
+export const usePastGuestEventFeed = () => useGuestEventFeed('past');
 
 export const useGetIcsToken = () =>
   useQuery<{ icsToken: string; organizationId: string }, Error>(['icsToken'], async () => {

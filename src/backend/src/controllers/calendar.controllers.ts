@@ -526,9 +526,9 @@ export default class CalendarController {
   }
 
   //overall filtering for events
-  static async getFilteredEvents(req: Request, res: Response, next: NextFunction) {
+  static async getCalendarViewEvents(req: Request, res: Response, next: NextFunction) {
     try {
-      const filteredEvents = await CalendarService.getFilteredEvents(req.body, req.organization);
+      const filteredEvents = await CalendarService.getCalendarViewEvents(req.body, req.organization);
       res.status(200).json(filteredEvents);
     } catch (error: unknown) {
       next(error);
@@ -588,10 +588,10 @@ export default class CalendarController {
     }
   }
 
-  static async getReviewEvents(req: Request, res: Response, next: NextFunction) {
+  static async getReviewBookingEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const { startPeriod } = req.query as Record<string, string | undefined>;
-      const events = await CalendarService.getReviewEvents(
+      const events = await CalendarService.getReviewBookingEvents(
         req.organization,
         startPeriod ? new Date(startPeriod) : undefined
       );
@@ -601,10 +601,10 @@ export default class CalendarController {
     }
   }
 
-  static async getUpcomingEvents(req: Request, res: Response, next: NextFunction) {
+  static async getMyUpcomingEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const { days, includeTeamEvents } = req.query as Record<string, string>;
-      const events = await CalendarService.getUpcomingEvents(
+      const events = await CalendarService.getMyUpcomingEvents(
         req.currentUser,
         req.organization,
         parseInt(days),
@@ -616,9 +616,9 @@ export default class CalendarController {
     }
   }
 
-  static async getEventAttendance(req: Request, res: Response, next: NextFunction) {
+  static async getDesignReviewAttendance(req: Request, res: Response, next: NextFunction) {
     try {
-      const attendance = await CalendarService.getEventAttendance(req.organization);
+      const attendance = await CalendarService.getDesignReviewAttendance(req.organization);
       res.status(200).json(attendance);
     } catch (error: unknown) {
       next(error);
@@ -634,10 +634,10 @@ export default class CalendarController {
     }
   }
 
-  static async getAllEventsPaginated(req: Request, res: Response, next: NextFunction) {
+  static async getGuestEventFeed(req: Request, res: Response, next: NextFunction) {
     try {
       const { direction, cursor } = req.body;
-      const paginatedEvents = await CalendarService.getAllEventsPaginated(req.organization, direction, cursor);
+      const paginatedEvents = await CalendarService.getGuestEventFeed(req.organization, direction, cursor);
       res.status(200).json(paginatedEvents);
     } catch (error: unknown) {
       next(error);

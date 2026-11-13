@@ -522,13 +522,13 @@ const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
 const calendarNewMemberEvents = () => `${calendar()}/events/new-member`;
 const calendarMyConflicts = () => `${calendar()}/events/my-conflicts`;
-const calendarReviewEvents = () => `${calendar()}/events/reviews`;
-const calendarUpcomingEvents = () => `${calendar()}/events/upcoming`;
-const calendarEventAttendance = () => `${calendar()}/events/attendance`;
-const calendarEventsPaginated = () => `${calendar()}/events-paginated`;
+const calendarReviewBookingEvents = () => `${calendar()}/events/review-bookings`;
+const calendarMyUpcomingEvents = () => `${calendar()}/events/my-upcoming`;
+const calendarDesignReviewAttendance = () => `${calendar()}/events/design-review-attendance`;
+const calendarGuestEventFeed = () => `${calendar()}/events/guest-feed`;
 const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
-const calendarFilterEvents = () => `${calendar()}/events/filter`;
+const calendarViewEvents = () => `${calendar()}/events/calendar-view`;
 const calendarMachinery = () => `${calendar()}/machinery`;
 const calendarCreateMachinery = () => `${calendar()}/machinery/create`;
 const calendarEditMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/edit`;
@@ -982,7 +982,7 @@ export const apiUrls = {
   singleRuleset,
   calendarShops,
   calendarCreateShop,
-  calendarFilterEvents,
+  calendarViewEvents,
   calendarMachinery,
   calendarCreateMachinery,
   calendarEditMachinery,
@@ -994,10 +994,10 @@ export const apiUrls = {
   calendarGetSingleEvent,
   calendarNewMemberEvents,
   calendarMyConflicts,
-  calendarReviewEvents,
-  calendarUpcomingEvents,
-  calendarEventAttendance,
-  calendarEventsPaginated,
+  calendarReviewBookingEvents,
+  calendarMyUpcomingEvents,
+  calendarDesignReviewAttendance,
+  calendarGuestEventFeed,
   calendarEventTypes,
   calendarDeleteEvent,
   calendarEventSetStatus,

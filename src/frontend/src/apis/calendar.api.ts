@@ -72,21 +72,21 @@ export const postCreateShop = (payload: { name: string; description: string }) =
   });
 };
 
-export const postFilterEvents = (payload: FilterArgs) => {
-  return axios.post<CalendarEvent[]>(apiUrls.calendarFilterEvents(), payload, {
+export const postCalendarViewEvents = (payload: FilterArgs) => {
+  return axios.post<CalendarEvent[]>(apiUrls.calendarViewEvents(), payload, {
     transformResponse: parseList<CalendarEvent>(baseEventTransformer)
   });
 };
 
-export const getReviewEvents = (startPeriod?: Date) => {
-  return axios.get<CalendarEvent[]>(apiUrls.calendarReviewEvents(), {
+export const getReviewBookingEvents = (startPeriod?: Date) => {
+  return axios.get<CalendarEvent[]>(apiUrls.calendarReviewBookingEvents(), {
     params: { startPeriod },
     transformResponse: parseList<CalendarEvent>(baseEventTransformer)
   });
 };
 
-export const getUpcomingEvents = (days: number, includeTeamEvents: boolean) => {
-  return axios.get<UpcomingEvent[]>(apiUrls.calendarUpcomingEvents(), {
+export const getMyUpcomingEvents = (days: number, includeTeamEvents: boolean) => {
+  return axios.get<UpcomingEvent[]>(apiUrls.calendarMyUpcomingEvents(), {
     params: { days, includeTeamEvents },
     transformResponse: parseList<UpcomingEvent>(baseEventTransformer)
   });
@@ -98,8 +98,8 @@ export const getMyConflicts = () => {
   });
 };
 
-export const getEventAttendance = () => {
-  return axios.get<UserEventAttendance[]>(apiUrls.calendarEventAttendance());
+export const getDesignReviewAttendance = () => {
+  return axios.get<UserEventAttendance[]>(apiUrls.calendarDesignReviewAttendance());
 };
 
 export const postDeleteShop = async (id: string) => {
@@ -290,9 +290,9 @@ export const scheduleEvent = async (eventId: string, payload: { startTime: Date;
   return axios.post(apiUrls.calendarScheduleEvent(eventId), payload);
 };
 
-export const getAllEventsPaginated = (direction: 'future' | 'past', cursor?: string) => {
+export const getGuestEventFeed = (direction: 'future' | 'past', cursor?: string) => {
   return axios.post<{ instances: GuestEventInstance[]; nextCursor: string | null }>(
-    apiUrls.calendarEventsPaginated(),
+    apiUrls.calendarGuestEventFeed(),
     { direction, cursor },
     {
       transformResponse: (data) => {

@@ -22,7 +22,7 @@ import { Calendar, CalendarEvent, ConflictStatus, EventType } from 'shared';
 import WarningTooltip from './YourEventsComponents/WarningTooltip';
 import { EventSlotTarget, getMeetingDates } from '../../utils/calendar.utils';
 import { EventClickPopup } from './EventClickPopup';
-import { useDeleteEvent, useFilterEvents, useReviewEvents } from '../../hooks/calendar.hooks';
+import { useDeleteEvent, useCalendarViewEvents, useReviewBookingEvents } from '../../hooks/calendar.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -146,11 +146,11 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, allEventTypes, allCalendar
   const [now] = useState(() => new Date());
 
   // each tab loads only its own events; hiding past events is done by the server
-  const yourEventsQuery = useFilterEvents(
+  const yourEventsQuery = useCalendarViewEvents(
     { memberIds: [user.userId], startPeriod: hidePastEvents ? now : ALL_TIME_START, endPeriod: ALL_TIME_END },
     tab === 1
   );
-  const reviewEventsQuery = useReviewEvents(hidePastEvents ? now : undefined, tab === 2);
+  const reviewEventsQuery = useReviewBookingEvents(hidePastEvents ? now : undefined, tab === 2);
   const { data: baseEvents, isError, error } = tab === 1 ? yourEventsQuery : reviewEventsQuery;
 
   const handleOpenClickPopup = (event: CalendarEvent) => {

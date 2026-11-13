@@ -8,7 +8,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import GuestEventCard from './GuestEventCard';
 import { GuestEventInstance, formatEventDate } from 'shared';
-import { useFutureEventsPaginated, usePastEventsPaginated } from '../../hooks/calendar.hooks';
+import { useFutureGuestEventFeed, usePastGuestEventFeed } from '../../hooks/calendar.hooks';
 
 const groupInstancesByDate = (instances: GuestEventInstance[]): [string, GuestEventInstance[]][] => {
   const groups = new Map<string, { date: Date; instances: GuestEventInstance[] }>();
@@ -71,7 +71,7 @@ const GuestEventPage: React.FC = () => {
     fetchNextPage: fetchNextFuture,
     hasNextPage: hasNextFuture,
     isFetchingNextPage: isFetchingNextFuture
-  } = useFutureEventsPaginated();
+  } = useFutureGuestEventFeed();
 
   const {
     data: pastData,
@@ -81,7 +81,7 @@ const GuestEventPage: React.FC = () => {
     fetchNextPage: fetchNextPast,
     hasNextPage: hasNextPast,
     isFetchingNextPage: isFetchingNextPast
-  } = usePastEventsPaginated();
+  } = usePastGuestEventFeed();
 
   const futureInstances = useMemo(() => futureData?.pages.flatMap((p) => p.instances) ?? [], [futureData]);
   const pastInstances = useMemo(() => pastData?.pages.flatMap((p) => p.instances) ?? [], [pastData]);

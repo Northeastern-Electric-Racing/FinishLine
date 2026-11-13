@@ -2612,7 +2612,7 @@ export default class CalendarService {
    *
    * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
    */
-  static async getFilteredEvents(filters: FilterArgs, organization: Organization): Promise<CalendarEvent[]> {
+  static async getCalendarViewEvents(filters: FilterArgs, organization: Organization): Promise<CalendarEvent[]> {
     const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalIds, startPeriod, endPeriod, statuses } =
       filters;
 
@@ -2756,7 +2756,7 @@ export default class CalendarService {
    * @param startPeriod when given, only events with a slot (or, if unscheduled, an initial date) on or after it
    * @returns the pending events, soonest first
    */
-  static async getReviewEvents(organization: Organization, startPeriod?: Date): Promise<CalendarEvent[]> {
+  static async getReviewBookingEvents(organization: Organization, startPeriod?: Date): Promise<CalendarEvent[]> {
     const events = await prisma.event.findMany({
       where: {
         dateDeleted: null,
@@ -2781,7 +2781,7 @@ export default class CalendarService {
    * @param includeTeamEvents whether to include events that only involve the user through a team
    * @returns the upcoming events with only their future slots in the window, by next slot
    */
-  static async getUpcomingEvents(
+  static async getMyUpcomingEvents(
     submitter: User,
     organization: Organization,
     days: number,
@@ -2885,7 +2885,7 @@ export default class CalendarService {
    * @param organization the organization the user is currently in
    * @returns one row per user with at least one attended event
    */
-  static async getEventAttendance(organization: Organization): Promise<UserEventAttendance[]> {
+  static async getDesignReviewAttendance(organization: Organization): Promise<UserEventAttendance[]> {
     const users = await prisma.user.findMany({
       where: {
         organizations: { some: { organizationId: organization.organizationId } },
@@ -3096,7 +3096,7 @@ export default class CalendarService {
    * @param direction 'future' pages forward from the reference point, 'past' pages backward
    * @param cursor the scheduleSlotId of the last slot of the previous page in this direction
    */
-  static async getAllEventsPaginated(
+  static async getGuestEventFeed(
     organization: Organization,
     direction: 'future' | 'past',
     cursor?: string

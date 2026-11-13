@@ -4,7 +4,7 @@
  */
 
 import DesignReviewCard from './EventCard';
-import { useUpcomingEvents } from '../../../hooks/calendar.hooks';
+import { useMyUpcomingEvents } from '../../../hooks/calendar.hooks';
 import ErrorPage from '../../ErrorPage';
 import { EventStatus } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -24,7 +24,7 @@ const NoUpcomingEventsDisplay: React.FC = () => {
 
 const UpcomingEvents: React.FC = () => {
   // the user's own events in the next two weeks, with only their upcoming slots
-  const { data: events, isLoading, isError, error } = useUpcomingEvents(14, false);
+  const { data: events, isLoading, isError, error } = useMyUpcomingEvents(14, false);
 
   if (isLoading || !events) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
