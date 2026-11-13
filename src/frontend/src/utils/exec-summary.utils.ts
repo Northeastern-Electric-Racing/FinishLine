@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { daysBetween, VehicleDevelopmentProjectSummary } from 'shared';
+import { daysBetween, ExecutiveSummary, RecruitmentCycle, Term, VehicleDevelopmentProjectSummary } from 'shared';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -41,3 +41,55 @@ export const EXEC_SUMMARY_BACKGROUND = '#121212';
 export const BUDGET_CHART_COLORS = ['#ef4345', '#9B3425', '#5E1A10', '#B3B3B3', '#808080', '#5C5C5C', '#3D3D3D', '#2A2A2A'];
 
 export const formatDollars = (amount: number): string => `$${amount.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+
+export interface NewMemberJourneyPoint {
+  label: string;
+  sortKey: number;
+  signUps: number;
+  onboarded: number;
+  newActiveMembers: number;
+}
+
+/**
+ * Builds the new member journey chart data, one point per term+year, summed across executive summaries.
+ */
+export const buildNewMemberJourneyData = (executiveSummaries: ExecutiveSummary[]): NewMemberJourneyPoint[] => {
+  const pointsByLabel = new Map<string, NewMemberJourneyPoint>();
+
+  executiveSummaries.forEach((executiveSummary) => {
+    executiveSummary.recruitmentCycles.forEach((cycle: RecruitmentCycle) => {
+      const seasonDate = cycle.term === Term.FALL ? executiveSummary.seasonStartDate : executiveSummary.seasonEndDate;
+      if (!seasonDate) return;
+
+      const year = new Date(seasonDate).getFullYear();
+      const termLabel = cycle.term === Term.FALL ? 'Fall' : 'Spring';
+      const label = `${termLabel} ${year}`;
+
+      // sortKey is anchored on seasonStartDate's year regardless of term, so Fall and its own
+      // Spring always sort together - using seasonEndDate's year for Spring's sortKey would make
+      // it collide with the NEXT season's Fall.
+      if (!executiveSummary.seasonStartDate) return;
+      const academicYearAnchor = new Date(executiveSummary.seasonStartDate).getFullYear();
+      const sortKey = academicYearAnchor * 10 + (cycle.term === Term.FALL ? 0 : 1);
+
+      const newActiveMembers = cycle.divisionCounts.reduce((sum, division) => sum + (division.newMembers ?? 0), 0);
+
+      const existing = pointsByLabel.get(label);
+      if (existing) {
+        existing.signUps += cycle.signUps ?? 0;
+        existing.onboarded += cycle.onboarded ?? 0;
+        existing.newActiveMembers += newActiveMembers;
+      } else {
+        pointsByLabel.set(label, {
+          label,
+          sortKey,
+          signUps: cycle.signUps ?? 0,
+          onboarded: cycle.onboarded ?? 0,
+          newActiveMembers
+        });
+      }
+    });
+  });
+
+  return Array.from(pointsByLabel.values()).sort((a, b) => a.sortKey - b.sortKey);
+};
