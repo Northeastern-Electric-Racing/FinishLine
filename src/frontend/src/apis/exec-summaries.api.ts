@@ -1,8 +1,16 @@
-import { BudgetSummary, ExecutiveSummary, NewMemberSignUpEvent, VehicleDevelopmentSummary } from 'shared';
+import {
+  BudgetSummary,
+  CompetitionDocumentsSummary,
+  EditCompetitionDocumentsSummaryArgs,
+  ExecutiveSummary,
+  NewMemberSignUpEvent,
+  VehicleDevelopmentSummary
+} from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { EditExecSummaryPayload } from '../hooks/exec-summaries.hooks';
 import {
+  competitionDocumentsSummaryTransformer,
   executiveSummaryTransformer,
   vehicleDevelopmentSummaryTransformer
 } from './transformers/exec-summaries.transformer';
@@ -80,4 +88,22 @@ export const getNewMemberSignUpEvents = () => {
     transformResponse: (data) =>
       (JSON.parse(data) as NewMemberSignUpEvent[]).map((event) => ({ ...event, date: new Date(event.date) }))
   });
+};
+
+/**
+ * Edits the competition documents summary of an executive summary
+ *
+ * @param executiveSummaryId id of the executive summary
+ * @param payload the edited competition documents summary data
+ * @returns the updated competition documents summary
+ */
+export const editCompetitionDocumentsSummary = (
+  executiveSummaryId: string,
+  payload: EditCompetitionDocumentsSummaryArgs
+) => {
+  return axios.post<CompetitionDocumentsSummary>(
+    apiUrls.executiveSummaryCompetitionDocumentsSummaryEdit(executiveSummaryId),
+    payload,
+    { transformResponse: (data) => competitionDocumentsSummaryTransformer(JSON.parse(data)) }
+  );
 };

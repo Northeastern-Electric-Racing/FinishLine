@@ -593,6 +593,8 @@ const executiveSummaryVehicleDevelopment = (id: string) => `${executiveSummaryBy
 const executiveSummaryNewMemberSignUps = () => `${executiveSummaries()}/new-member-sign-ups`;
 const executiveSummaryBudget = (id: string) => `${executiveSummaryById(id)}/budget`;
 const executiveSummaryEdit = (id: string) => `${executiveSummaries()}/${id}/edit`;
+const executiveSummaryCompetitionDocumentsSummaryEdit = (id: string) =>
+  `${executiveSummaryById(id)}/competition-documents-summary/edit`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -1034,6 +1036,7 @@ export const apiUrls = {
   executiveSummaries,
   executiveSummaryById,
   executiveSummaryVehicleDevelopment,
+  executiveSummaryCompetitionDocumentsSummaryEdit,
   executiveSummaryBudget,
   executiveSummaryNewMemberSignUps,
   executiveSummaryEdit,
