@@ -170,7 +170,7 @@ export const userHasPermission = async (
   return permissionCheck(user.roles.find((role) => role.organizationId === organizationId)?.roleType as Role | undefined);
 };
 
-export const areUsersinList = (users: User[], userList: User[]): boolean => {
+export const areUsersinList = (users: Pick<User, 'userId'>[], userList: Pick<User, 'userId'>[]): boolean => {
   return users.every((user) => userList.some((u) => u.userId === user.userId));
 };
 

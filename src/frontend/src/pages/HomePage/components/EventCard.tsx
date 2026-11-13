@@ -1,5 +1,5 @@
 import { Box, Card, CardContent, Link, Stack, Typography, useTheme } from '@mui/material';
-import { AuthenticatedUser, Event } from 'shared';
+import { UpcomingEvent } from 'shared';
 import { meetingStartTimePipeScheduleSlot, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
@@ -10,8 +10,7 @@ import { NERButton } from '../../../components/NERButton';
 import { formatDateOnly } from 'shared';
 
 interface EventProps {
-  event: Event;
-  user: AuthenticatedUser;
+  event: UpcomingEvent;
 }
 
 const EventInfo = ({ icon, text, link }: { icon: React.ReactNode; text: string; link?: boolean }) => {
@@ -33,13 +32,12 @@ const EventInfo = ({ icon, text, link }: { icon: React.ReactNode; text: string; 
   );
 };
 
-const DisplayStatus: React.FC<EventProps> = ({ event, user }) => {
+const DisplayStatus: React.FC<EventProps> = ({ event }) => {
   const history = useHistory();
-  const confirmedMemberIds = event.confirmedMembers.map((user) => user.userId);
 
   return (
     <>
-      {!confirmedMemberIds.includes(user.userId) ? (
+      {!event.isCurrentUserConfirmed ? (
         <NERButton
           variant="contained"
           size="small"
@@ -63,7 +61,7 @@ const getWeekday = (date: Date): string => {
   return weekdays[date.getDay()];
 };
 
-const UpcomingEventCard: React.FC<EventProps> = ({ event, user }) => {
+const UpcomingEventCard: React.FC<EventProps> = ({ event }) => {
   const theme = useTheme();
   const firstScheduledDate = event.initialDateScheduled || event.scheduledTimes[0]?.startTime;
   const displayDate = firstScheduledDate ? new Date(firstScheduledDate) : new Date();
@@ -115,7 +113,7 @@ const UpcomingEventCard: React.FC<EventProps> = ({ event, user }) => {
             {event.location && <EventInfo icon={<LocationOnOutlined />} text={event.location} />}
             {event.zoomLink && <EventInfo icon={<Computer />} text={event.zoomLink} link />}
           </Box>
-          <DisplayStatus event={event} user={user} />
+          <DisplayStatus event={event} />
         </Stack>
       </CardContent>
     </Card>

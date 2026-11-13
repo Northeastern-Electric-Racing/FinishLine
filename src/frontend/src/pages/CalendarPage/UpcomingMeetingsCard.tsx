@@ -3,14 +3,14 @@ import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { Calendar, EventInstance, EventType, formatEventTime } from 'shared';
+import { Calendar, EventType, UpcomingEvent, formatEventTime } from 'shared';
 import { datePipe } from '../../utils/pipes';
 
-import { getMutedColor, getPendingReason } from '../../utils/calendar.utils';
+import { EventInstance, getMutedColor, getPendingReason } from '../../utils/calendar.utils';
 
 interface UpcomingMeetingProp {
   calendars: Calendar[];
-  event: EventInstance;
+  event: EventInstance<UpcomingEvent>;
   eventTypes?: EventType[];
 }
 

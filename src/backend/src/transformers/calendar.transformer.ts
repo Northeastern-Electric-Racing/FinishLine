@@ -10,22 +10,37 @@ import {
   ShopMachinery,
   EventType,
   Calendar,
-  Event,
+  BaseEvent,
+  CalendarEvent,
+  EventDetail,
+  UpcomingEvent,
+  GuestEventInstance,
   ScheduleSlot,
+  ShopPreview,
+  MachineryPreview,
+  TeamCalendarPreview,
+  WorkPackageCalendarPreview,
   EventStatus,
   DayOfWeek,
   ConflictStatus,
-  Document,
-  EventWithMembers
+  Document
 } from 'shared';
 import { CalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { EventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
-import { EventQueryArgs, EventWithMembersQueryArgs } from '../prisma-query-args/event.query-args.js';
+import {
+  BaseEventQueryArgs,
+  CalendarEventQueryArgs,
+  eventWorkPackageSelect
+} from '../prisma-query-args/event.query-args.js';
+import { BaseUserQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { IcsEvent } from '../utils/ics.utils.js';
 import { ShopMachineryQueryArgs, MachineryQueryArgs } from '../prisma-query-args/machinery.query-args.js';
 import { ShopQueryArgs } from '../prisma-query-args/shop.query-args.js';
-import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer.js';
+import { baseUserTransformer, userTransformer } from './user.transformer.js';
 
-export const documentTransformer = (document: Prisma.DocumentGetPayload<null>): Document => {
+export const documentTransformer = (
+  document: Pick<Prisma.DocumentGetPayload<null>, 'documentId' | 'googleFileId' | 'name'>
+): Document => {
   return { documentId: document.documentId, googleFileId: document.googleFileId, name: document.name };
 };
 
@@ -101,7 +116,9 @@ export const calendarTransformer = (calendar: Prisma.CalendarGetPayload<Calendar
   };
 };
 
-export const scheduleTimesTransformer = (scheduleTimes: Prisma.Schedule_SlotGetPayload<null>): ScheduleSlot => {
+export const scheduleTimesTransformer = (
+  scheduleTimes: Pick<Prisma.Schedule_SlotGetPayload<null>, 'scheduleSlotId' | 'startTime' | 'endTime' | 'allDay'>
+): ScheduleSlot => {
   return {
     scheduleSlotId: scheduleTimes.scheduleSlotId,
     startTime: scheduleTimes.startTime ?? undefined,
@@ -110,78 +127,146 @@ export const scheduleTimesTransformer = (scheduleTimes: Prisma.Schedule_SlotGetP
   };
 };
 
-export const eventTransformer = (event: Prisma.EventGetPayload<EventQueryArgs>): Event => {
+type BaseUserPayload = Prisma.UserGetPayload<BaseUserQueryArgs>;
+type BaseEventPayload = Prisma.EventGetPayload<BaseEventQueryArgs>;
+type EventWorkPackagePayload = Prisma.Work_PackageGetPayload<typeof eventWorkPackageSelect>;
+type EventTeamPayload = { teamId: string; teamName: string };
+
+// every BaseEvent field except its slots, so slot-based models (one row per slot) can reuse it
+const baseEventFieldsTransformer = (event: Omit<BaseEventPayload, 'scheduledTimes'>): Omit<BaseEvent, 'scheduledTimes'> => {
   return {
     eventId: event.eventId,
     title: event.title,
-    userCreated: userTransformer(event.userCreated),
-    dateCreated: event.dateCreated,
     eventTypeId: event.eventTypeId,
-    requiredMembers: event.requiredMembers.map(userTransformer),
-    optionalMembers: event.optionalMembers.map(userTransformer),
-    confirmedMembers: event.confirmedMembers.map(userWithScheduleSettingsTransformer),
-    deniedMembers: event.deniedMembers.map(userTransformer),
-    teams: event.teams,
-    teamType: event.teamType ?? undefined,
-    shops: event.shops,
-    machinery: event.machinery,
-    workPackages: event.workPackages,
-    documents: event.documents.filter((document) => !document.dateDeleted).map(documentTransformer),
-    scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer),
+    status: eventStatusTransformer(event.status),
     approved: conflictStatusTransformer(event.approved),
-    approvalRequiredFrom: event.approvalRequiredBy ?? undefined,
     location: event.location ?? undefined,
     zoomLink: event.zoomLink ?? undefined,
-    questionDocumentLink: event.questionDocumentLink ?? undefined,
     description: event.description ?? undefined,
-    status: eventStatusTransformer(event.status),
+    questionDocumentLink: event.questionDocumentLink ?? undefined,
     initialDateScheduled: event.initialDateScheduled ?? undefined,
-    notificationChannelIds: event.notificationChannelIds
+    dateCreated: event.dateCreated,
+    notificationChannelIds: event.notificationChannelIds,
+    userCreated: baseUserTransformer(event.userCreated),
+    teamType: event.teamType ?? undefined
   };
 };
 
-export const eventWithMembersTransformer = (event: Prisma.EventGetPayload<EventWithMembersQueryArgs>): EventWithMembers => {
+export const baseEventTransformer = (event: BaseEventPayload): BaseEvent => {
   return {
-    eventId: event.eventId,
-    title: event.title,
-    userCreated: userWithScheduleSettingsTransformer(event.userCreated),
-    dateCreated: event.dateCreated,
-    eventTypeId: event.eventTypeId,
-    requiredMembers: event.requiredMembers.map(userTransformer),
-    optionalMembers: event.optionalMembers.map(userTransformer),
-    confirmedMembers: event.confirmedMembers.map(userWithScheduleSettingsTransformer),
-    deniedMembers: event.deniedMembers.map(userTransformer),
-    teams: event.teams.map((team) => ({
-      ...team,
-      members: team.members.map(userTransformer),
-      leads: team.leads.map(userTransformer),
-      head: userTransformer(team.head)
-    })),
-    teamType: event.teamType
-      ? {
-          teamTypeId: event.teamType.teamTypeId,
-          name: event.teamType.name,
-          teams: event.teamType.teams.map((team) => ({
-            members: team.members.map(userTransformer),
-            leads: team.leads.map(userTransformer),
-            head: userTransformer(team.head)
-          }))
-        }
-      : undefined,
-    shops: event.shops,
-    machinery: event.machinery,
-    workPackages: event.workPackages,
-    documents: event.documents.filter((document) => !document.dateDeleted).map(documentTransformer),
-    scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer),
-    approved: conflictStatusTransformer(event.approved),
-    approvalRequiredFrom: event.approvalRequiredBy ?? undefined,
-    location: event.location ?? undefined,
-    zoomLink: event.zoomLink ?? undefined,
-    questionDocumentLink: event.questionDocumentLink ?? undefined,
-    description: event.description ?? undefined,
-    status: eventStatusTransformer(event.status),
-    initialDateScheduled: event.initialDateScheduled ?? undefined,
-    notificationChannelIds: event.notificationChannelIds
+    ...baseEventFieldsTransformer(event),
+    scheduledTimes: event.scheduledTimes.map(scheduleTimesTransformer)
+  };
+};
+
+export const calendarEventTransformer = (event: Prisma.EventGetPayload<CalendarEventQueryArgs>): CalendarEvent => {
+  const [firstRequiredMember] = event.requiredMembers;
+  return {
+    ...baseEventTransformer(event),
+    approvalRequiredFrom: event.approvalRequiredBy ? baseUserTransformer(event.approvalRequiredBy) : undefined,
+    firstRequiredMember: firstRequiredMember ? baseUserTransformer(firstRequiredMember) : undefined,
+    numRequiredMembers: event._count.requiredMembers,
+    numOptionalMembers: event._count.optionalMembers,
+    numDeniedMembers: event._count.deniedMembers,
+    numScheduledSlots: event._count.scheduledTimes
+  };
+};
+
+export const eventWorkPackageTransformer = (workPackage: EventWorkPackagePayload): WorkPackageCalendarPreview => {
+  return { workPackageId: workPackage.workPackageId, wbsElement: workPackage.wbsElement };
+};
+
+const eventTeamTransformer = (team: EventTeamPayload): TeamCalendarPreview => {
+  return { teamId: team.teamId, teamName: team.teamName };
+};
+
+export const eventDetailTransformer = (
+  event: BaseEventPayload & {
+    approvalRequiredBy: BaseUserPayload | null;
+    requiredMembers: BaseUserPayload[];
+    optionalMembers: BaseUserPayload[];
+    confirmedMembers: BaseUserPayload[];
+    deniedMembers: BaseUserPayload[];
+    teams: EventTeamPayload[];
+    shops: ShopPreview[];
+    machinery: MachineryPreview[];
+    workPackages: EventWorkPackagePayload[];
+    documents: Document[];
+  },
+  isCurrentUserOnEvent: boolean
+): EventDetail => {
+  return {
+    ...baseEventTransformer(event),
+    approvalRequiredFrom: event.approvalRequiredBy ? baseUserTransformer(event.approvalRequiredBy) : undefined,
+    requiredMembers: event.requiredMembers.map(baseUserTransformer),
+    optionalMembers: event.optionalMembers.map(baseUserTransformer),
+    confirmedMembers: event.confirmedMembers.map(baseUserTransformer),
+    deniedMembers: event.deniedMembers.map(baseUserTransformer),
+    teams: event.teams.map(eventTeamTransformer),
+    shops: event.shops.map((shop) => ({ shopId: shop.shopId, name: shop.name })),
+    machinery: event.machinery.map((machine) => ({ machineryId: machine.machineryId, name: machine.name })),
+    workPackages: event.workPackages.map(eventWorkPackageTransformer),
+    documents: event.documents.map(documentTransformer),
+    isCurrentUserOnEvent
+  };
+};
+
+export const upcomingEventTransformer = (
+  event: BaseEventPayload & {
+    requiredMembers: BaseUserPayload[];
+    optionalMembers: BaseUserPayload[];
+    confirmedMembers: { userId: string }[];
+    teams: EventTeamPayload[];
+    workPackages: EventWorkPackagePayload[];
+  }
+): UpcomingEvent => {
+  return {
+    ...baseEventTransformer(event),
+    requiredMembers: event.requiredMembers.map(baseUserTransformer),
+    optionalMembers: event.optionalMembers.map(baseUserTransformer),
+    teams: event.teams.map(eventTeamTransformer),
+    workPackages: event.workPackages.map(eventWorkPackageTransformer),
+    // the query only selects the current user out of the confirmed members
+    isCurrentUserConfirmed: event.confirmedMembers.length > 0
+  };
+};
+
+export const guestEventInstanceTransformer = (
+  slot: Pick<Prisma.Schedule_SlotGetPayload<null>, 'scheduleSlotId' | 'startTime' | 'endTime' | 'allDay'> & {
+    event: Omit<BaseEventPayload, 'scheduledTimes'> & {
+      teams: EventTeamPayload[];
+      workPackages: EventWorkPackagePayload[];
+    };
+  }
+): GuestEventInstance => {
+  return {
+    ...baseEventFieldsTransformer(slot.event),
+    ...scheduleTimesTransformer(slot),
+    teams: slot.event.teams.map(eventTeamTransformer),
+    workPackages: slot.event.workPackages.map(eventWorkPackageTransformer)
+  };
+};
+
+export const icsEventTransformer = (
+  event: Omit<BaseEventPayload, 'userCreated'> & {
+    userCreated: BaseUserPayload & { email: string };
+    requiredMembers: BaseUserPayload[];
+    optionalMembers: BaseUserPayload[];
+    teams: { teamName: string }[];
+    shops: { name: string }[];
+    machinery: { name: string }[];
+    workPackages: EventWorkPackagePayload[];
+  }
+): IcsEvent => {
+  return {
+    ...baseEventTransformer(event),
+    userCreated: { ...baseUserTransformer(event.userCreated), email: event.userCreated.email },
+    requiredMembers: event.requiredMembers.map(baseUserTransformer),
+    optionalMembers: event.optionalMembers.map(baseUserTransformer),
+    teams: event.teams.map((team) => ({ teamName: team.teamName })),
+    shops: event.shops.map((shop) => ({ name: shop.name })),
+    machinery: event.machinery.map((machine) => ({ name: machine.name })),
+    workPackages: event.workPackages.map(eventWorkPackageTransformer)
   };
 };
 

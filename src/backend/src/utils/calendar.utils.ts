@@ -1,91 +1,68 @@
 import { Prisma, Event_Type, Organization } from '@prisma/client';
+import { User, ScheduleSlotCreateArgs, EventDocumentCreateArgs, Document, ConflictStatus, BaseEvent } from 'shared';
 import {
-  User,
-  ScheduleSlotCreateArgs,
-  EventDocumentCreateArgs,
-  Document,
-  ConflictStatus,
-  Event,
-  EventWithMembers
-} from 'shared';
-import { AccessDeniedException, InvalidEventTypeConfigurationException, NotFoundException } from './errors.utils.js';
+  AccessDeniedException,
+  DeletedException,
+  InvalidEventTypeConfigurationException,
+  InvalidOrganizationException,
+  NotFoundException
+} from './errors.utils.js';
 import prisma from '../prisma/prisma.js';
-import { getEventQueryArgs } from '../prisma-query-args/event.query-args.js';
-import { eventTransformer } from '../transformers/calendar.transformer.js';
+import { getBaseEventQueryArgs } from '../prisma-query-args/event.query-args.js';
+import { baseEventTransformer } from '../transformers/calendar.transformer.js';
 import { isSlackChannelMember } from './slack.utils.js';
 import { getBotChannels } from '../integrations/slack.js';
 import { getUserSlackId } from './users.utils.js';
 
+/**
+ * A schedule slot that overlaps [start, end]. Each slot is checked on its own, so a recurring event whose first slot is
+ * before the range still matches through its later slots
+ */
+export const scheduleSlotOverlapWhere = (start?: Date, end?: Date): Prisma.Schedule_SlotWhereInput => ({
+  ...(start && { endTime: { gte: start } }),
+  ...(end && { startTime: { lte: end } })
+});
+
 export function buildScheduledTimesOverlap(start?: Date, end?: Date): Prisma.Schedule_SlotListRelationFilter | undefined {
   if (!start && !end) return undefined;
-
-  // With the new schema, we check if the slot's time range overlaps with the query range
-  const AND: Prisma.Schedule_SlotWhereInput[] = [];
-
-  // For all-day events, we just check the date portion
-  // For timed events, we check the full datetime
-  if (start) {
-    AND.push({
-      OR: [
-        { allDay: true, startTime: { gte: start } },
-        { allDay: false, endTime: { gte: start } }
-      ]
-    });
-  }
-
-  if (end) {
-    AND.push({
-      OR: [
-        { allDay: true, startTime: { lte: end } },
-        { allDay: false, startTime: { lte: end } }
-      ]
-    });
-  }
-
-  return { some: { AND } };
+  return { some: scheduleSlotOverlapWhere(start, end) };
 }
 
-export const isUserOnEvent = (user: User, event: EventWithMembers): boolean => {
-  // Check if user is directly a required or optional member
-  const isDirectMember =
-    event.requiredMembers.some((member) => member.userId === user.userId) ||
-    event.optionalMembers.some((member) => member.userId === user.userId);
+/**
+ * Events in the given organization that the user is on: a required or optional member, the creator, or on (as a member,
+ * lead, or head) one of the event's teams or a team of the event's team type
+ */
+export const eventsUserIsOnWhere = (userId: string): Prisma.EventWhereInput => {
+  const userOnTeam: Prisma.TeamWhereInput = {
+    OR: [{ members: { some: { userId } } }, { leads: { some: { userId } } }, { headId: userId }]
+  };
+  return {
+    OR: [
+      { requiredMembers: { some: { userId } } },
+      { optionalMembers: { some: { userId } } },
+      { userCreatedId: userId },
+      { teams: { some: userOnTeam } },
+      { teamType: { teams: { some: userOnTeam } } }
+    ]
+  };
+};
 
-  if (isDirectMember) {
-    return true;
-  }
+/**
+ * Throws unless the event exists, isn't deleted, and belongs to the organization
+ */
+export function assertEventInOrganization<T extends { dateDeleted: Date | null; eventType: { organizationId: string } }>(
+  event: T | null,
+  eventId: string,
+  organization: Organization
+): asserts event is T {
+  if (!event) throw new NotFoundException('Event', eventId);
+  if (event.dateDeleted) throw new DeletedException('Event', eventId);
+  if (event.eventType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Event');
+}
 
-  // Check if user is on any of the event's teams (as member, lead, or head)
-  const isOnEventTeam = event.teams.some(
-    (team) =>
-      team.members.some((member) => member.userId === user.userId) ||
-      team.leads.some((lead) => lead.userId === user.userId) ||
-      team.head.userId === user.userId
-  );
-
-  if (isOnEventTeam) {
-    return true;
-  }
-
-  // Check if user is on any team that belongs to the event's team type
-  if (event.teamType) {
-    const isOnTeamType = event.teamType.teams.some(
-      (team) =>
-        team.members.some((member) => member.userId === user.userId) ||
-        team.leads.some((lead) => lead.userId === user.userId) ||
-        team.head.userId === user.userId
-    );
-
-    if (isOnTeamType) {
-      return true;
-    }
-  }
-
-  if (event.userCreated.userId === user.userId) {
-    return true;
-  }
-
-  return false;
+export const isUserOnEvent = async (userId: string, eventId: string): Promise<boolean> => {
+  const count = await prisma.event.count({ where: { eventId, ...eventsUserIsOnWhere(userId) } });
+  return count > 0;
 };
 
 /**
@@ -182,7 +159,7 @@ export async function checkEventConflicts(
   organization: Organization,
   location?: string,
   eventId?: string
-): Promise<{ hasConflict: boolean; conflictingEvent?: Event }> {
+): Promise<{ hasConflict: boolean; conflictingEvent?: BaseEvent; overlapStart?: Date }> {
   // No conflict if there's no location
   if (!location) {
     return { hasConflict: false };
@@ -222,7 +199,7 @@ export async function checkEventConflicts(
       },
       scheduledTimes: buildScheduledTimesOverlap(minStart ?? undefined, maxEnd ?? undefined)
     },
-    ...getEventQueryArgs(organization.organizationId)
+    ...getBaseEventQueryArgs()
   });
 
   // Check each new schedule slot against existing event slots
@@ -242,7 +219,11 @@ export async function checkEventConflicts(
           existingDate.setHours(0, 0, 0, 0);
 
           if (newDate.getTime() === existingDate.getTime()) {
-            return { hasConflict: true, conflictingEvent: eventTransformer(event) };
+            return {
+              hasConflict: true,
+              conflictingEvent: baseEventTransformer(event),
+              overlapStart: existingSlot.startTime
+            };
           }
         }
         // If one is all-day, check if the all-day event's date overlaps with the timed event
@@ -258,7 +239,11 @@ export async function checkEventConflicts(
           timedDate.setHours(0, 0, 0, 0);
 
           if (allDayDate.getTime() === timedDate.getTime()) {
-            return { hasConflict: true, conflictingEvent: eventTransformer(event) };
+            return {
+              hasConflict: true,
+              conflictingEvent: baseEventTransformer(event),
+              overlapStart: existingSlot.startTime
+            };
           }
         }
         // Both have specific times - check for time overlap
@@ -273,7 +258,8 @@ export async function checkEventConflicts(
           if (timeOverlap) {
             return {
               hasConflict: true,
-              conflictingEvent: eventTransformer(event)
+              conflictingEvent: baseEventTransformer(event),
+              overlapStart: existingSlot.startTime
             };
           }
         }

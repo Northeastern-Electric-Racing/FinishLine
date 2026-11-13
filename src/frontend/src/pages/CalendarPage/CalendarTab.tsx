@@ -5,18 +5,17 @@ import { Box, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import FullPageTabs from '../../components/FullPageTabs';
 import { useEffect, useState } from 'react';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { ConflictStatus, isGuest, isHead, isLead } from 'shared';
-import { useAllCalendars, useAllEventTypes, useFilterEvents, useSingleEvent } from '../../hooks/calendar.hooks';
+import { isGuest, isHead, isLead } from 'shared';
+import { useAllCalendars, useAllEventTypes, useSingleEvent } from '../../hooks/calendar.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import EventsTable from './EventsTable';
 import CreateEventModal from './Components/CreateEventModal';
 import CalendarCreateTaskModal from './Components/CalendarCreateTaskModal';
 import { useHistory, useLocation } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { Add } from '@mui/icons-material';
-import { eventsToEventInstances, getSundayOfWeek } from '../../utils/calendar.utils';
+import { getSundayOfWeek } from '../../utils/calendar.utils';
 import { useToast } from '../../hooks/toasts.hooks';
 
 const CalendarTab: React.FC = () => {
@@ -77,29 +76,6 @@ const CalendarTab: React.FC = () => {
   ];
 
   const {
-    data: untransformedYourEvents,
-    isLoading: yourEventsLoading,
-    isError: yourEventsIsError,
-    error: yourEventsError
-  } = useFilterEvents({
-    memberIds: [user.userId],
-    startPeriod: new Date(0),
-    endPeriod: new Date(2099, 11, 31) // Adjust as needed
-  });
-
-  const {
-    data: untransformedReviewEvents,
-    isLoading: reviewEventsLoading,
-    isError: reviewEventsIsError,
-    error: reviewEventsError
-  } = useFilterEvents({
-    approvalIds: canViewReviews ? [] : [user.userId],
-    statuses: canViewReviews ? [ConflictStatus.PENDING] : [],
-    startPeriod: new Date(0),
-    endPeriod: new Date(2099, 11, 31) // Adjust as needed
-  });
-
-  const {
     data: allEventTypes,
     isLoading: allEventTypesLoading,
     isError: allEventTypesIsError,
@@ -113,28 +89,11 @@ const CalendarTab: React.FC = () => {
     error: allCalendarsError
   } = useAllCalendars();
 
-  const yourEvents = untransformedYourEvents?.map(filterEventTransformer);
-  const reviewEvents = untransformedReviewEvents?.map(filterEventTransformer);
-
-  if (yourEventsIsError) return <ErrorPage error={yourEventsError} message={yourEventsError?.message} />;
-
-  if (reviewEventsIsError) return <ErrorPage error={reviewEventsError} message={reviewEventsError?.message} />;
-
   if (allEventTypesIsError) return <ErrorPage error={allEventTypesError} message={allEventTypesError?.message} />;
 
   if (allCalendarsIsError) return <ErrorPage error={allCalendarsError} message={allCalendarsError?.message} />;
 
-  if (
-    !yourEvents ||
-    yourEventsLoading ||
-    !reviewEvents ||
-    reviewEventsLoading ||
-    !allEventTypes ||
-    allEventTypesLoading ||
-    !allCalendars ||
-    allCalendarsLoading
-  )
-    return <LoadingIndicator />;
+  if (!allEventTypes || allEventTypesLoading || !allCalendars || allCalendarsLoading) return <LoadingIndicator />;
 
   if (canViewReviews) tabs.push({ tabUrlValue: 'reviews', tabName: 'Review Bookings' });
 
@@ -208,8 +167,6 @@ const CalendarTab: React.FC = () => {
         {tabIndex === 0 ? (
           <NewCalendarPage
             allEventTypes={allEventTypes}
-            reviewEvents={reviewEvents ?? []}
-            yourEvents={eventsToEventInstances(yourEvents)}
             allCalendars={allCalendars}
             onCreateEventClick={handleNewEventClick}
             viewMode={viewMode}
@@ -220,13 +177,7 @@ const CalendarTab: React.FC = () => {
             selectedEventId={selectedEventId}
           />
         ) : (
-          <EventsTable
-            tab={tabIndex}
-            yourEvents={yourEvents ?? []}
-            reviewEvents={reviewEvents ?? []}
-            allEventTypes={allEventTypes}
-            allCalendars={allCalendars}
-          />
+          <EventsTable tab={tabIndex} allEventTypes={allEventTypes} allCalendars={allCalendars} />
         )}
       </PageLayout>
 

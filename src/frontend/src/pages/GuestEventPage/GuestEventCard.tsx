@@ -1,9 +1,9 @@
 import { alpha, Box, Card, CardContent, Chip, Stack, Typography, useTheme } from '@mui/material';
-import { EventInstance, formatEventDate, formatEventTime } from 'shared';
+import { GuestEventInstance, formatEventDate, formatEventTime } from 'shared';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 
 interface GuestEventCardProps {
-  event: EventInstance;
+  event: GuestEventInstance;
 }
 
 const GuestEventCard: React.FC<GuestEventCardProps> = ({ event }) => {

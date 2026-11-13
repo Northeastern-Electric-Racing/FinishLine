@@ -1,8 +1,8 @@
 import React from 'react';
 import EventModal, { EventPayload } from './EventModal';
-import type { EventInstance, EventType, EventDocumentUploadArgs } from 'shared';
-import { convertEventToFormValues } from '../../../utils/calendar.utils';
-import { useEditEvent, useEditScheduleSlot, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
+import type { EventType, EventDocumentUploadArgs } from 'shared';
+import { convertEventToFormValues, EventSlotTarget } from '../../../utils/calendar.utils';
+import { useEditEvent, useEditScheduleSlot, useSingleEvent, useUploadManyDocuments } from '../../../hooks/calendar.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -10,7 +10,8 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 export interface EditEventModalProps {
   open: boolean;
   onClose: () => void;
-  event: EventInstance;
+  // the slot being edited; the event's details load here (already cached when opened from the event popup)
+  event: EventSlotTarget;
   eventTypes: EventType[];
 }
 
@@ -30,11 +31,14 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
     mutateAsync: editScheduleSlot
   } = useEditScheduleSlot(event.eventId, event.scheduleSlotId);
 
+  const { data: detail, isError: detailIsError, error: detailError } = useSingleEvent(event.eventId);
+
+  if (detailIsError) return <ErrorPage message={detailError?.message} />;
   if (editEventIsError) return <ErrorPage message={editEventError?.message} />;
   if (editScheduleSlotIsError) return <ErrorPage message={editScheduleSlotError?.message} />;
-  if (editEventIsLoading || editScheduleSlotIsLoading) return <LoadingIndicator />;
+  if (!detail || editEventIsLoading || editScheduleSlotIsLoading) return <LoadingIndicator />;
 
-  const initialValues = convertEventToFormValues(event);
+  const initialValues = convertEventToFormValues(detail, event);
 
   const handleSubmit = async (payload: EventPayload) => {
     try {
@@ -43,8 +47,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
       // First, update the event base information
       const editArgs = {
         ...eventData,
-        status: event.status,
-        documents: event.documents.map((doc) => ({
+        status: detail.status,
+        documents: detail.documents.map((doc) => ({
           name: doc.name,
           googleFileId: doc.googleFileId
         }))
@@ -60,7 +64,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
         });
       }
 
-      const editedEvent = await editEvent(editArgs);
+      await editEvent(editArgs);
 
       // Handle document uploads
       const filesToUpload = documentFiles
@@ -68,7 +72,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
         .filter((file: File | undefined): file is File => file !== undefined);
       if (filesToUpload.length > 0) {
         await uploadDocuments({
-          id: editedEvent.eventId,
+          id: event.eventId,
           files: filesToUpload
         });
       }

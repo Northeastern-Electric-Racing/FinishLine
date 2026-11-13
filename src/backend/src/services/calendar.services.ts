@@ -4,7 +4,13 @@ import {
   isHead,
   isGuest,
   AvailabilityCreateArgs,
-  Event,
+  BaseEvent,
+  CalendarEvent,
+  EventDetail,
+  UpcomingEvent,
+  EventConflict,
+  GuestEventInstance,
+  UserEventAttendance,
   EventType,
   ScheduleSlotCreateArgs,
   EventDocumentCreateArgs,
@@ -16,21 +22,30 @@ import {
   ScheduleSlot,
   notGuest,
   isSameDayUTC,
-  EventInstance,
   SlackMentionType
 } from 'shared';
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
-import { getEventQueryArgs, getEventWithMembersQueryArgs } from '../prisma-query-args/event.query-args.js';
+import {
+  eventValidationSelect,
+  eventWorkPackageSelect,
+  getBaseEventQueryArgs,
+  getCalendarEventQueryArgs,
+  getEventScheduledNotificationQueryArgs
+} from '../prisma-query-args/event.query-args.js';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args.js';
 import { getShopQueryArgs } from '../prisma-query-args/shop.query-args.js';
-import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { getBaseUserQueryArgs, getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
 import prisma from '../prisma/prisma.js';
 import {
   eventTypeTransformer,
   machineryTransformer,
-  eventTransformer,
-  eventWithMembersTransformer,
+  baseEventTransformer,
+  calendarEventTransformer,
+  eventDetailTransformer,
+  upcomingEventTransformer,
+  guestEventInstanceTransformer,
+  icsEventTransformer,
   shopTransformer,
   calendarTransformer
 } from '../transformers/calendar.transformer.js';
@@ -39,11 +54,14 @@ import {
   validateEventTypeConfiguration,
   checkEventConflicts,
   removeDeletedEventDocuments,
+  assertEventInOrganization,
   isUserOnEvent,
   buildScheduledTimesOverlap,
+  scheduleSlotOverlapWhere,
   findMatchingTimeOfDaySlots,
   validateNotificationChannelIds
 } from '../utils/calendar.utils.js';
+import { IcsEvent } from '../utils/ics.utils.js';
 import {
   AccessDeniedAdminOnlyException,
   NotFoundException,
@@ -69,7 +87,34 @@ import {
   updateUserAvailability,
   areUsersinList
 } from '../utils/users.utils.js';
-import { Conflict_Status, Event_Status, Organization, Team } from '@prisma/client';
+import { Conflict_Status, Event_Status, Organization, Prisma } from '@prisma/client';
+
+/**
+ * Events with a slot overlapping the period, or, for events not scheduled yet (no slots), an initial date in it. A
+ * recurring event whose first slot is before the period still matches through its later slots
+ */
+const eventInPeriodWhere = (startPeriod?: Date, endPeriod?: Date): Prisma.EventWhereInput => {
+  if (!startPeriod && !endPeriod) return {};
+  return {
+    OR: [
+      { scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod) },
+      {
+        scheduledTimes: { none: {} },
+        initialDateScheduled: {
+          ...(startPeriod && { gte: startPeriod }),
+          ...(endPeriod && { lte: endPeriod })
+        }
+      }
+    ]
+  };
+};
+
+// soonest first by first returned slot, falling back to the initial date for unscheduled events
+const byFirstSlotStart = (a: BaseEvent, b: BaseEvent): number => {
+  const startOf = (event: BaseEvent) =>
+    (event.scheduledTimes[0]?.startTime ?? event.initialDateScheduled ?? event.dateCreated).getTime();
+  return startOf(a) - startOf(b);
+};
 
 export default class CalendarService {
   /**
@@ -258,7 +303,7 @@ export default class CalendarService {
    * @param zoomLink Zoom Link if the event is online.
    * @param description Describes the event.
    *
-   * @returns The created event.
+   * @returns The id of the created event, so the caller can attach documents to it.
    *
    * @throws NotFoundException If the given event type, member IDs, shop IDs, machinery IDs, work package IDs, document IDs, or approvedByUserId are not found.
    * @throws InvalidOrganizationException If the given event type, members, shops, machinery, work packages, or approvedByUserId are not part of the same organization.
@@ -283,7 +328,7 @@ export default class CalendarService {
     zoomLink?: string,
     description?: string,
     mention?: SlackMentionType
-  ): Promise<Event> {
+  ): Promise<{ eventId: string }> {
     if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
     // Validate eventTypeId
     const foundEventType = await prisma.event_Type.findUnique({
@@ -484,10 +529,20 @@ export default class CalendarService {
         questionDocumentLink,
         description
       },
-      ...getEventQueryArgs(organization.organizationId)
+      // the base event plus what the calendar sync and notifications below read
+      select: {
+        ...getBaseEventQueryArgs().select,
+        teams: { select: { teamId: true, slackId: true } },
+        workPackages: {
+          select: {
+            wbsElement: { select: { name: true } },
+            project: {
+              select: { wbsElement: { select: { name: true } }, teams: { select: { teamId: true, slackId: true } } }
+            }
+          }
+        }
+      }
     });
-
-    const createdEvent = eventTransformer(newEvent);
 
     let calendarEventIds: string[] = [];
     if (process.env.NODE_ENV === 'production') {
@@ -516,13 +571,12 @@ export default class CalendarService {
     }
 
     if (foundEventType.sendSlackNotifications) {
-      const members = await prisma.user.findMany({
-        where: { userId: { in: optionalMemberIds.concat(allRequiredMembers) } }
-      });
+      const memberIds = [...new Set(optionalMemberIds.concat(allRequiredMembers))];
 
       // get the user settings for all the members invited, who are leaderingship
       const memberUserSettings = await prisma.user_Settings.findMany({
-        where: { userId: { in: members.map((member) => member.userId) } }
+        where: { userId: { in: memberIds } },
+        select: { slackId: true }
       });
 
       const workPackageNames = newEvent.workPackages.map((wp) => wp.wbsElement.name).join(', ');
@@ -544,9 +598,15 @@ export default class CalendarService {
       }
 
       // Send popup notification
-      await sendEventPopUp(newEvent, members, submitter, workPackageNames, organization.organizationId);
+      await sendEventPopUp(
+        newEvent,
+        memberIds.map((userId) => ({ userId })),
+        submitter,
+        workPackageNames,
+        organization.organizationId
+      );
 
-      const teamsToNotify = new Map<string, Team>();
+      const teamsToNotify = new Map<string, { slackId: string }>();
       for (const project of projects) {
         for (const team of project.teams) {
           teamsToNotify.set(team.teamId, team);
@@ -559,7 +619,7 @@ export default class CalendarService {
 
       await sendSlackEventNotifications(
         Array.from(teamsToNotify.values()),
-        createdEvent,
+        newEvent,
         submitter,
         workPackageNames,
         organization.name,
@@ -568,7 +628,7 @@ export default class CalendarService {
       );
     }
 
-    return createdEvent;
+    return { eventId: newEvent.eventId };
   }
 
   /**
@@ -592,8 +652,6 @@ export default class CalendarService {
    * @param zoomLink Zoom Link if the event is online.
    * @param description Describes the event.
    *
-   * @returns The edited event.
-   *
    * @throws NotFoundException If the given event type, member IDs, shop IDs, machinery IDs, work package IDs, document IDs, or approvedByUserId are not found.
    * @throws InvalidOrganizationException If the given event type, members, shops, machinery, work packages, or approvedByUserId are not part of the same organization.
    */
@@ -616,16 +674,21 @@ export default class CalendarService {
     location?: string,
     zoomLink?: string,
     description?: string
-  ): Promise<Event> {
+  ): Promise<void> {
     if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
     // validate eventId
     const foundEvent = await prisma.event.findUnique({
       where: { eventId },
-      ...getEventQueryArgs(organization.organizationId)
+      select: {
+        ...eventValidationSelect,
+        eventTypeId: true,
+        userCreatedId: true,
+        notificationChannelIds: true,
+        documents: { where: { dateDeleted: null }, select: { documentId: true, googleFileId: true, name: true } }
+      }
     });
 
-    if (!foundEvent) throw new NotFoundException('Event', eventId);
-    if (foundEvent.dateDeleted) throw new DeletedException('Event', eventId);
+    assertEventInOrganization(foundEvent, eventId, organization);
 
     const { eventTypeId } = foundEvent;
     const foundEventType = await prisma.event_Type.findUnique({
@@ -762,10 +825,11 @@ export default class CalendarService {
 
     if (teamTypeId) {
       // Validate team type
-      const foundTeamType = await prisma.team_Type.findMany({
+      const foundTeamType = await prisma.team_Type.findUnique({
         where: {
           teamTypeId
-        }
+        },
+        select: { teamTypeId: true }
       });
       if (!foundTeamType) {
         throw new NotFoundException('Team Type', teamTypeId);
@@ -813,18 +877,18 @@ export default class CalendarService {
         questionDocumentLink,
         description
       },
-      ...getEventQueryArgs(organization.organizationId)
+      select: {
+        notificationSlackThreads: true,
+        userCreated: { select: { userSettings: { select: { slackId: true } } } }
+      }
     });
 
     //set any deleted documents with a dateDeleted
-    await removeDeletedEventDocuments(documents, foundEvent.documents || [], submitter);
-
-    const edittedEvent = eventTransformer(updatedEvent);
+    await removeDeletedEventDocuments(documents, foundEvent.documents, submitter);
 
     if (status === Event_Status.CONFIRMED && foundEventType.sendSlackNotifications) {
       await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
     }
-    return edittedEvent;
   }
 
   static hasScheduleChanged(before: ScheduleSlot[], after: ScheduleSlot[]): boolean {
@@ -943,8 +1007,6 @@ export default class CalendarService {
    * @param editAllInSeries If true, edits all schedule slots with matching time-of-day.
    * @param organization The organization context.
    *
-   * @returns The updated event.
-   *
    * @throws NotFoundException If the event or schedule slot is not found.
    * @throws AccessDeniedException If the user doesn't have permission to edit.
    */
@@ -956,7 +1018,7 @@ export default class CalendarService {
     allDay: boolean,
     editAllInSeries: boolean,
     organization: Organization
-  ): Promise<Event> {
+  ): Promise<void> {
     // Validate schedule slot exists and get its eventId
     const scheduleSlot = await prisma.schedule_Slot.findUnique({
       where: { scheduleSlotId },
@@ -972,20 +1034,16 @@ export default class CalendarService {
     const event = await prisma.event.findUnique({
       where: { eventId: scheduleSlot.eventId },
       select: {
+        ...eventValidationSelect,
         eventId: true,
         userCreatedId: true,
         location: true,
-        dateDeleted: true,
         approved: true,
-        status: true,
-        title: true,
-        workPackages: true,
-        scheduledTimes: true
+        scheduledTimes: { select: { scheduleSlotId: true, startTime: true, endTime: true, allDay: true } }
       }
     });
 
-    if (!event) throw new NotFoundException('Event', scheduleSlot.eventId);
-    if (event.dateDeleted) throw new DeletedException('Event', scheduleSlot.eventId);
+    assertEventInOrganization(event, scheduleSlot.eventId, organization);
 
     // Check permissions
     const hasPermission =
@@ -1105,29 +1163,26 @@ export default class CalendarService {
       });
     }
 
-    // Fetch and return the updated event
+    // Fetch the updated event to notify about the new times
     const updatedEvent = await prisma.event.findUnique({
       where: { eventId: event.eventId },
-      ...getEventQueryArgs(organization.organizationId)
+      ...getEventScheduledNotificationQueryArgs()
     });
 
     if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
-    const updatedEventTransform = eventTransformer(updatedEvent);
 
     const foundEventType = await prisma.event_Type.findUnique({
-      where: { eventTypeId: updatedEventTransform.eventTypeId }
+      where: { eventTypeId: updatedEvent.eventTypeId },
+      select: { sendSlackNotifications: true }
     });
 
     if (
-      updatedEventTransform.status === Event_Status.SCHEDULED &&
-      foundEventType &&
-      foundEventType.sendSlackNotifications &&
+      updatedEvent.status === Event_Status.SCHEDULED &&
+      foundEventType?.sendSlackNotifications &&
       this.hasScheduleChanged(event.scheduledTimes, updatedEvent.scheduledTimes)
     ) {
-      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, updatedEventTransform, true);
+      await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, updatedEvent, true);
     }
-
-    return updatedEventTransform;
   }
 
   /**
@@ -1138,13 +1193,11 @@ export default class CalendarService {
    * @param scheduleSlotId The id of the specific schedule slot to delete.
    * @param organization The organization context.
    *
-   * @returns The updated event (or the deleted event if it was the last slot).
-   *
    * @throws NotFoundException If the event or schedule slot is not found.
    * @throws DeletedException If the event has already been deleted.
    * @throws AccessDeniedException If the user doesn't have permission to delete.
    */
-  static async deleteScheduleSlot(submitter: User, scheduleSlotId: string, organization: Organization): Promise<Event> {
+  static async deleteScheduleSlot(submitter: User, scheduleSlotId: string, organization: Organization): Promise<void> {
     // Validate schedule slot exists and get its eventId
     const scheduleSlot = await prisma.schedule_Slot.findUnique({
       where: { scheduleSlotId },
@@ -1159,13 +1212,10 @@ export default class CalendarService {
     // Fetch the event to check permissions and slot count
     const event = await prisma.event.findUnique({
       where: { eventId: scheduleSlot.eventId },
-      include: {
-        scheduledTimes: true
-      }
+      select: { ...eventValidationSelect, eventId: true, userCreatedId: true, _count: { select: { scheduledTimes: true } } }
     });
 
-    if (!event) throw new NotFoundException('Event', scheduleSlot.eventId);
-    if (event.dateDeleted) throw new DeletedException('Event', scheduleSlot.eventId);
+    assertEventInOrganization(event, scheduleSlot.eventId, organization);
 
     // Check permissions - same as deleteEvent
     const hasPermission =
@@ -1177,7 +1227,7 @@ export default class CalendarService {
     }
 
     // If this is the last schedule slot, delete the entire event instead
-    if (event.scheduledTimes.length <= 1) {
+    if (event._count.scheduledTimes <= 1) {
       return this.deleteEvent(submitter, event.eventId, organization);
     }
 
@@ -1185,16 +1235,6 @@ export default class CalendarService {
     await prisma.schedule_Slot.delete({
       where: { scheduleSlotId }
     });
-
-    // Fetch and return the updated event
-    const updatedEvent = await prisma.event.findUnique({
-      where: { eventId: event.eventId },
-      ...getEventQueryArgs(organization.organizationId)
-    });
-
-    if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
-
-    return eventTransformer(updatedEvent);
   }
 
   /**
@@ -1203,14 +1243,19 @@ export default class CalendarService {
    * @param file The file data for the image
    * @param submitter user who is uploading the document
    * @param organizationId the organization the user is currently in
-   * @returns the google drive id for the file
    */
-  static async uploadDocument(eventId: string, file: Express.Multer.File, submitter: User, organization: Organization) {
+  static async uploadDocument(
+    eventId: string,
+    file: Express.Multer.File,
+    submitter: User,
+    organization: Organization
+  ): Promise<void> {
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('Guests cannot upload documents');
 
     const event = await prisma.event.findUnique({
-      where: { eventId }
+      where: { eventId },
+      select: { ...eventValidationSelect, userCreatedId: true }
     });
 
     const numDocuments = await prisma.document.count({
@@ -1223,11 +1268,11 @@ export default class CalendarService {
       }
     });
 
-    if (!event) throw new NotFoundException('Event', eventId);
-    if (event.dateDeleted) {
-      throw new DeletedException('Event', eventId);
-    }
-    if (event.userCreatedId !== submitter.userId && !isHead) {
+    assertEventInOrganization(event, eventId, organization);
+    if (
+      event.userCreatedId !== submitter.userId &&
+      !(await userHasPermission(submitter.userId, organization.organizationId, isHead))
+    ) {
       throw new AccessDeniedException('You do not have access to upload a document for this event');
     }
 
@@ -1238,16 +1283,15 @@ export default class CalendarService {
       throw new HttpException(500, 'Document Name not found');
     }
 
-    const document = await prisma.document.create({
+    await prisma.document.create({
       data: {
         googleFileId: documentData.id,
         name: documentData.name,
         documentEventId: eventId,
         createdByUserId: submitter.userId
-      }
+      },
+      select: { documentId: true }
     });
-
-    return document;
   }
 
   /**
@@ -1269,20 +1313,18 @@ export default class CalendarService {
    * @param eventId The id of the given event.
    * @param organization The organization for which the event is being approved.
    *
-   * @returns The approved event.
-   *
    * @throws NotFoundException If the given eventId is not found.
    * @throws InvalidOrganizationException If the given eventId is not part of the same organization.
    * @throws DeletedException If the event has already been deleted.
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin or head.
    */
-  static async approveEvent(submitter: User, eventId: string, organization: Organization): Promise<Event> {
+  static async approveEvent(submitter: User, eventId: string, organization: Organization): Promise<void> {
     const event = await prisma.event.findUnique({
-      where: { eventId }
+      where: { eventId },
+      select: { ...eventValidationSelect, approvalRequiredFromUserId: true }
     });
 
-    if (!event) throw new NotFoundException('Event', eventId);
-    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+    assertEventInOrganization(event, eventId, organization);
 
     const hasPermission =
       (await userHasPermission(submitter.userId, organization.organizationId, isHead)) ||
@@ -1292,16 +1334,14 @@ export default class CalendarService {
       throw new AccessDeniedException('Only admins or heads or the owner of the conflicting event can approve this event!');
     }
 
-    const approvedEvent = await prisma.event.update({
+    await prisma.event.update({
       where: { eventId },
       data: {
         approved: Conflict_Status.APPROVED,
         approvalRequiredFromUserId: submitter.userId
       },
-      ...getEventQueryArgs(organization.organizationId)
+      select: { eventId: true }
     });
-
-    return eventTransformer(approvedEvent);
   }
 
   /**
@@ -1310,20 +1350,18 @@ export default class CalendarService {
    * @param eventId The id of the given event.
    * @param organization The organization for which the event is being denied.
    *
-   * @returns The denied event.
-   *
    * @throws NotFoundException If the given eventId is not found.
    * @throws InvalidOrganizationException If the given eventId is not part of the same organization.
    * @throws DeletedException If the event has already been deleted.
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin or head.
    */
-  static async denyEvent(submitter: User, eventId: string, organization: Organization): Promise<Event> {
+  static async denyEvent(submitter: User, eventId: string, organization: Organization): Promise<void> {
     const event = await prisma.event.findUnique({
-      where: { eventId }
+      where: { eventId },
+      select: { ...eventValidationSelect, approvalRequiredFromUserId: true }
     });
 
-    if (!event) throw new NotFoundException('Event', eventId);
-    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+    assertEventInOrganization(event, eventId, organization);
 
     const hasPermission =
       (await userHasPermission(submitter.userId, organization.organizationId, isHead)) ||
@@ -1333,16 +1371,14 @@ export default class CalendarService {
       throw new AccessDeniedException('Only admins or heads or the owner of the conflicting event can deny this event!');
     }
 
-    const deniedEvent = await prisma.event.update({
+    await prisma.event.update({
       where: { eventId },
       data: {
         approved: Conflict_Status.DENIED,
         approvalRequiredFromUserId: submitter.userId
       },
-      ...getEventQueryArgs(organization.organizationId)
+      select: { eventId: true }
     });
-
-    return eventTransformer(deniedEvent);
   }
 
   /**
@@ -1351,23 +1387,26 @@ export default class CalendarService {
    * @param eventId the id of the event
    * @param availabilities the given member's availabilities
    * @param organizationId the organization that the user is currently in
-   * @returns the modified event with its updated confirmed members
    */
   static async markUserConfirmed(
     eventId: string,
     availabilities: AvailabilityCreateArgs[],
     submitter: UserWithSettings,
     organization: Organization
-  ): Promise<Event> {
+  ): Promise<void> {
     const event = await prisma.event.findUnique({
       where: { eventId },
-      ...getEventWithMembersQueryArgs(organization.organizationId)
+      select: {
+        ...eventValidationSelect,
+        eventTypeId: true,
+        requiredMembers: { select: { userId: true } },
+        confirmedMembers: { where: { userId: submitter.userId }, select: { userId: true } }
+      }
     });
 
-    if (!event) throw new NotFoundException('Event', eventId);
-    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+    assertEventInOrganization(event, eventId, organization);
 
-    if (!isUserOnEvent(submitter, eventWithMembersTransformer(event)))
+    if (!(await isUserOnEvent(submitter.userId, eventId)))
       throw new HttpException(400, 'Current user is not in the list of this events members');
 
     let userSettings = await prisma.schedule_Settings.findUnique({
@@ -1396,52 +1435,53 @@ export default class CalendarService {
 
     await updateUserAvailability(availabilities, userSettings, submitter);
 
-    // set submitter as confirmed if they're not already
-    if (!event.confirmedMembers.map((user: { userId: string }) => user.userId).includes(submitter.userId)) {
-      const updatedEvent = await prisma.event.update({
-        where: { eventId },
-        ...getEventQueryArgs(organization.organizationId),
-        data: {
-          confirmedMembers: {
-            connect: {
-              userId: submitter.userId
-            }
+    // nothing else to do if the submitter has already confirmed
+    if (event.confirmedMembers.length > 0) return;
+
+    const updatedEvent = await prisma.event.update({
+      where: { eventId },
+      data: {
+        confirmedMembers: {
+          connect: {
+            userId: submitter.userId
           }
         }
-      });
-
-      const { eventTypeId } = updatedEvent;
-      const foundEventType = await prisma.event_Type.findUnique({
-        where: { eventTypeId }
-      });
-
-      if (!foundEventType) throw new NotFoundException('Event Type', eventTypeId);
-      if (foundEventType.dateDeleted) throw new DeletedException('Event Type', eventTypeId);
-
-      if (foundEventType.sendSlackNotifications) {
-        await sendEventUserConfirmationToThread(updatedEvent.notificationSlackThreads, submitter);
+      },
+      select: {
+        notificationSlackThreads: true,
+        userCreated: { select: { userSettings: { select: { slackId: true } } } },
+        confirmedMembers: { select: { userId: true } }
       }
+    });
 
-      // If all required attendees have confirmed their schedule and this member was a required attendee, mark design review as confirmed
-      if (
-        areUsersinList(event.requiredMembers, updatedEvent.confirmedMembers) &&
-        areUsersinList([submitter], event.requiredMembers)
-      ) {
-        await prisma.event.update({
-          where: { eventId },
-          ...getEventQueryArgs(organization.organizationId),
-          data: {
-            status: Event_Status.CONFIRMED
-          }
-        });
-        if (foundEventType.sendSlackNotifications) {
-          await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
-        }
-      }
+    const foundEventType = await prisma.event_Type.findUnique({
+      where: { eventTypeId: event.eventTypeId },
+      select: { dateDeleted: true, sendSlackNotifications: true }
+    });
 
-      return eventTransformer(updatedEvent);
+    if (!foundEventType) throw new NotFoundException('Event Type', event.eventTypeId);
+    if (foundEventType.dateDeleted) throw new DeletedException('Event Type', event.eventTypeId);
+
+    if (foundEventType.sendSlackNotifications) {
+      await sendEventUserConfirmationToThread(updatedEvent.notificationSlackThreads, submitter);
     }
-    return eventTransformer(event);
+
+    // If all required attendees have confirmed their schedule and this member was a required attendee, mark design review as confirmed
+    if (
+      areUsersinList(event.requiredMembers, updatedEvent.confirmedMembers) &&
+      areUsersinList([submitter], event.requiredMembers)
+    ) {
+      await prisma.event.update({
+        where: { eventId },
+        data: {
+          status: Event_Status.CONFIRMED
+        },
+        select: { eventId: true }
+      });
+      if (foundEventType.sendSlackNotifications) {
+        await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
+      }
+    }
   }
 
   /**
@@ -1454,8 +1494,6 @@ export default class CalendarService {
    * @param endTime The end time of the scheduled slot.
    * @param organization The organization context.
    *
-   * @returns The updated event with the new schedule slot.
-   *
    * @throws NotFoundException If the event is not found.
    * @throws DeletedException If the event has been deleted.
    * @throws AccessDeniedException If the user is not the event creator or an admin.
@@ -1467,14 +1505,38 @@ export default class CalendarService {
     startTime: Date,
     endTime: Date,
     organization: Organization
-  ): Promise<Event> {
+  ): Promise<void> {
     const event = await prisma.event.findUnique({
       where: { eventId },
-      ...getEventQueryArgs(organization.organizationId)
+      select: {
+        ...eventValidationSelect,
+        eventId: true,
+        status: true,
+        userCreatedId: true,
+        location: true,
+        initialDateScheduled: true,
+        approved: true,
+        approvalRequiredFromUserId: true,
+        confirmedMembers: {
+          select: {
+            drScheduleSettings: {
+              select: { availabilities: { select: { availabilityId: true, dateSet: true, availability: true } } }
+            }
+          }
+        }
+      }
     });
 
-    if (!event) throw new NotFoundException('Event', eventId);
-    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+    assertEventInOrganization(event, eventId, organization);
+
+    // Only the event creator can schedule the event. Checked before anything below changes availabilities or slots
+    if (
+      submitter.userId !== event.userCreatedId &&
+      !(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))
+    ) {
+      throw new AccessDeniedException('Only the event creator and admins can schedule the event');
+    }
+
     if (event.status === Event_Status.SCHEDULED) {
       const timeSlots = await prisma.schedule_Slot.findMany({
         where: { eventId: event.eventId }
@@ -1519,14 +1581,6 @@ export default class CalendarService {
       });
     }
 
-    // Only the event creator can schedule the event
-    if (
-      submitter.userId !== event.userCreatedId &&
-      !(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))
-    ) {
-      throw new AccessDeniedException('Only the event creator and admins can schedule the event');
-    }
-
     // Check for conflicts with the new time
     const newSlotData: ScheduleSlotCreateArgs = {
       startTime,
@@ -1558,8 +1612,7 @@ export default class CalendarService {
         approved: hasConflict ? Conflict_Status.PENDING : event.approved,
         approvalRequiredFromUserId: hasConflict ? conflictingEvent?.userCreated.userId : event.approvalRequiredFromUserId
       },
-
-      ...getEventQueryArgs(organization.organizationId)
+      ...getEventScheduledNotificationQueryArgs()
     });
 
     // Remove the scheduled time from confirmed members' availabilities so they can't be
@@ -1579,20 +1632,17 @@ export default class CalendarService {
         data: { availability: updatedAvailability }
       });
     }
-    const { eventTypeId } = updatedEvent;
     const foundEventType = await prisma.event_Type.findUnique({
-      where: { eventTypeId }
+      where: { eventTypeId: updatedEvent.eventTypeId },
+      select: { sendSlackNotifications: true }
     });
-    const edittedEvent = eventTransformer(updatedEvent);
     if (foundEventType?.sendSlackNotifications) {
       await sendEventScheduledSlackNotif(
         updatedEvent.notificationSlackThreads,
-        eventTransformer(updatedEvent),
+        updatedEvent,
         event.status === Event_Status.SCHEDULED
       );
     }
-
-    return edittedEvent;
   }
 
   /**
@@ -1601,15 +1651,14 @@ export default class CalendarService {
    * @param eventId the id of the event
    * @param status the status to set the event to
    * @param organizationId the organization that the user is currently in
-   * @returns the modified event
    */
-  static async setStatus(user: User, eventId: string, status: EventStatus, organization: Organization): Promise<Event> {
+  static async setStatus(user: User, eventId: string, status: EventStatus, organization: Organization): Promise<void> {
     // validate the design review exists and is not deleted
     const originalEvent = await prisma.event.findUnique({
-      where: { eventId }
+      where: { eventId },
+      select: { ...eventValidationSelect, userCreatedId: true }
     });
-    if (!originalEvent) throw new NotFoundException('Event', eventId);
-    if (originalEvent.dateDeleted) throw new DeletedException('Event', eventId);
+    assertEventInOrganization(originalEvent, eventId, organization);
 
     // verify user is allowed to set the status of the event
     if (
@@ -1620,15 +1669,13 @@ export default class CalendarService {
     }
 
     // actually try to update the event
-    const updatedEvent = await prisma.event.update({
+    await prisma.event.update({
       where: { eventId },
-      ...getEventQueryArgs(organization.organizationId),
       data: {
         status
-      }
+      },
+      select: { eventId: true }
     });
-
-    return eventTransformer(updatedEvent);
   }
 
   /**
@@ -1637,20 +1684,18 @@ export default class CalendarService {
    * @param eventId The id of the given event.
    * @param organization The organization for which the event is being deleted.
    *
-   * @returns The deleted event.
-   *
    * @throws NotFoundException If the given eventId is not found.
    * @throws InvalidOrganizationException If the given eventId is not part of the same organization.
    * @throws DeletedException If the event has already been deleted.
    * @throws AccessDeniedAdminOnlyException If the submitter is not an admin.
    */
-  static async deleteEvent(submitter: User, eventId: string, organization: Organization): Promise<Event> {
+  static async deleteEvent(submitter: User, eventId: string, organization: Organization): Promise<void> {
     const event = await prisma.event.findUnique({
-      where: { eventId }
+      where: { eventId },
+      select: { ...eventValidationSelect, userCreatedId: true, calendarEventIds: true }
     });
 
-    if (!event) throw new NotFoundException('Event', eventId);
-    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+    assertEventInOrganization(event, eventId, organization);
 
     const hasPermission =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
@@ -1669,13 +1714,11 @@ export default class CalendarService {
       }
     }
 
-    const deletedEvent = await prisma.event.update({
+    await prisma.event.update({
       where: { eventId },
       data: { dateDeleted: new Date(), userDeletedId: submitter.userId },
-      ...getEventQueryArgs(organization.organizationId)
+      select: { eventId: true }
     });
-
-    return eventTransformer(deletedEvent);
   }
 
   /**
@@ -2548,7 +2591,7 @@ export default class CalendarService {
    *
    * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
    */
-  static async getFilteredEvents(filters: FilterArgs, organization: Organization): Promise<Event[]> {
+  static async getCalendarViewEvents(filters: FilterArgs, organization: Organization): Promise<CalendarEvent[]> {
     const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalIds, startPeriod, endPeriod, statuses } =
       filters;
 
@@ -2558,7 +2601,8 @@ export default class CalendarService {
         where: {
           userId: { in: memberIds },
           organizations: { some: { organizationId: organization.organizationId } }
-        }
+        },
+        select: { userId: true }
       });
       if (foundMembers.length !== memberIds.length) {
         const missingIds = memberIds.filter((id) => !foundMembers.some((mem) => mem.userId === id));
@@ -2572,7 +2616,8 @@ export default class CalendarService {
         where: {
           teamId: { in: teamIds },
           organization: { organizationId: organization.organizationId }
-        }
+        },
+        select: { teamId: true }
       });
       if (foundteams.length !== teamIds.length) {
         const missingIds = teamIds.filter((id) => !foundteams.some((team) => team.teamId === id));
@@ -2587,7 +2632,8 @@ export default class CalendarService {
           calendarId: { in: calendarIds },
           organization: { organizationId: organization.organizationId },
           dateDeleted: null
-        }
+        },
+        select: { calendarId: true }
       });
       if (foundcalendars.length !== calendarIds.length) {
         const missingIds = calendarIds.filter((id) => !foundcalendars.some((mem) => mem.calendarId === id));
@@ -2602,7 +2648,8 @@ export default class CalendarService {
           eventTypeId: { in: eventTypeIds },
           organization: { organizationId: organization.organizationId },
           dateDeleted: null
-        }
+        },
+        select: { eventTypeId: true }
       });
       if (foundEventTypes.length !== eventTypeIds.length) {
         const missingIds = eventTypeIds.filter((id) => !foundEventTypes.some((et) => et.eventTypeId === id));
@@ -2615,8 +2662,10 @@ export default class CalendarService {
       const foundEvents = await prisma.event.findMany({
         where: {
           eventId: { in: eventIds },
-          dateDeleted: null
-        }
+          dateDeleted: null,
+          eventType: { organizationId: organization.organizationId }
+        },
+        select: { eventId: true }
       });
       if (foundEvents.length !== eventIds.length) {
         const missingIds = eventIds.filter((id) => !foundEvents.some((et) => et.eventId === id));
@@ -2625,7 +2674,7 @@ export default class CalendarService {
     }
 
     // filters for members/teams - event must match at least one of these if provided
-    const memberOrTeamFilter: any[] = [];
+    const memberOrTeamFilter: Prisma.EventWhereInput[] = [];
 
     if (memberIds?.length) {
       memberOrTeamFilter.push(
@@ -2640,18 +2689,8 @@ export default class CalendarService {
       memberOrTeamFilter.push({ workPackages: { some: { project: { teams: { some: { teamId: { in: teamIds } } } } } } });
     }
 
-    // filters for timing, based on either schedule slots (confirmed events) or initial date scheduled (unconfirmed events)
-    const scheduleSlotsOrDateScheduled: any[] = [
-      {
-        scheduledTimes: buildScheduledTimesOverlap(startPeriod, endPeriod)
-      },
-      {
-        AND: [{ initialDateScheduled: { gte: startPeriod } }, { initialDateScheduled: { lte: endPeriod } }]
-      }
-    ];
-
     // filters for selected calendars
-    const fromCalendar =
+    const fromCalendar: Prisma.EventWhereInput | undefined =
       calendarIds !== undefined
         ? {
             eventType: {
@@ -2668,35 +2707,118 @@ export default class CalendarService {
           }
         : undefined;
 
-    // Build the AND conditions - member/team filters AND time filters
-    const andConditions: any[] = [];
-
-    // If member/team filters are provided, require at least one to match
-    if (memberOrTeamFilter.length > 0) {
-      andConditions.push({ OR: memberOrTeamFilter });
-    }
-
-    // If time filters are provided, require at least one to match
-    if (startPeriod || endPeriod) {
-      andConditions.push({ OR: scheduleSlotsOrDateScheduled });
-    }
-
-    // get event using filter args
     const events = await prisma.event.findMany({
       where: {
         dateDeleted: null,
+        eventType: { organizationId: organization.organizationId },
         eventId: eventIds?.length ? { in: eventIds } : undefined,
         eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
         approvalRequiredFromUserId: approvalIds?.length ? { in: approvalIds } : undefined,
         approved: statuses?.length ? { in: statuses } : undefined,
-        AND: andConditions.length > 0 ? andConditions : undefined,
-        ...fromCalendar
+        AND: [
+          ...(memberOrTeamFilter.length > 0 ? [{ OR: memberOrTeamFilter }] : []),
+          eventInPeriodWhere(startPeriod, endPeriod),
+          ...(fromCalendar ? [fromCalendar] : [])
+        ]
       },
-      ...getEventQueryArgs(organization.organizationId),
+      ...getCalendarEventQueryArgs(scheduleSlotOverlapWhere(startPeriod, endPeriod)),
       orderBy: { dateCreated: 'asc' }
     });
 
-    return events.map(eventTransformer);
+    return events.map(calendarEventTransformer).sort(byFirstSlotStart);
+  }
+
+  /**
+   * Gets the events waiting on a conflict review in the organization, for the Review Bookings table
+   *
+   * @param organization the organization the user is currently in
+   * @param startPeriod when given, only events with a slot (or, if unscheduled, an initial date) on or after it
+   * @returns the pending events, soonest first
+   */
+  static async getReviewBookingEvents(organization: Organization, startPeriod?: Date): Promise<CalendarEvent[]> {
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        eventType: { organizationId: organization.organizationId },
+        approved: Conflict_Status.PENDING,
+        ...(startPeriod && eventInPeriodWhere(startPeriod))
+      },
+      ...getCalendarEventQueryArgs(),
+      orderBy: { dateCreated: 'asc' }
+    });
+
+    return events.map(calendarEventTransformer).sort(byFirstSlotStart);
+  }
+
+  /**
+   * Gets the current user's upcoming events: those they're a required or optional member on or created and, when
+   * includeTeamEvents, those on one of their teams or on a work package of one of their teams' projects
+   *
+   * @param submitter the current user
+   * @param organization the organization the user is currently in
+   * @param days how many days ahead to look
+   * @param includeTeamEvents whether to include events that only involve the user through a team
+   * @returns the upcoming events with only their future slots in the window, by next slot
+   */
+  static async getMyUpcomingEvents(
+    submitter: User,
+    organization: Organization,
+    days: number,
+    includeTeamEvents: boolean
+  ): Promise<UpcomingEvent[]> {
+    const now = new Date();
+    const end = new Date(now);
+    end.setDate(end.getDate() + days);
+    end.setHours(23, 59, 59, 999);
+
+    const memberOf: Prisma.EventWhereInput[] = [
+      { requiredMembers: { some: { userId: submitter.userId } } },
+      { optionalMembers: { some: { userId: submitter.userId } } },
+      { userCreatedId: submitter.userId }
+    ];
+
+    if (includeTeamEvents) {
+      const userTeams = await prisma.team.findMany({
+        where: {
+          organizationId: organization.organizationId,
+          dateArchived: null,
+          OR: [
+            { members: { some: { userId: submitter.userId } } },
+            { leads: { some: { userId: submitter.userId } } },
+            { headId: submitter.userId }
+          ]
+        },
+        select: { teamId: true }
+      });
+      const teamIds = userTeams.map((team) => team.teamId);
+      if (teamIds.length > 0) {
+        memberOf.push(
+          { teams: { some: { teamId: { in: teamIds } } } },
+          { workPackages: { some: { project: { teams: { some: { teamId: { in: teamIds } } } } } } }
+        );
+      }
+    }
+
+    const slotWhere = scheduleSlotOverlapWhere(now, end);
+
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        eventType: { organizationId: organization.organizationId },
+        scheduledTimes: { some: slotWhere },
+        OR: memberOf
+      },
+      select: {
+        ...getBaseEventQueryArgs(slotWhere).select,
+        requiredMembers: getBaseUserQueryArgs(),
+        optionalMembers: getBaseUserQueryArgs(),
+        confirmedMembers: { where: { userId: submitter.userId }, select: { userId: true } },
+        teams: { select: { teamId: true, teamName: true } },
+        workPackages: eventWorkPackageSelect
+      }
+    });
+
+    return events.map(upcomingEventTransformer).sort(byFirstSlotStart);
   }
 
   /**
@@ -2704,27 +2826,69 @@ export default class CalendarService {
    *
    * @param organization The organization to get new member events for.
    *
-   * @returns The upcoming events on the org's new member calendar, or an empty array if no calendar is designated.
+   * @returns The upcoming events on the org's new member calendar, with only their future slots, or an empty array if no
+   * calendar is designated.
    */
-  static async getNewMemberEvents(organization: Organization): Promise<Event[]> {
+  static async getNewMemberEvents(organization: Organization): Promise<BaseEvent[]> {
     const newMemberCalendar = await prisma.calendar.findFirst({
       where: {
         organizationId: organization.organizationId,
         isNewMemberCalendar: true,
         dateDeleted: null
-      }
+      },
+      select: { calendarId: true }
     });
 
     if (!newMemberCalendar) return [];
 
-    return CalendarService.getFilteredEvents(
-      {
-        calendarIds: [newMemberCalendar.calendarId],
-        startPeriod: new Date(),
-        endPeriod: new Date(2099, 11, 31)
+    const futureSlotWhere = scheduleSlotOverlapWhere(new Date());
+
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        eventType: {
+          organizationId: organization.organizationId,
+          calendars: { some: { calendarId: newMemberCalendar.calendarId } }
+        },
+        scheduledTimes: { some: futureSlotWhere }
       },
-      organization
-    );
+      ...getBaseEventQueryArgs(futureSlotWhere)
+    });
+
+    return events.map(baseEventTransformer);
+  }
+
+  /**
+   * Counts, per user in the organization, the completed events they were a required member on
+   *
+   * @param organization the organization the user is currently in
+   * @returns one row per user with at least one attended event
+   */
+  static async getDesignReviewAttendance(organization: Organization): Promise<UserEventAttendance[]> {
+    const users = await prisma.user.findMany({
+      where: {
+        organizations: { some: { organizationId: organization.organizationId } },
+        requiredEvents: {
+          some: { dateDeleted: null, status: Event_Status.DONE, eventType: { organizationId: organization.organizationId } }
+        }
+      },
+      select: {
+        userId: true,
+        _count: {
+          select: {
+            requiredEvents: {
+              where: {
+                dateDeleted: null,
+                status: Event_Status.DONE,
+                eventType: { organizationId: organization.organizationId }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return users.map((user) => ({ userId: user.userId, numAttended: user._count.requiredEvents }));
   }
 
   static async getAllShops(organization: Organization): Promise<Shop[]> {
@@ -2813,105 +2977,79 @@ export default class CalendarService {
   }
 
   /**
-   * Retrieves a single event
+   * Retrieves a single event with everything its popup, edit form, and availability page show
    *
    * @param submitter the user who is trying to retrieve the event
    * @param eventId the id of the event to retrieve
-   * @param organizationId the organization that the user is currently in
+   * @param organization the organization that the user is currently in
    * @returns the event
    */
-  static async getSingleEvent(_submitter: User, eventId: string, organization: Organization): Promise<Event> {
+  static async getSingleEvent(submitter: User, eventId: string, organization: Organization): Promise<EventDetail> {
     const event = await prisma.event.findUnique({
       where: { eventId },
-      ...getEventQueryArgs(organization.organizationId)
+      select: {
+        ...getBaseEventQueryArgs().select,
+        ...eventValidationSelect,
+        approvalRequiredBy: getBaseUserQueryArgs(),
+        requiredMembers: getBaseUserQueryArgs(),
+        optionalMembers: getBaseUserQueryArgs(),
+        confirmedMembers: getBaseUserQueryArgs(),
+        deniedMembers: getBaseUserQueryArgs(),
+        teams: { select: { teamId: true, teamName: true } },
+        shops: { select: { shopId: true, name: true } },
+        machinery: { select: { machineryId: true, name: true } },
+        workPackages: eventWorkPackageSelect,
+        documents: { where: { dateDeleted: null }, select: { documentId: true, googleFileId: true, name: true } }
+      }
     });
 
-    if (!event) throw new NotFoundException('Event', eventId);
+    assertEventInOrganization(event, eventId, organization);
 
-    if (event.dateDeleted) throw new DeletedException('Event', eventId);
-
-    return eventTransformer(event);
+    return eventDetailTransformer(event, await isUserOnEvent(submitter.userId, eventId));
   }
 
   /**
-   * Retrieves a single event
+   * Finds the conflicts the current user needs to know about: their own events waiting on (or denied) a conflict
+   * approval, and the events waiting on their approval, each with the event it conflicts with
    *
-   * @param submitter the user who is trying to retrieve the event
-   * @param eventId the id of the event to retrieve
-   * @param organizationId the organization that the user is currently in
-   * @returns the event
+   * @param submitter the current user
+   * @param organization the organization that the user is currently in
+   * @returns one entry per event that still conflicts
    */
-  static async getSingleEventWithMembers(_submitter: User, eventId: string, organization: Organization): Promise<Event> {
-    const event = await prisma.event.findUnique({
-      where: { eventId },
-      ...getEventWithMembersQueryArgs(organization.organizationId)
-    });
-
-    if (!event) throw new NotFoundException('Event', eventId);
-
-    if (event.dateDeleted) throw new DeletedException('Event', eventId);
-
-    return eventTransformer(event);
-  }
-
-  /**
-   * Retrieves a potential conflicting event
-   * If no conflict exists, returns the original event
-   *
-   * @param submitter the user who is trying to retrieve the event
-   * @param eventId the id of the event to retrieve
-   * @param organizationId the organization that the user is currently in
-   * @returns the event
-   */
-  static async getConflictingEvent(_submitter: User, eventId: string, organization: Organization): Promise<Event> {
-    const event = await prisma.event.findUnique({
-      where: { eventId },
-      ...getEventQueryArgs(organization.organizationId)
-    });
-
-    if (!event) throw new NotFoundException('Event', eventId);
-
-    if (event.dateDeleted) throw new DeletedException('Event', eventId);
-
-    const eventType = await prisma.event_Type.findUnique({
-      where: { eventTypeId: event.eventTypeId }
-    });
-
-    if (!eventType) throw new NotFoundException('Event Type', event.eventTypeId);
-
-    if (eventType.dateDeleted) throw new DeletedException('Event Type', event.eventTypeId);
-
-    if (eventType.organizationId !== organization.organizationId) {
-      throw new InvalidOrganizationException('Calendar');
-    }
-
-    const transformedEvent = eventTransformer(event);
-
-    const { hasConflict, conflictingEvent } = await checkEventConflicts(
-      transformedEvent.scheduledTimes,
-      organization,
-      transformedEvent.location,
-      transformedEvent.eventId
-    );
-
-    if (hasConflict && conflictingEvent) {
-      return conflictingEvent;
-    }
-
-    return transformedEvent;
-  }
-
-  /**
-   * Gets all events in the database
-   * @param organizationId the organization id of the current user
-   * @returns All of the events
-   */
-  static async getAllEvents(organization: Organization): Promise<Event[]> {
+  static async getMyConflicts(submitter: User, organization: Organization): Promise<EventConflict[]> {
     const events = await prisma.event.findMany({
-      where: { dateDeleted: null },
-      ...getEventQueryArgs(organization.organizationId)
+      where: {
+        dateDeleted: null,
+        eventType: { organizationId: organization.organizationId },
+        OR: [
+          { userCreatedId: submitter.userId, approved: { in: [Conflict_Status.PENDING, Conflict_Status.DENIED] } },
+          { approvalRequiredFromUserId: submitter.userId, approved: Conflict_Status.PENDING }
+        ]
+      },
+      ...getBaseEventQueryArgs(),
+      orderBy: { dateCreated: 'asc' }
     });
-    return events.map(eventTransformer);
+
+    const conflicts: EventConflict[] = [];
+    for (const event of events) {
+      const transformedEvent = baseEventTransformer(event);
+      const { hasConflict, conflictingEvent, overlapStart } = await checkEventConflicts(
+        transformedEvent.scheduledTimes,
+        organization,
+        transformedEvent.location,
+        transformedEvent.eventId
+      );
+      if (hasConflict && conflictingEvent && overlapStart) {
+        conflicts.push({
+          event: transformedEvent,
+          conflictingEvent,
+          overlapStart,
+          isCurrentUserApprover: event.userCreated.userId !== submitter.userId
+        });
+      }
+    }
+
+    return conflicts;
   }
 
   /**
@@ -2931,65 +3069,56 @@ export default class CalendarService {
   }
 
   /**
-   * Gets the 25 events on each side of a reference point (defaults to now).
-   * futureCursor paginates forward; pastCursor paginates backward.
+   * Gets the next 25 event slots in one direction from a reference point (defaults to now), for the guest events page.
+   * Pages are keyed on (startTime, scheduleSlotId) so slots sharing a start time are neither repeated nor skipped.
    * @param organization the org the user is currently in
-   * @param futureCursor the startTime of the last future event from the previous page
-   * @param pastCursor the startTime of the last past event from the previous page
+   * @param direction 'future' pages forward from the reference point, 'past' pages backward
+   * @param cursor the scheduleSlotId of the last slot of the previous page in this direction
    */
-  static async getAllEventsPaginated(
+  static async getGuestEventFeed(
     organization: Organization,
-    futureCursor?: Date,
-    pastCursor?: Date
-  ): Promise<{
-    futureInstances: EventInstance[];
-    pastInstances: EventInstance[];
-    nextFutureCursor: Date | null;
-    nextPastCursor: Date | null;
-  }> {
+    direction: 'future' | 'past',
+    cursor?: string
+  ): Promise<{ instances: GuestEventInstance[]; nextCursor: string | null }> {
+    const PAGE_SIZE = 25;
     const now = new Date();
+    const isFuture = direction === 'future';
 
-    const eventFilter = {
-      dateDeleted: null,
-      status: Event_Status.SCHEDULED,
-      eventType: {
-        organizationId: organization.organizationId
+    const slots = await prisma.schedule_Slot.findMany({
+      where: {
+        // the reference point only bounds the first page; later pages continue from the cursor
+        ...(!cursor && { startTime: isFuture ? { gte: now } : { lt: now } }),
+        event: {
+          dateDeleted: null,
+          status: Event_Status.SCHEDULED,
+          eventType: { organizationId: organization.organizationId }
+        }
+      },
+      ...(cursor && { cursor: { scheduleSlotId: cursor }, skip: 1 }),
+      orderBy: isFuture
+        ? [{ startTime: 'asc' }, { scheduleSlotId: 'asc' }]
+        : [{ startTime: 'desc' }, { scheduleSlotId: 'desc' }],
+      take: PAGE_SIZE,
+      select: {
+        scheduleSlotId: true,
+        startTime: true,
+        endTime: true,
+        allDay: true,
+        event: {
+          select: {
+            // one row per slot already, so the event's own slots aren't needed
+            ...getBaseEventQueryArgs().select,
+            scheduledTimes: false,
+            teams: { select: { teamId: true, teamName: true } },
+            workPackages: eventWorkPackageSelect
+          }
+        }
       }
-    };
-
-    const [futureSlots, pastSlots] = await Promise.all([
-      prisma.schedule_Slot.findMany({
-        where: { startTime: { gte: futureCursor ?? now }, event: eventFilter },
-        include: { event: getEventQueryArgs(organization.organizationId) },
-        orderBy: { startTime: 'asc' },
-        take: 25
-      }),
-      prisma.schedule_Slot.findMany({
-        where: { startTime: { lt: pastCursor ?? now }, event: eventFilter },
-        include: { event: getEventQueryArgs(organization.organizationId) },
-        orderBy: { startTime: 'desc' },
-        take: 25
-      })
-    ]);
-
-    const toInstance = (slot: (typeof futureSlots)[0]): EventInstance => {
-      const { scheduledTimes, ...eventWithoutSlots } = eventTransformer(slot.event);
-      return {
-        ...eventWithoutSlots,
-        scheduleSlotId: slot.scheduleSlotId,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        allDay: slot.allDay,
-        recurring: slot.event.scheduledTimes.length > 1,
-        totalScheduledSlots: slot.event.scheduledTimes.length
-      };
-    };
+    });
 
     return {
-      futureInstances: futureSlots.map(toInstance),
-      pastInstances: pastSlots.map(toInstance),
-      nextFutureCursor: futureSlots.length === 25 ? futureSlots[futureSlots.length - 1].startTime : null,
-      nextPastCursor: pastSlots.length === 25 ? pastSlots[pastSlots.length - 1].startTime : null
+      instances: slots.map(guestEventInstanceTransformer),
+      nextCursor: slots.length === PAGE_SIZE ? slots[slots.length - 1].scheduleSlotId : null
     };
   }
 
@@ -3003,10 +3132,25 @@ export default class CalendarService {
     return token;
   }
 
-  static async getIcsFeedEvents(icsToken: string, organizationId: string, calendarIds: string[], eventIds: string[] = []) {
+  /**
+   * Gets the events for a user's ICS calendar subscription. Only slots from the last six months onward are included, so
+   * the feed doesn't grow with the organization's whole history
+   *
+   * @param icsToken the user's ICS token
+   * @param organizationId the organization the feed is for
+   * @param calendarIds the calendars to include (all of the organization's when empty)
+   * @param eventIds specific events to include instead of the user's and calendars' events
+   */
+  static async getIcsFeedEvents(
+    icsToken: string,
+    organizationId: string,
+    calendarIds: string[],
+    eventIds: string[] = []
+  ): Promise<IcsEvent[]> {
     const user = await prisma.user.findUnique({
       where: { icsToken },
-      include: {
+      select: {
+        userId: true,
         teamsAsMember: { select: { teamId: true } },
         teamsAsLead: { select: { teamId: true } },
         teamsAsHead: { select: { teamId: true } }
@@ -3015,18 +3159,9 @@ export default class CalendarService {
 
     if (!user) throw new NotFoundException('User', 'icsToken');
 
-    // specific events case
-    if (eventIds.length > 0) {
-      const events = await prisma.event.findMany({
-        where: {
-          dateDeleted: null,
-          eventId: { in: eventIds },
-          eventType: { calendars: { some: { organizationId } } }
-        },
-        ...getEventQueryArgs(organizationId)
-      });
-      return events.map(eventTransformer);
-    }
+    const lookback = new Date();
+    lookback.setMonth(lookback.getMonth() - 6);
+    const slotWhere = scheduleSlotOverlapWhere(lookback);
 
     const userTeamIds = [
       ...user.teamsAsMember.map((t) => t.teamId),
@@ -3039,56 +3174,74 @@ export default class CalendarService {
         ? [{ eventType: { calendars: { some: { calendarId: { in: calendarIds }, organizationId } } } }]
         : [{ eventType: { calendars: { some: { organizationId } } } }];
 
+    // specific events when given, otherwise the user's events and the calendars' events
+    const feedWhere: Prisma.EventWhereInput =
+      eventIds.length > 0
+        ? { eventId: { in: eventIds }, eventType: { calendars: { some: { organizationId } } } }
+        : {
+            status: { in: [Event_Status.CONFIRMED, Event_Status.SCHEDULED, Event_Status.DONE] },
+            OR: [
+              { requiredMembers: { some: { userId: user.userId } } },
+              { optionalMembers: { some: { userId: user.userId } } },
+              ...(userTeamIds.length > 0 ? [{ teams: { some: { teamId: { in: userTeamIds } } } }] : []),
+              ...calendarFilter
+            ]
+          };
+
     const events = await prisma.event.findMany({
-      where: {
-        dateDeleted: null,
-        status: { in: [Event_Status.CONFIRMED, Event_Status.SCHEDULED, Event_Status.DONE] },
-        scheduledTimes: { some: {} },
-        OR: [
-          { requiredMembers: { some: { userId: user.userId } } },
-          { optionalMembers: { some: { userId: user.userId } } },
-          ...(userTeamIds.length > 0 ? [{ teams: { some: { teamId: { in: userTeamIds } } } }] : []),
-          ...calendarFilter,
-          ...[]
-        ]
-      },
-      ...getEventQueryArgs(organizationId)
+      where: { dateDeleted: null, scheduledTimes: { some: slotWhere }, ...feedWhere },
+      select: {
+        ...getBaseEventQueryArgs(slotWhere).select,
+        userCreated: { select: { ...getBaseUserQueryArgs().select, email: true } },
+        requiredMembers: getBaseUserQueryArgs(),
+        optionalMembers: getBaseUserQueryArgs(),
+        teams: { select: { teamName: true } },
+        shops: { select: { name: true } },
+        machinery: { select: { name: true } },
+        workPackages: eventWorkPackageSelect
+      }
     });
 
-    return events.map(eventTransformer);
+    return events.map(icsEventTransformer);
   }
 
   static async remindUnconfirmed(eventId: string, submitter: User, organization: Organization): Promise<void> {
     const event = await prisma.event.findUnique({
       where: { eventId },
-      ...getEventWithMembersQueryArgs(organization.organizationId)
+      select: {
+        ...getBaseEventQueryArgs().select,
+        ...eventValidationSelect,
+        requiredMembers: { select: { userId: true } },
+        optionalMembers: { select: { userId: true } },
+        confirmedMembers: { select: { userId: true } },
+        workPackages: { select: { project: { select: { wbsElement: { select: { name: true } } } } } }
+      }
     });
 
     const hasPermission =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
-      (!!event && submitter.userId === event.userCreatedId);
+      (!!event && submitter.userId === event.userCreated.userId);
 
     if (!hasPermission) {
       throw new AccessDeniedException('Only the creator or an admin can send reminders for unconfirmed events');
     }
 
-    if (!event) throw new NotFoundException('Event', eventId);
-    if (event.dateDeleted) throw new DeletedException('Event', eventId);
+    assertEventInOrganization(event, eventId, organization);
 
-    const confirmedMemberIds = new Set(event.confirmedMembers.map((u: { userId: string }) => u.userId));
+    const confirmedMemberIds = new Set(event.confirmedMembers.map((u) => u.userId));
 
     const allMembers = [...event.requiredMembers, ...event.optionalMembers];
-    const unconfirmedMembers = allMembers.filter((u: { userId: string }) => !confirmedMemberIds.has(u.userId));
-    const uniqueUnconfirmedIds = [...new Set(unconfirmedMembers.map((u: { userId: string }) => u.userId))];
+    const unconfirmedMembers = allMembers.filter((u) => !confirmedMemberIds.has(u.userId));
+    const uniqueUnconfirmedIds = [...new Set(unconfirmedMembers.map((u) => u.userId))];
 
     if (uniqueUnconfirmedIds.length === 0) return;
 
     const memberUserSettings = await prisma.user_Settings.findMany({
-      where: { userId: { in: uniqueUnconfirmedIds } }
+      where: { userId: { in: uniqueUnconfirmedIds } },
+      select: { slackId: true }
     });
 
-    const projects = event.workPackages.map((wp: { project: { wbsElement: { name: string } } }) => wp.project);
-    const projectName = projects.map((p: { wbsElement: { name: string } }) => p.wbsElement.name).join(', ');
+    const projectName = event.workPackages.map((wp) => wp.project.wbsElement.name).join(', ');
 
     for (const userSetting of memberUserSettings) {
       if (userSetting.slackId) {

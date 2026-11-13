@@ -5,16 +5,20 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
 import { useAllMembers } from '../../hooks/users.hooks';
-import { useAllEvents } from '../../hooks/calendar.hooks';
-import { EventStatus } from 'shared';
+import { useDesignReviewAttendance } from '../../hooks/calendar.hooks';
 
 const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: allMembers, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllMembers();
-  const { data: allEvents, isLoading: eventsIsLoading, isError: eventsIsError, error: eventsError } = useAllEvents();
+  const {
+    data: attendance,
+    isLoading: attendanceIsLoading,
+    isError: eventsIsError,
+    error: eventsError
+  } = useDesignReviewAttendance();
 
-  if (!allMembers || usersIsLoading || !allEvents || eventsIsLoading) return <LoadingIndicator />;
+  if (!allMembers || usersIsLoading || !attendance || attendanceIsLoading) return <LoadingIndicator />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;
   if (eventsIsError) return <ErrorPage message={eventsError.message} />;
 
@@ -26,29 +30,10 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
     setSearchQuery(event.target.value);
   };
 
-  const attendanceDict: Map<string, number> = new Map();
+  // completed events each member was required at, counted by the server
+  const attendanceDict = new Map(attendance.map((row) => [row.userId, row.numAttended]));
+  // TODO: "Required to come but did not" has never been tracked (it always showed 0); decide what it should count
   const missedDict: Map<string, number> = new Map();
-
-  allEvents.forEach((review) => {
-    if (review.status === EventStatus.DONE) {
-      review.requiredMembers.forEach((member) => {
-        if (attendanceDict.has(member.userId)) {
-          attendanceDict.set(member.userId, attendanceDict.get(member.userId)! + 1);
-        } else {
-          attendanceDict.set(member.userId, 1);
-        }
-      });
-      review.requiredMembers.forEach((member) => {
-        if (!review.requiredMembers.map((user) => user.userId).includes(member.userId)) {
-          if (missedDict.has(member.userId)) {
-            missedDict.set(member.userId, missedDict.get(member.userId)! + 1);
-          } else {
-            missedDict.set(member.userId, 1);
-          }
-        }
-      });
-    }
-  });
 
   const attendeeRows = filteredMembers.map((member, index) => (
     <TableRow key={index}>

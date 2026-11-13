@@ -18,12 +18,14 @@ import {
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import TableCellHuge from './YourEventsComponents/TableCellHuge';
 import React, { useState } from 'react';
-import { Calendar, ConflictStatus, EventType } from 'shared';
-import { Event } from 'shared';
+import { Calendar, CalendarEvent, ConflictStatus, EventType } from 'shared';
 import WarningTooltip from './YourEventsComponents/WarningTooltip';
-import { getMeetingDates } from '../../utils/calendar.utils';
+import { EventSlotTarget, getMeetingDates } from '../../utils/calendar.utils';
 import { EventClickPopup } from './EventClickPopup';
-import { useDeleteEvent } from '../../hooks/calendar.hooks';
+import { useDeleteEvent, useCalendarViewEvents, useReviewBookingEvents } from '../../hooks/calendar.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 import EditEventModal from './Components/EditEventModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import EditIcon from '@mui/icons-material/Edit';
@@ -37,7 +39,7 @@ interface YourEventsHeadCells {
   label: string;
 }
 
-const getNextMeetingTime = (event: Event): Date => {
+const getNextMeetingTime = (event: CalendarEvent): Date => {
   const times: Date[] = getMeetingDates(event);
 
   // If no scheduled times, fall back to initialDateScheduled (for unscheduled design reviews)
@@ -62,15 +64,15 @@ const getNextMeetingTime = (event: Event): Date => {
   return times[0];
 };
 
-const isAllDayEvent = (event: Event): boolean => {
+const isAllDayEvent = (event: CalendarEvent): boolean => {
   return event.scheduledTimes.length > 0 && event.scheduledTimes[0]?.allDay === true;
 };
 
-const isUnscheduledEvent = (event: Event): boolean => {
+const isUnscheduledEvent = (event: CalendarEvent): boolean => {
   return event.scheduledTimes.length === 0;
 };
 
-const sortEvents = (events: Event[]): Event[] => {
+const sortEvents = (events: CalendarEvent[]): CalendarEvent[] => {
   const now = new Date();
 
   return [...events].sort((a, b) => {
@@ -95,9 +97,28 @@ const sortEvents = (events: Event[]): Event[] => {
   });
 };
 
+// the table's slot target for an event: its next (or, with past events shown, earliest returned) slot
+const toSlotTarget = (event: CalendarEvent): EventSlotTarget => {
+  const nextMeetingTime = getNextMeetingTime(event);
+  const slot =
+    event.scheduledTimes.find((s) => s.startTime.getTime() === nextMeetingTime.getTime()) ?? event.scheduledTimes[0];
+  return {
+    eventId: event.eventId,
+    title: event.title,
+    scheduleSlotId: slot?.scheduleSlotId ?? '',
+    startTime: slot?.startTime ?? nextMeetingTime,
+    endTime: slot?.endTime ?? nextMeetingTime,
+    allDay: slot?.allDay ?? false,
+    recurring: event.numScheduledSlots > 1,
+    totalScheduledSlots: event.numScheduledSlots
+  };
+};
+
+// past events are hidden by default, so only events from today on load unless the user asks for all of them
+const ALL_TIME_START = new Date(0);
+const ALL_TIME_END = new Date(2099, 11, 31);
+
 export interface EventTableArgs {
-  yourEvents: Event[];
-  reviewEvents: Event[];
   allEventTypes: EventType[];
   allCalendars: Calendar[];
   tab: number;
@@ -110,23 +131,29 @@ const formatEventDate = (date: Date): string => {
   return `${month}/${day}/${year}`;
 };
 
-const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, allEventTypes, allCalendars }) => {
-  // Convert to include proper dates
-  // Done this way to allow the old events transformer to function properly
-  // but provide better utility to this file (without breaking other files that may rely on eventTransformer)
-
+const EventsTable: React.FC<EventTableArgs> = ({ tab, allEventTypes, allCalendars }) => {
   const toast = useToast();
+  const user = useCurrentUser();
 
-  const [clickedEvent, setClickedEvent] = useState<Event>();
+  const [clickedEvent, setClickedEvent] = useState<CalendarEvent>();
   const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number }>();
 
-  const [clickedEditEvent, setClickedEditEvent] = useState<Event | undefined>();
+  const [clickedEditEvent, setClickedEditEvent] = useState<CalendarEvent | undefined>();
   const [showEditModal, setShowEditModal] = useState(false);
 
-  const [eventToDelete, setEventToDelete] = useState<Event | undefined>(undefined);
+  const [eventToDelete, setEventToDelete] = useState<CalendarEvent | undefined>(undefined);
   const [hidePastEvents, setHidePastEvents] = useState(true);
+  const [now] = useState(() => new Date());
 
-  const handleOpenClickPopup = (event: Event) => {
+  // each tab loads only its own events; hiding past events is done by the server
+  const yourEventsQuery = useCalendarViewEvents(
+    { memberIds: [user.userId], startPeriod: hidePastEvents ? now : ALL_TIME_START, endPeriod: ALL_TIME_END },
+    tab === 1
+  );
+  const reviewEventsQuery = useReviewBookingEvents(hidePastEvents ? now : undefined, tab === 2);
+  const { data: baseEvents, isError, error } = tab === 1 ? yourEventsQuery : reviewEventsQuery;
+
+  const handleOpenClickPopup = (event: CalendarEvent) => {
     setClickedEvent(event);
     if (typeof window !== 'undefined') {
       setAnchorPosition({
@@ -143,7 +170,7 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
     setAnchorPosition(undefined);
   };
 
-  const handleEdit = (event: Event) => {
+  const handleEdit = (event: CalendarEvent) => {
     setClickedEditEvent(event);
     setShowEditModal(true);
   };
@@ -229,8 +256,9 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
       : [])
   ];
 
-  const now = new Date();
-  const baseEvents = tab === 1 ? yourEvents : reviewEvents;
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (!baseEvents) return <LoadingIndicator />;
+
   const filteredEvents = hidePastEvents
     ? baseEvents.filter((event) => getNextMeetingTime(event).getTime() >= now.getTime())
     : baseEvents;
@@ -283,8 +311,7 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
             {events?.map((event) => {
               const earliestSchedule = new Date(getNextMeetingTime(event));
 
-              const attendeeNumber =
-                event.requiredMembers.length + event.optionalMembers.length - event.deniedMembers.length + 1;
+              const attendeeNumber = event.numRequiredMembers + event.numOptionalMembers - event.numDeniedMembers + 1;
 
               return (
                 <TableRow key={event.eventId} hover>
@@ -421,19 +448,7 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
         </Table>
       </TableContainer>
       <EventClickPopup
-        clickedEvent={
-          clickedEvent
-            ? {
-                ...clickedEvent,
-                startTime: getNextMeetingTime(clickedEvent as Event),
-                endTime: getNextMeetingTime(clickedEvent as Event),
-                allDay: clickedEvent?.scheduledTimes[0]?.allDay ?? false,
-                scheduleSlotId: clickedEvent?.scheduledTimes[0]?.scheduleSlotId ?? '',
-                recurring: clickedEvent.scheduledTimes.length > 1,
-                totalScheduledSlots: clickedEvent.scheduledTimes.length
-              }
-            : undefined
-        }
+        clickedEvent={clickedEvent ? toSlotTarget(clickedEvent) : undefined}
         anchorPosition={anchorPosition}
         onClose={handleCloseClickPopup}
         eventTypes={allEventTypes}
@@ -444,15 +459,7 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, yourEvents, reviewEvents, 
         <EditEventModal
           open={showEditModal}
           onClose={handleCloseEdit}
-          event={{
-            ...clickedEditEvent,
-            startTime: getNextMeetingTime(clickedEditEvent as Event),
-            endTime: getNextMeetingTime(clickedEditEvent as Event),
-            allDay: clickedEditEvent?.scheduledTimes[0]?.allDay ?? false,
-            scheduleSlotId: clickedEditEvent?.scheduledTimes[0]?.scheduleSlotId ?? '',
-            recurring: clickedEditEvent.scheduledTimes.length > 1,
-            totalScheduledSlots: clickedEditEvent.scheduledTimes.length
-          }}
+          event={toSlotTarget(clickedEditEvent)}
           eventTypes={allEventTypes}
         />
       )}

@@ -18,10 +18,18 @@ import {
   Switch
 } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { Calendar, TaskBoardItem, ConflictStatus, DayOfWeek, EventType, Event, FilterTaskArgs } from 'shared';
+import {
+  Calendar,
+  TaskBoardItem,
+  ConflictStatus,
+  DayOfWeek,
+  EventType,
+  FilterTaskArgs,
+  CalendarEventInstance
+} from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
-import { useConflictingEvents, useFilterEvents } from '../../hooks/calendar.hooks';
+import { useCalendarViewEvents, useMyConflicts, useMyUpcomingEvents } from '../../hooks/calendar.hooks';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -35,16 +43,13 @@ import {
   convertIntToDay,
   eventsToEventInstances,
   eventsToNextEventInstance,
-  getOverlapTime,
   getSundayOfWeek
 } from '../../utils/calendar.utils';
-import { filterEventTransformer } from '../../apis/transformers/calendar.transformer';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useHistory } from 'react-router-dom';
 import UpcomingMeetingsCard from './UpcomingMeetingsCard';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import { EventInstance } from 'shared';
 import CalendarWeekView from './CalendarWeekView';
 import { useFilterTasks } from '../../hooks/tasks.hooks';
 
@@ -88,8 +93,6 @@ const clearFilterSettings = (): void => {
 
 interface NewCalendarPageProps {
   allEventTypes: EventType[];
-  yourEvents: EventInstance[];
-  reviewEvents: Event[];
   allCalendars: Calendar[];
   onCreateEventClick: (date: Date, startTime?: Date, endTime?: Date) => void;
   viewMode: 'month' | 'week';
@@ -102,8 +105,6 @@ interface NewCalendarPageProps {
 
 const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   allEventTypes,
-  yourEvents,
-  reviewEvents,
   allCalendars,
   onCreateEventClick,
   viewMode,
@@ -203,7 +204,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
         calendarIds: selectedCalendarIds
       };
 
-  const { isLoading, isError, error, data: allEvents } = useFilterEvents(filterArgs);
+  const { isLoading, isError, error, data: allEvents } = useCalendarViewEvents(filterArgs);
 
   // Task filtering - uses same date range and member/team filters as events
   const taskFilterArgs: FilterTaskArgs | null = showTasks
@@ -224,66 +225,34 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     data: filteredTasks
   } = useFilterTasks(taskFilterArgs);
 
-  const [pendingEvent, setPendingEvent] = useState(
-    yourEvents.filter((event) => event.approved === ConflictStatus.PENDING).length > 0
-  );
-
-  const [deniedEvent, setDeniedEvent] = useState(
-    yourEvents.filter((event) => event.approved === ConflictStatus.DENIED).length > 0
-  );
-
-  const [reviewEvent, setReviewEvent] = useState(
-    reviewEvents.filter((event) => event.approvalRequiredFrom?.userId === user.userId).length > 0
-  );
-
-  const filteredToPending = yourEvents
-    .filter((event) => event.approved === ConflictStatus.PENDING && event.userCreated.userId === user.userId)
-    .map((event) => event.eventId);
-
-  const filteredToDenied = yourEvents
-    .filter((event) => event.approved === ConflictStatus.DENIED && event.userCreated.userId === user.userId)
-    .map((event) => event.eventId);
-
+  // the user's own pending events in view, which the grid shows on top of the approved ones
   const {
-    data: conflictingEvents,
-    isLoading: conflictingEventsLoading,
-    isError: conflictingEventsIsError,
-    error: conflictingEventsError
-  } = useConflictingEvents(filteredToPending);
-
-  const {
-    data: conflictingDeniedEvents,
-    isLoading: conflictingDeniedEventsLoading,
-    isError: conflictingDeniedEventsIsError,
-    error: conflictingDeniedEventsError
-  } = useConflictingEvents(filteredToDenied);
-
-  const yourReviewEvents = reviewEvents.filter((event) => event.approvalRequiredFrom?.userId === user.userId);
-  const {
-    data: untransformedConflictingReviewEvents,
-    isLoading: conflictingReviewEventsLoading,
-    isError: conflictingReviewEventsIsError,
-    error: conflictingReviewEventsError
-  } = useConflictingEvents(yourReviewEvents.map((event) => event.eventId));
-
-  const conflictingReviewEvents = untransformedConflictingReviewEvents?.map(filterEventTransformer);
-
-  const [upcomingStartPeriod] = useState(() => new Date());
-
-  const [upcomingEndPeriod] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 7);
-    d.setHours(23, 59, 59, 999);
-    return d;
+    data: ownPendingEvents,
+    isError: ownPendingIsError,
+    error: ownPendingError
+  } = useCalendarViewEvents({
+    startPeriod,
+    endPeriod,
+    memberIds: [user.userId],
+    statuses: [ConflictStatus.PENDING]
   });
+
+  // conflict banners load on their own and appear once ready; each can be dismissed
+  const { data: myConflicts } = useMyConflicts();
+  const [showPendingBanner, setShowPendingBanner] = useState(true);
+  const [showDeniedBanner, setShowDeniedBanner] = useState(true);
+  const [showReviewBanner, setShowReviewBanner] = useState(true);
+
+  const pendingConflicts = (myConflicts ?? []).filter(
+    (conflict) => !conflict.isCurrentUserApprover && conflict.event.approved === ConflictStatus.PENDING
+  );
+  const deniedConflicts = (myConflicts ?? []).filter(
+    (conflict) => !conflict.isCurrentUserApprover && conflict.event.approved === ConflictStatus.DENIED
+  );
+  const reviewConflicts = (myConflicts ?? []).filter((conflict) => conflict.isCurrentUserApprover);
 
   // Upcoming meetings is independent of filters - shows events where user is creator, member, or on associated team
-  const { data: upcomingEvents } = useFilterEvents({
-    startPeriod: upcomingStartPeriod,
-    endPeriod: upcomingEndPeriod,
-    memberIds: [user.userId],
-    teamIds: teamList
-  });
+  const { data: upcomingEvents } = useMyUpcomingEvents(7, true);
 
   const upcomingOccurences = eventsToNextEventInstance(upcomingEvents ?? []).sort(
     (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
@@ -315,16 +284,6 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     }
   };
 
-  const yourConflicts = useMemo(
-    () => conflictingEvents?.filter((event, i) => filteredToPending[i] !== event.eventId) ?? [],
-    [conflictingEvents, filteredToPending]
-  );
-
-  const yourConflictsDenied = useMemo(
-    () => conflictingDeniedEvents?.filter((event, i) => filteredToDenied[i] !== event.eventId) ?? [],
-    [conflictingDeniedEvents, filteredToDenied]
-  );
-
   // If filter endpoint errors (e.g., deleted user/team in saved filters), clear filters and retry
   if (isError) {
     // Check if there are any filters that could be causing the error
@@ -338,77 +297,30 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
     // No filters to clear, show the error
     return <ErrorPage message={error.message} />;
   }
-  if (conflictingEventsIsError) return <ErrorPage message={conflictingEventsError.message} />;
-  if (conflictingDeniedEventsIsError) return <ErrorPage message={conflictingDeniedEventsError.message} />;
-  if (conflictingReviewEventsIsError) return <ErrorPage message={conflictingReviewEventsError.message} />;
+  if (ownPendingIsError) return <ErrorPage message={ownPendingError.message} />;
   if (tasksIsError) return <ErrorPage message={tasksError.message} />;
 
-  if (
-    isLoading ||
-    !allEvents ||
-    conflictingEventsLoading ||
-    !conflictingEvents ||
-    conflictingDeniedEventsLoading ||
-    !conflictingDeniedEvents ||
-    conflictingReviewEventsLoading ||
-    !conflictingReviewEvents ||
-    tasksIsLoading ||
-    (showTasks && !filteredTasks)
-  )
+  if (isLoading || !allEvents || !ownPendingEvents || tasksIsLoading || (showTasks && !filteredTasks))
     return <LoadingIndicator />;
 
-  const transformedEvents = allEvents.map(filterEventTransformer);
+  // the user's own pending events that aren't already in the grid's events
+  const userPendingConflictEvents = ownPendingEvents.filter(
+    (event) => event.userCreated.userId === user.userId && !allEvents.some((e) => e.eventId === event.eventId)
+  );
 
-  // Get user's pending conflict events that aren't already in allEvents
-  // These are events the user created that have conflicts requiring approval
-  const userPendingConflictEvents = yourEvents
-    .filter((event) => event.approved === ConflictStatus.PENDING)
-    .filter((event) => event.userCreated.userId === user.userId)
-    .filter((event) => {
-      // Check if event falls within the display period
-      const eventTime = new Date(event.startTime);
-      return eventTime >= startPeriod && eventTime <= endPeriod;
-    })
-    .filter((event) => {
-      // Only include if not already in transformedEvents
-      return !transformedEvents.some((e) => e.eventId === event.eventId);
-    });
-
-  // Merge pending events with regular events
-  const allDisplayEvents = [...transformedEvents, ...userPendingConflictEvents.map((e) => ({ ...e, scheduledTimes: [] }))];
-
-  // Sort events by their first occurrence's start time
-  const sortedEvents = [...allDisplayEvents].sort((event1, event2) => {
-    const time1 = event1.scheduledTimes[0]?.startTime ? new Date(event1.scheduledTimes[0].startTime).getTime() : 0;
-    const time2 = event2.scheduledTimes[0]?.startTime ? new Date(event2.scheduledTimes[0].startTime).getTime() : 0;
-    return time1 - time2;
-  });
-
-  const eventDict = new Map<string, EventInstance[]>();
+  const eventDict = new Map<string, CalendarEventInstance[]>();
   const dayDict = new Map<string, DayOfWeek>();
-
-  // Convert events to instances
-  const regularInstances = eventsToEventInstances(sortedEvents);
-
-  // For pending conflict events from yourEvents, they're already EventInstances
-  const pendingInstances = userPendingConflictEvents;
-
-  // Combine all instances, filtering by shouldShowPendingEvent for pending ones
-  const allEventInstances = [...regularInstances, ...pendingInstances].filter((event) => {
-    if (event.approved === ConflictStatus.PENDING || event.approved === ConflictStatus.DENIED) {
-      return event.userCreated.userId === user.userId;
-    }
-    return true;
-  });
 
   // Remove duplicates (same eventId + same scheduleSlotId)
   const seenKeys = new Set<string>();
-  const eventInstances = allEventInstances.filter((event) => {
-    const key = `${event.eventId}-${event.scheduleSlotId}`;
-    if (seenKeys.has(key)) return false;
-    seenKeys.add(key);
-    return true;
-  });
+  const eventInstances = eventsToEventInstances([...allEvents, ...userPendingConflictEvents])
+    .filter((event) => {
+      const key = `${event.eventId}-${event.scheduleSlotId}`;
+      if (seenKeys.has(key)) return false;
+      seenKeys.add(key);
+      return true;
+    })
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
   eventInstances.forEach((event) => {
     const eventDate = new Date(event.startTime);
@@ -474,13 +386,13 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
           maxWidth: 600
         }}
       >
-        {deniedEvent && yourConflictsDenied.length > 0 && (
+        {showDeniedBanner && deniedConflicts.length > 0 && (
           <Alert
             icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
             variant="filled"
             severity="error"
-            onClick={() => setDeniedEvent(false)}
-            onClose={() => setDeniedEvent(false)}
+            onClick={() => setShowDeniedBanner(false)}
+            onClose={() => setShowDeniedBanner(false)}
             sx={{
               cursor: 'pointer'
             }}
@@ -488,9 +400,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
             <Stack direction="row" alignItems="center" spacing={2}>
               <Typography fontSize={14}>
                 {' '}
-                You have scheduled an event at the same time and location as <i>{yourConflictsDenied[0].title}</i> and was
-                denied. Edit the event to put it up for re-approval, or change the time/location to not conflict with other
-                events.
+                You have scheduled an event at the same time and location as{' '}
+                <i>{deniedConflicts[0].conflictingEvent.title}</i> and was denied. Edit the event to put it up for
+                re-approval, or change the time/location to not conflict with other events.
               </Typography>
               <Button
                 variant="outlined"
@@ -516,31 +428,32 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
             </Stack>
           </Alert>
         )}
-        {pendingEvent && yourConflicts.length > 0 && (
+        {showPendingBanner && pendingConflicts.length > 0 && (
           <Alert
             icon={<WarningIcon fontSize="inherit" />}
             variant="filled"
             severity="error"
-            onClick={() => setPendingEvent(false)}
-            onClose={() => setPendingEvent(false)}
+            onClick={() => setShowPendingBanner(false)}
+            onClose={() => setShowPendingBanner(false)}
             sx={{
               cursor: 'pointer'
             }}
           >
-            You have scheduled an event at the same time and location as <i>{yourConflicts[0].title}</i>.{' '}
+            You have scheduled an event at the same time and location as <i>{pendingConflicts[0].conflictingEvent.title}</i>.{' '}
             <i>
-              {yourConflicts[0].userCreated.firstName} {yourConflicts[0].userCreated.lastName}
+              {pendingConflicts[0].conflictingEvent.userCreated.firstName}{' '}
+              {pendingConflicts[0].conflictingEvent.userCreated.lastName}
             </i>{' '}
             has been notified of this and must allow your event to take place in order to continue.
           </Alert>
         )}
-        {reviewEvent && yourReviewEvents.length > 0 && (
+        {showReviewBanner && reviewConflicts.length > 0 && (
           <Alert
             icon={<WarningIcon fontSize="inherit" sx={{ marginTop: 1 }} />}
             variant="filled"
             severity="error"
-            onClick={() => setReviewEvent(false)}
-            onClose={() => setReviewEvent(false)}
+            onClick={() => setShowReviewBanner(false)}
+            onClose={() => setShowReviewBanner(false)}
             sx={{
               cursor: 'pointer'
             }}
@@ -549,18 +462,14 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
               <Typography fontSize={14}>
                 {' '}
                 <i>
-                  {yourReviewEvents[0].userCreated.firstName} {yourReviewEvents[0].userCreated.lastName}
+                  {reviewConflicts[0].event.userCreated.firstName} {reviewConflicts[0].event.userCreated.lastName}
                 </i>{' '}
                 has scheduled an event at the same time and location as your meeting at{' '}
-                {(() => {
-                  const overlaps = getOverlapTime(conflictingReviewEvents[0], yourReviewEvents[0]);
-                  const eventTime = overlaps[0].event1Time.start.toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit'
-                  });
-                  return eventTime;
-                })()}{' '}
-                in {conflictingReviewEvents[0].location}.
+                {reviewConflicts[0].overlapStart.toLocaleTimeString('en-US', {
+                  hour: 'numeric',
+                  minute: '2-digit'
+                })}{' '}
+                in {reviewConflicts[0].conflictingEvent.location}.
               </Typography>
               <Button
                 variant="outlined"

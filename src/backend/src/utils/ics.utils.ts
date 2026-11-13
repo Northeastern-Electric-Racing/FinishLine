@@ -5,14 +5,27 @@ import ipaddr from 'ipaddr.js';
 import dayjs from 'dayjs';
 import 'dayjs/plugin/utc.js';
 import 'dayjs/plugin/timezone.js';
-import { IcsBusyInterval, Event, wbsPipe, EASTERN_TIMEZONE } from 'shared';
+import { IcsBusyInterval, BaseEvent, WorkPackageCalendarPreview, wbsPipe, EASTERN_TIMEZONE } from 'shared';
 import { HttpException } from './errors.utils.js';
 
 // availability slots are defined relative to Eastern time (see frontend design-review.utils.ts ESTOffset),
 // regardless of what timezone the server process happens to run in
 const BUSINESS_TIMEZONE = EASTERN_TIMEZONE;
 
-export const generateIcsFeed = (events: Event[]): string => {
+type IcsMember = { firstName: string; lastName: string };
+
+/** An event as the ICS feed writes it: one calendar entry per slot, with its attendees and resources in the description */
+export type IcsEvent = Pick<BaseEvent, 'eventId' | 'title' | 'description' | 'location' | 'zoomLink' | 'scheduledTimes'> & {
+  userCreated: IcsMember & { email: string };
+  requiredMembers: IcsMember[];
+  optionalMembers: IcsMember[];
+  teams: { teamName: string }[];
+  shops: { name: string }[];
+  machinery: { name: string }[];
+  workPackages: WorkPackageCalendarPreview[];
+};
+
+export const generateIcsFeed = (events: IcsEvent[]): string => {
   const cal = ical({ name: 'Northeastern Electric Racing' });
 
   for (const event of events) {

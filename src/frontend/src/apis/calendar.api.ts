@@ -6,16 +6,33 @@ import {
   EventType,
   AvailabilityCreateArgs,
   dateToMidnightUTC,
-  Event,
+  BaseEvent,
+  CalendarEvent,
+  EventDetail,
+  UpcomingEvent,
+  EventConflict,
+  GuestEventInstance,
+  UserEventAttendance,
   EventStatus,
   EventTypeCreateArgs,
   Calendar,
   FilterArgs,
-  ScheduleSlot,
-  EventInstance
+  ScheduleSlot
 } from 'shared';
-import { eventTransformer, eventWithMembersTransformer } from './transformers/calendar.transformer';
+import {
+  baseEventTransformer,
+  eventConflictTransformer,
+  guestEventInstanceTransformer
+} from './transformers/calendar.transformer';
 import { EditEventArgs, EditScheduleSlotArgs, EventCreateArgs } from '../hooks/calendar.hooks';
+
+// error responses pass through transformResponse too, so only map when the body is the expected list
+const parseList =
+  <T>(transform: (item: T) => T) =>
+  (data: string) => {
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed.map(transform) : parsed;
+  };
 
 export const getAllCalendars = () => {
   return axios.get<Calendar[]>(apiUrls.calendarCalendars(), {
@@ -55,10 +72,34 @@ export const postCreateShop = (payload: { name: string; description: string }) =
   });
 };
 
-export const postFilterEvents = (payload: FilterArgs) => {
-  return axios.post<Event[]>(apiUrls.calendarFilterEvents(), payload, {
-    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
+export const postCalendarViewEvents = (payload: FilterArgs) => {
+  return axios.post<CalendarEvent[]>(apiUrls.calendarViewEvents(), payload, {
+    transformResponse: parseList<CalendarEvent>(baseEventTransformer)
   });
+};
+
+export const getReviewBookingEvents = (startPeriod?: Date) => {
+  return axios.get<CalendarEvent[]>(apiUrls.calendarReviewBookingEvents(), {
+    params: { startPeriod },
+    transformResponse: parseList<CalendarEvent>(baseEventTransformer)
+  });
+};
+
+export const getMyUpcomingEvents = (days: number, includeTeamEvents: boolean) => {
+  return axios.get<UpcomingEvent[]>(apiUrls.calendarMyUpcomingEvents(), {
+    params: { days, includeTeamEvents },
+    transformResponse: parseList<UpcomingEvent>(baseEventTransformer)
+  });
+};
+
+export const getMyConflicts = () => {
+  return axios.get<EventConflict[]>(apiUrls.calendarMyConflicts(), {
+    transformResponse: parseList(eventConflictTransformer)
+  });
+};
+
+export const getDesignReviewAttendance = () => {
+  return axios.get<UserEventAttendance[]>(apiUrls.calendarDesignReviewAttendance());
 };
 
 export const postDeleteShop = async (id: string) => {
@@ -125,7 +166,7 @@ export const editShop = (shopId: string, payload: { name: string; description: s
 };
 
 export const markUserConfirmed = async (id: string, payload: { availability: AvailabilityCreateArgs[] }) => {
-  return axios.post<Event>(apiUrls.calendarEventMarkUserConfirmed(id), {
+  return axios.post(apiUrls.calendarEventMarkUserConfirmed(id), {
     availability: payload.availability.map((a) => ({ ...a, dateSet: dateToMidnightUTC(a.dateSet) }))
   });
 };
@@ -135,20 +176,8 @@ export const remindUnconfirmed = async (id: string) => {
 };
 
 export const getSingleEvent = async (id: string) => {
-  return axios.get(apiUrls.calendarGetSingleEvent(id), {
-    transformResponse: (data) => eventTransformer(JSON.parse(data))
-  });
-};
-
-export const getSingleEventWithMembers = async (id: string) => {
-  return axios.get(apiUrls.calendarGetSingleEventWithMembers(id), {
-    transformResponse: (data) => eventWithMembersTransformer(JSON.parse(data))
-  });
-};
-
-export const getConflictingEvent = async (id: string) => {
-  return axios.get(apiUrls.calendarGetConflictingEvent(id), {
-    transformResponse: (data) => eventTransformer(JSON.parse(data))
+  return axios.get<EventDetail>(apiUrls.calendarGetSingleEvent(id), {
+    transformResponse: (data) => baseEventTransformer(JSON.parse(data))
   });
 };
 
@@ -168,15 +197,9 @@ export const postDeleteEventType = async (eventTypeId: string) => {
   return axios.post<EventType>(apiUrls.calendarDeleteEventType(eventTypeId));
 };
 
-export const getAllEvents = () => {
-  return axios.get(apiUrls.calendarEvents(), {
-    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
-  });
-};
-
 export const getNewMemberEvents = () => {
-  return axios.get(apiUrls.calendarNewMemberEvents(), {
-    transformResponse: (data) => JSON.parse(data).map(eventTransformer)
+  return axios.get<BaseEvent[]>(apiUrls.calendarNewMemberEvents(), {
+    transformResponse: parseList<BaseEvent>(baseEventTransformer)
   });
 };
 
@@ -191,17 +214,15 @@ export const deleteEvent = async (id: string) => {
 };
 
 export const setEventStatus = async (id: string, payload: { status: EventStatus }) => {
-  return axios.post<Event>(apiUrls.calendarEventSetStatus(id), payload, {
-    transformResponse: (data) => eventTransformer(JSON.parse(data))
-  });
+  return axios.post(apiUrls.calendarEventSetStatus(id), payload);
 };
 
 export const approveEvent = async (id: string) => {
-  return axios.post<Event>(apiUrls.calendarApproveEvent(id));
+  return axios.post(apiUrls.calendarApproveEvent(id));
 };
 
 export const denyEvent = async (id: string) => {
-  return axios.post<Event>(apiUrls.calendarDenyEvent(id));
+  return axios.post(apiUrls.calendarDenyEvent(id));
 };
 
 export const postDeleteCalendar = async (id: string) => {
@@ -209,21 +230,15 @@ export const postDeleteCalendar = async (id: string) => {
 };
 
 export const postCreateEvent = async (payload: EventCreateArgs) => {
-  return axios.post<Event>(apiUrls.calendarCreateEvent(), payload, {
-    transformResponse: (data) => eventTransformer(JSON.parse(data))
-  });
+  return axios.post<{ eventId: string }>(apiUrls.calendarCreateEvent(), payload);
 };
 
 export const postEditEvent = async (eventId: string, payload: EditEventArgs) => {
-  return axios.post<Event>(apiUrls.calendarEditEvent(eventId), payload, {
-    transformResponse: (data) => eventTransformer(JSON.parse(data))
-  });
+  return axios.post(apiUrls.calendarEditEvent(eventId), payload);
 };
 
 export const postEditScheduleSlot = async (eventId: string, scheduleSlotId: string, payload: EditScheduleSlotArgs) => {
-  return axios.post<Event>(apiUrls.calendarEditScheduleSlot(eventId, scheduleSlotId), payload, {
-    transformResponse: (data) => eventTransformer(JSON.parse(data))
-  });
+  return axios.post(apiUrls.calendarEditScheduleSlot(eventId, scheduleSlotId), payload);
 };
 
 export const previewScheduleSlotRecurringEdits = async (eventId: string, scheduleSlotId: string) => {
@@ -238,13 +253,7 @@ export const previewScheduleSlotRecurringEdits = async (eventId: string, schedul
 };
 
 export const postDeleteScheduleSlot = async (eventId: string, scheduleSlotId: string) => {
-  return axios.post<Event>(
-    apiUrls.calendarDeleteScheduleSlot(eventId, scheduleSlotId),
-    {},
-    {
-      transformResponse: (data) => eventTransformer(JSON.parse(data))
-    }
-  );
+  return axios.post(apiUrls.calendarDeleteScheduleSlot(eventId, scheduleSlotId));
 };
 
 /**
@@ -278,29 +287,18 @@ export const downloadDocumentPdf = async (fileId: string): Promise<Blob> => {
  * @param payload The start and end times for the new schedule slot
  */
 export const scheduleEvent = async (eventId: string, payload: { startTime: Date; endTime: Date }) => {
-  return axios.post<Event>(apiUrls.calendarScheduleEvent(eventId), payload, {
-    transformResponse: (data) => eventTransformer(JSON.parse(data))
-  });
+  return axios.post(apiUrls.calendarScheduleEvent(eventId), payload);
 };
 
-export const getAllEventsPaginated = (futureCursor?: Date, pastCursor?: Date) => {
-  return axios.post<{
-    futureInstances: EventInstance[];
-    pastInstances: EventInstance[];
-    nextFutureCursor: Date | null;
-    nextPastCursor: Date | null;
-  }>(
-    apiUrls.calendarEventsPaginated(),
-    { futureCursor, pastCursor },
+export const getGuestEventFeed = (direction: 'future' | 'past', cursor?: string) => {
+  return axios.post<{ instances: GuestEventInstance[]; nextCursor: string | null }>(
+    apiUrls.calendarGuestEventFeed(),
+    { direction, cursor },
     {
       transformResponse: (data) => {
         const parsed = JSON.parse(data);
-        return {
-          futureInstances: parsed.futureInstances,
-          pastInstances: parsed.pastInstances,
-          nextFutureCursor: parsed.nextFutureCursor ? new Date(parsed.nextFutureCursor) : null,
-          nextPastCursor: parsed.nextPastCursor ? new Date(parsed.nextPastCursor) : null
-        };
+        if (!Array.isArray(parsed.instances)) return parsed;
+        return { instances: parsed.instances.map(guestEventInstanceTransformer), nextCursor: parsed.nextCursor };
       }
     }
   );

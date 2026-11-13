@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import {
   intMinZero,
   isDate,
@@ -216,15 +216,28 @@ calendarRouter.post(
 
 calendarRouter.post('/event/:eventId/delete', CalendarController.deleteEvent);
 
-calendarRouter.get('/event/:eventId/conflict', CalendarController.getConflictingEvent);
-
 calendarRouter.get('/event/:eventId', CalendarController.getSingleEvent);
-
-calendarRouter.get('/event-members/:eventId', CalendarController.getSingleEventWithMembers);
 
 calendarRouter.get('/events/new-member', CalendarController.getNewMemberEvents);
 
-calendarRouter.get('/events', CalendarController.getAllEvents);
+calendarRouter.get('/events/my-conflicts', CalendarController.getMyConflicts);
+
+calendarRouter.get(
+  '/events/review-bookings',
+  isDate(query('startPeriod').optional()),
+  validateInputs,
+  CalendarController.getReviewBookingEvents
+);
+
+calendarRouter.get(
+  '/events/my-upcoming',
+  query('days').isInt({ min: 1, max: 31 }),
+  query('includeTeamEvents').isBoolean(),
+  validateInputs,
+  CalendarController.getMyUpcomingEvents
+);
+
+calendarRouter.get('/events/design-review-attendance', CalendarController.getDesignReviewAttendance);
 
 calendarRouter.get('/event-types', CalendarController.getAllEventTypes);
 
@@ -286,7 +299,7 @@ calendarRouter.get('/machinery', CalendarController.getAllMachinery);
 
 // no restrictions filtering, in case multiple filters need to be sent
 calendarRouter.post(
-  '/events/filter',
+  '/events/calendar-view',
   body('memberIds').optional().isArray(),
   body('memberIds.*').optional().isString(),
   body('teamIds').optional().isArray(),
@@ -304,11 +317,17 @@ calendarRouter.post(
   isDate(body('startPeriod')),
   isDate(body('endPeriod')),
   validateInputs,
-  CalendarController.getFilteredEvents
+  CalendarController.getCalendarViewEvents
 );
 
 calendarRouter.get('/calendars', CalendarController.getAllCalendars);
-calendarRouter.post('/events-paginated', CalendarController.getAllEventsPaginated);
+calendarRouter.post(
+  '/events/guest-feed',
+  body('direction').isIn(['future', 'past']),
+  body('cursor').optional().isString(),
+  validateInputs,
+  CalendarController.getGuestEventFeed
+);
 calendarRouter.get('/ics/token', CalendarController.getOrCreateIcsToken);
 
 calendarRouter.post('/event/:eventId/remind-unconfirmed', CalendarController.remindUnconfirmed);

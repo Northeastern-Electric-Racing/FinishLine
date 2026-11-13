@@ -5,14 +5,18 @@ import {
   Calendar,
   AvailabilityCreateArgs,
   EventTypeCreateArgs,
-  Event,
+  BaseEvent,
+  CalendarEvent,
+  EventDetail,
+  UpcomingEvent,
+  EventConflict,
+  GuestEventInstance,
+  UserEventAttendance,
   EventStatus,
   EventType,
   FilterArgs,
   ScheduleSlotCreateArgs,
-  EventWithMembers,
   ScheduleSlot,
-  EventInstance,
   SlackMentionType
 } from 'shared';
 import {
@@ -34,25 +38,26 @@ import {
   postDeleteEventType,
   markUserConfirmed,
   getSingleEvent,
-  getAllEvents,
   getNewMemberEvents,
+  getReviewBookingEvents,
+  getMyUpcomingEvents,
+  getMyConflicts,
+  getDesignReviewAttendance,
   deleteEvent,
   setEventStatus,
   getAllEventTypes,
-  postFilterEvents,
+  postCalendarViewEvents,
   approveEvent,
   denyEvent,
-  getConflictingEvent,
   postCreateEvent,
   uploadSingleDocument,
   downloadDocumentPdf,
   postEditEvent,
   postEditScheduleSlot,
-  getSingleEventWithMembers,
   previewScheduleSlotRecurringEdits,
   postDeleteScheduleSlot,
   scheduleEvent,
-  getAllEventsPaginated,
+  getGuestEventFeed,
   getIcsToken,
   remindUnconfirmed
 } from '../apis/calendar.api';
@@ -117,7 +122,7 @@ export interface DownloadDocumentsFormInput {
   fileIds: string[];
   startDate: Date;
   endDate: Date;
-  event: Event;
+  event: BaseEvent;
 }
 
 export const useAllCalendars = () =>
@@ -331,11 +336,10 @@ export const useDeleteEventType = () => {
 export const useMarkUserConfirmed = (id: string) => {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
-  return useMutation<Event, Error, { availability: AvailabilityCreateArgs[] }>(
+  return useMutation<void, Error, { availability: AvailabilityCreateArgs[] }>(
     ['events', 'mark-confirmed'],
     async (eventPayload: { availability: AvailabilityCreateArgs[] }) => {
-      const { data } = await markUserConfirmed(id, eventPayload);
-      return data;
+      await markUserConfirmed(id, eventPayload);
     },
     {
       onSuccess: () => {
@@ -379,7 +383,7 @@ export const useDeleteCalendar = () => {
 };
 
 export const useSingleEvent = (id?: string) => {
-  return useQuery<Event, Error>(
+  return useQuery<EventDetail, Error>(
     ['events', id],
     async () => {
       const { data } = await getSingleEvent(id!);
@@ -389,52 +393,69 @@ export const useSingleEvent = (id?: string) => {
   );
 };
 
-export const useSingleEventWithMembers = (id?: string) => {
-  return useQuery<EventWithMembers, Error>(
-    ['events', id, 'with-members'],
-    async () => {
-      const { data } = await getSingleEventWithMembers(id!);
-      return data;
-    },
-    { enabled: !!id }
-  );
-};
-
-export const useConflictingEvents = (ids: string[]) => {
-  return useQuery<Event[], Error>(['events', 'conflicting', ids], async () => {
-    const results = await Promise.all(
-      ids.map(async (id) => {
-        const { data } = await getConflictingEvent(id);
-        return data;
-      })
-    );
-    return results;
+/**
+ * The current user's events that conflict with another: their own pending or denied ones, and those waiting on their
+ * approval. Kept under 'filter-events' so approving, denying, and editing events refresh it
+ */
+export const useMyConflicts = () => {
+  return useQuery<EventConflict[], Error>(['filter-events', 'my-conflicts'], async () => {
+    const { data } = await getMyConflicts();
+    return data;
   });
 };
 
-export const useAllEvents = () => {
-  return useQuery<Event[], Error>(EVENT_KEY, async () => {
-    const { data } = await getAllEvents();
+/**
+ * Events waiting on a conflict review, for the Review Bookings table
+ *
+ * @param startPeriod when given, only events happening on or after it
+ */
+export const useReviewBookingEvents = (startPeriod?: Date, enabled: boolean = true) => {
+  return useQuery<CalendarEvent[], Error>(
+    ['filter-events', 'reviews', startPeriod?.toISOString()],
+    async () => {
+      const { data } = await getReviewBookingEvents(startPeriod);
+      return data;
+    },
+    { enabled }
+  );
+};
+
+/**
+ * The current user's events in the next `days` days, with only their upcoming slots
+ *
+ * @param includeTeamEvents whether to include events the user is only on through one of their teams
+ */
+export const useMyUpcomingEvents = (days: number, includeTeamEvents: boolean) => {
+  return useQuery<UpcomingEvent[], Error>(['events', 'upcoming', days, includeTeamEvents], async () => {
+    const { data } = await getMyUpcomingEvents(days, includeTeamEvents);
+    return data;
+  });
+};
+
+export const useDesignReviewAttendance = () => {
+  return useQuery<UserEventAttendance[], Error>(['events', 'attendance'], async () => {
+    const { data } = await getDesignReviewAttendance();
     return data;
   });
 };
 
 export const useNewMemberEvents = () => {
-  return useQuery<Event[], Error>(['events', 'new-member'], async () => {
+  return useQuery<BaseEvent[], Error>(['events', 'new-member'], async () => {
     const { data } = await getNewMemberEvents();
     return data;
   });
 };
 
-export const useFilterEvents = (filterArgs: FilterArgs) => {
-  return useQuery<Event[], Error>(
+export const useCalendarViewEvents = (filterArgs: FilterArgs, enabled: boolean = true) => {
+  return useQuery<CalendarEvent[], Error>(
     ['filter-events', filterArgs],
     async () => {
-      const { data } = await postFilterEvents(filterArgs);
+      const { data } = await postCalendarViewEvents(filterArgs);
       return data;
     },
     {
-      keepPreviousData: true
+      keepPreviousData: true,
+      enabled
     }
   );
 };
@@ -448,11 +469,10 @@ export const useAllEventTypes = () => {
 
 export const useDeleteEvent = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Event, Error>(
+  return useMutation<void, Error>(
     ['events', 'delete'],
     async () => {
-      const { data } = await deleteEvent(id);
-      return data;
+      await deleteEvent(id);
     },
     {
       onSuccess: () => {
@@ -465,11 +485,10 @@ export const useDeleteEvent = (id: string) => {
 
 export const useSetEventStatus = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Event, Error, { status: EventStatus }>(
+  return useMutation<void, Error, { status: EventStatus }>(
     ['events', id],
     async (payload: { status: EventStatus }) => {
-      const { data } = await setEventStatus(id, payload);
-      return data;
+      await setEventStatus(id, payload);
     },
     {
       onSuccess: () => {
@@ -481,7 +500,7 @@ export const useSetEventStatus = (id: string) => {
 
 export const useCreateEvent = () => {
   const qc = useQueryClient();
-  return useMutation<Event, Error, EventCreateArgs>(
+  return useMutation<{ eventId: string }, Error, EventCreateArgs>(
     async (payload) => {
       const { data } = await postCreateEvent(payload);
       return data;
@@ -497,11 +516,10 @@ export const useCreateEvent = () => {
 
 export const useApproveEvent = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Event, Error>(
+  return useMutation<void, Error>(
     ['events', id],
     async () => {
-      const { data } = await approveEvent(id);
-      return data;
+      await approveEvent(id);
     },
     {
       onSuccess: () => {
@@ -514,11 +532,10 @@ export const useApproveEvent = (id: string) => {
 
 export const useEditEvent = (eventId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Event, Error, EditEventArgs>(
+  return useMutation<void, Error, EditEventArgs>(
     ['events', 'edit', eventId],
     async (payload) => {
-      const { data } = await postEditEvent(eventId, payload);
-      return data;
+      await postEditEvent(eventId, payload);
     },
     {
       onSuccess: () => {
@@ -531,11 +548,10 @@ export const useEditEvent = (eventId: string) => {
 
 export const useEditScheduleSlot = (eventId: string, scheduleSlotId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Event, Error, EditScheduleSlotArgs>(
+  return useMutation<void, Error, EditScheduleSlotArgs>(
     ['events', 'edit-schedule-slot', eventId, scheduleSlotId],
     async (payload) => {
-      const { data } = await postEditScheduleSlot(eventId, scheduleSlotId, payload);
-      return data;
+      await postEditScheduleSlot(eventId, scheduleSlotId, payload);
     },
     {
       onSuccess: () => {
@@ -570,11 +586,10 @@ export const usePreviewScheduleSlotRecurringEdits = (eventId: string, scheduleSl
  */
 export const useDeleteScheduleSlot = (eventId: string, scheduleSlotId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Event, Error>(
+  return useMutation<void, Error>(
     ['events', 'delete-schedule-slot', eventId, scheduleSlotId],
     async () => {
-      const { data } = await postDeleteScheduleSlot(eventId, scheduleSlotId);
-      return data;
+      await postDeleteScheduleSlot(eventId, scheduleSlotId);
     },
     {
       onSuccess: () => {
@@ -588,11 +603,10 @@ export const useDeleteScheduleSlot = (eventId: string, scheduleSlotId: string) =
 
 export const useDenyEvent = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Event, Error>(
+  return useMutation<void, Error>(
     ['events', id],
     async () => {
-      const { data } = await denyEvent(id);
-      return data;
+      await denyEvent(id);
     },
     {
       onSuccess: () => {
@@ -609,11 +623,10 @@ export const useDenyEvent = (id: string) => {
  */
 export const useScheduleEvent = (eventId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Event, Error, { startTime: Date; endTime: Date }>(
+  return useMutation<void, Error, { startTime: Date; endTime: Date }>(
     ['events', 'schedule', eventId],
     async (payload) => {
-      const { data } = await scheduleEvent(eventId, payload);
-      return data;
+      await scheduleEvent(eventId, payload);
     },
     {
       onSuccess: () => {
@@ -630,11 +643,10 @@ export const useScheduleEvent = (eventId: string) => {
  * Custom React Hook to upload a new document.
  */
 export const useUploadSingleDocument = () => {
-  return useMutation<{ googleFileId: string; name: string }, Error, { file: File; id: string }>(
+  return useMutation<void, Error, { file: File; id: string }>(
     ['events', 'upload', 'single'],
     async (formData: { file: File; id: string }) => {
-      const { data } = await uploadSingleDocument(formData.file, formData.id);
-      return data;
+      await uploadSingleDocument(formData.file, formData.id);
     }
   );
 };
@@ -645,14 +657,12 @@ export const useUploadSingleDocument = () => {
  * @returns The created document information
  */
 export const useUploadManyDocuments = () => {
-  return useMutation<{ googleFileId: string; name: string }[], Error, { files: File[]; id: string }>(
+  return useMutation<void, Error, { files: File[]; id: string }>(
     ['events', 'upload', 'many'],
     async (formData: { files: File[]; id: string }) => {
-      const results = [];
       for (const file of formData.files) {
-        results.push(await uploadSingleDocument(file, formData.id));
+        await uploadSingleDocument(file, formData.id);
       }
-      return results.map((result) => result.data);
     }
   );
 };
@@ -703,27 +713,20 @@ export const combinePdfsAndDownload = async (blobData: Blob[], filename: string)
   saveAs(pdfBlob, filename);
 };
 
-export const useFutureEventsPaginated = () => {
-  return useInfiniteQuery<{ futureInstances: EventInstance[]; nextFutureCursor: Date | null }, Error>(
-    ['events', 'future', 'paginated'],
-    async ({ pageParam }: { pageParam?: Date }) => {
-      const { data } = await getAllEventsPaginated(pageParam, undefined);
-      return { futureInstances: data.futureInstances, nextFutureCursor: data.nextFutureCursor };
+const useGuestEventFeed = (direction: 'future' | 'past') => {
+  return useInfiniteQuery<{ instances: GuestEventInstance[]; nextCursor: string | null }, Error>(
+    ['events', 'guest-feed', direction],
+    async ({ pageParam }: { pageParam?: string }) => {
+      const { data } = await getGuestEventFeed(direction, pageParam);
+      return data;
     },
-    { getNextPageParam: (lastPage) => lastPage.nextFutureCursor ?? undefined }
+    { getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined }
   );
 };
 
-export const usePastEventsPaginated = () => {
-  return useInfiniteQuery<{ pastInstances: EventInstance[]; nextPastCursor: Date | null }, Error>(
-    ['events', 'past', 'paginated'],
-    async ({ pageParam }: { pageParam?: Date }) => {
-      const { data } = await getAllEventsPaginated(undefined, pageParam);
-      return { pastInstances: data.pastInstances, nextPastCursor: data.nextPastCursor };
-    },
-    { getNextPageParam: (lastPage) => lastPage.nextPastCursor ?? undefined }
-  );
-};
+export const useFutureGuestEventFeed = () => useGuestEventFeed('future');
+
+export const usePastGuestEventFeed = () => useGuestEventFeed('past');
 
 export const useGetIcsToken = () =>
   useQuery<{ icsToken: string; organizationId: string }, Error>(['icsToken'], async () => {
