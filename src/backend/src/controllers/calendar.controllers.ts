@@ -152,6 +152,7 @@ export default class CalendarController {
         isNewMemberCalendar,
         req.organization
       );
+      broadcastBayDashboardUpdate(req.organization.slug);
 
       res.status(200).json(calendar);
     } catch (error: unknown) {
@@ -173,6 +174,7 @@ export default class CalendarController {
         isNewMemberCalendar,
         req.organization
       );
+      broadcastBayDashboardUpdate(req.organization.slug);
 
       broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(updatedCalendar);
@@ -262,6 +264,7 @@ export default class CalendarController {
       const { eventTypeId } = req.params as Record<string, string>;
 
       const deletedEventType = await CalendarService.deleteEventType(req.currentUser, eventTypeId, req.organization);
+      broadcastBayDashboardUpdate(req.organization.slug);
 
       broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(deletedEventType);
@@ -471,6 +474,7 @@ export default class CalendarController {
       const { eventId } = req.params as Record<string, string>;
 
       const event = await CalendarService.approveEvent(req.currentUser, eventId, req.organization);
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(event);
     } catch (error: unknown) {
       next(error);
@@ -482,6 +486,7 @@ export default class CalendarController {
       const { eventId } = req.params as Record<string, string>;
 
       const event = await CalendarService.denyEvent(req.currentUser, eventId, req.organization);
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(event);
     } catch (error: unknown) {
       next(error);
@@ -496,6 +501,7 @@ export default class CalendarController {
       const user = await getCurrentUserWithUserSettings(res);
 
       const updatedEvent = await CalendarService.markUserConfirmed(eventId, availability, user, req.organization);
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(updatedEvent);
     } catch (error: unknown) {
       next(error);
@@ -560,6 +566,7 @@ export default class CalendarController {
       const { eventId } = req.params as Record<string, string>;
 
       const event = await CalendarService.deleteEvent(req.currentUser, eventId, req.organization);
+      broadcastBayDashboardUpdate(req.organization.slug);
 
       broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(event);

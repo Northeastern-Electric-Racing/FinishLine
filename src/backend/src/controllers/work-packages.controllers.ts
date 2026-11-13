@@ -6,9 +6,11 @@ import {
   WbsNumber,
   WorkPackageCard,
   WorkPackageDetail,
-  WorkPackageSelection
+  WorkPackageSelection,
+  wbsPipe
 } from 'shared';
 import WorkPackagesService from '../services/work-packages.services.js';
+import { broadcastBayDashboardUpdate } from '../utils/bay-dashboard-events.utils.js';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {
@@ -94,6 +96,7 @@ export default class WorkPackagesController {
         projectWbsNum,
         req.organization
       );
+      broadcastBayDashboardUpdate(req.organization.slug);
 
       res.status(200).json(workPackage);
     } catch (error: unknown) {
@@ -123,7 +126,9 @@ export default class WorkPackagesController {
         managerId,
         req.organization
       );
-      res.sendStatus(204);
+      broadcastBayDashboardUpdate(req.organization.slug);
+
+      res.status(200).json({ message: 'Work package updated successfully' });
     } catch (error: unknown) {
       next(error);
     }
@@ -135,7 +140,9 @@ export default class WorkPackagesController {
       const wbsNum = validateWBS(req.params.wbsNum as string);
 
       await WorkPackagesService.deleteWorkPackage(req.currentUser, wbsNum, req.organization);
-      res.sendStatus(204);
+      broadcastBayDashboardUpdate(req.organization.slug);
+
+      res.status(200).json({ message: `Successfully deleted work package #${wbsPipe(wbsNum)}` });
     } catch (error: unknown) {
       next(error);
     }
