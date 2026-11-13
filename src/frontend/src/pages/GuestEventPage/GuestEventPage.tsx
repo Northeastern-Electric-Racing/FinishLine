@@ -7,11 +7,11 @@ import TodayIcon from '@mui/icons-material/Today';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import GuestEventCard from './GuestEventCard';
-import { EventInstance, formatEventDate } from 'shared';
+import { GuestEventInstance, formatEventDate } from 'shared';
 import { useFutureEventsPaginated, usePastEventsPaginated } from '../../hooks/calendar.hooks';
 
-const groupInstancesByDate = (instances: EventInstance[]): [string, EventInstance[]][] => {
-  const groups = new Map<string, { date: Date; instances: EventInstance[] }>();
+const groupInstancesByDate = (instances: GuestEventInstance[]): [string, GuestEventInstance[]][] => {
+  const groups = new Map<string, { date: Date; instances: GuestEventInstance[] }>();
   for (const instance of instances) {
     const date = new Date(instance.startTime);
     const key = formatEventDate(date);
@@ -25,7 +25,7 @@ const groupInstancesByDate = (instances: EventInstance[]): [string, EventInstanc
 
 interface DateGroupProps {
   date: string;
-  instances: EventInstance[];
+  instances: GuestEventInstance[];
 }
 
 const DateGroup: React.FC<DateGroupProps> = ({ date, instances }) => {
@@ -83,8 +83,8 @@ const GuestEventPage: React.FC = () => {
     isFetchingNextPage: isFetchingNextPast
   } = usePastEventsPaginated();
 
-  const futureInstances = useMemo(() => futureData?.pages.flatMap((p) => p.futureInstances) ?? [], [futureData]);
-  const pastInstances = useMemo(() => pastData?.pages.flatMap((p) => p.pastInstances) ?? [], [pastData]);
+  const futureInstances = useMemo(() => futureData?.pages.flatMap((p) => p.instances) ?? [], [futureData]);
+  const pastInstances = useMemo(() => pastData?.pages.flatMap((p) => p.instances) ?? [], [pastData]);
 
   if (futureIsError) return <ErrorPage message={futureError!.message} />;
   if (pastIsError) return <ErrorPage message={pastError!.message} />;

@@ -520,8 +520,11 @@ const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
 /**************** Calendar Endpoints ****************/
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
-const calendarEvents = () => `${calendar()}/events`;
 const calendarNewMemberEvents = () => `${calendar()}/events/new-member`;
+const calendarMyConflicts = () => `${calendar()}/events/my-conflicts`;
+const calendarReviewEvents = () => `${calendar()}/events/reviews`;
+const calendarUpcomingEvents = () => `${calendar()}/events/upcoming`;
+const calendarEventAttendance = () => `${calendar()}/events/attendance`;
 const calendarEventsPaginated = () => `${calendar()}/events-paginated`;
 const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
@@ -543,8 +546,6 @@ const calendarDeleteEventType = (eventTypeId: string) => `${calendar()}/event-ty
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
 const calendarEventRemindUnconfirmed = (id: string) => `${calendar()}/event/${id}/remind-unconfirmed`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
-const calendarGetSingleEventWithMembers = (id: string) => `${calendar()}/event-members/${id}`;
-const calendarGetConflictingEvent = (id: string) => `${calendar()}/event/${id}/conflict`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
 const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
 const calendarApproveEvent = (id: string) => `${calendar()}/event/${id}/approve`;
@@ -991,10 +992,11 @@ export const apiUrls = {
   calendarEventMarkUserConfirmed,
   calendarEventRemindUnconfirmed,
   calendarGetSingleEvent,
-  calendarGetSingleEventWithMembers,
-  calendarGetConflictingEvent,
-  calendarEvents,
   calendarNewMemberEvents,
+  calendarMyConflicts,
+  calendarReviewEvents,
+  calendarUpcomingEvents,
+  calendarEventAttendance,
   calendarEventsPaginated,
   calendarEventTypes,
   calendarDeleteEvent,

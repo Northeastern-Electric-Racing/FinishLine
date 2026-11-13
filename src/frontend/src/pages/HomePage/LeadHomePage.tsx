@@ -76,7 +76,7 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
               overflow: 'hidden'
             }}
           >
-            <UpcomingDesignReviews user={user} />
+            <UpcomingDesignReviews />
           </Grid>
         </Grid>
       </Box>

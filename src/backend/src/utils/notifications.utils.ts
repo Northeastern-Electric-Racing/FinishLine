@@ -46,7 +46,7 @@ export const usersToSlackPings = (users: UserWithSettings[]) => {
   return users.map(userToSlackPing).join(' ');
 };
 
-export const userToSlackPing = (user: UserWithSettings) => {
+export const userToSlackPing = (user: { userSettings: { slackId: string } | null }) => {
   return `<@${user.userSettings?.slackId}>`;
 };
 

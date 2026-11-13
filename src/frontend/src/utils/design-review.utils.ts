@@ -1,4 +1,4 @@
-import { Event, EventStatus } from 'shared';
+import { BaseEvent, EventStatus } from 'shared';
 
 export const enumToArray = (en: { [key: number]: string | number }) => {
   return Object.keys(en).filter((value: string) => isNaN(Number(value)) === true);
@@ -164,7 +164,7 @@ export const getWeekDateRange = (selectedDate: Date) => {
   return [startDate, endDate];
 };
 
-export const isConfirmed = (event: Event): boolean => {
+export const isConfirmed = (event: Pick<BaseEvent, 'status'>): boolean => {
   return (
     event.status === EventStatus.CONFIRMED || event.status === EventStatus.SCHEDULED || event.status === EventStatus.DONE
   );

@@ -1,4 +1,4 @@
-import { ConflictStatus, DayOfWeek, Event, EventInstance, EventStatus } from 'shared';
+import { BaseEvent, ConflictStatus, DayOfWeek, EventDetail, EventStatus, ScheduleSlot } from 'shared';
 import { EventFormValues } from '../pages/CalendarPage/Components/EventModal';
 
 /**
@@ -11,7 +11,20 @@ export const getSundayOfWeek = (date: Date): Date => {
   return d;
 };
 
-export const getPendingReason = (event: EventInstance): string | null => {
+/** One slot of an event model, the way the calendar views render events */
+export type EventInstance<T extends BaseEvent> = Omit<T, 'scheduledTimes'> &
+  ScheduleSlot & {
+    recurring: boolean;
+    totalScheduledSlots: number;
+  };
+
+/** What the calendar views know about a clicked slot before its details load */
+export type EventSlotTarget = Pick<
+  EventInstance<BaseEvent>,
+  'eventId' | 'title' | 'scheduleSlotId' | 'startTime' | 'endTime' | 'allDay' | 'recurring' | 'totalScheduledSlots'
+>;
+
+export const getPendingReason = (event: Pick<BaseEvent, 'approved' | 'status'>): string | null => {
   if (event.approved === ConflictStatus.PENDING) {
     return 'This event has a scheduling conflict and requires approval.';
   } else if (event.approved === ConflictStatus.DENIED) {
@@ -105,7 +118,7 @@ export const convertDayToDayShorthand = (day: DayOfWeek) => {
 // Get a list of dates for user viewing purposes (formatted to their timezone, with date and start/end time)
 // After the recurring events refactor, each schedule slot contains the actual date/time
 // Should be used when events need to be populated/displayed
-export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
+export const getMeetingDates = (event: Pick<BaseEvent, 'scheduledTimes'>, startTimes: boolean = true) => {
   const times: Date[] = [];
 
   event.scheduledTimes.forEach((schedule) => {
@@ -124,37 +137,12 @@ export const getMeetingDates = (event: Event, startTimes: boolean = true) => {
   return times;
 };
 
-// check when two events overlap, returning the start and end time for both events that overlap
-export const getOverlapTime = (event1: Event, event2: Event) => {
-  const starts1 = getMeetingDates(event1, true);
-  const ends1 = getMeetingDates(event1, false);
-  const starts2 = getMeetingDates(event2, true);
-  const ends2 = getMeetingDates(event2, false);
+// the event's total slot count: models that only return the slots in view also send the full count
+const totalSlotsOf = (event: BaseEvent & { numScheduledSlots?: number }) =>
+  event.numScheduledSlots ?? event.scheduledTimes.length;
 
-  const overlaps: { event1Time: { start: Date; end: Date }; event2Time: { start: Date; end: Date } }[] = [];
-
-  for (let i = 0; i < starts1.length; i++) {
-    const start1 = starts1[i];
-    const end1 = ends1[i];
-
-    for (let j = 0; j < starts2.length; j++) {
-      const start2 = starts2[j];
-      const end2 = ends2[j];
-
-      if (start1 < end2 && end1 > start2) {
-        overlaps.push({
-          event1Time: { start: start1, end: end1 },
-          event2Time: { start: start2, end: end2 }
-        });
-      }
-    }
-  }
-
-  return overlaps;
-};
-
-export const eventsToEventInstances = (events: Event[]): EventInstance[] => {
-  return events.flatMap((event) => {
+export const eventsToEventInstances = <T extends BaseEvent>(events: T[]): EventInstance<T>[] => {
+  return events.flatMap((event): EventInstance<T>[] => {
     if (event.scheduledTimes.length === 0 && event.initialDateScheduled) {
       // unscheduled design review, include slot with start and end time as initialDateScheduled
       return [
@@ -172,8 +160,8 @@ export const eventsToEventInstances = (events: Event[]): EventInstance[] => {
     return event.scheduledTimes.map((scheduledTime) => ({
       ...event,
       ...scheduledTime,
-      recurring: event.scheduledTimes.length > 1,
-      totalScheduledSlots: event.scheduledTimes.length
+      recurring: totalSlotsOf(event) > 1,
+      totalScheduledSlots: totalSlotsOf(event)
     }));
   });
 };
@@ -181,7 +169,7 @@ export const eventsToEventInstances = (events: Event[]): EventInstance[] => {
 // converts events to event instances, but only the next event instance for each event
 // If an event has no times in the future it will not be included in the result
 // if an event has multiple times in the future it will only include the next schedule slot
-export const eventsToNextEventInstance = (events: Event[]): EventInstance[] => {
+export const eventsToNextEventInstance = <T extends BaseEvent>(events: T[]): EventInstance<T>[] => {
   const now = new Date();
 
   const eventsWithSlotInFuture = events.filter((event) => {
@@ -206,9 +194,9 @@ export const eventsToNextEventInstance = (events: Event[]): EventInstance[] => {
 // Note: Because users can only edit a single instaces time, editModal is always populated with an event instance
 // representing a single occurrence of the event. However, event edits will effect the entire series for all values
 // except for the schedule slot (date/time), and users are prompted if they want the time effects to propogate to other schedule slots
-export const convertEventToFormValues = (event: EventInstance): Partial<EventFormValues> => {
+export const convertEventToFormValues = (event: EventDetail, slot: ScheduleSlot): Partial<EventFormValues> => {
   // For edit mode, use the actual scheduled date of this occurrence, not initialDateScheduled
-  const scheduleDate = event.startTime ? new Date(event.startTime) : undefined;
+  const scheduleDate = slot.startTime ? new Date(slot.startTime) : undefined;
 
   return {
     title: event.title,
@@ -230,13 +218,13 @@ export const convertEventToFormValues = (event: EventInstance): Partial<EventFor
     description: event.description,
     notificationChannelIds: event.notificationChannelIds,
     scheduleDate,
-    startTime: event.startTime ? new Date(event.startTime) : undefined,
-    endTime: event.endTime ? new Date(event.endTime) : undefined,
-    allDay: event.allDay ?? false,
+    startTime: slot.startTime ? new Date(slot.startTime) : undefined,
+    endTime: slot.endTime ? new Date(slot.endTime) : undefined,
+    allDay: slot.allDay ?? false,
     // Set recurrence to 0 since we've already expanded the schedule
     recurrenceNumber: 0,
     // No days since this is now a single occurrence
     days: [],
-    selectedScheduleSlotId: event.scheduleSlotId
+    selectedScheduleSlotId: slot.scheduleSlotId
   };
 };

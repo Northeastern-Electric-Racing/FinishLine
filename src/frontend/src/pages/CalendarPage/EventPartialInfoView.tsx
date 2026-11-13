@@ -1,6 +1,6 @@
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { Calendar, EventInstance, EventType, formatEventTime } from 'shared';
+import { Calendar, CalendarEventInstance, EventType, formatEventTime } from 'shared';
 import GroupIcon from '@mui/icons-material/Group';
 import { Stack } from '@mui/system';
 import { getTeamTypeIcon } from './CalendarDayCard';
@@ -9,7 +9,7 @@ import { Typography } from '@mui/material';
 import { getMutedColor } from '../../utils/calendar.utils';
 
 interface EventInfoProps {
-  event: EventInstance;
+  event: CalendarEventInstance;
   eventTypes?: EventType[];
   calendars?: Calendar[];
   onClick: () => void;
@@ -106,8 +106,8 @@ const EventPartialInfoView: React.FC<EventInfoProps> = ({ event, eventTypes, cal
         <Stack direction="row" sx={{ minWidth: 150, flexShrink: 0 }}>
           <GroupIcon />
           <Typography marginX={0.5} marginY={0.5} lineHeight={'120%'} fontSize={12} fontWeight="bold" align="left">
-            {event.requiredMembers[0]
-              ? `${event.requiredMembers[0].firstName} ${event.requiredMembers[0].lastName}...`
+            {event.firstRequiredMember
+              ? `${event.firstRequiredMember.firstName} ${event.firstRequiredMember.lastName}...`
               : 'N/A '}
           </Typography>
         </Stack>

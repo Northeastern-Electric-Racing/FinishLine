@@ -1,16 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, Box, Button, IconButton, Link, Popover, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import {
-  Calendar,
-  DayOfWeek,
-  EventInstance,
-  EventStatus,
-  EventType,
-  formatEventTime,
-  isAdmin,
-  isHead,
-  wbsPipe
-} from 'shared';
+import { Calendar, DayOfWeek, EventDetail, EventStatus, EventType, formatEventTime, isAdmin, isHead, wbsPipe } from 'shared';
 import { apiUrls } from '../../utils/urls';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { Link as RouterLink } from 'react-router-dom';
@@ -41,14 +31,16 @@ import {
   useDeleteEvent,
   useDeleteScheduleSlot,
   useDenyEvent,
-  useGetIcsToken
+  useGetIcsToken,
+  useSingleEvent
 } from '../../hooks/calendar.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import EditEventModal from './Components/EditEventModal';
 import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmationModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import NERDeleteModal from '../../components/NERDeleteModal';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import { getPendingReason } from '../../utils/calendar.utils';
+import { EventInstance, EventSlotTarget, getPendingReason } from '../../utils/calendar.utils';
 
 export const getStatusIcon = (status: string, isLarge?: boolean) => {
   const statusIcons: Map<string, JSX.Element> = new Map([
@@ -75,16 +67,21 @@ const stopClick: React.MouseEventHandler<HTMLElement> = (e) => {
 };
 
 interface EventClickContentProps {
-  event: EventInstance;
+  event: EventSlotTarget;
   eventTypes: EventType[];
   calendars: Calendar[];
   dayOfWeek?: DayOfWeek;
   disable: boolean;
   addApprovalButtons: boolean;
   onClose: () => void;
-  onEdit: (event: EventInstance) => void;
-  onDelete: (event: EventInstance) => void;
+  onEdit: (event: EventSlotTarget) => void;
+  onDelete: (event: EventSlotTarget) => void;
   clickedDate?: Date;
+}
+
+interface EventClickDetailsProps extends Omit<EventClickContentProps, 'event'> {
+  event: EventInstance<EventDetail>;
+  target: EventSlotTarget;
 }
 
 const joinPeople = (members: { firstName: string; lastName: string }[]) =>
@@ -95,8 +92,38 @@ const hasValue = (v?: string | null) => {
   return s.length > 0 && s.toLowerCase() !== 'n/a';
 };
 
-export const EventClickContent: React.FC<EventClickContentProps> = ({
+/**
+ * The popup body for a clicked slot. The calendar lists only carry what they render, so the event's members, resources,
+ * and links load here when the popup opens
+ */
+export const EventClickContent: React.FC<EventClickContentProps> = ({ event: target, ...props }) => {
+  const theme = useTheme();
+  const { data: detail, isError, error } = useSingleEvent(target.eventId);
+
+  if (!detail) {
+    return (
+      <Box sx={{ bgcolor: theme.palette.grey[900], color: theme.palette.common.white, borderRadius: 2, px: 2, py: 1.5 }}>
+        {isError ? <Typography variant="body2">{error?.message}</Typography> : <LoadingIndicator />}
+      </Box>
+    );
+  }
+
+  const event: EventInstance<EventDetail> = {
+    ...detail,
+    scheduleSlotId: target.scheduleSlotId,
+    startTime: target.startTime,
+    endTime: target.endTime,
+    allDay: target.allDay,
+    recurring: target.recurring,
+    totalScheduledSlots: target.totalScheduledSlots
+  };
+
+  return <EventClickDetails event={event} target={target} {...props} />;
+};
+
+const EventClickDetails: React.FC<EventClickDetailsProps> = ({
   event,
+  target,
   eventTypes,
   calendars,
   dayOfWeek,
@@ -160,7 +187,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
 
   const { data: tokenData } = useGetIcsToken();
 
-  const handleExport = (event: EventInstance) => {
+  const handleExport = (event: EventInstance<EventDetail>) => {
     if (!tokenData) return;
     const feedUrl = apiUrls.icsFeed(tokenData.icsToken, tokenData.organizationId, [], [event.eventId]);
     navigator.clipboard.writeText(feedUrl);
@@ -241,7 +268,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
                   size="small"
                   onClick={(e) => {
                     stopClick(e);
-                    onEdit(event);
+                    onEdit(target);
                   }}
                   sx={{
                     color: theme.palette.grey[500],
@@ -259,7 +286,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
                   size="small"
                   onClick={(e) => {
                     stopClick(e);
-                    onDelete(event);
+                    onDelete(target);
                   }}
                   sx={{
                     color: theme.palette.grey[500],
@@ -586,7 +613,7 @@ export const EventClickContent: React.FC<EventClickContentProps> = ({
 };
 
 export interface EventClickPopupProps {
-  clickedEvent?: EventInstance;
+  clickedEvent?: EventSlotTarget;
   anchorPosition?: { top: number; left: number };
   onClose: () => void;
   eventTypes: EventType[];
@@ -618,7 +645,7 @@ export const EventClickPopup: React.FC<EventClickPopupProps> = ({
     clickedEvent?.scheduleSlotId ?? ''
   );
 
-  const handleEdit = (_event: EventInstance) => {
+  const handleEdit = (_event: EventSlotTarget) => {
     setShowEditModal(true);
   };
 

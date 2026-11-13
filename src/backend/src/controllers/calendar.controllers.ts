@@ -356,7 +356,7 @@ export default class CalendarController {
         description
       } = req.body;
 
-      const event = await CalendarService.editEvent(
+      await CalendarService.editEvent(
         req.currentUser,
         eventId,
         title,
@@ -376,7 +376,7 @@ export default class CalendarController {
         zoomLink,
         description
       );
-      res.status(200).json(event);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -387,7 +387,7 @@ export default class CalendarController {
       const { scheduleSlotId } = req.params as Record<string, string>;
       const { startTime, endTime, allDay, editAllInSeries } = req.body;
 
-      const event = await CalendarService.editScheduleSlot(
+      await CalendarService.editScheduleSlot(
         req.currentUser,
         scheduleSlotId,
         new Date(startTime),
@@ -396,7 +396,7 @@ export default class CalendarController {
         editAllInSeries ?? false,
         req.organization
       );
-      res.status(200).json(event);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -421,8 +421,8 @@ export default class CalendarController {
     try {
       const { scheduleSlotId } = req.params as Record<string, string>;
 
-      const event = await CalendarService.deleteScheduleSlot(req.currentUser, scheduleSlotId, req.organization);
-      res.status(200).json(event);
+      await CalendarService.deleteScheduleSlot(req.currentUser, scheduleSlotId, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -432,9 +432,9 @@ export default class CalendarController {
     try {
       const { file } = req;
       const { eventId } = req.params as Record<string, string>;
-      const document = await CalendarService.uploadDocument(eventId, file!, req.currentUser, req.organization);
+      await CalendarService.uploadDocument(eventId, file!, req.currentUser, req.organization);
 
-      res.status(200).json(document);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -461,8 +461,8 @@ export default class CalendarController {
     try {
       const { eventId } = req.params as Record<string, string>;
 
-      const event = await CalendarService.approveEvent(req.currentUser, eventId, req.organization);
-      res.status(200).json(event);
+      await CalendarService.approveEvent(req.currentUser, eventId, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -472,8 +472,8 @@ export default class CalendarController {
     try {
       const { eventId } = req.params as Record<string, string>;
 
-      const event = await CalendarService.denyEvent(req.currentUser, eventId, req.organization);
-      res.status(200).json(event);
+      await CalendarService.denyEvent(req.currentUser, eventId, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -486,8 +486,8 @@ export default class CalendarController {
       const { eventId } = req.params as Record<string, string>;
       const user = await getCurrentUserWithUserSettings(res);
 
-      const updatedEvent = await CalendarService.markUserConfirmed(eventId, availability, user, req.organization);
-      res.status(200).json(updatedEvent);
+      await CalendarService.markUserConfirmed(eventId, availability, user, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -499,8 +499,8 @@ export default class CalendarController {
       const { eventId } = req.params as Record<string, string>;
       const { status } = req.body;
 
-      const updatedEvent = await CalendarService.setStatus(req.currentUser, eventId, status, req.organization);
-      res.status(200).json(updatedEvent);
+      await CalendarService.setStatus(req.currentUser, eventId, status, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -512,14 +512,14 @@ export default class CalendarController {
       const { eventId } = req.params as Record<string, string>;
       const { startTime, endTime } = req.body;
 
-      const updatedEvent = await CalendarService.scheduleEvent(
+      await CalendarService.scheduleEvent(
         req.currentUser,
         eventId,
         new Date(startTime),
         new Date(endTime),
         req.organization
       );
-      res.status(200).json(updatedEvent);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -548,9 +548,9 @@ export default class CalendarController {
     try {
       const { eventId } = req.params as Record<string, string>;
 
-      const event = await CalendarService.deleteEvent(req.currentUser, eventId, req.organization);
+      await CalendarService.deleteEvent(req.currentUser, eventId, req.organization);
 
-      res.status(200).json(event);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -579,32 +579,47 @@ export default class CalendarController {
     }
   }
 
-  static async getSingleEventWithMembers(req: Request, res: Response, next: NextFunction) {
+  static async getMyConflicts(req: Request, res: Response, next: NextFunction) {
     try {
-      const { eventId } = req.params as Record<string, string>;
-
-      const event = await CalendarService.getSingleEventWithMembers(req.currentUser, eventId, req.organization);
-      res.status(200).json(event);
+      const conflicts = await CalendarService.getMyConflicts(req.currentUser, req.organization);
+      res.status(200).json(conflicts);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async getConflictingEvent(req: Request, res: Response, next: NextFunction) {
+  static async getReviewEvents(req: Request, res: Response, next: NextFunction) {
     try {
-      const { eventId } = req.params as Record<string, string>;
-
-      const event = await CalendarService.getConflictingEvent(req.currentUser, eventId, req.organization);
-      res.status(200).json(event);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getAllEvents(req: Request, res: Response, next: NextFunction) {
-    try {
-      const events = await CalendarService.getAllEvents(req.organization);
+      const { startPeriod } = req.query as Record<string, string | undefined>;
+      const events = await CalendarService.getReviewEvents(
+        req.organization,
+        startPeriod ? new Date(startPeriod) : undefined
+      );
       res.status(200).json(events);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getUpcomingEvents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { days, includeTeamEvents } = req.query as Record<string, string>;
+      const events = await CalendarService.getUpcomingEvents(
+        req.currentUser,
+        req.organization,
+        parseInt(days),
+        includeTeamEvents === 'true'
+      );
+      res.status(200).json(events);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getEventAttendance(req: Request, res: Response, next: NextFunction) {
+    try {
+      const attendance = await CalendarService.getEventAttendance(req.organization);
+      res.status(200).json(attendance);
     } catch (error: unknown) {
       next(error);
     }
@@ -621,12 +636,8 @@ export default class CalendarController {
 
   static async getAllEventsPaginated(req: Request, res: Response, next: NextFunction) {
     try {
-      const { futureCursor, pastCursor } = req.body;
-      const paginatedEvents = await CalendarService.getAllEventsPaginated(
-        req.organization,
-        futureCursor ? new Date(futureCursor) : undefined,
-        pastCursor ? new Date(pastCursor) : undefined
-      );
+      const { direction, cursor } = req.body;
+      const paginatedEvents = await CalendarService.getAllEventsPaginated(req.organization, direction, cursor);
       res.status(200).json(paginatedEvents);
     } catch (error: unknown) {
       next(error);
@@ -666,7 +677,7 @@ export default class CalendarController {
       const { eventId } = req.params as Record<string, string>;
 
       await CalendarService.remindUnconfirmed(eventId, req.currentUser, req.organization);
-      res.status(200).json({ message: 'Reminders sent to unconfirmed members' });
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }

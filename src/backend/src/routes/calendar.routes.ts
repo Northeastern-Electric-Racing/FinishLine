@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import {
   intMinZero,
   isDate,
@@ -216,15 +216,28 @@ calendarRouter.post(
 
 calendarRouter.post('/event/:eventId/delete', CalendarController.deleteEvent);
 
-calendarRouter.get('/event/:eventId/conflict', CalendarController.getConflictingEvent);
-
 calendarRouter.get('/event/:eventId', CalendarController.getSingleEvent);
-
-calendarRouter.get('/event-members/:eventId', CalendarController.getSingleEventWithMembers);
 
 calendarRouter.get('/events/new-member', CalendarController.getNewMemberEvents);
 
-calendarRouter.get('/events', CalendarController.getAllEvents);
+calendarRouter.get('/events/my-conflicts', CalendarController.getMyConflicts);
+
+calendarRouter.get(
+  '/events/reviews',
+  isDate(query('startPeriod').optional()),
+  validateInputs,
+  CalendarController.getReviewEvents
+);
+
+calendarRouter.get(
+  '/events/upcoming',
+  query('days').isInt({ min: 1, max: 31 }),
+  query('includeTeamEvents').isBoolean(),
+  validateInputs,
+  CalendarController.getUpcomingEvents
+);
+
+calendarRouter.get('/events/attendance', CalendarController.getEventAttendance);
 
 calendarRouter.get('/event-types', CalendarController.getAllEventTypes);
 
@@ -308,7 +321,13 @@ calendarRouter.post(
 );
 
 calendarRouter.get('/calendars', CalendarController.getAllCalendars);
-calendarRouter.post('/events-paginated', CalendarController.getAllEventsPaginated);
+calendarRouter.post(
+  '/events-paginated',
+  body('direction').isIn(['future', 'past']),
+  body('cursor').optional().isString(),
+  validateInputs,
+  CalendarController.getAllEventsPaginated
+);
 calendarRouter.get('/ics/token', CalendarController.getOrCreateIcsToken);
 
 calendarRouter.post('/event/:eventId/remind-unconfirmed', CalendarController.remindUnconfirmed);

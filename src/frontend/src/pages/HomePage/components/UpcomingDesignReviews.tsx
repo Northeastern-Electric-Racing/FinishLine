@@ -4,17 +4,13 @@
  */
 
 import DesignReviewCard from './EventCard';
-import { useAllEvents } from '../../../hooks/calendar.hooks';
+import { useUpcomingEvents } from '../../../hooks/calendar.hooks';
 import ErrorPage from '../../ErrorPage';
-import { AuthenticatedUser, EventStatus } from 'shared';
+import { EventStatus } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import { Error } from '@mui/icons-material';
-
-interface UpcomingEventProps {
-  user: AuthenticatedUser;
-}
 
 const NoUpcomingEventsDisplay: React.FC = () => {
   return (
@@ -26,41 +22,21 @@ const NoUpcomingEventsDisplay: React.FC = () => {
   );
 };
 
-const UpcomingEvents: React.FC<UpcomingEventProps> = ({ user }) => {
-  const { data: events, isLoading, isError, error } = useAllEvents();
+const UpcomingEvents: React.FC = () => {
+  // the user's own events in the next two weeks, with only their upcoming slots
+  const { data: events, isLoading, isError, error } = useUpcomingEvents(14, false);
 
   if (isLoading || !events) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
-  const filteredEvents = events.filter((event) => {
-    // Get the first scheduled date
-    const scheduledDate = event.scheduledTimes[0]?.startTime;
-    if (!scheduledDate) return false;
-
-    const currentDate = new Date();
-    const inTwoWeeks = new Date();
-    inTwoWeeks.setDate(currentDate.getDate() + 14);
-
-    const memberUserIds = [
-      ...event.requiredMembers.map((user) => user.userId),
-      ...event.optionalMembers.map((user) => user.userId)
-    ];
-
-    memberUserIds.push(event.userCreated.userId);
-    return (
-      scheduledDate >= currentDate &&
-      scheduledDate <= inTwoWeeks &&
-      event.status !== EventStatus.DONE &&
-      memberUserIds.includes(user.userId)
-    );
-  });
+  const filteredEvents = events.filter((event) => event.status !== EventStatus.DONE);
 
   const fullDisplay = (
     <ScrollablePageBlock title={`Upcoming Design Reviews (${filteredEvents.length})`}>
       {filteredEvents.length === 0 ? (
         <NoUpcomingEventsDisplay />
       ) : (
-        filteredEvents.map((event) => <DesignReviewCard key={event.eventId} event={event} user={user} />)
+        filteredEvents.map((event) => <DesignReviewCard key={event.eventId} event={event} />)
       )}
     </ScrollablePageBlock>
   );

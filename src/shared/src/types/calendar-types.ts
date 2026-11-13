@@ -1,4 +1,4 @@
-import { User, UserWithScheduleSettings } from './user-types.js';
+import { BaseUser, User } from './user-types.js';
 
 export interface EventDocumentCreateArgs {
   googleFileId: string;
@@ -30,14 +30,6 @@ export interface TeamCalendarPreview {
   teamName: string;
 }
 
-export interface TeamWithMembers {
-  teamId: string;
-  teamName: string;
-  members: User[];
-  leads: User[];
-  head: User;
-}
-
 export interface NotificationChannelPreview {
   slackChannelId: string;
   name?: string;
@@ -47,16 +39,6 @@ export interface NotificationChannelPreview {
 export interface TeamTypeCalendarPreview {
   teamTypeId: string;
   name: string;
-}
-
-export interface TeamTypeWithMembersCalendarPreview {
-  teamTypeId: string;
-  name: string;
-  teams: {
-    members: User[];
-    leads: User[];
-    head: User;
-  }[];
 }
 
 export interface WorkPackageCalendarPreview {
@@ -202,66 +184,89 @@ export interface Machinery {
   shops: ShopMachinery[];
 }
 
-export interface Event {
+/** The minimum every consumer of an event needs. Served as-is by the new member events widget and nested in conflicts */
+export interface BaseEvent {
   eventId: string;
   title: string;
-  approved: ConflictStatus;
-  userCreated: UserWithScheduleSettings;
-  dateCreated: Date;
   eventTypeId: string;
-  approvalRequiredFrom?: User;
-  scheduledTimes: ScheduleSlot[];
-  requiredMembers: User[];
-  optionalMembers: User[];
-  confirmedMembers: UserWithScheduleSettings[];
-  deniedMembers: User[];
-  teams: TeamCalendarPreview[];
-  teamType?: TeamTypeCalendarPreview;
+  status: EventStatus;
+  approved: ConflictStatus;
   location?: string;
   zoomLink?: string;
-  shops: ShopPreview[];
-  machinery: MachineryPreview[];
-  workPackages: WorkPackageCalendarPreview[];
-  documents: Document[];
-  questionDocumentLink?: string;
   description?: string;
-  status: EventStatus;
+  questionDocumentLink?: string;
   initialDateScheduled?: Date;
+  dateCreated: Date;
   notificationChannelIds: string[];
+  userCreated: BaseUser;
+  teamType?: TeamTypeCalendarPreview;
+  scheduledTimes: ScheduleSlot[];
 }
 
-export type EventInstance = Omit<Event, 'scheduledTimes'> &
+/** The calendar grid, the "+N" overflow card, and the Your Events / Review Bookings tables */
+export interface CalendarEvent extends BaseEvent {
+  approvalRequiredFrom?: BaseUser;
+  firstRequiredMember?: BaseUser;
+  numRequiredMembers: number;
+  numOptionalMembers: number;
+  numDeniedMembers: number;
+  numScheduledSlots: number;
+}
+
+/** A single CalendarEvent slot, as the calendar grid and tables render it */
+export type CalendarEventInstance = Omit<CalendarEvent, 'scheduledTimes'> &
   ScheduleSlot & {
     recurring: boolean;
     totalScheduledSlots: number;
   };
 
-export interface EventWithMembers {
-  eventId: string;
-  title: string;
-  approved: ConflictStatus;
-  userCreated: UserWithScheduleSettings;
-  dateCreated: Date;
-  eventTypeId: string;
-  approvalRequiredFrom?: User;
-  scheduledTimes: ScheduleSlot[];
-  requiredMembers: User[];
-  optionalMembers: User[];
-  confirmedMembers: UserWithScheduleSettings[];
-  deniedMembers: User[];
-  teams: TeamWithMembers[];
-  teamType?: TeamTypeWithMembersCalendarPreview;
-  location?: string;
-  zoomLink?: string;
+/** The event click popup, edit modal, availability page, and event deep links */
+export interface EventDetail extends BaseEvent {
+  approvalRequiredFrom?: BaseUser;
+  requiredMembers: BaseUser[];
+  optionalMembers: BaseUser[];
+  confirmedMembers: BaseUser[];
+  deniedMembers: BaseUser[];
+  teams: TeamCalendarPreview[];
   shops: ShopPreview[];
   machinery: MachineryPreview[];
   workPackages: WorkPackageCalendarPreview[];
   documents: Document[];
-  questionDocumentLink?: string;
-  description?: string;
-  status: EventStatus;
-  initialDateScheduled?: Date;
-  notificationChannelIds: string[];
+  isCurrentUserOnEvent: boolean;
+}
+
+/** The calendar "My Upcoming Meetings" sidebar and the lead home page upcoming design reviews */
+export interface UpcomingEvent extends BaseEvent {
+  requiredMembers: BaseUser[];
+  optionalMembers: BaseUser[];
+  teams: TeamCalendarPreview[];
+  workPackages: WorkPackageCalendarPreview[];
+  isCurrentUserConfirmed: boolean;
+}
+
+/**
+ * A conflict banner on the calendar page. `event` is either one of the current user's pending or denied events, or (when
+ * isCurrentUserApprover) an event waiting on the current user's approval. `conflictingEvent` is the event it overlaps,
+ * and `overlapStart` is when the conflicting event's overlapping slot starts
+ */
+export interface EventConflict {
+  event: BaseEvent;
+  conflictingEvent: BaseEvent;
+  overlapStart: Date;
+  isCurrentUserApprover: boolean;
+}
+
+/** One slot of an event on the guest events page */
+export type GuestEventInstance = Omit<BaseEvent, 'scheduledTimes'> &
+  ScheduleSlot & {
+    teams: TeamCalendarPreview[];
+    workPackages: WorkPackageCalendarPreview[];
+  };
+
+/** The admin design review attendance table */
+export interface UserEventAttendance {
+  userId: string;
+  numAttended: number;
 }
 
 export interface TeamType {
