@@ -87,9 +87,16 @@ Also list any endpoints you propose to add or remove. Iterate until approved.
 
 Follow these placement rules:
 
-- `src/backend/src/prisma-query-args/<domain>.query-args.ts` holds **only** `getBase<Domain>QueryArgs` and extended query args used by **more than one** endpoint. Extend by spreading: `select: { ...getBase<Domain>QueryArgs().select, extra: true }`. Export a `ReturnType` type for each.
-- A model used by a single endpoint gets its query args inline in the service function, still spread from the base.
-- Transformers go in `src/backend/src/transformers/<domain>.transformer.ts`. Extended transformers start with `...base<Domain>Transformer(x)`.
+- **Every select lives in exactly one of two places:**
+  - **Inline**, written directly in the one Prisma call that uses it.
+  - **In `src/backend/src/prisma-query-args/<domain>.query-args.ts`**, because **more than one** endpoint uses it. Export it as a `get<Name>QueryArgs()` function returning a `Prisma.validator` call, with a `ReturnType` type and a one-line comment naming what it serves.
+- **Spread the base wherever possible:** `select: { ...getBase<Domain>QueryArgs().select, extra: true }`. This applies to every select that reads the entity's data, not just the ones that build a response model. That includes post-write reads for notifications or integrations, query args that only exist for an internal helper, and per-endpoint inline selects. The only selects that don't spread the base:
+  - **validation reads** (see below);
+  - reads that fetch **none of the entity's data**, e.g. only its Slack thread ids so a helper can reply in a thread.
+
+  Don't hand-pick a subset of base columns plus a few extras. Spread the base and add the extras.
+
+- Transformers go in `src/backend/src/transformers/<domain>.transformer.ts`. Extended transformers start with `...base<Domain>Transformer(x)`. Any function that maps a Prisma result to a type is a transformer and goes in that file, including small ones you'd otherwise write locally inside a service function. Type its input structurally (or with the `ReturnType` payload) if its query args are inline.
 - Shared types go in `src/shared/src/types/<domain>-types.ts`. Extended types use `interface X extends Base<Domain>`. Give each type a one-line doc comment naming what it serves.
 - Update the controllers, routes (with validators for new params), the frontend api functions, hooks (mutation hooks become `useMutation<void, ...>`), call sites, and the test stubs in `src/frontend/src/tests/test-support/`.
 - **Validation reads** (any DB call whose result is never returned, such as existence, permission, or org checks) select the absolute minimum inline: just the columns being checked, or `_count` for a count. This is usually not a base query args.
