@@ -382,8 +382,8 @@ describe('Bay Dashboard Overdue Work Packages Tests', () => {
         name: 'WP 0.1.2',
         projectWbsNum: { carNumber: 0, projectNumber: 1, workPackageNumber: 0 },
         projectName: 'Genesis',
-        lead: { userId: user.userId, firstName: user.firstName, lastName: user.lastName },
-        manager: { userId: user.userId, firstName: user.firstName, lastName: user.lastName },
+        lead: { firstName: user.firstName, lastName: user.lastName },
+        manager: { firstName: user.firstName, lastName: user.lastName },
         // default start 2024-01-01 with a 4 week duration
         endDate: new Date('2024-01-29'),
         daysOverdue: expect.any(Number),
