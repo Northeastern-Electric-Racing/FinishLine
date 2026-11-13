@@ -3,6 +3,7 @@ import { getBaseUserQueryArgs } from './user.query-args.js';
 
 export type BaseEventQueryArgs = ReturnType<typeof getBaseEventQueryArgs>;
 export type CalendarEventQueryArgs = ReturnType<typeof getCalendarEventQueryArgs>;
+export type EventScheduledNotificationQueryArgs = ReturnType<typeof getEventScheduledNotificationQueryArgs>;
 
 // the minimum every consumer of an event needs: what it is, who made it, and when it happens. No dateDeleted: every query
 // returning this filters deleted events out
@@ -52,5 +53,25 @@ export const getCalendarEventQueryArgs = (slotWhere?: Prisma.Schedule_SlotWhereI
       // the "+N" overflow card names one required member per event
       requiredMembers: { take: 1, ...getBaseUserQueryArgs() },
       _count: { select: { requiredMembers: true, optionalMembers: true, deniedMembers: true, scheduledTimes: true } }
+    }
+  });
+
+// what every event validation read selects on top of the columns it checks: enough to reject deleted events and events
+// outside the organization (see assertEventInOrganization)
+export const eventValidationSelect = {
+  dateDeleted: true,
+  eventType: { select: { organizationId: true } }
+} satisfies Prisma.EventSelect;
+
+// the event as the "has been scheduled / rescheduled" slack notification describes it, plus the threads it posts to.
+// Read back after editing a slot and after scheduling an event
+export const getEventScheduledNotificationQueryArgs = () =>
+  Prisma.validator<Prisma.EventDefaultArgs>()({
+    select: {
+      ...getBaseEventQueryArgs().select,
+      notificationSlackThreads: true,
+      requiredMembers: { select: { userId: true } },
+      optionalMembers: { select: { userId: true } },
+      workPackages: { select: { wbsElement: { select: { name: true } } } }
     }
   });

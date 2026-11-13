@@ -47,12 +47,6 @@ export const eventsUserIsOnWhere = (userId: string): Prisma.EventWhereInput => {
   };
 };
 
-// what every event validation read selects on top of the columns it checks
-export const eventValidationSelect = {
-  dateDeleted: true,
-  eventType: { select: { organizationId: true } }
-} satisfies Prisma.EventSelect;
-
 /**
  * Throws unless the event exists, isn't deleted, and belongs to the organization
  */

@@ -27,9 +27,11 @@ import {
 import { getCalendarQueryArgs } from '../prisma-query-args/calendar.query-args.js';
 import { getEventTypeQueryArgs } from '../prisma-query-args/event-type.query-args.js';
 import {
+  eventValidationSelect,
   eventWorkPackageSelect,
   getBaseEventQueryArgs,
-  getCalendarEventQueryArgs
+  getCalendarEventQueryArgs,
+  getEventScheduledNotificationQueryArgs
 } from '../prisma-query-args/event.query-args.js';
 import { getMachineryQueryArgs } from '../prisma-query-args/machinery.query-args.js';
 import { getShopQueryArgs } from '../prisma-query-args/shop.query-args.js';
@@ -43,6 +45,7 @@ import {
   eventDetailTransformer,
   upcomingEventTransformer,
   guestEventInstanceTransformer,
+  icsEventTransformer,
   shopTransformer,
   calendarTransformer
 } from '../transformers/calendar.transformer.js';
@@ -52,7 +55,6 @@ import {
   checkEventConflicts,
   removeDeletedEventDocuments,
   assertEventInOrganization,
-  eventValidationSelect,
   isUserOnEvent,
   buildScheduledTimesOverlap,
   scheduleSlotOverlapWhere,
@@ -86,25 +88,6 @@ import {
   areUsersinList
 } from '../utils/users.utils.js';
 import { Conflict_Status, Event_Status, Organization, Prisma } from '@prisma/client';
-
-// what sendEventScheduledSlackNotif reads, plus the threads it posts to
-const eventScheduledNotificationSelect = {
-  title: true,
-  eventTypeId: true,
-  status: true,
-  location: true,
-  zoomLink: true,
-  questionDocumentLink: true,
-  notificationSlackThreads: true,
-  userCreated: getBaseUserQueryArgs(),
-  requiredMembers: { select: { userId: true } },
-  optionalMembers: { select: { userId: true } },
-  workPackages: { select: { wbsElement: { select: { name: true } } } },
-  scheduledTimes: {
-    select: { scheduleSlotId: true, startTime: true, endTime: true, allDay: true },
-    orderBy: { startTime: 'asc' }
-  }
-} satisfies Prisma.EventSelect;
 
 /**
  * Events with a slot overlapping the period, or, for events not scheduled yet (no slots), an initial date in it. A
@@ -546,13 +529,9 @@ export default class CalendarService {
         questionDocumentLink,
         description
       },
-      // only what the calendar sync and notifications below read
+      // the base event plus what the calendar sync and notifications below read
       select: {
-        eventId: true,
-        title: true,
-        status: true,
-        notificationChannelIds: true,
-        scheduledTimes: { select: { startTime: true, endTime: true, allDay: true } },
+        ...getBaseEventQueryArgs().select,
         teams: { select: { teamId: true, slackId: true } },
         workPackages: {
           select: {
@@ -1187,7 +1166,7 @@ export default class CalendarService {
     // Fetch the updated event to notify about the new times
     const updatedEvent = await prisma.event.findUnique({
       where: { eventId: event.eventId },
-      select: eventScheduledNotificationSelect
+      ...getEventScheduledNotificationQueryArgs()
     });
 
     if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
@@ -1633,7 +1612,7 @@ export default class CalendarService {
         approved: hasConflict ? Conflict_Status.PENDING : event.approved,
         approvalRequiredFromUserId: hasConflict ? conflictingEvent?.userCreated.userId : event.approvalRequiredFromUserId
       },
-      select: eventScheduledNotificationSelect
+      ...getEventScheduledNotificationQueryArgs()
     });
 
     // Remove the scheduled time from confirmed members' availabilities so they can't be
@@ -3184,42 +3163,6 @@ export default class CalendarService {
     lookback.setMonth(lookback.getMonth() - 6);
     const slotWhere = scheduleSlotOverlapWhere(lookback);
 
-    const icsEventSelect = {
-      ...getBaseEventQueryArgs(slotWhere).select,
-      userCreated: { select: { userId: true, firstName: true, lastName: true, email: true } },
-      requiredMembers: getBaseUserQueryArgs(),
-      optionalMembers: getBaseUserQueryArgs(),
-      teams: { select: { teamName: true } },
-      shops: { select: { name: true } },
-      machinery: { select: { name: true } },
-      workPackages: eventWorkPackageSelect
-    } satisfies Prisma.EventSelect;
-
-    const toIcsEvent = (event: Prisma.EventGetPayload<{ select: typeof icsEventSelect }>): IcsEvent => ({
-      ...baseEventTransformer(event),
-      userCreated: event.userCreated,
-      requiredMembers: event.requiredMembers,
-      optionalMembers: event.optionalMembers,
-      teams: event.teams,
-      shops: event.shops,
-      machinery: event.machinery,
-      workPackages: event.workPackages
-    });
-
-    // specific events case
-    if (eventIds.length > 0) {
-      const events = await prisma.event.findMany({
-        where: {
-          dateDeleted: null,
-          eventId: { in: eventIds },
-          eventType: { calendars: { some: { organizationId } } },
-          scheduledTimes: { some: slotWhere }
-        },
-        select: icsEventSelect
-      });
-      return events.map(toIcsEvent);
-    }
-
     const userTeamIds = [
       ...user.teamsAsMember.map((t) => t.teamId),
       ...user.teamsAsLead.map((t) => t.teamId),
@@ -3231,31 +3174,43 @@ export default class CalendarService {
         ? [{ eventType: { calendars: { some: { calendarId: { in: calendarIds }, organizationId } } } }]
         : [{ eventType: { calendars: { some: { organizationId } } } }];
 
+    // specific events when given, otherwise the user's events and the calendars' events
+    const feedWhere: Prisma.EventWhereInput =
+      eventIds.length > 0
+        ? { eventId: { in: eventIds }, eventType: { calendars: { some: { organizationId } } } }
+        : {
+            status: { in: [Event_Status.CONFIRMED, Event_Status.SCHEDULED, Event_Status.DONE] },
+            OR: [
+              { requiredMembers: { some: { userId: user.userId } } },
+              { optionalMembers: { some: { userId: user.userId } } },
+              ...(userTeamIds.length > 0 ? [{ teams: { some: { teamId: { in: userTeamIds } } } }] : []),
+              ...calendarFilter
+            ]
+          };
+
     const events = await prisma.event.findMany({
-      where: {
-        dateDeleted: null,
-        status: { in: [Event_Status.CONFIRMED, Event_Status.SCHEDULED, Event_Status.DONE] },
-        scheduledTimes: { some: slotWhere },
-        OR: [
-          { requiredMembers: { some: { userId: user.userId } } },
-          { optionalMembers: { some: { userId: user.userId } } },
-          ...(userTeamIds.length > 0 ? [{ teams: { some: { teamId: { in: userTeamIds } } } }] : []),
-          ...calendarFilter
-        ]
-      },
-      select: icsEventSelect
+      where: { dateDeleted: null, scheduledTimes: { some: slotWhere }, ...feedWhere },
+      select: {
+        ...getBaseEventQueryArgs(slotWhere).select,
+        userCreated: { select: { ...getBaseUserQueryArgs().select, email: true } },
+        requiredMembers: getBaseUserQueryArgs(),
+        optionalMembers: getBaseUserQueryArgs(),
+        teams: { select: { teamName: true } },
+        shops: { select: { name: true } },
+        machinery: { select: { name: true } },
+        workPackages: eventWorkPackageSelect
+      }
     });
 
-    return events.map(toIcsEvent);
+    return events.map(icsEventTransformer);
   }
 
   static async remindUnconfirmed(eventId: string, submitter: User, organization: Organization): Promise<void> {
     const event = await prisma.event.findUnique({
       where: { eventId },
       select: {
+        ...getBaseEventQueryArgs().select,
         ...eventValidationSelect,
-        title: true,
-        userCreatedId: true,
         requiredMembers: { select: { userId: true } },
         optionalMembers: { select: { userId: true } },
         confirmedMembers: { select: { userId: true } },
@@ -3265,7 +3220,7 @@ export default class CalendarService {
 
     const hasPermission =
       (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
-      (!!event && submitter.userId === event.userCreatedId);
+      (!!event && submitter.userId === event.userCreated.userId);
 
     if (!hasPermission) {
       throw new AccessDeniedException('Only the creator or an admin can send reminders for unconfirmed events');

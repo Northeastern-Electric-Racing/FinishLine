@@ -33,6 +33,7 @@ import {
   eventWorkPackageSelect
 } from '../prisma-query-args/event.query-args.js';
 import { BaseUserQueryArgs } from '../prisma-query-args/user.query-args.js';
+import { IcsEvent } from '../utils/ics.utils.js';
 import { ShopMachineryQueryArgs, MachineryQueryArgs } from '../prisma-query-args/machinery.query-args.js';
 import { ShopQueryArgs } from '../prisma-query-args/shop.query-args.js';
 import { baseUserTransformer, userTransformer } from './user.transformer.js';
@@ -243,6 +244,29 @@ export const guestEventInstanceTransformer = (
     ...scheduleTimesTransformer(slot),
     teams: slot.event.teams.map(eventTeamTransformer),
     workPackages: slot.event.workPackages.map(eventWorkPackageTransformer)
+  };
+};
+
+export const icsEventTransformer = (
+  event: Omit<BaseEventPayload, 'userCreated'> & {
+    userCreated: BaseUserPayload & { email: string };
+    requiredMembers: BaseUserPayload[];
+    optionalMembers: BaseUserPayload[];
+    teams: { teamName: string }[];
+    shops: { name: string }[];
+    machinery: { name: string }[];
+    workPackages: EventWorkPackagePayload[];
+  }
+): IcsEvent => {
+  return {
+    ...baseEventTransformer(event),
+    userCreated: { ...baseUserTransformer(event.userCreated), email: event.userCreated.email },
+    requiredMembers: event.requiredMembers.map(baseUserTransformer),
+    optionalMembers: event.optionalMembers.map(baseUserTransformer),
+    teams: event.teams.map((team) => ({ teamName: team.teamName })),
+    shops: event.shops.map((shop) => ({ name: shop.name })),
+    machinery: event.machinery.map((machine) => ({ name: machine.name })),
+    workPackages: event.workPackages.map(eventWorkPackageTransformer)
   };
 };
 
