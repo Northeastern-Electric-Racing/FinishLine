@@ -179,13 +179,14 @@ const PointsRing: React.FC<PointsRingProps> = ({ earned, max, maxContent }) => {
     </Box>
   );
 };
+// TODO: call useEditCompetitionPerformance once the backend hook is merged
 
 const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ competitionPerformances }) => {
   const [tabValue, setTabValue] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<CompetitionPerformanceForm | null>(null);
   const user = useCurrentUser();
-  const canEdit = isAdmin(user.role);
+  const canEdit = isAdmin(user.role) || !!user.isOperations;
 
   const selectedCompetition = COMPETITIONS[tabValue];
   const performance = competitionPerformances.find((cp) => cp.competition === selectedCompetition);
