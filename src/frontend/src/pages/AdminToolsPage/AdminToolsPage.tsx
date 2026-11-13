@@ -24,6 +24,7 @@ import AdminToolsOnboardingConfig from './OnboardingConfig/AdminToolsOnboardingC
 import AdminToolsScheduleConfig from './ScheduleConfig/AdminToolsScheduleConfig';
 import AdminToolsAttendanceConfig from './AdminToolsAttendanceConfig';
 import ActivationBuffer from './ProjectsConfig/ActivationBuffer';
+import AdminToolsBayDashConfig from './BayDashConfig/AdminToolsBayDashConfig';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -50,6 +51,7 @@ const AdminToolsPage: React.FC = () => {
     tabs.push({ tabUrlValue: 'guest-view', tabName: 'Guest View' });
     tabs.push({ tabUrlValue: 'onboarding', tabName: 'Onboarding' });
     tabs.push({ tabUrlValue: 'attendance', tabName: 'Attendance' });
+    tabs.push({ tabUrlValue: 'bay-dashboard', tabName: 'Bay Dashboard' });
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
 
@@ -93,6 +95,8 @@ const AdminToolsPage: React.FC = () => {
         <AdminToolsOnboardingConfig />
       ) : tabIndex === 7 ? (
         <AdminToolsAttendanceConfig />
+      ) : tabIndex === 8 ? (
+        <AdminToolsBayDashConfig />
       ) : (
         <Box>
           <Box pb={2}>

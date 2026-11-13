@@ -1,0 +1,59 @@
+import express from 'express';
+import { body } from 'express-validator';
+import BayDashboardAdminController from '../controllers/bay-dashboard-admin.controllers.js';
+import {
+  intMinZero,
+  isBayDashboardWidgetSize,
+  isDateOnly,
+  isOptionalDateOnly,
+  nonEmptyString,
+  validateInputs
+} from '../utils/validation.utils.js';
+
+/**
+ * Authenticated bay dashboard routes, used by the Admin Tools to read and edit what the TV displays.
+ * Separated from bay-dashboard.routes because these endpoints are authenticated, while the public TV endpoints are not.
+ */
+const bayDashboardAdminRouter = express.Router();
+
+bayDashboardAdminRouter.get('/admin', BayDashboardAdminController.getCurrentBayDashboardConfig);
+
+bayDashboardAdminRouter.get('/admin/widgets', BayDashboardAdminController.getAvailableWidgets);
+
+bayDashboardAdminRouter.post(
+  '/admin/save',
+  body('slots').isArray(),
+  intMinZero(body('slots.*.position')),
+  isBayDashboardWidgetSize(body('slots.*.size')),
+  body('slots.*.widget').optional().isObject(),
+  body('slots.*.widget.text').optional({ nullable: true }).isString(),
+  validateInputs,
+  BayDashboardAdminController.saveBayDashboardConfig
+);
+
+bayDashboardAdminRouter.post(
+  '/admin/countdown/create',
+  nonEmptyString(body('name')),
+  isDateOnly(body('startDate')),
+  isOptionalDateOnly(body('endDate')),
+  body('isPrimary').isBoolean(),
+  validateInputs,
+  BayDashboardAdminController.createBayDashboardCountdown
+);
+
+bayDashboardAdminRouter.post(
+  '/admin/countdown/:countdownId/delete',
+  BayDashboardAdminController.deleteBayDashboardCountdown
+);
+
+bayDashboardAdminRouter.post(
+  '/admin/countdown/:countdownId/edit',
+  nonEmptyString(body('name')),
+  isDateOnly(body('startDate')),
+  isOptionalDateOnly(body('endDate')),
+  body('isPrimary').isBoolean(),
+  validateInputs,
+  BayDashboardAdminController.editBayDashboardCountdown
+);
+
+export default bayDashboardAdminRouter;

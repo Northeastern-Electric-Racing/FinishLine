@@ -49,6 +49,7 @@ export type OrganizationPreview = Pick<
   Organization,
   | 'organizationId'
   | 'name'
+  | 'slug'
   | 'dateCreated'
   | 'dateDeleted'
   | 'description'
@@ -61,6 +62,7 @@ export type OrganizationPreview = Pick<
 export interface Organization {
   organizationId: string;
   name: string;
+  slug: string;
   dateCreated: Date | null;
   userCreated: User;
   dateDeleted?: Date | null;

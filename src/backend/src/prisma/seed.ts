@@ -33,6 +33,7 @@ import { CompetitionDocumentsSummaryProcess } from './seed/competition-documents
 import { RecruitmentCycleProcess } from './seed/recruitment-cycle.process.js';
 import { RecruitmentDivisionCountProcess } from './seed/recruitment-division-count.process.js';
 import { RulesProcess } from './seed/rules.process.js';
+import { BayDashboardProcess } from './seed/bay-dashboard.process.js';
 
 const prisma = new PrismaClient();
 
@@ -64,7 +65,8 @@ await new SeedRunner()
     new CompetitionDocumentsSummaryProcess(),
     new RecruitmentCycleProcess(),
     new RecruitmentDivisionCountProcess(),
-    new RulesProcess()
+    new RulesProcess(),
+    new BayDashboardProcess()
   )
   .run();
 

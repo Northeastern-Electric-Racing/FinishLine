@@ -1,0 +1,135 @@
+import { Event_Status, Organization, WBS_Element_Status } from '@prisma/client';
+import dayjs from 'dayjs';
+import {
+  BAY_DASHBOARD_CALENDAR_DAYS_AHEAD,
+  BayDashboardCountdown,
+  PublicBayDashboardCalendarEvent,
+  PublicBayDashboardConfig,
+  PublicBayDashboardOverdueWorkPackage
+} from 'shared';
+import prisma from '../prisma/prisma.js';
+import {
+  getBayDashboardCalendarEventQueryArgs,
+  getBayDashboardCountdownQueryArgs,
+  getBayDashboardOverdueWorkPackageQueryArgs,
+  getPublicBayDashboardConfigQueryArgs
+} from '../prisma-query-args/bay-dashboard.query-args.js';
+import {
+  bayDashboardCountdownTransformer,
+  publicBayDashboardCalendarEventsTransformer,
+  publicBayDashboardConfigTransformer,
+  publicBayDashboardOverdueWorkPackageTransformer
+} from '../transformers/bay-dashboard.transformer.js';
+import { DeletedException, NotFoundException } from '../utils/errors.utils.js';
+
+export default class BayDashboardService {
+  /**
+   * Finds the organization a public bay dashboard URL refers to.
+   * @param slug the organization slug from the /bay-dashboard/:slug URL
+   * @returns the id of the organization with that slug
+   */
+  static async getOrganizationBySlug(slug: string): Promise<Pick<Organization, 'organizationId' | 'dateDeleted'>> {
+    const organization = await prisma.organization.findUnique({
+      where: { slug },
+      select: { organizationId: true, dateDeleted: true }
+    });
+
+    if (!organization) throw new NotFoundException('Organization', slug);
+    if (organization.dateDeleted) throw new DeletedException('Organization', slug);
+
+    return organization;
+  }
+
+  /**
+   * Gets the config the TV in the bay should be displaying.
+   * Public, so the TV can load it without logging in.
+   * @param slug the organization slug from the /bay-dashboard/:slug URL
+   * @returns the slots to render, or null if the organization has never saved a config
+   */
+  static async getBayDashboardConfig(slug: string): Promise<PublicBayDashboardConfig | null> {
+    const organization = await BayDashboardService.getOrganizationBySlug(slug);
+
+    const config = await prisma.bay_Dashboard_Config.findFirst({
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      orderBy: { dateCreated: 'desc' },
+      ...getPublicBayDashboardConfigQueryArgs()
+    });
+
+    return config ? publicBayDashboardConfigTransformer(config) : null;
+  }
+
+  /**
+   * Gets the organization's bay dashboard countdowns.
+   * Public, so the TV's countdown widgets can load them without logging in.
+   * @param slug the organization slug from the /bay-dashboard/:slug URL
+   * @returns the organization's non-deleted countdowns
+   */
+  static async getBayDashboardCountdowns(slug: string): Promise<BayDashboardCountdown[]> {
+    const organization = await BayDashboardService.getOrganizationBySlug(slug);
+
+    const countdowns = await prisma.bay_Dashboard_Countdown.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      ...getBayDashboardCountdownQueryArgs()
+    });
+
+    return countdowns.map(bayDashboardCountdownTransformer);
+  }
+
+  /**
+   * Gets the scheduled events the TV's calendar widget shows.
+   * A multi-day event comes back once, with the full range of its schedule slot, and the TV splits it across its days.
+   * @param slug the organization slug from the /bay-dashboard/:slug URL
+   * @returns the organization's scheduled events happening from a day ago to a few days ahead, ordered by start time
+   */
+  static async getBayDashboardCalendarEvents(slug: string): Promise<PublicBayDashboardCalendarEvent[]> {
+    const organization = await BayDashboardService.getOrganizationBySlug(slug);
+
+    const windowStart = dayjs().subtract(1, 'day').toDate();
+    const windowEnd = dayjs()
+      .add(BAY_DASHBOARD_CALENDAR_DAYS_AHEAD + 2, 'day')
+      .toDate();
+
+    const overlapsWindow = { startTime: { lte: windowEnd }, endTime: { gte: windowStart } };
+
+    const events = await prisma.event.findMany({
+      where: {
+        dateDeleted: null,
+        status: Event_Status.SCHEDULED,
+        eventType: { organizationId: organization.organizationId, calendars: { some: { dateDeleted: null } } },
+        scheduledTimes: { some: overlapsWindow }
+      },
+      ...getBayDashboardCalendarEventQueryArgs(overlapsWindow)
+    });
+
+    return events
+      .flatMap(publicBayDashboardCalendarEventsTransformer)
+      .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+  }
+
+  /**
+   * Gets the overdue work packages the TV's overdue widget shows.
+   * @param slug the organization slug from the /bay-dashboard/:slug URL
+   * @returns the organization's incomplete, non-deleted work packages whose end date has passed, most overdue first
+   */
+  static async getBayDashboardOverdueWorkPackages(slug: string): Promise<PublicBayDashboardOverdueWorkPackage[]> {
+    const organization = await BayDashboardService.getOrganizationBySlug(slug);
+    const now = new Date();
+
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        startDate: { lt: now },
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null,
+          status: { not: WBS_Element_Status.COMPLETE }
+        }
+      },
+      ...getBayDashboardOverdueWorkPackageQueryArgs()
+    });
+
+    return workPackages
+      .map((wp) => publicBayDashboardOverdueWorkPackageTransformer(wp, now))
+      .filter(({ endDate }) => endDate < now)
+      .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
+  }
+}

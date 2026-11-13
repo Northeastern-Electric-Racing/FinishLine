@@ -37,6 +37,7 @@ describe('Members Dropdown Tests', () => {
     const otherOrganization = await prisma.organization.create({
       data: {
         name: 'Other Org',
+        slug: 'other-org',
         description: '',
         applicationLink: '',
         userCreated: { connect: { userId: otherCreator.userId } }

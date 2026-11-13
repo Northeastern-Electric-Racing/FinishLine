@@ -595,6 +595,19 @@ const executiveSummaryVehicleDevelopment = (id: string) => `${executiveSummaryBy
 const executiveSummaryBudget = (id: string) => `${executiveSummaryById(id)}/budget`;
 const executiveSummaryEdit = (id: string) => `${executiveSummaries()}/${id}/edit`;
 
+/**************** Bay Dashboard Endpoints ****************/
+const bayDashboard = () => `${API_URL}/bay-dashboard`;
+const bayDashboardEvents = (slug: string) => `${bayDashboard()}/${slug}/events`;
+const bayDashboardConfig = (slug: string) => `${bayDashboard()}/${slug}/config`;
+const bayDashboardCountdowns = (slug: string) => `${bayDashboard()}/${slug}/countdowns`;
+const bayDashboardCalendar = (slug: string) => `${bayDashboard()}/${slug}/calendar`;
+const bayDashboardOverdueWorkPackages = (slug: string) => `${bayDashboard()}/${slug}/overdue-work-packages`;
+const bayDashboardAdmin = () => `${bayDashboard()}/admin`;
+const bayDashboardAdminWidgets = () => `${bayDashboardAdmin()}/widgets`;
+const bayDashboardAdminSave = () => `${bayDashboardAdmin()}/save`;
+const bayDashboardAdminCountdownCreate = () => `${bayDashboardAdmin()}/countdown/create`;
+const bayDashboardAdminCountdownDelete = (countdownId: string) => `${bayDashboardAdmin()}/countdown/${countdownId}/delete`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -1037,6 +1050,17 @@ export const apiUrls = {
   executiveSummaryVehicleDevelopment,
   executiveSummaryBudget,
   executiveSummaryEdit,
+
+  bayDashboardEvents,
+  bayDashboardConfig,
+  bayDashboardCountdowns,
+  bayDashboardCalendar,
+  bayDashboardOverdueWorkPackages,
+  bayDashboardAdmin,
+  bayDashboardAdminWidgets,
+  bayDashboardAdminSave,
+  bayDashboardAdminCountdownCreate,
+  bayDashboardAdminCountdownDelete,
 
   version
 };

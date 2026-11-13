@@ -52,6 +52,7 @@ describe('Cars Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org',
+          slug: 'other-org',
           description: 'Other organization',
           applicationLink: '',
           userCreatedId: orgCreator.userId
@@ -134,6 +135,7 @@ describe('Cars Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Second Org',
+          slug: 'second-org',
           description: 'Second organization',
           applicationLink: '',
           userCreatedId: orgCreator.userId

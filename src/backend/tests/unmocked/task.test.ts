@@ -203,6 +203,7 @@ describe('Task Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org',
+          slug: 'other-org-1',
           userCreated: { connect: { userId: user.userId } }
         }
       });
@@ -287,6 +288,7 @@ describe('Task Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org',
+          slug: 'task-other-org',
           userCreated: { connect: { userId: user.userId } }
         }
       });
@@ -1155,6 +1157,7 @@ describe('Task Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org',
+          slug: 'other-org-2',
           userCreated: { connect: { userId: admin.userId } }
         }
       });
@@ -1220,6 +1223,7 @@ describe('Task Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org',
+          slug: 'other-org-3',
           userCreated: { connect: { userId: admin.userId } }
         }
       });
