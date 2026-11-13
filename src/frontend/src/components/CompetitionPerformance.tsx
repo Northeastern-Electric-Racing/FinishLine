@@ -6,11 +6,18 @@
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import IconButton from '@mui/material/IconButton';
+import InputBase from '@mui/material/InputBase';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
+import { styled } from '@mui/material/styles';
+import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
-import { Competition, CompetitionPerformance } from 'shared';
+import { Competition, CompetitionPerformance, isAdmin } from 'shared';
+import { useCurrentUser } from '../hooks/users.hooks';
+import NERSuccessButton from './NERSuccessButton';
+import NERFailButton from './NERFailButton';
 
 interface CompetitionPerformanceProps {
   competitionPerformances: CompetitionPerformance[];
@@ -35,31 +42,88 @@ const formatTime = (seconds?: number): string => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
 
+interface CompetitionPerformanceForm {
+  finalPlace: string;
+  totalPointsEarned: string;
+  maxPoints: string;
+  bestStaticEvent: string;
+  worstStaticEvent: string;
+  bestDynamicEvent: string;
+  worstDynamicEvent: string;
+  accelerationTopTime: string;
+  enduranceLapsCompleted: string;
+  maxLaps: string;
+  autocrossTopTime: string;
+  enduranceAvgLapTime: string;
+}
+
+const numberToInput = (value?: number): string => (value === undefined ? '' : `${value}`);
+const timeToInput = (seconds?: number): string => (seconds === undefined ? '' : formatTime(seconds));
+
+const toFormValues = (performance: CompetitionPerformance): CompetitionPerformanceForm => ({
+  finalPlace: numberToInput(performance.finalPlace),
+  totalPointsEarned: numberToInput(performance.totalPointsEarned),
+  maxPoints: numberToInput(performance.maxPoints),
+  bestStaticEvent: performance.bestStaticEvent ?? '',
+  worstStaticEvent: performance.worstStaticEvent ?? '',
+  bestDynamicEvent: performance.bestDynamicEvent ?? '',
+  worstDynamicEvent: performance.worstDynamicEvent ?? '',
+  accelerationTopTime: timeToInput(performance.accelerationTopTimeSeconds),
+  enduranceLapsCompleted: numberToInput(performance.enduranceLapsCompleted),
+  maxLaps: numberToInput(performance.maxLaps),
+  autocrossTopTime: timeToInput(performance.autocrossTopTimeSeconds),
+  enduranceAvgLapTime: timeToInput(performance.enduranceAvgLapTimeSeconds)
+});
+
+const PillInput = styled(InputBase)({
+  backgroundColor: '#3a3a3a',
+  color: 'white',
+  borderRadius: 8,
+  padding: '0 10px',
+  fontSize: 14,
+  '& input': { padding: '4px 0', textAlign: 'center' }
+});
+
 interface UnderlinedLabelProps {
   label: string;
   value: string;
+  editing?: boolean;
+  inputValue?: string;
+  onChange?: (value: string) => void;
 }
 
-const UnderlinedLabel: React.FC<UnderlinedLabelProps> = ({ label, value }) => (
-  <Typography sx={{ mb: 1 }}>
+const UnderlinedLabel: React.FC<UnderlinedLabelProps> = ({ label, value, editing = false, inputValue = '', onChange }) => (
+  <Typography component="div" sx={{ mb: 1 }}>
     <Box component="span" sx={{ textDecoration: 'underline', fontWeight: 'bold' }}>
       {label}
     </Box>
     {': '}
-    {value}
+    {editing ? (
+      <PillInput
+        value={inputValue}
+        onChange={(e) => onChange?.(e.target.value)}
+        inputProps={{ 'aria-label': label }}
+        sx={{ width: 120, verticalAlign: 'middle' }}
+      />
+    ) : (
+      value
+    )}
   </Typography>
 );
 
 interface StatBlockProps {
   value: string;
   label: string;
+  editingContent?: React.ReactNode;
 }
 
-const StatBlock: React.FC<StatBlockProps> = ({ value, label }) => (
+const StatBlock: React.FC<StatBlockProps> = ({ value, label, editingContent }) => (
   <Box textAlign="center">
-    <Typography variant="h6" fontWeight="bold">
-      {value}
-    </Typography>
+    {editingContent ?? (
+      <Typography variant="h6" fontWeight="bold">
+        {value}
+      </Typography>
+    )}
     <Typography variant="body2">{label}</Typography>
   </Box>
 );
@@ -67,14 +131,15 @@ const StatBlock: React.FC<StatBlockProps> = ({ value, label }) => (
 interface PointsRingProps {
   earned: number;
   max: number;
+  maxContent?: React.ReactNode;
 }
 
 // TODO: this is a simple two-tone ring (earned vs. remaining). The mock shows a segmented
 // ring broken out by event category, which would need per-category point data we don't have.
-const PointsRing: React.FC<PointsRingProps> = ({ earned, max }) => {
+const PointsRing: React.FC<PointsRingProps> = ({ earned, max, maxContent }) => {
   const radius = 46;
   const circumference = 2 * Math.PI * radius;
-  const fraction = Math.min(earned / max, 1);
+  const fraction = max > 0 ? Math.min(earned / max, 1) : 0;
   const dashArray = `${circumference * fraction} ${circumference * (1 - fraction)}`;
 
   return (
@@ -103,31 +168,76 @@ const PointsRing: React.FC<PointsRingProps> = ({ earned, max }) => {
         alignItems="center"
         justifyContent="center"
       >
-        <Typography textAlign="center" fontSize={14}>
+        <Typography component="div" textAlign="center" fontSize={14}>
           {earned}
           <br />
-          <Box component="span" sx={{ borderTop: '1px solid white', display: 'inline-block', pt: 0.3 }}>
-            {max}
+          <Box component="div" sx={{ borderTop: '1px solid white', display: 'inline-block', pt: 0.3 }}>
+            {maxContent ?? max}
           </Box>
         </Typography>
       </Box>
     </Box>
   );
 };
+// TODO: call useEditCompetitionPerformance once the backend hook is merged
 
 const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ competitionPerformances }) => {
   const [tabValue, setTabValue] = useState<number>(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [form, setForm] = useState<CompetitionPerformanceForm | null>(null);
+  const user = useCurrentUser();
+  const canEdit = isAdmin(user.role) || !!user.isOperations;
 
   const selectedCompetition = COMPETITIONS[tabValue];
   const performance = competitionPerformances.find((cp) => cp.competition === selectedCompetition);
+
+  const startEditing = () => {
+    if (!performance) return;
+    setForm(toFormValues(performance));
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => setIsEditing(false);
+
+  const handleSave = () => setIsEditing(false);
+
+  const updateField = (key: keyof CompetitionPerformanceForm) => (value: string) =>
+    setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
+
+  const labelEditProps = (key: keyof CompetitionPerformanceForm) => ({
+    editing: isEditing,
+    inputValue: form?.[key] ?? '',
+    onChange: updateField(key)
+  });
+
+  const statInput = (key: keyof CompetitionPerformanceForm, label: string, width = 90) => (
+    <PillInput
+      value={form?.[key] ?? ''}
+      onChange={(e) => updateField(key)(e.target.value)}
+      inputProps={{ 'aria-label': label }}
+      sx={{ width, height: 36, mb: 0.5 }}
+    />
+  );
 
   //NOTE: Width and height are currently hardcoded to emulate the full mock executive panel
   return (
     <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 0, width: '100%' }}>
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Typography variant="h5" fontWeight="bold" textAlign="center" mb={1}>
-          Competition Performance
-        </Typography>
+        <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={1}>
+          <Typography variant="h5" fontWeight="bold">
+            Competition Performance
+          </Typography>
+          {canEdit && performance && !isEditing && (
+            <IconButton
+              aria-label="Edit competition performance"
+              onClick={startEditing}
+              size="small"
+              sx={{ color: 'white' }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+        </Box>
 
         <Tabs
           value={tabValue}
@@ -141,7 +251,7 @@ const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ 
           }}
         >
           {COMPETITIONS.map((competition, idx) => (
-            <Tab label={competition} value={idx} key={competition} />
+            <Tab label={competition} value={idx} key={competition} disabled={isEditing} />
           ))}
         </Tabs>
 
@@ -158,41 +268,97 @@ const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ 
                   mb: 2
                 }}
               >
-                <UnderlinedLabel label="Final Place" value={formatOrdinal(performance.finalPlace)} />
-                <UnderlinedLabel label="Total Points Earned" value={`${performance.totalPointsEarned ?? 'N/A'}`} />
+                <UnderlinedLabel
+                  label="Final Place"
+                  value={formatOrdinal(performance.finalPlace)}
+                  {...labelEditProps('finalPlace')}
+                />
+                <UnderlinedLabel
+                  label="Total Points Earned"
+                  value={`${performance.totalPointsEarned ?? 'N/A'}`}
+                  {...labelEditProps('totalPointsEarned')}
+                />
               </Box>
 
-              <UnderlinedLabel label="Best Static Event" value={performance.bestStaticEvent ?? 'N/A'} />
-              <UnderlinedLabel label="Worst Static Event" value={performance.worstStaticEvent ?? 'N/A'} />
-              <UnderlinedLabel label="Best Dynamic Event" value={performance.bestDynamicEvent ?? 'N/A'} />
-              <UnderlinedLabel label="Worst Dynamic Event" value={performance.worstDynamicEvent ?? 'N/A'} />
+              <UnderlinedLabel
+                label="Best Static Event"
+                value={performance.bestStaticEvent ?? 'N/A'}
+                {...labelEditProps('bestStaticEvent')}
+              />
+              <UnderlinedLabel
+                label="Worst Static Event"
+                value={performance.worstStaticEvent ?? 'N/A'}
+                {...labelEditProps('worstStaticEvent')}
+              />
+              <UnderlinedLabel
+                label="Best Dynamic Event"
+                value={performance.bestDynamicEvent ?? 'N/A'}
+                {...labelEditProps('bestDynamicEvent')}
+              />
+              <UnderlinedLabel
+                label="Worst Dynamic Event"
+                value={performance.worstDynamicEvent ?? 'N/A'}
+                {...labelEditProps('worstDynamicEvent')}
+              />
             </Box>
 
-            {performance.totalPointsEarned !== undefined && performance.maxPoints !== undefined && (
+            {(isEditing || (performance.totalPointsEarned !== undefined && performance.maxPoints !== undefined)) && (
               <Box flex="1 1 140px" display="flex" justifyContent="center" alignItems="flex-start">
-                <PointsRing earned={performance.totalPointsEarned} max={performance.maxPoints} />
+                <PointsRing
+                  earned={isEditing ? Number(form?.totalPointsEarned) || 0 : (performance.totalPointsEarned ?? 0)}
+                  max={isEditing ? Number(form?.maxPoints) || 0 : (performance.maxPoints ?? 0)}
+                  maxContent={isEditing ? statInput('maxPoints', 'Max Points', 50) : undefined}
+                />
               </Box>
             )}
 
             <Box display="flex" flexWrap="wrap" justifyContent="center" gap={3} width="100%">
               <Box flexBasis="45%">
-                <StatBlock value={formatTime(performance.accelerationTopTimeSeconds)} label="Acceleration Top Time" />
+                <StatBlock
+                  value={formatTime(performance.accelerationTopTimeSeconds)}
+                  label="Acceleration Top Time"
+                  editingContent={isEditing ? statInput('accelerationTopTime', 'Acceleration Top Time') : undefined}
+                />
               </Box>
-              {performance.enduranceLapsCompleted !== undefined && performance.maxLaps !== undefined && (
+              {(isEditing || (performance.enduranceLapsCompleted !== undefined && performance.maxLaps !== undefined)) && (
                 <Box flexBasis="45%">
                   <StatBlock
                     value={`${performance.enduranceLapsCompleted}/${performance.maxLaps}`}
                     label="Endurance Laps Completed"
+                    editingContent={
+                      isEditing ? (
+                        <Box display="flex" alignItems="center" justifyContent="center" gap={0.5}>
+                          {statInput('enduranceLapsCompleted', 'Endurance Laps Completed', 50)}
+                          <Typography>/</Typography>
+                          {statInput('maxLaps', 'Max Laps', 50)}
+                        </Box>
+                      ) : undefined
+                    }
                   />
                 </Box>
               )}
               <Box flexBasis="45%">
-                <StatBlock value={formatTime(performance.autocrossTopTimeSeconds)} label="Autocross Top Time" />
+                <StatBlock
+                  value={formatTime(performance.autocrossTopTimeSeconds)}
+                  label="Autocross Top Time"
+                  editingContent={isEditing ? statInput('autocrossTopTime', 'Autocross Top Time') : undefined}
+                />
               </Box>
               <Box flexBasis="45%">
-                <StatBlock value={formatTime(performance.enduranceAvgLapTimeSeconds)} label="Endurance Average Lap Time" />
+                <StatBlock
+                  value={formatTime(performance.enduranceAvgLapTimeSeconds)}
+                  label="Endurance Average Lap Time"
+                  editingContent={isEditing ? statInput('enduranceAvgLapTime', 'Endurance Average Lap Time') : undefined}
+                />
               </Box>
             </Box>
+          </Box>
+        )}
+
+        {isEditing && (
+          <Box display="flex" justifyContent="flex-end" gap={1} mt={2}>
+            <NERFailButton onClick={handleCancel}>Cancel</NERFailButton>
+            <NERSuccessButton onClick={handleSave}>Save</NERSuccessButton>
           </Box>
         )}
       </CardContent>
