@@ -19,7 +19,10 @@ export const prismaChangeRequest1: PrismaChangeRequest = {
   reviewerId: null,
   reviewNotes: null,
   dateDeleted: null,
-  deletedByUserId: null
+  deletedByUserId: null,
+  snapshotBlockingCount: null,
+  snapshotStartDate: null,
+  snapshotDuration: null
 };
 
 export const sharedChangeRequest: SharedChangeRequest = {

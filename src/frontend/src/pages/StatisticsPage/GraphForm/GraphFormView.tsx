@@ -1,7 +1,7 @@
 import { Autocomplete, FormControl, FormHelperText, FormLabel, Grid, MenuItem, Select, TextField } from '@mui/material';
-import { Control, Controller, FieldErrors } from 'react-hook-form';
+import { Control, Controller, FieldErrors, useWatch } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
-import { Car, GraphDisplayType, GraphFormInput, GraphType, Measure, SpecialPermission } from 'shared';
+import { Car, GraphDisplayType, GraphFormInput, GraphType, isAttendanceGraphType, Measure, SpecialPermission } from 'shared';
 import { displayEnum } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { useEffect, useState } from 'react';
@@ -17,6 +17,7 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, c
   const [startTimeDatePickerOpen, setStartTimeDatePickerOpen] = useState(false);
   const [endTimeDatePickerOpen, setEndTimeDatePickerOpen] = useState(false);
   const [carMap, setCarMap] = useState(new Map<string, Car>());
+  const isAttendanceGraph = isAttendanceGraphType(useWatch({ control, name: 'graphType' }));
 
   useEffect(() => {
     const tempSet = new Map<string, Car>();
@@ -92,7 +93,7 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, c
         <FormHelperText error={!!errors.endTime}>{errors.endTime?.message}</FormHelperText>
       </Grid>
 
-      <Grid item xs={6}>
+      <Grid item xs={isAttendanceGraph ? 12 : 6}>
         <FormControl fullWidth>
           <FormLabel sx={{ alignSelf: 'start' }}>Graph Type</FormLabel>
           <Controller
@@ -130,43 +131,45 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, c
         <FormHelperText error={!!errors.graphType}>{errors.graphType?.message}</FormHelperText>
       </Grid>
 
-      <Grid item xs={6}>
-        <FormControl fullWidth>
-          <FormLabel sx={{ alignSelf: 'start' }}>Measure</FormLabel>
-          <Controller
-            control={control}
-            name={'measure'}
-            render={({ field }) => (
-              <Select
-                displayEmpty
-                fullWidth
-                label={'Change Measure'}
-                sx={{ height: 56, width: '100%', textAlign: 'left' }}
-                MenuProps={{
-                  anchorOrigin: {
-                    vertical: 'bottom',
-                    horizontal: 'right'
-                  },
-                  transformOrigin: {
-                    vertical: 'top',
-                    horizontal: 'right'
-                  }
-                }}
-                {...field}
-              >
-                {Object.values(Measure).map((measure: Measure) => {
-                  return (
-                    <MenuItem key={measure} value={measure}>
-                      {displayEnum(measure)}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            )}
-          />
-        </FormControl>
-        <FormHelperText error={!!errors.measure}>{errors.measure?.message}</FormHelperText>
-      </Grid>
+      {!isAttendanceGraph && (
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <FormLabel sx={{ alignSelf: 'start' }}>Measure</FormLabel>
+            <Controller
+              control={control}
+              name={'measure'}
+              render={({ field }) => (
+                <Select
+                  displayEmpty
+                  fullWidth
+                  label={'Change Measure'}
+                  sx={{ height: 56, width: '100%', textAlign: 'left' }}
+                  MenuProps={{
+                    anchorOrigin: {
+                      vertical: 'bottom',
+                      horizontal: 'right'
+                    },
+                    transformOrigin: {
+                      vertical: 'top',
+                      horizontal: 'right'
+                    }
+                  }}
+                  {...field}
+                >
+                  {Object.values(Measure).map((measure: Measure) => {
+                    return (
+                      <MenuItem key={measure} value={measure}>
+                        {displayEnum(measure)}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              )}
+            />
+          </FormControl>
+          <FormHelperText error={!!errors.measure}>{errors.measure?.message}</FormHelperText>
+        </Grid>
+      )}
 
       <Grid item xs={12}>
         <FormControl fullWidth>
@@ -192,34 +195,36 @@ export const GraphFormView: React.FC<GraphFormViewProps> = ({ control, errors, c
         </FormControl>
       </Grid>
 
-      <Grid item xs={6}>
-        <FormControl fullWidth>
-          <FormLabel>Select Cars To Segment Data By</FormLabel>
-          <Controller
-            name="carIds"
-            control={control}
-            render={({ field: { onChange, value } }) => {
-              return (
-                <Autocomplete
-                  isOptionEqualToValue={(option, value) => option?.id === value?.id}
-                  filterSelectedOptions
-                  multiple
-                  id="carSelector"
-                  options={cars}
-                  value={value.map((carId) => carMap.get(carId))}
-                  onChange={(_event, newValue) => onChange(newValue.map((car) => car?.id))}
-                  getOptionLabel={(option) => option?.name ?? ''}
-                  renderInput={(params) => (
-                    <TextField {...params} variant="standard" placeholder="Select Cars (Leave Blank For All Cars)" />
-                  )}
-                />
-              );
-            }}
-          />
-          <FormHelperText error={!!errors.carIds}>{errors.carIds?.message}</FormHelperText>
-        </FormControl>
-      </Grid>
-      <Grid item xs={6}>
+      {!isAttendanceGraph && (
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <FormLabel>Select Cars To Segment Data By</FormLabel>
+            <Controller
+              name="carIds"
+              control={control}
+              render={({ field: { onChange, value } }) => {
+                return (
+                  <Autocomplete
+                    isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                    filterSelectedOptions
+                    multiple
+                    id="carSelector"
+                    options={cars}
+                    value={value.map((carId) => carMap.get(carId))}
+                    onChange={(_event, newValue) => onChange(newValue.map((car) => car?.id))}
+                    getOptionLabel={(option) => option?.name ?? ''}
+                    renderInput={(params) => (
+                      <TextField {...params} variant="standard" placeholder="Select Cars (Leave Blank For All Cars)" />
+                    )}
+                  />
+                );
+              }}
+            />
+            <FormHelperText error={!!errors.carIds}>{errors.carIds?.message}</FormHelperText>
+          </FormControl>
+        </Grid>
+      )}
+      <Grid item xs={isAttendanceGraph ? 12 : 6}>
         <FormControl fullWidth>
           <FormLabel>Additional Permissions to Apply to the Graph</FormLabel>
           <Controller

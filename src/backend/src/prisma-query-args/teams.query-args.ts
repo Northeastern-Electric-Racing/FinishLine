@@ -1,10 +1,11 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args.js';
-import { getProjectGanttQueryArgs } from './projects.query-args.js';
+import { getProjectListItemQueryArgs } from './projects.query-args.js';
 
 export type TeamQueryArgs = ReturnType<typeof getTeamQueryArgs>;
 export type TeamBaseQueryArgs = ReturnType<typeof getTeamBaseQueryArgs>;
 export type TeamPreviewQueryArgs = ReturnType<typeof getTeamPreviewQueryArgs>;
+export type TeamWithProjectsQueryArgs = ReturnType<typeof getTeamWithProjectsQueryArgs>;
 export type TeamJoinRequestQueryArgs = ReturnType<typeof getTeamJoinRequestQueryArgs>;
 
 export const getTeamQueryArgs = (organizationId: string) =>
@@ -21,7 +22,8 @@ export const getTeamQueryArgs = (organizationId: string) =>
             dateDeleted: null
           }
         },
-        ...getProjectGanttQueryArgs(organizationId)
+        // the team pages list them as cards; archiving checks that they're all complete
+        ...getProjectListItemQueryArgs()
       }
     }
   });
@@ -41,6 +43,29 @@ export const getTeamPreviewQueryArgs = (organizationId: string) =>
       head: getUserQueryArgs(organizationId),
       leads: getUserQueryArgs(organizationId),
       teamType: true
+    }
+  });
+
+export const getTeamWithProjectsQueryArgs = () =>
+  Prisma.validator<Prisma.TeamDefaultArgs>()({
+    select: {
+      teamId: true,
+      teamName: true,
+      dateArchived: true,
+      head: { select: { userId: true, firstName: true, lastName: true } },
+      _count: { select: { members: true, leads: true } },
+      projects: {
+        where: {
+          wbsElement: {
+            dateDeleted: null
+          }
+        },
+        select: {
+          wbsElement: {
+            select: { name: true, carNumber: true, projectNumber: true, workPackageNumber: true }
+          }
+        }
+      }
     }
   });
 

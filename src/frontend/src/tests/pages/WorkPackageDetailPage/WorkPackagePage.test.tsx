@@ -4,13 +4,13 @@
  */
 
 import { UseQueryResult } from 'react-query';
-import { AuthenticatedUser, WorkPackage } from 'shared';
+import { AuthenticatedUser, WorkPackageDetail } from 'shared';
 import { render, screen, routerWrapperBuilder, fireEvent } from '../../test-support/test-utils';
 import { Auth } from '../../../utils/types';
-import { useGetManyWorkPackages, useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
+import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { mockAuth, mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
-import { exampleDesignWorkPackage, exampleResearchWorkPackage } from '../../test-support/test-data/work-packages.stub';
+import { exampleResearchWorkPackageDetail } from '../../test-support/test-data/work-package-details.stub';
 import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
 import WorkPackagePage from '../../../pages/WorkPackageDetailPage/WorkPackagePage';
 import { useCurrentUser } from '../../../hooks/users.hooks';
@@ -21,16 +21,10 @@ import {
 
 vi.mock('../../../hooks/work-packages.hooks');
 
-const mockedUseSingleWorkPackage = useSingleWorkPackage as jest.Mock<UseQueryResult<WorkPackage>>;
+const mockedUseSingleWorkPackage = useSingleWorkPackage as jest.Mock<UseQueryResult<WorkPackageDetail>>;
 
-const mockSingleWPHook = (isLoading: boolean, isError: boolean, data?: WorkPackage, error?: Error) => {
-  mockedUseSingleWorkPackage.mockReturnValue(mockUseQueryResult<WorkPackage>(isLoading, isError, data, error));
-};
-
-const mockedGetBlockingWorkPackages = useGetManyWorkPackages as jest.Mock<UseQueryResult<WorkPackage[]>>;
-
-const mockGetBlockingWorkPackagesHook = (isLoading: boolean, isError: boolean, data?: WorkPackage[], error?: Error) => {
-  mockedGetBlockingWorkPackages.mockReturnValue(mockUseQueryResult<WorkPackage[]>(isLoading, isError, data, error));
+const mockSingleWPHook = (isLoading: boolean, isError: boolean, data?: WorkPackageDetail, error?: Error) => {
+  mockedUseSingleWorkPackage.mockReturnValue(mockUseQueryResult<WorkPackageDetail>(isLoading, isError, data, error));
 };
 
 vi.mock('../../../hooks/auth.hooks');
@@ -63,7 +57,6 @@ describe('work package container', () => {
     mockSingleWPHook(true, false);
     mockAuthHook();
     mockCurrentUserHook();
-    mockGetBlockingWorkPackagesHook(true, false);
     renderComponent();
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
@@ -71,10 +64,9 @@ describe('work package container', () => {
   });
 
   it('renders the loaded project', () => {
-    mockSingleWPHook(false, false, exampleResearchWorkPackage);
+    mockSingleWPHook(false, false, exampleResearchWorkPackageDetail);
     mockAuthHook();
     mockCurrentUserHook();
-    mockGetBlockingWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
     renderComponent();
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
@@ -87,7 +79,6 @@ describe('work package container', () => {
     mockSingleWPHook(false, true, undefined, new Error('404 could not find the requested work package'));
     mockAuthHook();
     mockCurrentUserHook();
-    mockGetBlockingWorkPackagesHook(false, false);
     renderComponent();
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
@@ -97,17 +88,15 @@ describe('work package container', () => {
     mockSingleWPHook(false, true);
     mockAuthHook();
     mockCurrentUserHook();
-    mockGetBlockingWorkPackagesHook(false, false);
     renderComponent();
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
   });
 
   it('enables the edit button for non-guest user', () => {
-    mockSingleWPHook(false, false, exampleResearchWorkPackage);
+    mockSingleWPHook(false, false, exampleResearchWorkPackageDetail);
     mockAuthHook(exampleAuthenticatedAdminUser);
     mockCurrentUserHook();
-    mockGetBlockingWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
     renderComponent();
 
     fireEvent.click(screen.getByText('Actions'));
@@ -115,10 +104,9 @@ describe('work package container', () => {
   });
 
   it('disables the edit button for guest user', () => {
-    mockSingleWPHook(false, false, exampleResearchWorkPackage);
+    mockSingleWPHook(false, false, exampleResearchWorkPackageDetail);
     mockAuthHook(exampleAuthenticatedGuestUser);
     mockCurrentUserHook(exampleAuthenticatedGuestUser);
-    mockGetBlockingWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
     renderComponent();
 
     fireEvent.click(screen.getByText('Actions'));

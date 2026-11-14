@@ -4,10 +4,15 @@
  */
 
 import axios from '../utils/axios';
-import { Team, TeamBase, TeamJoinRequest, TeamPreview } from 'shared';
+import { Team, TeamBase, TeamJoinRequest, TeamNamePreview, TeamPreview, TeamWithProjects } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateTeamPayload } from '../hooks/teams.hooks';
-import { teamJoinRequestTransformer, teamPreviewTransformer, teamTransformer } from './transformers/teams.transformers';
+import {
+  teamJoinRequestTransformer,
+  teamPreviewTransformer,
+  teamTransformer,
+  teamWithProjectsTransformer
+} from './transformers/teams.transformers';
 
 export const getAllTeamPreviews = () => {
   return axios.get<TeamBase[]>(apiUrls.teamPreviews(), {
@@ -27,6 +32,12 @@ export const getAllArchivedTeams = () => {
   });
 };
 
+export const getAllTeamsWithProjects = () => {
+  return axios.get<TeamWithProjects[]>(apiUrls.teamsWithProjects(), {
+    transformResponse: (data) => JSON.parse(data).map(teamWithProjectsTransformer)
+  });
+};
+
 export const getSingleTeam = (id: string) => {
   return axios.get<Team>(apiUrls.teamsById(id), {
     transformResponse: (data) => teamTransformer(JSON.parse(data))
@@ -34,7 +45,7 @@ export const getSingleTeam = (id: string) => {
 };
 
 export const getUsersTeams = () => {
-  return axios.get<Team[]>(apiUrls.usersTeams());
+  return axios.get<TeamNamePreview[]>(apiUrls.usersTeams());
 };
 
 export const setTeamMembers = (id: string, userIds: string[]) => {

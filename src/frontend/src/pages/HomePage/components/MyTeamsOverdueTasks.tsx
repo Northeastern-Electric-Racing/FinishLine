@@ -25,8 +25,8 @@ const NoOverdueTeamTaskDisplay = () => {
 const MyTeamsOverdueTasks: React.FC<MyTeamsOverdueTasksProps> = ({ user }) => {
   const { data: overdueTasks, isLoading, isError, error } = useOverdueTasksByTeamLeader(user.userId);
 
+  if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading || !overdueTasks) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error.message} />;
 
   return (
     <ScrollablePageBlock title={`My Team's Overdue Tasks (${overdueTasks.length})`}>

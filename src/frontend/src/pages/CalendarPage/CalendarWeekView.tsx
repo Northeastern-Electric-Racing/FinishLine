@@ -6,7 +6,7 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import { Box, Card, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { Calendar, CalendarTask, ConflictStatus, EventInstance, EventStatus, EventType, isGuest } from 'shared';
+import { Calendar, TaskBoardItem, ConflictStatus, CalendarEventInstance, EventStatus, EventType, isGuest } from 'shared';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { EventClickContent } from './EventClickPopup';
 import EditEventModal from './Components/EditEventModal';
@@ -15,7 +15,7 @@ import NERDeleteModal from '../../components/NERDeleteModal';
 import { useDeleteEvent, useDeleteScheduleSlot } from '../../hooks/calendar.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { getMutedColor } from '../../utils/calendar.utils';
+import { EventSlotTarget, getMutedColor } from '../../utils/calendar.utils';
 import { getTeamTypeIcon } from './CalendarDayCard';
 import { TaskClickContent } from './TaskClickPopup';
 
@@ -62,7 +62,7 @@ const isSameDay = (a: Date, b: Date): boolean =>
 // ─── Event layout ─────────────────────────────────────────────────────────────
 
 interface LayoutEvent {
-  event: EventInstance;
+  event: CalendarEventInstance;
   top: number;
   height: number;
   col: number;
@@ -73,14 +73,14 @@ interface LayoutEvent {
  * Positions events within a single day column using a greedy lane-assignment
  * algorithm so that overlapping events appear side-by-side.
  */
-const computeEventLayouts = (events: EventInstance[]): LayoutEvent[] => {
+const computeEventLayouts = (events: CalendarEventInstance[]): LayoutEvent[] => {
   if (events.length === 0) return [];
 
   const sorted = [...events].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
   // Greedy column assignment: track the end-time of the last event placed in each column.
   const colEndTimes: number[] = [];
-  const placements: { event: EventInstance; col: number }[] = [];
+  const placements: { event: CalendarEventInstance; col: number }[] = [];
 
   for (const event of sorted) {
     const startMs = new Date(event.startTime).getTime();
@@ -126,11 +126,11 @@ const computeEventLayouts = (events: EventInstance[]): LayoutEvent[] => {
 interface CalendarWeekViewProps {
   allEventTypes: EventType[];
   allCalendars: Calendar[];
-  eventInstances: EventInstance[];
+  eventInstances: CalendarEventInstance[];
   displayWeek: Date; // Sunday of the displayed week
   onNavigateWeek: (offset: -1 | 1) => void;
   onCreateEventClick: (date: Date, startTime?: Date, endTime?: Date) => void;
-  tasks?: CalendarTask[];
+  tasks?: TaskBoardItem[];
   selectedEventId?: string;
 }
 
@@ -161,7 +161,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const [lockedTooltipEventId, setLockedTooltipEventId] = useState<string | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<EventInstance | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventSlotTarget | null>(null);
 
   // Open this event's tooltip if it's been deep-linked to via ?eventId=
   useEffect(() => {
@@ -209,12 +209,12 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   const allDayEvents = eventInstances.filter((e) => e.allDay);
 
   // Build per-day event lists for the timed grid
-  const eventsByDay: EventInstance[][] = weekDays.map((day) =>
+  const eventsByDay: CalendarEventInstance[][] = weekDays.map((day) =>
     timedEvents.filter((e) => isSameDay(new Date(e.startTime), day))
   );
 
   // Build per-day all-day event lists
-  const allDayEventsByDay: EventInstance[][] = weekDays.map((day) =>
+  const allDayEventsByDay: CalendarEventInstance[][] = weekDays.map((day) =>
     allDayEvents.filter((e) => {
       const start = new Date(e.startTime);
       const end = new Date(e.endTime);
@@ -237,7 +237,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   // Build per-day task lists (tasks appear on their deadline day)
   // Task deadlines are date-only values normalized to local midnight by dbDateToLocalDate
   // in the transformer, so compare local components on both sides.
-  const tasksByDay: CalendarTask[][] = weekDays.map((day) =>
+  const tasksByDay: TaskBoardItem[][] = weekDays.map((day) =>
     tasks.filter((t) => {
       if (!t.deadline) return false;
       return isSameDay(new Date(t.deadline), day);
@@ -245,7 +245,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   );
 
   // Calendar color lookup
-  const getEventColor = (event: EventInstance): string => {
+  const getEventColor = (event: CalendarEventInstance): string => {
     const eventType = allEventTypes.find((et) => et.eventTypeId === event.eventTypeId);
     const calendar = allCalendars.find((cal) => cal.eventTypes.some((et) => et.eventTypeId === eventType?.eventTypeId));
     return calendar?.color ?? '#888888';
@@ -344,12 +344,12 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
 
   // ─── Edit / delete handlers ────────────────────────────────────────────────
 
-  const handleEdit = (event: EventInstance) => {
+  const handleEdit = (event: EventSlotTarget) => {
     setSelectedEvent(event);
     setShowEditModal(true);
   };
 
-  const handleDelete = (event: EventInstance) => {
+  const handleDelete = (event: EventSlotTarget) => {
     setSelectedEvent(event);
     if (event.recurring) {
       setShowSeriesDeleteModal(true);
@@ -387,7 +387,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
 
   // ─── Sub-components ────────────────────────────────────────────────────────
 
-  const WeekEventBlock = ({ event, layout }: { event: EventInstance; layout: LayoutEvent }) => {
+  const WeekEventBlock = ({ event, layout }: { event: CalendarEventInstance; layout: LayoutEvent }) => {
     const [blockHovered, setBlockHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const tooltipHoveredRef = useRef(false);
@@ -508,7 +508,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
     );
   };
 
-  const AllDayEventBlock = ({ event }: { event: EventInstance }) => {
+  const AllDayEventBlock = ({ event }: { event: CalendarEventInstance }) => {
     const [blockHovered, setBlockHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const isLocked = lockedTooltipEventId === event.eventId + event.scheduleSlotId;
@@ -601,7 +601,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
     );
   };
 
-  const AllDayTaskBlock = ({ task }: { task: CalendarTask }) => {
+  const AllDayTaskBlock = ({ task }: { task: TaskBoardItem }) => {
     const [blockHovered, setBlockHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const tooltipHoveredRef = useRef(false);

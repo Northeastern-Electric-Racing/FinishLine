@@ -147,7 +147,7 @@ export class ReimbursementRequestProcess extends SeedProcess<ReimbursementReques
     materialsByProjectId
   }: ReimbursementRequestInput): Promise<ReimbursementRequestOutput> {
     const { organizationId } = organization;
-    const now = new Date();
+    const { now } = this;
 
     const recipients = [...members, ...leadership, ...heads, ...admins];
     const headApprovers = [...heads, ...admins, ...appAdmins];

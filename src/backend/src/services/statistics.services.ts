@@ -9,7 +9,16 @@ import {
 } from '../prisma-query-args/statistics.query-args.js';
 import { userHasPermissionNew } from '../utils/users.utils.js';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils.js';
-import { Graph, GraphCollection, GraphData, isSubset, isUnderWordCount, Permission, User } from 'shared';
+import {
+  Graph,
+  GraphCollection,
+  GraphData,
+  isAttendanceGraphType,
+  isSubset,
+  isUnderWordCount,
+  Permission,
+  User
+} from 'shared';
 import { getGraphCollectionAndVerifyPermissions, getGraphData } from '../utils/statistics.utils.js';
 import { graphCollectionTransformer } from '../transformers/statistics-graph-collection.transformer.js';
 
@@ -45,6 +54,12 @@ export default class StatisticsService {
   ): Promise<Graph> {
     if (!(await userHasPermissionNew(user.userId, organization.organizationId, [Permission.CREATE_GRAPH]))) {
       throw new AccessDeniedException('You do not have permission to create a graph');
+    }
+
+    // attendance graphs are always averaged per session and aren't segmented by car
+    if (isAttendanceGraphType(graphType)) {
+      measure = Measure.AVG;
+      carIds = [];
     }
 
     if (startDate && endDate) {
@@ -153,6 +168,12 @@ export default class StatisticsService {
   ): Promise<Graph> {
     if (!(await userHasPermissionNew(userEditing.userId, organization.organizationId, [Permission.EDIT_GRAPH]))) {
       throw new AccessDeniedException('You do not have permission to edit a graph');
+    }
+
+    // attendance graphs are always averaged per session and aren't segmented by car
+    if (isAttendanceGraphType(graphType)) {
+      measure = Measure.AVG;
+      carIds = [];
     }
 
     const graph = await prisma.graph.findUnique({

@@ -1,12 +1,12 @@
 import {
   ChangeRequest,
   daysBetween,
-  Task,
+  BaseTask,
   wbsPipe,
   calculateEndDate,
   CreateSponsorTask,
   User,
-  Event,
+  BaseEvent,
   formatForSlack,
   SlackMentionType,
   Team as SharedTeam,
@@ -29,9 +29,6 @@ import { HttpException } from './errors.utils.js';
 import { Change_Request, Team, WBS_Element } from '@prisma/client';
 import { UserWithSettings } from './auth.utils.js';
 import { usersToSlackPings, userToSlackPing } from './notifications.utils.js';
-import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args.js';
-import { Prisma } from '@prisma/client';
-import { userTransformer } from '../transformers/user.transformer.js';
 import { SlackRichTextBlock } from '../services/slack.services.js';
 import UsersService from '../services/users.services.js';
 
@@ -59,17 +56,59 @@ export const buildDueString = (daysUntilDeadline: number): string => {
   return `is due in ${daysUntilDeadline} days!`;
 };
 
+// slack rejects a section block whose text is longer than this
+const SLACK_SECTION_TEXT_LIMIT = 3000;
+
+/**
+ * Splits a message made of separate lines into as few messages as possible that each fit in a slack section block,
+ * never splitting a line across messages
+ * @param header the text to start the first message with
+ * @param lines the lines to split across the messages
+ * @param separator the text to join lines with
+ * @returns the messages to send, in order (empty if there are no lines)
+ */
+export const splitSlackMessage = (header: string, lines: string[], separator: string): string[] => {
+  const messages: string[] = [];
+  let current = header;
+  let currentHasLines = false;
+  lines.forEach((rawLine) => {
+    const line = rawLine.slice(0, SLACK_SECTION_TEXT_LIMIT);
+    const next = currentHasLines ? current + separator + line : current + line;
+    if (next.length <= SLACK_SECTION_TEXT_LIMIT) {
+      current = next;
+    } else {
+      if (currentHasLines) messages.push(current);
+      current = line;
+    }
+    currentHasLines = true;
+  });
+  if (currentHasLines) messages.push(current);
+  return messages;
+};
+
 // build the "user" string for the upcoming deadlines slack message
-const buildUserString = (lead?: User, slackId?: string): string => {
+const buildUserString = (lead?: Pick<User, 'firstName' | 'lastName'>, slackId?: string): string => {
   if (lead && slackId) return `<@${slackId}>`;
   if (lead && !slackId)
     return `${lead.firstName} ${lead.lastName} (<https://finishlinebyner.com/settings|set your slack id here>)`;
   return '(no project lead)';
 };
 
-export const sendSlackUpcomingDeadlineNotification = async (
-  workPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>
-): Promise<void> => {
+type WbsOwner = Pick<User, 'userId' | 'firstName' | 'lastName'>;
+
+export const sendSlackUpcomingDeadlineNotification = async (workPackage: {
+  startDate: Date;
+  duration: number;
+  wbsElement: {
+    carNumber: number;
+    projectNumber: number;
+    workPackageNumber: number;
+    name: string;
+    lead: WbsOwner | null;
+    manager: WbsOwner | null;
+  };
+  project: { wbsElement: { name: string }; teams: Pick<Team, 'slackId'>[] };
+}): Promise<void> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
 
@@ -77,10 +116,8 @@ export const sendSlackUpcomingDeadlineNotification = async (
   const slackId = lead ? await getUserSlackId(lead?.userId) : undefined;
   const daysUntilDeadline = daysBetween(endDate, new Date());
 
-  const userString = lead ? buildUserString(userTransformer(lead), slackId) : 'No Lead Set';
-  const managerString = manager
-    ? buildUserString(userTransformer(manager), await getUserSlackId(manager.userId))
-    : 'No Manager Set';
+  const userString = lead ? buildUserString(lead, slackId) : 'No Lead Set';
+  const managerString = manager ? buildUserString(manager, await getUserSlackId(manager.userId)) : 'No Manager Set';
   const dueString = buildDueString(daysUntilDeadline);
 
   const wbsNumber: string = wbsPipe(workPackage.wbsElement);
@@ -124,7 +161,7 @@ export const sendSlackRequestedReviewNotification = async (
  */
 export const sendSlackTaskAssignedNotification = async (
   slackId: string,
-  task: Task,
+  task: Pick<BaseTask, 'wbsNum' | 'title'>,
   organizationId: string
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
@@ -321,9 +358,19 @@ export const sendSlackEventConfirmNotification = async (
 ) => {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
-  const msg = remindUnconfirmed
-    ? `REMINDER: Please fill out your availability for ${eventName} in project ${projectName}!`
-    : `You have been invited to ${eventName} in project ${projectName}!`;
+  const projectNameNotEmpty = projectName && projectName.trim() !== '';
+
+  let msg = '';
+  if (projectNameNotEmpty && remindUnconfirmed) {
+    msg = `REMINDER: Please fill out your availability for ${eventName} in project ${projectName}!`;
+  } else if (remindUnconfirmed) {
+    msg = `REMINDER: Please fill out your availability for ${eventName}!`;
+  } else if (projectNameNotEmpty) {
+    msg = `You have been invited to ${eventName} in project ${projectName}!`;
+  } else {
+    msg = `You have been invited to ${eventName}!`;
+  }
+
   const fullLink = isProduction
     ? `https://finishlinebyner.com/calendar/event/${eventId}`
     : `http://localhost:3000/calendar/event/${eventId}`;
@@ -342,7 +389,7 @@ export const sendSlackEventConfirmNotification = async (
  * @returns the channelId and timestamp of the messages sent in slack
  */
 export const sendSlackChangeRequestNotification = async (
-  team: Team,
+  team: Pick<Team, 'slackId'>,
   message: string,
   crId: string,
   identifier: number
@@ -359,7 +406,7 @@ export const sendSlackChangeRequestNotification = async (
 };
 
 export const sendAndGetSlackCRNotifications = async (
-  teams: Team[],
+  teams: Pick<Team, 'slackId'>[],
   changeRequest: Change_Request,
   submitter: User,
   wbsElement?: WBS_Element,
@@ -433,7 +480,7 @@ export const sendSlackEventNotificationToChannel = async (
 };
 
 export const sendSlackEventNotification = async (
-  team: Team,
+  team: Pick<Team, 'slackId'>,
   message: string
 ): Promise<{ channelId: string; ts: string }[]> => sendSlackEventNotificationToChannel(team.slackId, message);
 
@@ -443,8 +490,8 @@ export interface EventNotificationOptions {
 }
 
 export const sendSlackEventNotifications = async (
-  teams: Team[],
-  event: Event,
+  teams: Pick<Team, 'slackId'>[],
+  event: Pick<BaseEvent, 'eventId' | 'title'>,
   submitter: User,
   workPackageName: string,
   projectName: string,
@@ -455,12 +502,17 @@ export const sendSlackEventNotifications = async (
   const notifications: { channelId: string; ts: string }[] = [];
 
   const mentionPrefix = buildSlackMentionPrefix(options.mention ?? SlackMentionType.USER, options.memberSlackIds ?? []);
+  const projectNameNotEmpty = projectName && projectName.trim() !== '';
 
   let message;
-  if (workPackageName) {
+  if (workPackageName && projectNameNotEmpty) {
     message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
-  } else {
+  } else if (workPackageName) {
+    message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
+  } else if (projectNameNotEmpty) {
     message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName} in project ${projectName}`;
+  } else {
+    message = `${mentionPrefix}:spiral_calendar_pad: ${event.title} is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
   }
 
   const completion: Promise<void>[] = teams.map(async (team) => {
@@ -501,7 +553,10 @@ export const sendSlackEventNotifications = async (
   return notifications;
 };
 
-export const sendEventUserConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
+export const sendEventUserConfirmationToThread = async (
+  threads: SlackMessageThread[],
+  submitter: { userSettings: { slackId: string } | null }
+) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} confirmed their availability!`;
@@ -511,7 +566,10 @@ export const sendEventUserConfirmationToThread = async (threads: SlackMessageThr
   }
 };
 
-export const sendEventConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
+export const sendEventConfirmationToThread = async (
+  threads: SlackMessageThread[],
+  submitter: { userSettings: { slackId: string } | null }
+) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} All of the required attendees have confirmed their availability!`;
@@ -523,7 +581,14 @@ export const sendEventConfirmationToThread = async (threads: SlackMessageThread[
 
 export const sendEventScheduledSlackNotif = async (
   threads: SlackMessageThread[],
-  event: Event,
+  event: Pick<BaseEvent, 'title' | 'scheduledTimes' | 'userCreated'> & {
+    location: string | null;
+    zoomLink: string | null;
+    questionDocumentLink: string | null;
+    workPackages: { wbsElement: { name: string } }[];
+    requiredMembers: { userId: string }[];
+    optionalMembers: { userId: string }[];
+  },
   beingRescheduled: boolean = false
 ) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
@@ -968,4 +1033,51 @@ export const notifySponsorTaskAssignee = async (
   const link = `https://finishlinebyner.com/finance/companies/sponsors`;
   const linkButtonText = `View Tasks for ${sponsor}`;
   await sendMessage(assignee.userSettings?.slackId, msg, link, linkButtonText);
+};
+
+/**
+ *
+ * Sends a message to team channels that are associated with the work package
+ * and notifies leads and manager in that message. This message is only sent
+ * if the work package is scheduled to start more days apart than the
+ * accepted threshold.
+ *
+ * @param teams The teams to notify
+ * @param leadId The work package's lead
+ * @param managerId The work package's manager
+ * @param newStartDate The new planned starting date for the work package
+ * @param oldStartDate The previous planned starting date for the work package
+ * @param wbsString The wbs number as a string type
+ * @param name Name of the work package
+ */
+export const sendActivationStartDateChangedNotification = async (
+  teams: Pick<Team, 'slackId'>[],
+  leadId: string = '',
+  managerId: string = '',
+  newStartDate: Date,
+  oldStartDate: Date,
+  wbsString: string,
+  name: string
+) => {
+  const leadIdPing = (await getUserSlackMentionOrName(leadId)) || '';
+  const managerIdPing = (await getUserSlackMentionOrName(managerId)) || '';
+
+  const newStartDateString = newStartDate.toDateString();
+  const oldStartDateString = oldStartDate.toDateString();
+
+  const message =
+    leadIdPing +
+    ' ' +
+    managerIdPing +
+    ' The start date for ' +
+    name +
+    ' has been changed from ' +
+    oldStartDateString +
+    ' to ' +
+    newStartDateString +
+    '.\n';
+  const link = `https://finishlinebyner.com/projects/${wbsString}`;
+  const linkButtonText = 'Change Work Package';
+
+  await Promise.all(teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText)));
 };

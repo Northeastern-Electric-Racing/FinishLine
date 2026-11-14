@@ -6,13 +6,14 @@
 import { FormEvent, useState } from 'react';
 import { Redirect, useHistory } from 'react-router-dom';
 import { useToggleTheme } from '../../hooks/theme.hooks';
-import { useAuth } from '../../hooks/auth.hooks';
+import { SERVER_UNAVAILABLE_MESSAGE, useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
 import LoginPage from './LoginPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useOrganization } from '../../hooks/organizations.hooks';
 import { CredentialResponse } from '@react-oauth/google';
+import ErrorPage from '../ErrorPage';
 
 /**
  * Page for unauthenticated users to do login.
@@ -27,6 +28,7 @@ const Login = () => {
 
   if (!auth.user && !auth.triedCurrent) {
     auth.signInCurrent();
+    if (auth.serverUnavailable) return <ErrorPage message={SERVER_UNAVAILABLE_MESSAGE} />;
     return <LoadingIndicator />;
   }
 

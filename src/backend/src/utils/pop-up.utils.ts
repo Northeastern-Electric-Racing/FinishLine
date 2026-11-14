@@ -11,8 +11,8 @@ import { PopUpService } from '../services/pop-up.services.js';
  * @param organizationId  id of the organization of the event
  */
 export const sendEventPopUp = async (
-  event: Event,
-  members: User[],
+  event: Pick<Event, 'eventId'>,
+  members: Pick<User, 'userId'>[],
   submitter: User,
   workPackageName: string,
   organizationId: string

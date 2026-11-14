@@ -1,5 +1,5 @@
-import { Team, TeamJoinRequest, TeamPreview } from 'shared';
-import { projectGanttTransformer } from './projects.transformers';
+import { Team, TeamJoinRequest, TeamPreview, TeamWithProjects } from 'shared';
+import { baseProjectTransformer } from './projects.transformers';
 
 /**
  * Transforms a team to ensure deep field transformation of date objects.
@@ -11,7 +11,7 @@ export const teamTransformer = (team: Team): Team => {
   return {
     ...team,
     dateArchived: team.dateArchived ? new Date(team.dateArchived) : undefined,
-    projects: team.projects.map(projectGanttTransformer)
+    projects: team.projects.map(baseProjectTransformer)
   };
 };
 
@@ -19,6 +19,13 @@ export const teamPreviewTransformer = (team: TeamPreview): TeamPreview => {
   return {
     dateArchived: team.dateArchived ? new Date(team.dateArchived) : undefined,
     ...team
+  };
+};
+
+export const teamWithProjectsTransformer = (team: TeamWithProjects): TeamWithProjects => {
+  return {
+    ...team,
+    dateArchived: team.dateArchived ? new Date(team.dateArchived) : undefined
   };
 };
 

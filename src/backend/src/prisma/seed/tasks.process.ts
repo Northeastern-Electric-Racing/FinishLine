@@ -131,7 +131,7 @@ export class TaskProcess extends SeedProcess<TaskInput, TaskOutput> {
           .arrayElements(labels, Math.min(labelCountForTask(this.faker), labels.length))
           .map((label) => label.taskLabelId);
 
-        const data = createSeedTask(this.faker, parent, creator.userId, assigneeIds, labelIds, canBeDone);
+        const data = createSeedTask(this.faker, parent, creator.userId, assigneeIds, this.now, labelIds, canBeDone);
         const status = data.status as Task_Status;
 
         const blockedByIndices = pickBlockedByIndices(projectDraftIndices, status === Task_Status.DONE);

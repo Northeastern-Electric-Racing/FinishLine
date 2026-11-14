@@ -90,7 +90,7 @@ export class PartProcess extends SeedProcess<PartInput, PartOutput> {
       ])
     );
 
-    const now = new Date();
+    const { now } = this;
 
     // Parts (and their submissions/reviews/requests) only make sense for projects that have
     // actually started - matches the same skip used by ChangeRequestProcess/

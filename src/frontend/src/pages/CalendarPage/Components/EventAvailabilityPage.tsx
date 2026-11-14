@@ -11,7 +11,6 @@ import {
   getMostRecentAvailabilities,
   User,
   UserWithScheduleSettings,
-  EventWithMembers,
   EventStatus,
   isAdmin,
   dbDateToLocalDate
@@ -20,7 +19,7 @@ import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentUser, useUserScheduleSettings, useManyUsersWithScheduleSettings } from '../../../hooks/users.hooks';
-import { useMarkUserConfirmed, useRemindUnconfirmed, useSingleEventWithMembers } from '../../../hooks/calendar.hooks';
+import { useMarkUserConfirmed, useRemindUnconfirmed, useSingleEvent } from '../../../hooks/calendar.hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { eventNamePipe, fullNamePipe } from '../../../utils/pipes';
 import NERSuccessButton from '../../../components/NERSuccessButton';
@@ -35,37 +34,6 @@ import AvailabilityEditModal from '../../SettingsPage/UserScheduleSettings/Avail
 import AvailabilityScheduleView from '../AvailabilityScheduleView';
 import ScheduleEventModal from './ScheduleEventModal';
 import { formatHourInCurrentTimeZone, offsetDate, yourTimeZoneInitials } from '../../../utils/design-review.utils';
-
-const isUserOnEvent = (user: User, event: EventWithMembers): boolean => {
-  const isDirectMember =
-    event.requiredMembers?.some((member: User) => member.userId === user.userId) ||
-    event.optionalMembers?.some((member: User) => member.userId === user.userId);
-
-  if (isDirectMember) return true;
-
-  const isOnEventTeam = event.teams?.some(
-    (team) =>
-      team.members?.some((member: User) => member.userId === user.userId) ||
-      team.leads?.some((lead: User) => lead.userId === user.userId) ||
-      team.head?.userId === user.userId
-  );
-
-  if (isOnEventTeam) return true;
-
-  if (event.teamType?.teams) {
-    const isOnTeamType = event.teamType.teams.some(
-      (team) =>
-        team.members?.some((member: User) => member.userId === user.userId) ||
-        team.leads?.some((lead: User) => lead.userId === user.userId) ||
-        team.head?.userId === user.userId
-    );
-    if (isOnTeamType) return true;
-  }
-
-  if (event.userCreated?.userId === user.userId) return true;
-
-  return false;
-};
 
 export const EventAvailabilityPage: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -89,12 +57,7 @@ export const EventAvailabilityPage: React.FC = () => {
   const [selectedSlot, setSelectedSlot] = useState<{ day: Date; startHour: number; endHour: number } | null>(null);
   const [confirmRemindOpen, setConfirmRemindOpen] = useState(false);
 
-  const {
-    data: event,
-    isError: eventError,
-    error: eventErrorMsg,
-    isLoading: eventLoading
-  } = useSingleEventWithMembers(eventId);
+  const { data: event, isError: eventError, error: eventErrorMsg, isLoading: eventLoading } = useSingleEvent(eventId);
 
   const {
     data: userScheduleSettings,
@@ -136,10 +99,8 @@ export const EventAvailabilityPage: React.FC = () => {
     return event?.initialDateScheduled ? dbDateToLocalDate(event.initialDateScheduled) : new Date();
   }, [dateParam, event]);
 
-  const isUserMember = useMemo(() => {
-    if (!event) return false;
-    return isUserOnEvent(currentUser, event);
-  }, [currentUser, event]);
+  // computed by the server, including membership through the event's teams and team type
+  const isUserMember = event?.isCurrentUserOnEvent ?? false;
 
   // Determine if current user is the creator
   const isCreator = useMemo(() => {
@@ -280,7 +241,15 @@ export const EventAvailabilityPage: React.FC = () => {
     <PageLayout
       title={workPackageNames}
       headerRight={
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: { xs: 'stretch', sm: 'flex-end' },
+            mb: { xs: 2, md: 0 }
+          }}
+        >
           <NERSuccessButton variant="contained" onClick={() => setEditAvailabilityOpen(true)} disabled={!isUserMember}>
             Edit My Availability
           </NERSuccessButton>
@@ -288,9 +257,18 @@ export const EventAvailabilityPage: React.FC = () => {
         </Box>
       }
     >
-      <Box sx={{ display: 'flex', gap: 2, overflow: 'hidden', width: '100%', height: 'calc(100vh - 200px)' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 2,
+          overflow: 'hidden',
+          width: '100%',
+          height: { xs: 'auto', md: 'calc(100vh - 200px)' }
+        }}
+      >
         {/* Left side - Availability Grid */}
-        <Box sx={{ flex: '1 1 0', minWidth: 0, height: '100%', overflow: 'hidden' }}>
+        <Box sx={{ flex: '1 1 0', minWidth: 0, height: { xs: 420, md: '100%' }, overflow: 'hidden' }}>
           <AvailabilityScheduleView
             availableUsers={availableUsers}
             unavailableUsers={unavailableUsers}
@@ -308,12 +286,12 @@ export const EventAvailabilityPage: React.FC = () => {
         <Box
           sx={{
             flex: '0 0 auto',
-            width: { xs: 180, sm: 220, md: 280 },
+            width: { xs: '100%', md: 280 },
             backgroundColor: theme.palette.background.paper,
             borderRadius: 2,
             p: { xs: 1.5, sm: 2, md: 3 },
             overflowY: 'auto',
-            height: '100%'
+            height: { xs: 'auto', md: '100%' }
           }}
         >
           {/* Date/Time display */}
@@ -349,7 +327,7 @@ export const EventAvailabilityPage: React.FC = () => {
             }
             return (
               <Typography variant="body1" color="text.secondary" mb={3}>
-                Hover over a time slot to see availability
+                {isMobile ? 'Tap a time slot to see availability' : 'Hover over a time slot to see availability'}
               </Typography>
             );
           })()}

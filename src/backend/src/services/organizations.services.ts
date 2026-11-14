@@ -3,7 +3,7 @@ import {
   Link,
   LinkCreateArgs,
   NotificationChannelPreview,
-  ProjectPreview,
+  ProjectListItem,
   RoleEnum,
   isAdmin,
   isAtLeastRank,
@@ -22,8 +22,8 @@ import { createUsefulLinks } from '../utils/organizations.utils.js';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
 import { uploadFile } from '../utils/google-integration.utils.js';
 import { getProjects } from '../utils/projects.utils.js';
-import { getProjectPreviewQueryArgs } from '../prisma-query-args/projects.query-args.js';
-import { projectPreviewTransformer } from '../transformers/projects.transformer.js';
+import { getProjectListItemQueryArgs } from '../prisma-query-args/projects.query-args.js';
+import { projectListItemTransformer } from '../transformers/projects.transformer.js';
 import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { userTransformer } from '../transformers/user.transformer.js';
 import { organizationTransformer } from '../transformers/organizationTransformer.js';
@@ -360,17 +360,17 @@ export default class OrganizationsService {
    * @param organizationId the organization to get the projects for
    * @returns all the featured projects for the organization
    */
-  static async getOrganizationFeaturedProjects(organizationId: string): Promise<ProjectPreview[]> {
+  static async getOrganizationFeaturedProjects(organizationId: string): Promise<ProjectListItem[]> {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
-      include: { featuredProjects: getProjectPreviewQueryArgs(organizationId) }
+      select: { featuredProjects: { where: { wbsElement: { dateDeleted: null } }, ...getProjectListItemQueryArgs() } }
     });
 
     if (!organization) {
       throw new NotFoundException('Organization', organizationId);
     }
 
-    return organization.featuredProjects.filter((p) => !p.wbsElement.dateDeleted).map(projectPreviewTransformer);
+    return organization.featuredProjects.map(projectListItemTransformer);
   }
 
   /**
@@ -571,5 +571,39 @@ export default class OrganizationsService {
     });
 
     return newImages;
+  }
+
+  /**
+   * Sets the number of days a work package's activation start date can drift from its
+   * scheduled date before the change requires a change request
+   * @param submitter the user making the change (must be admin)
+   * @param organization the organization whose buffer is changing
+   * @param activationBufferDays the new buffer in days
+   * @returns the updated organization
+   * @throws if the user is not an admin or the value is invalid
+   */
+  static async setActivationBufferDays(submitter: User, organization: Organization, activationBufferDays: number) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update activation buffer days');
+    }
+
+    if (!Number.isInteger(activationBufferDays)) {
+      throw new HttpException(400, 'Activation buffer days must be an integer');
+    }
+
+    if (activationBufferDays < 0) {
+      throw new HttpException(400, 'Activation buffer days must not be negative');
+    }
+
+    if (activationBufferDays < 0 || activationBufferDays > 365) {
+      throw new HttpException(400, 'Activation buffer days must be between 0 and 365');
+    }
+
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: { activationBufferDays }
+    });
+
+    return organizationTransformer(updatedOrg);
   }
 }
