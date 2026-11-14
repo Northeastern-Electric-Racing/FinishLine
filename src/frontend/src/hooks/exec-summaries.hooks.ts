@@ -1,6 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { BudgetSummary, ExecutiveSummary, NewMemberSignUpEvent, VehicleDevelopmentSummary } from 'shared';
 import {
+  BudgetSummary,
+  CompetitionPerformance,
+  EditCompetitionPerformanceArgs,
+  ExecutiveSummary,
+  NewMemberSignUpEvent,
+  VehicleDevelopmentSummary
+} from 'shared';
+import {
+  editCompetitionPerformance,
   editExecutiveSummary,
   getAllExecutiveSummaries,
   getBudgetSummary,
@@ -100,4 +108,25 @@ export const useGetNewMemberSignUpEvents = () => {
     const { data } = await getNewMemberSignUpEvents();
     return data;
   });
+};
+
+/**
+ * Custom React Hook to edit a competition performance.
+ *
+ * NOTE: the server treats this as a full replace, not a patch. Any field omitted from the
+ * payload is cleared, so always send every field the form holds (including unchanged ones).
+ *
+ * @param competitionPerformanceId The id of the competition performance being edited
+ * @returns the updated competition performance
+ */
+export const useEditCompetitionPerformance = (competitionPerformanceId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<CompetitionPerformance, Error, EditCompetitionPerformanceArgs>(
+    ['executive-summaries', 'competition-performance', 'edit'],
+    async (formData: EditCompetitionPerformanceArgs) => {
+      const { data } = await editCompetitionPerformance(competitionPerformanceId, formData);
+      queryClient.invalidateQueries(['executive-summaries']);
+      return data;
+    }
+  );
 };

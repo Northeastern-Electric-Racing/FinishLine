@@ -1,4 +1,11 @@
-import { BudgetSummary, ExecutiveSummary, NewMemberSignUpEvent, VehicleDevelopmentSummary } from 'shared';
+import {
+  BudgetSummary,
+  CompetitionPerformance,
+  EditCompetitionPerformanceArgs,
+  ExecutiveSummary,
+  NewMemberSignUpEvent,
+  VehicleDevelopmentSummary
+} from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { EditExecSummaryPayload } from '../hooks/exec-summaries.hooks';
@@ -80,4 +87,24 @@ export const getNewMemberSignUpEvents = () => {
     transformResponse: (data) =>
       (JSON.parse(data) as NewMemberSignUpEvent[]).map((event) => ({ ...event, date: new Date(event.date) }))
   });
+};
+
+/**
+ * Edits a competition performance in the database.
+ *
+ * NOTE: this is a full replace, not a patch. Any field omitted from the payload is cleared
+ * (set to null) on the server, so the payload must contain every field the form holds.
+ *
+ * @param competitionPerformanceId id of the competition performance to edit
+ * @param competitionPerformanceData the complete edited data of the competition performance
+ * @returns the updated competition performance
+ */
+export const editCompetitionPerformance = (
+  competitionPerformanceId: string,
+  competitionPerformanceData: EditCompetitionPerformanceArgs
+) => {
+  return axios.post<CompetitionPerformance>(
+    apiUrls.executiveSummaryEditCompetitionPerformance(competitionPerformanceId),
+    competitionPerformanceData
+  );
 };
