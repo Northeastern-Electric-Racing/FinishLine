@@ -151,7 +151,7 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, allEventTypes, allCalendar
     tab === 1
   );
   const reviewEventsQuery = useReviewBookingEvents(hidePastEvents ? now : undefined, tab === 2);
-  const { data: baseEvents, isError, error } = tab === 1 ? yourEventsQuery : reviewEventsQuery;
+  const { data: baseEvents, isLoading, isError, error } = tab === 1 ? yourEventsQuery : reviewEventsQuery;
 
   const handleOpenClickPopup = (event: CalendarEvent) => {
     setClickedEvent(event);
@@ -257,12 +257,10 @@ const EventsTable: React.FC<EventTableArgs> = ({ tab, allEventTypes, allCalendar
   ];
 
   if (isError) return <ErrorPage message={error?.message} />;
-  if (!baseEvents) return <LoadingIndicator />;
+  if (isLoading || !baseEvents) return <LoadingIndicator />;
 
-  const filteredEvents = hidePastEvents
-    ? baseEvents.filter((event) => getNextMeetingTime(event).getTime() >= now.getTime())
-    : baseEvents;
-  const events = sortEvents(filteredEvents);
+  // the server already left out past events when they're hidden
+  const events = sortEvents(baseEvents);
 
   return (
     <Box sx={{ width: '100%', borderRadius: '8px 8px 0 0' }}>

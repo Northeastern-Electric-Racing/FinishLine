@@ -29,10 +29,10 @@ export function buildScheduledTimesOverlap(start?: Date, end?: Date): Prisma.Sch
 }
 
 /**
- * Events in the given organization that the user is on: a required or optional member, the creator, or on (as a member,
- * lead, or head) one of the event's teams or a team of the event's team type
+ * Events the user is on: a required or optional member, the creator, or, with includeTeamEvents, on (as a member, lead,
+ * or head) one of the event's teams, a team of the event's team type, or a team of a project one of its work packages is in
  */
-export const eventsUserIsOnWhere = (userId: string): Prisma.EventWhereInput => {
+export const eventsUserIsOnWhere = (userId: string, includeTeamEvents = true): Prisma.EventWhereInput => {
   const userOnTeam: Prisma.TeamWhereInput = {
     OR: [{ members: { some: { userId } } }, { leads: { some: { userId } } }, { headId: userId }]
   };
@@ -41,8 +41,13 @@ export const eventsUserIsOnWhere = (userId: string): Prisma.EventWhereInput => {
       { requiredMembers: { some: { userId } } },
       { optionalMembers: { some: { userId } } },
       { userCreatedId: userId },
-      { teams: { some: userOnTeam } },
-      { teamType: { teams: { some: userOnTeam } } }
+      ...(includeTeamEvents
+        ? [
+            { teams: { some: userOnTeam } },
+            { teamType: { teams: { some: userOnTeam } } },
+            { workPackages: { some: { project: { teams: { some: userOnTeam } } } } }
+          ]
+        : [])
     ]
   };
 };

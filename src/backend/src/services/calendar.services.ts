@@ -56,6 +56,7 @@ import {
   removeDeletedEventDocuments,
   assertEventInOrganization,
   isUserOnEvent,
+  eventsUserIsOnWhere,
   buildScheduledTimesOverlap,
   scheduleSlotOverlapWhere,
   findMatchingTimeOfDaySlots,
@@ -2725,7 +2726,7 @@ export default class CalendarService {
       orderBy: { dateCreated: 'asc' }
     });
 
-    return events.map(calendarEventTransformer).sort(byFirstSlotStart);
+    return events.map(calendarEventTransformer);
   }
 
   /**
@@ -2733,7 +2734,7 @@ export default class CalendarService {
    *
    * @param organization the organization the user is currently in
    * @param startPeriod when given, only events with a slot (or, if unscheduled, an initial date) on or after it
-   * @returns the pending events, soonest first
+   * @returns the pending events; the Review Bookings table orders them
    */
   static async getReviewBookingEvents(organization: Organization, startPeriod?: Date): Promise<CalendarEvent[]> {
     const events = await prisma.event.findMany({
@@ -2747,7 +2748,7 @@ export default class CalendarService {
       orderBy: { dateCreated: 'asc' }
     });
 
-    return events.map(calendarEventTransformer).sort(byFirstSlotStart);
+    return events.map(calendarEventTransformer);
   }
 
   /**
@@ -2756,57 +2757,24 @@ export default class CalendarService {
    *
    * @param submitter the current user
    * @param organization the organization the user is currently in
-   * @param days how many days ahead to look
+   * @param endPeriod the end of the window; the client sends it so the window ends at midnight in the user's timezone
    * @param includeTeamEvents whether to include events that only involve the user through a team
    * @returns the upcoming events with only their future slots in the window, by next slot
    */
   static async getMyUpcomingEvents(
     submitter: User,
     organization: Organization,
-    days: number,
+    endPeriod: Date,
     includeTeamEvents: boolean
   ): Promise<UpcomingEvent[]> {
-    const now = new Date();
-    const end = new Date(now);
-    end.setDate(end.getDate() + days);
-    end.setHours(23, 59, 59, 999);
-
-    const memberOf: Prisma.EventWhereInput[] = [
-      { requiredMembers: { some: { userId: submitter.userId } } },
-      { optionalMembers: { some: { userId: submitter.userId } } },
-      { userCreatedId: submitter.userId }
-    ];
-
-    if (includeTeamEvents) {
-      const userTeams = await prisma.team.findMany({
-        where: {
-          organizationId: organization.organizationId,
-          dateArchived: null,
-          OR: [
-            { members: { some: { userId: submitter.userId } } },
-            { leads: { some: { userId: submitter.userId } } },
-            { headId: submitter.userId }
-          ]
-        },
-        select: { teamId: true }
-      });
-      const teamIds = userTeams.map((team) => team.teamId);
-      if (teamIds.length > 0) {
-        memberOf.push(
-          { teams: { some: { teamId: { in: teamIds } } } },
-          { workPackages: { some: { project: { teams: { some: { teamId: { in: teamIds } } } } } } }
-        );
-      }
-    }
-
-    const slotWhere = scheduleSlotOverlapWhere(now, end);
+    const slotWhere = scheduleSlotOverlapWhere(new Date(), endPeriod);
 
     const events = await prisma.event.findMany({
       where: {
         dateDeleted: null,
         eventType: { organizationId: organization.organizationId },
         scheduledTimes: { some: slotWhere },
-        OR: memberOf
+        ...eventsUserIsOnWhere(submitter.userId, includeTeamEvents)
       },
       select: {
         ...getBaseEventQueryArgs(slotWhere).select,
@@ -2841,7 +2809,8 @@ export default class CalendarService {
 
     if (!newMemberCalendar) return [];
 
-    const futureSlotWhere = scheduleSlotOverlapWhere(new Date());
+    const now = new Date();
+    const futureSlotWhere = scheduleSlotOverlapWhere(now);
 
     const events = await prisma.event.findMany({
       where: {
@@ -2850,7 +2819,8 @@ export default class CalendarService {
           organizationId: organization.organizationId,
           calendars: { some: { calendarId: newMemberCalendar.calendarId } }
         },
-        scheduledTimes: { some: futureSlotWhere }
+        // events still being scheduled have no slots yet, only the date they were requested for
+        ...eventInPeriodWhere(now)
       },
       ...getBaseEventQueryArgs(futureSlotWhere)
     });
@@ -3026,7 +2996,7 @@ export default class CalendarService {
           { approvalRequiredFromUserId: submitter.userId, approved: Conflict_Status.PENDING }
         ]
       },
-      ...getBaseEventQueryArgs(),
+      select: { ...getBaseEventQueryArgs().select, approvalRequiredFromUserId: true },
       orderBy: { dateCreated: 'asc' }
     });
 
@@ -3044,7 +3014,10 @@ export default class CalendarService {
           event: transformedEvent,
           conflictingEvent,
           overlapStart,
-          isCurrentUserApprover: event.userCreated.userId !== submitter.userId
+          // both can be true when the user's event conflicts with another of their own
+          isCurrentUserCreator: event.userCreated.userId === submitter.userId,
+          isCurrentUserApprover:
+            event.approvalRequiredFromUserId === submitter.userId && event.approved === Conflict_Status.PENDING
         });
       }
     }

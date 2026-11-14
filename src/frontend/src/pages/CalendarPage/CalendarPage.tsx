@@ -228,6 +228,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   // the user's own pending events in view, which the grid shows on top of the approved ones
   const {
     data: ownPendingEvents,
+    isLoading: ownPendingIsLoading,
     isError: ownPendingIsError,
     error: ownPendingError
   } = useCalendarViewEvents({
@@ -238,21 +239,33 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   });
 
   // conflict banners load on their own and appear once ready; each can be dismissed
-  const { data: myConflicts } = useMyConflicts();
+  const {
+    data: myConflicts,
+    isLoading: myConflictsIsLoading,
+    isError: myConflictsIsError,
+    error: myConflictsError
+  } = useMyConflicts();
   const [showPendingBanner, setShowPendingBanner] = useState(true);
   const [showDeniedBanner, setShowDeniedBanner] = useState(true);
   const [showReviewBanner, setShowReviewBanner] = useState(true);
 
-  const pendingConflicts = (myConflicts ?? []).filter(
-    (conflict) => !conflict.isCurrentUserApprover && conflict.event.approved === ConflictStatus.PENDING
+  // the banners stay hidden until the conflicts load
+  const loadedConflicts = myConflictsIsLoading || !myConflicts ? [] : myConflicts;
+  const pendingConflicts = loadedConflicts.filter(
+    (conflict) => conflict.isCurrentUserCreator && conflict.event.approved === ConflictStatus.PENDING
   );
-  const deniedConflicts = (myConflicts ?? []).filter(
-    (conflict) => !conflict.isCurrentUserApprover && conflict.event.approved === ConflictStatus.DENIED
+  const deniedConflicts = loadedConflicts.filter(
+    (conflict) => conflict.isCurrentUserCreator && conflict.event.approved === ConflictStatus.DENIED
   );
-  const reviewConflicts = (myConflicts ?? []).filter((conflict) => conflict.isCurrentUserApprover);
+  const reviewConflicts = loadedConflicts.filter((conflict) => conflict.isCurrentUserApprover);
 
   // Upcoming meetings is independent of filters - shows events where user is creator, member, or on associated team
-  const { data: upcomingEvents } = useMyUpcomingEvents(7, true);
+  const {
+    data: upcomingEvents,
+    isLoading: upcomingIsLoading,
+    isError: upcomingIsError,
+    error: upcomingError
+  } = useMyUpcomingEvents(7, true);
 
   const upcomingOccurences = eventsToNextEventInstance(upcomingEvents ?? []).sort(
     (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
@@ -299,8 +312,10 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   }
   if (ownPendingIsError) return <ErrorPage message={ownPendingError.message} />;
   if (tasksIsError) return <ErrorPage message={tasksError.message} />;
+  if (myConflictsIsError) return <ErrorPage message={myConflictsError.message} />;
+  if (upcomingIsError) return <ErrorPage message={upcomingError.message} />;
 
-  if (isLoading || !allEvents || !ownPendingEvents || tasksIsLoading || (showTasks && !filteredTasks))
+  if (isLoading || !allEvents || ownPendingIsLoading || !ownPendingEvents || tasksIsLoading || (showTasks && !filteredTasks))
     return <LoadingIndicator />;
 
   // the user's own pending events that aren't already in the grid's events
@@ -652,7 +667,9 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
                 My Upcoming Meetings:
               </Typography>
 
-              {upcomingOccurences && (
+              {upcomingIsLoading ? (
+                <LoadingIndicator />
+              ) : (
                 <Box
                   sx={{
                     flex: 1,

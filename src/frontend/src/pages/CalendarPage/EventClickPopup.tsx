@@ -98,12 +98,12 @@ const hasValue = (v?: string | null) => {
  */
 export const EventClickContent: React.FC<EventClickContentProps> = ({ event: target, ...props }) => {
   const theme = useTheme();
-  const { data: detail, isError, error } = useSingleEvent(target.eventId);
+  const { data: detail, isLoading, isError, error } = useSingleEvent(target.eventId);
 
-  if (!detail) {
+  if (isError || isLoading || !detail) {
     return (
       <Box sx={{ bgcolor: theme.palette.grey[900], color: theme.palette.common.white, borderRadius: 2, px: 2, py: 1.5 }}>
-        {isError ? <Typography variant="body2">{error?.message}</Typography> : <LoadingIndicator />}
+        {isError ? <Typography variant="body2">{error.message}</Typography> : <LoadingIndicator />}
       </Box>
     );
   }

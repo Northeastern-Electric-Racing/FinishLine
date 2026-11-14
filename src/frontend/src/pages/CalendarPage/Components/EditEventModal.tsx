@@ -31,12 +31,17 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
     mutateAsync: editScheduleSlot
   } = useEditScheduleSlot(event.eventId, event.scheduleSlotId);
 
-  const { data: detail, isError: detailIsError, error: detailError } = useSingleEvent(event.eventId);
+  const {
+    data: detail,
+    isLoading: detailIsLoading,
+    isError: detailIsError,
+    error: detailError
+  } = useSingleEvent(event.eventId);
 
   if (detailIsError) return <ErrorPage message={detailError?.message} />;
   if (editEventIsError) return <ErrorPage message={editEventError?.message} />;
   if (editScheduleSlotIsError) return <ErrorPage message={editScheduleSlotError?.message} />;
-  if (!detail || editEventIsLoading || editScheduleSlotIsLoading) return <LoadingIndicator />;
+  if (!detail || detailIsLoading || editEventIsLoading || editScheduleSlotIsLoading) return <LoadingIndicator />;
 
   const initialValues = convertEventToFormValues(detail, event);
 

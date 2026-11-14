@@ -26,12 +26,19 @@ import {
 } from './transformers/calendar.transformer';
 import { EditEventArgs, EditScheduleSlotArgs, EventCreateArgs } from '../hooks/calendar.hooks';
 
-// error responses pass through transformResponse too, so only map when the body is the expected list
+// error responses pass through transformResponse too, so only transform when the body is the expected shape
 const parseList =
   <T>(transform: (item: T) => T) =>
   (data: string) => {
     const parsed = JSON.parse(data);
     return Array.isArray(parsed) ? parsed.map(transform) : parsed;
+  };
+
+const parseEvent =
+  <T extends BaseEvent>(transform: (event: T) => T) =>
+  (data: string) => {
+    const parsed = JSON.parse(data);
+    return parsed?.scheduledTimes ? transform(parsed) : parsed;
   };
 
 export const getAllCalendars = () => {
@@ -86,8 +93,12 @@ export const getReviewBookingEvents = (startPeriod?: Date) => {
 };
 
 export const getMyUpcomingEvents = (days: number, includeTeamEvents: boolean) => {
+  // the end of the last day in the user's timezone, not the server's
+  const endPeriod = new Date();
+  endPeriod.setDate(endPeriod.getDate() + days);
+  endPeriod.setHours(23, 59, 59, 999);
   return axios.get<UpcomingEvent[]>(apiUrls.calendarMyUpcomingEvents(), {
-    params: { days, includeTeamEvents },
+    params: { endPeriod, includeTeamEvents },
     transformResponse: parseList<UpcomingEvent>(baseEventTransformer)
   });
 };
@@ -177,7 +188,7 @@ export const remindUnconfirmed = async (id: string) => {
 
 export const getSingleEvent = async (id: string) => {
   return axios.get<EventDetail>(apiUrls.calendarGetSingleEvent(id), {
-    transformResponse: (data) => baseEventTransformer(JSON.parse(data))
+    transformResponse: parseEvent<EventDetail>(baseEventTransformer)
   });
 };
 

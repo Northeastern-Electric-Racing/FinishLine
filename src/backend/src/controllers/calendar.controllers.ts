@@ -603,11 +603,11 @@ export default class CalendarController {
 
   static async getMyUpcomingEvents(req: Request, res: Response, next: NextFunction) {
     try {
-      const { days, includeTeamEvents } = req.query as Record<string, string>;
+      const { endPeriod, includeTeamEvents } = req.query as Record<string, string>;
       const events = await CalendarService.getMyUpcomingEvents(
         req.currentUser,
         req.organization,
-        parseInt(days),
+        new Date(endPeriod),
         includeTeamEvents === 'true'
       );
       res.status(200).json(events);

@@ -17,8 +17,6 @@ const scheduleSlotTransformer = <T extends ScheduleSlot>(slot: T): T => {
  * Revives the dates on any event model (BaseEvent or one that extends it)
  */
 export const baseEventTransformer = <T extends BaseEvent>(event: T): T => {
-  // error responses pass through transformResponse too; leave them for axios to surface
-  if (!event?.scheduledTimes) return event;
   return {
     ...event,
     dateCreated: new Date(event.dateCreated),

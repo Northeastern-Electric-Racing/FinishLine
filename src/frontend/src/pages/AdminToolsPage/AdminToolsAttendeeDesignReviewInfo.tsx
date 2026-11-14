@@ -18,9 +18,9 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
     error: eventsError
   } = useDesignReviewAttendance();
 
-  if (!allMembers || usersIsLoading || !attendance || attendanceIsLoading) return <LoadingIndicator />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;
   if (eventsIsError) return <ErrorPage message={eventsError.message} />;
+  if (!allMembers || usersIsLoading || !attendance || attendanceIsLoading) return <LoadingIndicator />;
 
   const filteredMembers = allMembers.filter((member) =>
     fullNamePipe(member).toLowerCase().includes(searchQuery.toLowerCase())

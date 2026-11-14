@@ -382,6 +382,10 @@ export const useDeleteCalendar = () => {
   );
 };
 
+/**
+ * One event's detail. The calendar's hover popups load it, so it's cached for a minute rather than refetched on every
+ * hover; every event mutation invalidates it
+ */
 export const useSingleEvent = (id?: string) => {
   return useQuery<EventDetail, Error>(
     ['events', id],
@@ -389,7 +393,7 @@ export const useSingleEvent = (id?: string) => {
       const { data } = await getSingleEvent(id!);
       return data;
     },
-    { enabled: !!id }
+    { enabled: !!id, staleTime: 60 * 1000 }
   );
 };
 
@@ -631,7 +635,6 @@ export const useScheduleEvent = (eventId: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['events', eventId]);
-        queryClient.invalidateQueries(['events', eventId, 'with-members']);
         queryClient.invalidateQueries(['filter-events']);
         queryClient.invalidateQueries(EVENT_KEY);
       }

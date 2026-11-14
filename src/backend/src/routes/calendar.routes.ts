@@ -231,7 +231,7 @@ calendarRouter.get(
 
 calendarRouter.get(
   '/events/my-upcoming',
-  query('days').isInt({ min: 1, max: 31 }),
+  isDate(query('endPeriod')),
   query('includeTeamEvents').isBoolean(),
   validateInputs,
   CalendarController.getMyUpcomingEvents

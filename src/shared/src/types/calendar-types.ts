@@ -245,14 +245,15 @@ export interface UpcomingEvent extends BaseEvent {
 }
 
 /**
- * A conflict banner on the calendar page. `event` is either one of the current user's pending or denied events, or (when
- * isCurrentUserApprover) an event waiting on the current user's approval. `conflictingEvent` is the event it overlaps,
- * and `overlapStart` is when the conflicting event's overlapping slot starts
+ * A conflict banner on the calendar page. `event` is one of the current user's pending or denied events
+ * (isCurrentUserCreator), an event waiting on the current user's approval (isCurrentUserApprover), or both.
+ * `conflictingEvent` is the event it overlaps, and `overlapStart` is when the conflicting event's overlapping slot starts
  */
 export interface EventConflict {
   event: BaseEvent;
   conflictingEvent: BaseEvent;
   overlapStart: Date;
+  isCurrentUserCreator: boolean;
   isCurrentUserApprover: boolean;
 }
 
