@@ -65,7 +65,17 @@ const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
 
   const dialogWidth: Breakpoint = 'md';
   return (
-    <Dialog fullWidth maxWidth={dialogWidth} open={open} onClose={onHide}>
+    <Dialog
+      fullWidth
+      maxWidth={dialogWidth}
+      open={open}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          return;
+        }
+        onHide();
+      }}
+    >
       <DialogTitle sx={{ fontWeight: 'bold', fontSize: '30' }}>
         WARNING: THIS WORK PACKAGE BLOCKS OTHERS
         <IconButton
