@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef } from 'react';
+import { Box, CircularProgress } from '@mui/material';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
@@ -18,24 +20,59 @@ const NoGeneralAnnouncementsDisplay = () => {
 
 const GeneralAnnouncements: React.FC = () => {
   const {
-    data: unreadAnnouncements,
+    data,
     isLoading,
     isError: announcementsIsError,
-    error: announcementsError
+    error: announcementsError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
   } = useUserAnnouncements();
   const { mutateAsync: removeAnnouncement, isLoading: removeAnnouncementIsLoading } = useRemoveUserAnnouncement();
 
+  // the sentinel below the last card loads the next page once it scrolls into view
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef(() => {});
+  loadMoreRef.current = () => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  };
+  const setSentinel = useCallback((node: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    if (!node) return;
+    observerRef.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) loadMoreRef.current();
+    });
+    observerRef.current.observe(node);
+  }, []);
+  useEffect(() => () => observerRef.current?.disconnect(), []);
+
   if (announcementsIsError) return <ErrorPage message={announcementsError.message} />;
-  if (isLoading || removeAnnouncementIsLoading || !unreadAnnouncements) return <LoadingIndicator />;
+  if (isLoading || !data) return <LoadingIndicator />;
+
+  const unreadAnnouncements = data.pages.flatMap((page) => page.announcements);
+  // every page carries the total; the latest one is the freshest
+  const totalCount = data.pages[data.pages.length - 1].totalCount;
 
   return (
-    <ScrollablePageBlock title={`General Announcements (${unreadAnnouncements.length})`}>
+    <ScrollablePageBlock title={`General Announcements (${totalCount})`}>
       {unreadAnnouncements.length === 0 ? (
         <NoGeneralAnnouncementsDisplay />
       ) : (
-        unreadAnnouncements.map((announcement) => (
-          <GeneralAnnouncementCard announcement={announcement} removeAnnouncement={removeAnnouncement} />
-        ))
+        <>
+          {unreadAnnouncements.map((announcement) => (
+            <GeneralAnnouncementCard
+              key={announcement.announcementId}
+              announcement={announcement}
+              removeAnnouncement={removeAnnouncement}
+              removeDisabled={removeAnnouncementIsLoading}
+            />
+          ))}
+          {hasNextPage && (
+            <Box ref={setSentinel} sx={{ width: '100%', display: 'flex', justifyContent: 'center', py: 1 }}>
+              {isFetchingNextPage && <CircularProgress size={24} />}
+            </Box>
+          )}
+        </>
       )}
     </ScrollablePageBlock>
   );

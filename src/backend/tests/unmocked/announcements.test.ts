@@ -2,20 +2,8 @@ import { Organization } from '@prisma/client';
 import { batmanAppAdmin } from '../test-data/users.test-data.js';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
 import AnnouncementService from '../../src/services/announcement.services.js';
-import { Announcement } from 'shared';
 
 describe('Announcemnts Tests', () => {
-  const announcementComparator = (a: Announcement, b: Announcement) => {
-    // findMany does not guarantee order, so let's sort
-    if (a.text < b.text) {
-      return -1;
-    }
-    if (a.text > b.text) {
-      return 1;
-    }
-    return 0;
-  };
-
   let orgId: string;
   let organization: Organization;
   beforeEach(async () => {
@@ -32,7 +20,7 @@ describe('Announcemnts Tests', () => {
       await AnnouncementService.createAnnouncement(
         'test1',
         [testBatman.userId],
-        new Date(),
+        new Date(1000),
         'Thomas Emrax',
         '1',
         'software',
@@ -41,22 +29,22 @@ describe('Announcemnts Tests', () => {
       await AnnouncementService.createAnnouncement(
         'test2',
         [testBatman.userId],
-        new Date(),
+        new Date(2000),
         'Superman',
         '50',
         'mechanical',
         organization.organizationId
       );
 
-      const announcements = await AnnouncementService.getUserUnreadAnnouncements(
+      const { announcements } = await AnnouncementService.getUserUnreadAnnouncements(
         testBatman.userId,
         organization.organizationId
       );
-      announcements.sort(announcementComparator);
 
+      // newest first
       expect(announcements).toHaveLength(2);
-      expect(announcements[0].text).toBe('test1');
-      expect(announcements[1].text).toBe('test2');
+      expect(announcements[0].text).toBe('test2');
+      expect(announcements[1].text).toBe('test1');
     });
   });
 
@@ -66,7 +54,7 @@ describe('Announcemnts Tests', () => {
       await AnnouncementService.createAnnouncement(
         'test1',
         [testBatman.userId],
-        new Date(),
+        new Date(1000),
         'Thomas Emrax',
         '1',
         'software',
@@ -75,30 +63,25 @@ describe('Announcemnts Tests', () => {
       await AnnouncementService.createAnnouncement(
         'test2',
         [testBatman.userId],
-        new Date(),
+        new Date(2000),
         'Superman',
         '50',
         'mechanical',
         organization.organizationId
       );
 
-      const announcements = await AnnouncementService.getUserUnreadAnnouncements(
+      const { announcements } = await AnnouncementService.getUserUnreadAnnouncements(
         testBatman.userId,
         organization.organizationId
       );
-      announcements.sort(announcementComparator);
-
       expect(announcements).toHaveLength(2);
-      expect(announcements.some((announcement) => announcement.text === 'test1')).toBe(true);
-      expect(announcements.some((announcement) => announcement.text === 'test2')).toBe(true);
 
-      const updatedAnnouncements = await AnnouncementService.removeUserAnnouncement(
+      await AnnouncementService.removeUserAnnouncement(testBatman.userId, announcements[0].announcementId);
+
+      const { announcements: updatedAnnouncements } = await AnnouncementService.getUserUnreadAnnouncements(
         testBatman.userId,
-        announcements[0].announcementId,
         organization.organizationId
       );
-      updatedAnnouncements.sort(announcementComparator);
-
       expect(updatedAnnouncements).toHaveLength(1);
       expect(updatedAnnouncements[0].text).toBe(announcements[1].text);
     });

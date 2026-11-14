@@ -1,7 +1,7 @@
 import { Organization } from '@prisma/client';
 import { getChannelInfo, getChannelName, getUserName, getWorkspaceId, postMessageToChannel } from '../integrations/slack.js';
 import AnnouncementService from './announcement.services.js';
-import { Announcement, ReimbursementStatusType } from 'shared';
+import { ReimbursementStatusType } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { blockToMentionedUsers, blockToString } from '../utils/slack.utils.js';
 import {
@@ -399,9 +399,8 @@ export default class SlackServices {
    * make the appropriate announcement change in prisma.
    * @param event the slack event that will be processed
    * @param organizationId the id of the organization represented by the slack api
-   * @returns an annoucement if an announcement was processed and created/modified/deleted
    */
-  static async processMessageSent(event: SlackMessageEvent, organizationId: string): Promise<Announcement | undefined> {
+  static async processMessageSent(event: SlackMessageEvent, organizationId: string): Promise<void> {
     //get the name of the channel from the slack api
     const slackChannelName: string = (await getChannelName(event.channel)) ?? `Unknown_Channel:${event.channel}`;
     const dateCreated = new Date(1000 * Number(event.event_ts));
@@ -416,7 +415,8 @@ export default class SlackServices {
           eventMessage = (event as SlackDeletedMessage).previous_message;
           // bot and API posted messages have no client_msg_id, so they were never stored as announcements
           if (!eventMessage.client_msg_id) return;
-          return AnnouncementService.deleteAnnouncement(eventMessage.client_msg_id, organizationId);
+          await AnnouncementService.deleteAnnouncement(eventMessage.client_msg_id, organizationId);
+          return;
         case 'message_changed':
           eventMessage = (event as SlackUpdatedMessage).message;
           break;
@@ -461,6 +461,14 @@ export default class SlackServices {
     //get rid of duplicates within the users to notify
     userIdsToNotify = [...new Set(userIdsToNotify)];
 
+    //@channel, @here and direct mentions resolve slack ids across every org, so keep only members of this org;
+    //nobody outside it could ever see the announcement
+    const orgMembers = await prisma.user.findMany({
+      where: { userId: { in: userIdsToNotify }, organizations: { some: { organizationId } } },
+      select: { userId: true }
+    });
+    userIdsToNotify = orgMembers.map((user) => user.userId);
+
     //if no users are notified, disregard the message
     if (userIdsToNotify.length === 0) {
       return;
@@ -469,7 +477,7 @@ export default class SlackServices {
     if (event.subtype === 'message_changed') {
       //try to edit the announcement, if no announcement with that id exists create a new announcement
       try {
-        return await AnnouncementService.updateAnnouncement(
+        await AnnouncementService.updateAnnouncement(
           messageText,
           userIdsToNotify,
           userName,
@@ -477,6 +485,7 @@ export default class SlackServices {
           slackChannelName,
           organizationId
         );
+        return;
       } catch (error) {
         //if couldn't find the announcement to edit, create a new one below
         if (!(error instanceof NotFoundException)) {
@@ -485,7 +494,7 @@ export default class SlackServices {
       }
     }
 
-    return await AnnouncementService.createAnnouncement(
+    await AnnouncementService.createAnnouncement(
       messageText,
       userIdsToNotify,
       dateCreated,
