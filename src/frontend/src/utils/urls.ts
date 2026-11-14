@@ -520,12 +520,15 @@ const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
 /**************** Calendar Endpoints ****************/
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
-const calendarEvents = () => `${calendar()}/events`;
 const calendarNewMemberEvents = () => `${calendar()}/events/new-member`;
-const calendarEventsPaginated = () => `${calendar()}/events-paginated`;
+const calendarMyConflicts = () => `${calendar()}/events/my-conflicts`;
+const calendarReviewBookingEvents = () => `${calendar()}/events/review-bookings`;
+const calendarMyUpcomingEvents = () => `${calendar()}/events/my-upcoming`;
+const calendarDesignReviewAttendance = () => `${calendar()}/events/design-review-attendance`;
+const calendarGuestEventFeed = () => `${calendar()}/events/guest-feed`;
 const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
-const calendarFilterEvents = () => `${calendar()}/events/filter`;
+const calendarViewEvents = () => `${calendar()}/events/calendar-view`;
 const calendarMachinery = () => `${calendar()}/machinery`;
 const calendarCreateMachinery = () => `${calendar()}/machinery/create`;
 const calendarEditMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/edit`;
@@ -543,8 +546,6 @@ const calendarDeleteEventType = (eventTypeId: string) => `${calendar()}/event-ty
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
 const calendarEventRemindUnconfirmed = (id: string) => `${calendar()}/event/${id}/remind-unconfirmed`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
-const calendarGetSingleEventWithMembers = (id: string) => `${calendar()}/event-members/${id}`;
-const calendarGetConflictingEvent = (id: string) => `${calendar()}/event/${id}/conflict`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
 const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
 const calendarApproveEvent = (id: string) => `${calendar()}/event/${id}/approve`;
@@ -981,7 +982,7 @@ export const apiUrls = {
   singleRuleset,
   calendarShops,
   calendarCreateShop,
-  calendarFilterEvents,
+  calendarViewEvents,
   calendarMachinery,
   calendarCreateMachinery,
   calendarEditMachinery,
@@ -991,11 +992,12 @@ export const apiUrls = {
   calendarEventMarkUserConfirmed,
   calendarEventRemindUnconfirmed,
   calendarGetSingleEvent,
-  calendarGetSingleEventWithMembers,
-  calendarGetConflictingEvent,
-  calendarEvents,
   calendarNewMemberEvents,
-  calendarEventsPaginated,
+  calendarMyConflicts,
+  calendarReviewBookingEvents,
+  calendarMyUpcomingEvents,
+  calendarDesignReviewAttendance,
+  calendarGuestEventFeed,
   calendarEventTypes,
   calendarDeleteEvent,
   calendarEventSetStatus,

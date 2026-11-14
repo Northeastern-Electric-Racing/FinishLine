@@ -6,7 +6,7 @@ import {
   calculateEndDate,
   CreateSponsorTask,
   User,
-  Event,
+  BaseEvent,
   formatForSlack,
   SlackMentionType,
   Team as SharedTeam,
@@ -480,7 +480,7 @@ export const sendSlackEventNotificationToChannel = async (
 };
 
 export const sendSlackEventNotification = async (
-  team: Team,
+  team: Pick<Team, 'slackId'>,
   message: string
 ): Promise<{ channelId: string; ts: string }[]> => sendSlackEventNotificationToChannel(team.slackId, message);
 
@@ -490,8 +490,8 @@ export interface EventNotificationOptions {
 }
 
 export const sendSlackEventNotifications = async (
-  teams: Team[],
-  event: Event,
+  teams: Pick<Team, 'slackId'>[],
+  event: Pick<BaseEvent, 'eventId' | 'title'>,
   submitter: User,
   workPackageName: string,
   projectName: string,
@@ -553,7 +553,10 @@ export const sendSlackEventNotifications = async (
   return notifications;
 };
 
-export const sendEventUserConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
+export const sendEventUserConfirmationToThread = async (
+  threads: SlackMessageThread[],
+  submitter: { userSettings: { slackId: string } | null }
+) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} confirmed their availability!`;
@@ -563,7 +566,10 @@ export const sendEventUserConfirmationToThread = async (threads: SlackMessageThr
   }
 };
 
-export const sendEventConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
+export const sendEventConfirmationToThread = async (
+  threads: SlackMessageThread[],
+  submitter: { userSettings: { slackId: string } | null }
+) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} All of the required attendees have confirmed their availability!`;
@@ -575,7 +581,14 @@ export const sendEventConfirmationToThread = async (threads: SlackMessageThread[
 
 export const sendEventScheduledSlackNotif = async (
   threads: SlackMessageThread[],
-  event: Event,
+  event: Pick<BaseEvent, 'title' | 'scheduledTimes' | 'userCreated'> & {
+    location: string | null;
+    zoomLink: string | null;
+    questionDocumentLink: string | null;
+    workPackages: { wbsElement: { name: string } }[];
+    requiredMembers: { userId: string }[];
+    optionalMembers: { userId: string }[];
+  },
   beingRescheduled: boolean = false
 ) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod

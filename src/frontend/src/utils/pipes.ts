@@ -11,7 +11,7 @@ import {
   AccountCode,
   UserPreview,
   ScheduleSlot,
-  Event,
+  WorkPackageCalendarPreview,
   formatEventTime,
   formatEventDate
 } from 'shared';
@@ -121,7 +121,7 @@ export const daysOrWeeksLeftOrLate = (daysLeft: number) => {
   return `${daysToDaysOrWeeksPipe(Math.abs(daysLeft))} ${daysLeft > 0 ? 'left' : 'late'}`;
 };
 
-export const eventNamePipe = (event: Event) => {
+export const eventNamePipe = (event: { title: string; workPackages: WorkPackageCalendarPreview[] }) => {
   const [firstWorkPackage] = event.workPackages;
 
   if (firstWorkPackage) {

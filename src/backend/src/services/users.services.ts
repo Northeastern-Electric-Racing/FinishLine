@@ -693,7 +693,7 @@ export default class UsersService {
       ...user.teamsAsHead.map((team) => team.teamId)
     ];
 
-    const finishlineEvents = await CalendarService.getFilteredEvents(
+    const finishlineEvents = await CalendarService.getCalendarViewEvents(
       { memberIds: [userId], teamIds: userTeamIds, startPeriod: startDate, endPeriod: endDate },
       organization
     );
