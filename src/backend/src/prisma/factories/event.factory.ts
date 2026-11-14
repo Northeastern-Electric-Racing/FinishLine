@@ -1,9 +1,9 @@
 import { Faker } from '@faker-js/faker';
 import { Conflict_Status, Event_Status, Prisma } from '@prisma/client';
+import dayjs from 'dayjs';
 import { arrayOrNull } from '../utils/arrays.js';
-import { DAY_MS, MINUTE_MS } from '../dates.js';
 import { addDaysToDate } from 'shared';
-
+import { DAY_MS, MINUTE_MS } from '../../utils/time.utils.js';
 type ConflictResult = {
   approved: Conflict_Status;
   approvalRequiredFromUserId: string | undefined;
@@ -51,7 +51,6 @@ export const EVENTS_PER_PROJECT = 3;
 export const DOCUMENT_PROBABILITY = 0.6;
 export const MEETING_ATTENDANCE_PROBABILITY = 0.4;
 const EVENT_DATE_BUFFER_DAYS = 7;
-const MAX_ATTENDEES = 10;
 export const DAYS_AFTER_NO_EVENT = 20;
 const CONFIRMED_WINDOW = 14;
 
@@ -80,8 +79,9 @@ export const shouldCreateDocument = (faker: Faker): boolean => faker.datatype.bo
 export const shouldCreateMeetingAttendance = (faker: Faker): boolean =>
   faker.datatype.boolean({ probability: MEETING_ATTENDANCE_PROBABILITY });
 
-export const generateAttendeeCount = (faker: Faker, maxUsers: number): number =>
-  faker.number.int({ min: 2, max: Math.min(MAX_ATTENDEES, maxUsers) });
+// Picks between 40% and 100% of the team's roster to attend, always at least one person.
+export const generateRosterAttendeeCount = (faker: Faker, rosterSize: number): number =>
+  Math.max(1, Math.round(rosterSize * faker.number.float({ min: 0.4, max: 1 })));
 
 export const generateLocation = (faker: Faker): string | null => arrayOrNull(faker, EVENT_LOCATIONS, 0.5);
 
@@ -109,7 +109,7 @@ export const generateEventStatus = (
   faker: Faker,
   requiresConfirmation: boolean,
   initialDateScheduled: Date,
-  now: Date = new Date()
+  now: Date
 ): Event_Status => {
   const daysUntilDue = Math.floor((initialDateScheduled.getTime() - now.getTime()) / DAY_MS);
 
@@ -251,6 +251,113 @@ export const scheduleSlotCreateInput = (
   allDay,
   event: { connect: { eventId } }
 });
+
+type CalendarEventConfig = {
+  title: string;
+  eventTypeName: string;
+  location?: string;
+  startDaysFromNow: number;
+  startHour: number;
+  endDaysFromNow: number;
+  endHour: number;
+  allDay: boolean;
+};
+
+// Add events from today to 5 days in the future, including all day event and multi day event.
+// Useful for calendar widget visualizations
+export const calendarEventConfigs: CalendarEventConfig[] = [
+  {
+    title: 'Docker Learning Session',
+    eventTypeName: 'Educational',
+    location: 'Richards 010',
+    startDaysFromNow: 0,
+    startHour: 2,
+    endDaysFromNow: 0,
+    endHour: 4,
+    allDay: false
+  },
+  {
+    title: 'General Engineering Meeting',
+    eventTypeName: 'Manufacturing',
+    location: 'Richards 050',
+    startDaysFromNow: 0,
+    startHour: 18,
+    endDaysFromNow: 0,
+    endHour: 20,
+    allDay: false
+  },
+  {
+    title: 'Bay Cleanup',
+    eventTypeName: 'Manufacturing',
+    startDaysFromNow: 1,
+    startHour: 0,
+    endDaysFromNow: 2,
+    endHour: 0,
+    allDay: true
+  },
+  {
+    title: 'Design Freeze Deadline',
+    eventTypeName: 'Deadline/Heads Up',
+    startDaysFromNow: 1,
+    startHour: 17,
+    endDaysFromNow: 1,
+    endHour: 18,
+    allDay: false
+  },
+  {
+    title: 'Bay Time',
+    eventTypeName: 'Misc. Event (Standard)',
+    startDaysFromNow: 0,
+    startHour: 0,
+    endDaysFromNow: 3,
+    endHour: 0,
+    allDay: true
+  },
+  {
+    title: 'NER Social',
+    eventTypeName: 'Misc. Event (Standard)',
+    location: 'Curry Student Center',
+    startDaysFromNow: 2,
+    startHour: 18,
+    endDaysFromNow: 2,
+    endHour: 20,
+    allDay: false
+  },
+  {
+    title: 'FSAE Comp Prep Meeting',
+    eventTypeName: 'FSAE',
+    startDaysFromNow: 1,
+    startHour: 10,
+    endDaysFromNow: 1,
+    endHour: 12,
+    allDay: false
+  }
+];
+
+export const calendarEventCreateInput = (
+  userCreatedId: string,
+  eventTypeId: string,
+  config: CalendarEventConfig,
+  now: Date
+): Prisma.EventCreateInput => {
+  const timeOnDay = (daysFromNow: number, hour: number) =>
+    dayjs(now).startOf('day').add(daysFromNow, 'day').hour(hour).toDate();
+  const startTime = timeOnDay(config.startDaysFromNow, config.startHour);
+  const endTime = timeOnDay(config.endDaysFromNow, config.endHour);
+
+  return {
+    title: config.title,
+    status: Event_Status.SCHEDULED,
+    approved: Conflict_Status.NO_CONFLICT,
+    location: config.location,
+    initialDateScheduled: startTime,
+    calendarEventIds: [],
+    userCreated: { connect: { userId: userCreatedId } },
+    eventType: { connect: { eventTypeId } },
+    requiredMembers: { connect: [{ userId: userCreatedId }] },
+    scheduledTimes: { create: { startTime, endTime, allDay: config.allDay } }
+  };
+};
 
 export const documentCreateInput = (
   faker: Faker,

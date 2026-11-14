@@ -80,7 +80,11 @@ export const removeBayDashboardClient = (slug: string, res: Response) => {
  * @param slug the slug of the organization whose dashboard changed
  */
 export const broadcastBayDashboardUpdate = (slug: string) => {
-  const group = clients.get(slug);
-  if (!group) return;
-  for (const client of group) writeIfOpen(client, 'event: update\ndata: update\n\n');
+  try {
+    const group = clients.get(slug);
+    if (!group) return;
+    for (const client of group) writeIfOpen(client, 'event: update\ndata: update\n\n');
+  } catch (error: unknown) {
+    console.error('Failed to broadcast bay dashboard update:', error);
+  }
 };

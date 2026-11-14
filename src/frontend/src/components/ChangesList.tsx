@@ -4,13 +4,14 @@
  */
 
 import { Box, Link, Stack, Typography } from '@mui/material';
-import { ImplementedChange } from 'shared';
+import { WorkPackageChange } from 'shared';
 import { datePipe, fullNamePipe } from '../utils/pipes';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../utils/routes';
 
 interface ChangesListProps {
-  changes: ImplementedChange[];
+  // a project's ImplementedChange[] also fits: it only adds fields this list doesn't read
+  changes: WorkPackageChange[];
 }
 
 const URL_REGEX = /(https?:\/\/\S+)/g;

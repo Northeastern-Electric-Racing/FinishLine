@@ -30,6 +30,7 @@ interface NERAutocompleteProps {
   disabled?: boolean;
   noOptionsText?: React.ReactNode;
   onInputChange?: (event: React.SyntheticEvent, value: string) => void;
+  disablePortal?: boolean;
 }
 
 const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
@@ -46,7 +47,8 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   required = true,
   disabled = false,
   noOptionsText,
-  onInputChange
+  onInputChange,
+  disablePortal = true
 }) => {
   const theme = useTheme();
 
@@ -79,7 +81,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
         isOptionEqualToValue={(option, value) => option.id === value.id}
         getOptionLabel={(option) => option.label}
         getOptionKey={(option) => option.id}
-        disablePortal
+        disablePortal={disablePortal}
         id={id}
         onChange={onChange}
         onInputChange={onInputChange}

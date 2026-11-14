@@ -149,7 +149,7 @@ function transformLinksForSkills(content) {
 /**
  * Process a single doc file
  */
-function processDocFile(docPath) {
+function processDocFile(docPath, syncedNames) {
   const content = fs.readFileSync(docPath, 'utf-8');
   const { metadata, content: bodyContent } = parseFrontmatter(content);
 
@@ -176,12 +176,15 @@ function processDocFile(docPath) {
   const skillPath = path.join(skillDir, 'SKILL.md');
 
   // Flat output means skill_name must be unique across the whole docs tree.
-  if (fs.existsSync(skillPath)) {
+  // Checked against this run only, since the skills directory is no longer
+  // cleaned and may hold skills from previous syncs or hand-written ones.
+  if (syncedNames.has(metadata.skill_name)) {
     console.warn(`⚠️  Duplicate skill_name "${metadata.skill_name}" (${path.basename(docPath)}), skipping`);
     return null;
   }
+  syncedNames.add(metadata.skill_name);
 
-  // Create directory and write
+  // Create directory and write (overwrites only this skill's SKILL.md)
   fs.mkdirSync(skillDir, { recursive: true });
   fs.writeFileSync(skillPath, linkedContent);
 
@@ -205,13 +208,8 @@ function main() {
       process.exit(1);
     }
 
-    // Clean skills directory
-    if (fs.existsSync(SKILLS_DIR)) {
-      fs.rmSync(SKILLS_DIR, { recursive: true });
-      console.log('✓ Cleaned skills directory');
-    }
-
-    // Create skills directory
+    // Create skills directory if needed. Existing skills are never deleted, so
+    // hand-written skills in .claude/skills/ survive a sync.
     fs.mkdirSync(SKILLS_DIR, { recursive: true });
 
     // Find all docs
@@ -220,8 +218,9 @@ function main() {
 
     // Process each file
     let syncedCount = 0;
+    const syncedNames = new Set();
     docFiles.forEach((docPath) => {
-      const result = processDocFile(docPath);
+      const result = processDocFile(docPath, syncedNames);
       if (result) syncedCount++;
     });
 

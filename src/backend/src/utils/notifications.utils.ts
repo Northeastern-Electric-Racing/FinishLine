@@ -17,6 +17,30 @@ export type EventWithAttendees = Event & {
   })[];
 };
 
+/**
+ * Collects the unique Slack channels an event should notify: its standalone notification
+ * channels, the teams directly on the event, and the teams of its work packages' projects.
+ */
+export const getEventChannelIds = (event: {
+  notificationChannelIds: string[];
+  teams: { slackId: string }[];
+  workPackages: { project: { teams: { slackId: string }[] } }[];
+}): Set<string> => {
+  const channelIds = new Set<string>();
+  event.notificationChannelIds.forEach((id) => {
+    if (id) channelIds.add(id);
+  });
+  event.teams.forEach((team) => {
+    if (team.slackId) channelIds.add(team.slackId);
+  });
+  event.workPackages.forEach((wp) => {
+    wp.project.teams.forEach((team) => {
+      if (team.slackId) channelIds.add(team.slackId);
+    });
+  });
+  return channelIds;
+};
+
 export const usersToSlackPings = (users: UserWithSettings[]) => {
   // https://api.slack.com/reference/surfaces/formatting#mentioning-users
   return users.map(userToSlackPing).join(' ');

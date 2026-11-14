@@ -5,6 +5,7 @@
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
+import { HOME_PAGE_WORK_PACKAGES_KEY } from './work-packages.hooks';
 import {
   ChangeRequest,
   ProjectProposedChangesCreateArgs,
@@ -203,6 +204,7 @@ export interface CreateBudgetChangeRequestPayload {
  * Custom React Hook to create an activation change request.
  */
 export const useCreateActivationChangeRequest = () => {
+  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, CreateActivationChangeRequestPayload>(
     ['change requests', 'create', 'activation'],
     async (payload: CreateActivationChangeRequestPayload) => {
@@ -215,6 +217,15 @@ export const useCreateActivationChangeRequest = () => {
         payload.confirmDetails
       );
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['change requests']);
+        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['work packages']);
+        // activation is reviewed on creation, so the work package's status and dates change right away
+        queryClient.invalidateQueries(HOME_PAGE_WORK_PACKAGES_KEY);
+      }
     }
   );
 };
@@ -223,6 +234,7 @@ export const useCreateActivationChangeRequest = () => {
  * Custom React Hook to create a stage gate change request.
  */
 export const useCreateStageGateChangeRequest = () => {
+  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, CreateStageGateChangeRequestPayload>(
     ['change requests', 'create', 'stage gate'],
     async (payload: CreateStageGateChangeRequestPayload) => {
@@ -233,6 +245,15 @@ export const useCreateStageGateChangeRequest = () => {
         payload.dateCompleted
       );
       return data;
+    },
+    {
+      // stage gates are reviewed on creation, so the work package is complete right away
+      onSuccess: () => {
+        queryClient.invalidateQueries(['change requests']);
+        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['work packages']);
+        queryClient.invalidateQueries(HOME_PAGE_WORK_PACKAGES_KEY);
+      }
     }
   );
 };

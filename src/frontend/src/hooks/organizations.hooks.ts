@@ -20,7 +20,8 @@ import {
   getFinanceDelegates,
   setFinanceDelegates,
   setOrganizationPlatformLogoImage,
-  getNotificationChannels
+  getNotificationChannels,
+  setActivationBufferDays
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/organizations.api';
 
@@ -298,6 +299,22 @@ export const useSetFinanceDelegates = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['organizations', 'finance-delegates']);
+      }
+    }
+  );
+};
+
+export const useSetActivationBufferDays = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, number>(
+    ['organizations', 'activation-buffer-days'],
+    async (activationBufferDays: number) => {
+      const { data } = await setActivationBufferDays(activationBufferDays);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
       }
     }
   );

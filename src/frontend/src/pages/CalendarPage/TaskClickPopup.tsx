@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Chip, IconButton, Link, Stack, Typography, useTheme } from '@mui/material';
-import { CalendarTask, isAdmin, notGuest, TaskPriority, TaskStatus, wbsPipe, formatDateOnly } from 'shared';
+import { TaskBoardItem, isAdmin, notGuest, TaskPriority, TaskStatus, wbsPipe, formatDateOnly } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../utils/routes';
@@ -33,7 +33,7 @@ const joinPeople = (members: { firstName: string; lastName: string }[]) =>
   members.map((m) => `${m.firstName} ${m.lastName}`).join(', ');
 
 interface TaskClickContentProps {
-  task: CalendarTask;
+  task: TaskBoardItem;
   onClose: () => void;
 }
 
@@ -63,11 +63,11 @@ export const TaskClickContent: React.FC<TaskClickContentProps> = ({ task, onClos
         title: data.title,
         notes: data.notes,
         priority: data.priority,
-        labelIds: task.labels.map((l) => l.taskLabelId),
+        labelIds: data.labels.map((l) => l.taskLabelId),
         blockedByIds: data.blockedBy.map((b) => b.taskId),
         startDate: data.startDate,
         deadline: data.deadline,
-        wbsNum: task.wbsNum
+        wbsNum: data.wpWbsNum ?? task.wbsNum
       });
       await editAssignees({
         taskId: task.taskId,

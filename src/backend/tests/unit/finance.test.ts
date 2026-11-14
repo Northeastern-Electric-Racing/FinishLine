@@ -1,5 +1,6 @@
-import { Organization } from '@prisma/client';
+import { Organization, Reimbursement_Status_Type, User } from '@prisma/client';
 import FinanceServices from '../../src/services/finance.services.js';
+import ReimbursementRequestService from '../../src/services/reimbursement-requests.services.js';
 import { AccessDeniedException, DeletedException, NotFoundException } from '../../src/utils/errors.utils.js';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data.js';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
@@ -926,6 +927,140 @@ describe('Finance Tests', () => {
       await expect(FinanceServices.toggleSponsorTaskDone(user, organization, sponsorTask.sponsorTaskId)).rejects.toThrow(
         new NotFoundException('SponsorTask', sponsorTask.sponsorTaskId)
       );
+    });
+  });
+
+  describe('Category spending data cents to dollars conversion', () => {
+    let user: User;
+    let vendorId: string;
+    let indexCodeId: string;
+    let accountCodeId: string;
+    let rrIdentifier: number;
+
+    beforeEach(async () => {
+      user = await createTestUser(batmanAppAdmin, orgId);
+      const vendor = await ReimbursementRequestService.createVendor(user, 'Tesla', organization, true, [user.userId]);
+      ({ vendorId } = vendor);
+      ({ indexCodeId } = await ReimbursementRequestService.createIndexCode('CASH', '830667', user, organization));
+      ({ accountCodeId } = await ReimbursementRequestService.createAccountCode(
+        user,
+        'Equipment',
+        123,
+        true,
+        [indexCodeId],
+        organization
+      ));
+      rrIdentifier = 1;
+    });
+
+    // budget is stored in cents, matching what the admin category form saves
+    const createCategory = async (name: string, budgetInCents: number) =>
+      ReimbursementRequestService.createOtherReasonReimbursementProduct(
+        name,
+        budgetInCents,
+        indexCodeId,
+        [accountCodeId],
+        user,
+        organization
+      );
+
+    // product costs are stored in cents
+    const createCategoryRR = async (otherReasonId: string, costInCents: number, status: Reimbursement_Status_Type) =>
+      prisma.reimbursement_Request.create({
+        data: {
+          identifier: rrIdentifier++,
+          recipientId: user.userId,
+          vendorId,
+          indexCodeId,
+          accountCodeId,
+          organizationId: orgId,
+          totalCost: costInCents,
+          reimbursementStatuses: { create: { type: status, userId: user.userId } },
+          reimbursementProducts: {
+            create: {
+              name: 'Glue',
+              cost: costInCents,
+              reimbursementProductReason: { create: { otherReasonId } }
+            }
+          }
+        }
+      });
+
+    it('Converts the category budget from cents to dollars when there is no spending', async () => {
+      const category = await createCategory('General Tools', 500000);
+
+      const result = await FinanceServices.getReimbursementRequestCategoryData(category.otherProductReasonId, organization);
+
+      expect(result).toStrictEqual({
+        totalBudget: 5000,
+        approved: 0,
+        pendingApproval: 0,
+        addedToSabo: 0,
+        reimbursed: 0,
+        available: 5000
+      });
+    });
+
+    it('Converts the budget and every spending status from cents to dollars', async () => {
+      const category = await createCategory('General Tools', 500000);
+      const { otherProductReasonId } = category;
+
+      await createCategoryRR(otherProductReasonId, 10050, Reimbursement_Status_Type.PENDING_LEADERSHIP_APPROVAL);
+      await createCategoryRR(otherProductReasonId, 20000, Reimbursement_Status_Type.LEADERSHIP_APPROVED);
+      await createCategoryRR(otherProductReasonId, 30025, Reimbursement_Status_Type.SABO_SUBMITTED);
+      await createCategoryRR(otherProductReasonId, 40000, Reimbursement_Status_Type.REIMBURSED);
+
+      const result = await FinanceServices.getReimbursementRequestCategoryData(otherProductReasonId, organization);
+
+      expect(result).toStrictEqual({
+        totalBudget: 5000,
+        pendingApproval: 100.5,
+        approved: 200,
+        addedToSabo: 300.25,
+        reimbursed: 400,
+        available: 5000 - 100.5 - 200 - 300.25 - 400
+      });
+    });
+
+    it('Ignores denied requests when converting spending', async () => {
+      const category = await createCategory('General Tools', 500000);
+      await createCategoryRR(category.otherProductReasonId, 100000, Reimbursement_Status_Type.DENIED);
+
+      const result = await FinanceServices.getReimbursementRequestCategoryData(category.otherProductReasonId, organization);
+
+      expect(result.totalBudget).toBe(5000);
+      expect(result.available).toBe(5000);
+    });
+
+    it('Reports a negative available amount in dollars when overbudget', async () => {
+      const category = await createCategory('General Tools', 10000);
+      await createCategoryRR(category.otherProductReasonId, 15000, Reimbursement_Status_Type.REIMBURSED);
+
+      const result = await FinanceServices.getReimbursementRequestCategoryData(category.otherProductReasonId, organization);
+
+      expect(result.totalBudget).toBe(100);
+      expect(result.reimbursed).toBe(150);
+      expect(result.available).toBe(-50);
+    });
+
+    it('Returns dollar amounts for every category in the spending bar data', async () => {
+      const tools = await createCategory('General Tools', 500000);
+      const competition = await createCategory('Competition', 150000);
+      await createCategoryRR(competition.otherProductReasonId, 2500, Reimbursement_Status_Type.REIMBURSED);
+
+      const result = await FinanceServices.getSpendingBarCategoryData(organization);
+
+      expect(result.title).toBe('Club Categories');
+      expect(result.data).toHaveLength(2);
+
+      const toolsData = result.data.find((d) => d.title === tools.name);
+      const competitionData = result.data.find((d) => d.title === competition.name);
+
+      expect(toolsData?.spendingInfo.totalBudget).toBe(5000);
+      expect(toolsData?.spendingInfo.available).toBe(5000);
+      expect(competitionData?.spendingInfo.totalBudget).toBe(1500);
+      expect(competitionData?.spendingInfo.reimbursed).toBe(25);
+      expect(competitionData?.spendingInfo.available).toBe(1475);
     });
   });
 });

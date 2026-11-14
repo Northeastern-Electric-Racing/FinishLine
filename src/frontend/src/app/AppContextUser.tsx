@@ -21,9 +21,9 @@ const AppContextUser: React.FC<{ children: React.ReactNode }> = (props) => {
   const clarity = useClarity();
   const { data: teams, isLoading: teamsIsLoading, isError: teamsIsError, error: teamsError } = useGetUsersTeams();
 
-  if (!auth.user || teamsIsLoading || !teams) return <LoadingIndicator />;
-
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;
+
+  if (!auth.user || teamsIsLoading || !teams) return <LoadingIndicator />;
 
   if (import.meta.env.VITE_REACT_APP_CLARITY_PROJECT_ID) {
     clarity('consent');

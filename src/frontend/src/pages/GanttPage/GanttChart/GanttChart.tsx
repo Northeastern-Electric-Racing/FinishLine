@@ -12,6 +12,7 @@ import { eachDayOfInterval, isMonday, differenceInDays } from 'date-fns';
 import { getMonday } from '../../../utils/datetime.utils';
 import { toDateString } from 'shared';
 import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../utils/gantt.utils';
+import { useCallback, useState } from 'react';
 export interface GanttEditability<E, T> {
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
@@ -41,6 +42,15 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
   const daysIntoWeek = differenceInDays(today, getMonday(today));
   const dailyOffset = daysIntoWeek * (parseFloat(GANTT_CHART_CELL_SIZE) / 7);
 
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const toggleExpanded = useCallback((id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }, []);
+
   return (
     <Box
       sx={{
@@ -64,6 +74,9 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
               endDate={endDate}
               collection={collection}
               editability={editability}
+              toggleExpanded={toggleExpanded}
+              expanded={expanded}
+              key={collection.id}
             />
           ) : (
             <></>

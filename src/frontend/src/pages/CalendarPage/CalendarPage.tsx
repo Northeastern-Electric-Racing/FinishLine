@@ -18,7 +18,7 @@ import {
   Switch
 } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { Calendar, CalendarTask, ConflictStatus, DayOfWeek, EventType, Event, FilterTaskArgs } from 'shared';
+import { Calendar, TaskBoardItem, ConflictStatus, DayOfWeek, EventType, Event, FilterTaskArgs } from 'shared';
 import CalendarDayCard from './CalendarDayCard';
 import { DAY_NAMES, enumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import { useConflictingEvents, useFilterEvents } from '../../hooks/calendar.hooks';
@@ -425,7 +425,7 @@ const NewCalendarPage: React.FC<NewCalendarPageProps> = ({
   });
 
   // Build task dict keyed by date string (using deadline)
-  const taskDict = new Map<string, CalendarTask[]>();
+  const taskDict = new Map<string, TaskBoardItem[]>();
   if (showTasks && filteredTasks) {
     filteredTasks.forEach((task) => {
       if (!task.deadline) return;

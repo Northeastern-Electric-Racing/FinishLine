@@ -14,13 +14,17 @@ interface GanttChartCollectionSectionProps<E, T> {
   endDate: Date;
   collection: GanttCollection<E, T>;
   editability?: GanttEditability<E, T>;
+  toggleExpanded: (id: string) => void;
+  expanded: Set<string>;
 }
 
 const GanttChartCollectionSection = <E, T>({
   startDate,
   endDate,
   collection,
-  editability
+  editability,
+  toggleExpanded,
+  expanded
 }: GanttChartCollectionSectionProps<E, T>) => {
   const theme = useTheme();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -94,6 +98,8 @@ const GanttChartCollectionSection = <E, T>({
           onAddTaskPressed={editability?.onNewSubTaskPressed ?? ignore}
           highlightSubtaskComparator={editability?.highlightSubtaskComparator ?? ignoreBool}
           highlightTaskComparator={editability?.highlightTaskComparator ?? ignoreBool}
+          toggleExpanded={toggleExpanded}
+          expanded={expanded}
         />
       </Box>
     </Box>

@@ -2,11 +2,11 @@ import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { ChartOptions, Chart } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { ReimbursementRequestData, SpendingBarData, TeamPreview } from 'shared';
+import { ReimbursementRequestData, SpendingBarData } from 'shared';
 import { grey } from '@mui/material/colors';
 import React, { useEffect, useRef, useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
-import { useAllTeams } from '../../../hooks/teams.hooks';
+import { useTeamsDropdown } from '../../../hooks/dropdowns.hooks';
 import { EditProjectBudgetModal } from './EditProjectBudgetModal';
 import { EditBudgetModalForReason } from './EditBudgetModalForReason';
 import { displayEnum } from '../../../utils/pipes';
@@ -59,6 +59,47 @@ const getBarData = (title: string, value: number, color: string, dataLength: num
   },
   borderSkipped: false
 });
+
+interface SpendingBarEditButtonProps {
+  title: string;
+}
+
+/**
+ * Edit button and budget modals for a spending bar. Kept separate so the teams list is only fetched when editing is enabled.
+ */
+const SpendingBarEditButton = ({ title }: SpendingBarEditButtonProps) => {
+  const [openEditProjectModal, setOpenEditProjectModal] = useState(false);
+  const [openEditReasonModal, setOpenEditReasonModal] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
+  const { data: teams } = useTeamsDropdown();
+
+  const handleEditClick = () => {
+    const matchTeam = teams?.find((team) => team.name === title);
+    const matchReason = 'Club Categories' === title;
+    if (matchTeam) {
+      setSelectedTeamId(matchTeam.teamId);
+      setOpenEditProjectModal(true);
+    } else if (matchReason) {
+      setOpenEditReasonModal(true);
+    }
+  };
+
+  return (
+    <>
+      <IconButton size="small" onClick={handleEditClick}>
+        <EditIcon fontSize="small" />
+      </IconButton>
+      {selectedTeamId && (
+        <EditProjectBudgetModal
+          showModal={openEditProjectModal}
+          handleClose={() => setOpenEditProjectModal(false)}
+          teamId={selectedTeamId}
+        />
+      )}
+      <EditBudgetModalForReason showModal={openEditReasonModal} handleClose={() => setOpenEditReasonModal(false)} />
+    </>
+  );
+};
 
 const SpendingBar = ({ data, title, edit }: SpendingBarProps) => {
   Chart.register(ChartDataLabels);
@@ -257,22 +298,6 @@ const SpendingBar = ({ data, title, edit }: SpendingBarProps) => {
     }
   };
 
-  const [openEditProjectModal, setOpenEditProjectModal] = useState(false);
-  const [openEditReasonModal, setOpenEditReasonModal] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState<TeamPreview | undefined>(undefined);
-  const { data: allTeams } = useAllTeams();
-
-  const handleEditClick = (title: string) => {
-    const matchTeam = allTeams?.find((u) => u.teamName === title);
-    const matchReason = 'Club Categories' === title;
-    if (matchTeam) {
-      setSelectedTeam(matchTeam);
-      setOpenEditProjectModal(true);
-    } else if (matchReason) {
-      setOpenEditReasonModal(true);
-    }
-  };
-
   return (
     <>
       <Box display="flex" alignItems="center" gap={1}>
@@ -287,11 +312,7 @@ const SpendingBar = ({ data, title, edit }: SpendingBarProps) => {
             <HelpIcon style={{ fontSize: 'medium' }} />
           </Tooltip>
         )}
-        {edit && (
-          <IconButton size="small" onClick={() => handleEditClick(title)}>
-            <EditIcon fontSize="small" />
-          </IconButton>
-        )}
+        {edit && <SpendingBarEditButton title={title} />}
       </Box>
       {data.length > 0 ? (
         <Box ref={chartRef} height={100} sx={{ padding: 0, margin: 0 }}>
@@ -300,14 +321,6 @@ const SpendingBar = ({ data, title, edit }: SpendingBarProps) => {
       ) : (
         <Typography sx={{ mb: 1 }}>No Spending Data Available</Typography>
       )}
-      {selectedTeam && (
-        <EditProjectBudgetModal
-          showModal={openEditProjectModal}
-          handleClose={() => setOpenEditProjectModal(false)}
-          teamId={selectedTeam.teamId}
-        />
-      )}
-      <EditBudgetModalForReason showModal={openEditReasonModal} handleClose={() => setOpenEditReasonModal(false)} />
     </>
   );
 };

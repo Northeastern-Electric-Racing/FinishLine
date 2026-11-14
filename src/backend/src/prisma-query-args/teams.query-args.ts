@@ -5,6 +5,7 @@ import { getProjectGanttQueryArgs } from './projects.query-args.js';
 export type TeamQueryArgs = ReturnType<typeof getTeamQueryArgs>;
 export type TeamBaseQueryArgs = ReturnType<typeof getTeamBaseQueryArgs>;
 export type TeamPreviewQueryArgs = ReturnType<typeof getTeamPreviewQueryArgs>;
+export type TeamWithProjectsQueryArgs = ReturnType<typeof getTeamWithProjectsQueryArgs>;
 export type TeamJoinRequestQueryArgs = ReturnType<typeof getTeamJoinRequestQueryArgs>;
 
 export const getTeamQueryArgs = (organizationId: string) =>
@@ -41,6 +42,29 @@ export const getTeamPreviewQueryArgs = (organizationId: string) =>
       head: getUserQueryArgs(organizationId),
       leads: getUserQueryArgs(organizationId),
       teamType: true
+    }
+  });
+
+export const getTeamWithProjectsQueryArgs = () =>
+  Prisma.validator<Prisma.TeamDefaultArgs>()({
+    select: {
+      teamId: true,
+      teamName: true,
+      dateArchived: true,
+      head: { select: { userId: true, firstName: true, lastName: true } },
+      _count: { select: { members: true, leads: true } },
+      projects: {
+        where: {
+          wbsElement: {
+            dateDeleted: null
+          }
+        },
+        select: {
+          wbsElement: {
+            select: { name: true, carNumber: true, projectNumber: true, workPackageNumber: true }
+          }
+        }
+      }
     }
   });
 

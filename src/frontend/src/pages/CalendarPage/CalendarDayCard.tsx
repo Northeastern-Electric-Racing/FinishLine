@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Box, Card, CardContent, Grid, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { Calendar, CalendarTask, ConflictStatus, DayOfWeek, EventInstance, EventStatus, EventType } from 'shared';
+import { Calendar, TaskBoardItem, ConflictStatus, DayOfWeek, EventInstance, EventStatus, EventType } from 'shared';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -48,7 +48,7 @@ interface CalendarDayCardProps {
   calendars?: Calendar[];
   dayOfWeek?: DayOfWeek;
   onCreateEventClick: (date: Date) => void;
-  tasks?: CalendarTask[];
+  tasks?: TaskBoardItem[];
   selectedEventId?: string;
 }
 
@@ -172,7 +172,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const allItems = [...events, ...tasks];
   const totalItems = allItems.length;
 
-  const TaskCard = ({ task }: { task: CalendarTask }) => {
+  const TaskCard = ({ task }: { task: TaskBoardItem }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const tooltipKey = `task-${task.taskId}`;
@@ -514,7 +514,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     );
   };
 
-  const ExtraTaskItem = ({ task }: { task: CalendarTask }) => {
+  const ExtraTaskItem = ({ task }: { task: TaskBoardItem }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const tooltipKey = `task-${task.taskId}`;
@@ -603,7 +603,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     extraTasks = []
   }: {
     extraEvents: EventInstance[];
-    extraTasks?: CalendarTask[];
+    extraTasks?: TaskBoardItem[];
   }) => {
     const totalExtra = extraEvents.length + extraTasks.length;
     return (

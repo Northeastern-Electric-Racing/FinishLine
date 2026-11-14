@@ -16,7 +16,8 @@ import {
   BusySlots,
   IcsBusyInterval,
   MemberDropdownItem,
-  isValidSlackUserIdFormat
+  isValidSlackUserIdFormat,
+  TaskHomeCard
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { getMemberDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
@@ -34,8 +35,8 @@ import { getUserRole, updateUserAvailability } from '../utils/users.utils.js';
 import { getUserQueryArgs, getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args.js';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer.js';
-import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
-import taskTransformer from '../transformers/tasks.transformer.js';
+import { getTaskHomeCardQueryArgs } from '../prisma-query-args/tasks.query-args.js';
+import { taskHomeCardTransformer } from '../transformers/tasks.transformer.js';
 import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
 import { encrypt, decrypt } from '../utils/encryption.utils.js';
 
@@ -269,7 +270,7 @@ export default class UsersService {
     // if not in database, create user in database
     if (!user) {
       const emailId = payload['email']!.includes('@husky.neu.edu') ? payload['email']!.split('@')[0] : null;
-      const organization = await prisma.organization.findFirst();
+      const organization = await prisma.organization.findFirst({ where: { dateDeleted: null } });
 
       const firstName = payload['given_name'] ?? payload['email']!.split('@')[0]; // Defaults to id of email
       const lastName = payload['family_name'] ?? ''; // Defaults to no last name
@@ -278,41 +279,39 @@ export default class UsersService {
         ? payload['email'].replace(/@husky\.neu\.edu/i, '@northeastern.edu')
         : payload['email'];
 
-      const createdUser = await prisma.user.create({
-        data: {
-          firstName,
-          lastName,
-          googleAuthId: userId,
-          email: nonHuskyEmail,
-          emailId,
-          userSettings: { create: {} }
-        },
-        include: {
-          organizations: true,
-          userSettings: true
-        }
-      });
-      user = createdUser;
+      // the organization is connected as part of the create rather than in a follow up update, so
+      // that the user we return already lists it. Connecting afterwards leaves this object stale
+      // with an empty organizations array, and the client then has no organization to send back to
+      // us on its next request
+      user = await prisma.$transaction(async (tx) => {
+        const createdUser = await tx.user.create({
+          data: {
+            firstName,
+            lastName,
+            googleAuthId: userId,
+            email: nonHuskyEmail,
+            emailId,
+            userSettings: { create: {} },
+            ...(organization && { organizations: { connect: { organizationId: organization.organizationId } } })
+          },
+          include: {
+            organizations: true,
+            userSettings: true
+          }
+        });
 
-      if (organization) {
-        await prisma.organization.update({
-          where: { organizationId: organization.organizationId },
-          data: {
-            users: {
-              connect: {
-                userId: createdUser.userId
-              }
+        if (organization) {
+          await tx.role.create({
+            data: {
+              userId: createdUser.userId,
+              organizationId: organization.organizationId,
+              roleType: RoleEnum.GUEST
             }
-          }
-        });
-        await prisma.role.create({
-          data: {
-            userId: createdUser.userId,
-            organizationId: organization!.organizationId,
-            roleType: RoleEnum.GUEST
-          }
-        });
-      }
+          });
+        }
+
+        return createdUser;
+      });
     }
 
     // register a login
@@ -599,34 +598,22 @@ export default class UsersService {
    * @param organization the user's organization
    * @returns a list of the user's assigned tasks
    */
-  static async getUserTasks(userId: string, organization: Organization) {
+  static async getUserTasks(userId: string, organization: Organization): Promise<TaskHomeCard[]> {
     const requestedUser = await prisma.user.findUnique({
       where: { userId },
-      include: {
-        assignedTasks: { where: { dateDeleted: null }, ...getTaskQueryArgs() },
-        organizations: true
+      select: {
+        assignedTasks: {
+          where: { dateDeleted: null, wbsElement: { organizationId: organization.organizationId, dateDeleted: null } },
+          ...getTaskHomeCardQueryArgs()
+        },
+        organizations: { select: { organizationId: true } }
       }
     });
     if (!requestedUser) throw new NotFoundException('User', userId);
     if (!requestedUser.organizations.map((org) => org.organizationId).includes(organization.organizationId))
       throw new HttpException(400, `User ${userId} is not apart of the current organization`);
 
-    return requestedUser.assignedTasks.map(taskTransformer);
-  }
-
-  /**
-   * Get all tasks from a list of userIds
-   * @param userIds list of users to get the tasks from
-   * @param organization the users' organization
-   * @returns a list of tasks of the given users
-   */
-  static async getManyUserTasks(userIds: string[], organization: Organization) {
-    const tasksPromises = userIds.map(async (userId) => {
-      return UsersService.getUserTasks(userId, organization);
-    });
-
-    const resolvedTasks = await Promise.all(tasksPromises);
-    return resolvedTasks.flat();
+    return requestedUser.assignedTasks.map(taskHomeCardTransformer);
   }
 
   /**

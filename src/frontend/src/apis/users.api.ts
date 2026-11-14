@@ -11,7 +11,7 @@ import {
   GeneratedApiToken,
   ProjectOverview,
   SetUserScheduleSettingsPayload,
-  Task,
+  TaskHomeCard,
   User,
   UserScheduleSettings,
   UserSecureSettings,
@@ -28,7 +28,7 @@ import {
 } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
 import { projectOverviewTransformer } from './transformers/projects.transformers';
-import { taskTransformer } from './transformers/tasks.transformers';
+import { baseTaskTransformer } from './transformers/tasks.transformers';
 
 /**
  * Fetches all users.
@@ -186,19 +186,9 @@ export const updateUserRole = (id: string, role: string) => {
 };
 
 export const getUserTasks = (id: string) => {
-  return axios.get<Task[]>(apiUrls.userTasks(id), {
-    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  return axios.get<TaskHomeCard[]>(apiUrls.userTasks(id), {
+    transformResponse: (data) => JSON.parse(data).map(baseTaskTransformer)
   });
-};
-
-export const getManyUserTasks = (userIds: string[]) => {
-  return axios.post<Task[]>(
-    apiUrls.manyUserTasks(),
-    { userIds },
-    {
-      transformResponse: (data) => JSON.parse(data).map(taskTransformer)
-    }
-  );
 };
 
 export const getManyUsersWithScheduleSettings = (userIds: string[]) => {

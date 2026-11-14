@@ -348,6 +348,7 @@ describe('MCP Endpoint Tests', () => {
           onlyHeadsOrAboveForEventCreation: false,
           requiresConfirmation: false,
           sendSlackNotifications: false,
+          takeAttendance: false,
           calendars: { connect: { calendarId: calendar.calendarId } }
         }
       });

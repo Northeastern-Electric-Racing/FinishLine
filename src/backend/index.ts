@@ -26,6 +26,7 @@ import statisticsRouter from './src/routes/statistics.routes.js';
 import retrospectiveRouter from './src/routes/retrospective.routes.js';
 import partsRouter from './src/routes/parts.routes.js';
 import financeRouter from './src/routes/finance.routes.js';
+import rulesRouter from './src/routes/rules.routes.js';
 import calendarRouter from './src/routes/calendar.routes.js';
 import prospectiveSponsorRouter from './src/routes/prospective-sponsor.routes.js';
 import attendanceRouter from './src/routes/attendance.routes.js';
@@ -34,10 +35,17 @@ import agentRouter from './src/routes/agent.routes.js';
 import { mcpNodeHandler } from './src/mcp/handler.js';
 import { attachAuthInfo, requireApiToken } from './src/utils/mcp-auth.utils.js';
 import dashboardsRouter from './src/routes/dashboards.routes.js';
+import execSummaryRouter from './src/routes/exec-summaries.routes.js';
+import { withRequestContext } from './src/utils/request-context.utils.js';
+import { logRequests } from './src/utils/request-logger.utils.js';
 import bayDashboardRouter from './src/routes/bay-dashboard.routes.js';
 import bayDashboardAdminRouter from './src/routes/bay-dashboard-admin.routes.js';
 
 const app = express();
+
+// Global request logging and context middleware
+app.use(withRequestContext);
+app.use(logRequests);
 
 const port = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
@@ -141,10 +149,12 @@ app.use('/statistics', statisticsRouter);
 app.use('/retrospective', retrospectiveRouter);
 app.use('/parts', partsRouter);
 app.use('/finance', financeRouter);
+app.use('/rules', rulesRouter);
 app.use('/calendar', calendarRouter);
 app.use('/prospective-sponsors', prospectiveSponsorRouter);
 app.use('/attendance', attendanceRouter);
 app.use('/dashboards', dashboardsRouter);
+app.use('/executive-summaries', execSummaryRouter);
 app.use('/bay-dashboard', bayDashboardAdminRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');

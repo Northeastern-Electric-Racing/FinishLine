@@ -1,9 +1,10 @@
 import { Faker } from '@faker-js/faker';
 import { Prisma, WBS_Element_Status, Work_Package_Stage } from '@prisma/client';
 import { DateRange } from '../context.js';
-import { clampDate, DAYS_PER_WEEK, daysBetween } from '../dates.js';
+import { clampDate, daysBetween } from '../dates.js';
 import { addDaysToDate } from 'shared';
 import { seedConfig } from '../seed-config.js';
+import { DAYS_PER_WEEK } from '../../utils/time.utils.js';
 
 const WORK_PACKAGE_NULL_STAGE_CHANCE = 0.15;
 

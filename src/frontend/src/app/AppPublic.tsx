@@ -4,13 +4,14 @@
  */
 
 import { Switch, Route, Redirect, useHistory, RouteComponentProps } from 'react-router-dom';
-import { useAuth } from '../hooks/auth.hooks';
+import { SERVER_UNAVAILABLE_MESSAGE, useAuth } from '../hooks/auth.hooks';
 import { routes } from '../utils/routes';
 import Login from '../pages/LoginPage/Login';
 import AppAuthenticated from './AppAuthenticated';
 import { useProvideThemeToggle } from '../hooks/theme.hooks';
 import LoadingIndicator from '../components/LoadingIndicator';
 import { useOrganization } from '../hooks/organizations.hooks';
+import ErrorPage from '../pages/ErrorPage';
 import BayDashboardPage from '../pages/BayDashboardPage/BayDashboardPage';
 
 const AppPublic: React.FC = () => {
@@ -27,9 +28,15 @@ const AppPublic: React.FC = () => {
         theme.toggleTheme();
       }
 
-      if (auth.user.organizations.length > 0) {
-        organization.selectOrganization(auth.user.organizations[0]);
+      if (auth.user.organizations.length === 0) {
+        // without an organization every request would be sent with an empty organizationId header,
+        // so say so instead of spinning forever waiting for one to be selected
+        return (
+          <ErrorPage message="Your account isn't part of any organization yet. Reach out to a FinishLine admin to get added." />
+        );
       }
+
+      organization.selectOrganization(auth.user.organizations[0]);
 
       if (!organization.organizationId) {
         return <LoadingIndicator />;
@@ -45,6 +52,7 @@ const AppPublic: React.FC = () => {
 
     if (!auth.user && !auth.triedCurrent) {
       auth.signInCurrent();
+      if (auth.serverUnavailable) return <ErrorPage message={SERVER_UNAVAILABLE_MESSAGE} />;
       return <LoadingIndicator />;
     }
 

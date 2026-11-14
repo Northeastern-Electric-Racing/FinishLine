@@ -11,13 +11,16 @@ import {
   BayDashboardCountdown,
   BayDashboardCountdownCreateArgs,
   BayDashboardSlotCreateArgs,
+  PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig
 } from 'shared';
 import { apiUrls } from '../utils/urls';
 import {
   createBayDashboardCountdown,
+  deleteBayDashboardCountdown,
   editBayDashboardCountdown,
   getAvailableBayDashboardWidgets,
+  getBayDashboardCalendarEvents,
   getBayDashboardConfig,
   getBayDashboardCountdowns,
   getCurrentBayDashboardConfig,
@@ -50,6 +53,23 @@ export const useGetBayDashboardConfig = (slug: string) => {
 };
 
 /**
+ * Custom React Hook to get the upcoming calendar events the public TV display shows.
+ * Server's update events refetch it ['bay-dashboard', slug] and also refetches every few minutes.
+ * @param slug the organization slug (example: ner)
+ */
+export const useGetBayDashboardCalendarEvents = (slug?: string) => {
+  return useQuery<PublicBayDashboardCalendarEvent[], Error>(
+    ['bay-dashboard', slug, 'calendar'],
+    async () => {
+      if (!slug) throw new Error('Cannot get calendar events without an organization');
+      const { data } = await getBayDashboardCalendarEvents(slug);
+      return data;
+    },
+    { enabled: !!slug, refetchInterval: 5 * 60 * 1000 }
+  );
+};
+
+/**
  * Custom React Hook to get an organization's bay dashboard countdowns, for the TV, the Admin Tools preview and the countdown table.
  * The key sits under ['bay-dashboard', slug] so the server's update events refetch it on the TV.
  * @param slug the organization slug
@@ -77,6 +97,31 @@ export const useCreateBayDashboardCountdown = (slug: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['bay-dashboard', slug, 'countdowns']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a bay dashboard countdown.
+ * @param slug the organization slug, whose countdowns are refetched after deleting
+ */
+export const useDeleteBayDashboardCountdown = (slug: string) => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  return useMutation<BayDashboardCountdown, Error, string>(
+    ['bay-dashboard', 'admin', 'countdown', 'delete'],
+    async (countdownId: string) => {
+      const { data } = await deleteBayDashboardCountdown(countdownId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['bay-dashboard', slug, 'countdowns']);
+        toast.success('Successfully deleted countdown. The TV display has been updated.');
+      },
+      onError: (error) => {
+        toast.error(error.message);
       }
     }
   );

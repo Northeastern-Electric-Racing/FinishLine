@@ -2,6 +2,8 @@ import { Prisma } from '@prisma/client';
 
 export type UserQueryArgs = ReturnType<typeof getUserQueryArgs>;
 
+export type BaseUserQueryArgs = ReturnType<typeof getBaseUserQueryArgs>;
+
 export type UserPreviewWithEmailQueryArgs = ReturnType<typeof getUserPreviewWithEmailQueryArgs>;
 
 export type UserWithSettingsQueryArgs = ReturnType<typeof getUserWithSettingsQueryArgs>;
@@ -17,6 +19,16 @@ export const getUserQueryArgs = (organizationId?: string) =>
       firstName: true,
       lastName: true,
       email: true
+    }
+  });
+
+// the minimum every consumer of a user needs: who they are and what to call them
+export const getBaseUserQueryArgs = () =>
+  Prisma.validator<Prisma.UserDefaultArgs>()({
+    select: {
+      userId: true,
+      firstName: true,
+      lastName: true
     }
   });
 
