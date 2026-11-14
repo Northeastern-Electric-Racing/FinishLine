@@ -99,7 +99,6 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
           handleClose={() => setEditingCountdown(null)}
           countdown={editingCountdown}
           slug={slug}
-          shownAsPrimary={displayed.primary?.bayDashboardCountdownId === editingCountdown.bayDashboardCountdownId}
         />
       )}
       <Table sx={{ '& td': { borderBottom: 'none' } }}>

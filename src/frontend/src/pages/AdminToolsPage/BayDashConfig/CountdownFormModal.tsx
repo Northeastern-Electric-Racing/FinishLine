@@ -7,7 +7,7 @@ import { Checkbox, FormControl, FormControlLabel, FormHelperText, FormLabel } fr
 import { DatePicker } from '@mui/x-date-pickers';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
-import { BayDashboardCountdownCreateArgs } from 'shared';
+import { BayDashboardCountdown, BayDashboardCountdownCreateArgs, dbDateToLocalDate } from 'shared';
 import * as yup from 'yup';
 import NERFormModal from '../../../components/NERFormModal';
 import ReactHookTextField from '../../../components/ReactHookTextField';
@@ -23,6 +23,7 @@ interface CountdownFormModalProps {
   open: boolean;
   handleClose: () => void;
   onSubmit: (countdown: BayDashboardCountdownCreateArgs) => Promise<unknown>;
+  defaultValues?: BayDashboardCountdown;
 }
 
 const schema = yup.object().shape({
@@ -44,7 +45,7 @@ const emptyValues = (): CountdownFormValues => ({ name: '', startDate: new Date(
 /**
  * Modal for entering a bay dashboard countdown's name, start date, optional end date, and whether it's the primary countdown
  */
-const CountdownFormModal: React.FC<CountdownFormModalProps> = ({ open, handleClose, onSubmit }) => {
+const CountdownFormModal: React.FC<CountdownFormModalProps> = ({ open, handleClose, onSubmit, defaultValues }) => {
   const {
     handleSubmit,
     control,
@@ -52,7 +53,14 @@ const CountdownFormModal: React.FC<CountdownFormModalProps> = ({ open, handleClo
     formState: { errors }
   } = useForm<CountdownFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: emptyValues()
+    defaultValues: defaultValues
+      ? {
+          name: defaultValues.name,
+          startDate: dbDateToLocalDate(defaultValues.startDate),
+          endDate: defaultValues.endDate ? dbDateToLocalDate(defaultValues.endDate) : null,
+          isPrimary: defaultValues.isPrimary
+        }
+      : emptyValues()
   });
 
   // errors thrown here are toasted by NERFormModal, and the modal stays open so the countdown can be fixed and resubmitted
@@ -65,11 +73,11 @@ const CountdownFormModal: React.FC<CountdownFormModalProps> = ({ open, handleClo
     <NERFormModal
       open={open}
       onHide={handleClose}
-      title="New Countdown"
+      title={defaultValues ? 'Edit Countdown' : 'New Countdown'}
       reset={() => reset(emptyValues())}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId="bay-dashboard-countdown-form"
+      formId={defaultValues ? 'edit-bay-dashboard-countdown-form' : 'bay-dashboard-countdown-form'}
       showCloseButton
     >
       <FormControl fullWidth>
