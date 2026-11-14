@@ -467,7 +467,8 @@ export default class SlackServices {
       where: { userId: { in: userIdsToNotify }, organizations: { some: { organizationId } } },
       select: { userId: true }
     });
-    userIdsToNotify = orgMembers.map((user) => user.userId);
+    const orgMemberIds = new Set(orgMembers.map((user) => user.userId));
+    userIdsToNotify = userIdsToNotify.filter((userId) => orgMemberIds.has(userId));
 
     //if no users are notified, disregard the message
     if (userIdsToNotify.length === 0) {

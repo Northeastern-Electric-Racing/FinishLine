@@ -51,7 +51,7 @@ const GeneralAnnouncements: React.FC = () => {
 
   const unreadAnnouncements = data.pages.flatMap((page) => page.announcements);
   // every page carries the total; the latest one is the freshest
-  const totalCount = data.pages[data.pages.length - 1].totalCount;
+  const { totalCount } = data.pages[data.pages.length - 1];
 
   return (
     <ScrollablePageBlock title={`General Announcements (${totalCount})`}>
