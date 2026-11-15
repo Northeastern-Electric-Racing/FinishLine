@@ -46,3 +46,13 @@ output "database_url" {
   value       = "postgresql://${aws_db_instance.main.username}:${var.master_password}@${aws_db_instance.main.endpoint}/${aws_db_instance.main.db_name}"
   sensitive   = true
 }
+
+output "alarm_arns" {
+  description = "ARNs of the RDS CloudWatch alarms (for dashboard alarm status widgets)"
+  value = [
+    aws_cloudwatch_metric_alarm.database_cpu.arn,
+    aws_cloudwatch_metric_alarm.database_memory.arn,
+    aws_cloudwatch_metric_alarm.database_storage.arn,
+    aws_cloudwatch_metric_alarm.database_connections.arn,
+  ]
+}

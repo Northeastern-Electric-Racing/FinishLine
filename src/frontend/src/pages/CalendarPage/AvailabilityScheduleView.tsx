@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { Availability, Event, EventWithMembers, dbDateToLocalDate, getDayOfWeek, getNextSevenDays, User } from 'shared';
+import { Availability, EventDetail, dbDateToLocalDate, getDayOfWeek, getNextSevenDays, User } from 'shared';
 import React, { useState } from 'react';
 import {
   enumToArray,
@@ -9,7 +9,7 @@ import {
   reviewTimesInCurrentTimeZone
 } from '../../utils/design-review.utils';
 import { datePipe } from '../../utils/pipes';
-import EventTimeSlot from './Components/EventTimeSlot';
+import EventTimeSlot, { timeSlotCellSx } from './Components/EventTimeSlot';
 
 interface AvailabilityScheduleViewProps {
   availableUsers: Map<number, User[]>;
@@ -18,7 +18,7 @@ interface AvailabilityScheduleViewProps {
   setCurrentAvailableUsers: (val: User[]) => void;
   setCurrentUnavailableUsers: (val: User[]) => void;
   setCurrentHoveredSlot?: (slot: { day: Date; startHour: number; endHour: number } | null) => void;
-  event: Event | EventWithMembers;
+  event: Pick<EventDetail, 'initialDateScheduled' | 'requiredMembers'>;
   displayDate?: Date;
   onSlotScheduleClick?: (day: Date | null, startHour: number, endHour: number) => void;
 }
@@ -178,12 +178,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
               {potentialDays.map((day, dayIndex) => {
                 const index = dayIndex * enumToArray(REVIEW_TIMES).length + timeIndex;
                 return (
-                  <TableCell
-                    key={index}
-                    sx={{
-                      p: 0
-                    }}
-                  >
+                  <TableCell key={index} sx={timeSlotCellSx}>
                     <EventTimeSlot
                       backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
                       selected={selectedTimeslot === index}

@@ -9,9 +9,9 @@ import {
   ApiTokenMetadata,
   BusySlots,
   GeneratedApiToken,
-  ProjectOverview,
+  ProjectOverviewCard,
   SetUserScheduleSettingsPayload,
-  Task,
+  TaskHomeCard,
   User,
   UserScheduleSettings,
   UserSecureSettings,
@@ -27,8 +27,8 @@ import {
   userWithScheduleSettingsTransformer
 } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
-import { projectOverviewTransformer } from './transformers/projects.transformers';
-import { taskTransformer } from './transformers/tasks.transformers';
+import { projectOverviewCardTransformer } from './transformers/projects.transformers';
+import { baseTaskTransformer } from './transformers/tasks.transformers';
 
 /**
  * Fetches all users.
@@ -130,8 +130,8 @@ export const getCurrentUserSecureSettings = () => {
  * @param id User ID of the requested user's favorite projects.
  */
 export const getUsersFavoriteProjects = (id: string) => {
-  return axios.get<ProjectOverview[]>(apiUrls.userFavoriteProjects(id), {
-    transformResponse: (data) => JSON.parse(data).map(projectOverviewTransformer)
+  return axios.get<ProjectOverviewCard[]>(apiUrls.userFavoriteProjects(id), {
+    transformResponse: (data) => JSON.parse(data).map(projectOverviewCardTransformer)
   });
 };
 
@@ -186,19 +186,9 @@ export const updateUserRole = (id: string, role: string) => {
 };
 
 export const getUserTasks = (id: string) => {
-  return axios.get<Task[]>(apiUrls.userTasks(id), {
-    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  return axios.get<TaskHomeCard[]>(apiUrls.userTasks(id), {
+    transformResponse: (data) => JSON.parse(data).map(baseTaskTransformer)
   });
-};
-
-export const getManyUserTasks = (userIds: string[]) => {
-  return axios.post<Task[]>(
-    apiUrls.manyUserTasks(),
-    { userIds },
-    {
-      transformResponse: (data) => JSON.parse(data).map(taskTransformer)
-    }
-  );
 };
 
 export const getManyUsersWithScheduleSettings = (userIds: string[]) => {

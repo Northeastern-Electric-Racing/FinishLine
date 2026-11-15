@@ -1,6 +1,37 @@
 import { NextFunction, Request, Response } from 'express';
 import TasksService from '../services/tasks.services.js';
-import { validateWBS, WbsNumber } from 'shared';
+import { FilterTaskArgs, validateWBS, WbsNumber } from 'shared';
+
+// the filter criteria in a (validated) filter request body, shared by the full and paginated filter endpoints
+const filterTaskArgsOf = (body: Request['body']): FilterTaskArgs => {
+  const {
+    memberIds,
+    teamIds,
+    startPeriod,
+    endPeriod,
+    labelIds,
+    wbsNum,
+    carNumbers,
+    projectWbsNums,
+    workPackageWbsNums,
+    search,
+    andMemberTeam
+  } = body;
+
+  return {
+    memberIds,
+    teamIds,
+    startPeriod: startPeriod ? new Date(startPeriod) : undefined,
+    endPeriod: endPeriod ? new Date(endPeriod) : undefined,
+    labelIds,
+    wbsNum,
+    carNumbers,
+    projectWbsNums,
+    workPackageWbsNums,
+    search,
+    andMemberTeam
+  };
+};
 
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
@@ -34,7 +65,7 @@ export default class TasksController {
       const { title, notes, priority, deadline, startDate, wbsNum, labelIds, blockedByIds } = req.body;
       const { taskId } = req.params as Record<string, string>;
 
-      const updateTask = await TasksService.editTask(
+      await TasksService.editTask(
         req.currentUser,
         req.organization.organizationId,
         taskId,
@@ -48,7 +79,7 @@ export default class TasksController {
         wbsNum
       );
 
-      res.status(200).json(updateTask);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -59,14 +90,9 @@ export default class TasksController {
       const { status } = req.body;
       const { taskId } = req.params as Record<string, string>;
 
-      const updatedTask = await TasksService.editTaskStatus(
-        req.currentUser,
-        req.organization.organizationId,
-        taskId,
-        status
-      );
+      await TasksService.editTaskStatus(req.currentUser, req.organization.organizationId, taskId, status);
 
-      res.status(200).json(updatedTask);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -89,9 +115,9 @@ export default class TasksController {
     try {
       const { taskId } = req.params as Record<string, string>;
 
-      const updatedTask = await TasksService.deleteTask(req.currentUser, taskId, req.organization);
+      await TasksService.deleteTask(req.currentUser, taskId, req.organization);
 
-      res.status(200).json(updatedTask);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -99,38 +125,21 @@ export default class TasksController {
 
   static async getFilteredTasks(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        memberIds,
-        teamIds,
-        startPeriod,
-        endPeriod,
-        labelIds,
-        wbsNum,
-        carNumbers,
-        projectWbsNums,
-        workPackageWbsNums,
-        search,
-        andMemberTeam
-      } = req.body;
-
-      const tasks = await TasksService.getFilteredTasks(
-        {
-          memberIds,
-          teamIds,
-          startPeriod: startPeriod ? new Date(startPeriod) : undefined,
-          endPeriod: endPeriod ? new Date(endPeriod) : undefined,
-          labelIds,
-          wbsNum,
-          carNumbers,
-          projectWbsNums,
-          workPackageWbsNums,
-          search,
-          andMemberTeam
-        },
-        req.organization
-      );
+      const tasks = await TasksService.getFilteredTasks(filterTaskArgsOf(req.body), req.organization);
 
       res.status(200).json(tasks);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getFilteredTasksPage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { status, offset } = req.body;
+
+      const page = await TasksService.getFilteredTasksPage(filterTaskArgsOf(req.body), status, offset, req.organization);
+
+      res.status(200).json(page);
     } catch (error: unknown) {
       next(error);
     }
@@ -159,8 +168,8 @@ export default class TasksController {
   static async createTaskLabel(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, colorHexCode } = req.body;
-      const label = await TasksService.createTaskLabel(req.currentUser, name, colorHexCode, req.organization);
-      res.status(200).json(label);
+      await TasksService.createTaskLabel(req.currentUser, name, colorHexCode, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -170,8 +179,8 @@ export default class TasksController {
     try {
       const { taskLabelId } = req.params as Record<string, string>;
       const { name, colorHexCode } = req.body;
-      const label = await TasksService.editTaskLabel(req.currentUser, taskLabelId, name, colorHexCode, req.organization);
-      res.status(200).json(label);
+      await TasksService.editTaskLabel(req.currentUser, taskLabelId, name, colorHexCode, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -180,8 +189,8 @@ export default class TasksController {
   static async deleteTaskLabel(req: Request, res: Response, next: NextFunction) {
     try {
       const { taskLabelId } = req.params as Record<string, string>;
-      const deletedId = await TasksService.deleteTaskLabel(req.currentUser, taskLabelId, req.organization);
-      res.status(200).json(deletedId);
+      await TasksService.deleteTaskLabel(req.currentUser, taskLabelId, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }

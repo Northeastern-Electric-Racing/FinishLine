@@ -1,7 +1,8 @@
 import { Prisma } from '@prisma/client';
-import { RoleEnum, User, UserPreviewWithEmail, UserWithScheduleSettings } from 'shared';
+import { BaseUser, RoleEnum, User, UserPreviewWithEmail, UserWithScheduleSettings } from 'shared';
 import userScheduleSettingsTransformer from './user-schedule-settings.transformer.js';
 import {
+  BaseUserQueryArgs,
   UserPreviewWithEmailQueryArgs,
   UserQueryArgs,
   UserWithSettingsQueryArgs
@@ -11,6 +12,14 @@ export const userTransformer = (user: Prisma.UserGetPayload<UserQueryArgs>): Use
   return {
     ...user,
     role: user.roles.length > 0 ? user.roles[0].roleType : RoleEnum.GUEST
+  };
+};
+
+export const baseUserTransformer = (user: Prisma.UserGetPayload<BaseUserQueryArgs>): BaseUser => {
+  return {
+    userId: user.userId,
+    firstName: user.firstName,
+    lastName: user.lastName
   };
 };
 

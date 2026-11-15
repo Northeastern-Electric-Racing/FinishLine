@@ -1,4 +1,4 @@
-import { Shop, Event, EventPreview, EventWithMembers } from 'shared';
+import { Shop, BaseEvent, EventConflict, GuestEventInstance, ScheduleSlot } from 'shared';
 import { userTransformer } from './users.transformers';
 
 export const shopTransformer = (shop: Shop): Shop => {
@@ -9,64 +9,35 @@ export const shopTransformer = (shop: Shop): Shop => {
   };
 };
 
-export const filterEventTransformer = (event: Event): Event => {
-  // Guard against error responses being passed through transformResponse
-  if (!event || !event.scheduledTimes) {
-    return event;
-  }
-  return {
-    ...event,
-    initialDateScheduled: event.initialDateScheduled ? new Date(event.initialDateScheduled) : undefined,
-    dateCreated: new Date(event.dateCreated),
-    scheduledTimes: event.scheduledTimes.map((schedule) => ({
-      ...schedule,
-      startTime: new Date(schedule.startTime),
-      endTime: new Date(schedule.endTime)
-    }))
-  };
+const scheduleSlotTransformer = <T extends ScheduleSlot>(slot: T): T => {
+  return { ...slot, startTime: new Date(slot.startTime), endTime: new Date(slot.endTime) };
 };
 
-export const eventTransformer = (event: Event): Event => {
-  // Guard against error responses being passed through transformResponse
-  if (!event || !event.scheduledTimes) {
-    return event;
-  }
+/**
+ * Revives the dates on any event model (BaseEvent or one that extends it)
+ */
+export const baseEventTransformer = <T extends BaseEvent>(event: T): T => {
   return {
     ...event,
     dateCreated: new Date(event.dateCreated),
     initialDateScheduled: event.initialDateScheduled ? new Date(event.initialDateScheduled) : undefined,
-    scheduledTimes: event.scheduledTimes.map((slot: any) => ({
-      ...slot,
-      startTime: new Date(slot.startTime),
-      endTime: new Date(slot.endTime)
-    }))
+    scheduledTimes: event.scheduledTimes.map(scheduleSlotTransformer)
   };
 };
 
-export const eventWithMembersTransformer = (event: EventWithMembers): EventWithMembers => {
-  // Guard against error responses being passed through transformResponse
-  if (!event || !event.scheduledTimes) {
-    return event;
-  }
+export const eventConflictTransformer = (conflict: EventConflict): EventConflict => {
   return {
-    ...event,
-    dateCreated: new Date(event.dateCreated),
-    initialDateScheduled: event.initialDateScheduled ? new Date(event.initialDateScheduled) : undefined,
-    scheduledTimes: event.scheduledTimes.map((slot: any) => ({
-      ...slot,
-      startTime: new Date(slot.startTime),
-      endTime: new Date(slot.endTime)
-    }))
+    ...conflict,
+    event: baseEventTransformer(conflict.event),
+    conflictingEvent: baseEventTransformer(conflict.conflictingEvent),
+    overlapStart: new Date(conflict.overlapStart)
   };
 };
 
-export const eventPreviewTransformer = (event: EventPreview): EventPreview => {
+export const guestEventInstanceTransformer = (instance: GuestEventInstance): GuestEventInstance => {
   return {
-    eventId: event.eventId,
-    title: event.title,
-    dateScheduled: new Date(event.dateScheduled),
-    status: event.status,
-    userCreated: userTransformer(event.userCreated),
-    wbsName: event.wbsName
+    ...scheduleSlotTransformer(instance),
+    dateCreated: new Date(instance.dateCreated),
+    initialDateScheduled: instance.initialDateScheduled ? new Date(instance.initialDateScheduled) : undefined
   };
 };

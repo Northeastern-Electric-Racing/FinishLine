@@ -20,7 +20,7 @@ export class CompetitionDocumentsSummaryProcess extends SeedProcess<
   }
 
   async run({ executiveSummaries }: ExecutiveSummaryOutput): Promise<CompetitionDocumentsSummaryOutput> {
-    const now = new Date();
+    const { now } = this;
 
     const planned = executiveSummaries
       .filter(() => this.faker.datatype.boolean({ probability: DOCUMENTS_SUMMARY_CHANCE }))

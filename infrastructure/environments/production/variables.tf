@@ -99,7 +99,7 @@ variable "eb_max_instances" {
 variable "eb_solution_stack" {
   description = "Elastic Beanstalk solution stack name"
   type        = string
-  default     = ""  # Empty means use module default
+  default     = "" # Empty means use module default
 }
 
 #####################
@@ -286,4 +286,16 @@ variable "admin_user_id" {
   description = "Admin user ID"
   type        = string
   default     = ""
+}
+
+variable "slack_alerts_team_id" {
+  description = "Slack workspace ID that CloudWatch alarm notifications are sent to (authorized once in the Amazon Q Developer in chat applications console)"
+  type        = string
+  default     = "T7MHAQ5TL"
+}
+
+variable "slack_alerts_channel_id" {
+  description = "Slack channel ID that CloudWatch alarm notifications are sent to (the Amazon Q app must be invited to the channel)"
+  type        = string
+  default     = "C0C65LK58JK"
 }

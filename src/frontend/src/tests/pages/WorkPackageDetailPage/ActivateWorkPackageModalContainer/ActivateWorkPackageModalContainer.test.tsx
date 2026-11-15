@@ -19,6 +19,8 @@ import {
   mockUseAllUsersReturnValue
 } from '../../../test-support/mock-hooks';
 import { exampleAuthenticatedAdminUser } from '../../../test-support/test-data/authenticated-user.stub';
+import * as workPackageHooks from '../../../../hooks/work-packages.hooks';
+import * as organizationHooks from '../../../../hooks/organizations.hooks';
 
 vi.mock('../../../../hooks/change-requests.hooks');
 vi.mock('../../../../hooks/toasts.hooks');
@@ -42,6 +44,18 @@ describe('activate work package modal container test suite', () => {
     vi.spyOn(userHooks, 'useLogUserIn').mockReturnValue(mockLogUserInReturnValue);
     vi.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
     vi.spyOn(userHooks, 'useAllMembers').mockReturnValue(mockUseAllUsersReturnValue(exampleAllUsers));
+    vi.spyOn(workPackageHooks, 'useSingleWorkPackage').mockReturnValue({
+      data: { startDate: new Date('2026-09-22') },
+      isLoading: false,
+      isError: false,
+      error: null
+    } as any);
+    vi.spyOn(organizationHooks, 'useCurrentOrganization').mockReturnValue({
+      data: { activationBufferDays: 7 },
+      isLoading: false,
+      isError: false,
+      error: null
+    } as any);
   });
 
   it('renders component without crashing', () => {

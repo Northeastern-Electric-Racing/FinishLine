@@ -30,8 +30,9 @@ import {
   shouldCreateMeetingAttendance
 } from '../factories/event.factory.js';
 import { addDaysToDate } from 'shared';
-import { clampDate, DAY_MS, daysBetween } from '../dates.js';
+import { clampDate, daysBetween } from '../dates.js';
 import { Event_Status } from '@prisma/client';
+import { DAY_MS } from '../../utils/time.utils.js';
 
 type EventInput = OrganizationOutput & UsersOutput & ConfigDataOutput & TeamOutput & CarOutput & ProjectOutput;
 
@@ -78,7 +79,7 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
       ])
     );
 
-    const now = new Date();
+    const { now } = this;
 
     const BATCH_SIZE = 20;
     for (let i = 0; i < projects.length; i += BATCH_SIZE) {
@@ -128,7 +129,7 @@ export class EventProcess extends SeedProcess<EventInput, Record<string, never>>
       const availableDays = daysBetween(timeline);
       const offsetDays = generateInitialDateOffset(this.faker, availableDays, timeline.end > now);
       const initialDateScheduled = addDaysToDate(timeline.start, offsetDays);
-      const status = generateEventStatus(this.faker, eventType.requiresConfirmation, initialDateScheduled);
+      const status = generateEventStatus(this.faker, eventType.requiresConfirmation, initialDateScheduled, now);
 
       const location = generateLocation(this.faker);
       const zoomLink = generateZoomLink(this.faker);

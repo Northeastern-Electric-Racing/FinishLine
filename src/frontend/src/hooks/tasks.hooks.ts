@@ -3,8 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { CalendarTask, FilterTaskArgs, WbsNumber, TaskPriority, TaskStatus, Task, TaskCardPreview, TaskLabel } from 'shared';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from 'react-query';
+import {
+  FilterTaskArgs,
+  WbsNumber,
+  TaskPriority,
+  TaskStatus,
+  TaskBoardItem,
+  TaskBoardItemPage,
+  TaskHomeCard,
+  TaskLabel
+} from 'shared';
 import {
   createSingleTask,
   deleteSingleTask,
@@ -13,6 +22,7 @@ import {
   editTaskAssignees,
   getOverdueTasksByTeamLeader,
   getFilterTasks,
+  getFilterTasksPage,
   getAllTaskLabels,
   createTaskLabel,
   editTaskLabel,
@@ -37,7 +47,7 @@ export interface CreateTaskPayload {
  * @returns the filtered tasks query
  */
 export const useFilterTasks = (filterArgs: FilterTaskArgs | null) => {
-  return useQuery<CalendarTask[], Error>(
+  return useQuery<TaskBoardItem[], Error>(
     ['filter-tasks', filterArgs],
     async () => {
       const { data } = await getFilterTasks(filterArgs!);
@@ -50,9 +60,32 @@ export const useFilterTasks = (filterArgs: FilterTaskArgs | null) => {
   );
 };
 
+/**
+ * Custom React Hook for loading one status column of the filtered tasks a page at a time (the global tasks board)
+ * @param filterArgs the filter criteria
+ * @param status the status column to load
+ * @param enabled whether to load anything at all
+ * @returns the column's infinite query
+ */
+export const useFilterTasksPages = (filterArgs: FilterTaskArgs, status: TaskStatus, enabled: boolean) => {
+  // under 'filter-tasks' so the task mutations' invalidateQueries(['filter-tasks']) refreshes the loaded pages too
+  return useInfiniteQuery<TaskBoardItemPage, Error>(
+    ['filter-tasks', 'paginated', status, filterArgs],
+    async ({ pageParam = 0 }: { pageParam?: number }) => {
+      const { data } = await getFilterTasksPage(filterArgs, status, pageParam);
+      return data;
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextOffset,
+      keepPreviousData: true,
+      enabled
+    }
+  );
+};
+
 export const useCreateTask = () => {
   const queryClient = useQueryClient();
-  return useMutation<Task, Error, CreateTaskPayload>(
+  return useMutation<TaskBoardItem, Error, CreateTaskPayload>(
     ['tasks', 'create'],
     async (createTaskPayload: CreateTaskPayload) => {
       const { data } = await createSingleTask(
@@ -98,10 +131,10 @@ export interface TaskPayload {
  */
 export const useEditTask = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, TaskPayload>(
+  return useMutation<void, Error, TaskPayload>(
     ['tasks', 'edit'],
     async (taskPayload: TaskPayload) => {
-      const { data } = await editTask(
+      await editTask(
         taskPayload.taskId,
         taskPayload.title,
         taskPayload.notes ?? '',
@@ -112,8 +145,6 @@ export const useEditTask = () => {
         taskPayload.startDate,
         taskPayload.wbsNum
       );
-
-      return data;
     },
     {
       onSuccess: () => {
@@ -132,7 +163,7 @@ export const useEditTask = () => {
  */
 export const useEditTaskAssignees = () => {
   const queryClient = useQueryClient();
-  return useMutation<Task, Error, { taskId: string; assignees: string[] }>(
+  return useMutation<TaskBoardItem, Error, { taskId: string; assignees: string[] }>(
     ['tasks', 'edit-assignees'],
     async (editAssigneesTaskPayload: { taskId: string; assignees: string[] }) => {
       const { data } = await editTaskAssignees(editAssigneesTaskPayload.taskId, editAssigneesTaskPayload.assignees);
@@ -154,11 +185,10 @@ export const useEditTaskAssignees = () => {
  */
 export const useSetTaskStatus = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, { taskId: string; status: TaskStatus }>(
+  return useMutation<void, Error, { taskId: string; status: TaskStatus }>(
     ['tasks', 'edit-status'],
     async (editStatusTaskPayload: { taskId: string; status: TaskStatus }) => {
-      const { data } = await editSingleTaskStatus(editStatusTaskPayload.taskId, editStatusTaskPayload.status);
-      return data;
+      await editSingleTaskStatus(editStatusTaskPayload.taskId, editStatusTaskPayload.status);
     },
     {
       // the board updates optimistically, but the cached tasks must also be refreshed or a later
@@ -178,11 +208,10 @@ export interface DeleteTaskPayload {
 
 export const useDeleteTask = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, DeleteTaskPayload>(
+  return useMutation<void, Error, DeleteTaskPayload>(
     ['tasks', 'delete'],
     async (deleteTaskPayload: DeleteTaskPayload) => {
-      const { data } = await deleteSingleTask(deleteTaskPayload.taskId);
-      return data;
+      await deleteSingleTask(deleteTaskPayload.taskId);
     },
     {
       onSuccess: () => {
@@ -195,7 +224,8 @@ export const useDeleteTask = () => {
 };
 
 export const useOverdueTasksByTeamLeader = (userId: string) => {
-  return useQuery<TaskCardPreview[], Error>([userId, 'tasks'], async () => {
+  // under 'tasks' so every task mutation's invalidateQueries(['tasks']) refreshes it
+  return useQuery<TaskHomeCard[], Error>(['tasks', 'overdue', userId], async () => {
     const { data } = await getOverdueTasksByTeamLeader(userId);
     return data;
   });
@@ -218,11 +248,10 @@ export const useAllTaskLabels = () => {
  */
 export const useCreateTaskLabel = () => {
   const queryClient = useQueryClient();
-  return useMutation<TaskLabel, Error, { name: string; colorHexCode: string }>(
+  return useMutation<void, Error, { name: string; colorHexCode: string }>(
     ['task-labels', 'create'],
     async ({ name, colorHexCode }) => {
-      const { data } = await createTaskLabel(name, colorHexCode);
-      return data;
+      await createTaskLabel(name, colorHexCode);
     },
     {
       onSuccess: () => {
@@ -238,11 +267,10 @@ export const useCreateTaskLabel = () => {
  */
 export const useEditTaskLabel = () => {
   const queryClient = useQueryClient();
-  return useMutation<TaskLabel, Error, { taskLabelId: string; name: string; colorHexCode: string }>(
+  return useMutation<void, Error, { taskLabelId: string; name: string; colorHexCode: string }>(
     ['task-labels', 'edit'],
     async ({ taskLabelId, name, colorHexCode }) => {
-      const { data } = await editTaskLabel(taskLabelId, name, colorHexCode);
-      return data;
+      await editTaskLabel(taskLabelId, name, colorHexCode);
     },
     {
       onSuccess: () => {
@@ -254,15 +282,14 @@ export const useEditTaskLabel = () => {
 
 /**
  * Custom React Hook to delete a task label
- * @returns the delete task label id
+ * @returns the delete task label mutation
  */
 export const useDeleteTaskLabel = () => {
   const queryClient = useQueryClient();
-  return useMutation<string, Error, { taskLabelId: string }>(
+  return useMutation<void, Error, { taskLabelId: string }>(
     ['task-labels', 'delete'],
     async ({ taskLabelId }) => {
-      const { data } = await deleteTaskLabel(taskLabelId);
-      return data;
+      await deleteTaskLabel(taskLabelId);
     },
     {
       onSuccess: () => {

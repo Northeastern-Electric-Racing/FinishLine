@@ -3,26 +3,30 @@ import { Faker } from '@faker-js/faker';
 import { DateRange } from '../context.js';
 import { seedConfig } from '../seed-config.js';
 
-const CURRENT_YEAR = new Date().getFullYear();
-
 const FROM_MONTH = 5; // May
 const FROM_DAY = 1;
 const TO_MONTH = 7; // July
 const TO_DAY = 31;
 
-export const getCarConfigs = (faker: Faker) => {
+// Built in UTC on purpose: a local-time boundary would put CI (UTC) and a dev machine on
+// different sides of a car's date range and generate different data from the same seed.
+const utc = (year: number, month: number, day: number) => new Date(Date.UTC(year, month, day));
+
+export const getCarConfigs = (faker: Faker, now: Date) => {
+  const currentYear = now.getUTCFullYear();
+
   return Array.from({ length: seedConfig.car.carCount }, (_, i) => {
-    const carYear = CURRENT_YEAR - (seedConfig.car.carCount - 1) + i + 1;
+    const carYear = currentYear - (seedConfig.car.carCount - 1) + i + 1;
     const shortYear = String(carYear).slice(2);
 
     const start = faker.date.between({
-      from: new Date(carYear - 1, FROM_MONTH, FROM_DAY),
-      to: new Date(carYear - 1, TO_MONTH, TO_DAY)
+      from: utc(carYear - 1, FROM_MONTH, FROM_DAY),
+      to: utc(carYear - 1, TO_MONTH, TO_DAY)
     });
 
     const end = faker.date.between({
-      from: new Date(carYear, FROM_MONTH, FROM_DAY),
-      to: new Date(carYear, TO_MONTH, TO_DAY)
+      from: utc(carYear, FROM_MONTH, FROM_DAY),
+      to: utc(carYear, TO_MONTH, TO_DAY)
     });
 
     return {

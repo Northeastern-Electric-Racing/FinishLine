@@ -70,7 +70,8 @@ describe('Get User Busy Times', () => {
       false, // description
       false, // onlyHeadsOrAbove
       false, // requiresConfirmation
-      false // sendSlackNotifications
+      false, // sendSlackNotifications
+      false // takeAttendance
     );
   });
 

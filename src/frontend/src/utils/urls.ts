@@ -4,7 +4,7 @@
  */
 
 import { WbsNumber, wbsPipe } from 'shared';
-import { WorkPackageSelection } from 'shared';
+import { WorkPackageSelection, WorkPackageTimelineFilters } from 'shared';
 
 /**
  * This file centralizes URLs used to query the API.
@@ -31,7 +31,6 @@ const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings
 const userScheduleSettingsBusyTimes = (id: string) => `${usersById(id)}/schedule-settings/busy-times`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
-const manyUserTasks = () => `${users()}/tasks/get-many`;
 const currentUser = () => `${users()}/auth/current`;
 const logUserOut = () => `${users()}/auth/log-out`;
 const manyUsersWithScheduleSettings = () => `${users()}/scheduleSettings`;
@@ -90,6 +89,7 @@ const notifyPartAssignee = () => `${parts()}/notifyAssignee`;
 const notifyPartReviewer = () => `${parts()}/notifyReviewer`;
 const getPartReviewSampleImage = () => `${parts()}/partReviewSampleImage`;
 const setPartReviewSampleImage = () => `${parts()}/partReviewSampleImage/update`;
+const projectsEditTeams = (wbsNum: string) => `${projectsByWbsNum(wbsNum)}/edit-teams`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -99,6 +99,7 @@ const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
 const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 const tasksFilter = () => `${tasks()}/filter`;
+const tasksFilterPaginated = () => `${tasks()}/filter-paginated`;
 const overdueTasksByTeamLeadership = (userId: string) => `${tasks()}/overdue-by-team-member/${userId}`;
 const taskLabels = () => `${tasks()}/task-labels`;
 const taskLabelCreate = () => `${taskLabels()}/create`;
@@ -122,9 +123,17 @@ const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
 const workPackagesMany = () => `${workPackages()}/get-many`;
-const workPackagesAllPreview = (status?: string) =>
-  `${API_URL}/work-packages/all-preview${status ? `?status=${status}` : ''}`;
-const homePageWorkPackages = (selection: WorkPackageSelection) => `${workPackages()}/home-page/${selection}`;
+const workPackagesAll = (status?: string) => `${workPackages()}${status ? `?status=${status}` : ''}`;
+const homePageWorkPackages = (selection: WorkPackageSelection, filters: WorkPackageTimelineFilters) => {
+  const params = new URLSearchParams();
+  (['startsAfter', 'startsBefore', 'endsAfter', 'endsBefore'] as const).forEach((bound) => {
+    const date = filters[bound];
+    if (date) params.set(bound, date.toISOString());
+  });
+  if (filters.status) params.set('status', filters.status);
+  const queryString = params.toString();
+  return `${workPackages()}/home-page/${selection}${queryString ? `?${queryString}` : ''}`;
+};
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
@@ -150,6 +159,7 @@ const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/
 const teams = () => `${API_URL}/teams`;
 const teamPreviews = () => `${API_URL}/teams/previews/`;
 const teamsById = (id: string) => `${teams()}/${id}`;
+const teamsWithProjects = () => `${teams()}/summaries`;
 const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
@@ -392,6 +402,7 @@ const organizationsSetSlackSponsorshipNotificationChannelId = () => `${organizat
 const organizationsFinanceDelegates = () => `${organizations()}/finance-delegates`;
 const organizationsSetFinanceDelegates = () => `${organizationsFinanceDelegates()}/set`;
 const organizationsNotificationChannels = () => `${organizations()}/notification-channels`;
+const organizationsSetActivationBufferDays = () => `${organizations()}/activation-buffer-days/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -462,11 +473,12 @@ const removeGraphFromGraphCollection = (graphCollectionId: string, graphId: stri
 const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete`;
 
 /************** Retrospective Endpoints ***************/
-const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
-  `${API_URL}/retrospective/timelines?` +
-  (startDate ? `start=${encodeURIComponent(new Date(startDate).toISOString())}` : '') +
-  (endDate ? `end=${encodeURIComponent(new Date(endDate).toISOString())}` : '');
-const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
+const retrospectiveTimelines = (startDate?: Date, endDate?: Date) => {
+  const params = new URLSearchParams();
+  if (startDate) params.set('start', new Date(startDate).toISOString());
+  if (endDate) params.set('end', new Date(endDate).toISOString());
+  return `${API_URL}/retrospective/timelines?${params.toString()}`;
+};
 
 /**************** Rules Endpoints ****************/
 const rules = () => `${API_URL}/rules`;
@@ -508,12 +520,15 @@ const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
 /**************** Calendar Endpoints ****************/
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
-const calendarEvents = () => `${calendar()}/events`;
 const calendarNewMemberEvents = () => `${calendar()}/events/new-member`;
-const calendarEventsPaginated = () => `${calendar()}/events-paginated`;
+const calendarMyConflicts = () => `${calendar()}/events/my-conflicts`;
+const calendarReviewBookingEvents = () => `${calendar()}/events/review-bookings`;
+const calendarMyUpcomingEvents = () => `${calendar()}/events/my-upcoming`;
+const calendarDesignReviewAttendance = () => `${calendar()}/events/design-review-attendance`;
+const calendarGuestEventFeed = () => `${calendar()}/events/guest-feed`;
 const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
-const calendarFilterEvents = () => `${calendar()}/events/filter`;
+const calendarViewEvents = () => `${calendar()}/events/calendar-view`;
 const calendarMachinery = () => `${calendar()}/machinery`;
 const calendarCreateMachinery = () => `${calendar()}/machinery/create`;
 const calendarEditMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/edit`;
@@ -531,8 +546,6 @@ const calendarDeleteEventType = (eventTypeId: string) => `${calendar()}/event-ty
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
 const calendarEventRemindUnconfirmed = (id: string) => `${calendar()}/event/${id}/remind-unconfirmed`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
-const calendarGetSingleEventWithMembers = (id: string) => `${calendar()}/event-members/${id}`;
-const calendarGetConflictingEvent = (id: string) => `${calendar()}/event/${id}/conflict`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
 const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
 const calendarApproveEvent = (id: string) => `${calendar()}/event/${id}/approve`;
@@ -576,6 +589,13 @@ const dashboardsCreate = () => `${dashboards()}/create`;
 const dashboardEdit = (dashboardId: string) => `${dashboards()}/${dashboardId}/edit`;
 const dashboardDelete = (dashboardId: string) => `${dashboards()}/${dashboardId}/delete`;
 
+/************** Executive Summary Endpoints ***************/
+const executiveSummaries = () => `${API_URL}/executive-summaries`;
+const executiveSummaryById = (id: string) => `${executiveSummaries()}/${id}`;
+const executiveSummaryVehicleDevelopment = (id: string) => `${executiveSummaryById(id)}/vehicle-development`;
+const executiveSummaryBudget = (id: string) => `${executiveSummaryById(id)}/budget`;
+const executiveSummaryEdit = (id: string) => `${executiveSummaries()}/${id}/edit`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -602,7 +622,6 @@ export const apiUrls = {
   userScheduleSettingsBusyTimes,
   userScheduleSettingsSet,
   userTasks,
-  manyUserTasks,
   currentUser,
   logUserOut,
   manyUsersWithScheduleSettings,
@@ -648,6 +667,7 @@ export const apiUrls = {
   notifyPartReviewer,
   getPartReviewSampleImage,
   setPartReviewSampleImage,
+  projectsEditTeams,
 
   parts,
   partsByProject,
@@ -663,6 +683,7 @@ export const apiUrls = {
   tasksCreate,
   tasks,
   tasksFilter,
+  tasksFilterPaginated,
   editTaskById,
   taskEditStatus,
   editTaskAssignees,
@@ -682,7 +703,7 @@ export const apiUrls = {
   workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
   workPackagesMany,
-  workPackagesAllPreview,
+  workPackagesAll,
   homePageWorkPackages,
 
   changeRequests,
@@ -705,6 +726,7 @@ export const apiUrls = {
   teams,
   teamPreviews,
   teamsById,
+  teamsWithProjects,
   teamsDelete,
   teamsSetMembers,
   teamsArchive,
@@ -867,6 +889,7 @@ export const apiUrls = {
   organizationsFinanceDelegates,
   organizationsSetFinanceDelegates,
   organizationsNotificationChannels,
+  organizationsSetActivationBufferDays,
 
   cars,
   carsCreate,
@@ -924,7 +947,6 @@ export const apiUrls = {
   checklistDelete,
 
   retrospectiveTimelines,
-  retrospectiveBudgets,
 
   rules,
   rulesTopLevel,
@@ -960,7 +982,7 @@ export const apiUrls = {
   singleRuleset,
   calendarShops,
   calendarCreateShop,
-  calendarFilterEvents,
+  calendarViewEvents,
   calendarMachinery,
   calendarCreateMachinery,
   calendarEditMachinery,
@@ -970,11 +992,12 @@ export const apiUrls = {
   calendarEventMarkUserConfirmed,
   calendarEventRemindUnconfirmed,
   calendarGetSingleEvent,
-  calendarGetSingleEventWithMembers,
-  calendarGetConflictingEvent,
-  calendarEvents,
   calendarNewMemberEvents,
-  calendarEventsPaginated,
+  calendarMyConflicts,
+  calendarReviewBookingEvents,
+  calendarMyUpcomingEvents,
+  calendarDesignReviewAttendance,
+  calendarGuestEventFeed,
   calendarEventTypes,
   calendarDeleteEvent,
   calendarEventSetStatus,
@@ -1010,6 +1033,12 @@ export const apiUrls = {
   dashboardsCreate,
   dashboardEdit,
   dashboardDelete,
+
+  executiveSummaries,
+  executiveSummaryById,
+  executiveSummaryVehicleDevelopment,
+  executiveSummaryBudget,
+  executiveSummaryEdit,
 
   version
 };

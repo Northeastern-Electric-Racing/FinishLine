@@ -204,7 +204,7 @@ export const createCalendar = async (name: string) => {
 export const createCalendarEvent = async (
   calendarId: string,
   memberIds: string[],
-  scheduledSlots: Schedule_Slot[],
+  scheduledSlots: Pick<Schedule_Slot, 'startTime' | 'endTime' | 'allDay'>[],
   isInPerson: boolean,
   zoomLink: string | null,
   location: string | null,

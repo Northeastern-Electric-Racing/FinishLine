@@ -11,12 +11,13 @@ import {
   AuthenticatedUser,
   AvailabilityCreateArgs,
   UserWithScheduleSettings,
-  ProjectOverview,
+  ProjectOverviewCard,
   isAtLeastRank,
   BusySlots,
   IcsBusyInterval,
   MemberDropdownItem,
-  isValidSlackUserIdFormat
+  isValidSlackUserIdFormat,
+  TaskHomeCard
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { getMemberDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
@@ -25,8 +26,8 @@ import { AccessDeniedException, HttpException, NotFoundException } from '../util
 import { busyIntervalsToSlots, fetchIcsBusyTimes, validateIcsUrl } from '../utils/ics.utils.js';
 import CalendarService from './calendar.services.js';
 import { generateAccessToken } from '../utils/auth.utils.js';
-import { projectOverviewTransformer } from '../transformers/projects.transformer.js';
-import { getProjectOverviewQueryArgs } from '../prisma-query-args/projects.query-args.js';
+import { projectOverviewCardTransformer } from '../transformers/projects.transformer.js';
+import { getProjectOverviewCardQueryArgs } from '../prisma-query-args/projects.query-args.js';
 import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer.js';
 import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer.js';
 import { userTransformer, userWithScheduleSettingsTransformer } from '../transformers/user.transformer.js';
@@ -34,8 +35,8 @@ import { getUserRole, updateUserAvailability } from '../utils/users.utils.js';
 import { getUserQueryArgs, getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args.js';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer.js';
-import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args.js';
-import taskTransformer from '../transformers/tasks.transformer.js';
+import { getTaskHomeCardQueryArgs } from '../prisma-query-args/tasks.query-args.js';
+import { taskHomeCardTransformer } from '../transformers/tasks.transformer.js';
 import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
 import { encrypt, decrypt } from '../utils/encryption.utils.js';
 
@@ -190,7 +191,7 @@ export default class UsersService {
     userId: string,
     organization: Organization,
     carId?: string
-  ): Promise<ProjectOverview[]> {
+  ): Promise<ProjectOverviewCard[]> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
     if (!requestedUser) throw new NotFoundException('User', userId);
 
@@ -207,10 +208,10 @@ export default class UsersService {
         },
         ...(carId && { carId })
       },
-      ...getProjectOverviewQueryArgs(organization.organizationId)
+      ...getProjectOverviewCardQueryArgs()
     });
 
-    return projects.map(projectOverviewTransformer);
+    return projects.map(projectOverviewCardTransformer);
   }
 
   /**
@@ -597,34 +598,22 @@ export default class UsersService {
    * @param organization the user's organization
    * @returns a list of the user's assigned tasks
    */
-  static async getUserTasks(userId: string, organization: Organization) {
+  static async getUserTasks(userId: string, organization: Organization): Promise<TaskHomeCard[]> {
     const requestedUser = await prisma.user.findUnique({
       where: { userId },
-      include: {
-        assignedTasks: { where: { dateDeleted: null }, ...getTaskQueryArgs() },
-        organizations: true
+      select: {
+        assignedTasks: {
+          where: { dateDeleted: null, wbsElement: { organizationId: organization.organizationId, dateDeleted: null } },
+          ...getTaskHomeCardQueryArgs()
+        },
+        organizations: { select: { organizationId: true } }
       }
     });
     if (!requestedUser) throw new NotFoundException('User', userId);
     if (!requestedUser.organizations.map((org) => org.organizationId).includes(organization.organizationId))
       throw new HttpException(400, `User ${userId} is not apart of the current organization`);
 
-    return requestedUser.assignedTasks.map(taskTransformer);
-  }
-
-  /**
-   * Get all tasks from a list of userIds
-   * @param userIds list of users to get the tasks from
-   * @param organization the users' organization
-   * @returns a list of tasks of the given users
-   */
-  static async getManyUserTasks(userIds: string[], organization: Organization) {
-    const tasksPromises = userIds.map(async (userId) => {
-      return UsersService.getUserTasks(userId, organization);
-    });
-
-    const resolvedTasks = await Promise.all(tasksPromises);
-    return resolvedTasks.flat();
+    return requestedUser.assignedTasks.map(taskHomeCardTransformer);
   }
 
   /**
@@ -704,7 +693,7 @@ export default class UsersService {
       ...user.teamsAsHead.map((team) => team.teamId)
     ];
 
-    const finishlineEvents = await CalendarService.getFilteredEvents(
+    const finishlineEvents = await CalendarService.getCalendarViewEvents(
       { memberIds: [userId], teamIds: userTeamIds, startPeriod: startDate, endPeriod: endDate },
       organization
     );

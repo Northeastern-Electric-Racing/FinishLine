@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { wbsPipe, WorkPackage } from 'shared';
+import { WbsNumber, wbsPipe } from 'shared';
 import {
   Dialog,
   DialogContent,
@@ -18,10 +18,14 @@ import {
 import NERSuccessButton from './NERSuccessButton';
 import NERFailButton from './NERFailButton';
 import { Close } from '@mui/icons-material';
+import { useGetBlockingWorkPackages } from '../hooks/work-packages.hooks';
+import LoadingIndicator from './LoadingIndicator';
+import ErrorPage from '../pages/ErrorPage';
 
 interface BlockerWarningModalProps {
   duration: number;
-  blockingWorkPackages: WorkPackage[];
+  // the change request's wbs element; budget change requests have none, so nothing can be blocked
+  wbsNum?: WbsNumber;
   open: boolean;
   onHide: () => void;
   onSubmit: () => Promise<void>;
@@ -29,12 +33,14 @@ interface BlockerWarningModalProps {
 
 const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
   duration,
-  blockingWorkPackages,
+  wbsNum,
   open,
   onHide,
   onSubmit
 }: BlockerWarningModalProps) => {
   const theme = useTheme();
+  // only fetched once the warning actually opens, rather than every time the review modal mounts
+  const { data: blockingWorkPackages, isLoading, isError, error } = useGetBlockingWorkPackages(wbsNum, open);
   const dialogStyle = {
     '&::-webkit-scrollbar': {
       height: '20px'
@@ -51,7 +57,7 @@ const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
   };
 
   const title = `The following work packages' start dates will be delayed by ${duration} weeks`;
-  const list = blockingWorkPackages.map((wp) => {
+  const list = (blockingWorkPackages ?? []).map((wp) => {
     return '#' + wbsPipe(wp.wbsNum) + ' - ' + wp.projectName + ' - ' + wp.name;
   });
   const listPrepared = list.map((bullet, idx) => <li key={idx}>{bullet}</li>);
@@ -79,7 +85,7 @@ const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Typography>{title}</Typography>
-            {BuiltList}
+            {isError ? <ErrorPage error={error} /> : isLoading ? <LoadingIndicator /> : BuiltList}
           </Grid>
         </Grid>
       </DialogContent>

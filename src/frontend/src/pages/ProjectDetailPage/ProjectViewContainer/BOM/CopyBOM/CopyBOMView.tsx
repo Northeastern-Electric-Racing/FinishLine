@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Box, Grid } from '@mui/material';
-import { Car, ProjectPreview, wbsPipe } from 'shared';
+import { Car, ProjectListItem, wbsPipe } from 'shared';
 import NERModal from '../../../../../components/NERModal';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import CopyBOMProjectSection from './CopyBOMProjectSection';
@@ -9,13 +9,13 @@ interface CopyBOMViewProps {
   open: boolean;
   onHide: () => void;
   cars: Car[];
-  projects: ProjectPreview[];
+  projects: ProjectListItem[];
   onCopy: (materialIds: string[], sourceProjectName: string) => void;
 }
 
 const CopyBOMView: React.FC<CopyBOMViewProps> = ({ open, onHide, cars, projects, onCopy }) => {
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
-  const [selectedProject, setSelectedProject] = useState<ProjectPreview | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectListItem | null>(null);
   const [hasSelection, setHasSelection] = useState(false);
   const selectedMaterialIdsRef = useRef<string[]>([]);
 

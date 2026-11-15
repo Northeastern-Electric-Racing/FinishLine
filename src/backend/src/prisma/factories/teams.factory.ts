@@ -1,8 +1,8 @@
-import { Faker } from '@faker-js/faker';
 import { Prisma, Team_Type } from '@prisma/client';
 import type { FullUser } from '../context.js';
 
-const SLACK_ID_RANDOM_LENGTH = 4;
+// all seeded teams post to #slackbot_land so slack messages can be tested in dev
+const SEED_TEAM_SLACK_CHANNEL_ID = 'C06HR7WTTKM';
 
 export type SeedTeamConfig = {
   teamName: string;
@@ -119,12 +119,6 @@ export const seedTeamConfigs: SeedTeamConfig[] = [
 
 const connectUsers = (users: FullUser[]) => users.map((user) => ({ userId: user.userId }));
 
-const slackIdForTeam = (faker: Faker, teamName: string): string => {
-  const slug = teamName.toLowerCase().replaceAll(' ', '-').replaceAll('/', '-');
-
-  return `seed-${slug}-${faker.string.alphanumeric(SLACK_ID_RANDOM_LENGTH).toLowerCase()}`;
-};
-
 const findTeamType = (teamTypesByName: Record<string, Team_Type>, teamTypeName: string): Team_Type => {
   const teamType = teamTypesByName[teamTypeName];
 
@@ -136,7 +130,6 @@ const findTeamType = (teamTypesByName: Record<string, Team_Type>, teamTypeName: 
 };
 
 export const teamCreateInput = (
-  faker: Faker,
   organizationId: string,
   head: FullUser,
   leads: FullUser[],
@@ -149,7 +142,7 @@ export const teamCreateInput = (
 
   return {
     teamName: config.teamName,
-    slackId: slackIdForTeam(faker, config.teamName),
+    slackId: SEED_TEAM_SLACK_CHANNEL_ID,
     description: config.description,
     financeTeam: config.financeTeam ?? false,
     operationsTeam: config.operationsTeam ?? false,
