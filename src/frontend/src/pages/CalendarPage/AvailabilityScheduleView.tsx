@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { Availability, Event, EventWithMembers, dbDateToLocalDate, getDayOfWeek, getNextSevenDays, User } from 'shared';
+import { Availability, EventDetail, dbDateToLocalDate, getDayOfWeek, getNextSevenDays, User } from 'shared';
 import React, { useState } from 'react';
 import {
   enumToArray,
@@ -18,7 +18,7 @@ interface AvailabilityScheduleViewProps {
   setCurrentAvailableUsers: (val: User[]) => void;
   setCurrentUnavailableUsers: (val: User[]) => void;
   setCurrentHoveredSlot?: (slot: { day: Date; startHour: number; endHour: number } | null) => void;
-  event: Event | EventWithMembers;
+  event: Pick<EventDetail, 'initialDateScheduled' | 'requiredMembers'>;
   displayDate?: Date;
   onSlotScheduleClick?: (day: Date | null, startHour: number, endHour: number) => void;
 }

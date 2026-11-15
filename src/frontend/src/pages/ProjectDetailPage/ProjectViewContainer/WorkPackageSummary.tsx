@@ -10,7 +10,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import { Link as RouterLink } from 'react-router-dom';
-import { BaseWorkPackage, calculateEndDate, WorkPackage } from 'shared';
+import { calculateEndDate, ProjectDetailWorkPackage } from 'shared';
 import { weeksPipe, wbsPipe, datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import WbsStatus from '../../../components/WbsStatus';
@@ -18,20 +18,15 @@ import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
-import { useGetManyWorkPackages } from '../../../hooks/work-packages.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
 
 interface WorkPackageSummaryProps {
-  workPackage: WorkPackage;
+  workPackage: ProjectDetailWorkPackage;
 }
 
 const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) => {
-  const { data: dependencies, isError, isLoading, error } = useGetManyWorkPackages(workPackage.blockedBy);
   const theme = useTheme();
-
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (!dependencies || isLoading) return <LoadingIndicator />;
+  // blockers come back named with the project, so there's nothing to fetch per work package
+  const dependencies = workPackage.blockedBy;
 
   const numMoreDescriptionBullets = workPackage.descriptionBullets.length - 3;
   const descriptionBulletList = (
@@ -46,12 +41,12 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
 
   const DependencyList = () => (
     <Box sx={{ fontWeight: 'normal', display: 'inline' }}>
-      {dependencies.map((wp: BaseWorkPackage, idx) => (
+      {dependencies.map((blocker, idx) => (
         <Typography display="inline" key={idx}>
-          <Link component={RouterLink} fontWeight="bold" to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}>
-            {`${wbsPipe(wp.wbsNum)} - ${wp.name}`}
+          <Link component={RouterLink} fontWeight="bold" to={`${routes.PROJECTS}/${wbsPipe(blocker.wbsNum)}`}>
+            {`${wbsPipe(blocker.wbsNum)} - ${blocker.name}`}
           </Link>
-          {dependencies.indexOf(wp) !== workPackage.blockedBy.length - 1 ? ', ' : ''}
+          {idx !== dependencies.length - 1 ? ', ' : ''}
         </Typography>
       ))}
     </Box>

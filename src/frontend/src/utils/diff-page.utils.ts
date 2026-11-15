@@ -3,11 +3,10 @@ import {
   BaseWorkPackage,
   DescriptionBullet,
   Link,
-  Project,
+  ProjectDetail,
   ProjectProposedChanges,
   TeamPreview,
   User,
-  WbsElement,
   WbsElementStatus,
   WbsNumber,
   WorkPackageProposedChanges,
@@ -152,10 +151,12 @@ export const genListChange = <T extends DisplayableObejct>(
 };
 
 /** The fields of a project or work package that a change request can change. Work packages don't carry links */
-type DiffableWbsElement = Pick<WbsElement, 'name' | 'descriptionBullets'> & {
+type DiffableWbsElement = {
+  name: string;
+  descriptionBullets: Pick<DescriptionBullet, 'type' | 'detail'>[];
   lead?: BaseUser;
   manager?: BaseUser;
-  links?: Link[];
+  links?: (Pick<Link, 'url'> & { linkType: Pick<Link['linkType'], 'name'> })[];
 };
 
 /** A work package as the diff reads it: blockers are compared by wbs number only */
@@ -217,7 +218,7 @@ export const getWbsChanges = (
 
 export const getChangesForProject = (
   proposedChanges: ProjectProposedChanges,
-  originalProject?: Project
+  originalProject?: ProjectDetail
 ): ComparableCollection[] => {
   const projectLines: ComparableLine[] = [...getWbsChanges(originalProject, proposedChanges)];
 
@@ -260,7 +261,10 @@ export const getChangesForProject = (
   originalProject?.workPackages.forEach((workPackage) => {
     const newWorkPackage = proposedChanges.workPackageProposedChanges.find((wp) => wp.name === workPackage.name); // TODO ideally do this based on something unique, maybe add a reference to original wbsElementid or something this also just doesnt work if the name has changed so... I dont see another way to identify them though
     if (newWorkPackage) {
-      const workPackageLines = getChangesForWorkPackage(workPackage, newWorkPackage);
+      const workPackageLines = getChangesForWorkPackage(
+        { ...workPackage, blockedBy: workPackage.blockedBy.map((blocker) => blocker.wbsNum) },
+        newWorkPackage
+      );
       workPackageCollections.push(workPackageLines);
       proposedChanges.workPackageProposedChanges = proposedChanges.workPackageProposedChanges.filter(
         (wp) => wp.id !== newWorkPackage.id

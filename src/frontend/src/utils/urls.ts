@@ -89,6 +89,7 @@ const notifyPartAssignee = () => `${parts()}/notifyAssignee`;
 const notifyPartReviewer = () => `${parts()}/notifyReviewer`;
 const getPartReviewSampleImage = () => `${parts()}/partReviewSampleImage`;
 const setPartReviewSampleImage = () => `${parts()}/partReviewSampleImage/update`;
+const projectsEditTeams = (wbsNum: string) => `${projectsByWbsNum(wbsNum)}/edit-teams`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -472,11 +473,12 @@ const removeGraphFromGraphCollection = (graphCollectionId: string, graphId: stri
 const deleteGraphCollection = (id: string) => `${graphCollectionById(id)}/delete`;
 
 /************** Retrospective Endpoints ***************/
-const retrospectiveTimelines = (startDate?: Date, endDate?: Date) =>
-  `${API_URL}/retrospective/timelines?` +
-  (startDate ? `start=${encodeURIComponent(new Date(startDate).toISOString())}` : '') +
-  (endDate ? `end=${encodeURIComponent(new Date(endDate).toISOString())}` : '');
-const retrospectiveBudgets = () => `${API_URL}/retrospective/budgets`;
+const retrospectiveTimelines = (startDate?: Date, endDate?: Date) => {
+  const params = new URLSearchParams();
+  if (startDate) params.set('start', new Date(startDate).toISOString());
+  if (endDate) params.set('end', new Date(endDate).toISOString());
+  return `${API_URL}/retrospective/timelines?${params.toString()}`;
+};
 
 /**************** Rules Endpoints ****************/
 const rules = () => `${API_URL}/rules`;
@@ -518,12 +520,15 @@ const singleRuleset = (rulesetId: string) => `${rules()}/ruleset/${rulesetId}`;
 /**************** Calendar Endpoints ****************/
 const calendar = () => `${API_URL}/calendar`;
 const calendarShops = () => `${calendar()}/shops`;
-const calendarEvents = () => `${calendar()}/events`;
 const calendarNewMemberEvents = () => `${calendar()}/events/new-member`;
-const calendarEventsPaginated = () => `${calendar()}/events-paginated`;
+const calendarMyConflicts = () => `${calendar()}/events/my-conflicts`;
+const calendarReviewBookingEvents = () => `${calendar()}/events/review-bookings`;
+const calendarMyUpcomingEvents = () => `${calendar()}/events/my-upcoming`;
+const calendarDesignReviewAttendance = () => `${calendar()}/events/design-review-attendance`;
+const calendarGuestEventFeed = () => `${calendar()}/events/guest-feed`;
 const calendarEventTypes = () => `${calendar()}/event-types`;
 const calendarCreateShop = () => `${calendar()}/shop/create`;
-const calendarFilterEvents = () => `${calendar()}/events/filter`;
+const calendarViewEvents = () => `${calendar()}/events/calendar-view`;
 const calendarMachinery = () => `${calendar()}/machinery`;
 const calendarCreateMachinery = () => `${calendar()}/machinery/create`;
 const calendarEditMachinery = (machineryId: string) => `${calendar()}/machinery/${machineryId}/edit`;
@@ -541,8 +546,6 @@ const calendarDeleteEventType = (eventTypeId: string) => `${calendar()}/event-ty
 const calendarEventMarkUserConfirmed = (id: string) => `${calendar()}/event/${id}/confirm-schedule`;
 const calendarEventRemindUnconfirmed = (id: string) => `${calendar()}/event/${id}/remind-unconfirmed`;
 const calendarGetSingleEvent = (id: string) => `${calendar()}/event/${id}`;
-const calendarGetSingleEventWithMembers = (id: string) => `${calendar()}/event-members/${id}`;
-const calendarGetConflictingEvent = (id: string) => `${calendar()}/event/${id}/conflict`;
 const calendarDeleteEvent = (id: string) => `${calendar()}/event/${id}/delete`;
 const calendarEventSetStatus = (id: string) => `${calendar()}/event/${id}/set-status`;
 const calendarApproveEvent = (id: string) => `${calendar()}/event/${id}/approve`;
@@ -664,6 +667,7 @@ export const apiUrls = {
   notifyPartReviewer,
   getPartReviewSampleImage,
   setPartReviewSampleImage,
+  projectsEditTeams,
 
   parts,
   partsByProject,
@@ -943,7 +947,6 @@ export const apiUrls = {
   checklistDelete,
 
   retrospectiveTimelines,
-  retrospectiveBudgets,
 
   rules,
   rulesTopLevel,
@@ -979,7 +982,7 @@ export const apiUrls = {
   singleRuleset,
   calendarShops,
   calendarCreateShop,
-  calendarFilterEvents,
+  calendarViewEvents,
   calendarMachinery,
   calendarCreateMachinery,
   calendarEditMachinery,
@@ -989,11 +992,12 @@ export const apiUrls = {
   calendarEventMarkUserConfirmed,
   calendarEventRemindUnconfirmed,
   calendarGetSingleEvent,
-  calendarGetSingleEventWithMembers,
-  calendarGetConflictingEvent,
-  calendarEvents,
   calendarNewMemberEvents,
-  calendarEventsPaginated,
+  calendarMyConflicts,
+  calendarReviewBookingEvents,
+  calendarMyUpcomingEvents,
+  calendarDesignReviewAttendance,
+  calendarGuestEventFeed,
   calendarEventTypes,
   calendarDeleteEvent,
   calendarEventSetStatus,

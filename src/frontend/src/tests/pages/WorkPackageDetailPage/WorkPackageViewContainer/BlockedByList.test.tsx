@@ -34,7 +34,7 @@ describe.skip('Rendering Work Package Blocked By Component', () => {
     renderComponent();
     expect(screen.getByText(`Blocked By`)).toBeInTheDocument();
 
-    exampleDesignWorkPackage.blockedBy.forEach((wbs) => {
+    exampleDesignWorkPackage.blockedBy.forEach(({ wbsNum: wbs }) => {
       expect(screen.getByText(`${wbsPipe(wbs)}`)).toBeInTheDocument();
     });
   });
@@ -42,7 +42,7 @@ describe.skip('Rendering Work Package Blocked By Component', () => {
     renderComponent(true);
     expect(screen.getByText(`Blocked By`)).toBeInTheDocument();
 
-    exampleDesignWorkPackage.blockedBy.forEach((wbs) => {
+    exampleDesignWorkPackage.blockedBy.forEach(({ wbsNum: wbs }) => {
       expect(screen.getByText(`${wbsPipe(wbs)}`)).toBeInTheDocument();
     });
     expect(screen.getByPlaceholderText('New WBS #')).toBeInTheDocument();

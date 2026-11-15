@@ -3,14 +3,14 @@ import {
   AuthenticatedUser,
   DescriptionBullet,
   Material,
-  Project,
+  ProjectDetail,
+  ProjectOverviewCard,
   ReimbursementRequestData,
   TaskBoardItem,
   Team,
   TeamJoinRequest,
   UserSettings,
-  UserWithRole,
-  WorkPackage
+  UserWithRole
 } from 'shared';
 import { CheckDescriptionBulletRequestPayload } from '../../hooks/description-bullets.hooks';
 import { CreateTaskPayload, DeleteTaskPayload, TaskPayload } from '../../hooks/tasks.hooks';
@@ -51,8 +51,8 @@ export const mockUseSingleUserSettings = (settings?: UserSettings) =>
     new Error()
   );
 
-export const mockUseUsersFavoriteProjects = (projects?: Project[]) =>
-  mockUseQueryResult<Project[]>(false, false, projects || [], new Error());
+export const mockUseUsersFavoriteProjects = (projects?: ProjectOverviewCard[]) =>
+  mockUseQueryResult<ProjectOverviewCard[]>(false, false, projects || [], new Error());
 
 export const mockUseGetUsersTeams = (teams?: Team[]) => mockUseQueryResult<Team[]>(false, false, teams || [], new Error());
 
@@ -97,11 +97,8 @@ export const mockCheckDescBulletReturnValue = mockUseMutationResult<DescriptionB
 export const mockGetVersionNumberReturnValue = (versionObject: VersionObject) =>
   mockUseQueryResult<VersionObject>(false, false, versionObject);
 
-export const mockUseAllProjectsReturnValue = (projects: Project[]) =>
-  mockUseQueryResult<Project[]>(false, false, projects, new Error());
-
-export const mockManyWorkPackages = (workPackages: WorkPackage[]) =>
-  mockUseQueryResult<WorkPackage[]>(false, false, workPackages, new Error());
+export const mockUseAllProjectsReturnValue = (projects: ProjectDetail[]) =>
+  mockUseQueryResult<ProjectDetail[]>(false, false, projects, new Error());
 
 export const mockManyMaterials = (materials: Material[]) =>
   mockUseQueryResult<Material[]>(false, false, materials, new Error());
