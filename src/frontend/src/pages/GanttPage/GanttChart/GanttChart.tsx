@@ -12,7 +12,7 @@ import { eachDayOfInterval, isMonday, differenceInDays } from 'date-fns';
 import { getMonday } from '../../../utils/datetime.utils';
 import { toDateString } from 'shared';
 import { GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE } from '../../../utils/gantt.utils';
-import { useCallback, useState } from 'react';
+import { ReactNode, useCallback, useState } from 'react';
 export interface GanttEditability<E, T> {
   highlightTaskComparator: HighlightTaskComparator<T>;
   highlightSubtaskComparator: HighlightTaskComparator<T>;
@@ -31,9 +31,11 @@ interface GanttChartProps<E, T> {
   endDate: Date;
   collections: GanttCollection<E, T>[];
   editability?: GanttEditability<E, T>;
+  /** Rendered instead of the rows when collections exist but every one of them has no tasks */
+  emptyState?: ReactNode;
 }
 
-const GanttChart = <E, T>({ startDate, endDate, collections, editability }: GanttChartProps<E, T>) => {
+const GanttChart = <E, T>({ startDate, endDate, collections, editability, emptyState }: GanttChartProps<E, T>) => {
   const theme = useTheme();
   const days = eachDayOfInterval({ start: startDate, end: endDate }).filter((day) => isMonday(day));
 
@@ -41,6 +43,8 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
   const currentWeekCol = days.findIndex((day) => toDateString(day) === toDateString(getMonday(today))) + 1;
   const daysIntoWeek = differenceInDays(today, getMonday(today));
   const dailyOffset = daysIntoWeek * (parseFloat(GANTT_CHART_CELL_SIZE) / 7);
+
+  const isFilteredToEmpty = collections.length > 0 && collections.every((collection) => collection.tasks.length === 0);
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const toggleExpanded = useCallback((id: string) => {
@@ -52,52 +56,57 @@ const GanttChart = <E, T>({ startDate, endDate, collections, editability }: Gant
   }, []);
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        height: { xs: 'calc(100vh - 9.5rem )', md: 'calc(100vh - 6.25rem)' },
-        overflow: 'scroll',
-        position: 'relative',
-        '&::-webkit-scrollbar': {
-          display: 'none'
-        },
-        scrollbarWidth: 'none', // Firefox
-        msOverflowStyle: 'none' // IE and Edge
-      }}
-    >
-      <GanttChartTimeline start={startDate} end={endDate} />
-      <Box sx={{ position: 'relative' }}>
-        {collections.map((collection) => {
-          return collection.tasks ? (
-            <GanttChartCollectionSection
-              startDate={startDate}
-              endDate={endDate}
-              collection={collection}
-              editability={editability}
-              toggleExpanded={toggleExpanded}
-              expanded={expanded}
-              key={collection.id}
-            />
-          ) : (
-            <></>
-          );
-        })}
+    <Box sx={{ position: 'relative' }}>
+      <Box
+        sx={{
+          width: '100%',
+          height: { xs: 'calc(100vh - 9.5rem )', md: 'calc(100vh - 6.25rem)' },
+          overflow: 'scroll',
+          position: 'relative',
+          '&::-webkit-scrollbar': {
+            display: 'none'
+          },
+          scrollbarWidth: 'none', // Firefox
+          msOverflowStyle: 'none' // IE and Edge
+        }}
+      >
+        <GanttChartTimeline start={startDate} end={endDate} />
+        <Box sx={{ position: 'relative' }}>
+          {collections.map((collection) => {
+            return collection.tasks ? (
+              <GanttChartCollectionSection
+                startDate={startDate}
+                endDate={endDate}
+                collection={collection}
+                editability={editability}
+                toggleExpanded={toggleExpanded}
+                expanded={expanded}
+                key={collection.id}
+              />
+            ) : (
+              <></>
+            );
+          })}
 
-        {currentWeekCol > 0 && (
-          <Box
-            sx={{
-              position: 'absolute',
-              left: `calc(${currentWeekCol - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) + 1.1rem + ${dailyOffset}rem)`,
-              top: 0,
-              bottom: 0,
-              width: '1px',
-              backgroundColor: theme.palette.info.main,
-              zIndex: 3,
-              pointerEvents: 'none'
-            }}
-          />
-        )}
+          {currentWeekCol > 0 && (
+            <Box
+              sx={{
+                position: 'absolute',
+                left: `calc(${currentWeekCol - 1} * (${GANTT_CHART_CELL_SIZE} + ${GANTT_CHART_GAP_SIZE}) + 1.1rem + ${dailyOffset}rem)`,
+                top: 0,
+                bottom: 0,
+                width: '1px',
+                backgroundColor: theme.palette.info.main,
+                zIndex: 3,
+                pointerEvents: 'none'
+              }}
+            />
+          )}
+        </Box>
       </Box>
+      {/* Overlaid outside the scroll container: the chart auto-scrolls horizontally to today, which would carry
+          anything rendered inside it off screen */}
+      {isFilteredToEmpty && <Box sx={{ position: 'absolute', top: '6rem', left: 0, right: 0 }}>{emptyState}</Box>}
     </Box>
   );
 };
