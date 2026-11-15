@@ -10,7 +10,7 @@ import {
 import prisma from '../prisma/prisma.js';
 import { getBaseEventQueryArgs } from '../prisma-query-args/event.query-args.js';
 import { baseEventTransformer } from '../transformers/calendar.transformer.js';
-import { isSlackChannelMember } from './slack.utils.js';
+import { getDevNotificationChannelId, isSlackChannelMember } from './slack.utils.js';
 import { getBotChannels } from '../integrations/slack.js';
 import { getUserSlackId } from './users.utils.js';
 
@@ -348,18 +348,20 @@ export const findMatchingTimeOfDaySlots = <T extends { scheduleSlotId: string; s
  * @throws AccessDeniedException if the user isn't a member of one of the selected channels
  */
 export const validateNotificationChannelIds = async (submitter: User, notificationChannelIds: string[]) => {
-  if (notificationChannelIds.length === 0) return;
+  const devChannelId = getDevNotificationChannelId();
+  const channelIdsToCheck = notificationChannelIds.filter((id) => id !== devChannelId);
+  if (channelIdsToCheck.length === 0) return;
 
   const botChannels = await getBotChannels();
   const botChannelIds = new Set(botChannels.map((channel) => channel.id));
-  const missingIds = notificationChannelIds.filter((id) => !botChannelIds.has(id));
+  const missingIds = channelIdsToCheck.filter((id) => !botChannelIds.has(id));
   if (missingIds.length > 0) {
     throw new NotFoundException('Notification Channel', missingIds.join(', '));
   }
 
   const submitterSlackId = await getUserSlackId(submitter.userId);
   const accessResults = await Promise.all(
-    notificationChannelIds.map((channelId) => isSlackChannelMember(submitterSlackId, channelId))
+    channelIdsToCheck.map((channelId) => isSlackChannelMember(submitterSlackId, channelId))
   );
 
   if (accessResults.some((hasAccess) => !hasAccess)) {

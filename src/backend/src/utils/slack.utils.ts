@@ -1081,3 +1081,9 @@ export const sendActivationStartDateChangedNotification = async (
 
   await Promise.all(teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText)));
 };
+
+/**
+ * The Slack channel that is always available for notifications in development, if configured
+ */
+export const getDevNotificationChannelId = (): string | undefined =>
+  process.env.NODE_ENV === 'development' ? process.env.SLACK_DEV_CHANNEL_ID : undefined;
