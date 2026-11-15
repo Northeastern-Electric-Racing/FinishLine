@@ -225,6 +225,26 @@ describe('announcement tests', () => {
   });
 
   describe('Remove Announcement', () => {
+    it("Fails for another organization's announcement", async () => {
+      await AnnouncementService.createAnnouncement(
+        'test1',
+        [batman.userId],
+        new Date(1000),
+        'Thomas Emrax',
+        '1',
+        'software',
+        orgId
+      );
+      const [announcement] = (await AnnouncementService.getUserUnreadAnnouncements(batman.userId, orgId)).announcements;
+      const otherOrg = await prisma.organization.create({
+        data: { name: 'Other', description: '', applicationLink: '', userCreated: { connect: { userId: batman.userId } } }
+      });
+
+      await expect(
+        AnnouncementService.removeUserAnnouncement(batman.userId, announcement.announcementId, otherOrg.organizationId)
+      ).rejects.toThrow(new InvalidOrganizationException('Announcement'));
+    });
+
     it('Succeeds and removes user announcement', async () => {
       await AnnouncementService.createAnnouncement(
         'test1',
@@ -248,7 +268,7 @@ describe('announcement tests', () => {
       const page = await AnnouncementService.getUserUnreadAnnouncements(batman.userId, organization.organizationId);
       expect(page.announcements).toHaveLength(2);
 
-      await AnnouncementService.removeUserAnnouncement(batman.userId, page.announcements[0].announcementId);
+      await AnnouncementService.removeUserAnnouncement(batman.userId, page.announcements[0].announcementId, orgId);
 
       const updatedPage = await AnnouncementService.getUserUnreadAnnouncements(batman.userId, organization.organizationId);
       expect(updatedPage.announcements).toHaveLength(1);

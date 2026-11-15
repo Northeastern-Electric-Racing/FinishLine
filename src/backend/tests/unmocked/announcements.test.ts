@@ -76,7 +76,11 @@ describe('Announcemnts Tests', () => {
       );
       expect(announcements).toHaveLength(2);
 
-      await AnnouncementService.removeUserAnnouncement(testBatman.userId, announcements[0].announcementId);
+      await AnnouncementService.removeUserAnnouncement(
+        testBatman.userId,
+        announcements[0].announcementId,
+        organization.organizationId
+      );
 
       const { announcements: updatedAnnouncements } = await AnnouncementService.getUserUnreadAnnouncements(
         testBatman.userId,

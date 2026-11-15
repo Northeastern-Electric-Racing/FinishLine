@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { Box, CircularProgress } from '@mui/material';
+import { useCallback, useRef } from 'react';
+import { Alert, Box, Button, CircularProgress } from '@mui/material';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
@@ -7,6 +7,7 @@ import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutli
 import GeneralAnnouncementCard from './GeneralAnnouncementCard';
 import { useRemoveUserAnnouncement, useUserAnnouncements } from '../../../hooks/announcements.hooks';
 import ErrorPage from '../../ErrorPage';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const NoGeneralAnnouncementsDisplay = () => {
   return (
@@ -29,8 +30,19 @@ const GeneralAnnouncements: React.FC = () => {
     isFetchingNextPage
   } = useUserAnnouncements();
   const { mutateAsync: removeAnnouncement, isLoading: removeAnnouncementIsLoading } = useRemoveUserAnnouncement();
+  const toast = useToast();
 
-  // the sentinel below the last card loads the next page once it scrolls into view
+  const handleRemove = async (announcementId: string) => {
+    try {
+      await removeAnnouncement(announcementId);
+    } catch (e: unknown) {
+      if (e instanceof Error) toast.error(e.message);
+    }
+  };
+
+  // the sentinel below the last card loads the next page once it's in view. It's keyed on the page count, so each
+  // loaded page remounts it with a new observer, whose first callback checks whether it's still in view. Unmounting
+  // calls the ref with null, which disconnects the observer
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef(() => {});
   loadMoreRef.current = () => {
@@ -44,9 +56,9 @@ const GeneralAnnouncements: React.FC = () => {
     });
     observerRef.current.observe(node);
   }, []);
-  useEffect(() => () => observerRef.current?.disconnect(), []);
 
-  if (announcementsIsError) return <ErrorPage message={announcementsError.message} />;
+  // a failed later page keeps the loaded announcements and shows a retry below them instead
+  if (announcementsIsError && !data) return <ErrorPage message={announcementsError.message} />;
   if (isLoading || !data) return <LoadingIndicator />;
 
   const unreadAnnouncements = data.pages.flatMap((page) => page.announcements);
@@ -63,14 +75,32 @@ const GeneralAnnouncements: React.FC = () => {
             <GeneralAnnouncementCard
               key={announcement.announcementId}
               announcement={announcement}
-              removeAnnouncement={removeAnnouncement}
+              removeAnnouncement={handleRemove}
               removeDisabled={removeAnnouncementIsLoading}
             />
           ))}
-          {hasNextPage && (
-            <Box ref={setSentinel} sx={{ width: '100%', display: 'flex', justifyContent: 'center', py: 1 }}>
-              {isFetchingNextPage && <CircularProgress size={24} />}
-            </Box>
+          {announcementsIsError ? (
+            <Alert
+              severity="error"
+              sx={{ width: '100%' }}
+              action={
+                <Button color="inherit" size="small" onClick={() => fetchNextPage()}>
+                  Retry
+                </Button>
+              }
+            >
+              {announcementsError.message}
+            </Alert>
+          ) : (
+            hasNextPage && (
+              <Box
+                key={data.pages.length}
+                ref={setSentinel}
+                sx={{ width: '100%', display: 'flex', justifyContent: 'center', py: 1 }}
+              >
+                {isFetchingNextPage && <CircularProgress size={24} />}
+              </Box>
+            )
           )}
         </>
       )}

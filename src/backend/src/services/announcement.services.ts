@@ -2,7 +2,7 @@ import { AnnouncementPage } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { getBaseAnnouncementQueryArgs } from '../prisma-query-args/announcements.query-args.js';
 import { baseAnnouncementTransformer } from '../transformers/announcements.transformer.js';
-import { DeletedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
+import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils.js';
 import { validateOrgUsers } from '../utils/users.utils.js';
 
 const ANNOUNCEMENT_PAGE_SIZE = 10;
@@ -155,8 +155,18 @@ export default class AnnouncementService {
    * Removes a announcement from the user's unread announcements
    * @param userId id of the user to remove announcement from
    * @param announcementId id of the announcement to remove
+   * @param organizationId the organization the user is currently in
+   * @throws if the announcement doesn't exist or is in another organization
    */
-  static async removeUserAnnouncement(userId: string, announcementId: string): Promise<void> {
+  static async removeUserAnnouncement(userId: string, announcementId: string, organizationId: string): Promise<void> {
+    const announcement = await prisma.announcement.findUnique({
+      where: { announcementId },
+      select: { organizationId: true }
+    });
+
+    if (!announcement) throw new NotFoundException('Announcement', announcementId);
+    if (announcement.organizationId !== organizationId) throw new InvalidOrganizationException('Announcement');
+
     const requestedUser = await prisma.user.findUnique({
       where: { userId },
       select: { userId: true }

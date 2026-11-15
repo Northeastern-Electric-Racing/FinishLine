@@ -23,7 +23,7 @@ export default class AnnouncementController {
       const { announcementId } = req.params as Record<string, string>;
       const { currentUser } = req;
 
-      await AnnouncementService.removeUserAnnouncement(currentUser.userId, announcementId);
+      await AnnouncementService.removeUserAnnouncement(currentUser.userId, announcementId, req.organization.organizationId);
       res.sendStatus(204);
     } catch (error: unknown) {
       next(error);

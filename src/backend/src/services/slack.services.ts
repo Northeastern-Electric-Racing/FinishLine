@@ -488,10 +488,14 @@ export default class SlackServices {
         );
         return;
       } catch (error) {
-        //if couldn't find the announcement to edit, create a new one below
-        if (!(error instanceof NotFoundException)) {
-          throw error;
-        }
+        // only a missing announcement falls through to creating one below; a missing user still fails
+        const announcementIsMissing =
+          error instanceof NotFoundException &&
+          !(await prisma.announcement.findUnique({
+            where: { slackEventId: eventMessage.client_msg_id },
+            select: { announcementId: true }
+          }));
+        if (!announcementIsMissing) throw error;
       }
     }
 
