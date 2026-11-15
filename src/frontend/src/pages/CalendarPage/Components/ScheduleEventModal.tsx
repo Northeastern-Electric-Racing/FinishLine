@@ -62,7 +62,17 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          return;
+        }
+        onClose();
+      }}
+      maxWidth="sm"
+      fullWidth
+    >
       <DialogTitle>
         {beingRescheduled ? 'Reschedule' : 'Schedule'} {eventName}
       </DialogTitle>
