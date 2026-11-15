@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args.js';
-import { getProjectGanttQueryArgs } from './projects.query-args.js';
+import { getProjectListItemQueryArgs } from './projects.query-args.js';
 
 export type TeamQueryArgs = ReturnType<typeof getTeamQueryArgs>;
 export type TeamBaseQueryArgs = ReturnType<typeof getTeamBaseQueryArgs>;
@@ -22,7 +22,8 @@ export const getTeamQueryArgs = (organizationId: string) =>
             dateDeleted: null
           }
         },
-        ...getProjectGanttQueryArgs(organizationId)
+        // the team pages list them as cards; archiving checks that they're all complete
+        ...getProjectListItemQueryArgs()
       }
     }
   });

@@ -1,10 +1,11 @@
 import {
+  BaseProject,
   Manufacturer,
   MaterialType,
-  Project,
-  ProjectOverview,
-  ProjectGantt,
-  ProjectPreview,
+  ProjectDetail,
+  ProjectGanttItem,
+  ProjectListItem,
+  ProjectOverviewCard,
   validateWBS,
   WbsNumber,
   wbsPipe
@@ -17,7 +18,10 @@ import { broadcastBayDashboardUpdate } from '../utils/bay-dashboard-events.utils
 export default class ProjectsController {
   static async getAllProjectsGantt(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectGantt[] = await ProjectsService.getAllProjectsGantt(req.organization, req.currentCar?.carId);
+      const projects: ProjectGanttItem[] = await ProjectsService.getAllProjectsGantt(
+        req.organization,
+        req.currentCar?.carId
+      );
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
@@ -26,7 +30,7 @@ export default class ProjectsController {
 
   static async getAllProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectPreview[] = await ProjectsService.getAllProjects(req.organization, req.currentCar?.carId);
+      const projects: ProjectListItem[] = await ProjectsService.getAllProjects(req.organization, req.currentCar?.carId);
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
@@ -44,7 +48,7 @@ export default class ProjectsController {
 
   static async getUsersTeamsProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectOverview[] = await ProjectsService.getUsersTeamsProjects(
+      const projects: ProjectOverviewCard[] = await ProjectsService.getUsersTeamsProjects(
         req.currentUser,
         req.organization,
         req.currentCar?.carId
@@ -57,7 +61,7 @@ export default class ProjectsController {
 
   static async getUsersLeadingProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const projects: ProjectOverview[] = await ProjectsService.getUsersLeadingProjects(
+      const projects: ProjectOverviewCard[] = await ProjectsService.getUsersLeadingProjects(
         req.currentUser,
         req.organization,
         req.currentCar?.carId
@@ -71,7 +75,11 @@ export default class ProjectsController {
   static async getTeamsProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamId } = req.params as Record<string, string>;
-      const projects: Project[] = await ProjectsService.getTeamsProjects(req.organization, teamId, req.currentCar?.carId);
+      const projects: BaseProject[] = await ProjectsService.getTeamsProjects(
+        req.organization,
+        teamId,
+        req.currentCar?.carId
+      );
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
@@ -82,7 +90,7 @@ export default class ProjectsController {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
 
-      const project: Project = await ProjectsService.getSingleProject(wbsNumber, req.organization);
+      const project: ProjectDetail = await ProjectsService.getSingleProject(wbsNumber, req.currentUser, req.organization);
 
       res.status(200).json(project);
     } catch (error: unknown) {
@@ -118,7 +126,7 @@ export default class ProjectsController {
   static async editProject(req: Request, res: Response, next: NextFunction) {
     try {
       const { projectId, crId, name, budget, summary, descriptionBullets, links, leadId, managerId } = req.body;
-      const editedProject: Project = await ProjectsService.editProject(
+      await ProjectsService.editProject(
         req.currentUser,
         projectId,
         crId,
@@ -133,7 +141,20 @@ export default class ProjectsController {
       );
       broadcastBayDashboardUpdate(req.organization.slug);
 
-      res.status(200).json(editedProject);
+      res.sendStatus(204);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editProjectTeams(req: Request, res: Response, next: NextFunction) {
+    try {
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
+      const { teamIds } = req.body;
+
+      await ProjectsService.editProjectTeams(req.currentUser, wbsNumber, teamIds, req.organization);
+
+      res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)}'s teams successfully updated.` });
     } catch (error: unknown) {
       next(error);
     }
@@ -146,7 +167,7 @@ export default class ProjectsController {
 
       await ProjectsService.setProjectTeam(req.currentUser, wbsNumber, teamId, req.organization);
 
-      res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)}'s teams successfully updated.` });
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -155,10 +176,9 @@ export default class ProjectsController {
   static async deleteProject(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum as string);
-      const deletedProject: Project = await ProjectsService.deleteProject(req.currentUser, wbsNumber, req.organization);
+      await ProjectsService.deleteProject(req.currentUser, wbsNumber, req.organization);
       broadcastBayDashboardUpdate(req.organization.slug);
-
-      res.status(200).json(deletedProject);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -168,9 +188,9 @@ export default class ProjectsController {
     try {
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
 
-      const targetProject = await ProjectsService.toggleFavorite(wbsNum, req.currentUser, req.organization);
+      await ProjectsService.toggleFavorite(wbsNum, req.currentUser, req.organization);
 
-      res.status(200).json(targetProject);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -526,8 +546,8 @@ export default class ProjectsController {
     try {
       const { abbreviation } = req.body;
       const wbsNum: WbsNumber = validateWBS(req.body.wbsNum);
-      const updatedProject = await ProjectsService.setAbbreviation(wbsNum, req.currentUser, req.organization, abbreviation);
-      res.status(200).json(updatedProject);
+      await ProjectsService.setAbbreviation(wbsNum, req.currentUser, req.organization, abbreviation);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -537,7 +557,7 @@ export default class ProjectsController {
     try {
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum as string);
       await ProjectsService.deleteAbbreviation(wbsNum, req.currentUser, req.organization);
-      res.status(200).json({ message: `Project ${wbsPipe(wbsNum)}'s abbreviation was successfully deleted.` });
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }

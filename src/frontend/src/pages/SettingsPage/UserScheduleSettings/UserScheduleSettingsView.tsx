@@ -6,7 +6,7 @@
 import { Grid } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { NERButton } from '../../../components/NERButton';
-import { Availability, Event, getMostRecentAvailabilities, UserScheduleSettings, formatEventDate } from 'shared';
+import { Availability, EventDetail, getMostRecentAvailabilities, UserScheduleSettings, formatEventDate } from 'shared';
 import { useEffect, useMemo, useState } from 'react';
 import SingleAvailabilityModal from './Availability/SingleAvailabilityModal';
 import AvailabilityEditModal from './Availability/AvailabilityEditModal';
@@ -18,7 +18,7 @@ const UserScheduleSettingsView = ({
   event
 }: {
   scheduleSettings: UserScheduleSettings;
-  event?: Event;
+  event?: EventDetail;
 }) => {
   const [availabilityOpen, setAvailabilityOpen] = useState(false);
   const toast = useToast();

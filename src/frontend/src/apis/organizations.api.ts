@@ -1,5 +1,6 @@
 import axios from '../utils/axios';
-import { NotificationChannelPreview, Organization, ProjectPreview } from 'shared';
+import { NotificationChannelPreview, Organization, ProjectListItem } from 'shared';
+import { baseProjectTransformer } from './transformers/projects.transformers';
 import { apiUrls } from '../utils/urls';
 import {
   ApplicationLinkPayload,
@@ -19,8 +20,8 @@ export const getCurrentOrganization = async () => {
 };
 
 export const getFeaturedProjects = async () => {
-  return axios.get<ProjectPreview[]>(apiUrls.organizationsFeaturedProjects(), {
-    transformResponse: (data) => JSON.parse(data)
+  return axios.get<ProjectListItem[]>(apiUrls.organizationsFeaturedProjects(), {
+    transformResponse: (data) => JSON.parse(data).map(baseProjectTransformer)
   });
 };
 
