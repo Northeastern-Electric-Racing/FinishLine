@@ -6,10 +6,12 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, IconButton, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { useState } from 'react';
-import { BayDashboardCountdown, BayDashboardCountdownCreateArgs, formatDateOnly } from 'shared';
+import { BayDashboardCountdown, BayDashboardCountdownCreateArgs, formatDateOnly, isHead } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import NERDeleteModal from '../../../components/NERDeleteModal';
 import { NERButton } from '../../../components/NERButton';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { Edit } from '@mui/icons-material';
 import {
   useCreateBayDashboardCountdown,
   useDeleteBayDashboardCountdown,
@@ -17,6 +19,7 @@ import {
 } from '../../../hooks/bay-dashboard.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { pickDisplayedCountdowns } from '../../../utils/bay-dashboard-countdown.utils';
+import EditCountdownModal from './EditCountdownModal';
 import ErrorPage from '../../ErrorPage';
 import CountdownFormModal from './CountdownFormModal';
 
@@ -50,6 +53,8 @@ const displayLabel = (
 const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [countdownToDelete, setCountdownToDelete] = useState<BayDashboardCountdown | undefined>(undefined);
+  const [editingCountdown, setEditingCountdown] = useState<BayDashboardCountdown | null>(null);
+  const user = useCurrentUser();
   const { data: countdowns, isLoading, isError, error } = useGetBayDashboardCountdowns(slug);
   const { mutateAsync: createCountdown } = useCreateBayDashboardCountdown(slug);
   const {
@@ -88,6 +93,14 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
           }
         }}
       />
+      {editingCountdown && (
+        <EditCountdownModal
+          showModal
+          handleClose={() => setEditingCountdown(null)}
+          countdown={editingCountdown}
+          slug={slug}
+        />
+      )}
       <Table sx={{ '& td': { borderBottom: 'none' } }}>
         <TableHead>
           <TableRow>
@@ -103,7 +116,7 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
             <TableCell align="center" sx={headerCellSx}>
               Display
             </TableCell>
-            <TableCell align="center" sx={{ ...headerCellSx, borderRadius: '0px 10px 0px 0px' }} />
+            <TableCell align="center" sx={{ ...headerCellSx, width: '1%', borderRadius: '0px 10px 0px 0px' }} />
           </TableRow>
         </TableHead>
         <TableBody>
@@ -120,14 +133,21 @@ const CountdownTable: React.FC<CountdownTableProps> = ({ slug }) => {
               <TableCell align="center">{formatDateOnly(countdown.startDate)}</TableCell>
               <TableCell align="center">{countdown.endDate ? formatDateOnly(countdown.endDate) : '-'}</TableCell>
               <TableCell align="center">{displayLabel(countdown, displayed)}</TableCell>
-              <TableCell align="center">
-                <IconButton
-                  type="button"
-                  disabled={isDeleting && deletingCountdownId === countdown.bayDashboardCountdownId}
-                  onClick={() => setCountdownToDelete(countdown)}
-                >
-                  <DeleteIcon />
-                </IconButton>
+              <TableCell align="center" sx={{ width: '1%', whiteSpace: 'nowrap' }}>
+                <Box sx={{ display: 'flex' }}>
+                  {isHead(user.role) && (
+                    <IconButton onClick={() => setEditingCountdown(countdown)}>
+                      <Edit />
+                    </IconButton>
+                  )}
+                  <IconButton
+                    type="button"
+                    disabled={isDeleting && deletingCountdownId === countdown.bayDashboardCountdownId}
+                    onClick={() => setCountdownToDelete(countdown)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
               </TableCell>
             </TableRow>
           ))}

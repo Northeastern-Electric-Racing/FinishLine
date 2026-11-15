@@ -121,3 +121,20 @@ export const deleteBayDashboardCountdown = (countdownId: string) => {
     transformResponse: (data) => bayDashboardCountdownTransformer(JSON.parse(data))
   });
 };
+
+/**
+ * Edits a countdown on the bay dashboard.
+ *@param countdownId the id of the countdown being edited
+ *@param countdown the countdown data to update.
+ *@returns this returns something that is resolved to the update of the countdown object
+ */
+export const editBayDashboardCountdown = (countdownId: string, countdown: BayDashboardCountdownCreateArgs) => {
+  const payload = {
+    ...countdown,
+    startDate: dateToMidnightUTC(countdown.startDate),
+    endDate: countdown.endDate && dateToMidnightUTC(countdown.endDate)
+  };
+  return axios.post<BayDashboardCountdown>(apiUrls.bayDashboardCountdownEdit(countdownId), payload, {
+    transformResponse: (data) => bayDashboardCountdownTransformer(JSON.parse(data))
+  });
+};
