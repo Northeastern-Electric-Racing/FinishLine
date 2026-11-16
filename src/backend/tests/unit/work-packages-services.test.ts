@@ -1,28 +1,46 @@
-import { RoleEnum, WorkPackageStage } from 'shared';
-import WorkPackagesService from '../../src/services/work-packages.services';
+import {
+  createTestCar,
+  createTestOrganization,
+  createTestProject,
+  createTestUser,
+  createTestWorkPackage,
+  resetUsers
+} from '../test-utils';
+import { supermanAdmin } from '../test-data/users.test-data';
+import prisma from '../../src/prisma/prisma';
+import { Organization, User, WBS_Element_Status } from '@prisma/client';
 
-const user = {
-  userId: '123',
-  firstName: 'John',
-  lastName: 'Smith',
-  email: 'john.smith@email.com',
-  role: RoleEnum.ADMIN
-};
+describe('Change Request Tests', () => {
+  let orgId: string;
+  let organization: Organization;
+  let user: User;
+  let wpWbsElementId: string;
+  let workPackageId: string;
+  let startDate: Date;
 
-const project = new 
+  beforeEach(async () => {
+    organization = await createTestOrganization();
+    orgId = organization.organizationId;
+    user = await createTestUser(supermanAdmin, orgId);
+    await prisma.wBS_Element.create({
+      data: {
+        carNumber: 12,
+        projectNumber: 13,
+        workPackageNumber: 14,
+        name: 'test wbs',
+        organizationId: orgId,
+        status: WBS_Element_Status.INACTIVE
+      }
+    });
+    const car = await createTestCar(orgId, user.userId, 2);
+    const project = await createTestProject(user, orgId, undefined, car.carId, 2, 1);
+    const wp = await createTestWorkPackage(user, orgId, project.projectId, 2, 1, 1);
 
+    wpWbsElementId = wp.wbsElement.wbsElementId;
+    ({ workPackageId, startDate } = wp);
+  });
 
-const wbsNum = WorkPackagesService.createWorkPackage(
-  user,
-  'Example name 1',
-  '1',
-  WorkPackageStage.Design,
-  new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toDateString(), // 3 days ago
-  2,
-  [],
-  [],
-  new ,
-  'team'
-);
-
-describe('Irrelevant Work Package States');
+  afterEach(async () => {
+    await resetUsers();
+  });
+});
