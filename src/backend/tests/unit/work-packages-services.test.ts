@@ -9,6 +9,7 @@ import {
 import { supermanAdmin } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
 import { Organization, User, WBS_Element_Status } from '@prisma/client';
+import { afterEach, beforeEach, describe } from 'node:test';
 
 describe('Change Request Tests', () => {
   let orgId: string;
@@ -42,5 +43,9 @@ describe('Change Request Tests', () => {
 
   afterEach(async () => {
     await resetUsers();
+  });
+
+  describe('Create Change Request', () => {
+    it('create change request on an inactive project - project changes', async () => {});
   });
 });

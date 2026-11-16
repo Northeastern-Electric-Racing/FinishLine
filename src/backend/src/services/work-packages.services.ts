@@ -203,7 +203,14 @@ export default class WorkPackagesService {
   }
 
   /**
+   * Searches database for work packages, and iterates through each one to see
+   * if the work package is inactive and has a start date within a day distance from today OR
+   * the work package is not complete with the end date within a day distance from today.
    *
+   * If either condition is met, then a slack notification is sent to each team channel that is
+   * associated with the package that states whether its an inactive work package with a close
+   * start date OR a not complete work package with a close end date. This message also states
+   * whether this date is a day before, after, or the same day as today
    */
   static async sendWorkPackageDeadlineNotifications() {
     const currDay = new Date();
