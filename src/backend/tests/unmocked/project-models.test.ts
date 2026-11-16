@@ -175,7 +175,7 @@ describe('Project models', () => {
     test("can't see another organization's project", async () => {
       await createTestProject(user, orgId, undefined, carId, 1, 1);
       const otherOrg = await prisma.organization.create({
-        data: { name: 'Other', description: '', applicationLink: '', userCreated: { connect: { userId: user.userId } } }
+        data: { name: 'Other', slug: 'other', description: '', applicationLink: '', userCreated: { connect: { userId: user.userId } } }
       });
 
       await expect(ProjectsService.getSingleProject(projectWbs(1), user, otherOrg)).rejects.toThrow(
