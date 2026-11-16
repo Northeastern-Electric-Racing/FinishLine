@@ -2,7 +2,6 @@ import { Box, FormControl, FormHelperText, Typography } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import NERFormModal from '../../../../components/NERFormModal';
 import ReactHookTextField from '../../../../components/ReactHookTextField';
-import { useToast } from '../../../../hooks/toasts.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -16,29 +15,27 @@ export interface DateMarker {
 
 export interface DateMarkerFormValues {
   name: string;
-  date: Date;
+  date: Date | null;
 }
 
-const schema = yup.object({
+const schema: yup.ObjectSchema<DateMarkerFormValues> = yup.object({
   name: yup.string().required('Name is required'),
-  date: yup.date().required('Date is required')
+  date: yup.date().nullable().required('Date is required')
 });
 
 export interface BaseDateMarkerModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: DateMarkerFormValues) => Promise<DateMarker | unknown> | DateMarker | unknown;
+  onSubmit: (data: DateMarkerFormValues) => Promise<void>;
   initialValues?: DateMarkerFormValues;
 }
 
 const getDefaultValues = (): DateMarkerFormValues => ({
   name: '',
-  date: new Date()
+  date: null
 });
 
 const DateMarkerModal: React.FC<BaseDateMarkerModalProps> = ({ open, onClose, onSubmit, initialValues }) => {
-  const toast = useToast();
-
   const {
     handleSubmit,
     control,
@@ -50,18 +47,10 @@ const DateMarkerModal: React.FC<BaseDateMarkerModalProps> = ({ open, onClose, on
   });
 
   const onFormSubmit = async (data: DateMarkerFormValues) => {
-    try {
-      await onSubmit(data);
-      onClose();
-      if (!initialValues) {
-        reset(getDefaultValues());
-      }
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        toast.error(e.message);
-      } else {
-        toast.error('An error occurred while saving the date marker');
-      }
+    await onSubmit(data);
+    onClose();
+    if (!initialValues) {
+      reset(getDefaultValues());
     }
   };
 
@@ -100,7 +89,7 @@ const DateMarkerModal: React.FC<BaseDateMarkerModalProps> = ({ open, onClose, on
             render={({ field: { onChange, value } }) => (
               <DatePicker
                 value={value ? new Date(value) : null}
-                onChange={(newValue) => onChange(newValue ?? new Date())}
+                onChange={(newValue) => onChange(newValue)}
                 slotProps={{ textField: { fullWidth: true, error: !!errors.date } }}
               />
             )}

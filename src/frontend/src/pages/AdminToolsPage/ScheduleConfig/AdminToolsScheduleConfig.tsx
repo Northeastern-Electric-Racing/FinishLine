@@ -412,7 +412,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
                 {dateMarkers.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={3} align="center">
-                      No date markers yet.
+                      No date markers yet
                     </TableCell>
                   </TableRow>
                 ) : (
