@@ -122,7 +122,7 @@ export const useEditCompetitionDocumentsSummary = (executiveSummaryId: string) =
     ['executive-summaries', 'competition-documents-summary', 'edit'],
     async (payload: EditCompetitionDocumentsSummaryArgs) => {
       const { data } = await editCompetitionDocumentsSummary(executiveSummaryId, payload);
-      queryClient.invalidateQueries(['executive-summaries', executiveSummaryId]);
+      queryClient.invalidateQueries(['executive-summaries']);
       return data;
     }
   );
