@@ -3,7 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { daysBetween, dbDateToLocalDate, ExecutiveSummary, RecruitmentCycle, Term, VehicleDevelopmentProjectSummary } from 'shared';
+import {
+  daysBetween,
+  dbDateToLocalDate,
+  ExecutiveSummary,
+  RecruitmentCycle,
+  Term,
+  VehicleDevelopmentProjectSummary
+} from 'shared';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
