@@ -407,7 +407,7 @@ export default class ProjectsService {
       throw new InvalidOrganizationException('Project');
 
     // only budget and description bullet changes require a change request
-    const needsCR = projectEditNeedsReview(
+    const needsReview = projectEditNeedsReview(
       originalProject.budget,
       budget,
       originalProject.wbsElement.descriptionBullets.map((bullet) => ({
@@ -417,7 +417,7 @@ export default class ProjectsService {
       newDescriptionBullets.map((bullet) => ({ id: bullet.id, detail: bullet.detail }))
     );
 
-    if (needsCR) {
+    if (needsReview) {
       if (!crId) throw new HttpException(400, 'This edit requires an accepted change request');
       await validateChangeRequestAccepted(crId);
     }

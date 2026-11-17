@@ -434,7 +434,7 @@ export default class WorkPackagesService {
     const { wbsElementId } = originalWorkPackage;
 
     // only timeline and description bullet changes require a change request
-    const needsCR = workPackageEditNeedsReview(
+    const needsReview = workPackageEditNeedsReview(
       originalWorkPackage.startDate,
       new Date(startDate),
       originalWorkPackage.duration,
@@ -447,7 +447,7 @@ export default class WorkPackagesService {
     );
 
     // the crId must match a valid approved change request
-    if (needsCR) {
+    if (needsReview) {
       if (!crId) throw new HttpException(400, 'This edit requires an accepted change request');
       await validateChangeRequestAccepted(crId);
     }
