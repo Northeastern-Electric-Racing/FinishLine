@@ -244,9 +244,9 @@ export default class WorkPackagesService {
         const startDateMessage =
           'The work package, ' +
           wbsPipe(workPackage.wbsElement) +
-          ' , is still inactive ' +
-          dateRelation +
-          ' the start date';
+          ', is still inactive.' +
+          ' The start date ' +
+          dateRelation;
         const message = leadIdString + ' ' + managerIdString + ' ' + startDateMessage;
         teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText));
       }
@@ -256,7 +256,11 @@ export default class WorkPackagesService {
           calculateEndDate(workPackage.startDate, workPackage.duration)
         );
         const endDateMessage =
-          'The work package, ' + workPackage.projectId + ' , is still not complete ' + dateRelation + ' the end date';
+          'The work package, ' +
+          wbsPipe(workPackage.wbsElement) +
+          ', is still not complete.' +
+          ' The end date ' +
+          dateRelation;
         const message = leadIdString + ' ' + managerIdString + ' ' + endDateMessage;
         teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText));
       }
@@ -271,17 +275,17 @@ export default class WorkPackagesService {
    */
   private static GetBeforeNowOrAfter(currDay: Date, comparisonDate: Date) {
     if (isWithinBuffer(currDay, comparisonDate, 0)) {
-      return 'same day';
+      return 'is today';
     }
 
     const currUtc = Date.UTC(currDay.getFullYear(), currDay.getMonth(), currDay.getDate());
     const comparisonUtc = Date.UTC(comparisonDate.getFullYear(), comparisonDate.getMonth(), comparisonDate.getDate());
 
     if (currUtc > comparisonUtc) {
-      return 'one day after';
+      return 'is tomorrow';
     }
 
-    return 'one day before';
+    return 'was yesterday';
   }
 
   /**
