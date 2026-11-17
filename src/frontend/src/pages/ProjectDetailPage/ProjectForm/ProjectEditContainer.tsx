@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { Project, ProjectDetail, ProjectProposedChangesCreateArgs, wbsPipe, projectEditNeedsCR } from 'shared';
+import { ProjectDetail, ProjectProposedChangesCreateArgs, wbsPipe, projectEditNeedsCR } from 'shared';
 import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.hooks';
 import { bulletsToObject } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
