@@ -237,7 +237,13 @@ describe('announcement tests', () => {
       );
       const [announcement] = (await AnnouncementService.getUserUnreadAnnouncements(batman.userId, orgId)).announcements;
       const otherOrg = await prisma.organization.create({
-        data: { name: 'Other', description: '', applicationLink: '', userCreated: { connect: { userId: batman.userId } } }
+        data: {
+          name: 'Other',
+          slug: 'other-org',
+          description: '',
+          applicationLink: '',
+          userCreated: { connect: { userId: batman.userId } }
+        }
       });
 
       await expect(
