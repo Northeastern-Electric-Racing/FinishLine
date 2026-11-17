@@ -52,7 +52,7 @@ export const ChangeRequestTypeTextPipe: (type: ChangeRequestType) => string = (t
     case ChangeRequestType.Standard:
       return 'Standard';
     case ChangeRequestType.NonMeaningful:
-      return 'Non-Meaningful';
+      return 'Minor Edit';
   }
 };
 

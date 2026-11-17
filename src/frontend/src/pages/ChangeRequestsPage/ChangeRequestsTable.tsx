@@ -240,7 +240,7 @@ const ChangeRequestsTable: React.FC = () => {
     >
       <FormControlLabel
         control={<Switch checked={showNonMeaningful} onChange={(e) => setShowNonMeaningful(e.target.checked)} />}
-        label="Show non-meaningful change requests"
+        label="Show minor edit change requests"
         sx={{ mb: 1 }}
       />
       <DataGrid
