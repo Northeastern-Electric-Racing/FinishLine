@@ -44,7 +44,12 @@ const AddGanttSelectionModal: React.FC<AddGanttSelectionModalProps> = ({
   return (
     <Dialog
       open={showModal}
-      onClose={handleClose}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          return;
+        }
+        handleClose();
+      }}
       maxWidth="sm"
       fullWidth
       PaperProps={{
