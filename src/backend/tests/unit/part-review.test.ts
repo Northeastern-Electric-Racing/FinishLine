@@ -1135,18 +1135,18 @@ describe('part review tests', () => {
       new AccessDeniedAdminOnlyException('set abbreviation')
     );
 
-    const updatedProject = await ProjectsService.setAbbreviation(wbsNum, batman, organization, 'new abbreviation');
-    expect(updatedProject.abbreviation).toBe('new abbreviation');
+    await ProjectsService.setAbbreviation(wbsNum, batman, organization, 'new abbreviation');
+    expect((await ProjectsService.getSingleProject(wbsNum, batman, organization)).abbreviation).toBe('new abbreviation');
 
-    const updatedProject2 = await ProjectsService.setAbbreviation(wbsNum, batman, organization, 'diff');
-    expect(updatedProject2.abbreviation).toBe('diff');
+    await ProjectsService.setAbbreviation(wbsNum, batman, organization, 'diff');
+    expect((await ProjectsService.getSingleProject(wbsNum, batman, organization)).abbreviation).toBe('diff');
 
     await expect(ProjectsService.deleteAbbreviation(wbsNum, nonAdmin, organization)).rejects.toThrow(
       new AccessDeniedAdminOnlyException('delete abbreviation')
     );
 
     await ProjectsService.deleteAbbreviation(wbsNum, batman, organization);
-    const projectWithNoAbbrev = await ProjectsService.getSingleProject(wbsNum, organization);
+    const projectWithNoAbbrev = await ProjectsService.getSingleProject(wbsNum, batman, organization);
     expect(projectWithNoAbbrev.abbreviation).toBeUndefined();
   });
 });

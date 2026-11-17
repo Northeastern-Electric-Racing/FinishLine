@@ -3,41 +3,21 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { dbDateToLocalDate, RetrospectiveWorkPackage, WorkPackage, WorkPackagePreview } from 'shared';
-import { implementedChangeTransformer } from './change-requests.transformers';
-import { descriptionBulletTransformer } from './projects.transformers';
-import { eventPreviewTransformer } from './calendar.transformer';
+import { BaseWorkPackage, dbDateToLocalDate, WorkPackageCard, WorkPackageDetail } from 'shared';
+import { baseDescriptionBulletTransformer } from './projects.transformers';
 
-/**
- * Transforms a work package to ensure deep field transformation of date objects.
- *
- * @param workPackage Incoming work package object supplied by the HTTP response.
- * @returns Properly transformed work package object.
- */
-export const workPackageTransformer = (workPackage: WorkPackage): WorkPackage => {
-  return {
-    ...workPackage,
-    dateCreated: new Date(workPackage.dateCreated),
-    startDate: dbDateToLocalDate(new Date(workPackage.startDate)),
-    endDate: dbDateToLocalDate(new Date(workPackage.endDate)),
-    descriptionBullets: workPackage.descriptionBullets.map(descriptionBulletTransformer),
-    changes: workPackage.changes.map(implementedChangeTransformer),
-    events: workPackage.events.map(eventPreviewTransformer)
-  };
-};
+/** Converts the dates on any work package model; extended models spread it and convert what they add */
+export const baseWorkPackageTransformer = <T extends BaseWorkPackage>(workPackage: T): T => ({
+  ...workPackage,
+  startDate: dbDateToLocalDate(new Date(workPackage.startDate)),
+  endDate: dbDateToLocalDate(new Date(workPackage.endDate))
+});
 
-export const retrospectiveWorkPackageTransformer = (workPackage: RetrospectiveWorkPackage): RetrospectiveWorkPackage => {
-  return {
-    ...workPackageTransformer(workPackage),
-    originalDuration: workPackage.originalDuration,
-    originalStartDate: dbDateToLocalDate(new Date(workPackage.originalStartDate))
-  };
-};
+export const workPackageDetailTransformer = (workPackage: WorkPackageDetail): WorkPackageDetail => ({
+  ...baseWorkPackageTransformer(workPackage),
+  descriptionBullets: workPackage.descriptionBullets.map(baseDescriptionBulletTransformer),
+  changes: workPackage.changes.map((change) => ({ ...change, dateImplemented: new Date(change.dateImplemented) }))
+});
 
-export const workPackagePreviewTransformer = (workPackage: WorkPackagePreview): WorkPackagePreview => {
-  return {
-    ...workPackage,
-    startDate: dbDateToLocalDate(new Date(workPackage.startDate)),
-    endDate: dbDateToLocalDate(new Date(workPackage.endDate))
-  };
-};
+export const workPackageCardTransformer = (workPackage: WorkPackageCard): WorkPackageCard =>
+  baseWorkPackageTransformer(workPackage);

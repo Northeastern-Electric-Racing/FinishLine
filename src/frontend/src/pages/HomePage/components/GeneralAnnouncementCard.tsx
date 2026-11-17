@@ -1,16 +1,21 @@
 import { Card, CardContent, Typography, IconButton, Box } from '@mui/material';
 import { useTheme } from '@mui/system';
 import React from 'react';
-import { Announcement } from 'shared';
+import { BaseAnnouncement } from 'shared';
 import { datePipe } from '../../../utils/pipes';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface GeneralAnnouncementCardProps {
-  announcement: Announcement;
-  removeAnnouncement: (announcement: Announcement) => Promise<Announcement[]>;
+  announcement: Pick<BaseAnnouncement, 'announcementId' | 'senderName' | 'dateMessageSent' | 'slackChannelName' | 'text'>;
+  removeAnnouncement: (announcementId: string) => Promise<void>;
+  removeDisabled?: boolean;
 }
 
-const GeneralAnnouncementCard: React.FC<GeneralAnnouncementCardProps> = ({ announcement, removeAnnouncement }) => {
+const GeneralAnnouncementCard: React.FC<GeneralAnnouncementCardProps> = ({
+  announcement,
+  removeAnnouncement,
+  removeDisabled
+}) => {
   const theme = useTheme();
   return (
     <Card
@@ -36,7 +41,7 @@ const GeneralAnnouncementCard: React.FC<GeneralAnnouncementCardProps> = ({ annou
             right: 8
           }}
         >
-          <IconButton onClick={() => removeAnnouncement(announcement)}>
+          <IconButton disabled={removeDisabled} onClick={() => removeAnnouncement(announcement.announcementId)}>
             <CloseIcon />
           </IconButton>
         </Box>

@@ -222,6 +222,9 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
 
   const handleCloseSubmenu = () => {
     setOpenSubmenu(null);
+    if (isMobile) {
+      setDrawerOpen(false);
+    }
   };
 
   const drawerContent = (
