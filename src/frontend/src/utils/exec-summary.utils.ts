@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { daysBetween, ExecutiveSummary, RecruitmentCycle, Term, VehicleDevelopmentProjectSummary } from 'shared';
+import { daysBetween, dbDateToLocalDate, ExecutiveSummary, RecruitmentCycle, Term, VehicleDevelopmentProjectSummary } from 'shared';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -61,7 +61,7 @@ export const buildNewMemberJourneyData = (executiveSummaries: ExecutiveSummary[]
       const seasonDate = cycle.term === Term.FALL ? executiveSummary.seasonStartDate : executiveSummary.seasonEndDate;
       if (!seasonDate) return;
 
-      const year = new Date(seasonDate).getFullYear();
+      const year = dbDateToLocalDate(seasonDate).getFullYear();
       const termLabel = cycle.term === Term.FALL ? 'Fall' : 'Spring';
       const label = `${termLabel} ${year}`;
 
