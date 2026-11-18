@@ -281,7 +281,7 @@ export default class WorkPackagesService {
     const currUtc = Date.UTC(currDay.getFullYear(), currDay.getMonth(), currDay.getDate());
     const comparisonUtc = Date.UTC(comparisonDate.getFullYear(), comparisonDate.getMonth(), comparisonDate.getDate());
 
-    if (currUtc > comparisonUtc) {
+    if (currUtc < comparisonUtc) {
       return 'is tomorrow';
     }
 
