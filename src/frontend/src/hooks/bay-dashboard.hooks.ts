@@ -222,6 +222,9 @@ export const useBayDashboardEvents = (slug: string) => {
       // prefix match - this covers every bay dashboard query for this organization
       es.addEventListener('update', () => queryClient.invalidateQueries(['bay-dashboard', slug]));
 
+      // refetch on every (re)connect, in case updates missed while connection was down
+      es.onopen = () => queryClient.invalidateQueries(['bay-dashboard', slug]);
+
       es.onerror = () => {
         // a non-200 response closes the connection permanently, so retry after a delay
         if (es.readyState === EventSource.CLOSED) {

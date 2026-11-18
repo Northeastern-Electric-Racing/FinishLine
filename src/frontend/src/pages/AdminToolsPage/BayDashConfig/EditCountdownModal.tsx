@@ -5,8 +5,6 @@
 
 import React from 'react';
 import { BayDashboardCountdown } from 'shared';
-import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useEditBayDashboardCountdown } from '../../../hooks/bay-dashboard.hooks';
 import CountdownFormModal from './CountdownFormModal';
 
@@ -21,10 +19,7 @@ interface EditCountdownModalProps {
  * Edits a bay dashboard countdown by opening the shared countdown form prefilled with its current values
  */
 const EditCountdownModal: React.FC<EditCountdownModalProps> = ({ showModal, handleClose, countdown, slug }) => {
-  const { isLoading, isError, error, mutateAsync } = useEditBayDashboardCountdown(slug);
-
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading) return <LoadingIndicator />;
+  const { mutateAsync } = useEditBayDashboardCountdown(slug);
 
   return (
     <CountdownFormModal
