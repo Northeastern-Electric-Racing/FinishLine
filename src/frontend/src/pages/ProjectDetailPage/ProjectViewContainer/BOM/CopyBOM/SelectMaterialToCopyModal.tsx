@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Autocomplete, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useForm } from 'react-hook-form';
-import { Assembly, Car, Material, ProjectPreview, WbsNumber } from 'shared';
+import { Assembly, Car, Material, ProjectListItem, WbsNumber } from 'shared';
 
 import NERFormModal from '../../../../../components/NERFormModal';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
@@ -29,12 +29,12 @@ const carToOption = (car: Car): AutocompleteOption => ({
   id: car.wbsElementId
 });
 
-const projectToOption = (project: ProjectPreview): AutocompleteOption => ({
+const projectToOption = (project: ProjectListItem): AutocompleteOption => ({
   label: `${project.wbsNum.carNumber}.${project.wbsNum.projectNumber} - ${project.name}`,
   id: project.wbsElementId
 });
 
-const projectToWbsNumber = (project: ProjectPreview): WbsNumber => ({
+const projectToWbsNumber = (project: ProjectListItem): WbsNumber => ({
   carNumber: project.wbsNum.carNumber,
   projectNumber: project.wbsNum.projectNumber,
   workPackageNumber: 0
@@ -49,7 +49,7 @@ const SelectMaterialToCopyModal: React.FC<SelectMaterialToCopyModalProps> = ({ o
   const { reset, handleSubmit } = useForm<FormValues>();
 
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
-  const [selectedProject, setSelectedProject] = useState<ProjectPreview | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectListItem | null>(null);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
 
   const { data: cars, isLoading: carsIsLoading, isError: carsIsError, error: carsError } = useGetAllCars();

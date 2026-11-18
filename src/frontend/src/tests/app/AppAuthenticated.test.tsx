@@ -8,9 +8,7 @@ import AppAuthenticated from '../../app/AppAuthenticated';
 import { mockGetVersionNumberReturnValue, mockUseSingleUserSettings } from '../test-support/mock-hooks';
 import * as miscHooks from '../../hooks/misc.hooks';
 import * as authHooks from '../../hooks/auth.hooks';
-import * as workPackageHooks from '../../hooks/work-packages.hooks';
 import * as userHooks from '../../hooks/users.hooks';
-import { mockUseAllWorkPackagesReturnValue } from '../test-support/mock-hooks';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
 import { exampleAuthenticatedAdminUser } from '../test-support/test-data/authenticated-user.stub';
 
@@ -37,7 +35,6 @@ const renderComponent = (path?: string, route?: string) => {
 
 describe.skip('App Authenticated', () => {
   beforeEach(() => {
-    vi.spyOn(workPackageHooks, 'useAllWorkPackages').mockReturnValue(mockUseAllWorkPackagesReturnValue([]));
     vi.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAuthenticatedAdminUser));
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);

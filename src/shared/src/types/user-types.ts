@@ -91,6 +91,7 @@ export interface AuthenticatedUser {
   defaultTheme?: ThemeName;
   isFinance?: boolean;
   isAtLeastFinanceLead?: boolean;
+  isOperations?: boolean;
   organizations: string[];
   onboardingTeamTypeIds: string[];
   onboardedTeamTypeIds: string[];

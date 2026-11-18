@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { Project, ProjectProposedChangesCreateArgs, projectEditNeedsReview } from 'shared';
+import { ProjectDetail, ProjectProposedChangesCreateArgs, wbsPipe, projectEditNeedsReview } from 'shared';
 import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.hooks';
 import { bulletsToObject } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -19,7 +19,7 @@ import ProjectFormContainer from './ProjectForm';
 import { useQueryClient } from 'react-query';
 
 interface ProjectEditContainerProps {
-  project: Project;
+  project: ProjectDetail;
   exitEditMode: () => void;
 }
 
@@ -71,7 +71,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       name: wp.name,
       startDate: wp.startDate,
       duration: wp.duration,
-      blockedBy: wp.blockedBy.map((id) => id.toString()),
+      blockedBy: wp.blockedBy.map((blocker) => wbsPipe(blocker.wbsNum)),
       descriptionBullets: bulletsToObject(wp.descriptionBullets),
       stage: wp.stage ?? 'NONE'
     }))

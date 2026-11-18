@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import {
+  BaseUser,
   DescriptionBulletPreview,
   User,
   validateWBS,
@@ -66,7 +67,8 @@ interface WorkPackageFormViewProps {
   workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
   defaultValues?: WorkPackageFormViewPayload;
-  wbsElement: WbsElement;
+  // the work package being edited, or the project a new one is created under
+  wbsElement: Pick<WbsElement, 'wbsNum'> & { lead?: BaseUser; manager?: BaseUser };
   leadOrManagerOptions: User[];
   blockedByOptions: { id: string; label: string }[];
   crId?: string;

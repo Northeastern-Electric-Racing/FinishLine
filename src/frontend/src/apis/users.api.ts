@@ -9,7 +9,7 @@ import {
   ApiTokenMetadata,
   BusySlots,
   GeneratedApiToken,
-  ProjectOverview,
+  ProjectOverviewCard,
   SetUserScheduleSettingsPayload,
   TaskHomeCard,
   User,
@@ -27,7 +27,7 @@ import {
   userWithScheduleSettingsTransformer
 } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
-import { projectOverviewTransformer } from './transformers/projects.transformers';
+import { projectOverviewCardTransformer } from './transformers/projects.transformers';
 import { baseTaskTransformer } from './transformers/tasks.transformers';
 
 /**
@@ -130,8 +130,8 @@ export const getCurrentUserSecureSettings = () => {
  * @param id User ID of the requested user's favorite projects.
  */
 export const getUsersFavoriteProjects = (id: string) => {
-  return axios.get<ProjectOverview[]>(apiUrls.userFavoriteProjects(id), {
-    transformResponse: (data) => JSON.parse(data).map(projectOverviewTransformer)
+  return axios.get<ProjectOverviewCard[]>(apiUrls.userFavoriteProjects(id), {
+    transformResponse: (data) => JSON.parse(data).map(projectOverviewCardTransformer)
   });
 };
 

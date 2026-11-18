@@ -11,8 +11,8 @@ import StageGateWorkPackageModalContainer from '../../../../pages/WorkPackageDet
 import { mockUseMutationResult, mockUseQueryResult } from '../../../test-support/test-data/test-utils.stub';
 import { useCreateStageGateChangeRequest } from '../../../../hooks/change-requests.hooks';
 import { useSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
-import { WorkPackage } from 'shared';
-import { exampleWorkPackage5 } from '../../../test-support/test-data/work-packages.stub';
+import { WorkPackageDetail } from 'shared';
+import { exampleWorkPackage5Detail } from '../../../test-support/test-data/work-package-details.stub';
 
 vi.mock('../../../../hooks/change-requests.hooks');
 vi.mock('../../../../hooks/work-packages.hooks');
@@ -23,9 +23,9 @@ const mockUseCreateStageGateCRHook = (isLoading: boolean, isError: boolean, erro
   mockedUseCreateStageGateCR.mockReturnValue(mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error));
 };
 
-const mockedUseSingleWorkPackage = useSingleWorkPackage as jest.Mock<UseQueryResult<WorkPackage>>;
-const mockUseSingleWorkPackageHook = (isLoading: boolean, isError: boolean, data?: WorkPackage, error?: Error) => {
-  mockedUseSingleWorkPackage.mockReturnValue(mockUseQueryResult<WorkPackage>(isLoading, isError, data, error));
+const mockedUseSingleWorkPackage = useSingleWorkPackage as jest.Mock<UseQueryResult<WorkPackageDetail>>;
+const mockUseSingleWorkPackageHook = (isLoading: boolean, isError: boolean, data?: WorkPackageDetail, error?: Error) => {
+  mockedUseSingleWorkPackage.mockReturnValue(mockUseQueryResult<WorkPackageDetail>(isLoading, isError, data, error));
 };
 
 const renderComponent = () => {
@@ -35,7 +35,7 @@ const renderComponent = () => {
 describe('stage gate work package modal container test suite', () => {
   it('renders component without crashing', () => {
     mockUseCreateStageGateCRHook(false, false);
-    mockUseSingleWorkPackageHook(false, false, exampleWorkPackage5);
+    mockUseSingleWorkPackageHook(false, false, exampleWorkPackage5Detail);
     renderComponent();
 
     expect(screen.getByText(`Stage Gate #${wbsPipe(exampleWbs1)}`)).toBeInTheDocument();

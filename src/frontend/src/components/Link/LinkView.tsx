@@ -1,9 +1,10 @@
 import Icon from '@mui/material/Icon';
 import { Box } from '@mui/system';
-import { Link as SharedLink } from 'shared';
+import { LinkType } from 'shared';
 import { Link } from '@mui/material';
 
-const LinkView: React.FC<{ link: SharedLink }> = ({ link }) => {
+// only what it shows, so cards can pass a slim link
+const LinkView: React.FC<{ link: { url: string; linkType: Pick<LinkType, 'name' | 'iconName'> } }> = ({ link }) => {
   return (
     <Box display={'flex'} textAlign={'center'} sx={{ verticalAlign: 'middle' }} alignItems={'center'}>
       <Icon>{link.linkType.iconName}</Icon>
