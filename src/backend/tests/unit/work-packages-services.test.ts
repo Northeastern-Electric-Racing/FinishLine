@@ -88,6 +88,29 @@ describe('Change Request Tests', () => {
   });
 
   describe('send messages', () => {
+    it('does not send a message for an inactive work package as its start date is two days later', async () => {
+      await prisma.work_Package.update({
+        where: {
+          workPackageId: wp.workPackageId
+        },
+        data: {
+          startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // tomorrow
+          duration: 10
+        }
+      });
+
+      const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
+      console.log(sendMessageSpy.mock.calls);
+      await WorkPackagesService.sendWorkPackageDeadlineNotifications();
+
+      expect(sendMessageSpy).not.toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('The work package, 2.1.1, is still inactive. '),
+        expect.any(String),
+        expect.any(String)
+      );
+    });
+
     it('sends a message for an inactive work package and its start date is tomorrow', async () => {
       await prisma.work_Package.update({
         where: {
@@ -152,6 +175,52 @@ describe('Change Request Tests', () => {
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining('The work package, 2.1.1, is still inactive. The start date was yesterday.'),
+        expect.any(String),
+        expect.any(String)
+      );
+    });
+
+    it('does not send a message for an inactive work package since its start date was two days ago', async () => {
+      await prisma.work_Package.update({
+        where: {
+          workPackageId: wp.workPackageId
+        },
+        data: {
+          startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+          duration: 10
+        }
+      });
+
+      const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
+      console.log(sendMessageSpy.mock.calls);
+      await WorkPackagesService.sendWorkPackageDeadlineNotifications();
+
+      expect(sendMessageSpy).not.toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('The work package, 2.1.1, is still inactive.'),
+        expect.any(String),
+        expect.any(String)
+      );
+    });
+
+    it('does not send a message for an inactive work package and its end date in two days', async () => {
+      await prisma.work_Package.update({
+        where: {
+          workPackageId: wp.workPackageId
+        },
+        data: {
+          startDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+          duration: 1
+        }
+      });
+
+      const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
+      console.log(sendMessageSpy.mock.calls);
+      await WorkPackagesService.sendWorkPackageDeadlineNotifications();
+
+      expect(sendMessageSpy).not.toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('The work package, 2.1.1, is still not complete.'),
         expect.any(String),
         expect.any(String)
       );
@@ -225,5 +294,56 @@ describe('Change Request Tests', () => {
         expect.any(String)
       );
     });
+
+    it('does not send a message for an inactive work package since its end date was two days ago', async () => {
+      await prisma.work_Package.update({
+        where: {
+          workPackageId: wp.workPackageId
+        },
+        data: {
+          startDate: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000), // 9 days ago
+          duration: 1
+        }
+      });
+
+      const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
+      console.log(sendMessageSpy.mock.calls);
+      await WorkPackagesService.sendWorkPackageDeadlineNotifications();
+
+      expect(sendMessageSpy).not.toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('The work package, 2.1.1, is still not complete'),
+        expect.any(String),
+        expect.any(String)
+      );
+    });
+  });
+
+  it('sends a message for both the end date and start date being today', async () => {
+    await prisma.work_Package.update({
+      where: {
+        workPackageId: wp.workPackageId
+      },
+      data: {
+        startDate: new Date(Date.now()), // today
+        duration: 0
+      }
+    });
+
+    const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
+    console.log(sendMessageSpy.mock.calls);
+    await WorkPackagesService.sendWorkPackageDeadlineNotifications();
+    expect(sendMessageSpy).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining('The work package, 2.1.1, is still inactive. The start date is today.'),
+      expect.any(String),
+      expect.any(String)
+    );
+    expect(sendMessageSpy).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining('The work package, 2.1.1, is still not complete. The end date is today.'),
+      expect.any(String),
+      expect.any(String)
+    );
   });
 });
