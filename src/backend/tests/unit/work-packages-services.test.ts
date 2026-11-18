@@ -109,6 +109,7 @@ describe('Change Request Tests', () => {
         expect.any(String),
         expect.any(String)
       );
+      expect(sendMessageSpy).toHaveBeenCalledTimes(0);
     });
 
     it('sends a message for an inactive work package and its start date is tomorrow', async () => {
@@ -132,6 +133,7 @@ describe('Change Request Tests', () => {
         expect.any(String),
         expect.any(String)
       );
+      expect(sendMessageSpy).toHaveBeenCalledTimes(1);
     });
 
     it('sends a message for an inactive work package and its start date is today', async () => {
@@ -155,6 +157,7 @@ describe('Change Request Tests', () => {
         expect.any(String),
         expect.any(String)
       );
+      expect(sendMessageSpy).toHaveBeenCalledTimes(1);
     });
 
     it('sends a message for an inactive work package and its start date was yesterday', async () => {
@@ -178,6 +181,7 @@ describe('Change Request Tests', () => {
         expect.any(String),
         expect.any(String)
       );
+      expect(sendMessageSpy).toHaveBeenCalledTimes(1);
     });
 
     it('does not send a message for an inactive work package since its start date was two days ago', async () => {
@@ -201,6 +205,7 @@ describe('Change Request Tests', () => {
         expect.any(String),
         expect.any(String)
       );
+      expect(sendMessageSpy).toHaveBeenCalledTimes(0);
     });
 
     it('does not send a message for an inactive work package and its end date in two days', async () => {
@@ -224,6 +229,7 @@ describe('Change Request Tests', () => {
         expect.any(String),
         expect.any(String)
       );
+      expect(sendMessageSpy).toHaveBeenCalledTimes(0);
     });
 
     it('sends a message for an inactive work package and its end date is tomorrow', async () => {
@@ -247,6 +253,7 @@ describe('Change Request Tests', () => {
         expect.any(String),
         expect.any(String)
       );
+      expect(sendMessageSpy).toHaveBeenCalledTimes(1);
     });
 
     it('sends a message for an inactive work package and its end date is today', async () => {
@@ -263,13 +270,13 @@ describe('Change Request Tests', () => {
       const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
       console.log(sendMessageSpy.mock.calls);
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
-
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining('The work package, 2.1.1, is still not complete. The end date is today.'),
         expect.any(String),
         expect.any(String)
       );
+      expect(sendMessageSpy).toHaveBeenCalledTimes(1);
     });
 
     it('sends a message for an inactive work package and its end date was yesterday', async () => {
@@ -293,6 +300,7 @@ describe('Change Request Tests', () => {
         expect.any(String),
         expect.any(String)
       );
+      expect(sendMessageSpy).toHaveBeenCalledTimes(1);
     });
 
     it('does not send a message for an inactive work package since its end date was two days ago', async () => {
@@ -316,6 +324,7 @@ describe('Change Request Tests', () => {
         expect.any(String),
         expect.any(String)
       );
+      expect(sendMessageSpy).toHaveBeenCalledTimes(0);
     });
   });
 
@@ -345,5 +354,6 @@ describe('Change Request Tests', () => {
       expect.any(String),
       expect.any(String)
     );
+    expect(sendMessageSpy).toHaveBeenCalledTimes(2);
   });
 });
