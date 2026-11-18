@@ -5,7 +5,7 @@
 
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { isLeadership, isHead } from 'shared';
+import { ChangeRequestType, isLeadership, isHead } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import ChangeRequestRow from '../../components/ChangeRequestRow';
 import {
@@ -53,6 +53,9 @@ const ChangeRequestsOverview: React.FC = () => {
   )
     return <LoadingIndicator />;
 
+  // auto-approved non-meaningful CRs would flood this list; they're still in the change requests table
+  const visibleApprovedChangeRequests = approvedChangeRequests.filter((cr) => cr.type !== ChangeRequestType.NonMeaningful);
+
   return (
     <>
       {showToReview && (
@@ -69,7 +72,7 @@ const ChangeRequestsOverview: React.FC = () => {
       />
       <ChangeRequestRow
         title="My Approved Change Requests"
-        changeRequests={approvedChangeRequests}
+        changeRequests={visibleApprovedChangeRequests}
         noChangeRequestsMessage="No approved change requests"
       />
     </>

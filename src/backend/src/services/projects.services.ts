@@ -15,7 +15,7 @@ import {
   WbsNumber,
   wbsPipe,
   User,
-  projectEditNeedsCR
+  projectEditNeedsReview
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import { getProjectDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
@@ -26,7 +26,7 @@ import {
   projectListItemTransformer,
   projectOverviewCardTransformer
 } from '../transformers/projects.transformer.js';
-import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import { createNonMeaningfulChangeRequest, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
@@ -583,6 +583,7 @@ export default class ProjectsService {
       where: { projectId },
       select: {
         projectId: true,
+        wbsElementId: true,
         budget: true,
         wbsElement: {
           select: {
@@ -604,7 +605,7 @@ export default class ProjectsService {
       throw new InvalidOrganizationException('Project');
 
     // only budget and description bullet changes require a change request
-    const needsCR = projectEditNeedsCR(
+    const needsReview = projectEditNeedsReview(
       originalProject.budget,
       budget,
       originalProject.wbsElement.descriptionBullets.map((bullet) => ({
@@ -614,14 +615,19 @@ export default class ProjectsService {
       newDescriptionBullets.map((bullet) => ({ id: bullet.id, detail: bullet.detail }))
     );
 
-    if (needsCR) {
+    if (needsReview) {
       if (!crId) throw new HttpException(400, 'This edit requires an accepted change request');
       await validateChangeRequestAccepted(crId);
     }
 
+    // CR approval passes the approved CR's id; a direct edit that doesn't need review
+    // gets its own auto-approved change request so it still shows up in change history
+    const changeRequestId =
+      crId ?? (await createNonMeaningfulChangeRequest(user, originalProject.wbsElementId, organization.organizationId));
+
     await updateProjectAndCreateChanges(
       originalProject.projectId,
-      crId,
+      changeRequestId,
       userId,
       name,
       budget,

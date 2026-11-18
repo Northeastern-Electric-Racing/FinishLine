@@ -50,7 +50,6 @@ const CreateWorkPackageForm: React.FC = () => {
       wbsNum={validateWBS(wbsNum)}
       workPackageMutateAsync={createWorkPackageWrapper}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
-      createLeadershipCR={() => {}} // leadership changes can't happen on creation
       exitActiveMode={() => history.push(`${routes.PROJECTS}/${projectWbsPipe(validateWBS(wbsNum))}`)}
       schema={schema}
       breadcrumbs={breadcrumbs}

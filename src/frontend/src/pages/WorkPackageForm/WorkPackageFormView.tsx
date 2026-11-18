@@ -11,7 +11,6 @@ import {
   wbsPipe,
   WorkPackageTemplate,
   WorkPackageStage,
-  LeadershipChangeCreateArgs,
   isSameDay
 } from 'shared';
 import {
@@ -52,7 +51,6 @@ import { WorkPackageTemplateSection } from './WorkPackageTemplateSection';
 import { useQuery } from '../../hooks/utils.hooks';
 import * as yup from 'yup';
 import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeRequestModal';
-import { useQueryClient } from 'react-query';
 import * as React from 'react';
 
 export interface WorkPackageFormReturn {
@@ -68,7 +66,6 @@ interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
   workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
-  createLeadershipCR: (data: LeadershipChangeCreateArgs) => void;
   defaultValues?: WorkPackageFormViewPayload;
   // the work package being edited, or the project a new one is created under
   wbsElement: Pick<WbsElement, 'wbsNum'> & { lead?: BaseUser; manager?: BaseUser };
@@ -92,7 +89,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   exitActiveMode,
   workPackageMutateAsync,
   createWorkPackageScopeCR,
-  createLeadershipCR,
   defaultValues,
   wbsElement,
   leadOrManagerOptions,
@@ -103,7 +99,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const query = useQuery();
   const toast = useToast();
   const user = useCurrentUser();
-  const queryClient = useQueryClient();
   const history = useHistory();
 
   const { ...workPackageFormMethods } = useForm<WorkPackageFormViewPayload>({
@@ -205,26 +200,25 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       JSON.stringify(watchedDescriptionBullets) !== JSON.stringify(defaultValues.descriptionBullets)
     : false;
 
+  // lead and manager apply directly now, same as name, stage and blocked by
   const nonMeaningfulFieldsChanged = defaultValues
-    ? watchedName !== defaultValues.name ||
+    ? leadershipChanged ||
+      watchedName !== defaultValues.name ||
       JSON.stringify([...watchedBlockedBy].sort()) !== JSON.stringify([...(defaultValues.blockedBy || [])].sort()) ||
       watchedStage !== defaultValues.stage
     : false;
 
-  const otherFieldsChanged = meaningfulFieldsChanged || nonMeaningfulFieldsChanged;
-
-  const liveOnlyLeadershipChanged = leadershipChanged && !otherFieldsChanged;
+  const anyChangesMade = meaningfulFieldsChanged || nonMeaningfulFieldsChanged;
 
   const getButtonLabel = () => {
     if (!defaultValues) return 'Create Work Package';
-    if (liveOnlyLeadershipChanged) return 'Submit & Implement';
     if (meaningfulFieldsChanged) return 'Submit Change Request';
     return 'Save Changes';
   };
 
   const isButtonDisabled = () => {
     if (!defaultValues) return false;
-    return !leadershipChanged && !otherFieldsChanged;
+    return !anyChangesMade;
   };
 
   const handleButtonClick = (e: React.MouseEvent) => {
@@ -240,28 +234,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
 
     try {
-      if (liveOnlyLeadershipChanged) {
-        await createLeadershipCR({
-          submitterId: user.userId,
-          wbsNum: wbsElement.wbsNum,
-          leadId,
-          managerId
-        });
-        toast.success('Changes submitted successfully');
-        await queryClient.refetchQueries(['work packages']);
-        exitActiveMode();
-        return;
-      }
-
-      if (leadershipChanged && otherFieldsChanged) {
-        await createLeadershipCR({
-          submitterId: user.userId,
-          wbsNum: wbsElement.wbsNum,
-          leadId,
-          managerId
-        });
-      }
-
       const payload = {
         leadId,
         managerId,

@@ -10,7 +10,6 @@ import {
   WorkPackageStage,
   BudgetChangeRequest,
   isWorkPackageWbs,
-  LeadershipChangeRequest,
   ChangeRequestStatus
 } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
@@ -113,13 +112,7 @@ const triageScoreInputOf = (changeRequest: {
 
 export const changeRequestManyTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestManyQueryArgs>
-):
-  | ChangeRequest
-  | StandardChangeRequest
-  | ActivationChangeRequest
-  | StageGateChangeRequest
-  | BudgetChangeRequest
-  | LeadershipChangeRequest => {
+): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
   return {
@@ -145,17 +138,13 @@ export const changeRequestManyTransformer = (
     workPackageProposedChanges: undefined,
     originalProjectData: undefined,
     originalWorkPackageData: undefined,
-    // activation + leadership cr fields
-    lead: changeRequest.leadershipChangeRequest?.lead
-      ? userTransformer(changeRequest.leadershipChangeRequest.lead)
-      : changeRequest.activationChangeRequest?.lead
-        ? userTransformer(changeRequest.activationChangeRequest.lead)
-        : undefined,
-    manager: changeRequest.leadershipChangeRequest?.manager
-      ? userTransformer(changeRequest.leadershipChangeRequest.manager)
-      : changeRequest.activationChangeRequest?.manager
-        ? userTransformer(changeRequest.activationChangeRequest.manager)
-        : undefined,
+    // activation cr fields
+    lead: changeRequest.activationChangeRequest?.lead
+      ? userTransformer(changeRequest.activationChangeRequest.lead)
+      : undefined,
+    manager: changeRequest.activationChangeRequest?.manager
+      ? userTransformer(changeRequest.activationChangeRequest.manager)
+      : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields
@@ -170,13 +159,7 @@ export const changeRequestManyTransformer = (
 
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>
-):
-  | ChangeRequest
-  | StandardChangeRequest
-  | ActivationChangeRequest
-  | StageGateChangeRequest
-  | BudgetChangeRequest
-  | LeadershipChangeRequest => {
+): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
   const wbsName = changeRequest.wbsElement
@@ -222,17 +205,13 @@ const changeRequestTransformer = (
       : undefined,
     originalProjectData: undefined,
     originalWorkPackageData: undefined,
-    // activation + leadership cr fields
-    lead: changeRequest.leadershipChangeRequest?.lead
-      ? userTransformer(changeRequest.leadershipChangeRequest.lead)
-      : changeRequest.activationChangeRequest?.lead
-        ? userTransformer(changeRequest.activationChangeRequest.lead)
-        : undefined,
-    manager: changeRequest.leadershipChangeRequest?.manager
-      ? userTransformer(changeRequest.leadershipChangeRequest.manager)
-      : changeRequest.activationChangeRequest?.manager
-        ? userTransformer(changeRequest.activationChangeRequest.manager)
-        : undefined,
+    // activation cr fields
+    lead: changeRequest.activationChangeRequest?.lead
+      ? userTransformer(changeRequest.activationChangeRequest.lead)
+      : undefined,
+    manager: changeRequest.activationChangeRequest?.manager
+      ? userTransformer(changeRequest.activationChangeRequest.manager)
+      : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields

@@ -57,8 +57,8 @@ export const pullCRMetrics = async () => {
     prisma.change_Request.count({ where: { type: 'STAGE_GATE' } }),
     '# of BUDGET CRs',
     prisma.change_Request.count({ where: { type: 'BUDGET' } }),
-    '# of LEADERSHIP CRs',
-    prisma.change_Request.count({ where: { type: 'LEADERSHIP' } })
+    '# of NON_MEANINGFUL CRs',
+    prisma.change_Request.count({ where: { type: 'NON_MEANINGFUL' } })
   ]);
   for (let idx = 0; idx < nums.length; idx += 2) {
     console.log(nums[idx], nums[idx + 1]);

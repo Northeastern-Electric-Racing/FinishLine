@@ -20,7 +20,7 @@ export const isWithinBuffer = (scheduledDate: Date, newDate: Date, bufferDays: n
  * description bullets are meaningful; name, summary, links, lead and manager are not.
  * All bullet types count, since they're per-organization names rather than a fixed set.
  */
-export const projectEditNeedsCR = (
+export const projectEditNeedsReview = (
   originalBudget: number,
   newBudget: number,
   originalBullets: { id: string; detail: string }[],
@@ -35,7 +35,7 @@ export const projectEditNeedsCR = (
  * duration and description bullets are meaningful; name, stage, blocked by, lead and
  * manager are not.
  */
-export const workPackageEditNeedsCR = (
+export const workPackageEditNeedsReview = (
   originalStartDate: Date,
   newStartDate: Date,
   originalDuration: number,
