@@ -88,7 +88,7 @@ describe('Change Request Tests', () => {
   });
 
   describe('send messages', () => {
-    it('sends a message that a work package inactive and its start date is tomorrow', async () => {
+    it('sends a message for an inactive work package and its start date is tomorrow', async () => {
       await prisma.work_Package.update({
         where: {
           workPackageId: wp.workPackageId
@@ -105,13 +105,13 @@ describe('Change Request Tests', () => {
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date is tomorrow'),
+        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date is tomorrow.'),
         expect.any(String),
         expect.any(String)
       );
     });
 
-    it('sends a message that a work package inactive and its start date is today', async () => {
+    it('sends a message for an inactive work package and its start date is today', async () => {
       await prisma.work_Package.update({
         where: {
           workPackageId: wp.workPackageId
@@ -128,13 +128,13 @@ describe('Change Request Tests', () => {
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date is today'),
+        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date is today.'),
         expect.any(String),
         expect.any(String)
       );
     });
 
-    it('sends a message that a work package inactive and its start date was yesterday', async () => {
+    it('sends a message for an inactive work package and its start date was yesterday', async () => {
       await prisma.work_Package.update({
         where: {
           workPackageId: wp.workPackageId
@@ -151,20 +151,20 @@ describe('Change Request Tests', () => {
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date was yesterday'),
+        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date was yesterday.'),
         expect.any(String),
         expect.any(String)
       );
     });
 
-    it('sends a message that a work package active and its end date is tomorrow', async () => {
+    it('sends a message for an inactive work package and its end date is tomorrow', async () => {
       await prisma.work_Package.update({
         where: {
           workPackageId: wp.workPackageId
         },
         data: {
-          startDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-          duration: 3
+          startDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
+          duration: 1
         }
       });
 
@@ -174,20 +174,20 @@ describe('Change Request Tests', () => {
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date is tomorrow'),
+        expect.stringContaining('The work package, 2.1.1, is still not complete. The end date is tomorrow.'),
         expect.any(String),
         expect.any(String)
       );
     });
 
-    it('sends a message that a work package inactive and its start date is today', async () => {
+    it('sends a message for an inactive work package and its end date is today', async () => {
       await prisma.work_Package.update({
         where: {
           workPackageId: wp.workPackageId
         },
         data: {
-          startDate: new Date(Date.now()), // today
-          duration: 10
+          startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+          duration: 1
         }
       });
 
@@ -197,20 +197,20 @@ describe('Change Request Tests', () => {
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date is today'),
+        expect.stringContaining('The work package, 2.1.1, is still not complete. The end date is today.'),
         expect.any(String),
         expect.any(String)
       );
     });
 
-    it('sends a message that a work package inactive and its start date was yesterday', async () => {
+    it('sends a message for an inactive work package and its end date was yesterday', async () => {
       await prisma.work_Package.update({
         where: {
           workPackageId: wp.workPackageId
         },
         data: {
-          startDate: new Date(Date.now() - 24 * 60 * 60 * 1000), // yesterday
-          duration: 10
+          startDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
+          duration: 1
         }
       });
 
@@ -220,7 +220,7 @@ describe('Change Request Tests', () => {
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date was yesterday'),
+        expect.stringContaining('The work package, 2.1.1, is still not complete. The end date was yesterday.'),
         expect.any(String),
         expect.any(String)
       );

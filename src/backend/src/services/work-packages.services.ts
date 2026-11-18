@@ -247,7 +247,7 @@ export default class WorkPackagesService {
           ', is still inactive.' +
           ' The start date ' +
           dateRelation;
-        const message = leadIdString + ' ' + managerIdString + ' ' + startDateMessage;
+        const message = leadIdString + ' ' + managerIdString + ' ' + startDateMessage + '.';
         teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText));
       }
       if (endDateNotComplete) {
@@ -261,7 +261,7 @@ export default class WorkPackagesService {
           ', is still not complete.' +
           ' The end date ' +
           dateRelation;
-        const message = leadIdString + ' ' + managerIdString + ' ' + endDateMessage;
+        const message = leadIdString + ' ' + managerIdString + ' ' + endDateMessage + '.';
         teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText));
       }
     }
