@@ -36,7 +36,7 @@ export const sharedChangeRequest: SharedChangeRequest = {
   wbsName: 'whip',
   submitter: sharedBatman,
   dateSubmitted: new Date('12-25-2000'),
-  type: ChangeRequestType.Leadership,
+  type: ChangeRequestType.NonMeaningful,
   status: ChangeRequestStatus.Open,
   requestedReviewers: [],
   identifier: 1,

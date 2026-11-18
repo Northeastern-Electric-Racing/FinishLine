@@ -33,7 +33,7 @@ const CR_TYPE_WEIGHTS: Record<CR_Type, number> = {
   BUDGET: 8,
   ACTIVATION: 4,
   STAGE_GATE: 4,
-  LEADERSHIP: 0
+  NON_MEANINGFUL: 0
 };
 
 /**

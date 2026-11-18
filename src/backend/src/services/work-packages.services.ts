@@ -16,7 +16,7 @@ import {
   User,
   WorkPackageSelection,
   WorkPackageDropdownItem,
-  workPackageEditNeedsCR,
+  workPackageEditNeedsReview,
   WorkPackageTimelineFilters
 } from 'shared';
 import prisma from '../prisma/prisma.js';
@@ -39,7 +39,7 @@ import {
   workPackageDetailTransformer
 } from '../transformers/work-packages.transformer.js';
 import { workPackageDropdownTransformer } from '../transformers/dropdown.transformer.js';
-import { validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import { createNonMeaningfulChangeRequest, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils.js';
 import { getWorkPackageChanges } from '../utils/changes.utils.js';
 import {
@@ -405,7 +405,7 @@ export default class WorkPackagesService {
     const { wbsElementId } = originalWorkPackage;
 
     // only timeline and description bullet changes require a change request
-    const needsCR = workPackageEditNeedsCR(
+    const needsReview = workPackageEditNeedsReview(
       originalWorkPackage.startDate,
       new Date(startDate),
       originalWorkPackage.duration,
@@ -418,12 +418,17 @@ export default class WorkPackagesService {
     );
 
     // the crId must match a valid approved change request
-    if (needsCR) {
+    if (needsReview) {
       if (!crId) throw new HttpException(400, 'This edit requires an accepted change request');
       await validateChangeRequestAccepted(crId);
     }
 
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
+
+    // CR approval passes the approved CR's id; a direct edit that doesn't need review
+    // gets its own auto-approved change request so it still shows up in change history
+    const changeRequestId =
+      crId ?? (await createNonMeaningfulChangeRequest(user, wbsElementId, organization.organizationId));
 
     const changes = await getWorkPackageChanges(
       originalWorkPackage.wbsElement.name,
@@ -442,7 +447,7 @@ export default class WorkPackagesService {
       managerId,
       originalWorkPackage.wbsElement.descriptionBullets,
       descriptionBullets,
-      crId,
+      changeRequestId,
       wbsElementId,
       userId
     );
