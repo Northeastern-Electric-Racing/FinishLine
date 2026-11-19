@@ -19,12 +19,16 @@ import {
   GanttTask,
   isProjectPreview,
   reviveProjectGanttItem,
+  reviveRetrospectiveProject,
   RequestEventChange,
+  RetroGanttFilters,
   transformProjectToGanttTask,
+  transformRetrospectiveProjectToGanttTask,
   useGanttFilters
 } from '../../../utils/gantt.utils';
 import { routes } from '../../../utils/routes';
-import { Box } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
 import PageLayout from '../../../components/PageLayout';
 import { SearchBar } from '../../../components/SearchBar';
 import GanttChartColorLegend from './GanttChartColorLegend';
@@ -43,7 +47,8 @@ import {
   wbsPipe,
   GanttWorkPackage,
   WorkPackageStage,
-  WbsNumber
+  WbsNumber,
+  RetrospectiveProject
 } from 'shared';
 import { useAllTeams } from '../../../hooks/teams.hooks';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
@@ -57,6 +62,9 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { v4 as uuidv4 } from 'uuid';
 import { projectWbsPipe } from '../../../utils/pipes';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useGetRetrospectiveTimelines } from '../../../hooks/retrospective.hooks';
+import { useRetrospectiveMode } from '../../../hooks/gantt.hooks';
+import RetrospectiveToggle from './RetrospectiveToggle';
 
 const getElementId = (element: BaseWbsElement | GanttProjectTask) => {
   return (element as BaseWbsElement).id ?? (element as GanttProjectTask).taskId;
@@ -65,6 +73,8 @@ const getElementId = (element: BaseWbsElement | GanttProjectTask) => {
 const ProjectGanttChartPage: FC = () => {
   const history = useHistory();
   const toast = useToast();
+  const theme = useTheme();
+  const [isRetro, setIsRetro] = useRetrospectiveMode();
 
   const {
     isLoading: projectsIsLoading,
@@ -100,6 +110,14 @@ const ProjectGanttChartPage: FC = () => {
   const user = useCurrentUser();
   /******************** Filters ***************************/
   const { filters, setFilters } = useGanttFilters('project-gantt');
+
+  // only fetched while the retrospective view is on
+  const {
+    isLoading: retroProjectsIsLoading,
+    isError: retroProjectsIsError,
+    data: retroProjects,
+    error: retroProjectsError
+  } = useGetRetrospectiveTimelines(filters.startDate, filters.endDate, isRetro);
 
   // Local car filter state — resets to global selection whenever global car filter changes
   const [showCars, setShowCars] = useState<number[]>([]);
@@ -138,10 +156,35 @@ const ProjectGanttChartPage: FC = () => {
       );
     };
 
-    if (projects && teams) {
+    // the retrospective view is read-only, so it shows the fetched projects without any in-progress edits
+    const requestRetrospectiveRefresh = (
+      retroProjects: RetrospectiveProject[],
+      teams: TeamPreview[],
+      filters: GanttFilters,
+      searchText: string
+    ) => {
+      setCollections(
+        constructCollectionsFromTeamPreviewAndProjects(
+          teams,
+          retroProjects,
+          filters,
+          searchText,
+          transformRetrospectiveProjectToGanttTask,
+          reviveRetrospectiveProject
+        )
+      );
+    };
+
+    if (isRetro) {
+      if (retroProjects && teams) {
+        requestRetrospectiveRefresh(retroProjects, teams, { ...filters, showCars }, searchText);
+      }
+    } else if (projects && teams) {
       requestRefresh(projects, teams, editedProjects, addedProjects, { ...filters, showCars }, searchText);
     }
   }, [
+    isRetro,
+    retroProjects,
     teams,
     projects,
     addedProjects,
@@ -154,12 +197,16 @@ const ProjectGanttChartPage: FC = () => {
     history
   ]);
 
-  const handleSetGanttFilters = (newFilters: GanttFilters) => {
+  const handleSetGanttFilters = (newFilters: RetroGanttFilters) => {
     setFilters(newFilters);
   };
 
   if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || carFilterLoading || !teams || !projects || !teamTypes)
     return <LoadingIndicator />;
+  if (isRetro && (retroProjectsIsLoading || !retroProjects)) {
+    if (retroProjectsIsError) return <ErrorPage message={retroProjectsError.message} />;
+    return <LoadingIndicator />;
+  }
   if (projectsIsError) return <ErrorPage message={projectsError.message} />;
   if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;
@@ -588,7 +635,10 @@ const ProjectGanttChartPage: FC = () => {
 
   /* **************************************************** */
 
-  const allWorkPackages = projects.concat(addedProjects).flatMap((project) => project.workPackages);
+  const allWorkPackages: { startDate: Date; endDate: Date }[] =
+    isRetro && retroProjects
+      ? retroProjects.flatMap((project) => project.workPackages)
+      : projects.concat(addedProjects).flatMap((project) => project.workPackages);
 
   // find the earliest start date and subtract 2 weeks to use as the first date on calendar
   const startDate =
@@ -619,6 +669,14 @@ const ProjectGanttChartPage: FC = () => {
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />
+      {isRetro && (
+        <DatePicker
+          value={filters.startDate ?? null}
+          label={'Start Date For Retro'}
+          onChange={(date) => handleSetGanttFilters({ ...filters, startDate: date ?? undefined })}
+          sx={{ width: 400 }}
+        />
+      )}
       <GanttChartFiltersButton
         carHandlers={carHandlers}
         teamTypeHandlers={teamTypeHandlers}
@@ -645,7 +703,9 @@ const ProjectGanttChartPage: FC = () => {
         />
       ))}
       <PageLayout
-        title="Gantt Chart"
+        title={isRetro ? 'Retrospective' : 'Gantt Chart'}
+        titleColor={isRetro ? theme.palette.primary.main : undefined}
+        titleAdornment={<RetrospectiveToggle checked={isRetro} onChange={setIsRetro} />}
         chips={<SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />}
         headerRight={headerRight}
       >
@@ -653,18 +713,23 @@ const ProjectGanttChartPage: FC = () => {
           collections={collections}
           startDate={startDate}
           endDate={endDate}
-          editability={{
-            onEditPressed: (collection) => setSelectedTeam(collection.element),
-            onCancelChanges: handleCancel,
-            onCreateChange: createChangeHandler,
-            highlightedChange: requestEventChanges[requestEventChanges.length - 1],
-            onNewTaskPressed: onAddNewTask,
-            onNewSubTaskPressed: onAddNewSubtask,
-            createTaskTitle: 'Create New Project',
-            onSavePressed: saveChanges,
-            highlightSubtaskComparator: highlightWorkPackageComparator,
-            highlightTaskComparator: highlightProjectComparator
-          }}
+          // the retrospective view is read-only
+          editability={
+            isRetro
+              ? undefined
+              : {
+                  onEditPressed: (collection) => setSelectedTeam(collection.element),
+                  onCancelChanges: handleCancel,
+                  onCreateChange: createChangeHandler,
+                  highlightedChange: requestEventChanges[requestEventChanges.length - 1],
+                  onNewTaskPressed: onAddNewTask,
+                  onNewSubTaskPressed: onAddNewSubtask,
+                  createTaskTitle: 'Create New Project',
+                  onSavePressed: saveChanges,
+                  highlightSubtaskComparator: highlightWorkPackageComparator,
+                  highlightTaskComparator: highlightProjectComparator
+                }
+          }
         />
       </PageLayout>
     </>

@@ -8,6 +8,8 @@ import { ReactElement, ReactNode } from 'react';
 
 interface PageTitleProps {
   title: string;
+  titleColor?: string;
+  titleAdornment?: ReactNode;
   chips?: ReactNode;
   headerRight?: ReactNode;
   tabs?: ReactElement;
@@ -17,12 +19,14 @@ interface PageTitleProps {
 /**
  * Build the page title section for a page.
  * @param title The title of the page
+ * @param titleColor optional color for the title text
+ * @param titleAdornment optional element displayed directly after the title, e.g. a toggle
  * @param headerRight The button to display on the right side of the page title
  * @param tabs The tabs on the page to display.
  * @param sticky whether or not the header should be sticky
  * @param chips Oval next to the title
  **/
-const PageTitle: React.FC<PageTitleProps> = ({ title, headerRight, tabs, sticky, chips }) => {
+const PageTitle: React.FC<PageTitleProps> = ({ title, titleColor, titleAdornment, headerRight, tabs, sticky, chips }) => {
   return (
     <>
       <Box
@@ -36,20 +40,29 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, headerRight, tabs, sticky,
       >
         <Grid container>
           <Grid container item md={12} display="flex" alignItems={'center'}>
-            <Grid md={4} xs={12} display="flex">
-              <Typography
+            <Grid md={4} xs={12} display="flex" alignItems="center">
+              <Box
                 flexGrow={1}
-                variant="h4"
-                fontSize={30}
-                sx={{
-                  textAlign: {
-                    xs: 'center',
-                    md: 'left'
-                  }
-                }}
+                display="flex"
+                alignItems="center"
+                justifyContent={{ xs: 'center', md: 'flex-start' }}
+                gap={1}
               >
-                {title}
-              </Typography>
+                <Typography
+                  variant="h4"
+                  fontSize={30}
+                  color={titleColor}
+                  sx={{
+                    textAlign: {
+                      xs: 'center',
+                      md: 'left'
+                    }
+                  }}
+                >
+                  {title}
+                </Typography>
+                {titleAdornment}
+              </Box>
             </Grid>
             <Box sx={{ display: 'flex', alignItems: 'center' }} flexGrow={4}>
               {chips}

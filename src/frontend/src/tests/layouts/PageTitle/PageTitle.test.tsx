@@ -24,4 +24,18 @@ describe('error page', () => {
 
     expect(screen.getByText('test')).toBeInTheDocument();
   });
+
+  it('renders the title adornment next to the title', () => {
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
+    render(<PageTitle title={'test'} titleAdornment={<button>adornment</button>} />);
+
+    expect(screen.getByRole('button', { name: 'adornment' })).toBeInTheDocument();
+  });
+
+  it('applies the title color', () => {
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAuthenticatedAdminUser);
+    render(<PageTitle title={'test'} titleColor={'#ef4345'} />);
+
+    expect(screen.getByText('test')).toHaveStyle({ color: '#ef4345' });
+  });
 });

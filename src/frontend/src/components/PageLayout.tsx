@@ -14,6 +14,8 @@ interface PageLayoutProps {
   children: ReactNode;
   useTitleForHelmet?: boolean;
   title?: string;
+  titleColor?: string;
+  titleAdornment?: ReactNode;
   chips?: ReactNode;
   hidePageTitle?: boolean;
   previousPages?: LinkItem[];
@@ -27,6 +29,8 @@ export const PAGE_GRID_HEIGHT = 85;
 const PageLayout: React.FC<PageLayoutProps> = ({
   children,
   title,
+  titleColor,
+  titleAdornment,
   chips,
   hidePageTitle = false,
   previousPages = [],
@@ -49,7 +53,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
           <Box mb={-1}>
             <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
           </Box>
-          <PageTitle sticky={stickyHeader} {...{ title, chips, headerRight, tabs }} />
+          <PageTitle sticky={stickyHeader} {...{ title, titleColor, titleAdornment, chips, headerRight, tabs }} />
         </>
       )}
       {children}
