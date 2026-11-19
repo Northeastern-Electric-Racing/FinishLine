@@ -16,7 +16,8 @@ import {
   User,
   WorkPackageSelection,
   WorkPackageDropdownItem,
-  WorkPackageTimelineFilters
+  WorkPackageTimelineFilters,
+  isWithinBuffer
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -49,6 +50,7 @@ import {
 import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packages.utils.js';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
 import { userHasPermission } from '../utils/users.utils.js';
+import { sendMessage } from '../integrations/slack.js';
 
 /**
  * Throws a 404 unless the wbs number is a work package's (not a car's or project's)
@@ -198,6 +200,92 @@ export default class WorkPackagesService {
     });
 
     return workPackages.map(baseWorkPackageTransformer);
+  }
+
+  /**
+   * Searches database for work packages, and iterates through each one to see
+   * if the work package is inactive and has a start date within a day distance from today OR
+   * the work package is not complete with the end date within a day distance from today.
+   *
+   * If either condition is met, then a slack notification is sent to each team channel that is
+   * associated with the package that states whether its an inactive work package with a close
+   * start date OR a not complete work package with a close end date. This message also states
+   * whether this date is a day before, after, or the same day as today
+   */
+  static async sendWorkPackageDeadlineNotifications() {
+    const currDay = new Date();
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        wbsElement: { dateDeleted: null }
+      },
+      include: {
+        project: { include: { teams: true } },
+        wbsElement: { include: { lead: true, manager: true } }
+      }
+    });
+
+    for (const workPackage of workPackages) {
+      const startDateIsADayApart = isWithinBuffer(currDay, workPackage.startDate, 1);
+      const startDateInactive = startDateIsADayApart && workPackage.wbsElement.status === WBS_Element_Status.INACTIVE;
+
+      const endDateIsADayApart = isWithinBuffer(currDay, calculateEndDate(workPackage.startDate, workPackage.duration), 1);
+      const endDateNotComplete = endDateIsADayApart && workPackage.wbsElement.status !== WBS_Element_Status.COMPLETE;
+
+      const leadIdString = workPackage.wbsElement.leadId || '';
+      const managerIdString = workPackage.wbsElement.managerId || '';
+
+      const link = `<https://finishlinebyner.com/projects/${workPackage.wbsElement}|${workPackage.wbsElement}>`;
+      const linkButtonText = `View WP#${wbsPipe(workPackage.wbsElement)}`;
+
+      const { teams } = workPackage.project;
+
+      if (startDateInactive) {
+        const dateRelation = WorkPackagesService.GetBeforeNowOrAfter(currDay, workPackage.startDate);
+        const startDateMessage =
+          'The work package, ' +
+          wbsPipe(workPackage.wbsElement) +
+          ', is still inactive.' +
+          ' The start date ' +
+          dateRelation;
+        const message = leadIdString + ' ' + managerIdString + ' ' + startDateMessage + '.';
+        teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText));
+      }
+      if (endDateNotComplete) {
+        const dateRelation = WorkPackagesService.GetBeforeNowOrAfter(
+          currDay,
+          calculateEndDate(workPackage.startDate, workPackage.duration)
+        );
+        const endDateMessage =
+          'The work package, ' +
+          wbsPipe(workPackage.wbsElement) +
+          ', is still not complete.' +
+          ' The end date ' +
+          dateRelation;
+        const message = leadIdString + ' ' + managerIdString + ' ' + endDateMessage + '.';
+        teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText));
+      }
+    }
+  }
+
+  /**
+   * Returns a string that states whether the currDay is before, after, or on the same day as the comparisonDate
+   * @param currDay The date being compared with the workpackage start/end Date.
+   * @param comparisonDate given date to compare with
+   * @returns A string that states whether the given currDay is before / after / same day as the comparisonDate
+   */
+  private static GetBeforeNowOrAfter(currDay: Date, comparisonDate: Date) {
+    if (isWithinBuffer(currDay, comparisonDate, 0)) {
+      return 'is today';
+    }
+
+    const currUtc = Date.UTC(currDay.getFullYear(), currDay.getMonth(), currDay.getDate());
+    const comparisonUtc = Date.UTC(comparisonDate.getFullYear(), comparisonDate.getMonth(), comparisonDate.getDate());
+
+    if (currUtc < comparisonUtc) {
+      return 'is tomorrow';
+    }
+
+    return 'was yesterday';
   }
 
   /**
