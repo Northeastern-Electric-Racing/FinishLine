@@ -1,10 +1,10 @@
 import { Theme } from '@prisma/client';
-import express from 'express';
 import { body, query } from 'express-validator';
 import UsersController from '../controllers/users.controllers.js';
 import { isRole, nonEmptyString, intMinZero, validateInputs, isDateOnly } from '../utils/validation.utils.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const userRouter = express.Router();
+const userRouter = createRouter();
 
 userRouter.get('/', UsersController.getAllUsers);
 userRouter.get('/organization', UsersController.getAllOrgUsers);

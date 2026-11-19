@@ -1,9 +1,9 @@
-import express from 'express';
 import { body } from 'express-validator';
 import { nonEmptyString, validateInputs, isDate, isOptionalDate, intMinZero } from '../utils/validation.utils.js';
 import ProspectiveSponsorController from '../controllers/prospective-sponsor.controllers.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const prospectiveSponsorRouter = express.Router();
+const prospectiveSponsorRouter = createRouter();
 
 // Create prospective sponsor
 prospectiveSponsorRouter.post(

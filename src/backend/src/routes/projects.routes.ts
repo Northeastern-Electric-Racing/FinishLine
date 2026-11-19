@@ -1,4 +1,3 @@
-import express from 'express';
 import { body } from 'express-validator';
 import {
   intMinZero,
@@ -9,8 +8,9 @@ import {
 } from '../utils/validation.utils.js';
 import { validateWBS } from 'shared';
 import ProjectsController from '../controllers/projects.controllers.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const projectRouter = express.Router();
+const projectRouter = createRouter();
 
 projectRouter.get('/all-gantt', ProjectsController.getAllProjectsGantt);
 projectRouter.get('/all-previews', ProjectsController.getAllProjects);

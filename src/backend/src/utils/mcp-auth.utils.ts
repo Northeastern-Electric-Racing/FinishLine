@@ -8,7 +8,7 @@ import { hashApiToken } from './api-tokens.utils.js';
 import { userHasPermission } from './users.utils.js';
 
 /** The header an API client sends its token in. */
-const API_KEY_HEADER = 'x-api-key';
+export const API_KEY_HEADER = 'x-api-key';
 
 /**
  * Resolves the organization for an API token request when no organizationId header was sent.
@@ -51,6 +51,8 @@ const getSoleOrganization = async (userId: string): Promise<Organization> => {
  *
  * Populates req.currentUser and req.organization exactly like getUserAndOrganization does, so
  * downstream services are indistinguishable from the ones the cookie authenticated API calls.
+ * Authenticating is not authorizing: outside /mcp, a token only reaches endpoints that opted in
+ * with @ApiKey (see api-key.utils.ts).
  */
 export const requireApiToken = async (req: Request, _res: Response, next: NextFunction) => {
   try {
@@ -79,6 +81,8 @@ export const requireApiToken = async (req: Request, _res: Response, next: NextFu
 
     req.currentUser = user;
     req.organization = organization;
+    // what the createRouter guard checks to keep a token off endpoints that have not opted in with @ApiKey
+    req.authenticatedWithApiKey = true;
 
     // fire and forget: last used is for auditing and must never add latency or fail the request
     prisma.user_API_Token
@@ -89,18 +93,6 @@ export const requireApiToken = async (req: Request, _res: Response, next: NextFu
   } catch (error) {
     return next(error);
   }
-};
-
-/**
- * Rejects any write attempt. The API token surface is intentionally read only for now, so this is
- * enforced structurally rather than left to each route to remember.
- */
-export const readOnlyGuard = (req: Request, _res: Response, next: NextFunction) => {
-  if (req.method !== 'GET' && req.method !== 'OPTIONS') {
-    return next(new AccessDeniedException('the API is currently read only'));
-  }
-
-  return next();
 };
 
 /**

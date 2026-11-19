@@ -1,14 +1,13 @@
-import express from 'express';
 import { body, query } from 'express-validator';
 import AgentController from '../controllers/agent.controllers.js';
-import { readOnlyGuard, requireApiToken } from '../utils/mcp-auth.utils.js';
 import { isDate, nonEmptyString, validateInputs } from '../utils/validation.utils.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const agentRouter = express.Router();
+const agentRouter = createRouter();
 
-// this router authenticates with per-user API tokens rather than the session cookie, and is read only
-// apart from the admin only routes registered above readOnlyGuard
-agentRouter.use(requireApiToken);
+// Routes built for external scripts calling with an API token. They are ordinary routes behind the
+// same authentication as the rest of the API; what lets a token reach them is the @ApiKey on each
+// AgentController method.
 
 // the admin check lives in the service, and this deliberately has no MCP tool so it is only reachable through the API
 agentRouter.post(
@@ -22,8 +21,6 @@ agentRouter.post(
   validateInputs,
   AgentController.sendSlackMessage
 );
-
-agentRouter.use(readOnlyGuard);
 
 agentRouter.get('/health', AgentController.healthCheck);
 agentRouter.get('/projects', query('offset').optional().isInt({ min: 0 }), validateInputs, AgentController.getProjects);

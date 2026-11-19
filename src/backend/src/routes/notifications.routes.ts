@@ -1,7 +1,7 @@
-import express from 'express';
 import NotificationsController from '../controllers/notifications.controllers.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const notificationsRouter = express.Router();
+const notificationsRouter = createRouter();
 
 notificationsRouter.post('/task-deadlines', NotificationsController.sendDailySlackNotifications);
 notificationsRouter.post('/attendance', NotificationsController.updateScheduledAttendances);

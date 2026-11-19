@@ -1,11 +1,11 @@
-import express from 'express';
 import TeamsController from '../controllers/teams.controllers.js';
 import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 import multer, { memoryStorage } from 'multer';
 import { MAX_FILE_SIZE } from 'shared';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const teamsRouter = express.Router();
+const teamsRouter = createRouter();
 const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 teamsRouter.get('/', TeamsController.getAllTeams);

@@ -1,9 +1,9 @@
-import express from 'express';
 import { query } from 'express-validator';
 import AnnouncementController from '../controllers/announcements.controllers.js';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const announcementsRouter = express.Router();
+const announcementsRouter = createRouter();
 
 announcementsRouter.get(
   '/current-user',

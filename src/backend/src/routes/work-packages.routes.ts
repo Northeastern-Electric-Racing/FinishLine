@@ -1,4 +1,3 @@
-import express from 'express';
 import { body, param, query } from 'express-validator';
 import WorkPackagesController from '../controllers/work-packages.controllers.js';
 import {
@@ -12,7 +11,8 @@ import {
   validateInputs
 } from '../utils/validation.utils.js';
 import { WorkPackageSelection, WbsElementStatus } from 'shared';
-const workPackagesRouter = express.Router();
+import { createRouter } from '../utils/api-key.utils.js';
+const workPackagesRouter = createRouter();
 
 workPackagesRouter.get('/dropdown', WorkPackagesController.getAllWorkPackagesDropdown);
 workPackagesRouter.get(

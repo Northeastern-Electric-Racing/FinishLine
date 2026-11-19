@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import express from 'express';
 import StatisticsController from '../controllers/statistics.controllers.js';
 import {
   isGraphDisplayType,
@@ -15,8 +14,9 @@ import {
   validateInputs
 } from '../utils/validation.utils.js';
 import { body } from 'express-validator';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const statisticsRouter = express.Router();
+const statisticsRouter = createRouter();
 
 statisticsRouter.get('/graph/:graphId', StatisticsController.getSingleGraph);
 

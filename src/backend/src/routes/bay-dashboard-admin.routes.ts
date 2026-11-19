@@ -1,4 +1,3 @@
-import express from 'express';
 import { body } from 'express-validator';
 import BayDashboardAdminController from '../controllers/bay-dashboard-admin.controllers.js';
 import {
@@ -9,12 +8,13 @@ import {
   nonEmptyString,
   validateInputs
 } from '../utils/validation.utils.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
 /**
  * Authenticated bay dashboard routes, used by the Admin Tools to read and edit what the TV displays.
  * Separated from bay-dashboard.routes because these endpoints are authenticated, while the public TV endpoints are not.
  */
-const bayDashboardAdminRouter = express.Router();
+const bayDashboardAdminRouter = createRouter();
 
 bayDashboardAdminRouter.get('/admin', BayDashboardAdminController.getCurrentBayDashboardConfig);
 

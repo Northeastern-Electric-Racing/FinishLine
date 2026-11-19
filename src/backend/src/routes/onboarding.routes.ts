@@ -1,9 +1,9 @@
-import express from 'express';
 import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 import OnboardingController from '../controllers/onboarding.controllers.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const onboardingRouter = express.Router();
+const onboardingRouter = createRouter();
 
 /* Checklists Section */
 onboardingRouter.get('/checklists', OnboardingController.getAllChecklists);

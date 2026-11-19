@@ -1,4 +1,3 @@
-import express from 'express';
 import { body } from 'express-validator';
 import ChangeRequestsController from '../controllers/change-requests.controllers.js';
 import {
@@ -10,8 +9,9 @@ import {
   validateInputs,
   workPackageProposedChangesValidators
 } from '../utils/validation.utils.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const changeRequestsRouter = express.Router();
+const changeRequestsRouter = createRouter();
 
 changeRequestsRouter.get('/', ChangeRequestsController.getAllChangeRequests);
 changeRequestsRouter.get('/guest', ChangeRequestsController.getAllGuestChangeRequests);

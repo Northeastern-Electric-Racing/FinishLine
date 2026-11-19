@@ -1,7 +1,8 @@
 import express, { Router } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { getUserAndOrganization, prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils.js';
+import { getUserAndOrganization, prodHeaders } from './src/utils/auth.utils.js';
+import { authenticate } from './src/utils/api-key.utils.js';
 import { errorHandler } from './src/utils/errors.utils.js';
 import { getCurrentCar } from './src/utils/car.utils.js';
 import userRouter from './src/routes/users.routes.js';
@@ -106,21 +107,17 @@ app.use('/ics', icsRouter);
 // Bay TV can display the dashboard read-only with no one logged in
 app.use('/bay-dashboard', bayDashboardRouter);
 
-// API token routes — mounted before the JWT middleware so that per-user API tokens authenticate here
-// and ONLY here. Keeping this above the cookie middleware is what stops a token from reaching the
-// rest of the API.
-app.use('/agent', agentRouter);
-
-// The MCP endpoint, authenticated with the same per-user API tokens. JSON-RPC requires POST, so it
-// cannot sit behind the readOnlyGuard the /agent router uses and is mounted separately; registering
-// every tool through registerReadOnlyTool in src/mcp/tools.ts is what keeps it read only instead.
+// The MCP endpoint, which only accepts per-user API tokens. Its tools are opted in by being registered
+// in src/mcp rather than by @ApiKey, and registering every tool through registerReadOnlyTool in
+// src/mcp/tools.ts is what keeps it read only.
 // The handler is async, so its rejections are forwarded to the error handler rather than dropped.
 app.all('/mcp', requireApiToken, attachAuthInfo, (req, res, next) => {
   mcpNodeHandler(req, res, req.body).catch(next);
 });
 
-// ensure each request is authorized using JWT
-app.use(isProd ? requireJwtProd : requireJwtDev);
+// authenticate with an API token when one is sent and the session cookie otherwise. A token is then
+// refused by every route except those whose controller method opts in with @ApiKey (api-key.utils.ts)
+app.use(authenticate(isProd));
 
 // get user and organization
 app.use(getUserAndOrganization);
@@ -156,6 +153,7 @@ app.use('/attendance', attendanceRouter);
 app.use('/dashboards', dashboardsRouter);
 app.use('/executive-summaries', execSummaryRouter);
 app.use('/bay-dashboard', bayDashboardAdminRouter);
+app.use('/agent', agentRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

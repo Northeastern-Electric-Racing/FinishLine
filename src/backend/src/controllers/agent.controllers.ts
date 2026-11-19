@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { getRoleInOrganization } from '../utils/mcp-auth.utils.js';
 import McpService from '../services/mcp.services.js';
+import { ApiKey } from '../utils/api-key.utils.js';
 import SlackServices from '../services/slack.services.js';
 
 export default class AgentController {
@@ -8,6 +9,7 @@ export default class AgentController {
    * Confirms an API token is valid and reports who it resolved to. This is deliberately verbose
    * about identity so a client can verify the whole token -> user -> organization -> role chain.
    */
+  @ApiKey
   static async healthCheck(req: Request, res: Response, next: NextFunction) {
     try {
       const { currentUser, organization } = req;
@@ -32,6 +34,7 @@ export default class AgentController {
     }
   }
 
+  @ApiKey
   static async getProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const { carNumber, offset } = req.query as Record<string, string | undefined>;
@@ -43,6 +46,7 @@ export default class AgentController {
     }
   }
 
+  @ApiKey
   static async getProject(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum } = req.params as Record<string, string>;
@@ -54,6 +58,7 @@ export default class AgentController {
     }
   }
 
+  @ApiKey
   static async getWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum } = req.params as Record<string, string>;
@@ -65,6 +70,7 @@ export default class AgentController {
     }
   }
 
+  @ApiKey
   static async getTasks(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum } = req.params as Record<string, string>;
@@ -77,6 +83,7 @@ export default class AgentController {
     }
   }
 
+  @ApiKey
   static async getEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const { startDate, endDate } = req.query as Record<string, string>;
@@ -88,6 +95,7 @@ export default class AgentController {
     }
   }
 
+  @ApiKey
   static async sendSlackMessage(req: Request, res: Response, next: NextFunction) {
     try {
       const { channelId, message } = req.body;

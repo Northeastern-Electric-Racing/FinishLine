@@ -62,8 +62,7 @@ const offsetSchema = (items: string) =>
  * Registers a read only tool.
  *
  * Every tool goes through here, and readOnlyHint is set in one place rather than per tool. The /mcp
- * endpoint accepts POST (JSON-RPC requires it) so it cannot sit behind the readOnlyGuard the /agent
- * router uses; this is what keeps the endpoint read only instead. Adding a tool that writes means
+ * endpoint accepts POST (JSON-RPC requires it), so this is what keeps the endpoint read only. Adding a tool that writes means
  * changing this function, which is deliberately the same edit as revisiting the auth in front of it.
  *
  * @param server the server to register on

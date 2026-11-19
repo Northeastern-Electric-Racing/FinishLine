@@ -1,4 +1,3 @@
-import express from 'express';
 import {
   descriptionBulletsValidators,
   intMinZero,
@@ -8,8 +7,9 @@ import {
 } from '../utils/validation.utils.js';
 import { body } from 'express-validator';
 import WbsElementTemplatesController from '../controllers/wbs-element-templates.controllers.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const wbsElementTemplatesRouter = express.Router();
+const wbsElementTemplatesRouter = createRouter();
 
 wbsElementTemplatesRouter.get('/project', WbsElementTemplatesController.getAllProjectTemplates);
 wbsElementTemplatesRouter.get('/', WbsElementTemplatesController.getAllWorkPackageTemplates);

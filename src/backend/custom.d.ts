@@ -8,6 +8,8 @@ declare global {
       currentUser: SharedUser;
       organization: Organization;
       currentCar?: Prisma.CarGetPayload<{ include: { wbsElement: true } }>;
+      /** set by requireApiToken; routes made with createRouter refuse these unless the handler has @ApiKey */
+      authenticatedWithApiKey?: boolean;
       /** set by attachAuthInfo and read by the MCP handler via toNodeHandler */
       auth?: AuthInfo;
     }

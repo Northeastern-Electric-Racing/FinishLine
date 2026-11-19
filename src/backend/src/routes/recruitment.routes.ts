@@ -1,9 +1,9 @@
-import express from 'express';
 import { isDateOnly, nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 import { body } from 'express-validator';
 import RecruitmentController from '../controllers/recruitment.controllers.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const recruitmentRouter = express.Router();
+const recruitmentRouter = createRouter();
 
 /* Milestone Section */
 

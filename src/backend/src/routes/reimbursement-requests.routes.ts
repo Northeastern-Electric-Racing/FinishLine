@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import express from 'express';
 import { body } from 'express-validator';
 import {
   intMinZero,
@@ -17,8 +16,9 @@ import {
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers.js';
 import multer, { memoryStorage } from 'multer';
 import { MAX_FILE_SIZE } from 'shared';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const reimbursementRequestsRouter = express.Router();
+const reimbursementRequestsRouter = createRouter();
 
 const upload = multer({
   storage: memoryStorage(),

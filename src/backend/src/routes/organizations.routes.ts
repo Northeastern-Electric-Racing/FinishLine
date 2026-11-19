@@ -1,11 +1,11 @@
-import express from 'express';
 import { linkValidators, nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 import OrganizationsController from '../controllers/organizations.controllers.js';
 import multer, { memoryStorage } from 'multer';
 import { body } from 'express-validator';
 import { MAX_FILE_SIZE } from 'shared';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const organizationRouter = express.Router();
+const organizationRouter = createRouter();
 const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 organizationRouter.get('/current', OrganizationsController.getCurrentOrganization);

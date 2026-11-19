@@ -184,6 +184,9 @@ export const getCurrentUserWithUserSettings = async (res: Response): Promise<Use
 };
 
 export const getUserAndOrganization = async (req: Request, res: Response, next: NextFunction) => {
+  // requireApiToken already resolved the user and organization from the token
+  if (req.authenticatedWithApiKey) return next();
+
   if (
     req.path === '/users/auth/login' || // logins dont have cookies yet
     req.path === '/users/auth/login/dev' ||

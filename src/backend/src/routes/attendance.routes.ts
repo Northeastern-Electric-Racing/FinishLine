@@ -1,9 +1,9 @@
-import express from 'express';
 import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 import AttendanceController from '../controllers/attendance.controllers.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const attendanceRouter = express.Router();
+const attendanceRouter = createRouter();
 
 attendanceRouter.post(
   '/',

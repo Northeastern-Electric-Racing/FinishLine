@@ -1,9 +1,9 @@
-import express from 'express';
 import { body } from 'express-validator';
 import DescriptionBulletsController from '../controllers/description-bullets.controllers.js';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const descriptionBulletsRouter = express.Router();
+const descriptionBulletsRouter = createRouter();
 
 descriptionBulletsRouter.post(
   '/check',

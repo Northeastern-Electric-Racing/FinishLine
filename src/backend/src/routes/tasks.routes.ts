@@ -1,4 +1,3 @@
-import express from 'express';
 import { body } from 'express-validator';
 import TasksController from '../controllers/tasks.controllers.js';
 import {
@@ -10,8 +9,9 @@ import {
   intMinZero
 } from '../utils/validation.utils.js';
 import { isDate } from '../utils/validation.utils.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const tasksRouter = express.Router();
+const tasksRouter = createRouter();
 
 // the filter criteria shared by the full and paginated filter endpoints
 const filterTasksValidators = [

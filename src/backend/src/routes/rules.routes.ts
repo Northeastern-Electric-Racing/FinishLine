@@ -1,11 +1,11 @@
-import express from 'express';
 import RulesController from '../controllers/rules.controllers.js';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 import { body, query } from 'express-validator';
 import { MAX_FILE_SIZE, RuleStatus } from 'shared';
 import multer, { memoryStorage } from 'multer';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const rulesRouter = express.Router();
+const rulesRouter = createRouter();
 
 rulesRouter.get(
   '/rulesetType/:rulesetTypeId/active',

@@ -1,4 +1,3 @@
-import express from 'express';
 import {
   nonEmptyString,
   validateInputs,
@@ -11,8 +10,9 @@ import { body } from 'express-validator';
 import FinanceController from '../controllers/finance.controllers.js';
 import multer, { memoryStorage } from 'multer';
 import { MAX_FILE_SIZE } from 'shared';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const financeRouter = express.Router();
+const financeRouter = createRouter();
 const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 financeRouter.post(

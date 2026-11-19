@@ -1,4 +1,3 @@
-import express from 'express';
 import { body, param, query } from 'express-validator';
 import {
   intMinZero,
@@ -13,8 +12,9 @@ import {
 import CalendarController from '../controllers/calendar.controllers.js';
 import multer, { memoryStorage } from 'multer';
 import { MAX_FILE_SIZE } from 'shared';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const calendarRouter = express.Router();
+const calendarRouter = createRouter();
 
 const upload = multer({
   limits: { fileSize: MAX_FILE_SIZE },

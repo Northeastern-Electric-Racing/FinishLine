@@ -1,9 +1,9 @@
-import express from 'express';
 import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 import DashboardsController from '../controllers/dashboards.controllers.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const dashboardsRouter = express.Router();
+const dashboardsRouter = createRouter();
 
 // Create dashboard
 dashboardsRouter.post(

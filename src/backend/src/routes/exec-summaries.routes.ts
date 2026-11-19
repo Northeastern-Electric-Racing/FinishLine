@@ -3,12 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import express from 'express';
 import { body, query } from 'express-validator';
 import { isOptionalDate, validateInputs } from '../utils/validation.utils.js';
 import ExecSummaryController from '../controllers/exec-summaries.controllers.js';
+import { createRouter } from '../utils/api-key.utils.js';
 
-const execSummaryRouter = express.Router();
+const execSummaryRouter = createRouter();
 
 execSummaryRouter.get('/', ExecSummaryController.getAllExecutiveSummaries);
 execSummaryRouter.get('/:execSummaryId', ExecSummaryController.getSingleExecutiveSummary);

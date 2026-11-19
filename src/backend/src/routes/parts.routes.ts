@@ -1,4 +1,3 @@
-import express from 'express';
 import {
   intMinZero,
   nonEmptyString,
@@ -12,10 +11,11 @@ import { body } from 'express-validator';
 import PartReviewController from '../controllers/part-review.controllers.js';
 import { Review_Status, MAX_FILE_SIZE } from 'shared';
 import multer, { memoryStorage } from 'multer';
+import { createRouter } from '../utils/api-key.utils.js';
 
 const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
-const partsRouter = express.Router();
+const partsRouter = createRouter();
 
 partsRouter.get('/tags', PartReviewController.getAllPartTags);
 partsRouter.get('/faqs', PartReviewController.getAllPartReviewFAQS);
