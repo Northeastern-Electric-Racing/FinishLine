@@ -32,4 +32,6 @@ jobs:
         run: yarn build:shared
 
       - name: Run tsc check
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: npm run tsc-check # You need to define this script in your package.json
