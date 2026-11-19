@@ -1,7 +1,8 @@
 import { createMcpHandler } from '@modelcontextprotocol/server';
 import { toNodeHandler } from '@modelcontextprotocol/node';
 import { HttpException } from '../utils/errors.utils.js';
-import { AgentContext, buildMcpServer } from './tools.js';
+import { buildMcpServer } from './server.js';
+import { AgentContext } from './tools.utils.js';
 
 /**
  * Reads the authenticated caller back out of the pass-through authInfo attachAuthInfo set.

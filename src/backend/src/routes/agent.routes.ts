@@ -26,7 +26,13 @@ agentRouter.post(
 agentRouter.use(readOnlyGuard);
 
 agentRouter.get('/health', AgentController.healthCheck);
-agentRouter.get('/projects', query('offset').optional().isInt({ min: 0 }), validateInputs, AgentController.getProjects);
+agentRouter.get(
+  '/projects',
+  query('carNumber').optional().isInt({ min: 0 }),
+  query('offset').optional().isInt({ min: 0 }),
+  validateInputs,
+  AgentController.getProjects
+);
 agentRouter.get('/projects/:wbsNum', AgentController.getProject);
 agentRouter.get('/projects/:wbsNum/work-packages', AgentController.getWorkPackages);
 agentRouter.get(

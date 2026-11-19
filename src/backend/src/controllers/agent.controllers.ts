@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { getRoleInOrganization } from '../utils/mcp-auth.utils.js';
-import McpService from '../services/mcp.services.js';
+import ProjectsService from '../services/projects.services.js';
+import WorkPackagesService from '../services/work-packages.services.js';
+import TasksService from '../services/tasks.services.js';
+import CalendarService from '../services/calendar.services.js';
+import { paginate, parseEventRange, parseProjectWbsNum, resolveCar } from '../utils/agent.utils.js';
 import SlackServices from '../services/slack.services.js';
 
 export default class AgentController {
@@ -35,9 +39,11 @@ export default class AgentController {
   static async getProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const { carNumber, offset } = req.query as Record<string, string | undefined>;
-      const projects = await McpService.getProjects(req.organization, carNumber, offset ? Number(offset) : undefined);
+      const car = await resolveCar(req.organization, carNumber ? Number(carNumber) : undefined);
+      const projects = await ProjectsService.getAllProjects(req.organization, car.carId);
+      const { items, ...page } = paginate(projects, offset ? Number(offset) : undefined);
 
-      res.status(200).json(projects);
+      res.status(200).json({ carNumber: car.carNumber, projects: items, ...page });
     } catch (error: unknown) {
       next(error);
     }
@@ -46,7 +52,7 @@ export default class AgentController {
   static async getProject(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum } = req.params as Record<string, string>;
-      const project = await McpService.getProject(wbsNum, req.organization);
+      const project = await ProjectsService.getSingleProject(parseProjectWbsNum(wbsNum), req.currentUser, req.organization);
 
       res.status(200).json(project);
     } catch (error: unknown) {
@@ -57,7 +63,7 @@ export default class AgentController {
   static async getWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum } = req.params as Record<string, string>;
-      const workPackages = await McpService.getWorkPackages(wbsNum, req.organization);
+      const workPackages = await WorkPackagesService.getWorkPackagesByProject(parseProjectWbsNum(wbsNum), req.organization);
 
       res.status(200).json(workPackages);
     } catch (error: unknown) {
@@ -69,9 +75,12 @@ export default class AgentController {
     try {
       const { wbsNum } = req.params as Record<string, string>;
       const { offset } = req.query as Record<string, string | undefined>;
-      const tasks = await McpService.getTasks(wbsNum, req.organization, offset ? Number(offset) : undefined);
+      const tasks = await TasksService.getFilteredTasks({ wbsNum: parseProjectWbsNum(wbsNum) }, req.organization);
+      // the service does not order its results, and paging needs the same order on every call
+      tasks.sort((a, b) => a.taskId.localeCompare(b.taskId));
+      const { items, ...page } = paginate(tasks, offset ? Number(offset) : undefined);
 
-      res.status(200).json(tasks);
+      res.status(200).json({ tasks: items, ...page });
     } catch (error: unknown) {
       next(error);
     }
@@ -80,7 +89,10 @@ export default class AgentController {
   static async getEvents(req: Request, res: Response, next: NextFunction) {
     try {
       const { startDate, endDate } = req.query as Record<string, string>;
-      const events = await McpService.getEvents(new Date(startDate), new Date(endDate), req.organization);
+      const events = await CalendarService.getCalendarViewEvents(
+        parseEventRange(new Date(startDate), new Date(endDate)),
+        req.organization
+      );
 
       res.status(200).json(events);
     } catch (error: unknown) {

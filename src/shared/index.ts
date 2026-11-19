@@ -23,7 +23,6 @@ export * from './src/types/dropdown-types.js';
 export * from './src/types/dashboard-types.js';
 export * from './src/types/bay-dashboard-types.js';
 export * from './src/types/api-token-types.js';
-export * from './src/types/mcp-types.js';
 export * from './src/types/exec-summary-shared-types.js';
 export * from './src/change-request-utils.js';
 
