@@ -4,6 +4,7 @@
  */
 
 import { NextFunction, Request, Response } from 'express';
+import { EditRecruitmentCycleArgs } from 'shared';
 import ExecSummaryServices from '../services/exec-summaries.services.js';
 
 export default class ExecSummaryController {
@@ -151,6 +152,27 @@ export default class ExecSummaryController {
         competitionPerformanceId
       );
       res.status(200).json(competitionPerformance);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editRecruitmentCycle(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { recruitmentCycleId } = req.params as Record<string, string>;
+      const { eventsHeld, signUps, onboarded, activeMembers, divisionCounts }: EditRecruitmentCycleArgs = req.body;
+
+      const recruitmentCycle = await ExecSummaryServices.editRecruitmentCycle(
+        req.currentUser,
+        req.organization,
+        eventsHeld,
+        signUps,
+        onboarded,
+        activeMembers,
+        divisionCounts,
+        recruitmentCycleId
+      );
+      res.status(200).json(recruitmentCycle);
     } catch (error: unknown) {
       next(error);
     }

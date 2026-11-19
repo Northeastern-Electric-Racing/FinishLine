@@ -6,7 +6,7 @@
 import express from 'express';
 import { DataSource } from 'shared';
 import { body, query } from 'express-validator';
-import { intMinZero, isOptionalDate, validateInputs } from '../utils/validation.utils.js';
+import { intMinZero, isOptionalDate, nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 import ExecSummaryController from '../controllers/exec-summaries.controllers.js';
 
 const execSummaryRouter = express.Router();
@@ -65,6 +65,20 @@ execSummaryRouter.post(
   isOptionalDate(body('dateSynced')),
   validateInputs,
   ExecSummaryController.editCompetitionDocumentsSummary
+);
+
+execSummaryRouter.post(
+  '/recruitment-cycle/:recruitmentCycleId/edit',
+  intMinZero(body('eventsHeld')),
+  intMinZero(body('signUps')),
+  intMinZero(body('onboarded')),
+  intMinZero(body('activeMembers')),
+  body('divisionCounts').isArray(),
+  nonEmptyString(body('divisionCounts.*.teamTypeId')),
+  intMinZero(body('divisionCounts.*.newMembers')),
+  intMinZero(body('divisionCounts.*.returningMembers')),
+  validateInputs,
+  ExecSummaryController.editRecruitmentCycle
 );
 
 export default execSummaryRouter;
