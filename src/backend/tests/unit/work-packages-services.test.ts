@@ -2,7 +2,6 @@ import {
   createTestCar,
   createTestOrganization,
   createTestProject,
-  createTestTeam,
   createTestUser,
   createTestWorkPackage,
   resetUsers
@@ -10,22 +9,16 @@ import {
 import * as slackModule from '../../src/integrations/slack';
 import { supermanAdmin } from '../test-data/users.test-data';
 import prisma from '../../src/prisma/prisma';
-import { Organization, Team, User, WBS_Element_Status } from '@prisma/client';
+import { Organization, User, WBS_Element_Status } from '@prisma/client';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import WorkPackagesService from '../../src/services/work-packages.services';
 import { WorkPackage } from '../../src/prisma/context';
-import { sendMessage } from '../../src/integrations/slack';
 
 describe('Change Request Tests', () => {
   let orgId: string;
   let organization: Organization;
   let user: User;
   let wp: WorkPackage;
-  let wpWbsElementId: string;
-  let workPackageId: string;
-  let startDate: Date;
-  let duration: number;
-  let teams: Team[];
 
   beforeEach(async () => {
     organization = await createTestOrganization();
@@ -45,9 +38,6 @@ describe('Change Request Tests', () => {
     const car = await createTestCar(orgId, user.userId, 2);
     const project = await createTestProject(user, orgId, undefined, car.carId, 2, 1);
     wp = await createTestWorkPackage(user, orgId, project.projectId, 2, 1, 1);
-
-    wpWbsElementId = wp.wbsElement.wbsElementId;
-    ({ workPackageId, startDate, duration } = wp);
 
     const team = await prisma.team.create({
       data: {
