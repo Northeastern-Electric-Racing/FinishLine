@@ -11,7 +11,6 @@ import {
   getMostRecentAvailabilities,
   User,
   UserWithScheduleSettings,
-  EventWithMembers,
   EventStatus,
   isAdmin,
   dbDateToLocalDate
@@ -20,7 +19,7 @@ import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentUser, useUserScheduleSettings, useManyUsersWithScheduleSettings } from '../../../hooks/users.hooks';
-import { useMarkUserConfirmed, useRemindUnconfirmed, useSingleEventWithMembers } from '../../../hooks/calendar.hooks';
+import { useMarkUserConfirmed, useRemindUnconfirmed, useSingleEvent } from '../../../hooks/calendar.hooks';
 import { useParams, useHistory } from 'react-router-dom';
 import { eventNamePipe, fullNamePipe } from '../../../utils/pipes';
 import NERSuccessButton from '../../../components/NERSuccessButton';
@@ -35,37 +34,6 @@ import AvailabilityEditModal from '../../SettingsPage/UserScheduleSettings/Avail
 import AvailabilityScheduleView from '../AvailabilityScheduleView';
 import ScheduleEventModal from './ScheduleEventModal';
 import { formatHourInCurrentTimeZone, offsetDate, yourTimeZoneInitials } from '../../../utils/design-review.utils';
-
-const isUserOnEvent = (user: User, event: EventWithMembers): boolean => {
-  const isDirectMember =
-    event.requiredMembers?.some((member: User) => member.userId === user.userId) ||
-    event.optionalMembers?.some((member: User) => member.userId === user.userId);
-
-  if (isDirectMember) return true;
-
-  const isOnEventTeam = event.teams?.some(
-    (team) =>
-      team.members?.some((member: User) => member.userId === user.userId) ||
-      team.leads?.some((lead: User) => lead.userId === user.userId) ||
-      team.head?.userId === user.userId
-  );
-
-  if (isOnEventTeam) return true;
-
-  if (event.teamType?.teams) {
-    const isOnTeamType = event.teamType.teams.some(
-      (team) =>
-        team.members?.some((member: User) => member.userId === user.userId) ||
-        team.leads?.some((lead: User) => lead.userId === user.userId) ||
-        team.head?.userId === user.userId
-    );
-    if (isOnTeamType) return true;
-  }
-
-  if (event.userCreated?.userId === user.userId) return true;
-
-  return false;
-};
 
 export const EventAvailabilityPage: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -89,12 +57,7 @@ export const EventAvailabilityPage: React.FC = () => {
   const [selectedSlot, setSelectedSlot] = useState<{ day: Date; startHour: number; endHour: number } | null>(null);
   const [confirmRemindOpen, setConfirmRemindOpen] = useState(false);
 
-  const {
-    data: event,
-    isError: eventError,
-    error: eventErrorMsg,
-    isLoading: eventLoading
-  } = useSingleEventWithMembers(eventId);
+  const { data: event, isError: eventError, error: eventErrorMsg, isLoading: eventLoading } = useSingleEvent(eventId);
 
   const {
     data: userScheduleSettings,
@@ -136,10 +99,8 @@ export const EventAvailabilityPage: React.FC = () => {
     return event?.initialDateScheduled ? dbDateToLocalDate(event.initialDateScheduled) : new Date();
   }, [dateParam, event]);
 
-  const isUserMember = useMemo(() => {
-    if (!event) return false;
-    return isUserOnEvent(currentUser, event);
-  }, [currentUser, event]);
+  // computed by the server, including membership through the event's teams and team type
+  const isUserMember = event?.isCurrentUserOnEvent ?? false;
 
   // Determine if current user is the creator
   const isCreator = useMemo(() => {

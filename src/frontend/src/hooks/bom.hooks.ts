@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Assembly, Manufacturer, Material, MaterialType, ProjectPreview, Unit, WbsNumber, wbsPipe } from 'shared';
+import { Assembly, Manufacturer, Material, MaterialType, Unit, WbsNumber, wbsPipe } from 'shared';
 import { useToast } from '../hooks/toasts.hooks';
 import {
   assignMaterialToAssembly,
@@ -348,7 +348,7 @@ export const useGetMaterialsForWbsElement = (wbsNum: WbsNumber) => {
   });
 };
 
-export const useGetMaterialsForCar = (carNumber: number | null, projects: ProjectPreview[]) => {
+export const useGetMaterialsForCar = (carNumber: number | null, projects: { wbsNum: WbsNumber }[]) => {
   const projectsInCar = projects.filter((p) => p.wbsNum.carNumber === carNumber);
 
   return useQuery<Material[], Error>(

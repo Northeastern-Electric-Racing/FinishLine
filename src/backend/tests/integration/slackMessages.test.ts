@@ -26,6 +26,20 @@ vi.mock('../../src/integrations/slack', async (importOriginal) => {
   };
 });
 
+// processMessageSent returns nothing, so read what it stored back from the database
+const getStoredAnnouncement = (slackEventId: string) =>
+  prisma.announcement.findUnique({
+    where: { slackEventId },
+    select: {
+      text: true,
+      dateMessageSent: true,
+      senderName: true,
+      slackChannelName: true,
+      slackEventId: true,
+      usersReceived: { select: { userId: true } }
+    }
+  });
+
 describe('Slack message tests', () => {
   let orgId: string;
   let organization: Organization;
@@ -63,7 +77,7 @@ describe('Slack message tests', () => {
 
     const spy = vi.spyOn(AnnouncementService, 'createAnnouncement');
 
-    const announcement = await slackServices.processMessageSent(
+    await slackServices.processMessageSent(
       createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
         { type: 'text', text: 'test with ' },
         { type: 'broadcast', range: 'everyone' },
@@ -83,6 +97,7 @@ describe('Slack message tests', () => {
       orgId
     );
 
+    const announcement = await getStoredAnnouncement('id_1');
     expect(announcement?.text).toBe('test with @everyone broadcast (@everyone)');
     expect(announcement?.dateMessageSent.toDateString()).toBe(new Date(1000).toDateString());
     expect(announcement?.senderName).toBe('Slack User Name');
@@ -98,7 +113,7 @@ describe('Slack message tests', () => {
 
     const spy = vi.spyOn(AnnouncementService, 'createAnnouncement');
 
-    const announcement = await slackServices.processMessageSent(
+    await slackServices.processMessageSent(
       createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
         { type: 'text', text: 'test with ' },
         { type: 'broadcast', range: 'channel' },
@@ -120,6 +135,7 @@ describe('Slack message tests', () => {
       orgId
     );
 
+    const announcement = await getStoredAnnouncement('id_1');
     expect(announcement?.text).toBe('test with @channel broadcast (@channel)@Slack User Name@Slack User Name');
     expect(announcement?.dateMessageSent.toDateString()).toBe(new Date(1000).toDateString());
     expect(announcement?.senderName).toBe('Slack User Name');
@@ -134,7 +150,7 @@ describe('Slack message tests', () => {
 
     const spy = vi.spyOn(AnnouncementService, 'createAnnouncement');
 
-    const announcement = await slackServices.processMessageSent(
+    await slackServices.processMessageSent(
       createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
         { type: 'text', text: 'test with ' },
         { type: 'user', user_id: 'slackWW' },
@@ -154,6 +170,7 @@ describe('Slack message tests', () => {
       orgId
     );
 
+    const announcement = await getStoredAnnouncement('id_1');
     expect(announcement?.text).toBe('test with @Slack User Name broadcast (@wonderwoman)');
     expect(announcement?.dateMessageSent.toDateString()).toBe(new Date(1000).toDateString());
     expect(announcement?.senderName).toBe('Slack User Name');
@@ -162,13 +179,42 @@ describe('Slack message tests', () => {
     expect(announcement?.usersReceived).toHaveLength(1);
   });
 
+  it('Leaves out mentioned users who are not in the organization', async () => {
+    vi.mocked(apiFunctions.getUserName).mockReturnValue(Promise.resolve('Slack User Name'));
+    vi.mocked(apiFunctions.getChannelName).mockReturnValue(Promise.resolve('Slack Channel Name'));
+    await prisma.user.create({
+      data: {
+        firstName: 'Out',
+        lastName: 'Sider',
+        email: 'outsider@test.com',
+        googleAuthId: 'outsider',
+        userSettings: { create: { slackId: 'slackOutsider' } }
+      }
+    });
+
+    const spy = vi.spyOn(AnnouncementService, 'createAnnouncement');
+
+    await slackServices.processMessageSent(
+      createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
+        { type: 'user', user_id: 'slackWW' },
+        { type: 'user', user_id: 'slackOutsider' }
+      ]),
+      orgId
+    );
+
+    expect(spy).toBeCalledTimes(1);
+    expect(spy.mock.calls[0][1]).toStrictEqual([wonderwoman.userId]);
+    const announcement = await getStoredAnnouncement('id_1');
+    expect(announcement?.usersReceived).toStrictEqual([{ userId: wonderwoman.userId }]);
+  });
+
   it('Correctly processes other types of blocks', async () => {
     vi.mocked(apiFunctions.getUserName).mockReturnValue(Promise.resolve('Slack User Name'));
     vi.mocked(apiFunctions.getChannelName).mockReturnValue(Promise.resolve('Slack Channel Name'));
 
     const spy = vi.spyOn(AnnouncementService, 'createAnnouncement');
 
-    const announcement = await slackServices.processMessageSent(
+    await slackServices.processMessageSent(
       createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [
         { type: 'text', text: 'test with: ' },
         { type: 'link', url: 'http://www.example.com', text: 'link' },
@@ -200,6 +246,7 @@ describe('Slack message tests', () => {
       orgId
     );
 
+    const announcement = await getStoredAnnouncement('id_1');
     expect(announcement?.text).toBe(
       'test with: link:(http://www.example.com)Italics and a unicode emoji: 😝 and a slack emoji: emoji:birthday-parrot@Slack User Name'
     );
@@ -216,14 +263,14 @@ describe('Slack message tests', () => {
 
     const spy = vi.spyOn(AnnouncementService, 'createAnnouncement');
 
-    const announcement = await slackServices.processMessageSent(
+    await slackServices.processMessageSent(
       createSlackMessageEvent('channel id', '1', 'user name', 'id_1', [{ type: 'text', text: 'just a text message' }]),
       orgId
     );
 
     expect(spy).toBeCalledTimes(0);
 
-    expect(announcement).toBeUndefined();
+    expect(await prisma.announcement.count()).toBe(0);
   });
 
   it('Updates an edit made to a message', async () => {
@@ -247,7 +294,7 @@ describe('Slack message tests', () => {
       orgId
     );
 
-    const announcement2 = await slackServices.processMessageSent(
+    await slackServices.processMessageSent(
       {
         type: 'message',
         subtype: 'message_changed',
@@ -274,6 +321,7 @@ describe('Slack message tests', () => {
       orgId
     );
 
+    const announcement2 = await getStoredAnnouncement('id_1');
     expect(announcement2?.text).toBe('@Slack User Name added text');
     expect(announcement2?.dateMessageSent.toDateString()).toBe(new Date(1000).toDateString());
     expect(announcement2?.senderName).toBe('Slack User Name');
@@ -292,7 +340,7 @@ describe('Slack message tests', () => {
     const createSpy = vi.spyOn(AnnouncementService, 'createAnnouncement');
     const updateSpy = vi.spyOn(AnnouncementService, 'updateAnnouncement');
 
-    const announcement2 = await slackServices.processMessageSent(
+    await slackServices.processMessageSent(
       {
         type: 'message',
         subtype: 'message_changed',
@@ -329,6 +377,7 @@ describe('Slack message tests', () => {
       orgId
     );
 
+    const announcement2 = await getStoredAnnouncement('id_1');
     expect(announcement2?.text).toBe('@Slack User Name added text');
     expect(announcement2?.dateMessageSent.toDateString()).toBe(new Date(1000).toDateString());
     expect(announcement2?.senderName).toBe('Slack User Name');
@@ -385,7 +434,7 @@ describe('Slack message tests', () => {
 
     const createSpy = vi.spyOn(AnnouncementService, 'createAnnouncement');
 
-    const announcement = await slackServices.processMessageSent(
+    await slackServices.processMessageSent(
       {
         type: 'message',
         subtype: 'other-nonprocessed-subtype',
@@ -397,7 +446,7 @@ describe('Slack message tests', () => {
       orgId
     );
     expect(createSpy).toBeCalledTimes(0);
-    expect(announcement).toBeUndefined();
+    expect(await prisma.announcement.count()).toBe(0);
   });
 
   it('Ignores a deleted message that has no client_msg_id', async () => {
@@ -408,7 +457,7 @@ describe('Slack message tests', () => {
     const botMessage: Partial<SlackMessage> = createSlackMessageEvent('channel id', '1', 'user name', 'id_1', []);
     delete botMessage.client_msg_id;
 
-    const announcement = await slackServices.processMessageSent(
+    await slackServices.processMessageSent(
       {
         type: 'message',
         subtype: 'message_deleted',
@@ -420,7 +469,7 @@ describe('Slack message tests', () => {
       orgId
     );
     expect(deleteSpy).toBeCalledTimes(0);
-    expect(announcement).toBeUndefined();
+    expect(await prisma.announcement.count()).toBe(0);
   });
 
   it('Catches a failure processing a message event instead of letting it escape', async () => {

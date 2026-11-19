@@ -332,6 +332,7 @@ describe('Reimbursement Requests', () => {
       const newOrg = await prisma.organization.create({
         data: {
           name: 'Test',
+          slug: 'test-org',
           description: 'Test`s organization',
           userCreated: {
             connect: {

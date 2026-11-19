@@ -11,6 +11,7 @@ const GUEST_INFO = `/guestinfo`;
 const GANTT = `/gantt`;
 const TASKS = `/tasks`;
 const CREDITS = `/credits`;
+const BAY_DASHBOARD = `/bay-dashboard/:slug`; /* /bay-dashboard/ner */
 
 /**************** Home Section ****************/
 const HOME = `/home`;
@@ -83,6 +84,9 @@ const GRAPH_COLLECTION_BY_ID = '/statistics/graph-collections/:graphCollectionId
 /**************** Retrospective ****************/
 const RETROSPECTIVE = `/retrospective`;
 
+/**************** Executive Summaries ****************/
+const EXECUTIVE_SUMMARIES = `/executive-summaries`;
+
 /**************** Rules ****************/
 const RULES = `/rules`;
 const RULESET_BY_ID = RULES + `/:rulesetTypeId`;
@@ -90,11 +94,13 @@ const RULESET_VIEW = RULES + `/ruleset/:rulesetId/view`;
 const RULESET_EDIT = RULES + `/ruleset/:rulesetId/edit`;
 
 export const routes = {
+  EXECUTIVE_SUMMARIES,
   BASE,
   LOGIN,
   INFO,
   GUEST_INFO,
   CREDITS,
+  BAY_DASHBOARD,
 
   HOME,
   HOME_PNM,

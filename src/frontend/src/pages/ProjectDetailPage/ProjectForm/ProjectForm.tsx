@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { DescriptionBulletPreview, LinkCreateArgs, Project, ProjectTemplate } from 'shared';
+import { DescriptionBulletPreview, LinkCreateArgs, ProjectDetail, ProjectTemplate } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -45,7 +45,7 @@ export interface ProjectFormInput {
 interface ProjectFormContainerProps {
   requiredLinkTypeNames: string[];
   exitEditMode: () => void;
-  project?: Project;
+  project?: ProjectDetail;
   onSubmit: (data: ProjectFormInput, why?: string, requestedReviewerId?: string) => void;
   defaultValues: ProjectFormInput;
   setManagerId: (id?: string) => void;
