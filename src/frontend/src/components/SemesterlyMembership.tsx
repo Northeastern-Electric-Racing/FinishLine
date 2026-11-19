@@ -3,7 +3,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, TooltipProps, XAxis, YAxis } from 'recharts';
-import { ExecutiveSummary, Term } from 'shared';
+import { dbDateToLocalDate, ExecutiveSummary, Term } from 'shared';
 import { displayEnum } from '../utils/pipes';
 
 interface SemesterlyMembershipProps {
@@ -30,8 +30,8 @@ interface SemesterPoint {
 export const buildSemesterPoints = (executiveSummaries: ExecutiveSummary[]): SemesterPoint[] => {
   const points = new Map<string, SemesterPoint>();
   executiveSummaries.forEach((summary) => {
-    const start = summary.seasonStartDate ? new Date(summary.seasonStartDate).getFullYear() : undefined;
-    const end = summary.seasonEndDate ? new Date(summary.seasonEndDate).getFullYear() : undefined;
+    const start = summary.seasonStartDate ? dbDateToLocalDate(new Date(summary.seasonStartDate)).getFullYear() : undefined;
+    const end = summary.seasonEndDate ? dbDateToLocalDate(new Date(summary.seasonEndDate)).getFullYear() : undefined;
     summary.recruitmentCycles.forEach((cycle) => {
       const year =
         cycle.term === Term.FALL
