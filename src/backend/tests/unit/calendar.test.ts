@@ -580,6 +580,7 @@ describe('Calendar Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org (calendar test)',
+          slug: 'other-org-calendar-1',
           description: 'for cross-org negative case',
           applicationLink: '',
           userCreated: { connect: { userId: adminUser.userId } }
@@ -777,6 +778,7 @@ describe('Calendar Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Different Org',
+          slug: 'different-org-calendar',
           description: 'for invalid org calendar case',
           applicationLink: '',
           userCreated: { connect: { userId: adminUser.userId } }
@@ -936,6 +938,7 @@ describe('Calendar Tests', () => {
       otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org (calendar test)',
+          slug: 'other-org-calendar-2',
           description: 'for cross-org negative case',
           applicationLink: '',
           userCreated: { connect: { userId: adminUser.userId } }
@@ -2163,6 +2166,7 @@ describe('Calendar Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org (calendar test)',
+          slug: 'other-org-calendar-3',
           description: 'for cross-org negative case',
           applicationLink: '',
           userCreated: { connect: { userId: adminUser.userId } }

@@ -198,6 +198,8 @@ export const resetUsers = async () => {
   await prisma.description_Bullet_Type.deleteMany();
   await prisma.unit.deleteMany();
   await prisma.dashboard.deleteMany();
+  await prisma.bay_Dashboard_Config.deleteMany();
+  await prisma.bay_Dashboard_Countdown.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -283,6 +285,7 @@ export const createTestOrganization = async () => {
   return await prisma.organization.create({
     data: {
       name: 'Joe mama',
+      slug: 'joe-mama',
       description: 'Joe mama`s organization',
       applicationLink: '',
       userCreated: {

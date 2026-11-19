@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import CalendarService from '../services/calendar.services.js';
 import { getCurrentUserWithUserSettings } from '../utils/auth.utils.js';
 import { generateIcsFeed } from '../utils/ics.utils.js';
+import { broadcastBayDashboardUpdate } from '../utils/bay-dashboard-events.utils.js';
 
 export default class CalendarController {
   static async createEventType(req: Request, res: Response, next: NextFunction) {
@@ -151,6 +152,7 @@ export default class CalendarController {
         isNewMemberCalendar,
         req.organization
       );
+      broadcastBayDashboardUpdate(req.organization.slug);
 
       res.status(200).json(calendar);
     } catch (error: unknown) {
@@ -172,7 +174,9 @@ export default class CalendarController {
         isNewMemberCalendar,
         req.organization
       );
+      broadcastBayDashboardUpdate(req.organization.slug);
 
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(updatedCalendar);
     } catch (error: unknown) {
       next(error);
@@ -194,6 +198,7 @@ export default class CalendarController {
 
       const updatedCalendar = await CalendarService.deleteCalendar(req.currentUser, calendarId, req.organization);
 
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(updatedCalendar);
     } catch (error: unknown) {
       next(error);
@@ -247,6 +252,7 @@ export default class CalendarController {
         sendSlackNotifications,
         takeAttendance
       );
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(eventType);
     } catch (error: unknown) {
       next(error);
@@ -258,7 +264,9 @@ export default class CalendarController {
       const { eventTypeId } = req.params as Record<string, string>;
 
       const deletedEventType = await CalendarService.deleteEventType(req.currentUser, eventTypeId, req.organization);
+      broadcastBayDashboardUpdate(req.organization.slug);
 
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(deletedEventType);
     } catch (error: unknown) {
       next(error);
@@ -328,6 +336,7 @@ export default class CalendarController {
         description,
         mention
       );
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(event);
     } catch (error: unknown) {
       next(error);
@@ -376,6 +385,7 @@ export default class CalendarController {
         zoomLink,
         description
       );
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
@@ -396,6 +406,7 @@ export default class CalendarController {
         editAllInSeries ?? false,
         req.organization
       );
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
@@ -422,6 +433,7 @@ export default class CalendarController {
       const { scheduleSlotId } = req.params as Record<string, string>;
 
       await CalendarService.deleteScheduleSlot(req.currentUser, scheduleSlotId, req.organization);
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
@@ -462,6 +474,7 @@ export default class CalendarController {
       const { eventId } = req.params as Record<string, string>;
 
       await CalendarService.approveEvent(req.currentUser, eventId, req.organization);
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
@@ -473,6 +486,7 @@ export default class CalendarController {
       const { eventId } = req.params as Record<string, string>;
 
       await CalendarService.denyEvent(req.currentUser, eventId, req.organization);
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
@@ -487,6 +501,7 @@ export default class CalendarController {
       const user = await getCurrentUserWithUserSettings(res);
 
       await CalendarService.markUserConfirmed(eventId, availability, user, req.organization);
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
@@ -500,6 +515,7 @@ export default class CalendarController {
       const { status } = req.body;
 
       await CalendarService.setStatus(req.currentUser, eventId, status, req.organization);
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
@@ -519,6 +535,7 @@ export default class CalendarController {
         new Date(endTime),
         req.organization
       );
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
@@ -549,7 +566,7 @@ export default class CalendarController {
       const { eventId } = req.params as Record<string, string>;
 
       await CalendarService.deleteEvent(req.currentUser, eventId, req.organization);
-
+      broadcastBayDashboardUpdate(req.organization.slug);
       res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
