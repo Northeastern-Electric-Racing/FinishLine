@@ -13,7 +13,6 @@ import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
   exitActiveMode: () => void;
-  crId?: string;
   workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
   schema: ObjectSchema<any>;
@@ -25,7 +24,6 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   workPackageMutateAsync,
   createWorkPackageScopeCR,
   exitActiveMode,
-  crId,
   schema,
   breadcrumbs
 }) => {
@@ -80,7 +78,6 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
       wbsElement={wbsElement}
       leadOrManagerOptions={leadOrManagerOptions}
       blockedByOptions={blockedByOptions}
-      crId={crId}
       schema={schema}
       breadcrumbs={breadcrumbs}
     />

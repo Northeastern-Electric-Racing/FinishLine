@@ -36,7 +36,6 @@ workPackagesRouter.get('/by-project/:wbsNum', WorkPackagesController.getWorkPack
 
 workPackagesRouter.post(
   '/create',
-  nonEmptyString(body('crId').optional()),
   nonEmptyString(body('name')),
   isWorkPackageStageOrNone(body('stage')),
   isDateOnly(body('startDate')),

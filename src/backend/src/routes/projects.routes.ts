@@ -50,7 +50,7 @@ projectRouter.post(
   body('teamIds').isArray(),
   nonEmptyString(body('teamIds.*')),
   body('budget').optional().isInt({ min: 0 }).default(0),
-  nonEmptyString(body('crId').optional()),
+
   ...projectValidators,
   validateInputs,
   ProjectsController.createProject
