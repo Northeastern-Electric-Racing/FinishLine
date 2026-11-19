@@ -1,26 +1,21 @@
-import { Announcement } from 'shared';
+import { AnnouncementPage } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { announcementsTransformer } from './transformers/announcements.transformer';
+import { announcementPageTransformer } from './transformers/announcements.transformer';
 
 /*
- * Gets all unread announcement of the user with the given id
+ * Gets one page of the current user's unread announcements, starting after the given cursor
  */
-export const getAnnouncements = () => {
-  return axios.get<Announcement[]>(apiUrls.announcementsCurrentUser(), {
-    transformResponse: (data) => JSON.parse(data).map(announcementsTransformer)
+export const getAnnouncementsPage = (cursor?: string) => {
+  return axios.get<AnnouncementPage>(apiUrls.announcementsCurrentUser(), {
+    params: { cursor },
+    transformResponse: (data) => announcementPageTransformer(JSON.parse(data))
   });
 };
 
 /*
- * Removes a notification from the user with the given id
+ * Removes an announcement from the current user's unread announcements
  */
 export const removeAnnouncement = (announcementId: string) => {
-  return axios.post<Announcement[]>(
-    apiUrls.announcementsRemove(announcementId),
-    {},
-    {
-      transformResponse: (data) => JSON.parse(data).map(announcementsTransformer)
-    }
-  );
+  return axios.post(apiUrls.announcementsRemove(announcementId));
 };

@@ -1,14 +1,12 @@
 import { Prisma } from '@prisma/client';
-import { AnnouncementQueryArgs } from '../prisma-query-args/announcements.query.args.js';
-import { Announcement } from 'shared';
-import { userTransformer } from './user.transformer.js';
+import { BaseAnnouncementQueryArgs } from '../prisma-query-args/announcements.query-args.js';
+import { BaseAnnouncement } from 'shared';
 
-const announcementTransformer = (announcement: Prisma.AnnouncementGetPayload<AnnouncementQueryArgs>): Announcement => {
+export const baseAnnouncementTransformer = (
+  announcement: Prisma.AnnouncementGetPayload<BaseAnnouncementQueryArgs>
+): BaseAnnouncement => {
   return {
     ...announcement,
-    usersReceived: announcement.usersReceived.map(userTransformer),
     dateDeleted: announcement.dateDeleted ?? undefined
   };
 };
-
-export default announcementTransformer;

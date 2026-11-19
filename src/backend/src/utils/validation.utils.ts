@@ -2,6 +2,7 @@ import { Event_Status, Graph_Display_Type, Graph_Type, Measure, Special_Permissi
 import { Request, Response } from 'express';
 import { body, query, ValidationChain, validationResult } from 'express-validator';
 import {
+  BayDashboardWidgetSize,
   MaterialStatus,
   TaskPriority,
   TaskStatus,
@@ -31,6 +32,10 @@ export const isRole = (validationObject: ValidationChain): ValidationChain => {
   return validationObject
     .isString()
     .isIn([RoleEnum.APP_ADMIN, RoleEnum.ADMIN, RoleEnum.HEAD, RoleEnum.LEADERSHIP, RoleEnum.MEMBER, RoleEnum.GUEST]);
+};
+
+export const isBayDashboardWidgetSize = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn(Object.values(BayDashboardWidgetSize));
 };
 
 export const isStatus = (validationObject: ValidationChain): ValidationChain => {
