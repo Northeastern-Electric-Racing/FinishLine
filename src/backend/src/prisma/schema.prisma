@@ -1485,6 +1485,7 @@ model Organization {
   partReviewSampleImageId                String?
   partReviewGuideLink                    String?
   sponsorshipNotificationsSlackChannelId String?
+  appreciationsSlackChannelId            String?
   platformDescription                    String    @default("")
   platformLogoImageId                    String?
   activationBufferDays                   Int       @default(7)
@@ -1535,6 +1536,7 @@ model Organization {
   dashboards               Dashboard[]
   bayDashboardConfigs      Bay_Dashboard_Config[]
   bayDashboardCountdowns   Bay_Dashboard_Countdown[]
+  bayDashboardRotations    Bay_Dashboard_Rotation[]
 }
 
 model Dashboard {
@@ -2162,13 +2164,23 @@ model Bay_Dashboard_Slot {
   size                 Bay_Dashboard_Widget_Size
   // 0 = left large, 1 = right medium, 2 = right small
   position             Int
-  rotationSeconds      Int                       @default(30)
   widgets              Bay_Dashboard_Widget[]
   bayDashboardConfigId String
   bayDashboardConfig   Bay_Dashboard_Config      @relation(fields: [bayDashboardConfigId], references: [bayDashboardConfigId], onDelete: Cascade)
 
   @@unique([bayDashboardConfigId, position])
   @@index([bayDashboardConfigId])
+}
+
+model Bay_Dashboard_Rotation {
+  bayDashboardRotationId String                    @id @default(uuid())
+  size                   Bay_Dashboard_Widget_Size
+  rotationSeconds        Int                       @default(30)
+  organizationId         String
+  organization           Organization              @relation(fields: [organizationId], references: [organizationId])
+
+  @@unique([organizationId, size])
+  @@index([organizationId])
 }
 
 model Bay_Dashboard_Widget {
