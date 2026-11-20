@@ -36,6 +36,7 @@ import {
 } from '../../hooks/calendar.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import EditEventModal from './Components/EditEventModal';
+import RescheduleButton from './Components/RescheduleButton';
 import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmationModal';
 import { useToast } from '../../hooks/toasts.hooks';
 import NERDeleteModal from '../../components/NERDeleteModal';
@@ -541,37 +542,7 @@ const EventClickDetails: React.FC<EventClickDetailsProps> = ({
 
         {/* Reschedule */}
 
-        {event.status === EventStatus.SCHEDULED && event.userCreated.userId === currentUser.userId && (
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Tooltip title="Reschedule Event" arrow placement="top">
-              <EditIcon fontSize="small" sx={{ mt: 0.1 }} />
-            </Tooltip>
-            <Button
-              size="small"
-              variant="outlined"
-              component={RouterLink}
-              to={availabilityUrl}
-              onClick={stopClick}
-              disabled={disable}
-              sx={{
-                textTransform: 'none',
-                borderRadius: 999,
-                px: 1.5,
-                py: 0.25,
-                minHeight: 24,
-                fontSize: 12,
-                color: theme.palette.common.white,
-                borderColor: theme.palette.grey[700],
-                '&:hover': {
-                  borderColor: theme.palette.grey[500],
-                  bgcolor: 'transparent'
-                }
-              }}
-            >
-              Reschedule Event
-            </Button>
-          </Stack>
-        )}
+        <RescheduleButton event={event} eventDate={eventDate} disable={disable} />
 
         {addApprovalButtons && canApprove && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
