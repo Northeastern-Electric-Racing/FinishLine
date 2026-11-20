@@ -26,7 +26,11 @@ import {
   projectListItemTransformer,
   projectOverviewCardTransformer
 } from '../transformers/projects.transformer.js';
-import { createNonMeaningfulChangeRequest, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import {
+  createNonMeaningfulChangeRequest,
+  PENDING_CHANGE_REQUEST_ID,
+  validateChangeRequestAccepted
+} from '../utils/change-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
@@ -36,7 +40,12 @@ import {
   AccessDeniedException,
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
-import { updateProjectAndCreateChanges, getHighestProjectNumber } from '../utils/projects.utils.js';
+import {
+  applyProjectChanges,
+  getHighestProjectNumber,
+  getProjectChanges,
+  updateProjectAndCreateChanges
+} from '../utils/projects.utils.js';
 import { wbsNumOf } from '../utils/utils.js';
 import WorkPackagesService from './work-packages.services.js';
 import { userHasPermission } from '../utils/users.utils.js';
@@ -664,20 +673,37 @@ export default class ProjectsService {
       await validateChangeRequestAccepted(crId, tx);
     }
 
-    // CR approval passes the approved CR's id; a direct edit that doesn't need review
-    // gets its own auto-approved change request so it still shows up in change history
-    const changeRequestId =
-      crId ?? (await createNonMeaningfulChangeRequest(user, originalProject.wbsElementId, organization.organizationId, tx));
-
-    await updateProjectAndCreateChanges(
+    // work out the changes before creating a minor-edit CR, so an edit that changes nothing doesn't create one
+    const projectChanges = await getProjectChanges(
       originalProject.projectId,
-      changeRequestId,
+      crId ?? PENDING_CHANGE_REQUEST_ID,
       userId,
       name,
       budget,
       summary,
       newDescriptionBullets,
       linkCreateArgs,
+      leadId,
+      managerId,
+      organization.organizationId,
+      tx
+    );
+
+    // a direct edit that changes nothing has nothing to save or record
+    if (!crId && projectChanges.changes.length === 0) return;
+
+    // CR approval passes the approved CR's id; a direct edit gets its own auto-approved change request
+    // so it still shows up in change history
+    const changeRequestId =
+      crId ?? (await createNonMeaningfulChangeRequest(user, originalProject.wbsElementId, organization.organizationId, tx));
+
+    await applyProjectChanges(
+      projectChanges,
+      changeRequestId,
+      userId,
+      name,
+      budget,
+      summary,
       leadId,
       managerId,
       organization.organizationId,
