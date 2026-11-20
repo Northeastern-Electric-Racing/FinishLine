@@ -1014,199 +1014,208 @@ export default class ChangeRequestsService {
         })
       : null;
 
-    const createdCR = await prisma.change_Request.create({
-      data: {
-        submitter: { connect: { userId: submitter.userId } },
-        wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
-        type: CR_Type.STANDARD,
-        why,
-        ...(requestedReviewerId && {
-          requestedReviewers: { connect: { userId: requestedReviewerId } }
-        }),
-        organization: { connect: { organizationId: organization.organizationId } },
-        identifier: numChangeRequests + 1,
-        snapshotBlockingCount: blockingCount,
-        snapshotStartDate: workPackage ? workPackage.startDate : null,
-        snapshotDuration: workPackage ? workPackage.duration : null,
-        snapshotBudget: wbsElement.project?.budget
-      },
-      include: {
-        wbsElement: {
+    // create the CR and its proposed changes together, so a failed validation doesn't leave an empty CR behind
+    const createdCR = await prisma.$transaction(
+      async (tx) => {
+        const cr = await tx.change_Request.create({
+          data: {
+            submitter: { connect: { userId: submitter.userId } },
+            wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
+            type: CR_Type.STANDARD,
+            why,
+            ...(requestedReviewerId && {
+              requestedReviewers: { connect: { userId: requestedReviewerId } }
+            }),
+            organization: { connect: { organizationId: organization.organizationId } },
+            identifier: numChangeRequests + 1,
+            snapshotBlockingCount: blockingCount,
+            snapshotStartDate: workPackage ? workPackage.startDate : null,
+            snapshotDuration: workPackage ? workPackage.duration : null,
+            snapshotBudget: wbsElement.project?.budget
+          },
           include: {
-            project: { include: { teams: true, wbsElement: true } },
-            workPackage: { include: { project: { include: { teams: true, wbsElement: true } } } }
+            wbsElement: {
+              include: {
+                project: { include: { teams: true, wbsElement: true } },
+                workPackage: { include: { project: { include: { teams: true, wbsElement: true } } } }
+              }
+            }
           }
-        }
-      }
-    });
+        });
 
-    if (projectProposedChanges && workPackageProposedChanges) {
-      throw new HttpException(400, "Change Request can't be on both a project and a work package");
-    } else if (projectProposedChanges) {
-      const {
-        name,
-        leadId,
-        managerId,
-        links,
-        budget,
-        summary,
-        teamIds,
-        descriptionBullets,
-        workPackageProposedChanges: wpChanges,
-        carNumber: proposedCarNumber
-      } = projectProposedChanges;
+        if (projectProposedChanges && workPackageProposedChanges) {
+          throw new HttpException(400, "Change Request can't be on both a project and a work package");
+        } else if (projectProposedChanges) {
+          const {
+            name,
+            leadId,
+            managerId,
+            links,
+            budget,
+            summary,
+            teamIds,
+            descriptionBullets,
+            workPackageProposedChanges: wpChanges,
+            carNumber: proposedCarNumber
+          } = projectProposedChanges;
 
-      const validationResult = await validateProposedChangesFields(
-        projectProposedChanges,
-        links,
-        descriptionBullets,
-        [],
-        wpChanges,
-        organization.organizationId,
-        proposedCarNumber,
-        leadId,
-        managerId
-      );
+          const validationResult = await validateProposedChangesFields(
+            projectProposedChanges,
+            links,
+            descriptionBullets,
+            [],
+            wpChanges,
+            organization.organizationId,
+            proposedCarNumber,
+            leadId,
+            managerId
+          );
 
-      if (teamIds.length > 0) {
-        for (const teamId of teamIds) {
-          const team = await prisma.team.findUnique({ where: { teamId } });
-          if (!team) throw new NotFoundException('Team', teamId);
-        }
-      }
+          if (teamIds.length > 0) {
+            for (const teamId of teamIds) {
+              const team = await prisma.team.findUnique({ where: { teamId } });
+              if (!team) throw new NotFoundException('Team', teamId);
+            }
+          }
 
-      const isCreatingNewProject = projectNumber === 0;
+          const isCreatingNewProject = projectNumber === 0;
 
-      const changes = await prisma.wbs_Proposed_Changes.create({
-        data: {
-          changeRequest: { connect: { crId: createdCR.crId } },
-          name,
-          status: isCreatingNewProject ? WBS_Element_Status.INACTIVE : wbsElement.status,
-          links: {
-            create: validationResult.links.map((linkInfo) => ({
-              url: linkInfo.url,
-              linkTypeId: linkInfo.linkType.id,
-              creatorId: submitter.userId
-            }))
-          },
-          proposedDescriptionBulletChanges: {
-            create: validationResult.descriptionBullets.map((bullet) => ({
-              detail: bullet.detail,
-              descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
-            }))
-          },
-          projectProposedChanges: {
-            create: {
-              budget,
-              summary,
-              teams: { connect: teamIds.map((teamId) => ({ teamId })) },
-              workPackageProposedChanges: {
-                create: validationResult.workPackageProposedChanges.map((workPackage) => ({
-                  wbsProposedChanges: {
-                    create: {
-                      name: workPackage.originalElement.name,
-                      status: WBS_Element_Status.INACTIVE,
-                      proposedDescriptionBulletChanges: {
-                        create: workPackage.descriptionBullets.map((bullet) => ({
-                          detail: bullet.detail,
-                          descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
-                        }))
+          const changes = await tx.wbs_Proposed_Changes.create({
+            data: {
+              changeRequest: { connect: { crId: cr.crId } },
+              name,
+              status: isCreatingNewProject ? WBS_Element_Status.INACTIVE : wbsElement.status,
+              links: {
+                create: validationResult.links.map((linkInfo) => ({
+                  url: linkInfo.url,
+                  linkTypeId: linkInfo.linkType.id,
+                  creatorId: submitter.userId
+                }))
+              },
+              proposedDescriptionBulletChanges: {
+                create: validationResult.descriptionBullets.map((bullet) => ({
+                  detail: bullet.detail,
+                  descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
+                }))
+              },
+              projectProposedChanges: {
+                create: {
+                  budget,
+                  summary,
+                  teams: { connect: teamIds.map((teamId) => ({ teamId })) },
+                  workPackageProposedChanges: {
+                    create: validationResult.workPackageProposedChanges.map((workPackage) => ({
+                      wbsProposedChanges: {
+                        create: {
+                          name: workPackage.originalElement.name,
+                          status: WBS_Element_Status.INACTIVE,
+                          proposedDescriptionBulletChanges: {
+                            create: workPackage.descriptionBullets.map((bullet) => ({
+                              detail: bullet.detail,
+                              descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
+                            }))
+                          },
+                          leadId: workPackage.originalElement.leadId,
+                          managerId: workPackage.originalElement.managerId
+                        }
                       },
-                      leadId: workPackage.originalElement.leadId,
-                      managerId: workPackage.originalElement.managerId
-                    }
-                  },
-                  duration: workPackage.originalElement.duration,
-                  startDate: new Date(workPackage.originalElement.startDate),
-                  stage: workPackage.originalElement.stage,
+                      duration: workPackage.originalElement.duration,
+                      startDate: new Date(workPackage.originalElement.startDate),
+                      stage: workPackage.originalElement.stage,
+                      blockedBy: {
+                        connect: workPackage.validatedBlockedBys.map((wbsEl) => ({
+                          wbsNumber: {
+                            carNumber: wbsEl.carNumber,
+                            projectNumber: wbsEl.projectNumber,
+                            workPackageNumber: wbsEl.workPackageNumber,
+                            organizationId: organization.organizationId
+                          }
+                        }))
+                      }
+                    }))
+                  }
+                }
+              }
+            }
+          });
+
+          await tx.wbs_Proposed_Changes.update({
+            where: { wbsProposedChangesId: changes.wbsProposedChangesId },
+            data: {
+              leadId,
+              managerId,
+              projectProposedChanges: { update: { carId: validationResult.carId } }
+            }
+          });
+        } else if (workPackageProposedChanges) {
+          const { name, leadId, managerId, duration, startDate, stage, descriptionBullets, blockedBy } =
+            workPackageProposedChanges;
+
+          const validationResult = await validateProposedChangesFields(
+            workPackageProposedChanges,
+            workPackageProposedChanges.links,
+            descriptionBullets,
+            blockedBy,
+            [],
+            organization.organizationId,
+            undefined,
+            leadId,
+            managerId
+          );
+
+          const isCreatingNewWorkPackage = workPackageNumber === 0;
+
+          const changes = await tx.wbs_Proposed_Changes.create({
+            data: {
+              changeRequest: { connect: { crId: cr.crId } },
+              name,
+              status: isCreatingNewWorkPackage ? WBS_Element_Status.INACTIVE : wbsElement.status,
+              proposedDescriptionBulletChanges: {
+                create: validationResult.descriptionBullets.map((bullet) => ({
+                  detail: bullet.detail,
+                  descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
+                }))
+              },
+              links: {
+                create: validationResult.links.map((linkInfo) => ({
+                  url: linkInfo.url,
+                  linkTypeId: linkInfo.linkType.id,
+                  creatorId: submitter.userId
+                }))
+              },
+              ...(leadId && { lead: { connect: { userId: leadId } } }),
+              ...(managerId && { manager: { connect: { userId: managerId } } }),
+              workPackageProposedChanges: {
+                create: {
+                  duration,
+                  startDate: new Date(startDate),
+                  stage,
                   blockedBy: {
-                    connect: workPackage.validatedBlockedBys.map((wbsEl) => ({
+                    connect: validationResult.validatedBlockedBys.map((wbsNumber) => ({
                       wbsNumber: {
-                        carNumber: wbsEl.carNumber,
-                        projectNumber: wbsEl.projectNumber,
-                        workPackageNumber: wbsEl.workPackageNumber,
+                        carNumber: wbsNumber.carNumber,
+                        projectNumber: wbsNumber.projectNumber,
+                        workPackageNumber: wbsNumber.workPackageNumber,
                         organizationId: organization.organizationId
                       }
                     }))
                   }
-                }))
+                }
               }
             }
-          }
+          });
+
+          await tx.wbs_Proposed_Changes.update({
+            where: { wbsProposedChangesId: changes.wbsProposedChangesId },
+            data: { leadId, managerId }
+          });
         }
-      });
 
-      await prisma.wbs_Proposed_Changes.update({
-        where: { wbsProposedChangesId: changes.wbsProposedChangesId },
-        data: {
-          leadId,
-          managerId,
-          projectProposedChanges: { update: { carId: validationResult.carId } }
-        }
-      });
-    } else if (workPackageProposedChanges) {
-      const { name, leadId, managerId, duration, startDate, stage, descriptionBullets, blockedBy } =
-        workPackageProposedChanges;
-
-      const validationResult = await validateProposedChangesFields(
-        workPackageProposedChanges,
-        workPackageProposedChanges.links,
-        descriptionBullets,
-        blockedBy,
-        [],
-        organization.organizationId,
-        undefined,
-        leadId,
-        managerId
-      );
-
-      const isCreatingNewWorkPackage = workPackageNumber === 0;
-
-      const changes = await prisma.wbs_Proposed_Changes.create({
-        data: {
-          changeRequest: { connect: { crId: createdCR.crId } },
-          name,
-          status: isCreatingNewWorkPackage ? WBS_Element_Status.INACTIVE : wbsElement.status,
-          proposedDescriptionBulletChanges: {
-            create: validationResult.descriptionBullets.map((bullet) => ({
-              detail: bullet.detail,
-              descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
-            }))
-          },
-          links: {
-            create: validationResult.links.map((linkInfo) => ({
-              url: linkInfo.url,
-              linkTypeId: linkInfo.linkType.id,
-              creatorId: submitter.userId
-            }))
-          },
-          ...(leadId && { lead: { connect: { userId: leadId } } }),
-          ...(managerId && { manager: { connect: { userId: managerId } } }),
-          workPackageProposedChanges: {
-            create: {
-              duration,
-              startDate: new Date(startDate),
-              stage,
-              blockedBy: {
-                connect: validationResult.validatedBlockedBys.map((wbsNumber) => ({
-                  wbsNumber: {
-                    carNumber: wbsNumber.carNumber,
-                    projectNumber: wbsNumber.projectNumber,
-                    workPackageNumber: wbsNumber.workPackageNumber,
-                    organizationId: organization.organizationId
-                  }
-                }))
-              }
-            }
-          }
-        }
-      });
-
-      await prisma.wbs_Proposed_Changes.update({
-        where: { wbsProposedChangesId: changes.wbsProposedChangesId },
-        data: { leadId, managerId }
-      });
-    }
+        return cr;
+      },
+      // validating a project's proposed changes checks every work package in it, which can take a while
+      { timeout: 20000 }
+    );
 
     const project = createdCR.wbsElement?.workPackage?.project || createdCR.wbsElement?.project;
     const teams = project?.teams;
