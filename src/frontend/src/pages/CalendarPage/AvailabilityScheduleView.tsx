@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { ButtonBase, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { Availability, EventDetail, dbDateToLocalDate, getDayOfWeek, getNextSevenDays, User } from 'shared';
 import React, { useState } from 'react';
 import {
@@ -35,11 +35,12 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   onSlotScheduleClick
 }) => {
   const totalUsers = usersToAvailabilities.size;
-  const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
+  const [selectedTimeslots, setSelectedTimeslots] = useState<Set<number>>(new Set());
 
   // Use displayDate if provided, otherwise fall back to event's initial date.
   const initialDate = event.initialDateScheduled ? dbDateToLocalDate(event.initialDateScheduled) : displayDate || new Date();
   const potentialDays = getNextSevenDays(initialDate);
+  const timesPerDay = enumToArray(REVIEW_TIMES).length;
 
   // Handle hover - updates the sidebar with available/unavailable users and slot info
   const handleTimeslotHover = (index: number, day: Date, timeIndex: number) => {
@@ -68,30 +69,62 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
     if (setCurrentHoveredSlot) {
       setCurrentHoveredSlot(null);
     }
-    // If there's a selected slot, show its users
-    if (selectedTimeslot !== null) {
-      setCurrentAvailableUsers(availableUsers.get(selectedTimeslot) || []);
-      setCurrentUnavailableUsers(unavailableUsers.get(selectedTimeslot) || []);
+    // If there's a single selected slot, show its users
+    if (selectedTimeslots.size === 1) {
+      const [index] = [...selectedTimeslots];
+      setCurrentAvailableUsers(availableUsers.get(index) || []);
+      setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
     }
   };
 
-  // Handle click - selects/deselects the time slot
-  const handleTimeslotClick = (index: number, day: Date, timeIndex: number) => {
-    if (selectedTimeslot === index) {
-      // Deselect
-      setSelectedTimeslot(null);
-      if (onSlotScheduleClick) {
-        onSlotScheduleClick(null, 0, 0); // Clear selection in parent
-      }
-    } else {
-      // Select
-      setSelectedTimeslot(index);
-      if (onSlotScheduleClick) {
-        const startHour = 10 + timeIndex;
-        const endHour = 11 + timeIndex;
-        onSlotScheduleClick(day, startHour, endHour);
-      }
+  // The parent schedules one continuous block, so the selection is only passed up when it is
+  // a contiguous range of slots on a single day otherwise the parent's selection is cleared
+  const reportSelectionToParent = (slots: Set<number>) => {
+    if (!onSlotScheduleClick) return;
+    if (slots.size === 0) {
+      onSlotScheduleClick(null, 0, 0);
+      return;
     }
+    const sortedSlots = [...slots].sort((a, b) => a - b);
+    const [firstSlot] = sortedSlots;
+    const lastSlot = sortedSlots[sortedSlots.length - 1];
+    const dayIndex = Math.floor(firstSlot / timesPerDay);
+    const isContiguousSingleDay =
+      Math.floor(lastSlot / timesPerDay) === dayIndex && lastSlot - firstSlot === sortedSlots.length - 1;
+
+    if (!isContiguousSingleDay) {
+      onSlotScheduleClick(null, 0, 0);
+      return;
+    }
+    onSlotScheduleClick(potentialDays[dayIndex], 10 + (firstSlot % timesPerDay), 11 + (lastSlot % timesPerDay));
+  };
+
+  // Deselects the given slots if they are all already selected, otherwise selects all of them
+  const toggleSlots = (indices: number[]) => {
+    const allSelected = indices.every((index) => selectedTimeslots.has(index));
+    const nextSelected = new Set(selectedTimeslots);
+    indices.forEach((index) => {
+      if (allSelected) {
+        nextSelected.delete(index);
+      } else {
+        nextSelected.add(index);
+      }
+    });
+    setSelectedTimeslots(nextSelected);
+    reportSelectionToParent(nextSelected);
+  };
+
+  const handleColumnClick = (dayIndex: number) => {
+    toggleSlots(Array.from({ length: timesPerDay }, (_, timeIndex) => dayIndex * timesPerDay + timeIndex));
+  };
+
+  const handleRowClick = (timeIndex: number) => {
+    toggleSlots(potentialDays.map((_, dayIndex) => dayIndex * timesPerDay + timeIndex));
+  };
+
+  // Handle click - selects/deselects the time slot
+  const handleTimeslotClick = (index: number) => {
+    toggleSlots([index]);
   };
 
   // Populates the availableUsers map
@@ -158,32 +191,36 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
         <TableHead>
           <TableRow>
             <TableCell></TableCell>
-            {potentialDays.map((day) => (
-              <TableCell>
-                <Typography flexGrow={1} variant="h6" align="center" sx={{ fontSize: { xs: 12, md: 16 } }}>
-                  {getDayOfWeek(day) + ' ' + datePipe(day)}
-                </Typography>
+            {potentialDays.map((day, dayIndex) => (
+              <TableCell key={dayIndex}>
+                <ButtonBase onClick={() => handleColumnClick(dayIndex)} sx={{ width: '100%', borderRadius: 1 }}>
+                  <Typography flexGrow={1} variant="h6" align="center" sx={{ fontSize: { xs: 12, md: 16 } }}>
+                    {getDayOfWeek(day) + ' ' + datePipe(day)}
+                  </Typography>
+                </ButtonBase>
               </TableCell>
             ))}
           </TableRow>
         </TableHead>
         <TableBody>
           {enumToArray(REVIEW_TIMES).map((time, timeIndex) => (
-            <TableRow>
+            <TableRow key={timeIndex}>
               <TableCell sx={{ ...stickyLeft, zIndex: 1 }}>
-                <Typography flexGrow={1} variant="h6" align="center" sx={{ fontSize: { xs: 12, md: 16 } }}>
-                  {reviewTimesInCurrentTimeZone(time)}
-                </Typography>
+                <ButtonBase onClick={() => handleRowClick(timeIndex)} sx={{ width: '100%', borderRadius: 1 }}>
+                  <Typography flexGrow={1} variant="h6" align="center" sx={{ fontSize: { xs: 12, md: 16 } }}>
+                    {reviewTimesInCurrentTimeZone(time)}
+                  </Typography>
+                </ButtonBase>
               </TableCell>
               {potentialDays.map((day, dayIndex) => {
-                const index = dayIndex * enumToArray(REVIEW_TIMES).length + timeIndex;
+                const index = dayIndex * timesPerDay + timeIndex;
                 return (
                   <TableCell key={index} sx={timeSlotCellSx}>
                     <EventTimeSlot
                       backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
-                      selected={selectedTimeslot === index}
+                      selected={selectedTimeslots.has(index)}
                       allRequiredAvailable={allRequiredUsersAvailable(index)}
-                      onClick={() => handleTimeslotClick(index, day, timeIndex)}
+                      onClick={() => handleTimeslotClick(index)}
                       onMouseEnter={() => handleTimeslotHover(index, day, timeIndex)}
                     />
                   </TableCell>

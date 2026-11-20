@@ -18,7 +18,7 @@ import {
   ToggleButton,
   useTheme
 } from '@mui/material';
-import { DatePicker, TimePicker } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -32,7 +32,8 @@ import {
   MAX_FILE_SIZE,
   getNextSevenDays,
   getDay,
-  SlackMentionType
+  SlackMentionType,
+  BaseEvent
 } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useAllMembers, useCurrentUser, useUserScheduleSettings } from '../../../hooks/users.hooks';
@@ -57,12 +58,13 @@ import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturi
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Tooltip from '@mui/material/Tooltip';
-import { convertDayToInt, convertIntToDay } from '../../../utils/calendar.utils';
+import { convertDayToInt, convertIntToDay, EventInstance } from '../../../utils/calendar.utils';
 import EditSeriesConfirmationModal from './EditSeriesConfirmationModal';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import RescheduleButton from './RescheduleButton';
 
 export interface EventFormValues {
   title: string;
@@ -170,6 +172,7 @@ export interface BaseEventModalProps {
   defaultStartTime?: Date; // Pre-fill start time without triggering edit mode (e.g. drag-to-create)
   defaultEndTime?: Date; // Pre-fill end time without triggering edit mode
   eventId?: string; // Required for edit mode to fetch preview of affected schedule slots
+  event?: EventInstance<BaseEvent>; // Present in edit mode to enable rescheduling
   actionsLeftChildren?: React.ReactNode;
 }
 
@@ -232,6 +235,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   defaultStartTime,
   defaultEndTime,
   eventId,
+  event,
   actionsLeftChildren
 }) => {
   const theme = useTheme();
@@ -244,8 +248,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     error: ssError
   } = useUserScheduleSettings(user.userId);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [startTimePickerOpen, setStartTimePickerOpen] = useState(false);
-  const [endTimePickerOpen, setEndTimePickerOpen] = useState(false);
   const [showRecurringOptions, setShowRecurringOptions] = useState(false);
   const [requiredMembers, setRequiredMembers] = useState<Array<{ id: string; label: string }>>([]);
   const [optionalMembers, setOptionalMembers] = useState<Array<{ id: string; label: string }>>([]);
@@ -819,7 +821,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
           {/* Date and Time Section - Only show when event type is selected */}
           {selectedEventType && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {selectedEventType.requiresConfirmation ? (
+              {!isEditMode && selectedEventType.requiresConfirmation ? (
                 <Box>
                   {/* Header with info tooltip */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -842,7 +844,6 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       render={({ field: { onChange, value } }) => (
                         <DatePicker
                           value={value}
-                          disabled={!!initialValues?.selectedScheduleSlotId}
                           open={datePickerOpen}
                           onClose={() => setDatePickerOpen(false)}
                           onOpen={() => setDatePickerOpen(true)}
@@ -904,167 +905,26 @@ const EventModal: React.FC<BaseEventModalProps> = ({
               ) : (
                 /* Normal Event Type - Full date/time selection */
                 <>
-                  {/* Date and Time Row */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                    <CalendarTodayIcon sx={{ color: 'text.secondary' }} />
-                    <Controller
-                      name="scheduleDate"
-                      control={control}
-                      render={({ field: { onChange, value } }) => (
-                        <DatePicker
-                          value={value}
-                          open={datePickerOpen}
-                          onClose={() => setDatePickerOpen(false)}
-                          onOpen={() => setDatePickerOpen(true)}
-                          onChange={(newValue) => onChange(newValue ?? defaultDate)}
-                          slotProps={{
-                            textField: {
-                              variant: 'standard',
-                              error: !!errors.scheduleDate,
-                              onClick: () => setDatePickerOpen(true),
-                              sx: { minWidth: 150 }
-                            },
-                            day: {
-                              sx: {
-                                '&.Mui-selected': {
-                                  backgroundColor: '#EF4345 !important',
-                                  '&:hover': {
-                                    backgroundColor: '#d32f2f !important'
-                                  },
-                                  '&:focus': {
-                                    backgroundColor: '#EF4345 !important'
-                                  }
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      )}
-                    />
-
-                    {!watch('allDay') && (
-                      <>
-                        <Controller
-                          name="startTime"
-                          control={control}
-                          render={({ field: { onChange, value } }) => (
-                            <TimePicker
-                              value={value}
-                              open={startTimePickerOpen}
-                              onClose={() => setStartTimePickerOpen(false)}
-                              onOpen={() => setStartTimePickerOpen(true)}
-                              onChange={(newValue) => {
-                                onChange(newValue);
-                                if (newValue) {
-                                  const newEndTime = new Date(newValue);
-                                  newEndTime.setHours(newEndTime.getHours() + 1);
-                                  setValue('endTime', newEndTime);
-                                }
-                              }}
-                              slotProps={{
-                                textField: {
-                                  variant: 'standard',
-                                  error: !!errors.startTime,
-                                  helperText: errors.startTime?.message,
-                                  onClick: () => setStartTimePickerOpen(true),
-                                  sx: { width: 120 }
-                                },
-                                layout: {
-                                  sx: {
-                                    '& .MuiPickersLayout-contentWrapper .MuiClock-pin': {
-                                      backgroundColor: '#EF4345'
-                                    },
-                                    '& .MuiPickersLayout-contentWrapper .MuiClockPointer-root': {
-                                      backgroundColor: '#EF4345'
-                                    },
-                                    '& .MuiPickersLayout-contentWrapper .MuiClockPointer-thumb': {
-                                      backgroundColor: '#EF4345',
-                                      borderColor: '#EF4345'
-                                    },
-                                    '& .MuiPickersLayout-contentWrapper .MuiClockNumber-root.Mui-selected': {
-                                      backgroundColor: '#EF4345 !important'
-                                    },
-                                    '& .MuiPickersLayout-contentWrapper .MuiPickersArrowSwitcher-button.Mui-selected': {
-                                      backgroundColor: '#EF4345 !important',
-                                      color: 'white'
-                                    },
-                                    '& .MuiMultiSectionDigitalClock-root .MuiMenuItem-root.Mui-selected': {
-                                      backgroundColor: '#EF4345 !important',
-                                      color: 'white'
-                                    }
-                                  }
-                                }
-                              }}
-                            />
-                          )}
-                        />
-                        <Typography>-</Typography>
-                        <Controller
-                          name="endTime"
-                          control={control}
-                          render={({ field: { onChange, value } }) => (
-                            <TimePicker
-                              value={value}
-                              open={endTimePickerOpen}
-                              onClose={() => setEndTimePickerOpen(false)}
-                              onOpen={() => setEndTimePickerOpen(true)}
-                              onChange={(newValue) => onChange(newValue)}
-                              slotProps={{
-                                textField: {
-                                  variant: 'standard',
-                                  error: !!errors.endTime,
-                                  helperText: errors.endTime?.message,
-                                  onClick: () => setEndTimePickerOpen(true),
-                                  sx: { width: 120 }
-                                },
-                                layout: {
-                                  sx: {
-                                    '& .MuiPickersLayout-contentWrapper .MuiClock-pin': {
-                                      backgroundColor: '#EF4345'
-                                    },
-                                    '& .MuiPickersLayout-contentWrapper .MuiClockPointer-root': {
-                                      backgroundColor: '#EF4345'
-                                    },
-                                    '& .MuiPickersLayout-contentWrapper .MuiClockPointer-thumb': {
-                                      backgroundColor: '#EF4345',
-                                      borderColor: '#EF4345'
-                                    },
-                                    '& .MuiPickersLayout-contentWrapper .MuiClockNumber-root.Mui-selected': {
-                                      backgroundColor: '#EF4345 !important'
-                                    },
-                                    '& .MuiPickersLayout-contentWrapper .MuiPickersArrowSwitcher-button.Mui-selected': {
-                                      backgroundColor: '#EF4345 !important',
-                                      color: 'white'
-                                    },
-                                    '& .MuiMultiSectionDigitalClock-root .MuiMenuItem-root.Mui-selected': {
-                                      backgroundColor: '#EF4345 !important',
-                                      color: 'white'
-                                    }
-                                  }
-                                }
-                              }}
-                            />
-                          )}
-                        />
-                      </>
-                    )}
-                  </Box>
+                  <RescheduleButton
+                    event={event ?? null}
+                    eventDate={event?.initialDateScheduled ?? event?.startTime ?? defaultDate}
+                  />
 
                   {/* All Day and Recurring Row */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 5 }}>
-                    <Controller
-                      name="allDay"
-                      control={control}
-                      render={({ field: { onChange, value } }) => (
-                        <FormControlLabel
-                          control={<Checkbox checked={value} onChange={(e) => onChange(e.target.checked)} />}
-                          label="All Day"
-                        />
-                      )}
-                    />
+                  {/* Hide recurring options when editing */}
+                  {!isEditMode && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 5 }}>
+                      <Controller
+                        name="allDay"
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                          <FormControlLabel
+                            control={<Checkbox checked={value} onChange={(e) => onChange(e.target.checked)} />}
+                            label="All Day"
+                          />
+                        )}
+                      />
 
-                    {/* Hide recurring options when editing */}
-                    {!isEditMode && (
                       <Button
                         variant="outlined"
                         size="small"
@@ -1079,8 +939,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                       >
                         Recurring ▼
                       </Button>
-                    )}
-                  </Box>
+                    </Box>
+                  )}
 
                   {/* Recurring Options */}
                   {showRecurringOptions && (

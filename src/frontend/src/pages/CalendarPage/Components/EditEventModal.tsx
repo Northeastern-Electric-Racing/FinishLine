@@ -102,6 +102,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ open, onClose, event, e
       initialValues={initialValues}
       eventTypes={eventTypes}
       eventId={event.eventId}
+      event={{ ...detail, ...event }}
     />
   );
 };
