@@ -37,9 +37,10 @@ export const formatEventDate = (date: Date, tz?: string): string =>
   tz ? dayjs(date).tz(tz).format('MM/DD/YYYY') : dayjs(date).format('MM/DD/YYYY');
 
 /**
- * Format a full timestamp for Slack messages — always Eastern time.
+ * Format a full timestamp for Slack messages, including the day of the week — always Eastern time.
+ * e.g. "Tuesday, 11/18/2025 at 3:00 PM"
  */
-export const formatForSlack = (date: Date): string => dayjs(date).tz(EASTERN_TIMEZONE).format('M/D/YYYY [at] h:mm A');
+export const formatForSlack = (date: Date): string => dayjs(date).tz(EASTERN_TIMEZONE).format('dddd, M/D/YYYY [at] h:mm A');
 
 /**
  * Format a date for Slack messages — always Eastern time.
