@@ -217,6 +217,7 @@ export const convertEventToFormValues = (event: EventDetail, slot: ScheduleSlot)
     questionDocumentLink: event.questionDocumentLink,
     description: event.description,
     notificationChannelIds: event.notificationChannelIds,
+    sendSlackNotifications: event.sendSlackNotifications,
     scheduleDate,
     startTime: slot.startTime ? new Date(slot.startTime) : undefined,
     endTime: slot.endTime ? new Date(slot.endTime) : undefined,

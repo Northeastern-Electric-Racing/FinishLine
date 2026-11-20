@@ -98,7 +98,6 @@ export const eventTypeTransformer = (eventType: Prisma.Event_TypeGetPayload<Even
     description: eventType.description,
     onlyHeadsOrAboveForEventCreation: eventType.onlyHeadsOrAboveForEventCreation,
     requiresConfirmation: eventType.requiresConfirmation,
-    sendSlackNotifications: eventType.sendSlackNotifications,
     takeAttendance: eventType.takeAttendance
   } as EventType;
 };
@@ -192,6 +191,7 @@ export const eventDetailTransformer = (
     machinery: MachineryPreview[];
     workPackages: EventWorkPackagePayload[];
     documents: Document[];
+    sendSlackNotifications: boolean;
   },
   isCurrentUserOnEvent: boolean
 ): EventDetail => {
@@ -207,6 +207,7 @@ export const eventDetailTransformer = (
     machinery: event.machinery.map((machine) => ({ machineryId: machine.machineryId, name: machine.name })),
     workPackages: event.workPackages.map(eventWorkPackageTransformer),
     documents: event.documents.map(documentTransformer),
+    sendSlackNotifications: event.sendSlackNotifications,
     isCurrentUserOnEvent
   };
 };

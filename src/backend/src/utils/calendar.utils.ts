@@ -1,5 +1,13 @@
 import { Prisma, Event_Type, Organization } from '@prisma/client';
-import { User, ScheduleSlotCreateArgs, EventDocumentCreateArgs, Document, ConflictStatus, BaseEvent } from 'shared';
+import {
+  User,
+  ScheduleSlotCreateArgs,
+  EventDocumentCreateArgs,
+  Document,
+  ConflictStatus,
+  BaseEvent,
+  SlackMentionType
+} from 'shared';
 import {
   AccessDeniedException,
   DeletedException,
@@ -10,7 +18,7 @@ import {
 import prisma from '../prisma/prisma.js';
 import { getBaseEventQueryArgs } from '../prisma-query-args/event.query-args.js';
 import { baseEventTransformer } from '../transformers/calendar.transformer.js';
-import { getDevNotificationChannelId, isSlackChannelMember } from './slack.utils.js';
+import { getDevNotificationChannelId, isSlackChannelMember, sendSlackEventNotifications } from './slack.utils.js';
 import { getBotChannels } from '../integrations/slack.js';
 import { getUserSlackId } from './users.utils.js';
 
@@ -367,4 +375,45 @@ export const validateNotificationChannelIds = async (submitter: User, notificati
   if (accessResults.some((hasAccess) => !hasAccess)) {
     throw new AccessDeniedException('You are not a member of one or more of the selected notification channels');
   }
+};
+
+/**
+ * Posts the initial Slack announcement for an event to its teams, the teams of its work packages' projects,
+ * and its notification channels. The posted messages are saved as the event's notification threads.
+ *
+ * @param event The event to announce.
+ * @param submitter The user creating or editing the event.
+ * @param organizationName The name of the event's organization.
+ * @param memberSlackIds The slack ids of the members invited to the event.
+ * @param mention Whether to mention the invited members or the whole channel.
+ */
+export const sendEventAnnouncement = async (
+  event: Pick<BaseEvent, 'eventId' | 'title' | 'notificationChannelIds'> & {
+    teams: { teamId: string; slackId: string }[];
+    workPackages: { wbsElement: { name: string }; project: { teams: { teamId: string; slackId: string }[] } }[];
+  },
+  submitter: User,
+  organizationName: string,
+  memberSlackIds: string[],
+  mention?: SlackMentionType
+) => {
+  const teamsToNotify = new Map<string, { slackId: string }>();
+  for (const workPackage of event.workPackages) {
+    for (const team of workPackage.project.teams) {
+      teamsToNotify.set(team.teamId, team);
+    }
+  }
+  for (const team of event.teams) {
+    teamsToNotify.set(team.teamId, team);
+  }
+
+  await sendSlackEventNotifications(
+    Array.from(teamsToNotify.values()),
+    event,
+    submitter,
+    event.workPackages.map((wp) => wp.wbsElement.name).join(', '),
+    organizationName,
+    { memberSlackIds, mention },
+    event.notificationChannelIds
+  );
 };
