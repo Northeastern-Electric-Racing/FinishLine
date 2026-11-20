@@ -1,5 +1,5 @@
+import prisma, { PrismaTransactionClient } from '../prisma/prisma.js';
 import { wbsNumOf } from './utils.js';
-import prisma from '../prisma/prisma.js';
 import {
   Prisma,
   Change_Request,
@@ -40,11 +40,12 @@ import { validateBlockedBys } from './work-packages.utils.js';
 
 /** Makes sure that a change request has been accepted already (and not deleted)
  * @param crId - the id of the change request to check
+ * @param tx the transaction client to read with, so it sees the review inside the same transaction (defaults to prisma)
  * @returns the change request
  * @throws if the change request is unreviewed, denied, or deleted
  */
-export const validateChangeRequestAccepted = async (crId: string) => {
-  const changeRequest = await prisma.change_Request.findUnique({ where: { crId }, include: { changes: true } });
+export const validateChangeRequestAccepted = async (crId: string, tx: PrismaTransactionClient = prisma) => {
+  const changeRequest = await tx.change_Request.findUnique({ where: { crId }, include: { changes: true } });
 
   if (!changeRequest) throw new NotFoundException('Change Request', crId);
   if (changeRequest.dateDeleted) throw new HttpException(400, 'Cannot use a deleted change request!');
@@ -260,6 +261,7 @@ export const validateNoUnreviewedOpenAccountCodeCRs = async (accountCodeId: stri
  * @param reviewer  the user reviewing the change request
  * @param crId  the change request id
  * @param carNumber the car number of the change request's WBS element
+ * @param tx the review's transaction, so the project and its work packages are saved with the review
  */
 export const applyProjectProposedChanges = async (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>,
@@ -268,7 +270,8 @@ export const applyProjectProposedChanges = async (
   reviewer: User,
   crId: string,
   carNumber: number,
-  organization: Organization
+  organization: Organization,
+  tx: PrismaTransactionClient
 ) => {
   if (projectProposedChanges) {
     const links = wbsProposedChanges.links.map((link) => {
@@ -295,14 +298,15 @@ export const applyProjectProposedChanges = async (
         descriptionBullets,
         wbsProposedChanges.leadId,
         wbsProposedChanges.managerId,
-        organization
+        organization,
+        tx
       );
 
       projectWbsNum = proj.wbsNum;
     } else if (associatedProject) {
       // Map proposed links back to the current project's real linkIds so that
       // editProject's linkId-based comparator correctly detects unchanged links.
-      const currentProject = await prisma.project.findUnique({
+      const currentProject = await tx.project.findUnique({
         where: { projectId: associatedProject.projectId },
         include: { wbsElement: { include: { links: { where: { dateDeleted: null }, include: { linkType: true } } } } }
       });
@@ -323,7 +327,8 @@ export const applyProjectProposedChanges = async (
         linksWithRealIds,
         wbsProposedChanges.leadId,
         wbsProposedChanges.managerId,
-        organization
+        organization,
+        tx
       );
 
       // editProject throws when the project doesn't exist, so it's here
@@ -338,7 +343,8 @@ export const applyProjectProposedChanges = async (
         null,
         reviewer,
         crId,
-        organization
+        organization,
+        tx
       );
     }
   }
@@ -353,6 +359,7 @@ export const applyProjectProposedChanges = async (
  * @param reviewer  the user reviewing the change request
  * @param crId  the change request id
  * @param organizationId the organization id of the user
+ * @param tx the review's transaction, so the work package is saved with the review
  */
 export const applyWorkPackageProposedChanges = async (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>,
@@ -361,7 +368,8 @@ export const applyWorkPackageProposedChanges = async (
   associatedWorkPackage: Work_Package | null,
   reviewer: User,
   crId: string,
-  organization: Organization
+  organization: Organization,
+  tx: PrismaTransactionClient
 ) => {
   if (existingWbsNum) {
     await WorkPackagesService.createWorkPackage(
@@ -376,7 +384,8 @@ export const applyWorkPackageProposedChanges = async (
         descriptionBulletToDescriptionBulletPreview
       ),
       existingWbsNum,
-      organization
+      organization,
+      tx
     );
   } else if (associatedWorkPackage) {
     await WorkPackagesService.editWorkPackage(
@@ -391,7 +400,8 @@ export const applyWorkPackageProposedChanges = async (
       wbsProposedChanges.proposedDescriptionBulletChanges.map(descriptionBulletToDescriptionBulletPreview),
       wbsProposedChanges.leadId,
       wbsProposedChanges.managerId,
-      organization
+      organization,
+      tx
     );
   }
 };
@@ -549,21 +559,29 @@ export const validateWbsElement = async (wbsNum: WbsNumber, organization: Organi
 };
 
 /**
+ * Stands in for a direct edit's change request id while its changes are worked out, before the minor-edit CR
+ * exists. It is always replaced with the real id before anything is saved
+ */
+export const PENDING_CHANGE_REQUEST_ID = 'pending';
+
+/**
  * Creates an auto-approved change request for an edit that doesn't need review,
  * so the edit's changes can still be recorded in change history
  * @param submitter the user making the edit, also recorded as the reviewer
  * @param wbsElementId the wbs element being edited
  * @param organizationId the organization the user is currently in
+ * @param tx the transaction client to create it in, so it rolls back with the edit (defaults to prisma)
  * @returns the id of the created change request
  */
 export const createNonMeaningfulChangeRequest = async (
   submitter: User,
   wbsElementId: string,
-  organizationId: string
+  organizationId: string,
+  tx: PrismaTransactionClient = prisma
 ): Promise<string> => {
-  const numChangeRequests = await prisma.change_Request.count({ where: { organizationId } });
+  const numChangeRequests = await tx.change_Request.count({ where: { organizationId } });
 
-  const changeRequest = await prisma.change_Request.create({
+  const changeRequest = await tx.change_Request.create({
     data: {
       submitter: { connect: { userId: submitter.userId } },
       wbsElement: { connect: { wbsElementId } },

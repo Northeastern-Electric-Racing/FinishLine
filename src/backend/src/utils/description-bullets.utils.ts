@@ -1,4 +1,4 @@
-import prisma from '../prisma/prisma.js';
+import prisma, { PrismaTransactionClient } from '../prisma/prisma.js';
 import { DescriptionBullet, DescriptionBulletPreview, isLeadership, User } from 'shared';
 import { Description_Bullet, Prisma } from '@prisma/client';
 import { HttpException, NotFoundException } from './errors.utils.js';
@@ -104,15 +104,16 @@ export const addDescriptionBulletsToWbsElement = async (
   addedDetails: string[],
   wbsElementId: string,
   typeName: string,
-  organizationId: string
+  organizationId: string,
+  tx: PrismaTransactionClient = prisma
 ) => {
-  const wbsElement = await prisma.wBS_Element.findUnique({ where: { wbsElementId } });
+  const wbsElement = await tx.wBS_Element.findUnique({ where: { wbsElementId } });
   if (!wbsElement) throw new NotFoundException('WBS Element', wbsElementId);
 
   const foundType = await validateDescriptionBulletType(typeName, organizationId);
 
   if (addedDetails.length > 0) {
-    await prisma.description_Bullet.createMany({
+    await tx.description_Bullet.createMany({
       data: addedDetails.map((element) => {
         return {
           detail: element,
@@ -128,15 +129,16 @@ export const addDescriptionBulletsToWorkPackageTemplate = async (
   addedDetails: string[],
   templateId: string,
   typeName: string,
-  organizationId: string
+  organizationId: string,
+  tx: PrismaTransactionClient = prisma
 ) => {
-  const template = await prisma.work_Package_Template.findUnique({ where: { wbsElementTemplateId: templateId } });
+  const template = await tx.work_Package_Template.findUnique({ where: { wbsElementTemplateId: templateId } });
   if (!template) throw new NotFoundException('Work Package Template', templateId);
 
   const foundType = await validateDescriptionBulletType(typeName, organizationId);
 
   if (addedDetails.length > 0) {
-    await prisma.description_Bullet.createMany({
+    await tx.description_Bullet.createMany({
       data: addedDetails.map((element) => {
         return {
           detail: element,
@@ -152,15 +154,16 @@ export const addDescriptionBulletsToProjectTemplate = async (
   addedDetails: string[],
   templateId: string,
   typeName: string,
-  organizationId: string
+  organizationId: string,
+  tx: PrismaTransactionClient = prisma
 ) => {
-  const template = await prisma.project_Template.findUnique({ where: { wbsElementTemplateId: templateId } });
+  const template = await tx.project_Template.findUnique({ where: { wbsElementTemplateId: templateId } });
   if (!template) throw new NotFoundException('Project Template', templateId);
 
   const foundType = await validateDescriptionBulletType(typeName, organizationId);
 
   if (addedDetails.length > 0) {
-    await prisma.description_Bullet.createMany({
+    await tx.description_Bullet.createMany({
       data: addedDetails.map((element) => {
         return {
           detail: element,
@@ -175,74 +178,54 @@ export const addDescriptionBulletsToProjectTemplate = async (
 export enum DescriptionBulletDestination {
   WBS_ELEMENT,
   WORK_PACKAGE_TEMPLATE,
-  PROJECT_TEMPLATE,
-  PROPOSED_CHANGES
+  PROJECT_TEMPLATE
 }
 
 export const addRawDescriptionBullets = async (
   descriptionBullets: DescriptionBulletPreview[],
   destination: DescriptionBulletDestination,
   destinationId: string,
-  organizationId: string
+  organizationId: string,
+  tx: PrismaTransactionClient = prisma
 ) => {
   const descriptionBulletsSeparatedByType = separateDescriptionBulletsByType(descriptionBullets);
-  const promises: Promise<void>[] = [];
+
+  // await each write so errors are caught and the writes stay inside the caller's transaction
   for (const [type, bullets] of descriptionBulletsSeparatedByType) {
+    const details = bullets.map((bullet) => bullet.detail);
     switch (destination) {
       case DescriptionBulletDestination.WBS_ELEMENT:
-        promises.concat(
-          addDescriptionBulletsToWbsElement(
-            bullets.map((bullet) => bullet.detail),
-            destinationId,
-            type,
-            organizationId
-          )
-        );
+        await addDescriptionBulletsToWbsElement(details, destinationId, type, organizationId, tx);
         break;
       case DescriptionBulletDestination.WORK_PACKAGE_TEMPLATE:
-        promises.concat(
-          addDescriptionBulletsToWorkPackageTemplate(
-            bullets.map((bullet) => bullet.detail),
-            destinationId,
-            type,
-            organizationId
-          )
-        );
+        await addDescriptionBulletsToWorkPackageTemplate(details, destinationId, type, organizationId, tx);
         break;
       case DescriptionBulletDestination.PROJECT_TEMPLATE:
-        promises.concat(
-          addDescriptionBulletsToProjectTemplate(
-            bullets.map((bullet) => bullet.detail),
-            destinationId,
-            type,
-            organizationId
-          )
-        );
+        await addDescriptionBulletsToProjectTemplate(details, destinationId, type, organizationId, tx);
         break;
-      case DescriptionBulletDestination.PROPOSED_CHANGES:
-        // TODO add proposed changes
-        break;
+      // removed proposed changes case dead code
     }
   }
-
-  await Promise.all(promises);
 };
 
 // edit descrption bullets in the db for each id and detail pair
-export const editDescriptionBullets = async (editedIdsAndDetails: DescriptionBulletPreview[], organizationId: string) => {
-  if (editedIdsAndDetails.length < 1) return;
-  const promises = editedIdsAndDetails.map(async (element) => {
-    const foundType = await prisma.description_Bullet_Type.findUnique({
+export const editDescriptionBullets = async (
+  editedIdsAndDetails: DescriptionBulletPreview[],
+  organizationId: string,
+  tx: PrismaTransactionClient = prisma
+) => {
+  // await each write so errors are caught and the writes stay inside the caller's transaction
+  for (const element of editedIdsAndDetails) {
+    const foundType = await tx.description_Bullet_Type.findUnique({
       where: { uniqueDescriptionBulletType: { name: element.type, organizationId } }
     });
     if (!foundType) throw new NotFoundException('Description Bullet Type', element.type);
 
-    await prisma.description_Bullet.update({
+    await tx.description_Bullet.update({
       where: { descriptionId: element.id },
       data: { detail: element.detail, descriptionBulletTypeId: foundType.id }
     });
-  });
-  await Promise.resolve(promises);
+  }
 };
 
 export const validateDescriptionBullets = async (
@@ -264,8 +247,11 @@ export const validateDescriptionBulletType = async (typeName: string, organizati
   return foundType;
 };
 
-export const markDescriptionBulletsAsDeleted = async (descriptionBullets: DescriptionBulletPreview[]) => {
-  await prisma.description_Bullet.updateMany({
+export const markDescriptionBulletsAsDeleted = async (
+  descriptionBullets: DescriptionBulletPreview[],
+  tx: PrismaTransactionClient = prisma
+) => {
+  await tx.description_Bullet.updateMany({
     where: {
       descriptionId: {
         in: descriptionBullets.map((bullet) => bullet.id)

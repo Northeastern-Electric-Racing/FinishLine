@@ -1,6 +1,6 @@
 import { LinkCreateArgs } from 'shared';
 import { ChangeCreateArgs } from './changes.utils.js';
-import prisma from '../prisma/prisma.js';
+import prisma, { PrismaTransactionClient } from '../prisma/prisma.js';
 import { NotFoundException } from './errors.utils.js';
 
 /**
@@ -9,6 +9,7 @@ import { NotFoundException } from './errors.utils.js';
  * @param projectId the project of the links
  * @param userId the user making the changes
  * @param organizationId the organization of the project
+ * @param tx the transaction client to run the writes in (defaults to prisma)
  */
 export const updateLinks = async (
   linkChanges: {
@@ -19,10 +20,11 @@ export const updateLinks = async (
   },
   wbsElementId: string,
   userId: string,
-  organizationId: string
+  organizationId: string,
+  tx: PrismaTransactionClient = prisma
 ) => {
   const promises = linkChanges.addedElements.map(async (link) => {
-    const linkType = await prisma.link_Type.findUnique({
+    const linkType = await tx.link_Type.findUnique({
       where: {
         uniqueLinkType: { name: link.linkTypeName, organizationId }
       }
@@ -30,7 +32,7 @@ export const updateLinks = async (
 
     if (!linkType) throw new NotFoundException('Link Type', `${link.linkTypeName}`);
 
-    await prisma.link.create({
+    await tx.link.create({
       data: {
         url: link.url,
         linkTypeId: linkType.id,
@@ -41,7 +43,7 @@ export const updateLinks = async (
   });
 
   const editPromises = linkChanges.editedElements.map(async (link) => {
-    await prisma.link.update({
+    await tx.link.update({
       where: {
         linkId: link.linkId
       },
@@ -52,7 +54,7 @@ export const updateLinks = async (
   });
 
   const deletePromises = linkChanges.deletedElements.map(async (link) => {
-    await prisma.link.update({
+    await tx.link.update({
       where: {
         linkId: link.linkId
       },

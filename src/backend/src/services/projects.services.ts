@@ -17,7 +17,7 @@ import {
   User,
   projectEditNeedsReview
 } from 'shared';
-import prisma from '../prisma/prisma.js';
+import prisma, { PrismaTransactionClient } from '../prisma/prisma.js';
 import { getProjectDropdownQueryArgs } from '../prisma-query-args/dropdown.query-args.js';
 import { projectDropdownTransformer } from '../transformers/dropdown.transformer.js';
 import {
@@ -26,7 +26,11 @@ import {
   projectListItemTransformer,
   projectOverviewCardTransformer
 } from '../transformers/projects.transformer.js';
-import { createNonMeaningfulChangeRequest, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import {
+  createNonMeaningfulChangeRequest,
+  PENDING_CHANGE_REQUEST_ID,
+  validateChangeRequestAccepted
+} from '../utils/change-requests.utils.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
@@ -36,7 +40,12 @@ import {
   AccessDeniedException,
   InvalidOrganizationException
 } from '../utils/errors.utils.js';
-import { updateProjectAndCreateChanges, getHighestProjectNumber } from '../utils/projects.utils.js';
+import {
+  applyProjectChanges,
+  getHighestProjectNumber,
+  getProjectChanges,
+  updateProjectAndCreateChanges
+} from '../utils/projects.utils.js';
 import { wbsNumOf } from '../utils/utils.js';
 import WorkPackagesService from './work-packages.services.js';
 import { userHasPermission } from '../utils/users.utils.js';
@@ -444,6 +453,7 @@ export default class ProjectsService {
    * @param leadId the new lead of the project
    * @param managerId the new manager of the project
    * @param organizationId the id of the organization the user is currently in
+   * @param tx the transaction to run in when applying a change request; a direct create starts its own
    * @returns the created project; the create form reads its wbs number to add the work packages
    * @throws if the user doesn't have permission or if the change request is invalid
    */
@@ -459,14 +469,35 @@ export default class ProjectsService {
     descriptionBullets: DescriptionBulletPreview[],
     leadId: string | null,
     managerId: string | null,
-    organization: Organization
+    organization: Organization,
+    tx?: PrismaTransactionClient
   ): Promise<BaseProject> {
+    // a direct create gets its own transaction, so the project and everything set on it save together
+    if (!tx) {
+      return prisma.$transaction((newTx) =>
+        ProjectsService.createProject(
+          user,
+          crId,
+          carNumber,
+          name,
+          summary,
+          teamIds,
+          budget,
+          linkCreateArgs,
+          descriptionBullets,
+          leadId,
+          managerId,
+          organization,
+          newTx
+        )
+      );
+    }
     const { userId } = user;
     if (await userHasPermission(userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create projects');
 
     if (crId) {
-      await validateChangeRequestAccepted(crId);
+      await validateChangeRequestAccepted(crId, tx);
     }
 
     if (teamIds.length > 0) {
@@ -477,7 +508,7 @@ export default class ProjectsService {
       }
     }
 
-    const carWbs = await prisma.wBS_Element.findUnique({
+    const carWbs = await tx.wBS_Element.findUnique({
       where: {
         wbsNumber: { carNumber, projectNumber: 0, workPackageNumber: 0, organizationId: organization.organizationId }
       },
@@ -498,7 +529,7 @@ export default class ProjectsService {
       : [];
 
     // create the wbs element and project as well as the associated change
-    const createdWbsElement = await prisma.wBS_Element.create({
+    const createdWbsElement = await tx.wBS_Element.create({
       data: {
         carNumber,
         projectNumber: maxProjectNumber + 1,
@@ -536,11 +567,12 @@ export default class ProjectsService {
       linkCreateArgs,
       leadId,
       managerId,
-      organization.organizationId
+      organization.organizationId,
+      tx
     );
 
     // read back after the lead, manager, and budget are set
-    const project = await prisma.project.findUniqueOrThrow({
+    const project = await tx.project.findUniqueOrThrow({
       where: { projectId: createdProject.projectId },
       ...getBaseProjectQueryArgs()
     });
@@ -560,6 +592,7 @@ export default class ProjectsService {
    * @param leadId the new lead of the project
    * @param managerId the new manager of the project
    * @param organizationId the id of the organization the user is currently in
+   * @param tx the transaction to run in when applying a change request; a direct edit starts its own
    */
   static async editProject(
     user: User,
@@ -572,14 +605,34 @@ export default class ProjectsService {
     linkCreateArgs: LinkCreateArgs[],
     leadId: string | null,
     managerId: string | null,
-    organization: Organization
+    organization: Organization,
+    tx?: PrismaTransactionClient
   ): Promise<void> {
+    // a direct edit gets its own transaction, so the minor-edit CR, the edit, and its changes save together
+    if (!tx) {
+      return prisma.$transaction((newTx) =>
+        ProjectsService.editProject(
+          user,
+          projectId,
+          crId,
+          name,
+          budget,
+          summary,
+          newDescriptionBullets,
+          linkCreateArgs,
+          leadId,
+          managerId,
+          organization,
+          newTx
+        )
+      );
+    }
     const { userId } = user;
     if (await userHasPermission(userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('edit projects');
 
     // get the original project so we can compare things
-    const originalProject = await prisma.project.findUnique({
+    const originalProject = await tx.project.findUnique({
       where: { projectId },
       select: {
         projectId: true,
@@ -617,17 +670,13 @@ export default class ProjectsService {
 
     if (needsReview) {
       if (!crId) throw new HttpException(400, 'This edit requires an accepted change request');
-      await validateChangeRequestAccepted(crId);
+      await validateChangeRequestAccepted(crId, tx);
     }
 
-    // CR approval passes the approved CR's id; a direct edit that doesn't need review
-    // gets its own auto-approved change request so it still shows up in change history
-    const changeRequestId =
-      crId ?? (await createNonMeaningfulChangeRequest(user, originalProject.wbsElementId, organization.organizationId));
-
-    await updateProjectAndCreateChanges(
+    // work out the changes before creating a minor-edit CR, so an edit that changes nothing doesn't create one
+    const projectChanges = await getProjectChanges(
       originalProject.projectId,
-      changeRequestId,
+      crId ?? PENDING_CHANGE_REQUEST_ID,
       userId,
       name,
       budget,
@@ -636,7 +685,29 @@ export default class ProjectsService {
       linkCreateArgs,
       leadId,
       managerId,
-      organization.organizationId
+      organization.organizationId,
+      tx
+    );
+
+    // a direct edit that changes nothing has nothing to save or record
+    if (!crId && projectChanges.changes.length === 0) return;
+
+    // CR approval passes the approved CR's id; a direct edit gets its own auto-approved change request
+    // so it still shows up in change history
+    const changeRequestId =
+      crId ?? (await createNonMeaningfulChangeRequest(user, originalProject.wbsElementId, organization.organizationId, tx));
+
+    await applyProjectChanges(
+      projectChanges,
+      changeRequestId,
+      userId,
+      name,
+      budget,
+      summary,
+      leadId,
+      managerId,
+      organization.organizationId,
+      tx
     );
   }
 

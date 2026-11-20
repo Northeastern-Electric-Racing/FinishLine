@@ -88,4 +88,14 @@ const baseClient = new PrismaClient({
 
 const prisma = baseClient.$extends(queryLoggerExtension);
 
+/**
+ * The client available inside prisma.$transaction(async (tx) => ...).
+ * The regular prisma client also fits this type, so functions that take it
+ * can be called either inside or outside a transaction.
+ */
+export type PrismaTransactionClient = Omit<
+  typeof prisma,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+>;
+
 export default prisma;
