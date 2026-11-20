@@ -19,7 +19,7 @@ import {
   workPackageEditNeedsReview,
   WorkPackageTimelineFilters
 } from 'shared';
-import prisma from '../prisma/prisma.js';
+import prisma, { PrismaTransactionClient } from '../prisma/prisma.js';
 import {
   NotFoundException,
   HttpException,
@@ -212,6 +212,7 @@ export default class WorkPackagesService {
    * @param blockedBy the WBS elements that need to be completed before this WP
    * @param descriptionBullets the description bullets associated with this WP
    * @param organizationId the id of the organization that the user is currently in
+   * @param tx the transaction to run in when applying a change request; a direct create starts its own
    * @returns the WBS number of the successfully created work package
    * @throws if the work package could not be created
    */
@@ -225,13 +226,32 @@ export default class WorkPackagesService {
     blockedBy: WbsNumber[],
     descriptionBullets: DescriptionBulletPreview[],
     projectWbsNum: WbsNumber,
-    organization: Organization
+    organization: Organization,
+    tx?: PrismaTransactionClient
   ): Promise<BaseWorkPackage> {
+    // a direct create gets its own transaction, so the work package, its bullets, and its changes save together
+    if (!tx) {
+      return prisma.$transaction((newTx) =>
+        WorkPackagesService.createWorkPackage(
+          user,
+          name,
+          crId,
+          stage,
+          startDate,
+          duration,
+          blockedBy,
+          descriptionBullets,
+          projectWbsNum,
+          organization,
+          newTx
+        )
+      );
+    }
     if (await userHasPermission(user.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create work packages');
 
     if (crId) {
-      await validateChangeRequestAccepted(crId);
+      await validateChangeRequestAccepted(crId, tx);
     }
 
     const blockedByElements: WBS_Element[] = await validateBlockedBys(blockedBy, organization.organizationId);
@@ -240,7 +260,7 @@ export default class WorkPackagesService {
     // and what number work package this should be
     const { carNumber, projectNumber } = projectWbsNum;
 
-    const project = await prisma.project.findFirst({
+    const project = await tx.project.findFirst({
       where: {
         wbsElement: {
           carNumber,
@@ -280,7 +300,7 @@ export default class WorkPackagesService {
       : [];
 
     // add to the database
-    const created = await prisma.work_Package.create({
+    const created = await tx.work_Package.create({
       data: {
         wbsElement: {
           create: {
@@ -334,10 +354,11 @@ export default class WorkPackagesService {
       descriptionBullets,
       DescriptionBulletDestination.WBS_ELEMENT,
       created.wbsElementId,
-      organization.organizationId
+      organization.organizationId,
+      tx
     );
 
-    await prisma.change.createMany({ data: changes.changes });
+    await tx.change.createMany({ data: changes.changes });
 
     return baseWorkPackageTransformer(created);
   }
@@ -355,6 +376,7 @@ export default class WorkPackagesService {
    * @param leadId the new lead for this work package
    * @param managerId the new manager for this work package
    * @param organizationId the id of the organization that the user is currently in
+   * @param tx the transaction to run in when applying a change request; a direct edit starts its own
    */
   static async editWorkPackage(
     user: User,
@@ -368,15 +390,37 @@ export default class WorkPackagesService {
     descriptionBullets: DescriptionBulletPreview[],
     leadId: string | null,
     managerId: string | null,
-    organization: Organization
+    organization: Organization,
+    tx?: PrismaTransactionClient
   ): Promise<void> {
+    // a direct edit gets its own transaction, so the minor-edit CR, the edit, and its changes save together
+    if (!tx) {
+      return prisma.$transaction((newTx) =>
+        WorkPackagesService.editWorkPackage(
+          user,
+          workPackageId,
+          name,
+          crId,
+          stage,
+          startDate,
+          duration,
+          blockedBy,
+          descriptionBullets,
+          leadId,
+          managerId,
+          organization,
+          newTx
+        )
+      );
+    }
+
     const { userId } = user;
     // verify user is allowed to edit work packages
     if (await userHasPermission(userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('edit work packages');
 
     // get the original work package so we can compare things
-    const originalWorkPackage = await prisma.work_Package.findFirst({
+    const originalWorkPackage = await tx.work_Package.findFirst({
       where: { workPackageId, wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
       select: {
         wbsElementId: true,
@@ -420,7 +464,7 @@ export default class WorkPackagesService {
     // the crId must match a valid approved change request
     if (needsReview) {
       if (!crId) throw new HttpException(400, 'This edit requires an accepted change request');
-      await validateChangeRequestAccepted(crId);
+      await validateChangeRequestAccepted(crId, tx);
     }
 
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
@@ -428,7 +472,7 @@ export default class WorkPackagesService {
     // CR approval passes the approved CR's id; a direct edit that doesn't need review
     // gets its own auto-approved change request so it still shows up in change history
     const changeRequestId =
-      crId ?? (await createNonMeaningfulChangeRequest(user, wbsElementId, organization.organizationId));
+      crId ?? (await createNonMeaningfulChangeRequest(user, wbsElementId, organization.organizationId, tx));
 
     const changes = await getWorkPackageChanges(
       originalWorkPackage.wbsElement.name,
@@ -459,7 +503,7 @@ export default class WorkPackagesService {
         : originalWorkPackage.wbsElement.status;
 
     // update the work package with the input fields
-    await prisma.work_Package.update({
+    await tx.work_Package.update({
       where: { wbsElementId },
       data: {
         startDate: new Date(startDate),
@@ -482,7 +526,7 @@ export default class WorkPackagesService {
 
     // Update any deleted description bullets to have their date deleted as right now
     if (changes.deletedDescriptionBullets.length > 0) {
-      await prisma.description_Bullet.updateMany({
+      await tx.description_Bullet.updateMany({
         where: { descriptionId: { in: changes.deletedDescriptionBullets.map((descriptionBullet) => descriptionBullet.id) } },
         data: { dateDeleted: new Date() }
       });
@@ -493,14 +537,15 @@ export default class WorkPackagesService {
       changes.addedDescriptionBullets,
       DescriptionBulletDestination.WBS_ELEMENT,
       wbsElementId,
-      organization.organizationId
+      organization.organizationId,
+      tx
     );
 
     // edit the expected changes and deliverables
-    await editDescriptionBullets(changes.editedDescriptionBullets, organization.organizationId);
+    await editDescriptionBullets(changes.editedDescriptionBullets, organization.organizationId, tx);
 
     // create the changes in prisma
-    await prisma.change.createMany({ data: changes.changes });
+    await tx.change.createMany({ data: changes.changes });
   }
 
   /**

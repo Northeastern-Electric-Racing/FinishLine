@@ -555,16 +555,18 @@ export const validateWbsElement = async (wbsNum: WbsNumber, organization: Organi
  * @param submitter the user making the edit, also recorded as the reviewer
  * @param wbsElementId the wbs element being edited
  * @param organizationId the organization the user is currently in
+ * @param tx the transaction client to create it in, so it rolls back with the edit (defaults to prisma)
  * @returns the id of the created change request
  */
 export const createNonMeaningfulChangeRequest = async (
   submitter: User,
   wbsElementId: string,
-  organizationId: string
+  organizationId: string,
+  tx: PrismaTransactionClient = prisma
 ): Promise<string> => {
-  const numChangeRequests = await prisma.change_Request.count({ where: { organizationId } });
+  const numChangeRequests = await tx.change_Request.count({ where: { organizationId } });
 
-  const changeRequest = await prisma.change_Request.create({
+  const changeRequest = await tx.change_Request.create({
     data: {
       submitter: { connect: { userId: submitter.userId } },
       wbsElement: { connect: { wbsElementId } },
