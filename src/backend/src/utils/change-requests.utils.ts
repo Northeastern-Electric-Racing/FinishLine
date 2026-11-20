@@ -550,6 +550,12 @@ export const validateWbsElement = async (wbsNum: WbsNumber, organization: Organi
 };
 
 /**
+ * Stands in for a direct edit's change request id while its changes are worked out, before the minor-edit CR
+ * exists. It is always replaced with the real id before anything is saved
+ */
+export const PENDING_CHANGE_REQUEST_ID = 'pending';
+
+/**
  * Creates an auto-approved change request for an edit that doesn't need review,
  * so the edit's changes can still be recorded in change history
  * @param submitter the user making the edit, also recorded as the reviewer

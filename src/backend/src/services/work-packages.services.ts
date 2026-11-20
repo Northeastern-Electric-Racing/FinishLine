@@ -39,7 +39,11 @@ import {
   workPackageDetailTransformer
 } from '../transformers/work-packages.transformer.js';
 import { workPackageDropdownTransformer } from '../transformers/dropdown.transformer.js';
-import { createNonMeaningfulChangeRequest, validateChangeRequestAccepted } from '../utils/change-requests.utils.js';
+import {
+  createNonMeaningfulChangeRequest,
+  PENDING_CHANGE_REQUEST_ID,
+  validateChangeRequestAccepted
+} from '../utils/change-requests.utils.js';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils.js';
 import { getWorkPackageChanges } from '../utils/changes.utils.js';
 import {
@@ -469,11 +473,7 @@ export default class WorkPackagesService {
 
     const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
 
-    // CR approval passes the approved CR's id; a direct edit that doesn't need review
-    // gets its own auto-approved change request so it still shows up in change history
-    const changeRequestId =
-      crId ?? (await createNonMeaningfulChangeRequest(user, wbsElementId, organization.organizationId, tx));
-
+    // work out the changes before creating a minor-edit CR, so an edit that changes nothing doesn't create one
     const changes = await getWorkPackageChanges(
       originalWorkPackage.wbsElement.name,
       name,
@@ -491,10 +491,19 @@ export default class WorkPackagesService {
       managerId,
       originalWorkPackage.wbsElement.descriptionBullets,
       descriptionBullets,
-      changeRequestId,
+      crId ?? PENDING_CHANGE_REQUEST_ID,
       wbsElementId,
       userId
     );
+
+    // a direct edit that changes nothing has nothing to save or record
+    if (!crId && changes.changes.length === 0) return;
+
+    // CR approval passes the approved CR's id; a direct edit gets its own auto-approved change request
+    // so it still shows up in change history
+    const changeRequestId =
+      crId ?? (await createNonMeaningfulChangeRequest(user, wbsElementId, organization.organizationId, tx));
+    const changesToCreate = changes.changes.map((change) => ({ ...change, changeRequestId }));
 
     // set the status of the wbs element to active if an edit is made to a completed version
     const status =
@@ -545,7 +554,7 @@ export default class WorkPackagesService {
     await editDescriptionBullets(changes.editedDescriptionBullets, organization.organizationId, tx);
 
     // create the changes in prisma
-    await tx.change.createMany({ data: changes.changes });
+    await tx.change.createMany({ data: changesToCreate });
   }
 
   /**
