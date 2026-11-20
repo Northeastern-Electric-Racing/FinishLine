@@ -712,7 +712,7 @@ describe('Change Request Tests', () => {
         managerId: current.managerId ?? undefined,
         startDate: current.startDate,
         duration: current.duration,
-        stage: null,
+        stage: undefined,
         descriptionBullets: current.descriptionBullets,
         blockedBy: [],
         links: []
