@@ -123,7 +123,7 @@ calendarRouter.post(
   isDate(body('scheduleSlots.*.endTime')),
   body('scheduleSlots.*.allDay').isBoolean(),
   body('mention').isIn(['USER', 'CHANNEL']),
-  body('sendSlackNotifications').optional().isBoolean(),
+  body('sendSlackNotifications').default(false).isBoolean(),
   validateInputs,
   CalendarController.createEvent
 );
@@ -154,7 +154,7 @@ calendarRouter.post(
   body('notificationChannelIds.*').isString(),
   body('questionDocumentLink').optional().isString(),
   body('description').optional().isString(),
-  body('sendSlackNotifications').optional().isBoolean(),
+  body('sendSlackNotifications').default(false).isBoolean(),
   validateInputs,
   CalendarController.editEvent
 );

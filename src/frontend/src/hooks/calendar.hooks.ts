@@ -91,7 +91,7 @@ export interface EventCreateArgs {
   initialDateScheduled: Date;
   scheduleSlots: ScheduleSlotCreateArgs[];
   mention?: SlackMentionType;
-  sendSlackNotifications?: boolean;
+  sendSlackNotifications: boolean;
 }
 
 export interface EditEventArgs {
@@ -110,7 +110,7 @@ export interface EditEventArgs {
   questionDocumentLink?: string;
   description?: string;
   notificationChannelIds: string[];
-  sendSlackNotifications?: boolean;
+  sendSlackNotifications: boolean;
 }
 
 export interface EditScheduleSlotArgs {

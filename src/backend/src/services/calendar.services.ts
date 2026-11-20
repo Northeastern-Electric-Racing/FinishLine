@@ -60,7 +60,8 @@ import {
   buildScheduledTimesOverlap,
   scheduleSlotOverlapWhere,
   findMatchingTimeOfDaySlots,
-  validateNotificationChannelIds
+  validateNotificationChannelIds,
+  sendEventAnnouncement
 } from '../utils/calendar.utils.js';
 import { IcsEvent } from '../utils/ics.utils.js';
 import {
@@ -77,7 +78,6 @@ import { sendEventPopUp } from '../utils/pop-up.utils.js';
 import {
   sendSlackEventConfirmNotification,
   sendEventConfirmationToThread,
-  sendSlackEventNotifications,
   sendEventScheduledSlackNotif,
   sendEventUserConfirmationToThread
 } from '../utils/slack.utils.js';
@@ -300,7 +300,7 @@ export default class CalendarService {
    * @param location Location of the event.
    * @param zoomLink Zoom Link if the event is online.
    * @param description Describes the event.
-   * @param sendSlackNotifications Whether slack notifications should be sent for this event. Defaults to true.
+   * @param sendSlackNotifications Whether slack notifications should be sent for this event. Defaults to false.
    *
    * @returns The id of the created event, so the caller can attach documents to it.
    *
@@ -326,7 +326,8 @@ export default class CalendarService {
     location?: string,
     zoomLink?: string,
     description?: string,
-    mention?: SlackMentionType
+    mention?: SlackMentionType,
+    sendSlackNotifications: boolean = false
   ): Promise<{ eventId: string }> {
     if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
     // Validate eventTypeId
@@ -570,7 +571,7 @@ export default class CalendarService {
       }
     }
 
-    if (foundEventType.sendSlackNotifications) {
+    if (sendSlackNotifications) {
       const memberIds = [...new Set(optionalMemberIds.concat(allRequiredMembers))];
 
       // get the user settings for all the members invited, who are leaderingship
@@ -606,25 +607,12 @@ export default class CalendarService {
         organization.organizationId
       );
 
-      const teamsToNotify = new Map<string, { slackId: string }>();
-      for (const project of projects) {
-        for (const team of project.teams) {
-          teamsToNotify.set(team.teamId, team);
-        }
-      }
-
-      for (const team of newEvent.teams) {
-        teamsToNotify.set(team.teamId, team);
-      }
-
-      await sendSlackEventNotifications(
-        Array.from(teamsToNotify.values()),
+      await sendEventAnnouncement(
         newEvent,
         submitter,
-        workPackageNames,
         organization.name,
-        { memberSlackIds: memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id), mention },
-        newEvent.notificationChannelIds
+        memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id),
+        mention
       );
     }
 
@@ -651,7 +639,9 @@ export default class CalendarService {
    * @param location Location of the event.
    * @param zoomLink Zoom Link if the event is online.
    * @param description Describes the event.
-   * @param sendSlackNotifications Whether slack notifications should be sent for this event.
+   * @param sendSlackNotifications Whether slack notifications should be sent for this event. Defaults to false.
+   *   If notifications are turned on for an event that has never been announced, the initial announcement is posted
+   *   so that later confirmation and reschedule replies have a thread to post to.
    *
    * @throws NotFoundException If the given event type, member IDs, shop IDs, machinery IDs, work package IDs, document IDs, or approvedByUserId are not found.
    * @throws InvalidOrganizationException If the given event type, members, shops, machinery, work packages, or approvedByUserId are not part of the same organization.
@@ -674,7 +664,8 @@ export default class CalendarService {
     questionDocumentLink?: string,
     location?: string,
     zoomLink?: string,
-    description?: string
+    description?: string,
+    sendSlackNotifications: boolean = false
   ): Promise<void> {
     if (!title.trim()) throw new HttpException(400, 'Title cannot be only whitespace');
     // validate eventId
@@ -685,6 +676,7 @@ export default class CalendarService {
         eventTypeId: true,
         userCreatedId: true,
         notificationChannelIds: true,
+        sendSlackNotifications: true,
         documents: { where: { dateDeleted: null }, select: { documentId: true, googleFileId: true, name: true } }
       }
     });
@@ -888,8 +880,42 @@ export default class CalendarService {
     //set any deleted documents with a dateDeleted
     await removeDeletedEventDocuments(documents, foundEvent.documents, submitter);
 
-    if (status === Event_Status.CONFIRMED && updatedEvent.sendSlackNotifications) {
-      await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
+    let { notificationSlackThreads } = updatedEvent;
+
+    // An event created with notifications off was never announced, so post the announcement when they're
+    // turned on to give confirmation and reschedule replies a thread to post to
+    if (!foundEvent.sendSlackNotifications && sendSlackNotifications && notificationSlackThreads.length === 0) {
+      const memberUserSettings = await prisma.user_Settings.findMany({
+        where: { userId: { in: [...allRequiredMembers, ...optionalMemberIds] } },
+        select: { slackId: true }
+      });
+      // only read when notifications are turned on for an event that was never announced
+      const updatedEventNotifs = await prisma.event.findUniqueOrThrow({
+        where: { eventId },
+        select: {
+          eventId: true,
+          title: true,
+          notificationChannelIds: true,
+          teams: { select: { teamId: true, slackId: true } },
+          workPackages: {
+            select: {
+              wbsElement: { select: { name: true } },
+              project: { select: { teams: { select: { teamId: true, slackId: true } } } }
+            }
+          }
+        }
+      });
+      await sendEventAnnouncement(
+        updatedEventNotifs,
+        submitter,
+        organization.name,
+        memberUserSettings.map((s) => s.slackId).filter((id): id is string => !!id)
+      );
+      notificationSlackThreads = await prisma.message_Info.findMany({ where: { eventId } });
+    }
+
+    if (status === Event_Status.CONFIRMED && sendSlackNotifications) {
+      await sendEventConfirmationToThread(notificationSlackThreads, updatedEvent.userCreated);
     }
   }
 
@@ -1173,14 +1199,9 @@ export default class CalendarService {
 
     if (!updatedEvent) throw new NotFoundException('Event', event.eventId);
 
-    const foundEventType = await prisma.event_Type.findUnique({
-      where: { eventTypeId: updatedEvent.eventTypeId },
-      select: { sendSlackNotifications: true }
-    });
-
     if (
       updatedEvent.status === Event_Status.SCHEDULED &&
-      foundEventType?.sendSlackNotifications &&
+      updatedEvent.sendSlackNotifications &&
       this.hasScheduleChanged(event.scheduledTimes, updatedEvent.scheduledTimes)
     ) {
       await sendEventScheduledSlackNotif(updatedEvent.notificationSlackThreads, updatedEvent, true);
@@ -1451,6 +1472,7 @@ export default class CalendarService {
       },
       select: {
         notificationSlackThreads: true,
+        sendSlackNotifications: true,
         userCreated: { select: { userSettings: { select: { slackId: true } } } },
         confirmedMembers: { select: { userId: true } }
       }
@@ -1458,13 +1480,13 @@ export default class CalendarService {
 
     const foundEventType = await prisma.event_Type.findUnique({
       where: { eventTypeId: event.eventTypeId },
-      select: { dateDeleted: true, sendSlackNotifications: true }
+      select: { dateDeleted: true }
     });
 
     if (!foundEventType) throw new NotFoundException('Event Type', event.eventTypeId);
     if (foundEventType.dateDeleted) throw new DeletedException('Event Type', event.eventTypeId);
 
-    if (foundEventType.sendSlackNotifications) {
+    if (updatedEvent.sendSlackNotifications) {
       await sendEventUserConfirmationToThread(updatedEvent.notificationSlackThreads, submitter);
     }
 
@@ -1480,7 +1502,7 @@ export default class CalendarService {
         },
         select: { eventId: true }
       });
-      if (foundEventType.sendSlackNotifications) {
+      if (updatedEvent.sendSlackNotifications) {
         await sendEventConfirmationToThread(updatedEvent.notificationSlackThreads, updatedEvent.userCreated);
       }
     }
@@ -1634,11 +1656,7 @@ export default class CalendarService {
         data: { availability: updatedAvailability }
       });
     }
-    const foundEventType = await prisma.event_Type.findUnique({
-      where: { eventTypeId: updatedEvent.eventTypeId },
-      select: { sendSlackNotifications: true }
-    });
-    if (foundEventType?.sendSlackNotifications) {
+    if (updatedEvent.sendSlackNotifications) {
       await sendEventScheduledSlackNotif(
         updatedEvent.notificationSlackThreads,
         updatedEvent,
@@ -2967,7 +2985,8 @@ export default class CalendarService {
         shops: { select: { shopId: true, name: true } },
         machinery: { select: { machineryId: true, name: true } },
         workPackages: eventWorkPackageSelect,
-        documents: { where: { dateDeleted: null }, select: { documentId: true, googleFileId: true, name: true } }
+        documents: { where: { dateDeleted: null }, select: { documentId: true, googleFileId: true, name: true } },
+        sendSlackNotifications: true
       }
     });
 

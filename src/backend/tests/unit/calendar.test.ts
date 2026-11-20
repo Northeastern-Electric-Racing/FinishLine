@@ -2777,8 +2777,8 @@ describe('Calendar Tests', () => {
   });
 
   describe('On/Off Calendar Notifications', () => {
-    let event: Event;
-    let offEvent: Event;
+    let event: EventDetail;
+    let offEvent: EventDetail;
     let member: User;
 
     beforeEach(async () => {
@@ -2791,7 +2791,7 @@ describe('Calendar Tests', () => {
         }
       ];
 
-      event = await CalendarService.createEvent(
+      const created = await CalendarService.createEvent(
         adminUser,
         'Notification Test Event',
         eventType.eventTypeId,
@@ -2807,10 +2807,15 @@ describe('Calendar Tests', () => {
         [], // notificationChannelIds
         undefined, // teamTypeId
         undefined, // questionDocumentLink
-        'Conference Room A' // location
+        'Conference Room A', // location
+        undefined, // zoomLink
+        undefined, // description
+        undefined, // mention
+        true // sendSlackNotifications
       );
+      event = await getEventDetail(adminUser, created.eventId, organization);
 
-      offEvent = await CalendarService.createEvent(
+      const offCreated = await CalendarService.createEvent(
         adminUser,
         'Notification Off Test Event',
         eventType.eventTypeId,
@@ -2832,9 +2837,10 @@ describe('Calendar Tests', () => {
         undefined, // mention
         false // sendSlackNotifications
       );
+      offEvent = await getEventDetail(adminUser, offCreated.eventId, organization);
     });
 
-    it('defaults to notifications on when the flag is omitted', async () => {
+    it('succeeds when created with notifications on', async () => {
       expect(event.sendSlackNotifications).toBe(true);
     });
 
@@ -2860,7 +2866,7 @@ describe('Calendar Tests', () => {
     });
 
     it('succeeds turning notifications off through editEvent', async () => {
-      const result = await CalendarService.editEvent(
+      await CalendarService.editEvent(
         adminUser,
         event.eventId,
         event.title,
@@ -2882,11 +2888,12 @@ describe('Calendar Tests', () => {
         false // sendSlackNotifications
       );
 
+      const result = await getEventDetail(adminUser, event.eventId, organization);
       expect(result.sendSlackNotifications).toBe(false);
     });
 
     it('succeeds turning notifications back on through editEvent', async () => {
-      const result = await CalendarService.editEvent(
+      await CalendarService.editEvent(
         adminUser,
         offEvent.eventId,
         offEvent.title,
@@ -2908,6 +2915,7 @@ describe('Calendar Tests', () => {
         true // sendSlackNotifications
       );
 
+      const result = await getEventDetail(adminUser, offEvent.eventId, organization);
       expect(result.sendSlackNotifications).toBe(true);
     });
 

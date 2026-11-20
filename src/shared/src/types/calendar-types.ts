@@ -230,6 +230,7 @@ export interface EventDetail extends BaseEvent {
   machinery: MachineryPreview[];
   workPackages: WorkPackageCalendarPreview[];
   documents: Document[];
+  sendSlackNotifications: boolean;
   isCurrentUserOnEvent: boolean;
 }
 

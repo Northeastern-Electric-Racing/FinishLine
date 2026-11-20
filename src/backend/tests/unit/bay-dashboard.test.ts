@@ -66,7 +66,6 @@ describe('Bay Dashboard Calendar Tests', () => {
         description: false,
         onlyHeadsOrAboveForEventCreation: false,
         requiresConfirmation: false,
-        sendSlackNotifications: false,
         calendars: { connect: calendarIds.map((calendarId) => ({ calendarId })) },
         userCreated: { connect: { userId: user.userId } },
         organization: { connect: { organizationId } }

@@ -18,7 +18,6 @@ import {
   ToggleButton,
   useTheme
 } from '@mui/material';
-import { yellow } from '@mui/material/colors';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import * as yup from 'yup';
@@ -42,6 +41,7 @@ import { useAllTeamPreviews } from '../../../hooks/teams.hooks';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
 import ErrorPage from '../../ErrorPage';
 import NERFormModal from '../../../components/NERFormModal';
+import NERModal from '../../../components/NERModal';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import PeopleIcon from '@mui/icons-material/People';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -89,7 +89,7 @@ export interface EventFormValues {
   days: DayOfWeek[];
   selectedScheduleSlotId?: string;
   mention: SlackMentionType;
-  sendSlackNotifications?: boolean;
+  sendSlackNotifications: boolean;
 }
 
 export interface EventPayload {
@@ -160,7 +160,8 @@ const schema = yup.object().shape({
   recurrenceNumber: yup.number().min(0).required('Recurrence is required'),
   days: yup.array().of(yup.mixed<DayOfWeek>().required()).default([]),
   selectedScheduleSlotId: yup.string().optional(),
-  mention: yup.mixed<SlackMentionType>().required().default(SlackMentionType.USER)
+  mention: yup.mixed<SlackMentionType>().required().default(SlackMentionType.USER),
+  sendSlackNotifications: yup.boolean().required()
 });
 
 export interface BaseEventModalProps {
@@ -266,6 +267,9 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const [pendingPayload, setPendingPayload] = useState<EventPayload | null>(null);
   const [pendingFormData, setPendingFormData] = useState<EventFormValues | null>(null);
 
+  // State for the slack announcement warning modal (only used in edit mode when notifications are turned on)
+  const [showSlackAnnouncementWarning, setShowSlackAnnouncementWarning] = useState(false);
+
   // used in edit mode for ability to send notifs when wp changes
   const [workPackageIds, setWorkPackageIds] = useState<string[]>(initialValues?.workPackageIds ?? []);
 
@@ -323,7 +327,8 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       recurrenceNumber: 0,
       days: [],
       selectedScheduleSlotId: initialValues?.selectedScheduleSlotId,
-      mention: SlackMentionType.USER
+      mention: SlackMentionType.USER,
+      sendSlackNotifications: initialValues?.sendSlackNotifications ?? true
     };
   }, [initialValues, defaultDate, defaultStartTime, defaultEndTime]);
 
@@ -350,14 +355,11 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   const shopIds = watch('shopIds');
   const selectedEventTypeId = watch('eventTypeId');
   const documentFiles = watch('documentFiles');
+  const preferSlackNotifications = watch('sendSlackNotifications');
 
   const selectedEventType = useMemo(
     () => allowedEventTypes.find((et) => et.eventTypeId === selectedEventTypeId),
     [allowedEventTypes, selectedEventTypeId]
-  );
-
-  const [preferSlackNotification, setPreferSlackNotification] = useState<boolean>(
-    initialValues?.sendSlackNotifications ?? true
   );
 
   // Filter machinery based on selected shops
@@ -568,7 +570,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
       questionDocumentLink: data.questionDocumentLink,
       description: data.description,
       notificationChannelIds: selectedNotificationChannels.map((c) => c.id),
-      sendSlackNotifications: preferSlackNotification,
+      sendSlackNotifications: data.sendSlackNotifications,
       mention: data.mention
     };
 
@@ -633,6 +635,16 @@ const EventModal: React.FC<BaseEventModalProps> = ({
   };
 
   const onFormSubmit = async (data: EventFormValues) => {
+    if (isEditMode && initialValues?.sendSlackNotifications === false && data.sendSlackNotifications) {
+      setPendingFormData(data);
+      setShowSlackAnnouncementWarning(true);
+      return;
+    }
+
+    await submitForm(data);
+  };
+
+  const submitForm = async (data: EventFormValues) => {
     // In edit mode, check if time has changed AND there are other affected slots
     // Only show the confirmation modal if there are other slots that would be affected
     if (isEditMode && data.selectedScheduleSlotId && hasTimeChanged(initialValues, data) && affectedSlots.length > 0) {
@@ -648,6 +660,24 @@ const EventModal: React.FC<BaseEventModalProps> = ({
     const payload = buildPayload(data, false);
     await onSubmit(payload);
     handleClose();
+  };
+
+  /**
+   * Handles confirmation from the slack announcement warning modal
+   */
+  const handleSlackAnnouncementConfirmation = async () => {
+    setShowSlackAnnouncementWarning(false);
+    if (!pendingFormData) return;
+    await submitForm(pendingFormData);
+  };
+
+  /**
+   * Handles cancellation of the slack announcement warning modal
+   */
+  const handleSlackAnnouncementCancel = () => {
+    setShowSlackAnnouncementWarning(false);
+    setPendingFormData(null);
+    // Form stays open with user's changes preserved
   };
 
   /**
@@ -746,6 +776,19 @@ const EventModal: React.FC<BaseEventModalProps> = ({
         newStartTime={pendingFormData?.startTime}
         newEndTime={pendingFormData?.endTime}
       />
+      <NERModal
+        open={showSlackAnnouncementWarning}
+        onHide={handleSlackAnnouncementCancel}
+        title="Warning!"
+        cancelText="Cancel"
+        submitText="Save"
+        onSubmit={handleSlackAnnouncementConfirmation}
+      >
+        <Typography>
+          You turned on notifications for this event. Saving will post the event announcement to Slack if it hasn't been
+          posted already.
+        </Typography>
+      </NERModal>
       <NERFormModal
         open={open}
         onHide={handleClose}
@@ -1244,7 +1287,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 arrow
                 placement="right"
                 title={
-                  !preferSlackNotification
+                  !preferSlackNotifications
                     ? selectedEventType.takeAttendance
                       ? 'Slack notifications are disabled for this event. Attendance messages are still posted.'
                       : 'Slack notifications are disabled for this event.'
@@ -1255,25 +1298,34 @@ const EventModal: React.FC<BaseEventModalProps> = ({
               >
                 {/* Span wrapper so the tooltip still shows when the button is disabled */}
                 <span style={{ display: 'inline-flex', flexShrink: 0 }}>
-                  <Button
-                    onClick={() => setPreferSlackNotification((prev) => !prev)}
-                    disableRipple
-                    sx={{
-                      minWidth: 0,
-                      p: 0,
-                      gap: 1,
-                      textTransform: 'none',
-                      '&:hover': { backgroundColor: 'transparent' }
-                    }}
-                  >
-                    <NotificationsIcon sx={{ color: preferSlackNotification ? yellow[700] : 'text.secondary' }} />
-                    <Typography variant="body2" color={'text.disabled'} fontWeight={500} sx={{ whiteSpace: 'nowrap' }}>
-                      {preferSlackNotification ? 'Notifications on' : 'Notifications off'}
-                    </Typography>
-                  </Button>
+                  <Controller
+                    name="sendSlackNotifications"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <Button
+                        onClick={() => {
+                          if (value) setSelectedNotificationChannels([]);
+                          onChange(!value);
+                        }}
+                        disableRipple
+                        sx={{
+                          minWidth: 0,
+                          p: 0,
+                          gap: 1,
+                          textTransform: 'none',
+                          '&:hover': { backgroundColor: 'transparent' }
+                        }}
+                      >
+                        <NotificationsIcon sx={{ color: value ? 'warning.main' : 'text.secondary' }} />
+                        <Typography variant="body2" color={'text.disabled'} fontWeight={500} sx={{ whiteSpace: 'nowrap' }}>
+                          {value ? 'Notifications on' : 'Notifications off'}
+                        </Typography>
+                      </Button>
+                    )}
+                  />
                 </span>
               </Tooltip>
-              {preferSlackNotification &&
+              {preferSlackNotifications &&
                 !selectedTeams.length &&
                 !workPackageIds.length &&
                 !selectedNotificationChannels.length && (
@@ -1292,7 +1344,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
                 )}
 
               {/* Slack Mention Type Toggle */}
-              {preferSlackNotification && !initialValues && (
+              {preferSlackNotifications && !initialValues && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginLeft: 'auto' }}>
                   <Controller
                     name="mention"
@@ -1476,7 +1528,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
             </Box>
           )}
           {/* Notification Channels Section */}
-          {preferSlackNotification && (
+          {preferSlackNotifications && (
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
               <NotificationsIcon sx={{ color: 'text.secondary', mt: 1 }} />
               <Box sx={{ flex: 1, width: '100%' }}>
