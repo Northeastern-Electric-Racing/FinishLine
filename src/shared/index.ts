@@ -15,7 +15,7 @@ export * from './src/types/recruitment-types.js';
 export * from './src/types/milestone-types.js';
 export * from './src/types/checklist-types.js';
 export * from './src/types/pop-up-types.js';
-export * from './src/types/announcements.types.js';
+export * from './src/types/announcements-types.js';
 export * from './src/types/part-review.types.js';
 export * from './src/types/calendar-types.js';
 export * from './src/types/attendance-types.js';
@@ -40,3 +40,4 @@ export * from './src/types/statistics-types.js';
 export * from './src/types/rules-types.js';
 
 export * from './src/utils.js';
+export * from './src/utils/task-filters.utils.js';

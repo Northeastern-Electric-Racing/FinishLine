@@ -10,7 +10,6 @@ import {
   WorkPackageStage,
   BudgetChangeRequest,
   isWorkPackageWbs,
-  LeadershipChangeRequest,
   ChangeRequestStatus
 } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
@@ -82,9 +81,18 @@ const triageScoreInputOf = (changeRequest: {
   activationChangeRequest: { startDate: Date } | null;
   wbsProposedChanges: { projectProposedChanges: { budget: number } | null } | null;
 }): TriageScoreInput => {
-  const currentBudget = changeRequest.snapshotBudget ?? undefined;
-  const proposedBudget =
-    changeRequest.budgetChangeRequest?.proposedBudget ?? changeRequest.wbsProposedChanges?.projectProposedChanges?.budget;
+  // budget CRs store cents; project budgets are whole dollars
+  const budgetChange =
+    changeRequest.snapshotBudget === null
+      ? undefined
+      : changeRequest.budgetChangeRequest
+        ? { proposed: changeRequest.budgetChangeRequest.proposedBudget, current: changeRequest.snapshotBudget }
+        : changeRequest.wbsProposedChanges?.projectProposedChanges
+          ? {
+              proposed: changeRequest.wbsProposedChanges.projectProposedChanges.budget * 100,
+              current: changeRequest.snapshotBudget * 100
+            }
+          : undefined;
 
   const msPerDay = 1000 * 60 * 60 * 24;
   const timelineChangeInDays =
@@ -98,21 +106,13 @@ const triageScoreInputOf = (changeRequest: {
     type: changeRequest.type,
     blockingCount: changeRequest.snapshotBlockingCount ?? 0,
     timelineChangeInDays,
-    ...(proposedBudget !== undefined && currentBudget !== undefined
-      ? { budgetChange: { proposed: proposedBudget, current: currentBudget } }
-      : {})
+    ...(budgetChange ? { budgetChange } : {})
   };
 };
 
 export const changeRequestManyTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestManyQueryArgs>
-):
-  | ChangeRequest
-  | StandardChangeRequest
-  | ActivationChangeRequest
-  | StageGateChangeRequest
-  | BudgetChangeRequest
-  | LeadershipChangeRequest => {
+): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
   return {
@@ -138,17 +138,13 @@ export const changeRequestManyTransformer = (
     workPackageProposedChanges: undefined,
     originalProjectData: undefined,
     originalWorkPackageData: undefined,
-    // activation + leadership cr fields
-    lead: changeRequest.leadershipChangeRequest?.lead
-      ? userTransformer(changeRequest.leadershipChangeRequest.lead)
-      : changeRequest.activationChangeRequest?.lead
-        ? userTransformer(changeRequest.activationChangeRequest.lead)
-        : undefined,
-    manager: changeRequest.leadershipChangeRequest?.manager
-      ? userTransformer(changeRequest.leadershipChangeRequest.manager)
-      : changeRequest.activationChangeRequest?.manager
-        ? userTransformer(changeRequest.activationChangeRequest.manager)
-        : undefined,
+    // activation cr fields
+    lead: changeRequest.activationChangeRequest?.lead
+      ? userTransformer(changeRequest.activationChangeRequest.lead)
+      : undefined,
+    manager: changeRequest.activationChangeRequest?.manager
+      ? userTransformer(changeRequest.activationChangeRequest.manager)
+      : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields
@@ -163,13 +159,7 @@ export const changeRequestManyTransformer = (
 
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>
-):
-  | ChangeRequest
-  | StandardChangeRequest
-  | ActivationChangeRequest
-  | StageGateChangeRequest
-  | BudgetChangeRequest
-  | LeadershipChangeRequest => {
+): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
   const wbsName = changeRequest.wbsElement
@@ -215,17 +205,13 @@ const changeRequestTransformer = (
       : undefined,
     originalProjectData: undefined,
     originalWorkPackageData: undefined,
-    // activation + leadership cr fields
-    lead: changeRequest.leadershipChangeRequest?.lead
-      ? userTransformer(changeRequest.leadershipChangeRequest.lead)
-      : changeRequest.activationChangeRequest?.lead
-        ? userTransformer(changeRequest.activationChangeRequest.lead)
-        : undefined,
-    manager: changeRequest.leadershipChangeRequest?.manager
-      ? userTransformer(changeRequest.leadershipChangeRequest.manager)
-      : changeRequest.activationChangeRequest?.manager
-        ? userTransformer(changeRequest.activationChangeRequest.manager)
-        : undefined,
+    // activation cr fields
+    lead: changeRequest.activationChangeRequest?.lead
+      ? userTransformer(changeRequest.activationChangeRequest.lead)
+      : undefined,
+    manager: changeRequest.activationChangeRequest?.manager
+      ? userTransformer(changeRequest.activationChangeRequest.manager)
+      : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields

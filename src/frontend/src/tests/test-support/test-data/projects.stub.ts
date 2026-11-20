@@ -3,8 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link, LinkType, Project, WbsElementStatus } from 'shared';
-import { exampleTask1 } from './tasks.stub';
+import { Link, LinkType, ProjectDetail, WbsElementStatus } from 'shared';
 import { exampleTeam } from './teams.stub';
 import { exampleAdminUser, exampleLeadershipUser, exampleLeadUser, exampleManagerUser } from './users.stub';
 import { exampleWbsProject1, exampleWbsProject2 } from './wbs-numbers.stub';
@@ -54,11 +53,9 @@ const exampleLinks: Link[] = [
     url: 'https://www.google.com'
   }
 ];
-export const exampleProject1: Project = {
+export const exampleProject1: ProjectDetail = {
   id: '4',
   wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
-  dateCreated: new Date('08/01/20'),
-  deleted: false,
   name: 'Impact Attenuator',
   status: WbsElementStatus.Active,
   lead: exampleLeadUser,
@@ -68,13 +65,13 @@ export const exampleProject1: Project = {
   budget: 124,
   teams: [],
   descriptionBullets: [],
-  favoritedBy: [],
+  isFavorited: false,
+  isOnProjectTeam: false,
   wbsElementId: '4',
   changes: [
     {
       changeId: '10',
       changeRequestId: '37',
-      wbsNum: exampleWbsProject1,
       implementer: exampleAdminUser,
       detail: 'Added goal for weight reduction',
       dateImplemented: new Date('02/25/21'),
@@ -84,16 +81,13 @@ export const exampleProject1: Project = {
   duration: 8,
   startDate: new Date('01/01/21'),
   endDate: new Date('02/26/21'),
-  workPackages: [exampleResearchWorkPackage, exampleDesignWorkPackage],
-  tasks: []
+  workPackages: [exampleResearchWorkPackage, exampleDesignWorkPackage]
 };
 
-export const exampleProject2: Project = {
+export const exampleProject2: ProjectDetail = {
   id: '5',
   wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 },
-  dateCreated: new Date('08/02/20'),
   name: 'Bodywork',
-  deleted: false,
   status: WbsElementStatus.Inactive,
   lead: exampleLeadUser,
   manager: exampleManagerUser,
@@ -101,21 +95,20 @@ export const exampleProject2: Project = {
   summary: 'Do some bodywork',
   budget: 50,
   descriptionBullets: [],
-  favoritedBy: [],
+  isFavorited: false,
+  isOnProjectTeam: false,
   wbsElementId: '5',
   changes: [],
   duration: 0,
   startDate: undefined,
   endDate: undefined,
   workPackages: [],
-  tasks: [],
   teams: []
 };
 
-export const exampleProject3: Project = {
+export const exampleProject3: ProjectDetail = {
   id: '6',
   wbsNum: exampleWbsProject1,
-  dateCreated: new Date('08/04/20'),
   name: 'Battery Box',
   status: WbsElementStatus.Active,
   lead: exampleLeadershipUser,
@@ -123,23 +116,21 @@ export const exampleProject3: Project = {
   links: exampleLinks,
   summary: 'Make a box for the battery',
   budget: 5000,
-  deleted: false,
   descriptionBullets: [],
-  favoritedBy: [],
+  isFavorited: false,
+  isOnProjectTeam: false,
   wbsElementId: '5',
   changes: [],
   duration: 3,
   startDate: new Date('01/01/21'),
   endDate: new Date('01/22/21'),
   workPackages: [exampleResearchWorkPackage],
-  teams: [exampleTeam],
-  tasks: [exampleTask1]
+  teams: [{ teamId: exampleTeam.teamId, teamName: exampleTeam.teamName }]
 };
 
-export const exampleProject4: Project = {
+export const exampleProject4: ProjectDetail = {
   id: '7',
   wbsNum: exampleWbsProject2,
-  dateCreated: new Date('11/07/20'),
   name: 'Motor Controller Integration',
   status: WbsElementStatus.Inactive,
   lead: exampleLeadershipUser,
@@ -149,42 +140,39 @@ export const exampleProject4: Project = {
   budget: 0,
   teams: [],
   descriptionBullets: [],
-  favoritedBy: [],
+  isFavorited: false,
+  isOnProjectTeam: false,
   wbsElementId: '5',
   changes: [],
   duration: 5,
-  deleted: false,
   startDate: new Date('01/22/21'),
   endDate: new Date('02/26/21'),
-  workPackages: [exampleDesignWorkPackage],
-  tasks: []
+  workPackages: [exampleDesignWorkPackage]
 };
 
-export const exampleProject5: Project = {
+export const exampleProject5: ProjectDetail = {
   id: '8',
   wbsNum: { carNumber: 2, projectNumber: 7, workPackageNumber: 0 },
-  dateCreated: new Date('08/03/20'),
   name: 'Wiring Harness',
   status: WbsElementStatus.Complete,
   lead: exampleLeadUser,
   manager: exampleManagerUser,
   links: exampleLinks,
-  deleted: false,
   summary: 'Harness the wiring',
   budget: 234,
   descriptionBullets: [],
   teams: [],
-  favoritedBy: [],
+  isFavorited: false,
+  isOnProjectTeam: false,
   wbsElementId: '5',
   changes: [],
   duration: 2,
   startDate: new Date('01/01/21'),
   endDate: new Date('01/15/21'),
-  workPackages: [exampleManufacturingWorkPackage],
-  tasks: []
+  workPackages: [exampleManufacturingWorkPackage]
 };
 
-export const exampleAllProjects: Project[] = [
+export const exampleAllProjects: ProjectDetail[] = [
   exampleProject1,
   exampleProject2,
   exampleProject3,

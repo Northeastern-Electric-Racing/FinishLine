@@ -1,4 +1,4 @@
-import { Organization } from '@prisma/client';
+import { Competition, Organization, Term } from '@prisma/client';
 import { isAdmin, User } from 'shared';
 import { getCarQueryArgs } from '../prisma-query-args/cars.query-args.js';
 import prisma from '../prisma/prisma.js';
@@ -44,6 +44,26 @@ export default class CarsService {
               connect: {
                 organizationId: organization.organizationId
               }
+            }
+          }
+        },
+        executiveSummary: {
+          create: {
+            userCreated: {
+              connect: {
+                userId: user.userId
+              }
+            },
+            // every executive summary starts with an empty performance per competition, an empty documents
+            // summary, and an empty recruitment cycle per term, all of which are filled in later
+            competitionPerformances: {
+              create: Object.values(Competition).map((competition) => ({ competition }))
+            },
+            competitionDocumentsSummary: {
+              create: {}
+            },
+            recruitmentCycles: {
+              create: Object.values(Term).map((term) => ({ term }))
             }
           }
         }

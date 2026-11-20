@@ -1,5 +1,5 @@
-import { Project, WBS_Element_Status } from '@prisma/client';
 import prisma, { PrismaTransactionClient } from '../prisma/prisma.js';
+import { WBS_Element_Status } from '@prisma/client';
 import { DescriptionBulletPreview, LinkCreateArgs, WbsElementStatus } from 'shared';
 import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
 import { ChangeCreateArgs, createChange, createListChanges, getDescriptionBulletChanges } from './changes.utils.js';
@@ -11,7 +11,6 @@ import {
 import { linkToChangeListValue, updateLinks } from './links.utils.js';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
-import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args.js';
 
 export type ProjectWithId = {
   projectId: String;
@@ -210,7 +209,7 @@ export const updateProjectAndCreateChanges = async (
   }
 
   // update the project with the input fields
-  const updatedProject = await tx.project.update({
+  await tx.project.update({
     where: {
       wbsElementId
     },
@@ -225,7 +224,7 @@ export const updateProjectAndCreateChanges = async (
         }
       }
     },
-    ...getProjectQueryArgs(organizationId)
+    select: { projectId: true }
   });
 
   // Update any deleted description bullets to have their date deleted as right now
@@ -263,7 +262,7 @@ export const updateProjectAndCreateChanges = async (
     data: changesJson
   });
 
-  return { project: updatedProject, wbsElementId };
+  return { wbsElementId };
 };
 /**
  * Check if given assembly, material type, manufacturer, and unit exist in the app database
@@ -310,23 +309,25 @@ export const checkMaterialInputs = async (
 export const getProjects = async (projectIds: string[], organizationId: string) => {
   const projects = await prisma.project.findMany({
     where: { projectId: { in: projectIds }, wbsElement: { organizationId, dateDeleted: null } },
-    ...getProjectQueryArgs(organizationId)
+    select: { projectId: true }
   });
 
-  validateFoundProjects(projects, projectIds);
+  validateFoundProjects(
+    projects.map((project) => project.projectId),
+    projectIds
+  );
 
   return projects;
 };
 
 /**
  * Validates that the projects found in the database match the given projectIds
- * @param projects the projects found in the database
+ * @param foundProjectIds the ids of the projects found in the database
  * @param projectIds the requested projectIds to retrieve
  */
-const validateFoundProjects = (projects: Project[], projectIds: string[]) => {
-  if (projects.length !== projectIds.length) {
-    const primsaProjectIds = projects.map((project) => project.projectId);
-    const missingProjectIds = projectIds.filter((id) => !primsaProjectIds.includes(id));
+const validateFoundProjects = (foundProjectIds: string[], projectIds: string[]) => {
+  if (foundProjectIds.length !== projectIds.length) {
+    const missingProjectIds = projectIds.filter((id) => !foundProjectIds.includes(id));
     throw new HttpException(404, `Projects(s) with the following ids not found: ${missingProjectIds.join(', ')}`);
   }
 };

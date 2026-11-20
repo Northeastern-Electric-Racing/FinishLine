@@ -1,4 +1,5 @@
 import prisma, { PrismaTransactionClient } from '../prisma/prisma.js';
+import { wbsNumOf } from './utils.js';
 import {
   Prisma,
   Change_Request,
@@ -8,7 +9,8 @@ import {
   Project,
   Work_Package,
   WBS_Element,
-  Organization
+  Organization,
+  CR_Type
 } from '@prisma/client';
 import {
   DescriptionBulletPreview,
@@ -44,7 +46,6 @@ import { validateBlockedBys } from './work-packages.utils.js';
  */
 export const validateChangeRequestAccepted = async (crId: string, tx: PrismaTransactionClient = prisma) => {
   const changeRequest = await tx.change_Request.findUnique({ where: { crId }, include: { changes: true } });
-  const currentDate = new Date();
 
   if (!changeRequest) throw new NotFoundException('Change Request', crId);
   if (changeRequest.dateDeleted) throw new HttpException(400, 'Cannot use a deleted change request!');
@@ -53,8 +54,6 @@ export const validateChangeRequestAccepted = async (crId: string, tx: PrismaTran
   const dateImplemented = getDateImplemented(changeRequest);
   if (!dateImplemented && !changeRequest.dateReviewed)
     throw new HttpException(400, 'Cannot use an unreviewed and unimplemented change request');
-  if (dateImplemented && currentDate.getTime() - dateImplemented.getTime() > 1000 * 60 * 60 * 24 * 5)
-    throw new HttpException(400, 'Cannot tie changes to outdated change request');
 
   return changeRequest;
 };
@@ -314,7 +313,7 @@ export const applyProjectProposedChanges = async (
         linkId: existingLinkIdByType.get(link.linkTypeName) ?? '-1'
       }));
 
-      const proj = await ProjectsService.editProject(
+      await ProjectsService.editProject(
         reviewer,
         associatedProject.projectId,
         crId,
@@ -328,7 +327,8 @@ export const applyProjectProposedChanges = async (
         organization
       );
 
-      projectWbsNum = proj.wbsNum;
+      // editProject throws when the project doesn't exist, so it's here
+      projectWbsNum = currentProject ? wbsNumOf(currentProject.wbsElement) : null;
     }
 
     for (const proposedChange of projectProposedChanges.workPackageProposedChanges) {
@@ -547,4 +547,36 @@ export const validateWbsElement = async (wbsNum: WbsNumber, organization: Organi
   if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
   if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
   return wbsElement;
+};
+
+/**
+ * Creates an auto-approved change request for an edit that doesn't need review,
+ * so the edit's changes can still be recorded in change history
+ * @param submitter the user making the edit, also recorded as the reviewer
+ * @param wbsElementId the wbs element being edited
+ * @param organizationId the organization the user is currently in
+ * @returns the id of the created change request
+ */
+export const createNonMeaningfulChangeRequest = async (
+  submitter: User,
+  wbsElementId: string,
+  organizationId: string
+): Promise<string> => {
+  const numChangeRequests = await prisma.change_Request.count({ where: { organizationId } });
+
+  const changeRequest = await prisma.change_Request.create({
+    data: {
+      submitter: { connect: { userId: submitter.userId } },
+      wbsElement: { connect: { wbsElementId } },
+      type: CR_Type.NON_MEANINGFUL,
+      organization: { connect: { organizationId } },
+      identifier: numChangeRequests + 1,
+      reviewer: { connect: { userId: submitter.userId } },
+      accepted: true,
+      dateReviewed: new Date(),
+      reviewNotes: 'Auto-approved: this change does not need review'
+    }
+  });
+
+  return changeRequest.crId;
 };

@@ -1,9 +1,11 @@
-import { Announcement } from 'shared';
+import { AnnouncementPage } from 'shared';
 import prisma from '../prisma/prisma.js';
-import { getAnnouncementQueryArgs } from '../prisma-query-args/announcements.query.args.js';
-import announcementTransformer from '../transformers/announcements.transformer.js';
-import { DeletedException, HttpException, NotFoundException } from '../utils/errors.utils.js';
-import { getUsers } from '../utils/users.utils.js';
+import { getBaseAnnouncementQueryArgs } from '../prisma-query-args/announcements.query-args.js';
+import { baseAnnouncementTransformer } from '../transformers/announcements.transformer.js';
+import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils.js';
+import { validateOrgUsers } from '../utils/users.utils.js';
+
+const ANNOUNCEMENT_PAGE_SIZE = 10;
 
 export default class AnnouncementService {
   /**
@@ -16,7 +18,7 @@ export default class AnnouncementService {
    * @param slackEventId id of slack event (provided by slack api)
    * @param slackChannelName name of channel message was sent in
    * @param organizationId id of organization of users
-   * @returns the created announcement
+   * @throws if any receiving user doesn't exist or isn't in the organization
    */
   static async createAnnouncement(
     text: string,
@@ -26,30 +28,29 @@ export default class AnnouncementService {
     slackEventId: string,
     slackChannelName: string,
     organizationId: string
-  ): Promise<Announcement> {
-    // throws if a user id is invalid
-    const usersToSend = await getUsers(usersReceivedIds);
+  ): Promise<void> {
+    await validateOrgUsers(usersReceivedIds, organizationId);
 
-    const announcement = await prisma.announcement.create({
+    await prisma.announcement.create({
       data: {
         text,
         usersReceived: {
-          connect: usersToSend.map((user) => ({
-            userId: user.userId
-          }))
+          connect: usersReceivedIds.map((userId) => ({ userId }))
         },
         dateMessageSent,
         senderName,
         slackEventId,
         slackChannelName,
         organizationId
-      },
-      ...getAnnouncementQueryArgs(organizationId)
+      }
     });
-
-    return announcementTransformer(announcement);
   }
 
+  /**
+   * Edits the announcement created from the given slack message
+   * @throws NotFoundException if no announcement was created from that slack message
+   * @throws if any receiving user doesn't exist or isn't in the organization
+   */
   static async updateAnnouncement(
     text: string,
     usersReceivedIds: string[],
@@ -57,11 +58,10 @@ export default class AnnouncementService {
     slackEventId: string,
     slackChannelName: string,
     organizationId: string
-  ): Promise<Announcement> {
+  ): Promise<void> {
     const originalAnnouncement = await prisma.announcement.findUnique({
-      where: {
-        slackEventId
-      }
+      where: { slackEventId },
+      select: { announcementId: true, dateDeleted: true, organizationId: true }
     });
 
     if (!originalAnnouncement) throw new NotFoundException('Announcement', slackEventId);
@@ -71,30 +71,29 @@ export default class AnnouncementService {
     if (originalAnnouncement.organizationId !== organizationId)
       throw new HttpException(400, `Announcement is not apart of the current organization`);
 
-    const announcement = await prisma.announcement.update({
+    await validateOrgUsers(usersReceivedIds, organizationId);
+
+    await prisma.announcement.update({
       where: { announcementId: originalAnnouncement.announcementId },
       data: {
         text,
         usersReceived: {
-          set: usersReceivedIds.map((id) => ({
-            userId: id
-          }))
+          set: usersReceivedIds.map((userId) => ({ userId }))
         },
-        slackEventId,
         senderName,
         slackChannelName
-      },
-      ...getAnnouncementQueryArgs(organizationId)
+      }
     });
-
-    return announcementTransformer(announcement);
   }
 
-  static async deleteAnnouncement(slackEventId: string, organizationId: string): Promise<Announcement> {
+  /**
+   * Soft deletes the announcement created from the given slack message and clears it from everyone's unread list
+   * @throws NotFoundException if no announcement was created from that slack message
+   */
+  static async deleteAnnouncement(slackEventId: string, organizationId: string): Promise<void> {
     const originalAnnouncement = await prisma.announcement.findUnique({
-      where: {
-        slackEventId
-      }
+      where: { slackEventId },
+      select: { dateDeleted: true, organizationId: true }
     });
 
     if (!originalAnnouncement) throw new NotFoundException('Announcement', slackEventId);
@@ -104,69 +103,85 @@ export default class AnnouncementService {
     if (originalAnnouncement.organizationId !== organizationId)
       throw new HttpException(400, `Announcement is not apart of the current organization`);
 
-    const announcement = await prisma.announcement.update({
+    await prisma.announcement.update({
       where: { slackEventId },
       data: {
         dateDeleted: new Date(),
         usersReceived: {
           set: []
         }
-      },
-      ...getAnnouncementQueryArgs(organizationId)
+      }
     });
-
-    return announcementTransformer(announcement);
   }
 
   /**
-   * Gets all of a user's unread announcements
+   * Gets one page of a user's unread announcements, newest first
    * @param userId id of the current user
-   * @param organization the user's orgainzation
-   * @returns the unread announcements of the user
+   * @param organizationId the user's organization
+   * @param cursor the announcementId of the last announcement on the previous page
+   * @returns the page, the cursor of the next page, and how many unread announcements the user has in total
    */
-  static async getUserUnreadAnnouncements(userId: string, organizationId: string) {
-    const unreadAnnouncements = await prisma.announcement.findMany({
-      where: {
-        dateDeleted: null,
-        usersReceived: {
-          some: { userId }
-        },
-        organizationId
-      },
-      ...getAnnouncementQueryArgs(organizationId)
-    });
+  static async getUserUnreadAnnouncements(
+    userId: string,
+    organizationId: string,
+    cursor?: string
+  ): Promise<AnnouncementPage> {
+    const where = {
+      dateDeleted: null,
+      usersReceived: { some: { userId } },
+      organizationId
+    };
 
-    if (!unreadAnnouncements) throw new HttpException(404, 'User Unread Announcements Not Found');
+    const [announcements, totalCount] = await Promise.all([
+      prisma.announcement.findMany({
+        where,
+        ...(cursor && { cursor: { announcementId: cursor }, skip: 1 }),
+        orderBy: [{ dateMessageSent: 'desc' }, { announcementId: 'desc' }],
+        take: ANNOUNCEMENT_PAGE_SIZE,
+        ...getBaseAnnouncementQueryArgs()
+      }),
+      prisma.announcement.count({ where })
+    ]);
 
-    return unreadAnnouncements.map(announcementTransformer);
+    return {
+      announcements: announcements.map(baseAnnouncementTransformer),
+      nextCursor:
+        announcements.length === ANNOUNCEMENT_PAGE_SIZE ? announcements[announcements.length - 1].announcementId : undefined,
+      totalCount
+    };
   }
 
   /**
-   * Removes a announcement from the user's unread announcement
+   * Removes a announcement from the user's unread announcements
    * @param userId id of the user to remove announcement from
    * @param announcementId id of the announcement to remove
-   * @param organization the user's organization
-   * @returns the user's updated unread announcement
+   * @param organizationId the organization the user is currently in
+   * @throws if the announcement doesn't exist or is in another organization
    */
-  static async removeUserAnnouncement(userId: string, announcementId: string, organizationId: string) {
+  static async removeUserAnnouncement(userId: string, announcementId: string, organizationId: string): Promise<void> {
+    const announcement = await prisma.announcement.findUnique({
+      where: { announcementId },
+      select: { organizationId: true }
+    });
+
+    if (!announcement) throw new NotFoundException('Announcement', announcementId);
+    if (announcement.organizationId !== organizationId) throw new InvalidOrganizationException('Announcement');
+
     const requestedUser = await prisma.user.findUnique({
-      where: { userId }
+      where: { userId },
+      select: { userId: true }
     });
 
     if (!requestedUser) throw new NotFoundException('User', userId);
 
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { userId },
       data: {
         unreadAnnouncements: {
-          disconnect: {
-            announcementId
-          }
+          disconnect: { announcementId }
         }
       },
-      include: { unreadAnnouncements: getAnnouncementQueryArgs(organizationId) }
+      select: { userId: true }
     });
-
-    return updatedUser.unreadAnnouncements.map(announcementTransformer);
   }
 }

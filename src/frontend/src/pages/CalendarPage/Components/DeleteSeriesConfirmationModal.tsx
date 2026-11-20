@@ -46,7 +46,12 @@ const DeleteSeriesConfirmationModal: React.FC<DeleteSeriesConfirmationModalProps
   return (
     <Dialog
       open={open}
-      onClose={handleCancel}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          return;
+        }
+        handleCancel();
+      }}
       PaperProps={{
         style: { borderRadius: '10px', maxWidth: '550px' }
       }}

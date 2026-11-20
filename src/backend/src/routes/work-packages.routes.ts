@@ -6,6 +6,7 @@ import {
   descriptionBulletsValidators,
   intMinZero,
   isDateOnly,
+  isOptionalDate,
   isWorkPackageStageOrNone,
   nonEmptyString,
   validateInputs
@@ -13,13 +14,12 @@ import {
 import { WorkPackageSelection, WbsElementStatus } from 'shared';
 const workPackagesRouter = express.Router();
 
-workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
 workPackagesRouter.get('/dropdown', WorkPackagesController.getAllWorkPackagesDropdown);
 workPackagesRouter.get(
-  '/all-preview',
+  '/',
   query('status').optional().isIn(Object.values(WbsElementStatus)),
   validateInputs,
-  WorkPackagesController.getAllWorkPackagesPreview
+  WorkPackagesController.getAllWorkPackages
 );
 workPackagesRouter.post(
   '/get-many',
@@ -36,7 +36,6 @@ workPackagesRouter.get('/by-project/:wbsNum', WorkPackagesController.getWorkPack
 
 workPackagesRouter.post(
   '/create',
-  nonEmptyString(body('crId').optional()),
   nonEmptyString(body('name')),
   isWorkPackageStageOrNone(body('stage')),
   isDateOnly(body('startDate')),
@@ -53,7 +52,6 @@ workPackagesRouter.post(
 workPackagesRouter.post(
   '/edit',
   nonEmptyString(body('workPackageId')),
-  nonEmptyString(body('crId')),
   nonEmptyString(body('name')),
   isDateOnly(body('startDate')),
   intMinZero(body('duration')),
@@ -79,6 +77,11 @@ workPackagesRouter.post(
 workPackagesRouter.get(
   '/home-page/:selection',
   param('selection').isIn(Object.values(WorkPackageSelection)),
+  isOptionalDate(query('startsAfter')),
+  isOptionalDate(query('startsBefore')),
+  isOptionalDate(query('endsAfter')),
+  isOptionalDate(query('endsBefore')),
+  query('status').optional().isIn(Object.values(WbsElementStatus)),
   validateInputs,
   WorkPackagesController.getHomePageWorkPackages
 );

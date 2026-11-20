@@ -15,13 +15,4 @@ export default class RetrospectiveController {
       next(error);
     }
   }
-
-  static async getRetrospectiveBudgets(req: Request, res: Response, next: NextFunction) {
-    try {
-      const projects = await RetrospectiveService.getRetrospectiveBudgets(req.organization.organizationId);
-      res.json(projects);
-    } catch (error) {
-      next(error);
-    }
-  }
 }

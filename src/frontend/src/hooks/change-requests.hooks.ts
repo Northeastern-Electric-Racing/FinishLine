@@ -5,12 +5,12 @@
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
+import { HOME_PAGE_WORK_PACKAGES_KEY } from './work-packages.hooks';
 import {
   ChangeRequest,
   ProjectProposedChangesCreateArgs,
   WbsNumber,
   WorkPackageProposedChangesCreateArgs,
-  LeadershipChangeCreateArgs,
   GuestChangeRequest
 } from 'shared';
 import {
@@ -26,7 +26,6 @@ import {
   getUnreviewedChangeRequests,
   getApprovedChangeRequests,
   createBudgetChangeRequest,
-  createLeadershipChangeRequest,
   getAllGuestChangeRequests
 } from '../apis/change-requests.api';
 
@@ -222,7 +221,8 @@ export const useCreateActivationChangeRequest = () => {
         queryClient.invalidateQueries(['change requests']);
         queryClient.invalidateQueries(['projects']);
         queryClient.invalidateQueries(['work packages']);
-        queryClient.invalidateQueries(['work-packages']);
+        // activation is reviewed on creation, so the work package's status and dates change right away
+        queryClient.invalidateQueries(HOME_PAGE_WORK_PACKAGES_KEY);
       }
     }
   );
@@ -232,6 +232,7 @@ export const useCreateActivationChangeRequest = () => {
  * Custom React Hook to create a stage gate change request.
  */
 export const useCreateStageGateChangeRequest = () => {
+  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, CreateStageGateChangeRequestPayload>(
     ['change requests', 'create', 'stage gate'],
     async (payload: CreateStageGateChangeRequestPayload) => {
@@ -242,6 +243,15 @@ export const useCreateStageGateChangeRequest = () => {
         payload.dateCompleted
       );
       return data;
+    },
+    {
+      // stage gates are reviewed on creation, so the work package is complete right away
+      onSuccess: () => {
+        queryClient.invalidateQueries(['change requests']);
+        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['work packages']);
+        queryClient.invalidateQueries(HOME_PAGE_WORK_PACKAGES_KEY);
+      }
     }
   );
 };
@@ -260,33 +270,6 @@ export const useCreateBudgetChangeRequest = () => {
         payload.accountCodeId
       );
       return data;
-    }
-  );
-};
-
-/**
- * Custome React hook to create a leadership change request
- * to change lead and/or manager of a project or work package
- */
-export const useCreateLeadershipChangeRequest = () => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, LeadershipChangeCreateArgs>(
-    ['change requests', 'create', 'leadership'],
-    async (payload: LeadershipChangeCreateArgs) => {
-      const { data } = await createLeadershipChangeRequest(
-        payload.submitterId,
-        payload.wbsNum,
-        payload.leadId,
-        payload.managerId
-      );
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['change requests']);
-        queryClient.invalidateQueries(['projects']);
-        queryClient.invalidateQueries(['work packages']);
-      }
     }
   );
 };

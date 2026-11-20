@@ -14,7 +14,6 @@ import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 
 const CreateWorkPackageForm: React.FC = () => {
   const query = useQuery();
-  const crId = query.get('crId');
   const wbsNum = query.get('wbs');
   const history = useHistory();
 
@@ -36,36 +35,22 @@ const CreateWorkPackageForm: React.FC = () => {
   const createWorkPackageWrapper = (workPackageInput: WorkPackageApiInputs) =>
     createWorkPackage({ ...workPackageInput, projectWbsNum: wbsElement.wbsNum });
 
-  const breadcrumbs =
-    crId && crId !== 'null'
-      ? [
-          {
-            name: 'Change Requests',
-            route: routes.CHANGE_REQUESTS
-          },
-          {
-            name: `Change Request #${crId}`,
-            route: `${routes.CHANGE_REQUESTS}/${crId}`
-          }
-        ]
-      : [
-          {
-            name: 'Projects',
-            route: routes.PROJECTS
-          },
-          {
-            name: `${projectWbsNamePipe(wbsElement)}`,
-            route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
-          }
-        ];
+  const breadcrumbs = [
+    {
+      name: 'Projects',
+      route: routes.PROJECTS
+    },
+    {
+      name: `${projectWbsNamePipe(wbsElement)}`,
+      route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
+    }
+  ];
   return (
     <WorkPackageForm
       wbsNum={validateWBS(wbsNum)}
       workPackageMutateAsync={createWorkPackageWrapper}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
-      createLeadershipCR={() => {}} // leadership changes can't happen on creation
       exitActiveMode={() => history.push(`${routes.PROJECTS}/${projectWbsPipe(validateWBS(wbsNum))}`)}
-      crId={crId ?? undefined}
       schema={schema}
       breadcrumbs={breadcrumbs}
     />

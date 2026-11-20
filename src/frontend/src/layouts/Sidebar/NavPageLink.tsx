@@ -6,7 +6,7 @@
 import { NavLink } from 'react-router-dom';
 import { LinkItem } from '../../utils/types';
 import { routes } from '../../utils/routes';
-import { Box, Typography, useTheme, Collapse } from '@mui/material';
+import { Box, Typography, useTheme, Collapse, useMediaQuery } from '@mui/material';
 
 export interface NavPageLinkItemProps extends LinkItem {
   isSubmenuOpen?: boolean;
@@ -28,6 +28,7 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
   isClickableWithSubitems
 }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const renderLink = () => {
     const content = (
@@ -97,7 +98,12 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({
       {subItems && (
         <Collapse in={isSubmenuOpen} timeout="auto" unmountOnExit>
           {subItems.map((subItem) => (
-            <NavPageLink key={subItem.route} {...subItem} isSubItem={true} />
+            <NavPageLink
+              key={subItem.route}
+              {...subItem}
+              isSubItem={true}
+              onSubmenuCollapse={isMobile ? onSubmenuCollapse : undefined}
+            />
           ))}
         </Collapse>
       )}
