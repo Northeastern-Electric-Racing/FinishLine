@@ -571,7 +571,7 @@ export const createTestReimbursementRequest = async () => {
     organization
   );
 
-  const rr = await ReimbursementRequestService.createReimbursementRequest(
+  const { reimbursementRequestId } = await ReimbursementRequestService.createReimbursementRequest(
     user,
     vendor.vendorId,
     indexCode.indexCodeId,
@@ -599,7 +599,7 @@ export const createTestReimbursementRequest = async () => {
     new Date()
   );
 
-  if (!rr) throw new Error('Failed to create reimbursement request');
+  const rr = await ReimbursementRequestService.getSingleReimbursementRequest(user, reimbursementRequestId, organization);
 
   return { rr, organization, vendor, indexCode, accountCode, project, user };
 };

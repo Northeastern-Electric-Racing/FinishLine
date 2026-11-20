@@ -4,13 +4,13 @@ import { AccessDeniedException, DeletedException, HttpException, NotFoundExcepti
 import { createTestCar, createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import { assert } from 'console';
-import { addDaysToDate, IndexCode, ReimbursementRequest, AccountCode, OtherProductReason } from 'shared';
+import { addDaysToDate, IndexCode, ReimbursementRequestDetail, AccountCode, OtherProductReason } from 'shared';
 import { Organization, Vendor } from '@prisma/client';
 import { UserWithSecureSettings } from '../../src/utils/auth.utils.js';
 
 describe('Reimbursement Requests', () => {
   let org: Organization;
-  let reimbursementRequest: ReimbursementRequest;
+  let reimbursementRequest: ReimbursementRequestDetail;
   let createdVendor: Vendor;
   let createdIndexCode: IndexCode;
   let createdAccountCode: AccountCode;
@@ -95,7 +95,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Creating a reimbursement request', () => {
     test('Creating a Reimbursement Request Succeeds without a date', async () => {
-      const rr = await ReimbursementRequestService.createReimbursementRequest(
+      const { reimbursementRequestId } = await ReimbursementRequestService.createReimbursementRequest(
         createdUser,
         createdVendor.vendorId,
         createdIndexCode.indexCodeId,
@@ -125,8 +125,10 @@ describe('Reimbursement Requests', () => {
         100,
         org
       );
+      // create only returns the id, so read the request back
+      const rr = await ReimbursementRequestService.getSingleReimbursementRequest(createdUser, reimbursementRequestId, org);
 
-      expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
+      expect(rr.accountCode.accountCodeId).toEqual(createdAccountCode.accountCodeId);
       expect(rr.indexCode.name).toEqual('CASH');
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
@@ -146,7 +148,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Creating a Reimbursement Request Succeeds with a date', async () => {
-      const rr = await ReimbursementRequestService.createReimbursementRequest(
+      const { reimbursementRequestId } = await ReimbursementRequestService.createReimbursementRequest(
         createdUser,
         createdVendor.vendorId,
         createdIndexCode.indexCodeId,
@@ -177,8 +179,10 @@ describe('Reimbursement Requests', () => {
         org,
         new Date('12-29-2023')
       );
+      // create only returns the id, so read the request back
+      const rr = await ReimbursementRequestService.getSingleReimbursementRequest(createdUser, reimbursementRequestId, org);
 
-      expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
+      expect(rr.accountCode.accountCodeId).toEqual(createdAccountCode.accountCodeId);
       expect(rr.indexCode.name).toEqual('CASH');
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
@@ -260,13 +264,17 @@ describe('Reimbursement Requests', () => {
 
       const dateToSetAsDelivered = addDaysToDate(new Date(), -5);
 
-      const updatedRR = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
+      await ReimbursementRequestService.markReimbursementRequestAsDelivered(
         createdUser,
         oldReimbursementRequest.reimbursementRequestId,
         org,
         dateToSetAsDelivered
       );
 
+      const updatedRR = await prisma.reimbursement_Request.findUniqueOrThrow({
+        where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
+        select: { dateDelivered: true }
+      });
       expect(updatedRR.dateDelivered).toEqual(dateToSetAsDelivered);
     });
   });
@@ -617,18 +625,27 @@ describe('Reimbursement Requests', () => {
     });
   });
 
+  // the comment mutations return nothing, so read the comment back
+  const createComment = async (text: string) => {
+    await ReimbursementRequestService.createReimbursementRequestComment(
+      createdUser,
+      org,
+      text,
+      reimbursementRequest.reimbursementRequestId
+    );
+    return prisma.reimbursement_Request_Comment.findFirstOrThrow({
+      where: { reimbursementRequestId: reimbursementRequest.reimbursementRequestId, comment: text },
+      orderBy: { dateCreated: 'desc' }
+    });
+  };
+
   describe('Creating a reimbursement request comment', () => {
     test('Successfully creating a RR comment', async () => {
-      const comment = await ReimbursementRequestService.createReimbursementRequestComment(
-        createdUser,
-        org,
-        'Test comment!',
-        reimbursementRequest.reimbursementRequestId
-      );
+      const comment = await createComment('Test comment!');
 
       expect(comment.comment).toEqual('Test comment!');
       expect(comment.reimbursementRequestId).toEqual(reimbursementRequest.reimbursementRequestId);
-      expect(comment.userCreated.userId).toEqual(createdUser.userId);
+      expect(comment.userCreatedId).toEqual(createdUser.userId);
     });
     test('Fails when RR id is not found', async () => {
       await expect(
@@ -640,22 +657,20 @@ describe('Reimbursement Requests', () => {
 
   describe('Editing a reimbursement request comment', () => {
     test('Successfully editing a RR comment', async () => {
-      const comment = await ReimbursementRequestService.createReimbursementRequestComment(
-        createdUser,
-        org,
-        'Test comment!',
-        reimbursementRequest.reimbursementRequestId
-      );
-      const editedComment = await ReimbursementRequestService.editReimbursementRequestComment(
+      const comment = await createComment('Test comment!');
+      await ReimbursementRequestService.editReimbursementRequestComment(
         createdUser,
         org,
         'Edited',
         comment.reimbursementRequestCommentId
       );
 
+      const editedComment = await prisma.reimbursement_Request_Comment.findUniqueOrThrow({
+        where: { reimbursementRequestCommentId: comment.reimbursementRequestCommentId }
+      });
       expect(editedComment.comment).toEqual('Edited');
       expect(comment.reimbursementRequestId).toEqual(editedComment.reimbursementRequestId);
-      expect(editedComment.userCreated.userId).toEqual(comment.userCreated.userId);
+      expect(editedComment.userCreatedId).toEqual(comment.userCreatedId);
     });
     test('Fails when RRComment id is not found', async () => {
       await expect(
@@ -664,12 +679,7 @@ describe('Reimbursement Requests', () => {
       ).rejects.toThrow(new NotFoundException('Reimbursement Request Comment', 'bad ID'));
     });
     test('Fails when new comment is the same as existing comment', async () => {
-      const comment = await ReimbursementRequestService.createReimbursementRequestComment(
-        createdUser,
-        org,
-        'Test comment!',
-        reimbursementRequest.reimbursementRequestId
-      );
+      const comment = await createComment('Test comment!');
       await expect(
         async () =>
           await ReimbursementRequestService.editReimbursementRequestComment(
@@ -684,16 +694,11 @@ describe('Reimbursement Requests', () => {
 
   describe('Deleting a reimbursement request comment', () => {
     test('Successfully deleting a RR comment', async () => {
-      const comment = await ReimbursementRequestService.createReimbursementRequestComment(
+      const deletedComment = await createComment('Test comment!');
+      await ReimbursementRequestService.deleteReimbursementRequestComment(
         createdUser,
         org,
-        'Test comment!',
-        reimbursementRequest.reimbursementRequestId
-      );
-      const deletedComment = await ReimbursementRequestService.deleteReimbursementRequestComment(
-        createdUser,
-        org,
-        comment.reimbursementRequestCommentId
+        deletedComment.reimbursementRequestCommentId
       );
       // checking its not found after deleting
       await expect(
@@ -716,7 +721,7 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Car filtering for reimbursement request list endpoints', () => {
-    let car1RR: ReimbursementRequest;
+    let car1RR: { reimbursementRequestId: string };
 
     beforeEach(async () => {
       await createTestCar(org.organizationId, createdUser.userId, 1);
@@ -887,28 +892,6 @@ describe('Reimbursement Requests', () => {
         expect(fergusResults[0].reimbursementRequestId).toBe(reimbursementRequest.reimbursementRequestId);
       });
     });
-
-    describe('getUsersTeamsReimbursementRequests', () => {
-      test('returns only requests whose products belong to the given car', async () => {
-        const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
-
-        const car0Results = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(financeHead, org, 0);
-        expect(car0Results.map((r) => r.reimbursementRequestId)).toContain(reimbursementRequest.reimbursementRequestId);
-        expect(car0Results.map((r) => r.reimbursementRequestId)).not.toContain(car1RR.reimbursementRequestId);
-
-        const car1Results = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(financeHead, org, 1);
-        expect(car1Results.map((r) => r.reimbursementRequestId)).toContain(car1RR.reimbursementRequestId);
-        expect(car1Results.map((r) => r.reimbursementRequestId)).not.toContain(reimbursementRequest.reimbursementRequestId);
-      });
-
-      test('carNumber 0 filters to only car-0 requests and does not return all requests (Fergus regression)', async () => {
-        const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
-        const fergusResults = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(financeHead, org, 0);
-        expect(fergusResults).toHaveLength(1);
-        expect(fergusResults.map((r) => r.reimbursementRequestId)).toContain(reimbursementRequest.reimbursementRequestId);
-        expect(fergusResults.map((r) => r.reimbursementRequestId)).not.toContain(car1RR.reimbursementRequestId);
-      });
-    });
   });
 
   describe('Editing an other reimbursement product reason', () => {
@@ -997,18 +980,22 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Successfully sets the SABO number', async () => {
-      const result = await ReimbursementRequestService.setSaboNumber(
+      await ReimbursementRequestService.setSaboNumber(
         reimbursementRequest.reimbursementRequestId,
         'SABO-001',
         createdUser,
         org
       );
+      const result = await prisma.reimbursement_Request.findUniqueOrThrow({
+        where: { reimbursementRequestId: reimbursementRequest.reimbursementRequestId },
+        select: { saboId: true }
+      });
       expect(result.saboId).toEqual('SABO-001');
     });
   });
 
   describe('category-only requests appear under every car', () => {
-    let categoryOnlyRR: ReimbursementRequest;
+    let categoryOnlyRR: { reimbursementRequestId: string };
 
     beforeEach(async () => {
       categoryOnlyRR = await ReimbursementRequestService.createReimbursementRequest(
@@ -1052,22 +1039,78 @@ describe('Reimbursement Requests', () => {
       expect(results.map((r) => r.reimbursementRequestId)).toContain(categoryOnlyRR.reimbursementRequestId);
     });
 
-    test('category-only RR appears under car 0 for getUsersTeamsReimbursementRequests', async () => {
-      const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
-      const results = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(financeHead, org, 0);
-      expect(results.map((r) => r.reimbursementRequestId)).toContain(categoryOnlyRR.reimbursementRequestId);
-    });
-
-    test('category-only RR appears under car 1 for getUsersTeamsReimbursementRequests', async () => {
-      const financeHead = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
-      const results = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(financeHead, org, 1);
-      expect(results.map((r) => r.reimbursementRequestId)).toContain(categoryOnlyRR.reimbursementRequestId);
-    });
-
     test('category-only RR does not appear under getUserAssignedReimbursementRequests when unassigned', async () => {
       const financeMember = await prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeMember' } });
       const results = await ReimbursementRequestService.getUserAssignedReimbursementRequests(financeMember, org, 0);
       expect(results.map((r) => r.reimbursementRequestId)).not.toContain(categoryOnlyRR.reimbursementRequestId);
+    });
+  });
+
+  describe('Slim reimbursement request models', () => {
+    const financeHead = () => prisma.user.findUniqueOrThrow({ where: { googleAuthId: 'financeHead' } });
+
+    test('table items carry the current status and their products, not every relation', async () => {
+      const [item] = await ReimbursementRequestService.getUserReimbursementRequests(createdUser, org);
+
+      expect(item.currentStatus).toEqual('PENDING_LEADERSHIP_APPROVAL');
+      expect(item.dateSubmittedToSabo).toBeUndefined();
+      expect(item.reimbursementProducts).toEqual([
+        { name: 'GLUE', reimbursementProductReason: expect.objectContaining({ wbsNum: expect.anything() }) }
+      ]);
+      expect(item).not.toHaveProperty('vendor');
+      expect(item).not.toHaveProperty('comments');
+    });
+
+    test("project spending counts only the project's products", async () => {
+      const spending = await ReimbursementRequestService.getProjectSpending(
+        await financeHead(),
+        { carNumber: 0, projectNumber: 0, workPackageNumber: 0 },
+        org
+      );
+
+      expect(spending.map((item) => item.reimbursementRequestId)).toEqual([reimbursementRequest.reimbursementRequestId]);
+      expect(spending[0].projectCost).toEqual(200000);
+      expect(spending[0].productNames).toEqual(['GLUE']);
+    });
+
+    test('spending by index code leaves out denied requests', async () => {
+      const spentFrom = async () =>
+        (await ReimbursementRequestService.getSpendingByIndexCode(await financeHead(), org)).find(
+          (entry) => entry.indexCodeId === createdIndexCode.indexCodeId
+        )?.totalSpent ?? 0;
+
+      expect(await spentFrom()).toEqual(reimbursementRequest.totalCost);
+      await ReimbursementRequestService.denyReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        createdUser,
+        org
+      );
+      expect(await spentFrom()).toEqual(0);
+    });
+
+    test('the pending advisor list is SABO numbers and leaves out deleted requests', async () => {
+      await prisma.reimbursement_Request.update({
+        where: { reimbursementRequestId: reimbursementRequest.reimbursementRequestId },
+        data: {
+          saboId: 'SABO-123',
+          reimbursementStatuses: { create: { type: 'SABO_SUBMITTED', userId: createdUser.userId } }
+        }
+      });
+
+      expect(await ReimbursementRequestService.getPendingAdvisorList(await financeHead(), org)).toEqual(['SABO-123']);
+
+      await prisma.reimbursement_Request.update({
+        where: { reimbursementRequestId: reimbursementRequest.reimbursementRequestId },
+        data: { dateDeleted: new Date() }
+      });
+      expect(await ReimbursementRequestService.getPendingAdvisorList(await financeHead(), org)).toEqual([]);
+    });
+
+    test('the export names the refund source', async () => {
+      const [row] = await ReimbursementRequestService.getReimbursementRequestExport(await financeHead(), org);
+
+      expect(row.indexCode).toEqual({ code: createdIndexCode.code, name: createdIndexCode.name });
+      expect(row.currentStatus).toEqual('PENDING_LEADERSHIP_APPROVAL');
     });
   });
 });

@@ -28,8 +28,9 @@ import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { dateToMidnightUTC } from 'shared';
 import {
+  baseReimbursementRequestTransformer,
   reimbursementRequestDataTransformer,
-  reimbursementRequestTransformer,
+  reimbursementRequestDetailTransformer,
   reimbursementTransformer,
   spendingBarDataTransformer,
   vendorTransformer
@@ -39,8 +40,14 @@ import { PDFDocument, PDFImage } from 'pdf-lib';
 import {
   IndexCode,
   AccountCode,
-  ReimbursementRequest,
+  IndexCodeSpending,
   OtherProductReason,
+  ProjectSpendingItem,
+  ReimbursementRequestDetail,
+  ReimbursementRequestExportRow,
+  ReimbursementRequestTableItem,
+  WbsNumber,
+  wbsPipe,
   Sponsor,
   SponsorTask,
   ReimbursementRequestData,
@@ -77,7 +84,7 @@ export const uploadSingleReceipt = (file: File, id: string) => {
  * @returns the created reimbursement request
  */
 export const createReimbursementRequest = (formData: CreateReimbursementRequestPayload) => {
-  return axios.post(apiUrls.financeCreateReimbursementRequest(), {
+  return axios.post<{ reimbursementRequestId: string }>(apiUrls.financeCreateReimbursementRequest(), {
     ...formData,
     dateOfExpense: formData.dateOfExpense ? dateToMidnightUTC(formData.dateOfExpense) : undefined
   });
@@ -168,8 +175,8 @@ export const getAllVendors = () => {
  * @returns the reimbursement request with the given id
  */
 export const getSingleReimbursementRequest = (id: string) => {
-  return axios.get(apiUrls.financeReimbursementRequestById(id), {
-    transformResponse: (data) => reimbursementRequestTransformer(JSON.parse(data))
+  return axios.get<ReimbursementRequestDetail>(apiUrls.financeReimbursementRequestById(id), {
+    transformResponse: (data) => reimbursementRequestDetailTransformer(JSON.parse(data))
   });
 };
 
@@ -177,8 +184,8 @@ export const getSingleReimbursementRequest = (id: string) => {
  * Get the reimbursement requests created by the current user
  */
 export const getCurrentUserReimbursementRequests = () => {
-  return axios.get(apiUrls.financeGetUserReimbursementRequest(), {
-    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
+  return axios.get<ReimbursementRequestTableItem[]>(apiUrls.financeGetUserReimbursementRequest(), {
+    transformResponse: (data) => JSON.parse(data).map(baseReimbursementRequestTransformer)
   });
 };
 
@@ -186,17 +193,8 @@ export const getCurrentUserReimbursementRequests = () => {
  * Get the reimbursement requests assigned to the current user
  */
 export const getCurrentUserAssignedReimbursementRequests = () => {
-  return axios.get(apiUrls.financeGetUserAssignedReimbursementRequest(), {
-    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
-  });
-};
-
-/**
- * Get the reimbursement requests for the current user's teams
- */
-export const getCurrentUsersTeamsReimbursementRequests = () => {
-  return axios.get(apiUrls.financeGetUsersTeamsReimbursementRequests(), {
-    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
+  return axios.get<ReimbursementRequestTableItem[]>(apiUrls.financeGetUserAssignedReimbursementRequest(), {
+    transformResponse: (data) => JSON.parse(data).map(baseReimbursementRequestTransformer)
   });
 };
 
@@ -204,8 +202,46 @@ export const getCurrentUsersTeamsReimbursementRequests = () => {
  * Gets all the reimbursement requests
  */
 export const getAllReimbursementRequests = () => {
-  return axios.get<ReimbursementRequest[]>(apiUrls.financeEndpoints(), {
-    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
+  return axios.get<ReimbursementRequestTableItem[]>(apiUrls.financeEndpoints(), {
+    transformResponse: (data) => JSON.parse(data).map(baseReimbursementRequestTransformer)
+  });
+};
+
+/**
+ * Gets the reimbursement requests with a product bought for the given project
+ */
+export const getProjectSpending = (wbsNum: WbsNumber) => {
+  return axios.get<ProjectSpendingItem[]>(apiUrls.financeProjectSpending(wbsPipe(wbsNum)), {
+    transformResponse: (data) => JSON.parse(data).map(baseReimbursementRequestTransformer)
+  });
+};
+
+/**
+ * Gets how much has been spent from each index code
+ */
+export const getSpendingByIndexCode = () => {
+  return axios.get<IndexCodeSpending[]>(apiUrls.financeSpendingByIndexCode());
+};
+
+/**
+ * Gets the receipt files of the reimbursement requests created in the given period
+ *
+ * @param startPeriod the earliest creation time to include
+ * @param endPeriod the latest creation time to include
+ * @param refundSource the name of the refund source, or BOTH
+ */
+export const getReceiptFileIds = (startPeriod: Date, endPeriod: Date, refundSource: string) => {
+  return axios.get<string[]>(apiUrls.financeReceiptFiles(), {
+    params: { startPeriod: startPeriod.toISOString(), endPeriod: endPeriod.toISOString(), refundSource }
+  });
+};
+
+/**
+ * Gets every reimbursement request for the CSV export
+ */
+export const getReimbursementRequestExport = () => {
+  return axios.get<ReimbursementRequestExportRow[]>(apiUrls.financeExport(), {
+    transformResponse: (data) => JSON.parse(data).map(baseReimbursementRequestTransformer)
   });
 };
 
@@ -351,9 +387,7 @@ export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => 
  * @returns The list of Reimbursement Requests that are pending advisor approval
  */
 export const getPendingAdvisorList = () => {
-  return axios.get(apiUrls.financeGetPendingAdvisorList(), {
-    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
-  });
+  return axios.get<string[]>(apiUrls.financeGetPendingAdvisorList());
 };
 
 /**

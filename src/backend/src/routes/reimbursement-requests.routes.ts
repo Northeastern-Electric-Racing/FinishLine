@@ -4,7 +4,7 @@
  */
 
 import express from 'express';
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
 import {
   intMinZero,
   isDate,
@@ -86,11 +86,6 @@ reimbursementRequestsRouter.get(
 
 reimbursementRequestsRouter.get('/reimbursements/current-user', ReimbursementRequestController.getCurrentUserReimbursements);
 
-reimbursementRequestsRouter.get(
-  '/reimbursements/current-user-team',
-  ReimbursementRequestController.getCurrentUsersTeamsReimbursementRequests
-);
-
 reimbursementRequestsRouter.get('/reimbursements', ReimbursementRequestController.getAllReimbursements);
 
 reimbursementRequestsRouter.post(
@@ -127,6 +122,22 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.get('/', ReimbursementRequestController.getAllReimbursementRequests);
+
+// these single-segment paths must come before '/:requestId'
+reimbursementRequestsRouter.get('/spending-by-index-code', ReimbursementRequestController.getSpendingByIndexCode);
+
+reimbursementRequestsRouter.get(
+  '/receipt-files',
+  isDate(query('startPeriod')),
+  isDate(query('endPeriod')),
+  nonEmptyString(query('refundSource')),
+  validateInputs,
+  ReimbursementRequestController.getReceiptFileIds
+);
+
+reimbursementRequestsRouter.get('/export', ReimbursementRequestController.getReimbursementRequestExport);
+
+reimbursementRequestsRouter.get('/project/:wbsNum', ReimbursementRequestController.getProjectSpending);
 
 reimbursementRequestsRouter.get('/:requestId', ReimbursementRequestController.getSingleReimbursementRequest);
 

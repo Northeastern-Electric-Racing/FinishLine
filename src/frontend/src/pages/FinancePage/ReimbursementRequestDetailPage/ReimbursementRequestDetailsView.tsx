@@ -25,7 +25,7 @@ import { Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { ReimbursementRequest, isAdmin, isHead } from 'shared';
+import { ReimbursementRequestDetail, isAdmin, isHead } from 'shared';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
 import PageLayout from '../../../components/PageLayout';
@@ -52,8 +52,7 @@ import {
   isReimbursementRequestDenied,
   isReimbursementRequestLeadershipApproved,
   isReimbursementRequestPendingFinance,
-  getUniqueWbsElementsWithProductsFromReimbursementRequest,
-  getCurrentReimbursementStatus
+  getUniqueWbsElementsWithProductsFromReimbursementRequest
 } from '../../../utils/reimbursement-request.utils';
 import { routes } from '../../../utils/routes';
 import AddSABONumberModal from './AddSABONumberModal';
@@ -71,7 +70,7 @@ import ErrorPage from '../../ErrorPage';
 import AssignFinanceMemberModal from './AssignFinanceMemberModal';
 
 interface ReimbursementRequestDetailsViewProps {
-  reimbursementRequest: ReimbursementRequest;
+  reimbursementRequest: ReimbursementRequestDetail;
   onCloseSidePage: () => void;
 }
 
@@ -418,8 +417,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
 
   const buttons: ButtonInfo[] = allButtons.filter((button) => button.show !== false).map(({ show, ...button }) => button);
 
-  const sortedStatus = reimbursementRequest.reimbursementStatuses.sort((a) => a.dateCreated.getDate());
-  const statusTypes = sortedStatus.map((status) => status.type);
+  // the server sends statuses oldest first
+  const statusTypes = reimbursementRequest.reimbursementStatuses.map((status) => status.type);
 
   const uniqueWbsElementsWithProducts = getUniqueWbsElementsWithProductsFromReimbursementRequest(reimbursementRequest);
   const keys: string[] = [];
@@ -454,9 +453,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       content: statusTypes.length > 0 && (
         <Box id="status" display="flex">
           {reimbursementRequest.reimbursementStatuses.length > 0 && (
-            <ReimbursementRequestStatusPill
-              status={getCurrentReimbursementStatus(reimbursementRequest.reimbursementStatuses).type}
-            />
+            <ReimbursementRequestStatusPill status={reimbursementRequest.currentStatus} />
           )}
         </Box>
       )

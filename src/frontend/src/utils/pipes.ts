@@ -94,7 +94,7 @@ export const numberParamPipe = (param: string | null) => {
   }
 };
 
-export const accountCodePipe = (accountCode: AccountCode) => {
+export const accountCodePipe = (accountCode: Pick<AccountCode, 'code' | 'name'>) => {
   return `${accountCode.code} - ${accountCode.name}`;
 };
 
@@ -163,7 +163,7 @@ export const projectWbsNamePipe = (wbsElement: NamedWbsElement) => {
 };
 
 /** Displays a refund source as a string "Code - Name" */
-export const codeAndRefundSourceName = (refundSource?: IndexCode) => {
+export const codeAndRefundSourceName = (refundSource?: Pick<IndexCode, 'code' | 'name'>) => {
   return refundSource ? `${refundSource.code} - ${refundSource.name}` : '-';
 };
 
