@@ -6,8 +6,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { getCurrentUserWithUserSettings } from '../utils/auth.utils.js';
 import ReimbursementRequestService from '../services/reimbursement-requests.services.js';
-import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types.js';
-import { Vendor } from 'shared';
+import { validateWBS, Vendor } from 'shared';
 import { HttpException } from '../utils/errors.utils.js';
 
 export default class ReimbursementRequestsController {
@@ -39,24 +38,66 @@ export default class ReimbursementRequestsController {
     }
   }
 
-  static async getCurrentUserReimbursements(req: Request, res: Response, next: NextFunction) {
+  static async getProjectSpending(req: Request, res: Response, next: NextFunction) {
     try {
-      const userReimbursements = await ReimbursementRequestService.getUserReimbursements(req.currentUser, req.organization);
-      res.status(200).json(userReimbursements);
+      const wbsNum = validateWBS(req.params.wbsNum as string);
+      const spending = await ReimbursementRequestService.getProjectSpending(req.currentUser, wbsNum, req.organization);
+      res.status(200).json(spending);
     } catch (error: unknown) {
       next(error);
     }
   }
 
-  static async getCurrentUsersTeamsReimbursementRequests(req: Request, res: Response, next: NextFunction) {
+  static async getSpendingByIndexCode(req: Request, res: Response, next: NextFunction) {
     try {
       const carNumber = req.currentCar?.wbsElement.carNumber;
-      const userTeamsReimbursementRequests = await ReimbursementRequestService.getUsersTeamsReimbursementRequests(
+      const spending = await ReimbursementRequestService.getSpendingByIndexCode(
         req.currentUser,
         req.organization,
         carNumber
       );
-      res.status(200).json(userTeamsReimbursementRequests);
+      res.status(200).json(spending);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getReceiptFileIds(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { startPeriod, endPeriod, refundSource } = req.query as Record<string, string>;
+      const carNumber = req.currentCar?.wbsElement.carNumber;
+      const fileIds = await ReimbursementRequestService.getReceiptFileIds(
+        req.currentUser,
+        req.organization,
+        new Date(startPeriod),
+        new Date(endPeriod),
+        refundSource,
+        carNumber
+      );
+      res.status(200).json(fileIds);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getReimbursementRequestExport(req: Request, res: Response, next: NextFunction) {
+    try {
+      const carNumber = req.currentCar?.wbsElement.carNumber;
+      const rows = await ReimbursementRequestService.getReimbursementRequestExport(
+        req.currentUser,
+        req.organization,
+        carNumber
+      );
+      res.status(200).json(rows);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getCurrentUserReimbursements(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userReimbursements = await ReimbursementRequestService.getUserReimbursements(req.currentUser, req.organization);
+      res.status(200).json(userReimbursements);
     } catch (error: unknown) {
       next(error);
     }
@@ -142,7 +183,7 @@ export default class ReimbursementRequestsController {
         description
       } = req.body;
 
-      const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
+      await ReimbursementRequestService.editReimbursementRequest(
         requestId,
         vendorId,
         indexCodeId,
@@ -156,7 +197,7 @@ export default class ReimbursementRequestsController {
         dateOfExpense,
         description
       );
-      res.status(200).json(updatedReimbursementRequestId);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -167,13 +208,8 @@ export default class ReimbursementRequestsController {
       const { requestId } = req.params as Record<string, string>;
       const { assigneeId } = req.body;
 
-      const updatedReimbursementRequest = await ReimbursementRequestService.assignFinanceMember(
-        req.currentUser,
-        req.organization,
-        requestId,
-        assigneeId
-      );
-      res.status(200).json(updatedReimbursementRequest);
+      await ReimbursementRequestService.assignFinanceMember(req.currentUser, req.organization, requestId, assigneeId);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -201,12 +237,8 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params as Record<string, string>;
 
-      const deletedReimbursementRequest = await ReimbursementRequestService.deleteReimbursementRequest(
-        requestId,
-        req.currentUser,
-        req.organization
-      );
-      res.status(200).json(deletedReimbursementRequest);
+      await ReimbursementRequestService.deleteReimbursementRequest(requestId, req.currentUser, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -215,7 +247,7 @@ export default class ReimbursementRequestsController {
   static async getPendingAdvisorList(req: Request, res: Response, next: NextFunction) {
     try {
       const carNumber = req.currentCar?.wbsElement.carNumber;
-      const requestsPendingAdvisors: ReimbursementRequest[] = await ReimbursementRequestService.getPendingAdvisorList(
+      const requestsPendingAdvisors = await ReimbursementRequestService.getPendingAdvisorList(
         req.currentUser,
         req.organization,
         carNumber
@@ -234,7 +266,7 @@ export default class ReimbursementRequestsController {
         saboNumbers,
         req.organization.organizationId
       );
-      res.status(200).json({ message: 'Successfully sent pending advisor list' });
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -245,7 +277,7 @@ export default class ReimbursementRequestsController {
       const { requestId } = req.params as Record<string, string>;
       const { saboNumber } = req.body;
       await ReimbursementRequestService.setSaboNumber(requestId, saboNumber, req.currentUser, req.organization);
-      res.status(200).json({ message: 'Successfully set sabo number' });
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -294,12 +326,12 @@ export default class ReimbursementRequestsController {
       const { file } = req;
       const { requestId } = req.params as Record<string, string>;
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
-      const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, req.currentUser, req.organization);
+      await ReimbursementRequestService.uploadReceipt(requestId, file, req.currentUser, req.organization);
       const isProd = process.env.NODE_ENV === 'production';
       const origin = isProd ? 'https://finishlinebyner.com' : 'http://localhost:3000';
 
       res.header('Access-Control-Allow-Origin', origin);
-      res.status(200).json(receipt);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -317,7 +349,7 @@ export default class ReimbursementRequestsController {
   static async getAllReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
       const carNumber = req.currentCar?.wbsElement.carNumber;
-      const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests(
+      const reimbursementRequests = await ReimbursementRequestService.getAllReimbursementRequests(
         req.currentUser,
         req.organization,
         carNumber
@@ -332,12 +364,8 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params as Record<string, string>;
 
-      const reimbursementStatus = await ReimbursementRequestService.leadershipApproveReimbursementRequest(
-        requestId,
-        req.currentUser,
-        req.organization
-      );
-      res.status(200).json(reimbursementStatus);
+      await ReimbursementRequestService.leadershipApproveReimbursementRequest(requestId, req.currentUser, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -347,12 +375,8 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params as Record<string, string>;
 
-      const reimbursementStatus = await ReimbursementRequestService.inputReimbursementRequestInSabo(
-        requestId,
-        req.currentUser,
-        req.organization
-      );
-      res.status(200).json(reimbursementStatus);
+      await ReimbursementRequestService.inputReimbursementRequestInSabo(requestId, req.currentUser, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -362,12 +386,12 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params as Record<string, string>;
 
-      const reimbursementStatus = await ReimbursementRequestService.markReimbursementRequestAsSaboSubmitted(
+      await ReimbursementRequestService.markReimbursementRequestAsSaboSubmitted(
         requestId,
         req.currentUser,
         req.organization
       );
-      res.status(200).json(reimbursementStatus);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -377,12 +401,8 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params as Record<string, string>;
 
-      const reimbursementStatus = await ReimbursementRequestService.denyReimbursementRequest(
-        requestId,
-        req.currentUser,
-        req.organization
-      );
-      res.status(200).json(reimbursementStatus);
+      await ReimbursementRequestService.denyReimbursementRequest(requestId, req.currentUser, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -392,12 +412,8 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params as Record<string, string>;
 
-      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsReimbursed(
-        requestId,
-        req.currentUser,
-        req.organization
-      );
-      res.status(200).json(updatedRequest);
+      await ReimbursementRequestService.markReimbursementRequestAsReimbursed(requestId, req.currentUser, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -408,13 +424,13 @@ export default class ReimbursementRequestsController {
       const { requestId } = req.params as Record<string, string>;
       const { dateDelivered } = req.body;
 
-      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
+      await ReimbursementRequestService.markReimbursementRequestAsDelivered(
         req.currentUser,
         requestId,
         req.organization,
         dateDelivered
       );
-      res.status(200).json(updatedRequest);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -424,7 +440,7 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params as Record<string, string>;
 
-      const reimbursementRequest: ReimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
+      const reimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
         req.currentUser,
         requestId,
         req.organization
@@ -545,12 +561,8 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params as Record<string, string>;
 
-      const updatedRequest = await ReimbursementRequestService.markPendingFinance(
-        req.currentUser,
-        requestId,
-        req.organization
-      );
-      res.status(200).json(updatedRequest);
+      await ReimbursementRequestService.markPendingFinance(req.currentUser, requestId, req.organization);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -560,12 +572,12 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params as Record<string, string>;
 
-      const updatedRequest = await ReimbursementRequestService.financeRequestReimbursementRequestChanges(
+      await ReimbursementRequestService.financeRequestReimbursementRequestChanges(
         req.currentUser,
         requestId,
         req.organization
       );
-      res.status(200).json(updatedRequest);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -695,13 +707,13 @@ export default class ReimbursementRequestsController {
       const { comment } = req.body;
       const { requestId: reimbursementRequestId } = req.params as Record<string, string>;
 
-      const createdComment = await ReimbursementRequestService.createReimbursementRequestComment(
+      await ReimbursementRequestService.createReimbursementRequestComment(
         req.currentUser,
         req.organization,
         comment,
         reimbursementRequestId
       );
-      res.status(200).json(createdComment);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -712,13 +724,13 @@ export default class ReimbursementRequestsController {
       const { comment } = req.body;
       const { commentId } = req.params as Record<string, string>;
 
-      const editedComment = await ReimbursementRequestService.editReimbursementRequestComment(
+      await ReimbursementRequestService.editReimbursementRequestComment(
         req.currentUser,
         req.organization,
         comment,
         commentId
       );
-      res.status(200).json(editedComment);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }
@@ -728,7 +740,7 @@ export default class ReimbursementRequestsController {
     try {
       const { commentId } = req.params as Record<string, string>;
       await ReimbursementRequestService.deleteReimbursementRequestComment(req.currentUser, req.organization, commentId);
-      res.status(204).json({ message: `Successfully deleted Comment with id ${commentId}` });
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }

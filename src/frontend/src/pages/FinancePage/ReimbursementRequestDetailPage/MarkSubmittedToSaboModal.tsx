@@ -1,13 +1,13 @@
 import NERModal from '../../../components/NERModal';
 import { useMarkReimbursementRequestAsSaboSubmitted } from '../../../hooks/finance.hooks';
-import { ReimbursementRequest } from 'shared';
+import { ReimbursementRequestDetail } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Typography } from '@mui/material';
 
 interface MarkSubmittedToSaboModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
-  reimbursementRequest: ReimbursementRequest;
+  reimbursementRequest: ReimbursementRequestDetail;
 }
 
 const MarkSubmittedToSaboModal = ({ open, setOpen, reimbursementRequest }: MarkSubmittedToSaboModalProps) => {

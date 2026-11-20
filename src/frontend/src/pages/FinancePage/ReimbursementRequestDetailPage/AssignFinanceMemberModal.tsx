@@ -1,7 +1,7 @@
 import { Autocomplete, FormControl, FormLabel, TextField } from '@mui/material';
 import { useAssignMemberToRR } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { ReimbursementRequest, User } from 'shared';
+import { ReimbursementRequestDetail, User } from 'shared';
 import { useEffect, useState } from 'react';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -12,7 +12,7 @@ import { fullNamePipe } from '../../../utils/pipes';
 interface AssignFinanceMemberModalProps {
   modalShow: boolean;
   onHide: () => void;
-  reimbursementRequest: ReimbursementRequest;
+  reimbursementRequest: ReimbursementRequestDetail;
 }
 
 const AssignFinanceMemberModal = ({ modalShow, onHide, reimbursementRequest }: AssignFinanceMemberModalProps) => {

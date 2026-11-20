@@ -4,7 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { ProjectDetail, isGuest, isAdmin, isLeadership } from 'shared';
+import { ProjectDetail, isGuest, isAdmin, isHead, isLeadership } from 'shared';
 import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
 import ProjectDetails from './ProjectDetails';
 import { routes } from '../../../utils/routes';
@@ -209,6 +209,22 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       </PageLayout>
     );
 
+  // only finance members and heads can see a project's spending
+  const canViewSpending = user.isFinance || isHead(user.role);
+  const tabsLabels = [
+    { tabUrlValue: 'overview', tabName: 'Overview' },
+    { tabUrlValue: 'tasks', tabName: 'Tasks' },
+    { tabUrlValue: 'bom', tabName: 'BOM' },
+    { tabUrlValue: 'changes', tabName: 'Changes' },
+    { tabUrlValue: 'gantt', tabName: 'Gantt' },
+    { tabUrlValue: 'change-requests', tabName: 'Change Requests' },
+    { tabUrlValue: 'parts-review', tabName: 'Parts Review' },
+    ...(canViewSpending ? [{ tabUrlValue: 'spending', tabName: 'Budget' }] : []),
+    { tabUrlValue: 'rules', tabName: 'Rules' }
+  ];
+  // tabs are picked by url value since the Budget tab isn't always there
+  const currentTab = tabsLabels[tab]?.tabUrlValue ?? 'overview';
+
   return (
     <PageLayout
       title={pageTitle}
@@ -216,17 +232,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       tabs={
         <FullPageTabs
           setTab={setTab}
-          tabsLabels={[
-            { tabUrlValue: 'overview', tabName: 'Overview' },
-            { tabUrlValue: 'tasks', tabName: 'Tasks' },
-            { tabUrlValue: 'bom', tabName: 'BOM' },
-            { tabUrlValue: 'changes', tabName: 'Changes' },
-            { tabUrlValue: 'gantt', tabName: 'Gantt' },
-            { tabUrlValue: 'change-requests', tabName: 'Change Requests' },
-            { tabUrlValue: 'parts-review', tabName: 'Parts Review' },
-            { tabUrlValue: 'spending', tabName: 'Budget' },
-            { tabUrlValue: 'rules', tabName: 'Rules' }
-          ]}
+          tabsLabels={tabsLabels}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
           id="project-detail-tabs"
@@ -234,21 +240,21 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       }
       previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
     >
-      {tab === 0 ? (
+      {currentTab === 'overview' ? (
         <ProjectDetails project={projectWithSortedWorkPackages} />
-      ) : tab === 1 ? (
+      ) : currentTab === 'tasks' ? (
         <TaskList project={project} isGuest={false} />
-      ) : tab === 2 ? (
+      ) : currentTab === 'bom' ? (
         <BOMTab project={project} />
-      ) : tab === 3 ? (
+      ) : currentTab === 'changes' ? (
         <ChangesList changes={project.changes} />
-      ) : tab === 4 ? (
+      ) : currentTab === 'gantt' ? (
         <ProjectGantt workPackages={projectWithSortedWorkPackages.workPackages} />
-      ) : tab === 5 ? (
+      ) : currentTab === 'change-requests' ? (
         <ChangeRequestTab wbsElement={project} />
-      ) : tab === 6 ? (
+      ) : currentTab === 'parts-review' ? (
         <PartsReviewPage project={project} />
-      ) : tab === 7 ? (
+      ) : currentTab === 'spending' ? (
         <ProjectSpendingHistory wbsNum={project.wbsNum} />
       ) : (
         <ProjectRulesTab project={project} />

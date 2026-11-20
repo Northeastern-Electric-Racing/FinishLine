@@ -217,6 +217,10 @@ const financeDenyReimbursementRequest = (id: string) => `${financeEndpoints()}/$
 const financeMarkPending = (id: string) => `${financeEndpoints()}/${id}/pending-finance`;
 const financeRequestChanges = (id: string) => `${financeEndpoints()}/${id}/request-changes`;
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
+const financeProjectSpending = (wbsNum: string) => `${financeEndpoints()}/project/${wbsNum}`;
+const financeSpendingByIndexCode = () => `${financeEndpoints()}/spending-by-index-code`;
+const financeReceiptFiles = () => `${financeEndpoints()}/receipt-files`;
+const financeExport = () => `${financeEndpoints()}/export`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
 const financeEditAccountCode = (accountCodeId: string) => `${getAllAccountCodes()}/${accountCodeId}/edit`;
 const financeDeleteAccountCode = (accountCodeId: string) => `${financeEndpoints()}/account-codes/${accountCodeId}/delete`;
@@ -320,7 +324,6 @@ const getAllSpendingBarData = (startDate?: Date, endDate?: Date): string => {
 const getAllSponsorTiers = () => `${financeRoutesEndpoints()}/sponsorTiers`;
 const editSponsor = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/edit`;
 const uploadSponsorLogo = (sponsorId: string) => `${financeRoutesEndpoints()}/sponsor/${sponsorId}/uploadLogo`;
-const financeGetUsersTeamsReimbursementRequests = () => `${financeEndpoints()}/reimbursements/current-user-team`;
 const deleteSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}`;
 const editSponsorTier = (sponsorTierId: string) => `${financeRoutesEndpoints()}/sponsorTier/${sponsorTierId}/edit`;
 const toggleSponsorTaskDone = (sponsorTaskId: string) =>
@@ -776,6 +779,10 @@ export const apiUrls = {
   getAllAccountCodes,
   getAllVendors,
   financeEndpoints,
+  financeProjectSpending,
+  financeSpendingByIndexCode,
+  financeReceiptFiles,
+  financeExport,
   financeUploadReceipt,
   financeGetUserReimbursementRequest,
   financeGetUserAssignedReimbursementRequest,
@@ -830,7 +837,6 @@ export const apiUrls = {
   getAllSponsorTiers,
   editSponsor,
   uploadSponsorLogo,
-  financeGetUsersTeamsReimbursementRequests,
   deleteSponsorTier,
   editSponsorTier,
   toggleSponsorTaskDone,
