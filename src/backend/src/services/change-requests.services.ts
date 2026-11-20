@@ -275,30 +275,10 @@ export default class ChangeRequestsService {
       throw new AccessDeniedMemberException('review change requests');
     }
 
-    // Mark as reviewed FIRST so validateChangeRequestAccepted passes when applying proposed changes
-    let updated;
-
-    if (foundCR.type === CR_Type.STANDARD) {
-      // TODO #4459: move into the transaction once the standard apply path takes tx
-      // Mark as reviewed FIRST so validateChangeRequestAccepted passes when applying proposed changes
-      updated = await prisma.change_Request.update({
-        where: { crId },
-        data: {
-          reviewer: { connect: { userId: reviewer.userId } },
-          reviewNotes,
-          accepted,
-          dateReviewed: new Date()
-        },
-        include: {
-          ...getChangeRequestQueryArgs(organization.organizationId).include,
-          notificationSlackThreads: true
-        }
-      });
-
-      if (accepted) await this.reviewStandardChangeRequest(foundCR, reviewer, organization);
-    } else {
-      // mark as reviewed and apply the changes together, so a failure leaves the CR unreviewed
-      updated = await prisma.$transaction(async (tx) => {
+    // mark as reviewed and apply the changes together, so a failure leaves the CR unreviewed and reviewable again.
+    // the review is saved first so validateChangeRequestAccepted, reading through tx, sees the CR as accepted
+    const updated = await prisma.$transaction(
+      async (tx) => {
         const reviewedCR = await tx.change_Request.update({
           where: { crId },
           data: {
@@ -319,11 +299,15 @@ export default class ChangeRequestsService {
           await this.reviewActivationChangeRequest(foundCR, reviewer, tx);
         } else if (foundCR.type === CR_Type.BUDGET && foundCR.budgetChangeRequest && accepted) {
           await this.reviewBudgetChangeRequest(foundCR, reviewer, tx);
+        } else if (foundCR.type === CR_Type.STANDARD && accepted) {
+          await this.reviewStandardChangeRequest(foundCR, reviewer, organization, tx);
         }
 
         return reviewedCR;
-      });
-    }
+      },
+      // approving a standard CR can create a project and all its work packages, which takes longer than the 5 second default
+      { timeout: 20000 }
+    );
 
     await sendCRSubmitterReviewedNotification(updated);
     await sendCrReviewedPopUp(foundCR, updated.submitter, accepted, organization.organizationId);
@@ -337,11 +321,13 @@ export default class ChangeRequestsService {
    * @param foundCR the change request to be reviewed
    * @param reviewer the user reviewing the change request
    * @param organization the organization the user is currently in
+   * @param tx the transaction client to run the writes in
    */
   private static async reviewStandardChangeRequest(
     foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
     reviewer: User,
-    organization: Organization
+    organization: Organization,
+    tx: PrismaTransactionClient
   ): Promise<void> {
     if (!foundCR.wbsProposedChanges) return;
 
@@ -369,7 +355,8 @@ export default class ChangeRequestsService {
         associatedWorkPackage,
         reviewer,
         foundCR.crId,
-        organization
+        organization,
+        tx
       );
     } else if (projectProposedChanges) {
       // CR is on a project — edit it or create it
@@ -380,7 +367,8 @@ export default class ChangeRequestsService {
         reviewer,
         foundCR.crId,
         foundCR.wbsElement?.carNumber ?? 0,
-        organization
+        organization,
+        tx
       );
     }
   }

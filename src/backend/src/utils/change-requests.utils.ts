@@ -261,6 +261,7 @@ export const validateNoUnreviewedOpenAccountCodeCRs = async (accountCodeId: stri
  * @param reviewer  the user reviewing the change request
  * @param crId  the change request id
  * @param carNumber the car number of the change request's WBS element
+ * @param tx the review's transaction, so the project and its work packages are saved with the review
  */
 export const applyProjectProposedChanges = async (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>,
@@ -269,7 +270,8 @@ export const applyProjectProposedChanges = async (
   reviewer: User,
   crId: string,
   carNumber: number,
-  organization: Organization
+  organization: Organization,
+  tx: PrismaTransactionClient
 ) => {
   if (projectProposedChanges) {
     const links = wbsProposedChanges.links.map((link) => {
@@ -296,14 +298,15 @@ export const applyProjectProposedChanges = async (
         descriptionBullets,
         wbsProposedChanges.leadId,
         wbsProposedChanges.managerId,
-        organization
+        organization,
+        tx
       );
 
       projectWbsNum = proj.wbsNum;
     } else if (associatedProject) {
       // Map proposed links back to the current project's real linkIds so that
       // editProject's linkId-based comparator correctly detects unchanged links.
-      const currentProject = await prisma.project.findUnique({
+      const currentProject = await tx.project.findUnique({
         where: { projectId: associatedProject.projectId },
         include: { wbsElement: { include: { links: { where: { dateDeleted: null }, include: { linkType: true } } } } }
       });
@@ -324,7 +327,8 @@ export const applyProjectProposedChanges = async (
         linksWithRealIds,
         wbsProposedChanges.leadId,
         wbsProposedChanges.managerId,
-        organization
+        organization,
+        tx
       );
 
       // editProject throws when the project doesn't exist, so it's here
@@ -339,7 +343,8 @@ export const applyProjectProposedChanges = async (
         null,
         reviewer,
         crId,
-        organization
+        organization,
+        tx
       );
     }
   }
@@ -354,6 +359,7 @@ export const applyProjectProposedChanges = async (
  * @param reviewer  the user reviewing the change request
  * @param crId  the change request id
  * @param organizationId the organization id of the user
+ * @param tx the review's transaction, so the work package is saved with the review
  */
 export const applyWorkPackageProposedChanges = async (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>,
@@ -362,7 +368,8 @@ export const applyWorkPackageProposedChanges = async (
   associatedWorkPackage: Work_Package | null,
   reviewer: User,
   crId: string,
-  organization: Organization
+  organization: Organization,
+  tx: PrismaTransactionClient
 ) => {
   if (existingWbsNum) {
     await WorkPackagesService.createWorkPackage(
@@ -377,7 +384,8 @@ export const applyWorkPackageProposedChanges = async (
         descriptionBulletToDescriptionBulletPreview
       ),
       existingWbsNum,
-      organization
+      organization,
+      tx
     );
   } else if (associatedWorkPackage) {
     await WorkPackagesService.editWorkPackage(
@@ -392,7 +400,8 @@ export const applyWorkPackageProposedChanges = async (
       wbsProposedChanges.proposedDescriptionBulletChanges.map(descriptionBulletToDescriptionBulletPreview),
       wbsProposedChanges.leadId,
       wbsProposedChanges.managerId,
-      organization
+      organization,
+      tx
     );
   }
 };
