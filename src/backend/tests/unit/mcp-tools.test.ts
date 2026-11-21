@@ -9,7 +9,7 @@ import {
   createTestWorkPackage,
   resetUsers
 } from '../test-utils.js';
-import { batmanAppAdmin } from '../test-data/users.test-data.js';
+import { batmanAppAdmin, supermanAdmin, supermanSettings, wonderwomanGuest } from '../test-data/users.test-data.js';
 import prisma from '../../src/prisma/prisma.js';
 import ApiTokenService from '../../src/services/api-tokens.services.js';
 import { mcpNodeHandler } from '../../src/mcp/handler.js';
@@ -99,6 +99,7 @@ describe('MCP Tools', () => {
       'finishline_get_events',
       'finishline_get_project',
       'finishline_get_tasks',
+      'finishline_get_user_slack_id',
       'finishline_list_projects'
     ]);
   });
@@ -312,6 +313,44 @@ describe('MCP Tools', () => {
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('after startPeriod');
+    });
+  });
+
+  describe('Get User Slack Id', () => {
+    it("returns a user's linked slack id", async () => {
+      const superman = await createTestUser(supermanAdmin, orgId, supermanSettings);
+
+      const { data } = await callTool('finishline_get_user_slack_id', { userId: superman.userId });
+
+      expect(data).toEqual({ userId: superman.userId, slackId: supermanSettings.slackId });
+    });
+
+    it('leaves slackId out for a user who never linked slack', async () => {
+      const wonderwoman = await createTestUser(wonderwomanGuest, orgId);
+
+      const { data } = await callTool('finishline_get_user_slack_id', { userId: wonderwoman.userId });
+
+      expect(data).toEqual({ userId: wonderwoman.userId });
+    });
+
+    it('does not reveal users outside the organization', async () => {
+      // created inline rather than with createTestOrganization, which always uses the same unique creator and slug
+      const otherOrganization = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          slug: 'other-org',
+          description: 'A second organization',
+          applicationLink: '',
+          userCreated: { connect: { userId: admin.userId } }
+        }
+      });
+      const outsider = await createTestUser(supermanAdmin, otherOrganization.organizationId, supermanSettings);
+
+      const { result } = await callTool('finishline_get_user_slack_id', { userId: outsider.userId });
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain('not found');
+      expect(result.content[0].text).not.toContain(supermanSettings.slackId);
     });
   });
 });
