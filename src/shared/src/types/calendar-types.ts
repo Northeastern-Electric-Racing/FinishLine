@@ -213,13 +213,6 @@ export interface CalendarEvent extends BaseEvent {
   numScheduledSlots: number;
 }
 
-/** One page of the calendar view events */
-export interface CalendarEventPage {
-  events: CalendarEvent[];
-  // where the next page starts, or undefined when this is the last page
-  nextOffset?: number;
-}
-
 /** A single CalendarEvent slot, as the calendar grid and tables render it */
 export type CalendarEventInstance = Omit<CalendarEvent, 'scheduledTimes'> &
   ScheduleSlot & {
