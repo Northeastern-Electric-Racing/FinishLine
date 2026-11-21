@@ -27,7 +27,9 @@ export const registerEventTools: ToolRegistrar = (server, { organization }) => {
         statuses: z
           .array(z.enum(ConflictStatus))
           .optional()
-          .describe('Only events with these approval statuses. Omit this for every status.')
+          .describe(
+            'Only events with these approval statuses. In general use APPROVED and NO_CONFLICT to get confirmed events.'
+          )
       })
     },
     async ({ startPeriod, endPeriod, statuses }) =>
