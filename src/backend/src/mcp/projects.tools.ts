@@ -3,38 +3,41 @@ import { validateWBS } from 'shared';
 import ProjectsService from '../services/projects.services.js';
 import CarsService from '../services/car.services.js';
 import { withToolErrors } from './errors.js';
-import { LIST_PROJECTS_HINT, offsetSchema, registerReadOnlyTool, ToolRegistrar, wbsNumSchema } from './tools.utils.js';
+import { LIST_PROJECTS_HINT, registerReadOnlyTool, ToolRegistrar, wbsNumSchema } from './tools.utils.js';
 
 export const registerProjectTools: ToolRegistrar = (server, { user, organization }) => {
+  registerReadOnlyTool(
+    server,
+    'finishline_list_cars',
+    {
+      title: 'List cars',
+      description:
+        "List the organization's cars with their ids, names, and WBS numbers. The car number is the first " +
+        'part of every WBS number, and the highest car number is the newest car, which is almost always ' +
+        'the one the user means. Use a car id from here to filter finishline_list_projects.',
+      inputSchema: z.object({})
+    },
+    async () => withToolErrors('', async () => CarsService.getAllCars(organization))
+  );
+
   registerReadOnlyTool(
     server,
     'finishline_list_projects',
     {
       title: 'List projects',
       description:
-        'List the projects on a car, newest first, with their names, WBS numbers, summaries, status, ' +
-        'dates, and teams. Start here when the user names a project in words rather than by number, ' +
-        'then match the name to a WBS number and use the other tools. Cars are identified by a number ' +
-        'and are consecutive. Omit carNumber to use the newest car, which is almost always what the user ' +
-        'means; the response reports which car number was actually used. Results come back a page at a ' +
-        'time, and nextOffset is present only while more remain.',
+        'List projects newest first, with their names, WBS numbers, summaries, status, dates, and teams. ' +
+        'Start here when the user names a project in words rather than by number, then match the name to ' +
+        'a WBS number and use the other tools. Pass carId to only list one car; without it, projects ' +
+        'from every car come back, so prefer passing the newest car from finishline_list_cars.',
       inputSchema: z.object({
-        carNumber: z
-          .number()
-          .int()
-          .min(0)
+        carId: z
+          .string()
           .optional()
-          .describe('Which car to list projects for. Omit this to use the newest car.'),
-        offset: offsetSchema('projects')
+          .describe('The id of the car to list projects for, from finishline_list_cars. Omit this for every car.')
       })
     },
-    async ({ carNumber, offset = 0 }) =>
-      withToolErrors('', async () => {
-        const car = await CarsService.getCarByNumber(organization, carNumber);
-        const page = await ProjectsService.getAllProjectsPage(organization, car.id, offset);
-
-        return { carNumber: car.wbsNum.carNumber, ...page };
-      })
+    async ({ carId }) => withToolErrors('', async () => ProjectsService.getAllProjects(organization, carId))
   );
 
   registerReadOnlyTool(

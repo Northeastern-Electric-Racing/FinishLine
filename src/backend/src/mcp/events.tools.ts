@@ -1,8 +1,9 @@
 import * as z from 'zod/v4';
+import { ConflictStatus } from 'shared';
 import CalendarService from '../services/calendar.services.js';
 import { HttpException } from '../utils/errors.utils.js';
 import { withToolErrors } from './errors.js';
-import { isoDateSchema, offsetSchema, registerReadOnlyTool, ToolRegistrar } from './tools.utils.js';
+import { dateSchema, registerReadOnlyTool, ToolRegistrar } from './tools.utils.js';
 
 export const registerEventTools: ToolRegistrar = (server, { organization }) => {
   registerReadOnlyTool(
@@ -11,29 +12,33 @@ export const registerEventTools: ToolRegistrar = (server, { organization }) => {
     {
       title: 'Get calendar events',
       description:
-        'List the calendar events scheduled in a date range, across every calendar in the ' +
-        'organization. Each event reports its title, status, approval, location, and scheduled times. ' +
-        'A recurring event is returned once: scheduledTimes holds only the occurrences inside the ' +
-        'requested range, and numScheduledSlots is how many it has in total, so a larger ' +
-        'numScheduledSlots means it also repeats outside the range. Results come back a page at a time, ' +
-        'and nextOffset is present only while more remain. Keep the range as narrow as the question ' +
-        'allows.',
+        'List the calendar events scheduled between startPeriod and endPeriod, across every calendar in ' +
+        'the organization. Each event reports its title, status, approval, location, and ' +
+        'scheduled times. A recurring event is returned once: scheduledTimes holds only the occurrences ' +
+        'inside the period, and numScheduledSlots is how many it has in total, so a larger ' +
+        'numScheduledSlots means it also repeats outside the period. Keep the period as narrow as the ' +
+        'question allows, since every matching event comes back in one response.',
       inputSchema: z.object({
-        startDate: isoDateSchema('Start of the range, as an ISO date such as "2026-09-01".'),
-        endDate: isoDateSchema(
-          'Last day of the range, as an ISO date. Events on this day are included. Must be on or after startDate.'
+        startPeriod: dateSchema('Start of the period, such as "2026-09-01T00:00:00Z".'),
+        endPeriod: dateSchema(
+          'End of the period, such as "2026-09-07T23:59:59Z". A bare date means midnight at the start of ' +
+            'that day, so pass an end-of-day time to include events on the last day. Must be after startPeriod.'
         ),
-        offset: offsetSchema('events')
+        statuses: z
+          .array(z.enum(ConflictStatus))
+          .optional()
+          .describe(
+            'Only events with these approval statuses. In general use APPROVED and NO_CONFLICT to get confirmed events.'
+          )
       })
     },
-    async ({ startDate, endDate, offset = 0 }) =>
+    async ({ startPeriod, endPeriod, statuses }) =>
       withToolErrors('', async () => {
-        if (endDate < startDate) throw new HttpException(400, 'endDate must be on or after startDate');
+        const start = new Date(startPeriod);
+        const end = new Date(endPeriod);
+        if (end < start) throw new HttpException(400, 'endPeriod must be after startPeriod');
 
-        // the period is inclusive of the whole last day, so an endDate of 2026-09-07 covers events on the 7th
-        const filters = { startPeriod: new Date(startDate), endPeriod: new Date(`${endDate}T23:59:59.999Z`) };
-
-        return CalendarService.getCalendarViewEventsPage(filters, offset, organization);
+        return CalendarService.getCalendarViewEvents({ statuses, startPeriod: start, endPeriod: end }, organization);
       })
   );
 };

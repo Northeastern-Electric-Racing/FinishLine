@@ -6,7 +6,6 @@ import {
   AvailabilityCreateArgs,
   BaseEvent,
   CalendarEvent,
-  CalendarEventPage,
   EventDetail,
   UpcomingEvent,
   EventConflict,
@@ -116,149 +115,6 @@ const byFirstSlotStart = (a: BaseEvent, b: BaseEvent): number => {
   const startOf = (event: BaseEvent) =>
     (event.scheduledTimes[0]?.startTime ?? event.initialDateScheduled ?? event.dateCreated).getTime();
   return startOf(a) - startOf(b);
-};
-
-/** How many events one page of the calendar view events holds */
-const CALENDAR_EVENT_PAGE_SIZE = 20;
-
-/**
- * Builds the filter for the calendar view's events, after checking every id in the filters belongs to the organization
- * @param filters the calendar view's filter arguments
- * @param organization the organization the user is currently in
- * @returns the where clause matching the filtered events
- * @throws NotFoundException if any of the given member, team, calendar, event type, or event ids are not found
- */
-const getCalendarViewEventsWhere = async (
-  filters: FilterArgs,
-  organization: Organization
-): Promise<Prisma.EventWhereInput> => {
-  const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalIds, startPeriod, endPeriod, statuses } = filters;
-
-  // validate memberIds
-  if (memberIds?.length) {
-    const foundMembers = await prisma.user.findMany({
-      where: {
-        userId: { in: memberIds },
-        organizations: { some: { organizationId: organization.organizationId } }
-      },
-      select: { userId: true }
-    });
-    if (foundMembers.length !== memberIds.length) {
-      const missingIds = memberIds.filter((id) => !foundMembers.some((mem) => mem.userId === id));
-      throw new NotFoundException('User', missingIds.join(', '));
-    }
-  }
-
-  // validate teamIds
-  if (teamIds?.length) {
-    const foundteams = await prisma.team.findMany({
-      where: {
-        teamId: { in: teamIds },
-        organization: { organizationId: organization.organizationId }
-      },
-      select: { teamId: true }
-    });
-    if (foundteams.length !== teamIds.length) {
-      const missingIds = teamIds.filter((id) => !foundteams.some((team) => team.teamId === id));
-      throw new NotFoundException('Team', missingIds.join(', '));
-    }
-  }
-
-  // validate calendarIds
-  if (calendarIds?.length) {
-    const foundcalendars = await prisma.calendar.findMany({
-      where: {
-        calendarId: { in: calendarIds },
-        organization: { organizationId: organization.organizationId },
-        dateDeleted: null
-      },
-      select: { calendarId: true }
-    });
-    if (foundcalendars.length !== calendarIds.length) {
-      const missingIds = calendarIds.filter((id) => !foundcalendars.some((mem) => mem.calendarId === id));
-      throw new NotFoundException('Calendar', missingIds.join(', '));
-    }
-  }
-
-  // validate eventTypeIds
-  if (eventTypeIds?.length) {
-    const foundEventTypes = await prisma.event_Type.findMany({
-      where: {
-        eventTypeId: { in: eventTypeIds },
-        organization: { organizationId: organization.organizationId },
-        dateDeleted: null
-      },
-      select: { eventTypeId: true }
-    });
-    if (foundEventTypes.length !== eventTypeIds.length) {
-      const missingIds = eventTypeIds.filter((id) => !foundEventTypes.some((et) => et.eventTypeId === id));
-      throw new NotFoundException('Event Type', missingIds.join(', '));
-    }
-  }
-
-  // validate eventIds
-  if (eventIds?.length) {
-    const foundEvents = await prisma.event.findMany({
-      where: {
-        eventId: { in: eventIds },
-        dateDeleted: null,
-        eventType: { organizationId: organization.organizationId }
-      },
-      select: { eventId: true }
-    });
-    if (foundEvents.length !== eventIds.length) {
-      const missingIds = eventIds.filter((id) => !foundEvents.some((et) => et.eventId === id));
-      throw new NotFoundException('Event', missingIds.join(', '));
-    }
-  }
-
-  // filters for members/teams - event must match at least one of these if provided
-  const memberOrTeamFilter: Prisma.EventWhereInput[] = [];
-
-  if (memberIds?.length) {
-    memberOrTeamFilter.push(
-      { requiredMembers: { some: { userId: { in: memberIds } } } },
-      { optionalMembers: { some: { userId: { in: memberIds } } } },
-      { userCreatedId: { in: memberIds } }
-    );
-  }
-
-  if (teamIds?.length) {
-    memberOrTeamFilter.push({ teams: { some: { teamId: { in: teamIds } } } });
-    memberOrTeamFilter.push({ workPackages: { some: { project: { teams: { some: { teamId: { in: teamIds } } } } } } });
-  }
-
-  // filters for selected calendars
-  const fromCalendar: Prisma.EventWhereInput | undefined =
-    calendarIds !== undefined
-      ? {
-          eventType: {
-            is: {
-              organizationId: organization.organizationId,
-              calendars: {
-                some: {
-                  calendarId: { in: calendarIds },
-                  organizationId: organization.organizationId
-                }
-              }
-            }
-          }
-        }
-      : undefined;
-
-  return {
-    dateDeleted: null,
-    eventType: { organizationId: organization.organizationId },
-    eventId: eventIds?.length ? { in: eventIds } : undefined,
-    eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
-    approvalRequiredFromUserId: approvalIds?.length ? { in: approvalIds } : undefined,
-    approved: statuses?.length ? { in: statuses } : undefined,
-    AND: [
-      ...(memberOrTeamFilter.length > 0 ? [{ OR: memberOrTeamFilter }] : []),
-      eventInPeriodWhere(startPeriod, endPeriod),
-      ...(fromCalendar ? [fromCalendar] : [])
-    ]
-  };
 };
 
 export default class CalendarService {
@@ -2737,43 +2593,140 @@ export default class CalendarService {
    * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
    */
   static async getCalendarViewEvents(filters: FilterArgs, organization: Organization): Promise<CalendarEvent[]> {
+    const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalIds, startPeriod, endPeriod, statuses } =
+      filters;
+
+    // validate memberIds
+    if (memberIds?.length) {
+      const foundMembers = await prisma.user.findMany({
+        where: {
+          userId: { in: memberIds },
+          organizations: { some: { organizationId: organization.organizationId } }
+        },
+        select: { userId: true }
+      });
+      if (foundMembers.length !== memberIds.length) {
+        const missingIds = memberIds.filter((id) => !foundMembers.some((mem) => mem.userId === id));
+        throw new NotFoundException('User', missingIds.join(', '));
+      }
+    }
+
+    // validate teamIds
+    if (teamIds?.length) {
+      const foundteams = await prisma.team.findMany({
+        where: {
+          teamId: { in: teamIds },
+          organization: { organizationId: organization.organizationId }
+        },
+        select: { teamId: true }
+      });
+      if (foundteams.length !== teamIds.length) {
+        const missingIds = teamIds.filter((id) => !foundteams.some((team) => team.teamId === id));
+        throw new NotFoundException('Team', missingIds.join(', '));
+      }
+    }
+
+    // validate calendarIds
+    if (calendarIds?.length) {
+      const foundcalendars = await prisma.calendar.findMany({
+        where: {
+          calendarId: { in: calendarIds },
+          organization: { organizationId: organization.organizationId },
+          dateDeleted: null
+        },
+        select: { calendarId: true }
+      });
+      if (foundcalendars.length !== calendarIds.length) {
+        const missingIds = calendarIds.filter((id) => !foundcalendars.some((mem) => mem.calendarId === id));
+        throw new NotFoundException('Calendar', missingIds.join(', '));
+      }
+    }
+
+    // validate eventTypeIds
+    if (eventTypeIds?.length) {
+      const foundEventTypes = await prisma.event_Type.findMany({
+        where: {
+          eventTypeId: { in: eventTypeIds },
+          organization: { organizationId: organization.organizationId },
+          dateDeleted: null
+        },
+        select: { eventTypeId: true }
+      });
+      if (foundEventTypes.length !== eventTypeIds.length) {
+        const missingIds = eventTypeIds.filter((id) => !foundEventTypes.some((et) => et.eventTypeId === id));
+        throw new NotFoundException('Event Type', missingIds.join(', '));
+      }
+    }
+
+    // validate eventIds
+    if (eventIds?.length) {
+      const foundEvents = await prisma.event.findMany({
+        where: {
+          eventId: { in: eventIds },
+          dateDeleted: null,
+          eventType: { organizationId: organization.organizationId }
+        },
+        select: { eventId: true }
+      });
+      if (foundEvents.length !== eventIds.length) {
+        const missingIds = eventIds.filter((id) => !foundEvents.some((et) => et.eventId === id));
+        throw new NotFoundException('Event', missingIds.join(', '));
+      }
+    }
+
+    // filters for members/teams - event must match at least one of these if provided
+    const memberOrTeamFilter: Prisma.EventWhereInput[] = [];
+
+    if (memberIds?.length) {
+      memberOrTeamFilter.push(
+        { requiredMembers: { some: { userId: { in: memberIds } } } },
+        { optionalMembers: { some: { userId: { in: memberIds } } } },
+        { userCreatedId: { in: memberIds } }
+      );
+    }
+
+    if (teamIds?.length) {
+      memberOrTeamFilter.push({ teams: { some: { teamId: { in: teamIds } } } });
+      memberOrTeamFilter.push({ workPackages: { some: { project: { teams: { some: { teamId: { in: teamIds } } } } } } });
+    }
+
+    // filters for selected calendars
+    const fromCalendar: Prisma.EventWhereInput | undefined =
+      calendarIds !== undefined
+        ? {
+            eventType: {
+              is: {
+                organizationId: organization.organizationId,
+                calendars: {
+                  some: {
+                    calendarId: { in: calendarIds },
+                    organizationId: organization.organizationId
+                  }
+                }
+              }
+            }
+          }
+        : undefined;
+
     const events = await prisma.event.findMany({
-      where: await getCalendarViewEventsWhere(filters, organization),
-      ...getCalendarEventQueryArgs(scheduleSlotOverlapWhere(filters.startPeriod, filters.endPeriod)),
+      where: {
+        dateDeleted: null,
+        eventType: { organizationId: organization.organizationId },
+        eventId: eventIds?.length ? { in: eventIds } : undefined,
+        eventTypeId: eventTypeIds?.length ? { in: eventTypeIds } : undefined,
+        approvalRequiredFromUserId: approvalIds?.length ? { in: approvalIds } : undefined,
+        approved: statuses?.length ? { in: statuses } : undefined,
+        AND: [
+          ...(memberOrTeamFilter.length > 0 ? [{ OR: memberOrTeamFilter }] : []),
+          eventInPeriodWhere(startPeriod, endPeriod),
+          ...(fromCalendar ? [fromCalendar] : [])
+        ]
+      },
+      ...getCalendarEventQueryArgs(scheduleSlotOverlapWhere(startPeriod, endPeriod)),
       orderBy: { dateCreated: 'asc' }
     });
 
     return events.map(calendarEventTransformer);
-  }
-
-  /**
-   * Gets one page of the events that match the given filter arguments
-   *
-   * @param filters the same filters getCalendarViewEvents takes
-   * @param offset how many of the matching events come before this page
-   * @param organization the organization the user is currently in
-   * @returns the page's events, oldest created first, and where the next page starts if there is one
-   * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
-   */
-  static async getCalendarViewEventsPage(
-    filters: FilterArgs,
-    offset: number,
-    organization: Organization
-  ): Promise<CalendarEventPage> {
-    const events = await prisma.event.findMany({
-      where: await getCalendarViewEventsWhere(filters, organization),
-      ...getCalendarEventQueryArgs(scheduleSlotOverlapWhere(filters.startPeriod, filters.endPeriod)),
-      // eventId breaks ties so consecutive pages never overlap or skip an event
-      orderBy: [{ dateCreated: 'asc' }, { eventId: 'asc' }],
-      skip: offset,
-      // one extra row says whether there's another page without a separate count query
-      take: CALENDAR_EVENT_PAGE_SIZE + 1
-    });
-
-    return {
-      events: events.slice(0, CALENDAR_EVENT_PAGE_SIZE).map(calendarEventTransformer),
-      nextOffset: events.length > CALENDAR_EVENT_PAGE_SIZE ? offset + CALENDAR_EVENT_PAGE_SIZE : undefined
-    };
   }
 
   /**

@@ -97,12 +97,16 @@ export const wbsNumSchema = z
   .describe(WBS_NUM_DESCRIPTION);
 
 /**
- * An ISO calendar date. Same reasoning as the WBS number: a model will send "next Monday" if the
- * schema lets it, and an unparseable date is far cheaper to reject here than downstream.
+ * A date string, accepted the same way the HTTP routes' isDate validator accepts one. Same reasoning
+ * as the WBS number: a model will send "next Monday" if the schema lets it, and an unparseable date
+ * is far cheaper to reject here than downstream.
  * @param description what the date means, for the model
  */
-export const isoDateSchema = (description: string) =>
-  z.iso.date('Date must be an ISO date, such as "2026-09-01".').describe(description);
+export const dateSchema = (description: string) =>
+  z
+    .string()
+    .refine((value) => !isNaN(Date.parse(value)), 'Must be an ISO date or date-time, such as "2026-09-01T00:00:00Z".')
+    .describe(description);
 
 /**
  * The offset into a paged list. Only the tools whose lists can outgrow a page take one; the response

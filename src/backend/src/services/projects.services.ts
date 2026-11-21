@@ -10,7 +10,6 @@ import {
   ProjectDetail,
   ProjectGanttItem,
   ProjectListItem,
-  ProjectListItemPage,
   ProjectOverviewCard,
   ProjectDropdownItem,
   WbsNumber,
@@ -55,9 +54,6 @@ import { baseWorkPackageTransformer } from '../transformers/work-packages.transf
 import { baseTaskTransformer } from '../transformers/tasks.transformer.js';
 import { baseUserTransformer } from '../transformers/user.transformer.js';
 import { baseDescriptionBulletTransformer } from '../transformers/description-bullets.transformer.js';
-
-/** How many projects one page of the projects list holds */
-const PROJECT_PAGE_SIZE = 20;
 
 export default class ProjectsService {
   /**
@@ -141,34 +137,6 @@ export default class ProjectsService {
     });
 
     return projects.map(projectListItemTransformer);
-  }
-
-  /**
-   * Gets one page of the projects for given organization
-   * @param organization the organization the user is in
-   * @param carId optional car id to filter projects by
-   * @param offset how many of the matching projects come before this page
-   * @returns the page's projects, newest first, and where the next page starts if there is one
-   */
-  static async getAllProjectsPage(
-    organization: Organization,
-    carId: string | undefined,
-    offset: number
-  ): Promise<ProjectListItemPage> {
-    const projects = await prisma.project.findMany({
-      where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId }, ...(carId && { carId }) },
-      // projectId breaks ties so consecutive pages never overlap or skip a project
-      orderBy: [{ wbsElement: { dateCreated: 'desc' } }, { projectId: 'asc' }],
-      skip: offset,
-      // one extra row says whether there's another page without a separate count query
-      take: PROJECT_PAGE_SIZE + 1,
-      ...getProjectListItemQueryArgs()
-    });
-
-    return {
-      projects: projects.slice(0, PROJECT_PAGE_SIZE).map(projectListItemTransformer),
-      nextOffset: projects.length > PROJECT_PAGE_SIZE ? offset + PROJECT_PAGE_SIZE : undefined
-    };
   }
 
   /**

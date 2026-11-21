@@ -9,7 +9,7 @@ import {
   createTestWorkPackage,
   resetUsers
 } from '../test-utils.js';
-import { batmanAppAdmin, greenlanternHead } from '../test-data/users.test-data.js';
+import { batmanAppAdmin } from '../test-data/users.test-data.js';
 import prisma from '../../src/prisma/prisma.js';
 import ApiTokenService from '../../src/services/api-tokens.services.js';
 import { mcpNodeHandler } from '../../src/mcp/handler.js';
@@ -19,18 +19,16 @@ import { errorHandler } from '../../src/utils/errors.utils.js';
 /**
  * Drives the MCP tools through /mcp the way index.ts mounts it, authenticated with real API tokens. The
  * tools call the same services the app does, so these cover what sits on top of them: tool
- * registration, schema validation, the newest car default, paging, and how failures reach the model.
+ * registration, schema validation, paging, and how failures reach the model.
  */
 
-/** How many items one page of the paged project, task, and event services holds. */
+/** How many items one page of the paged tasks service holds. */
 const PAGE_SIZE = 20;
 describe('MCP Tools', () => {
   let organization: Organization;
   let orgId: string;
   let admin: User;
-  let head: User;
   let adminToken: string;
-  let headToken: string;
   let carId: string;
   let app: express.Express;
 
@@ -38,9 +36,7 @@ describe('MCP Tools', () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     admin = await createTestUser(batmanAppAdmin, orgId);
-    head = await createTestUser(greenlanternHead, orgId);
     adminToken = (await ApiTokenService.generateApiToken(admin, organization)).token;
-    headToken = (await ApiTokenService.generateApiToken(head, organization)).token;
     ({ carId } = await createTestCar(orgId, admin.userId, 1));
 
     // mounted the way index.ts does
@@ -96,59 +92,45 @@ describe('MCP Tools', () => {
     const { tools } = await rpc('tools/list', {});
 
     expect(tools.map((tool: { name: string }) => tool.name).sort()).toEqual([
-      'finishline_create_team',
       'finishline_get_events',
       'finishline_get_project',
       'finishline_get_tasks',
+      'finishline_list_cars',
       'finishline_list_projects'
     ]);
   });
 
+  describe('List Cars', () => {
+    it("lists the organization's cars", async () => {
+      await createTestCar(orgId, admin.userId, 2);
+
+      const { data } = await callTool('finishline_list_cars', {});
+
+      expect(data.map((car: { wbsNum: { carNumber: number } }) => car.wbsNum.carNumber).sort()).toEqual([1, 2]);
+    });
+  });
+
   describe('List Projects', () => {
-    it('defaults to the newest car', async () => {
+    it('lists only the requested car', async () => {
+      const newerCarId = (await createTestCar(orgId, admin.userId, 2)).carId;
+      await makeProject(1);
+      await makeProject(1, newerCarId, 2);
+
+      const { data } = await callTool('finishline_list_projects', { carId: newerCarId });
+
+      expect(data.map((project: { wbsNum: object }) => project.wbsNum)).toEqual([
+        { carNumber: 2, projectNumber: 1, workPackageNumber: 0 }
+      ]);
+    });
+
+    it('lists every car when no car is given', async () => {
       const newerCarId = (await createTestCar(orgId, admin.userId, 2)).carId;
       await makeProject(1);
       await makeProject(1, newerCarId, 2);
 
       const { data } = await callTool('finishline_list_projects', {});
 
-      expect(data.carNumber).toBe(2);
-      expect(data.projects.map((project: { wbsNum: object }) => project.wbsNum)).toEqual([
-        { carNumber: 2, projectNumber: 1, workPackageNumber: 0 }
-      ]);
-    });
-
-    it('lists only the requested car', async () => {
-      const newerCarId = (await createTestCar(orgId, admin.userId, 2)).carId;
-      await makeProject(1);
-      await makeProject(1, newerCarId, 2);
-
-      const { data } = await callTool('finishline_list_projects', { carNumber: 1 });
-
-      expect(data.carNumber).toBe(1);
-      expect(data.projects).toHaveLength(1);
-      expect(data.projects[0].wbsNum.carNumber).toBe(1);
-    });
-
-    it('pages through a car with more projects than fit in one page', async () => {
-      for (let projectNumber = 1; projectNumber <= PAGE_SIZE + 1; projectNumber++) {
-        await makeProject(projectNumber);
-      }
-
-      const { data: first } = await callTool('finishline_list_projects', {});
-      const { data: second } = await callTool('finishline_list_projects', { offset: first.nextOffset });
-
-      expect(first.projects).toHaveLength(PAGE_SIZE);
-      expect(first.nextOffset).toBe(PAGE_SIZE);
-      expect(second.projects).toHaveLength(1);
-      expect(second.nextOffset).toBeUndefined();
-    });
-
-    it('reports a car that does not exist', async () => {
-      const { result } = await callTool('finishline_list_projects', { carNumber: 9 });
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('no car 9');
+      expect(data).toHaveLength(2);
     });
   });
 
@@ -271,96 +253,59 @@ describe('MCP Tools', () => {
       endTime: new Date(`${day}T11:00:00Z`)
     });
 
-    it('returns events in the range, including ones on the final day', async () => {
+    const firstWeek = { startPeriod: '2026-09-01T00:00:00Z', endPeriod: '2026-09-07T23:59:59Z' };
+
+    it('returns only the events in the period', async () => {
       await createEvent([slotOn('2026-09-07')]);
       await createEvent([slotOn('2026-09-20')]);
 
-      const { data } = await callTool('finishline_get_events', { startDate: '2026-09-01', endDate: '2026-09-07' });
+      const { data } = await callTool('finishline_get_events', firstWeek);
 
-      expect(data.events).toHaveLength(1);
-      expect(data.events[0].title).toBe('Weekly Sync');
+      expect(data).toHaveLength(1);
+      expect(data[0].title).toBe('Weekly Sync');
     });
 
     it('returns only the occurrences of a recurring event inside the range', async () => {
       await createEvent([slotOn('2026-09-02'), slotOn('2026-09-09'), slotOn('2026-09-16')]);
 
-      const { data } = await callTool('finishline_get_events', { startDate: '2026-09-01', endDate: '2026-09-07' });
+      const { data } = await callTool('finishline_get_events', firstWeek);
 
-      expect(data.events[0].scheduledTimes).toHaveLength(1);
-      expect(data.events[0].numScheduledSlots).toBe(3);
+      expect(data[0].scheduledTimes).toHaveLength(1);
+      expect(data[0].numScheduledSlots).toBe(3);
     });
 
-    it('pages through every event in the range exactly once', async () => {
-      for (let i = 0; i < PAGE_SIZE + 1; i++) await createEvent([slotOn('2026-09-02')]);
+    it('filters by approval status', async () => {
+      await createEvent([slotOn('2026-09-02')]);
+      const pending = await createEvent([slotOn('2026-09-03')]);
+      await prisma.event.update({ where: { eventId: pending.eventId }, data: { approved: Conflict_Status.PENDING } });
 
-      const range = { startDate: '2026-09-01', endDate: '2026-09-30' };
-      const { data: first } = await callTool('finishline_get_events', range);
-      const { data: second } = await callTool('finishline_get_events', { ...range, offset: first.nextOffset });
+      const { data } = await callTool('finishline_get_events', { ...firstWeek, statuses: ['PENDING'] });
 
-      const ids = [...first.events, ...second.events].map((event: { eventId: string }) => event.eventId);
-      expect(first.events).toHaveLength(PAGE_SIZE);
-      expect(second.nextOffset).toBeUndefined();
-      expect(new Set(ids).size).toBe(PAGE_SIZE + 1);
+      expect(data.map((event: { eventId: string }) => event.eventId)).toEqual([pending.eventId]);
+    });
+
+    it('does not expose the id filters', async () => {
+      const { tools } = await rpc('tools/list', {});
+      const tool = tools.find((candidate: { name: string }) => candidate.name === 'finishline_get_events');
+
+      expect(Object.keys(tool.inputSchema.properties).sort()).toEqual(['endPeriod', 'startPeriod', 'statuses']);
+    });
+
+    it('rejects an unparseable date before reaching the service', async () => {
+      const { result } = await callTool('finishline_get_events', { ...firstWeek, startPeriod: 'next Monday' });
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain('ISO date');
     });
 
     it('rejects an inverted range', async () => {
-      const { result } = await callTool('finishline_get_events', { startDate: '2026-09-07', endDate: '2026-09-01' });
+      const { result } = await callTool('finishline_get_events', {
+        startPeriod: '2026-09-07T00:00:00Z',
+        endPeriod: '2026-09-01T00:00:00Z'
+      });
 
       expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('on or after startDate');
-    });
-  });
-
-  describe('Create Team', () => {
-    const validTeam = () => ({
-      teamName: 'Software',
-      headId: head.userId,
-      slackId: 'C0123456789',
-      description: 'Builds FinishLine',
-      isFinanceTeam: false
-    });
-
-    const teamCount = () => prisma.team.count({ where: { organizationId: orgId } });
-
-    it('is listed as a write tool with its field descriptions', async () => {
-      const { tools } = await rpc('tools/list', {});
-      const tool = tools.find((candidate: { name: string }) => candidate.name === 'finishline_create_team');
-
-      expect(tool.annotations).toEqual({ readOnlyHint: false, destructiveHint: false });
-      expect(tool.inputSchema.required.sort()).toEqual(['description', 'headId', 'isFinanceTeam', 'slackId', 'teamName']);
-      expect(tool.inputSchema.properties.slackId.description).toContain('Slack channel id');
-    });
-
-    it('creates a team through the teams service', async () => {
-      const { data } = await callTool('finishline_create_team', validTeam());
-
-      expect(data.teamName).toBe('Software');
-      expect(await teamCount()).toBe(1);
-    });
-
-    it('rejects a slack channel name before reaching the service', async () => {
-      const { result } = await callTool('finishline_create_team', { ...validTeam(), slackId: '#software' });
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('slackId');
-      expect(await teamCount()).toBe(0);
-    });
-
-    it("applies the service's admin check to the token's user", async () => {
-      const { result } = await callTool('finishline_create_team', validTeam(), headToken);
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('must be an admin');
-      expect(await teamCount()).toBe(0);
-    });
-
-    it('reports a service failure with the recovery hint', async () => {
-      await callTool('finishline_create_team', validTeam());
-      const { result } = await callTool('finishline_create_team', validTeam());
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('must not be the name of another team');
-      expect(result.content[0].text).toContain('Check that the head id');
+      expect(result.content[0].text).toContain('after startPeriod');
     });
   });
 });

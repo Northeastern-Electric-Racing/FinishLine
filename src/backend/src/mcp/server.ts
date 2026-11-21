@@ -3,10 +3,9 @@ import { AgentContext, ToolRegistrar } from './tools.utils.js';
 import { registerProjectTools } from './projects.tools.js';
 import { registerTaskTools } from './tasks.tools.js';
 import { registerEventTools } from './events.tools.js';
-import { registerTeamTools } from './teams.tools.js';
 
 /** Every domain's tools. A new *.tools.ts file only becomes reachable once it is added here. */
-const registrars: ToolRegistrar[] = [registerProjectTools, registerTaskTools, registerEventTools, registerTeamTools];
+const registrars: ToolRegistrar[] = [registerProjectTools, registerTaskTools, registerEventTools];
 
 /**
  * Builds a FinishLine MCP server for one authenticated caller. Called once per request, so nothing
