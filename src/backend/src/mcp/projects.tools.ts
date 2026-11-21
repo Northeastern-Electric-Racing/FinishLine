@@ -1,6 +1,7 @@
 import * as z from 'zod/v4';
+import { validateWBS } from 'shared';
 import ProjectsService from '../services/projects.services.js';
-import { paginate, parseProjectWbsNum, resolveCar } from '../utils/agent.utils.js';
+import CarsService from '../services/car.services.js';
 import { withToolErrors } from './errors.js';
 import { LIST_PROJECTS_HINT, offsetSchema, registerReadOnlyTool, ToolRegistrar, wbsNumSchema } from './tools.utils.js';
 
@@ -16,7 +17,7 @@ export const registerProjectTools: ToolRegistrar = (server, { user, organization
         'then match the name to a WBS number and use the other tools. Cars are identified by a number ' +
         'and are consecutive. Omit carNumber to use the newest car, which is almost always what the user ' +
         'means; the response reports which car number was actually used. Results come back a page at a ' +
-        'time: total is how many the car has, and nextOffset is present only while more remain.',
+        'time, and nextOffset is present only while more remain.',
       inputSchema: z.object({
         carNumber: z
           .number()
@@ -27,12 +28,12 @@ export const registerProjectTools: ToolRegistrar = (server, { user, organization
         offset: offsetSchema('projects')
       })
     },
-    async ({ carNumber, offset }) =>
+    async ({ carNumber, offset = 0 }) =>
       withToolErrors('', async () => {
-        const car = await resolveCar(organization, carNumber);
-        const { items, ...page } = paginate(await ProjectsService.getAllProjects(organization, car.carId), offset);
+        const car = await CarsService.getCarByNumber(organization, carNumber);
+        const page = await ProjectsService.getAllProjectsPage(organization, car.id, offset);
 
-        return { carNumber: car.carNumber, projects: items, ...page };
+        return { carNumber: car.wbsNum.carNumber, ...page };
       })
   );
 
@@ -56,7 +57,7 @@ export const registerProjectTools: ToolRegistrar = (server, { user, organization
     },
     async ({ wbsNum }) =>
       withToolErrors(LIST_PROJECTS_HINT, async () =>
-        ProjectsService.getSingleProject(parseProjectWbsNum(wbsNum), user, organization)
+        ProjectsService.getSingleProject(validateWBS(wbsNum), user, organization)
       )
   );
 };

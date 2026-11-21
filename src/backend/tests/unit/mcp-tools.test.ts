@@ -12,19 +12,19 @@ import {
 import { batmanAppAdmin, greenlanternHead } from '../test-data/users.test-data.js';
 import prisma from '../../src/prisma/prisma.js';
 import ApiTokenService from '../../src/services/api-tokens.services.js';
-import agentRouter from '../../src/routes/agent.routes.js';
 import { mcpNodeHandler } from '../../src/mcp/handler.js';
 import { attachAuthInfo, requireApiToken } from '../../src/utils/mcp-auth.utils.js';
 import { errorHandler } from '../../src/utils/errors.utils.js';
-import { AGENT_PAGE_SIZE } from '../../src/utils/agent.utils.js';
 
 /**
- * Drives the agent APIs the way index.ts mounts them, authenticated with real API tokens: the MCP
- * tools through /mcp, and the matching REST routes through /agent. Both call the same services the
- * app does, so these cover what sits on top of them: tool registration, schema validation, the
- * newest car default, paging, the event range limit, and how failures reach the model.
+ * Drives the MCP tools through /mcp the way index.ts mounts it, authenticated with real API tokens. The
+ * tools call the same services the app does, so these cover what sits on top of them: tool
+ * registration, schema validation, the newest car default, paging, and how failures reach the model.
  */
-describe('Agent APIs', () => {
+
+/** How many items one page of the paged project, task, and event services holds. */
+const PAGE_SIZE = 20;
+describe('MCP Tools', () => {
   let organization: Organization;
   let orgId: string;
   let admin: User;
@@ -43,10 +43,9 @@ describe('Agent APIs', () => {
     headToken = (await ApiTokenService.generateApiToken(head, organization)).token;
     ({ carId } = await createTestCar(orgId, admin.userId, 1));
 
-    // mounted the way index.ts does: both authenticate with the API token themselves
+    // mounted the way index.ts does
     app = express();
     app.use(express.json());
-    app.use('/agent', agentRouter);
     app.all('/mcp', requireApiToken, attachAuthInfo, (req, res, next) => {
       mcpNodeHandler(req, res, req.body).catch(next);
     });
@@ -73,8 +72,6 @@ describe('Agent APIs', () => {
     const result = await rpc('tools/call', { name, arguments: args }, token);
     return { result, data: result.isError ? undefined : JSON.parse(result.content[0].text) };
   };
-
-  const agentGet = (path: string) => request(app).get(`/agent${path}`).set('x-api-key', adminToken);
 
   const makeProject = (projectNumber: number, projectCarId = carId, carNumber = 1) =>
     createTestProject(admin, orgId, undefined, projectCarId, carNumber, projectNumber);
@@ -134,16 +131,15 @@ describe('Agent APIs', () => {
     });
 
     it('pages through a car with more projects than fit in one page', async () => {
-      for (let projectNumber = 1; projectNumber <= AGENT_PAGE_SIZE + 1; projectNumber++) {
+      for (let projectNumber = 1; projectNumber <= PAGE_SIZE + 1; projectNumber++) {
         await makeProject(projectNumber);
       }
 
       const { data: first } = await callTool('finishline_list_projects', {});
       const { data: second } = await callTool('finishline_list_projects', { offset: first.nextOffset });
 
-      expect(first.total).toBe(AGENT_PAGE_SIZE + 1);
-      expect(first.projects).toHaveLength(AGENT_PAGE_SIZE);
-      expect(first.nextOffset).toBe(AGENT_PAGE_SIZE);
+      expect(first.projects).toHaveLength(PAGE_SIZE);
+      expect(first.nextOffset).toBe(PAGE_SIZE);
       expect(second.projects).toHaveLength(1);
       expect(second.nextOffset).toBeUndefined();
     });
@@ -153,20 +149,6 @@ describe('Agent APIs', () => {
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('no car 9');
-    });
-
-    it('is served the same way over /agent', async () => {
-      await makeProject(1);
-
-      const res = await agentGet('/projects');
-
-      expect(res.status).toBe(200);
-      expect(res.body.carNumber).toBe(1);
-      expect(res.body.total).toBe(1);
-    });
-
-    it('rejects a malformed car number over /agent', async () => {
-      expect((await agentGet('/projects?carNumber=abc')).status).toBe(400);
     });
   });
 
@@ -187,7 +169,7 @@ describe('Agent APIs', () => {
       const { result } = await callTool('finishline_get_project', { wbsNum: '1.1.1' });
 
       expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('is a work package, not a project');
+      expect(result.content[0].text).toContain('not a valid project WBS');
       expect(result.content[0].text).toContain('finishline_list_projects');
     });
 
@@ -203,16 +185,6 @@ describe('Agent APIs', () => {
 
       expect(result.isError).toBe(true);
     });
-
-    it("serves the project's work packages over /agent", async () => {
-      const project = await makeProject(1);
-      await createTestWorkPackage(admin, orgId, project.projectId, 1, 1, 1);
-
-      const res = await agentGet('/projects/1.1.0/work-packages');
-
-      expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(1);
-    });
   });
 
   describe('Get Tasks', () => {
@@ -224,7 +196,6 @@ describe('Agent APIs', () => {
 
       const { data } = await callTool('finishline_get_tasks', { wbsNum: '1.1.0' });
 
-      expect(data.total).toBe(2);
       expect(data.nextOffset).toBeUndefined();
       expect(data.tasks.map((task: { title: string }) => task.title).sort()).toEqual(['Project task', 'Work package task']);
     });
@@ -232,25 +203,27 @@ describe('Agent APIs', () => {
     it('pages through every task exactly once', async () => {
       const project = await makeProject(1);
       const wbsElementId = await projectWbsElementId(project.projectId);
-      for (let i = 0; i < AGENT_PAGE_SIZE + 1; i++) await makeTask(wbsElementId, `Task ${i}`);
+      for (let i = 0; i < PAGE_SIZE + 1; i++) await makeTask(wbsElementId, `Task ${i}`);
 
       const { data: first } = await callTool('finishline_get_tasks', { wbsNum: '1.1.0' });
       const { data: second } = await callTool('finishline_get_tasks', { wbsNum: '1.1.0', offset: first.nextOffset });
 
       const ids = [...first.tasks, ...second.tasks].map((task: { taskId: string }) => task.taskId);
-      expect(first.tasks).toHaveLength(AGENT_PAGE_SIZE);
+      expect(first.tasks).toHaveLength(PAGE_SIZE);
       expect(second.nextOffset).toBeUndefined();
-      expect(new Set(ids).size).toBe(AGENT_PAGE_SIZE + 1);
+      expect(new Set(ids).size).toBe(PAGE_SIZE + 1);
     });
 
-    it('is served the same way over /agent', async () => {
+    it('filters to one status when asked', async () => {
       const project = await makeProject(1);
-      await makeTask(await projectWbsElementId(project.projectId), 'Project task');
+      const wbsElementId = await projectWbsElementId(project.projectId);
+      await makeTask(wbsElementId, 'In progress task');
+      const doneTask = await makeTask(wbsElementId, 'Done task');
+      await prisma.task.update({ where: { taskId: doneTask.taskId }, data: { status: Task_Status.DONE } });
 
-      const res = await agentGet('/projects/1.1.0/tasks');
+      const { data } = await callTool('finishline_get_tasks', { wbsNum: '1.1.0', status: 'DONE' });
 
-      expect(res.status).toBe(200);
-      expect(res.body.total).toBe(1);
+      expect(data.tasks.map((task: { title: string }) => task.title)).toEqual(['Done task']);
     });
   });
 
@@ -304,8 +277,8 @@ describe('Agent APIs', () => {
 
       const { data } = await callTool('finishline_get_events', { startDate: '2026-09-01', endDate: '2026-09-07' });
 
-      expect(data).toHaveLength(1);
-      expect(data[0].title).toBe('Weekly Sync');
+      expect(data.events).toHaveLength(1);
+      expect(data.events[0].title).toBe('Weekly Sync');
     });
 
     it('returns only the occurrences of a recurring event inside the range', async () => {
@@ -313,16 +286,21 @@ describe('Agent APIs', () => {
 
       const { data } = await callTool('finishline_get_events', { startDate: '2026-09-01', endDate: '2026-09-07' });
 
-      expect(data[0].scheduledTimes).toHaveLength(1);
-      expect(data[0].numScheduledSlots).toBe(3);
+      expect(data.events[0].scheduledTimes).toHaveLength(1);
+      expect(data.events[0].numScheduledSlots).toBe(3);
     });
 
-    it('rejects a range wider than a week with a hint', async () => {
-      const { result } = await callTool('finishline_get_events', { startDate: '2026-09-01', endDate: '2026-09-09' });
+    it('pages through every event in the range exactly once', async () => {
+      for (let i = 0; i < PAGE_SIZE + 1; i++) await createEvent([slotOn('2026-09-02')]);
 
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('7 days or fewer');
-      expect(result.content[0].text).toContain('one week at a time');
+      const range = { startDate: '2026-09-01', endDate: '2026-09-30' };
+      const { data: first } = await callTool('finishline_get_events', range);
+      const { data: second } = await callTool('finishline_get_events', { ...range, offset: first.nextOffset });
+
+      const ids = [...first.events, ...second.events].map((event: { eventId: string }) => event.eventId);
+      expect(first.events).toHaveLength(PAGE_SIZE);
+      expect(second.nextOffset).toBeUndefined();
+      expect(new Set(ids).size).toBe(PAGE_SIZE + 1);
     });
 
     it('rejects an inverted range', async () => {
@@ -330,10 +308,6 @@ describe('Agent APIs', () => {
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('on or after startDate');
-    });
-
-    it('rejects a range wider than a week over /agent', async () => {
-      expect((await agentGet('/events?startDate=2026-09-01&endDate=2026-09-09')).status).toBe(400);
     });
   });
 

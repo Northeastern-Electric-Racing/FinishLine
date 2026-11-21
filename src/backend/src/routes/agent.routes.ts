@@ -1,8 +1,8 @@
 import express from 'express';
-import { body, query } from 'express-validator';
+import { body } from 'express-validator';
 import AgentController from '../controllers/agent.controllers.js';
 import { readOnlyGuard, requireApiToken } from '../utils/mcp-auth.utils.js';
-import { isDate, nonEmptyString, validateInputs } from '../utils/validation.utils.js';
+import { nonEmptyString, validateInputs } from '../utils/validation.utils.js';
 
 const agentRouter = express.Router();
 
@@ -26,21 +26,5 @@ agentRouter.post(
 agentRouter.use(readOnlyGuard);
 
 agentRouter.get('/health', AgentController.healthCheck);
-agentRouter.get(
-  '/projects',
-  query('carNumber').optional().isInt({ min: 0 }),
-  query('offset').optional().isInt({ min: 0 }),
-  validateInputs,
-  AgentController.getProjects
-);
-agentRouter.get('/projects/:wbsNum', AgentController.getProject);
-agentRouter.get('/projects/:wbsNum/work-packages', AgentController.getWorkPackages);
-agentRouter.get(
-  '/projects/:wbsNum/tasks',
-  query('offset').optional().isInt({ min: 0 }),
-  validateInputs,
-  AgentController.getTasks
-);
-agentRouter.get('/events', isDate(query('startDate')), isDate(query('endDate')), validateInputs, AgentController.getEvents);
 
 export default agentRouter;

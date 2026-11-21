@@ -1,9 +1,9 @@
 import { Competition, Organization, Term } from '@prisma/client';
-import { isAdmin, User } from 'shared';
+import { Car, isAdmin, User } from 'shared';
 import { getCarQueryArgs } from '../prisma-query-args/cars.query-args.js';
 import prisma from '../prisma/prisma.js';
 import { carTransformer } from '../transformers/cars.transformer.js';
-import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils.js';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils.js';
 import { userHasPermission } from '../utils/users.utils.js';
 
 export default class CarsService {
@@ -18,6 +18,37 @@ export default class CarsService {
     });
 
     return cars.map(carTransformer);
+  }
+
+  /**
+   * Gets the car with the given number, or the newest car when no number is given. There is no "current car" flag in
+   * the data; the convention across the app is that the highest car number is the newest.
+   * @param organization the organization the car is in
+   * @param carNumber the car's number, or undefined for the newest car
+   * @returns the car
+   * @throws if no such car exists, or the organization has no cars
+   */
+  static async getCarByNumber(organization: Organization, carNumber?: number): Promise<Car> {
+    const car = await prisma.car.findFirst({
+      where: {
+        wbsElement: {
+          organizationId: organization.organizationId,
+          dateDeleted: null,
+          ...(carNumber !== undefined && { carNumber })
+        }
+      },
+      orderBy: { wbsElement: { carNumber: 'desc' } },
+      ...getCarQueryArgs(organization.organizationId)
+    });
+
+    if (!car) {
+      throw new HttpException(
+        404,
+        carNumber === undefined ? 'This organization has no cars' : `This organization has no car ${carNumber}`
+      );
+    }
+
+    return carTransformer(car);
   }
 
   static async createCar(organization: Organization, user: User, name: string) {

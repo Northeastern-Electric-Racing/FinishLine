@@ -77,6 +77,13 @@ export interface ProjectListItem extends BaseProject {
   activeStage?: WorkPackageStage;
 }
 
+/** One page of the projects list */
+export interface ProjectListItemPage {
+  projects: ProjectListItem[];
+  // where the next page starts, or undefined when this is the last page
+  nextOffset?: number;
+}
+
 /** A link as a card or page shows it */
 export interface ProjectLink {
   linkId: string;
