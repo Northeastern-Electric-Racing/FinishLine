@@ -1,5 +1,5 @@
 import { Organization, User as PrismaUser } from '@prisma/client';
-import { ApiTokenMetadata, GeneratedApiToken, notGuest, User } from 'shared';
+import { ApiTokenMetadata, GeneratedApiToken, isAdmin, notGuest, User } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
   AccessDeniedException,
@@ -49,6 +49,36 @@ const getSoleOrganization = async (userId: string): Promise<Organization> => {
   return organization;
 };
 
+/**
+ * Resolves the FinishLine user a Slack bot is acting on behalf of.
+ *
+ * Slack ids are only unique per workspace and nothing stops two users from entering the same id, so
+ * the lookup is scoped to the organization and must match exactly one user rather than picking one.
+ *
+ * @param slackUserId the Slack user id of the person who messaged the bot
+ * @param organizationId the organization the admin token resolved to
+ * @returns the matching user
+ * @throws if no user, or more than one user, in the organization has that Slack id
+ */
+const getUserBySlackId = async (slackUserId: string, organizationId: string): Promise<PrismaUser> => {
+  const users = await prisma.user.findMany({
+    where: {
+      userSettings: { slackId: slackUserId },
+      organizations: { some: { organizationId } }
+    },
+    take: 2
+  });
+
+  if (users.length === 0) {
+    throw new HttpException(401, 'Authentication Failed: No user in this organization is linked to that Slack id!');
+  }
+  if (users.length > 1) {
+    throw new HttpException(401, 'Authentication Failed: Multiple users in this organization are linked to that Slack id!');
+  }
+
+  return users[0];
+};
+
 export default class ApiTokenService {
   /**
    * Gets the metadata for the given user's active API token, if they have one.
@@ -96,14 +126,22 @@ export default class ApiTokenService {
    * The guest check runs on every call, so demoting someone to guest revokes their token's access
    * immediately rather than whenever the token is next rotated.
    *
+   * When a Slack user id is given, the request is being made by a shared bot on behalf of that Slack
+   * user. The token must then belong to an admin of the organization (anything else fails outright,
+   * never falling back to the token's own user), and the request runs as the organization member
+   * linked to that Slack id instead of as the token's owner.
+   *
    * @param token the raw API token the client sent
    * @param organizationId the organization the client asked for, or undefined to use the user's only organization
-   * @returns the token's user and the organization to scope the request to
-   * @throws if the token is missing, unknown, or revoked, the organization can't be resolved, or the user is a guest
+   * @param slackUserId the Slack user id the bot is acting for, or undefined for a normal token request
+   * @returns the user to act as and the organization to scope the request to
+   * @throws if the token is missing, unknown, or revoked, the organization can't be resolved, the user
+   * is a guest, or a Slack user id was given and the token isn't an admin's or the id doesn't resolve
    */
   static async authenticateApiToken(
     token: string | undefined,
-    organizationId: string | undefined
+    organizationId: string | undefined,
+    slackUserId?: string
   ): Promise<{ user: PrismaUser; organization: Organization }> {
     if (!token) throw new HttpException(401, 'Authentication Failed: No API token provided!');
 
@@ -129,6 +167,22 @@ export default class ApiTokenService {
       .update({ where: { apiTokenId: apiToken.apiTokenId }, data: { lastUsedAt: new Date() } })
       .catch(() => {});
 
-    return { user, organization };
+    if (slackUserId === undefined) return { user, organization };
+
+    // a header that was sent but is blank must not fall through to acting as the admin, and an empty
+    // string would otherwise match every user who never set a Slack id (the column defaults to '')
+    const trimmedSlackUserId = slackUserId.trim();
+    if (!trimmedSlackUserId) throw new HttpException(401, 'Authentication Failed: Empty Slack user id!');
+
+    const isTokenAdmin = await userHasPermission(user.userId, organization.organizationId, isAdmin);
+    if (!isTokenAdmin) throw new AccessDeniedException('only admin API tokens can act on behalf of a Slack user');
+
+    const slackUser = await getUserBySlackId(trimmedSlackUserId, organization.organizationId);
+
+    // the impersonated user is held to the same rule as a token owner
+    const slackUserHasPermission = await userHasPermission(slackUser.userId, organization.organizationId, notGuest);
+    if (!slackUserHasPermission) throw new AccessDeniedException('guests cannot use the API');
+
+    return { user: slackUser, organization };
   }
 }

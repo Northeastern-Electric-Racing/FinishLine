@@ -1,6 +1,14 @@
 import { Organization, Role_Type } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
-import { batmanAppAdmin, theVisitorGuest } from '../test-data/users.test-data.js';
+import {
+  batmanAppAdmin,
+  member,
+  supermanAdmin,
+  supermanSettings,
+  theVisitorGuest,
+  wonderwomanGuest,
+  wonderwomanSettings
+} from '../test-data/users.test-data.js';
 import { AccessDeniedException, AccessDeniedGuestException, HttpException } from '../../src/utils/errors.utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import ApiTokenService from '../../src/services/api-tokens.services.js';
@@ -141,6 +149,72 @@ describe('Api Token Tests', () => {
       });
 
       await expect(ApiTokenService.authenticateApiToken(token, undefined)).rejects.toThrow(
+        new AccessDeniedException('guests cannot use the API')
+      );
+    });
+  });
+
+  describe('Authenticate Api Token On Behalf Of A Slack User', () => {
+    it('resolves to the organization member linked to the slack id', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const superman = await createTestUser(supermanAdmin, orgId, supermanSettings);
+      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+
+      const { user, organization: resolved } = await ApiTokenService.authenticateApiToken(
+        token,
+        undefined,
+        supermanSettings.slackId
+      );
+
+      expect(user.userId).toBe(superman.userId);
+      expect(resolved.organizationId).toBe(orgId);
+    });
+
+    it('fails outright when the token is not an admin', async () => {
+      const regularMember = await createTestUser(member, orgId);
+      await createTestUser(supermanAdmin, orgId, supermanSettings);
+      const { token } = await ApiTokenService.generateApiToken(regularMember, organization);
+
+      await expect(ApiTokenService.authenticateApiToken(token, undefined, supermanSettings.slackId)).rejects.toThrow(
+        new AccessDeniedException('only admin API tokens can act on behalf of a Slack user')
+      );
+    });
+
+    it('fails when no user in the organization has the slack id', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+
+      await expect(ApiTokenService.authenticateApiToken(token, undefined, 'unknownSlackId')).rejects.toThrow(
+        new HttpException(401, 'Authentication Failed: No user in this organization is linked to that Slack id!')
+      );
+    });
+
+    it('fails when the slack user belongs to a different organization', async () => {
+      const otherOrganization = await createTestOrganization();
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await createTestUser(supermanAdmin, otherOrganization.organizationId, supermanSettings);
+      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+
+      await expect(ApiTokenService.authenticateApiToken(token, orgId, supermanSettings.slackId)).rejects.toThrow(
+        new HttpException(401, 'Authentication Failed: No user in this organization is linked to that Slack id!')
+      );
+    });
+
+    it('fails for a blank slack id rather than acting as the admin', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+
+      await expect(ApiTokenService.authenticateApiToken(token, undefined, '  ')).rejects.toThrow(
+        new HttpException(401, 'Authentication Failed: Empty Slack user id!')
+      );
+    });
+
+    it('fails when the slack user is a guest', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await createTestUser(wonderwomanGuest, orgId, wonderwomanSettings);
+      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+
+      await expect(ApiTokenService.authenticateApiToken(token, undefined, wonderwomanSettings.slackId)).rejects.toThrow(
         new AccessDeniedException('guests cannot use the API')
       );
     });
