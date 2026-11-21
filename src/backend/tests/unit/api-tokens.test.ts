@@ -190,8 +190,17 @@ describe('Api Token Tests', () => {
     });
 
     it('fails when the slack user belongs to a different organization', async () => {
-      const otherOrganization = await createTestOrganization();
       const batman = await createTestUser(batmanAppAdmin, orgId);
+      // created inline rather than with createTestOrganization, which always uses the same unique creator and slug
+      const otherOrganization = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          slug: 'other-org',
+          description: 'A second organization',
+          applicationLink: '',
+          userCreated: { connect: { userId: batman.userId } }
+        }
+      });
       await createTestUser(supermanAdmin, otherOrganization.organizationId, supermanSettings);
       const { token } = await ApiTokenService.generateApiToken(batman, organization);
 

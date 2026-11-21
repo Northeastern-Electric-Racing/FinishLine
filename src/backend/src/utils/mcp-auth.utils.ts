@@ -62,15 +62,15 @@ export const readOnlyGuard = (req: Request, _res: Response, next: NextFunction) 
  * Hands the authenticated caller to the MCP handler.
  *
  * toNodeHandler forwards req.auth to the handler as its pass-through authInfo, and AuthInfo.extra
- * is the documented place for data of our own, so the MCP server factory reads the user and
- * organization back out of it. Must run after requireApiToken.
+ * is the documented place for data of our own, so the MCP server factory reads the user,
+ * organization, and current car back out of it. Must run after requireApiToken and getCurrentCar.
  */
 export const attachAuthInfo = (req: Request, _res: Response, next: NextFunction) => {
   req.auth = {
     token: '',
     clientId: req.currentUser.userId,
     scopes: [],
-    extra: { user: req.currentUser, organization: req.organization }
+    extra: { user: req.currentUser, organization: req.organization, currentCar: req.currentCar }
   };
 
   return next();

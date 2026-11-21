@@ -14,6 +14,7 @@ import prisma from '../../src/prisma/prisma.js';
 import ApiTokenService from '../../src/services/api-tokens.services.js';
 import { mcpNodeHandler } from '../../src/mcp/handler.js';
 import { attachAuthInfo, requireApiToken } from '../../src/utils/mcp-auth.utils.js';
+import { getCurrentCar } from '../../src/utils/car.utils.js';
 import { errorHandler } from '../../src/utils/errors.utils.js';
 
 /**
@@ -42,7 +43,7 @@ describe('MCP Tools', () => {
     // mounted the way index.ts does
     app = express();
     app.use(express.json());
-    app.all('/mcp', requireApiToken, attachAuthInfo, (req, res, next) => {
+    app.all('/mcp', requireApiToken, getCurrentCar, attachAuthInfo, (req, res, next) => {
       mcpNodeHandler(req, res, req.body).catch(next);
     });
     app.use(errorHandler);
@@ -52,20 +53,23 @@ describe('MCP Tools', () => {
     await resetUsers();
   });
 
-  /** Sends one JSON-RPC request to /mcp and returns its result, whether it came back as JSON or SSE. */
-  const rpc = async (method: string, params: object, token: string = adminToken) => {
-    const res = await request(app)
+  /** Sends one JSON-RPC request to /mcp as the admin, with any extra headers such as carid. */
+  const post = (method: string, params: object, headers: Record<string, string> = {}) =>
+    request(app)
       .post('/mcp')
-      .set('x-api-key', token)
-      .set('Accept', 'application/json, text/event-stream')
+      .set({ 'x-api-key': adminToken, Accept: 'application/json, text/event-stream', ...headers })
       .send({ jsonrpc: '2.0', id: 1, method, params });
+
+  /** Sends one JSON-RPC request to /mcp and returns its result, whether it came back as JSON or SSE. */
+  const rpc = async (method: string, params: object, headers?: Record<string, string>) => {
+    const res = await post(method, params, headers);
     const sseData = res.text.split('\n').find((line) => line.startsWith('data: '));
     return (sseData ? JSON.parse(sseData.slice('data: '.length)) : res.body).result;
   };
 
   /** Calls a tool and returns its parsed JSON payload, or the raw result when the call failed. */
-  const callTool = async (name: string, args: object, token?: string) => {
-    const result = await rpc('tools/call', { name, arguments: args }, token);
+  const callTool = async (name: string, args: object, headers?: Record<string, string>) => {
+    const result = await rpc('tools/call', { name, arguments: args }, headers);
     return { result, data: result.isError ? undefined : JSON.parse(result.content[0].text) };
   };
 
@@ -95,35 +99,24 @@ describe('MCP Tools', () => {
       'finishline_get_events',
       'finishline_get_project',
       'finishline_get_tasks',
-      'finishline_list_cars',
       'finishline_list_projects'
     ]);
   });
 
-  describe('List Cars', () => {
-    it("lists the organization's cars", async () => {
-      await createTestCar(orgId, admin.userId, 2);
-
-      const { data } = await callTool('finishline_list_cars', {});
-
-      expect(data.map((car: { wbsNum: { carNumber: number } }) => car.wbsNum.carNumber).sort()).toEqual([1, 2]);
-    });
-  });
-
   describe('List Projects', () => {
-    it('lists only the requested car', async () => {
+    it('lists only the car from the carid header', async () => {
       const newerCarId = (await createTestCar(orgId, admin.userId, 2)).carId;
       await makeProject(1);
       await makeProject(1, newerCarId, 2);
 
-      const { data } = await callTool('finishline_list_projects', { carId: newerCarId });
+      const { data } = await callTool('finishline_list_projects', {}, { carid: newerCarId });
 
       expect(data.map((project: { wbsNum: object }) => project.wbsNum)).toEqual([
         { carNumber: 2, projectNumber: 1, workPackageNumber: 0 }
       ]);
     });
 
-    it('lists every car when no car is given', async () => {
+    it('lists every car when no carid header is sent', async () => {
       const newerCarId = (await createTestCar(orgId, admin.userId, 2)).carId;
       await makeProject(1);
       await makeProject(1, newerCarId, 2);
@@ -131,6 +124,19 @@ describe('MCP Tools', () => {
       const { data } = await callTool('finishline_list_projects', {});
 
       expect(data).toHaveLength(2);
+    });
+
+    it('does not take a car as input', async () => {
+      const { tools } = await rpc('tools/list', {});
+      const tool = tools.find((candidate: { name: string }) => candidate.name === 'finishline_list_projects');
+
+      expect(tool.inputSchema.properties ?? {}).toEqual({});
+    });
+
+    it('rejects a carid header for a car outside the organization', async () => {
+      const res = await post('tools/call', { name: 'finishline_list_projects', arguments: {} }, { carid: 'not-a-car' });
+
+      expect(res.status).toBe(404);
     });
   });
 
