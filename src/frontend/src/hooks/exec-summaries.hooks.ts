@@ -3,12 +3,15 @@ import {
   BudgetSummary,
   CompetitionPerformance,
   EditCompetitionPerformanceArgs,
+  CompetitionDocumentsSummary,
+  EditCompetitionDocumentsSummaryArgs,
   ExecutiveSummary,
   NewMemberSignUpEvent,
   VehicleDevelopmentSummary
 } from 'shared';
 import {
   editCompetitionPerformance,
+  editCompetitionDocumentsSummary,
   editExecutiveSummary,
   getAllExecutiveSummaries,
   getBudgetSummary,
@@ -125,6 +128,24 @@ export const useEditCompetitionPerformance = (competitionPerformanceId: string) 
     ['executive-summaries', 'competition-performance', 'edit'],
     async (formData: EditCompetitionPerformanceArgs) => {
       const { data } = await editCompetitionPerformance(competitionPerformanceId, formData);
+      queryClient.invalidateQueries(['executive-summaries']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit the competition documents summary of an executive summary.
+ *
+ * @param executiveSummaryId The id of the executive summary whose documents summary is being edited
+ * @returns the edited competition documents summary
+ */
+export const useEditCompetitionDocumentsSummary = (executiveSummaryId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<CompetitionDocumentsSummary, Error, EditCompetitionDocumentsSummaryArgs>(
+    ['executive-summaries', 'competition-documents-summary', 'edit'],
+    async (payload: EditCompetitionDocumentsSummaryArgs) => {
+      const { data } = await editCompetitionDocumentsSummary(executiveSummaryId, payload);
       queryClient.invalidateQueries(['executive-summaries']);
       return data;
     }

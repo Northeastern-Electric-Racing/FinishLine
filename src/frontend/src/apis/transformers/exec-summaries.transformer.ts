@@ -7,7 +7,7 @@ import { CompetitionDocumentsSummary, dbDateToLocalDate, ExecutiveSummary, Vehic
  * @param competitionDocumentsSummary The competition documents summary with dates as strings.
  * @returns The competition documents summary with `dateSynced` as a Date (or undefined if not set).
  */
-const competitionDocumentsSummaryTransformer = (
+export const competitionDocumentsSummaryTransformer = (
   competitionDocumentsSummary: CompetitionDocumentsSummary
 ): CompetitionDocumentsSummary => {
   return {
