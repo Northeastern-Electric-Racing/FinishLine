@@ -1,7 +1,7 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { Circle } from '@mui/icons-material';
 import { datePipe } from '../../../utils/pipes';
-import { ReimbursementRequestComment } from '../../../../../shared/src/types/reimbursement-requests-types';
+import { ReimbursementRequestComment } from 'shared';
 import { useState } from 'react';
 import { Link } from '@mui/material';
 import { useCreateReimbursementRequestComment } from '../../../hooks/finance.hooks';
