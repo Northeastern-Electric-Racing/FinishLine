@@ -109,12 +109,6 @@ export const dateSchema = (description: string) =>
     .describe(description);
 
 /**
- * A list of ids to filter by, for the model.
- * @param description what the ids identify
- */
-export const idListSchema = (description: string) => z.array(z.string()).optional().describe(description);
-
-/**
  * The offset into a paged list. Only the tools whose lists can outgrow a page take one; the response
  * carries a nextOffset to feed back in, so the model never has to work the arithmetic out.
  * @param items what is being paged, for the model

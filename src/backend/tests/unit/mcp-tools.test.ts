@@ -274,13 +274,21 @@ describe('MCP Tools', () => {
       expect(data[0].numScheduledSlots).toBe(3);
     });
 
-    it('passes the calendar view filters through to the service', async () => {
+    it('filters by approval status', async () => {
       await createEvent([slotOn('2026-09-02')]);
-      const other = await createEvent([slotOn('2026-09-03')]);
+      const pending = await createEvent([slotOn('2026-09-03')]);
+      await prisma.event.update({ where: { eventId: pending.eventId }, data: { approved: Conflict_Status.PENDING } });
 
-      const { data } = await callTool('finishline_get_events', { ...firstWeek, eventIds: [other.eventId] });
+      const { data } = await callTool('finishline_get_events', { ...firstWeek, statuses: ['PENDING'] });
 
-      expect(data.map((event: { eventId: string }) => event.eventId)).toEqual([other.eventId]);
+      expect(data.map((event: { eventId: string }) => event.eventId)).toEqual([pending.eventId]);
+    });
+
+    it('does not expose the id filters', async () => {
+      const { tools } = await rpc('tools/list', {});
+      const tool = tools.find((candidate: { name: string }) => candidate.name === 'finishline_get_events');
+
+      expect(Object.keys(tool.inputSchema.properties).sort()).toEqual(['endPeriod', 'startPeriod', 'statuses']);
     });
 
     it('rejects an unparseable date before reaching the service', async () => {
