@@ -59,10 +59,10 @@ execSummaryRouter.post(
 
 execSummaryRouter.post(
   '/:executiveSummaryId/competition-documents-summary/edit',
-  intMinZero(body('submittedOnTimeCount')).optional(),
-  intMinZero(body('firstSubmissionRejectedCount')).optional(),
+  intMinZero(body('submittedOnTimeCount')).optional({ nullable: true }),
+  intMinZero(body('firstSubmissionRejectedCount')).optional({ nullable: true }),
   body('source').optional().isIn(Object.values(DataSource)),
-  isOptionalDate(body('dateSynced')),
+  isOptionalDate(body('dateSynced')).optional({ nullable: true }),
   validateInputs,
   ExecSummaryController.editCompetitionDocumentsSummary
 );

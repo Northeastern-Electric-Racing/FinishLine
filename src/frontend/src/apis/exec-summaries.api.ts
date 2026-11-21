@@ -92,11 +92,11 @@ export const getNewMemberSignUpEvents = () => {
 /**
  * Edits a competition performance in the database.
  *
- * NOTE: this is a full replace, not a patch. Any field omitted from the payload is cleared
- * (set to null) on the server, so the payload must contain every field the form holds.
+ * NOTE: a field that is undefined (omitted from the payload) is left unchanged on the server,
+ * and a field that is null is cleared.
  *
  * @param competitionPerformanceId id of the competition performance to edit
- * @param competitionPerformanceData the complete edited data of the competition performance
+ * @param competitionPerformanceData the fields to change; null clears a field, undefined leaves it unchanged
  * @returns the updated competition performance
  */
 export const editCompetitionPerformance = (

@@ -18,8 +18,8 @@ import {
 } from '../apis/exec-summaries.api';
 
 export interface EditExecSummaryPayload {
-  seasonStartDate?: Date;
-  seasonEndDate?: Date;
+  seasonStartDate?: Date | null;
+  seasonEndDate?: Date | null;
   goals: string;
   winsAndImprovements: string;
   budgetNotes: string;
@@ -113,8 +113,8 @@ export const useGetNewMemberSignUpEvents = () => {
 /**
  * Custom React Hook to edit a competition performance.
  *
- * NOTE: the server treats this as a full replace, not a patch. Any field omitted from the
- * payload is cleared, so always send every field the form holds (including unchanged ones).
+ * NOTE: a field that is undefined (omitted from the payload) is left unchanged on the server,
+ * and a field that is null is cleared.
  *
  * @param competitionPerformanceId The id of the competition performance being edited
  * @returns the updated competition performance
