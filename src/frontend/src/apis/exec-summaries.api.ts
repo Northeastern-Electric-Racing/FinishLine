@@ -1,5 +1,7 @@
 import {
   BudgetSummary,
+  CompetitionPerformance,
+  EditCompetitionPerformanceArgs,
   CompetitionDocumentsSummary,
   EditCompetitionDocumentsSummaryArgs,
   ExecutiveSummary,
@@ -88,6 +90,26 @@ export const getNewMemberSignUpEvents = () => {
     transformResponse: (data) =>
       (JSON.parse(data) as NewMemberSignUpEvent[]).map((event) => ({ ...event, date: new Date(event.date) }))
   });
+};
+
+/**
+ * Edits a competition performance in the database.
+ *
+ * NOTE: a field that is undefined (omitted from the payload) is left unchanged on the server,
+ * and a field that is null is cleared.
+ *
+ * @param competitionPerformanceId id of the competition performance to edit
+ * @param competitionPerformanceData the fields to change; null clears a field, undefined leaves it unchanged
+ * @returns the updated competition performance
+ */
+export const editCompetitionPerformance = (
+  competitionPerformanceId: string,
+  competitionPerformanceData: EditCompetitionPerformanceArgs
+) => {
+  return axios.post<CompetitionPerformance>(
+    apiUrls.executiveSummaryEditCompetitionPerformance(competitionPerformanceId),
+    competitionPerformanceData
+  );
 };
 
 /**

@@ -449,6 +449,23 @@ describe('Executive Summary Tests', () => {
       expect(edited.source).toBe(DataSource.MANUAL);
     });
 
+    it('Clears nullable fields when null is passed', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      await createDocumentsSummary(executiveSummary.executiveSummaryId);
+
+      const edited = await ExecSummaryServices.editCompetitionDocumentsSummary(
+        admin,
+        organization,
+        executiveSummary.executiveSummaryId,
+        { submittedOnTimeCount: null, dateSynced: null }
+      );
+
+      expect(edited.submittedOnTimeCount).toBeUndefined();
+      expect(edited.firstSubmissionRejectedCount).toBe(1);
+      expect(edited.dateSynced).toBeUndefined();
+    });
+
     it('Succeeds and edits the competition documents summary as an ops team member (non-admin)', async () => {
       const opsMember = await createOpsTeamAndMember(organization);
       const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);

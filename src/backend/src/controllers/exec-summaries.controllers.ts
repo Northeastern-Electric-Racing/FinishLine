@@ -42,7 +42,7 @@ export default class ExecSummaryController {
           submittedOnTimeCount,
           firstSubmissionRejectedCount,
           source,
-          dateSynced: dateSynced ? new Date(dateSynced) : undefined
+          dateSynced: dateSynced === undefined || dateSynced === null ? dateSynced : new Date(dateSynced)
         }
       );
       res.status(200).json(competitionDocumentsSummary);

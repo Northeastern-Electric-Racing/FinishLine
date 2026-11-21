@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   BudgetSummary,
+  CompetitionPerformance,
+  EditCompetitionPerformanceArgs,
   CompetitionDocumentsSummary,
   EditCompetitionDocumentsSummaryArgs,
   ExecutiveSummary,
@@ -8,6 +10,7 @@ import {
   VehicleDevelopmentSummary
 } from 'shared';
 import {
+  editCompetitionPerformance,
   editCompetitionDocumentsSummary,
   editExecutiveSummary,
   getAllExecutiveSummaries,
@@ -18,8 +21,8 @@ import {
 } from '../apis/exec-summaries.api';
 
 export interface EditExecSummaryPayload {
-  seasonStartDate?: Date;
-  seasonEndDate?: Date;
+  seasonStartDate?: Date | null;
+  seasonEndDate?: Date | null;
   goals: string;
   winsAndImprovements: string;
   budgetNotes: string;
@@ -108,6 +111,27 @@ export const useGetNewMemberSignUpEvents = () => {
     const { data } = await getNewMemberSignUpEvents();
     return data;
   });
+};
+
+/**
+ * Custom React Hook to edit a competition performance.
+ *
+ * NOTE: a field that is undefined (omitted from the payload) is left unchanged on the server,
+ * and a field that is null is cleared.
+ *
+ * @param competitionPerformanceId The id of the competition performance being edited
+ * @returns the updated competition performance
+ */
+export const useEditCompetitionPerformance = (competitionPerformanceId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<CompetitionPerformance, Error, EditCompetitionPerformanceArgs>(
+    ['executive-summaries', 'competition-performance', 'edit'],
+    async (formData: EditCompetitionPerformanceArgs) => {
+      const { data } = await editCompetitionPerformance(competitionPerformanceId, formData);
+      queryClient.invalidateQueries(['executive-summaries']);
+      return data;
+    }
+  );
 };
 
 /**
