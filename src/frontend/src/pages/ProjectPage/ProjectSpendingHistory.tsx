@@ -1,15 +1,11 @@
 import React, { useMemo } from 'react';
 import { Box, Typography, Link, LinearProgress } from '@mui/material';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { useAllReimbursementRequests } from '../../hooks/finance.hooks';
+import { useProjectSpending } from '../../hooks/finance.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
-import { WbsNumber, ReimbursementRequest, WBSElementData, equalsWbsNumber, ReimbursementStatusType } from 'shared';
+import { WbsNumber, ProjectSpendingItem, ReimbursementStatusType } from 'shared';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import {
-  createReimbursementRequestRowData,
-  cleanReimbursementRequestStatus,
-  getCurrentReimbursementStatus
-} from '../../utils/reimbursement-request.utils';
+import { cleanReimbursementRequestStatus } from '../../utils/reimbursement-request.utils';
 import NERDataGrid, { MapRowResult } from '../../components/NERDataGrid';
 import { routes } from '../../utils/routes';
 import { fullNamePipe, centsToDollar, datePipe } from '../../utils/pipes';
@@ -36,44 +32,18 @@ const getStatusColor = (status: ReimbursementStatusType): string => {
   }
 };
 
-const getProjectCost = (rr: ReimbursementRequest, wbsNum: WbsNumber): number =>
-  rr.reimbursementProducts
-    .filter((product) => {
-      const reason = product.reimbursementProductReason;
-      return (
-        (reason as WBSElementData).wbsNum &&
-        equalsWbsNumber({ ...(reason as WBSElementData).wbsNum, workPackageNumber: 0 }, { ...wbsNum, workPackageNumber: 0 })
-      );
-    })
-    .reduce((sum, product) => sum + (product.cost || 0), 0);
-
 const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum }) => {
-  const { data: allReimbursementRequests, isLoading: rrLoading, isError: rrError } = useAllReimbursementRequests();
+  // the server only returns the requests with a product for this project, each with that product's cost
+  const { data: spending, isLoading: rrLoading, isError: rrError, error: rrErrorDetails } = useProjectSpending(wbsNum);
   const { data: project, isLoading: projectLoading } = useSingleProject(wbsNum);
 
-  const reimbursementRequests = useMemo(() => {
-    if (!allReimbursementRequests || !project) return [];
-    return allReimbursementRequests.filter((rr) =>
-      rr.reimbursementProducts.some((product) => {
-        const reason = product.reimbursementProductReason;
-        if ((reason as WBSElementData).wbsNum) {
-          return equalsWbsNumber(
-            { ...(reason as WBSElementData).wbsNum, workPackageNumber: 0 },
-            { ...wbsNum, workPackageNumber: 0 }
-          );
-        }
-        return false;
-      })
-    );
-  }, [allReimbursementRequests, project, wbsNum]);
+  const reimbursementRequests = useMemo(() => spending ?? [], [spending]);
 
   const budgetInfo = useMemo(() => {
     if (!project) return null;
     const totalBudget = project.budget; // already in dollars
-    const nonDeniedRequests = reimbursementRequests.filter(
-      (rr) => getCurrentReimbursementStatus(rr.reimbursementStatuses).type !== 'DENIED'
-    );
-    const totalSpent = nonDeniedRequests.reduce((sum, rr) => sum + getProjectCost(rr, wbsNum), 0) / 100; // cents → dollars
+    const nonDeniedRequests = reimbursementRequests.filter((rr) => rr.currentStatus !== ReimbursementStatusType.DENIED);
+    const totalSpent = nonDeniedRequests.reduce((sum, rr) => sum + rr.projectCost, 0) / 100; // cents → dollars
     const budgetRemaining = totalBudget - totalSpent;
     const budgetUsedPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
     return {
@@ -82,7 +52,7 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
       budgetRemaining,
       budgetUsedPercentage
     };
-  }, [project, reimbursementRequests, wbsNum]);
+  }, [project, reimbursementRequests]);
 
   const columns: GridColDef[] = [
     {
@@ -113,7 +83,7 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
       headerName: 'Products',
       flex: 2,
       minWidth: 250,
-      valueGetter: (params: any) => params.row.reimbursementProducts?.map((p: any) => p.name).join(', ') || 'No products'
+      valueGetter: (params: any) => params.row.productNames.join(', ') || 'No products'
     },
     {
       field: 'dateSubmitted',
@@ -147,7 +117,7 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
       headerName: 'Project Cost',
       flex: 0.5,
       minWidth: 110,
-      valueGetter: (params: any) => `$${centsToDollar(getProjectCost(params.row.raw ?? params.row, wbsNum))}`
+      valueGetter: (params: any) => `$${centsToDollar(params.row.projectCost as number)}`
     },
     {
       field: 'amount',
@@ -158,15 +128,16 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
     }
   ];
 
-  const mapRow = (rr: ReimbursementRequest): MapRowResult<ReimbursementRequest> => {
-    const row = createReimbursementRequestRowData(rr);
-    return { ...rr, ...row, id: row.id, raw: rr };
+  const mapRow = (rr: ProjectSpendingItem): MapRowResult<ProjectSpendingItem> => {
+    // the column names the table reads
+    const row = { submitter: rr.recipient, dateSubmitted: rr.dateCreated, status: rr.currentStatus, amount: rr.totalCost };
+    return { ...rr, ...row, id: rr.reimbursementRequestId, raw: rr };
   };
 
   const isLoading = rrLoading || projectLoading;
 
+  if (rrError) return <Typography color="error">Failed to load spending history: {rrErrorDetails.message}</Typography>;
   if (isLoading) return <LoadingIndicator />;
-  if (rrError) return <Typography color="error">Failed to load spending history.</Typography>;
   if (!reimbursementRequests.length) return <Typography>No spending history for this project.</Typography>;
 
   return (
@@ -263,7 +234,7 @@ const ProjectSpendingHistory: React.FC<ProjectSpendingHistoryProps> = ({ wbsNum 
           return (
             String(r.identifier).includes(q) ||
             fullNamePipe(r.submitter).toLowerCase().includes(q) ||
-            (r.reimbursementProducts?.map((p: any) => p.name).join(', ') || '').toLowerCase().includes(q) ||
+            r.productNames.join(', ').toLowerCase().includes(q) ||
             String(r.status).toLowerCase().includes(q)
           );
         }}

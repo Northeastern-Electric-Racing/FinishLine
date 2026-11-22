@@ -42,6 +42,8 @@ const ReimbursementRequests: React.FC = () => {
 
   const user = useCurrentUser();
   const canViewAllReimbursementRequests = user.isFinance || isHead(user.role) || isLead(user.role);
+  // the server only gives every request to finance members and heads
+  const canFetchAllReimbursementRequests = user.isFinance || isHead(user.role);
   const toast = useToast();
   const { isFinance } = user;
   const { mutateAsync: downloadCSVFileOfReimbursementRequests } = useDownloadCSVFileOfReimbursementRequests();
@@ -120,13 +122,14 @@ const ReimbursementRequests: React.FC = () => {
     refetch: refetchAssignedReimbursementRequests,
     isError: assignedReimbursementRequestIsError,
     error: assignedReimbursementRequestError
-  } = useCurrentUserAssignedReimbursementRequests();
+    // only users who can see the tabs see the Assigned To Me tab
+  } = useCurrentUserAssignedReimbursementRequests(canViewAllReimbursementRequests);
   const {
     data: allReimbursementRequests,
     refetch: refetchAllReimbursementRequests,
     isError: allReimbursementRequestsIsError,
     error: allReimbursementRequestsError
-  } = useAllReimbursementRequests();
+  } = useAllReimbursementRequests(canFetchAllReimbursementRequests);
   const {
     data: allProjects,
     isLoading: allProjectsIsLoading,
@@ -297,11 +300,7 @@ const ReimbursementRequests: React.FC = () => {
           mb: 2
         }}
       >
-        <GenerateReceiptsModal
-          open={showGenerateReceipts}
-          setOpen={setShowGenerateReceipts}
-          allReimbursementRequests={allReimbursementRequests}
-        />
+        <GenerateReceiptsModal open={showGenerateReceipts} setOpen={setShowGenerateReceipts} />
         <ReportRefundModal showModal={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
         <Typography variant="h3" sx={{ fontSize: { xs: '1.4rem', sm: '1.75rem', md: '3rem' } }}>
           Reimbursement Requests
@@ -320,9 +319,10 @@ const ReimbursementRequests: React.FC = () => {
           endDate={endDate}
           selectedProject={selectedProjectFilter ?? undefined}
           onCloseSidePage={() => {
+            // refetch runs even for a disabled query, so only refetch the lists this user loads
             refetchCreatedReimbursementRequests();
-            refetchAllReimbursementRequests();
-            refetchAssignedReimbursementRequests();
+            if (canFetchAllReimbursementRequests) refetchAllReimbursementRequests();
+            if (canViewAllReimbursementRequests) refetchAssignedReimbursementRequests();
           }}
         />
       </Box>

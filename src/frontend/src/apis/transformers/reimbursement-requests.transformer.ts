@@ -4,22 +4,15 @@
  */
 
 import {
-  Receipt,
+  BaseReimbursementRequest,
   Reimbursement,
-  ReimbursementProduct,
-  ReimbursementRequest,
   ReimbursementRequestData,
-  ReimbursementStatus,
+  ReimbursementRequestDetail,
+  ReimbursementRequestExportRow,
+  ReimbursementRequestTableItem,
   SpendingBarData,
   Vendor
 } from 'shared';
-
-const reimbursementStatusTransformer = (status: ReimbursementStatus): ReimbursementStatus => {
-  return {
-    ...status,
-    dateCreated: new Date(status.dateCreated)
-  };
-};
 
 export const vendorTransformer = (vendor: Vendor): Vendor => {
   return {
@@ -28,30 +21,35 @@ export const vendorTransformer = (vendor: Vendor): Vendor => {
   };
 };
 
-const receiptTransformer = (receipt: Receipt): Receipt => {
-  return {
-    ...receipt
-  };
-};
+/** Converts the dates on any reimbursement request model; extended models spread it and convert what they add */
+export const baseReimbursementRequestTransformer = <T extends BaseReimbursementRequest>(request: T): T => ({
+  ...request,
+  dateCreated: new Date(request.dateCreated)
+});
 
-const reimbursementProductTransformer = (product: ReimbursementProduct): ReimbursementProduct => {
-  return {
-    ...product
-  };
-};
+const optionalDate = (date?: Date) => (date ? new Date(date) : undefined);
 
-export const reimbursementRequestTransformer = (request: ReimbursementRequest): ReimbursementRequest => {
-  return {
-    ...request,
-    dateCreated: new Date(request.dateCreated),
-    dateOfExpense: request.dateOfExpense ? new Date(request.dateOfExpense) : undefined,
-    reimbursementStatuses: request.reimbursementStatuses.map(reimbursementStatusTransformer),
-    vendor: vendorTransformer(request.vendor),
-    receiptPictures: request.receiptPictures.map(receiptTransformer),
-    reimbursementProducts: request.reimbursementProducts.map(reimbursementProductTransformer),
-    dateDelivered: request.dateDelivered ? new Date(request.dateDelivered) : undefined
-  };
-};
+export const reimbursementRequestTableItemTransformer = (
+  request: ReimbursementRequestTableItem
+): ReimbursementRequestTableItem => ({
+  ...baseReimbursementRequestTransformer(request),
+  dateSubmittedToSabo: optionalDate(request.dateSubmittedToSabo)
+});
+
+export const reimbursementRequestDetailTransformer = (request: ReimbursementRequestDetail): ReimbursementRequestDetail => ({
+  ...baseReimbursementRequestTransformer(request),
+  dateOfExpense: optionalDate(request.dateOfExpense),
+  dateDelivered: optionalDate(request.dateDelivered),
+  comments: request.comments.map((comment) => ({ ...comment, dateCreated: new Date(comment.dateCreated) }))
+});
+
+export const reimbursementRequestExportRowTransformer = (
+  request: ReimbursementRequestExportRow
+): ReimbursementRequestExportRow => ({
+  ...baseReimbursementRequestTransformer(request),
+  dateDelivered: optionalDate(request.dateDelivered),
+  dateSubmittedToSabo: optionalDate(request.dateSubmittedToSabo)
+});
 
 export const reimbursementTransformer = (reimbursement: Reimbursement): Reimbursement => {
   return {
