@@ -9,6 +9,7 @@ import {
   AvailableBayDashboardWidgets,
   BayDashboardConfig,
   BayDashboardCountdown,
+  BayDashboardRotation,
   BayDashboardCountdownCreateArgs,
   BayDashboardSlotCreateArgs,
   dateToMidnightUTC,
@@ -93,6 +94,16 @@ export const saveBayDashboardConfig = (slots: BayDashboardSlotCreateArgs[]) => {
 export const getBayDashboardCountdowns = (slug: string) => {
   return axios.get<BayDashboardCountdown[]>(apiUrls.bayDashboardCountdowns(slug), {
     transformResponse: (data) => JSON.parse(data).map(bayDashboardCountdownTransformer)
+  });
+};
+
+/**
+ * Gets the rotation time for each widget size on the organizations bay dashboard
+ * @param slug the organization's slug
+ */
+export const getBayDashboardRotations = (slug: string) => {
+  return axios.get<BayDashboardRotation[]>(apiUrls.bayDashboardRotationSettings(slug), {
+    transformResponse: (data) => JSON.parse(data)
   });
 };
 
