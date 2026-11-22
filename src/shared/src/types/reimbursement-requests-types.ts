@@ -41,29 +41,19 @@ export interface Receipt {
   name: string;
 }
 
-/** A status change, as every reimbursement request model carries them: enough for the current status and the status checks */
-export interface BaseReimbursementStatus {
-  type: ReimbursementStatusType;
-  dateCreated: Date;
-}
-
 /** The minimum every reimbursement request consumer needs */
 export interface BaseReimbursementRequest {
   reimbursementRequestId: string;
   identifier: number;
   saboId?: string;
   dateCreated: Date;
-  dateOfExpense?: Date;
-  dateDelivered?: Date;
   description?: string;
   totalCost: number;
   recipient: BaseUser;
-  // oldest first
-  reimbursementStatuses: BaseReimbursementStatus[];
+  // every status it has had, oldest first; the status checks only need the types
+  statusTypes: ReimbursementStatusType[];
   // the type of the newest status
   currentStatus: ReimbursementStatusType;
-  // when it was marked SABO submitted, if it has been
-  dateSubmittedToSabo?: Date;
 }
 
 /** Why a product was bought: the wbs element it's for, or an "other" reason */
@@ -71,6 +61,8 @@ export type ReimbursementProductReasonPreview = WBSElementData | Pick<OtherProdu
 
 /** A row of the My Requests, Assigned To Me, and All Requests tables */
 export interface ReimbursementRequestTableItem extends BaseReimbursementRequest {
+  // when it was marked SABO submitted, if it has been
+  dateSubmittedToSabo?: Date;
   assignee?: BaseUser;
   reimbursementProducts: { name?: string; reimbursementProductReason: ReimbursementProductReasonPreview }[];
 }
@@ -94,6 +86,8 @@ export interface ReimbursementRequestCommentPreview {
 
 /** The reimbursement request detail page, its modals, and the edit form */
 export interface ReimbursementRequestDetail extends BaseReimbursementRequest {
+  dateOfExpense?: Date;
+  dateDelivered?: Date;
   // the Submit to SABO modal shows the recipient's email
   recipient: BaseUser & { email: string };
   assignee?: BaseUser;
@@ -114,6 +108,8 @@ export interface ProjectSpendingItem extends BaseReimbursementRequest {
 
 /** A row of the reimbursement requests CSV export */
 export interface ReimbursementRequestExportRow extends BaseReimbursementRequest {
+  dateDelivered?: Date;
+  dateSubmittedToSabo?: Date;
   vendor: Pick<Vendor, 'name'>;
   accountCode: Pick<AccountCode, 'code'>;
   indexCode: Pick<IndexCode, 'code' | 'name'>;

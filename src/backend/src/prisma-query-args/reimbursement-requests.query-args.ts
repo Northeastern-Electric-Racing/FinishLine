@@ -13,14 +13,12 @@ export const getBaseReimbursementRequestQueryArgs = () =>
       identifier: true,
       saboId: true,
       dateCreated: true,
-      dateOfExpense: true,
-      dateDelivered: true,
       description: true,
       totalCost: true,
       // every table shows or searches the submitter, and the detail page checks permissions against them
       recipient: getBaseUserQueryArgs(),
-      // one per status change (about 8 at most): gives the current status, the SABO submitted date, and every status check
-      reimbursementStatuses: { select: { type: true, dateCreated: true }, orderBy: { dateCreated: 'asc' } }
+      // one per status change (about 8 at most): gives the current status and every status check
+      reimbursementStatuses: { select: { type: true }, orderBy: { dateCreated: 'asc' } }
     }
   });
 
@@ -33,11 +31,19 @@ export const getBaseReimbursementProductReasonQueryArgs = () =>
     }
   });
 
+// the statuses with their dates, for the models that show when a request was submitted to SABO
+export const reimbursementStatusesWithDatesSelect = {
+  select: { type: true, dateCreated: true },
+  orderBy: { dateCreated: 'asc' }
+} as const satisfies Prisma.Reimbursement_Request$reimbursementStatusesArgs;
+
 // the My Requests, Assigned To Me, and All Requests tables
 export const getReimbursementRequestTableItemQueryArgs = () =>
   Prisma.validator<Prisma.Reimbursement_RequestDefaultArgs>()({
     select: {
       ...getBaseReimbursementRequestQueryArgs().select,
+      // the Date Submitted To SABO column
+      reimbursementStatuses: reimbursementStatusesWithDatesSelect,
       // the All Requests tab's Assigned To column
       assignee: getBaseUserQueryArgs(),
       // the products column, search, and project filter

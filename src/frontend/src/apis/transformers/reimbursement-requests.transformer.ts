@@ -8,6 +8,8 @@ import {
   Reimbursement,
   ReimbursementRequestData,
   ReimbursementRequestDetail,
+  ReimbursementRequestExportRow,
+  ReimbursementRequestTableItem,
   SpendingBarData,
   Vendor
 } from 'shared';
@@ -22,19 +24,31 @@ export const vendorTransformer = (vendor: Vendor): Vendor => {
 /** Converts the dates on any reimbursement request model; extended models spread it and convert what they add */
 export const baseReimbursementRequestTransformer = <T extends BaseReimbursementRequest>(request: T): T => ({
   ...request,
-  dateCreated: new Date(request.dateCreated),
-  dateOfExpense: request.dateOfExpense ? new Date(request.dateOfExpense) : undefined,
-  dateDelivered: request.dateDelivered ? new Date(request.dateDelivered) : undefined,
-  dateSubmittedToSabo: request.dateSubmittedToSabo ? new Date(request.dateSubmittedToSabo) : undefined,
-  reimbursementStatuses: request.reimbursementStatuses.map((status) => ({
-    ...status,
-    dateCreated: new Date(status.dateCreated)
-  }))
+  dateCreated: new Date(request.dateCreated)
+});
+
+const optionalDate = (date?: Date) => (date ? new Date(date) : undefined);
+
+export const reimbursementRequestTableItemTransformer = (
+  request: ReimbursementRequestTableItem
+): ReimbursementRequestTableItem => ({
+  ...baseReimbursementRequestTransformer(request),
+  dateSubmittedToSabo: optionalDate(request.dateSubmittedToSabo)
 });
 
 export const reimbursementRequestDetailTransformer = (request: ReimbursementRequestDetail): ReimbursementRequestDetail => ({
   ...baseReimbursementRequestTransformer(request),
+  dateOfExpense: optionalDate(request.dateOfExpense),
+  dateDelivered: optionalDate(request.dateDelivered),
   comments: request.comments.map((comment) => ({ ...comment, dateCreated: new Date(comment.dateCreated) }))
+});
+
+export const reimbursementRequestExportRowTransformer = (
+  request: ReimbursementRequestExportRow
+): ReimbursementRequestExportRow => ({
+  ...baseReimbursementRequestTransformer(request),
+  dateDelivered: optionalDate(request.dateDelivered),
+  dateSubmittedToSabo: optionalDate(request.dateSubmittedToSabo)
 });
 
 export const reimbursementTransformer = (reimbursement: Reimbursement): Reimbursement => {

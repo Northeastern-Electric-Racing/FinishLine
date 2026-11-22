@@ -129,10 +129,7 @@ const RefundInfo = ({
     allReimbursements && canViewAllReimbursementRequests ? allReimbursements : userReimbursements;
   const displayedReimbursementRequests = (
     allReimbursementRequests && canViewAllReimbursementRequests ? allReimbursementRequests : userReimbursementRequests
-  ).filter(
-    (request: BaseReimbursementRequest) =>
-      !request.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)
-  );
+  ).filter((request: BaseReimbursementRequest) => !request.statusTypes.includes(ReimbursementStatusType.DENIED));
 
   const rows = displayedReimbursements.map(getRefundRowData).sort(getComparator(order, orderBy));
 

@@ -57,6 +57,7 @@ import {
   indexCodeTransformer,
   otherProductReasonTransformer,
   baseReimbursementRequestTransformer,
+  dateSubmittedToSaboOf,
   reimbursementProductReasonPreviewTransformer,
   reimbursementRequestTableItemTransformer,
   reimbursementTransformer,
@@ -77,7 +78,8 @@ import { getUsers, userHasPermission } from '../utils/users.utils.js';
 import {
   getBaseReimbursementProductReasonQueryArgs,
   getBaseReimbursementRequestQueryArgs,
-  getReimbursementRequestTableItemQueryArgs
+  getReimbursementRequestTableItemQueryArgs,
+  reimbursementStatusesWithDatesSelect
 } from '../prisma-query-args/reimbursement-requests.query-args.js';
 import { getBaseUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { baseUserTransformer } from '../transformers/user.transformer.js';
@@ -705,6 +707,8 @@ export default class ReimbursementRequestService {
       },
       select: {
         ...getBaseReimbursementRequestQueryArgs().select,
+        dateDelivered: true,
+        reimbursementStatuses: reimbursementStatusesWithDatesSelect,
         vendor: { select: { name: true } },
         accountCode: { select: { code: true } },
         indexCode: { select: { code: true, name: true } }
@@ -713,6 +717,8 @@ export default class ReimbursementRequestService {
 
     return reimbursementRequests.map((reimbursementRequest) => ({
       ...baseReimbursementRequestTransformer(reimbursementRequest),
+      dateDelivered: reimbursementRequest.dateDelivered ?? undefined,
+      dateSubmittedToSabo: dateSubmittedToSaboOf(reimbursementRequest.reimbursementStatuses),
       vendor: reimbursementRequest.vendor,
       accountCode: reimbursementRequest.accountCode,
       indexCode: reimbursementRequest.indexCode
@@ -1244,6 +1250,8 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId },
       select: {
         ...getBaseReimbursementRequestQueryArgs().select,
+        dateOfExpense: true,
+        dateDelivered: true,
         dateDeleted: true,
         organizationId: true,
         // the Submit to SABO modal shows the recipient's email
@@ -1286,6 +1294,8 @@ export default class ReimbursementRequestService {
 
     return {
       ...baseReimbursementRequestTransformer(reimbursementRequest),
+      dateOfExpense: reimbursementRequest.dateOfExpense ?? undefined,
+      dateDelivered: reimbursementRequest.dateDelivered ?? undefined,
       recipient: { ...baseUserTransformer(reimbursementRequest.recipient), email: reimbursementRequest.recipient.email },
       assignee: reimbursementRequest.assignee ? baseUserTransformer(reimbursementRequest.assignee) : undefined,
       vendor: reimbursementRequest.vendor,

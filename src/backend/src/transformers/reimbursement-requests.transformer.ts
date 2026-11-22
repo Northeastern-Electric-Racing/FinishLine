@@ -34,26 +34,24 @@ export const baseReimbursementRequestTransformer = (
   reimbursementRequest: Prisma.Reimbursement_RequestGetPayload<BaseReimbursementRequestQueryArgs>
 ): BaseReimbursementRequest => {
   // the query returns statuses oldest first
-  const statuses = reimbursementRequest.reimbursementStatuses.map((status) => ({
-    type: status.type as ReimbursementStatusType,
-    dateCreated: status.dateCreated
-  }));
+  const statusTypes = reimbursementRequest.reimbursementStatuses.map((status) => status.type as ReimbursementStatusType);
   return {
     reimbursementRequestId: reimbursementRequest.reimbursementRequestId,
     identifier: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId ?? undefined,
     dateCreated: reimbursementRequest.dateCreated,
-    dateOfExpense: reimbursementRequest.dateOfExpense ?? undefined,
-    dateDelivered: reimbursementRequest.dateDelivered ?? undefined,
     description: reimbursementRequest.description,
     totalCost: reimbursementRequest.totalCost,
     recipient: baseUserTransformer(reimbursementRequest.recipient),
-    reimbursementStatuses: statuses,
+    statusTypes,
     // every request is created with a status, so there's always one
-    currentStatus: statuses[statuses.length - 1]?.type ?? ReimbursementStatusType.PENDING_LEADERSHIP_APPROVAL,
-    dateSubmittedToSabo: statuses.find((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated
+    currentStatus: statusTypes[statusTypes.length - 1] ?? ReimbursementStatusType.PENDING_LEADERSHIP_APPROVAL
   };
 };
+
+/** When a request was marked SABO submitted, from statuses selected with reimbursementStatusesWithDatesSelect */
+export const dateSubmittedToSaboOf = (statuses: { type: string; dateCreated: Date }[]): Date | undefined =>
+  statuses.find((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated;
 
 export const reimbursementProductReasonPreviewTransformer = (
   reason: Prisma.Reimbursement_Product_ReasonGetPayload<BaseReimbursementProductReasonQueryArgs>
@@ -66,6 +64,7 @@ export const reimbursementRequestTableItemTransformer = (
   reimbursementRequest: Prisma.Reimbursement_RequestGetPayload<ReimbursementRequestTableItemQueryArgs>
 ): ReimbursementRequestTableItem => ({
   ...baseReimbursementRequestTransformer(reimbursementRequest),
+  dateSubmittedToSabo: dateSubmittedToSaboOf(reimbursementRequest.reimbursementStatuses),
   assignee: reimbursementRequest.assignee ? baseUserTransformer(reimbursementRequest.assignee) : undefined,
   reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({
     name: product.name ?? undefined,

@@ -88,46 +88,34 @@ export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType)
 };
 
 // the status checks only need the request's statuses
-type WithStatuses = Pick<BaseReimbursementRequest, 'reimbursementStatuses'>;
+type WithStatuses = Pick<BaseReimbursementRequest, 'statusTypes'>;
 
 export const isReimbursementRequestAdvisorApproved = (reimbursementRequest: WithStatuses) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.ADVISOR_APPROVED);
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.ADVISOR_APPROVED);
 };
 
 export const isReimbursementRequestPendingSaboSubmission = (reimbursementRequest: WithStatuses) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.PENDING_SABO_SUBMISSION);
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.PENDING_SABO_SUBMISSION);
 };
 
 export const isReimbursementRequestSaboSubmitted = (reimbursementRequest: WithStatuses) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.SABO_SUBMITTED);
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.SABO_SUBMITTED);
 };
 
 export const isReimbursementRequestLeadershipApproved = (reimbursementRequest: WithStatuses) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.LEADERSHIP_APPROVED);
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.LEADERSHIP_APPROVED);
 };
 
 export const isReimbursementRequestPendingFinance = (reimbursementRequest: WithStatuses) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.PENDING_FINANCE);
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.PENDING_FINANCE);
 };
 
 export const isReimbursementRequestDenied = (reimbursementRequest: WithStatuses) => {
-  return reimbursementRequest.reimbursementStatuses.map((status) => status.type).includes(ReimbursementStatusType.DENIED);
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.DENIED);
 };
 
 export const isReimbursementRequestReimbursed = (reimbursementRequest: WithStatuses) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.REIMBURSED);
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.REIMBURSED);
 };
 
 export const imagePreviewUrl = (googleFileId: string) => `https://drive.google.com/file/d/${googleFileId}/preview`;

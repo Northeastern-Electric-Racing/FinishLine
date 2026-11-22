@@ -31,6 +31,8 @@ import {
   baseReimbursementRequestTransformer,
   reimbursementRequestDataTransformer,
   reimbursementRequestDetailTransformer,
+  reimbursementRequestExportRowTransformer,
+  reimbursementRequestTableItemTransformer,
   reimbursementTransformer,
   spendingBarDataTransformer,
   vendorTransformer
@@ -185,7 +187,7 @@ export const getSingleReimbursementRequest = (id: string) => {
  */
 export const getCurrentUserReimbursementRequests = () => {
   return axios.get<ReimbursementRequestTableItem[]>(apiUrls.financeGetUserReimbursementRequest(), {
-    transformResponse: (data) => JSON.parse(data).map(baseReimbursementRequestTransformer)
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTableItemTransformer)
   });
 };
 
@@ -194,7 +196,7 @@ export const getCurrentUserReimbursementRequests = () => {
  */
 export const getCurrentUserAssignedReimbursementRequests = () => {
   return axios.get<ReimbursementRequestTableItem[]>(apiUrls.financeGetUserAssignedReimbursementRequest(), {
-    transformResponse: (data) => JSON.parse(data).map(baseReimbursementRequestTransformer)
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTableItemTransformer)
   });
 };
 
@@ -203,7 +205,7 @@ export const getCurrentUserAssignedReimbursementRequests = () => {
  */
 export const getAllReimbursementRequests = () => {
   return axios.get<ReimbursementRequestTableItem[]>(apiUrls.financeEndpoints(), {
-    transformResponse: (data) => JSON.parse(data).map(baseReimbursementRequestTransformer)
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTableItemTransformer)
   });
 };
 
@@ -241,7 +243,7 @@ export const getReceiptFileIds = (startPeriod: Date, endPeriod: Date, refundSour
  */
 export const getReimbursementRequestExport = () => {
   return axios.get<ReimbursementRequestExportRow[]>(apiUrls.financeExport(), {
-    transformResponse: (data) => JSON.parse(data).map(baseReimbursementRequestTransformer)
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestExportRowTransformer)
   });
 };
 

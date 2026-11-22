@@ -417,8 +417,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
 
   const buttons: ButtonInfo[] = allButtons.filter((button) => button.show !== false).map(({ show, ...button }) => button);
 
-  // the server sends statuses oldest first
-  const statusTypes = reimbursementRequest.reimbursementStatuses.map((status) => status.type);
+  const { statusTypes } = reimbursementRequest;
 
   const uniqueWbsElementsWithProducts = getUniqueWbsElementsWithProductsFromReimbursementRequest(reimbursementRequest);
   const keys: string[] = [];
@@ -452,9 +451,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     {
       content: statusTypes.length > 0 && (
         <Box id="status" display="flex">
-          {reimbursementRequest.reimbursementStatuses.length > 0 && (
-            <ReimbursementRequestStatusPill status={reimbursementRequest.currentStatus} />
-          )}
+          {statusTypes.length > 0 && <ReimbursementRequestStatusPill status={reimbursementRequest.currentStatus} />}
         </Box>
       )
     },

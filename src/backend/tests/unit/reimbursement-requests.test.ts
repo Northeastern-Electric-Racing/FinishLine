@@ -142,8 +142,7 @@ describe('Reimbursement Requests', () => {
         workPackageNumber: 0
       });
       expect(rr.totalCost).toEqual(100);
-      expect(rr.reimbursementStatuses).toHaveLength(1);
-      expect(rr.reimbursementStatuses[0].type).toEqual('PENDING_LEADERSHIP_APPROVAL');
+      expect(rr.statusTypes).toEqual(['PENDING_LEADERSHIP_APPROVAL']);
       expect(rr.identifier).toEqual(2);
     });
 
@@ -196,8 +195,7 @@ describe('Reimbursement Requests', () => {
         workPackageNumber: 0
       });
       expect(rr.totalCost).toEqual(100);
-      expect(rr.reimbursementStatuses).toHaveLength(1);
-      expect(rr.reimbursementStatuses[0].type).toEqual('PENDING_LEADERSHIP_APPROVAL');
+      expect(rr.statusTypes).toEqual(['PENDING_LEADERSHIP_APPROVAL']);
       expect(rr.identifier).toEqual(2);
     });
   });
