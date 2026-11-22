@@ -15,6 +15,9 @@ describe('Bay Dashboard Tests', () => {
   beforeEach(async () => {
     organization = await createTestOrganization();
     head = await createTestUser(greenlanternHead, organization.organizationId);
+    await prisma.bay_Dashboard_Rotation.create({
+      data: { size: BayDashboardWidgetSize.LARGE, rotationSeconds: 45, organizationId: organization.organizationId }
+    });
   });
 
   afterEach(async () => {
@@ -43,7 +46,6 @@ describe('Bay Dashboard Tests', () => {
             {
               size: BayDashboardWidgetSize.LARGE,
               position: 0,
-              rotationSeconds: 45,
               widgets: {
                 create: [
                   { type: BayDashboardWidgetType.TEXT_FIELD, order: 1, text },

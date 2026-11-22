@@ -5,7 +5,8 @@ import {
   BayDashboardCountdown,
   PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig,
-  PublicBayDashboardOverdueWorkPackage
+  PublicBayDashboardOverdueWorkPackage,
+  RotationSecondsBySize
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -16,11 +17,29 @@ import {
 } from '../prisma-query-args/bay-dashboard.query-args.js';
 import {
   bayDashboardCountdownTransformer,
+  bayDashboardWidgetSizeTransformer,
   publicBayDashboardCalendarEventsTransformer,
   publicBayDashboardConfigTransformer,
   publicBayDashboardOverdueWorkPackageTransformer
 } from '../transformers/bay-dashboard.transformer.js';
 import { DeletedException, NotFoundException } from '../utils/errors.utils.js';
+
+/**
+ * Gets how long each widget size rotates for an organization.
+ * Sizes that the organization hasn't yet configured fall back to the default.
+ * @param organizationId the organization the rotations belong to
+ * @returns the rotation seconds keyed by widget size
+ */
+export const getRotationSecondsBySize = async (organizationId: string): Promise<RotationSecondsBySize> => {
+  const rotations = await prisma.bay_Dashboard_Rotation.findMany({
+    where: { organizationId },
+    select: { size: true, rotationSeconds: true }
+  });
+
+  return Object.fromEntries(
+    rotations.map((rotation) => [bayDashboardWidgetSizeTransformer(rotation.size), rotation.rotationSeconds])
+  );
+};
 
 export default class BayDashboardService {
   /**
@@ -55,7 +74,10 @@ export default class BayDashboardService {
       ...getPublicBayDashboardConfigQueryArgs()
     });
 
-    return config ? publicBayDashboardConfigTransformer(config) : null;
+    if (!config) return null;
+
+    const rotations = await getRotationSecondsBySize(organization.organizationId);
+    return publicBayDashboardConfigTransformer(config, rotations);
   }
 
   /**

@@ -8,6 +8,7 @@ import {
   BayDashboardSlotCreateArgs,
   BayDashboardWidgetSize,
   BayDashboardWidgetType,
+  DEFAULT_ROTATION_SECONDS,
   PublicBayDashboardWidget
 } from 'shared';
 
@@ -55,7 +56,7 @@ const defaultSlot = (size: BayDashboardWidgetSize, type: BayDashboardWidgetType)
   bayDashboardSlotId: `default-${slotPositions[size]}`,
   size,
   position: slotPositions[size],
-  rotationSeconds: 30,
+  rotationSeconds: DEFAULT_ROTATION_SECONDS,
   widgets: [{ bayDashboardWidgetId: `default-${slotPositions[size]}-0`, type, order: 0 }]
 });
 
@@ -89,7 +90,7 @@ export const applyWidgetSelection = (
       bayDashboardSlotId: existingSlot?.bayDashboardSlotId ?? `preview-${size}`,
       size,
       position: slotPositions[size],
-      rotationSeconds: existingSlot?.rotationSeconds ?? 30,
+      rotationSeconds: existingSlot?.rotationSeconds ?? DEFAULT_ROTATION_SECONDS,
       widgets: [{ bayDashboardWidgetId: `preview-${size}-0`, type: choice.type, order: 0, text: choice.text }]
     });
   }
