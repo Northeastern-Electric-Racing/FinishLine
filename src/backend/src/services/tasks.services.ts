@@ -555,21 +555,22 @@ export default class TasksService {
   }
 
   /**
-   * Gets one page of a single status column of the tasks matching the filter criteria, for the global tasks board
+   * Gets one page of the tasks matching the filter criteria. The global tasks board asks for one status column at a
+   * time; leaving the status out pages through every status at once.
    * @param filters the filter criteria
-   * @param status the status column to get a page of
-   * @param offset how many of the column's tasks come before this page
+   * @param status the status column to get a page of, or undefined for every status
+   * @param offset how many of the matching tasks come before this page
    * @param organization the organization that the user is currently in
    * @returns the page's tasks, and where the next page starts if there is one
    */
   static async getFilteredTasksPage(
     filters: FilterTaskArgs,
-    status: Task_Status,
+    status: Task_Status | undefined,
     offset: number,
     organization: Organization
   ): Promise<TaskBoardItemPage> {
     const tasks = await prisma.task.findMany({
-      where: { ...(await getFilteredTasksWhere(filters, organization)), status },
+      where: { ...(await getFilteredTasksWhere(filters, organization)), ...(status && { status }) },
       // the board's own order (compareTasks): soonest deadline first with no deadline last, then highest priority.
       // taskId breaks the remaining ties so consecutive pages never overlap or skip a task
       orderBy: [{ deadline: { sort: 'asc', nulls: 'last' } }, { priority: 'desc' }, { taskId: 'asc' }],

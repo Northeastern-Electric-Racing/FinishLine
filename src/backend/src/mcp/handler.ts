@@ -1,7 +1,8 @@
 import { createMcpHandler } from '@modelcontextprotocol/server';
 import { toNodeHandler } from '@modelcontextprotocol/node';
 import { HttpException } from '../utils/errors.utils.js';
-import { AgentContext, buildMcpServer } from './tools.js';
+import { buildMcpServer } from './server.js';
+import { AgentContext } from './tools.utils.js';
 
 /**
  * Reads the authenticated caller back out of the pass-through authInfo attachAuthInfo set.
@@ -31,11 +32,9 @@ const getAgentContext = (authInfo: unknown): AgentContext => {
  * and nothing is retained between requests. That is what makes the endpoint stateless and safe to
  * run behind a load balancer with more than one instance.
  *
- * responseMode 'json' pins plain JSON responses instead of upgrading to server sent events; we emit
- * no progress or logging notifications, and it keeps the endpoint easy to test with curl.
+ * Responses may come back as plain JSON or as an SSE stream depending on the client's protocol version.
+ * Both are valid Streamable HTTP responses that every MCP client must accept.
  */
-const mcpHandler = createMcpHandler(({ authInfo }) => buildMcpServer(getAgentContext(authInfo)), {
-  responseMode: 'json'
-});
+const mcpHandler = createMcpHandler(({ authInfo }) => buildMcpServer(getAgentContext(authInfo)));
 
 export const mcpNodeHandler = toNodeHandler(mcpHandler);

@@ -1,7 +1,7 @@
-import { Organization } from '@prisma/client';
+import { Organization, Role_Type } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
 import { batmanAppAdmin, theVisitorGuest } from '../test-data/users.test-data.js';
-import { AccessDeniedGuestException } from '../../src/utils/errors.utils.js';
+import { AccessDeniedException, AccessDeniedGuestException, HttpException } from '../../src/utils/errors.utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import ApiTokenService from '../../src/services/api-tokens.services.js';
 import { hashApiToken } from '../../src/utils/api-tokens.utils.js';
@@ -90,6 +90,59 @@ describe('Api Token Tests', () => {
       });
 
       expect(await ApiTokenService.getCurrentUserApiToken(batman)).toBeNull();
+    });
+  });
+
+  describe('Authenticate Api Token', () => {
+    it('resolves the token to its user and their only organization', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+
+      const { user, organization: resolved } = await ApiTokenService.authenticateApiToken(token, undefined);
+
+      expect(user.userId).toBe(batman.userId);
+      expect(resolved.organizationId).toBe(orgId);
+    });
+
+    it('uses the organization id when one is given', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+
+      const { organization: resolved } = await ApiTokenService.authenticateApiToken(token, orgId);
+
+      expect(resolved.organizationId).toBe(orgId);
+    });
+
+    it('fails without a token', async () => {
+      await expect(ApiTokenService.authenticateApiToken(undefined, undefined)).rejects.toThrow(
+        new HttpException(401, 'Authentication Failed: No API token provided!')
+      );
+    });
+
+    it('fails for a revoked token', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const generated = await ApiTokenService.generateApiToken(batman, organization);
+      await prisma.user_API_Token.update({
+        where: { apiTokenId: generated.apiTokenId },
+        data: { dateRevoked: new Date() }
+      });
+
+      await expect(ApiTokenService.authenticateApiToken(generated.token, undefined)).rejects.toThrow(
+        new HttpException(401, 'Authentication Failed: Invalid API token!')
+      );
+    });
+
+    it('fails once the user has been demoted to guest', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+      await prisma.role.update({
+        where: { uniqueRole: { userId: batman.userId, organizationId: orgId } },
+        data: { roleType: Role_Type.GUEST }
+      });
+
+      await expect(ApiTokenService.authenticateApiToken(token, undefined)).rejects.toThrow(
+        new AccessDeniedException('guests cannot use the API')
+      );
     });
   });
 });

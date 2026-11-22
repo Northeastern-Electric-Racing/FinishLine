@@ -112,8 +112,9 @@ app.use('/bay-dashboard', bayDashboardRouter);
 app.use('/agent', agentRouter);
 
 // The MCP endpoint, authenticated with the same per-user API tokens. JSON-RPC requires POST, so it
-// cannot sit behind the readOnlyGuard the /agent router uses and is mounted separately; registering
-// every tool through registerReadOnlyTool in src/mcp/tools.ts is what keeps it read only instead.
+// cannot sit behind the readOnlyGuard the /agent router uses and is mounted separately. Its tools are
+// registered per domain in src/mcp; tools that change data use registerWriteTool, and the services
+// they call do the permission checks.
 // The handler is async, so its rejections are forwarded to the error handler rather than dropped.
 app.all('/mcp', requireApiToken, attachAuthInfo, (req, res, next) => {
   mcpNodeHandler(req, res, req.body).catch(next);
