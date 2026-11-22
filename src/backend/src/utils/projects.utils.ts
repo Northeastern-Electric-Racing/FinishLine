@@ -1,5 +1,5 @@
+import prisma, { PrismaTransactionClient } from '../prisma/prisma.js';
 import { WBS_Element_Status } from '@prisma/client';
-import prisma from '../prisma/prisma.js';
 import { DescriptionBulletPreview, LinkCreateArgs, WbsElementStatus } from 'shared';
 import { DeletedException, HttpException, InvalidOrganizationException, NotFoundException } from './errors.utils.js';
 import { ChangeCreateArgs, createChange, createListChanges, getDescriptionBulletChanges } from './changes.utils.js';
@@ -47,8 +47,14 @@ export const getUserFullName = async (userId: string | null): Promise<string | n
   return `${user.firstName} ${user.lastName}`;
 };
 
-// Update a project and create changes together
-export const updateProjectAndCreateChanges = async (
+/**
+ * Works out what an edit to a project changes, without saving anything
+ * @param crId the change request the changes belong to; with null no changes are recorded
+ * @param tx the transaction client to read with (defaults to prisma)
+ * @returns the changes to record, the bullet and link changes to apply, and the work packages that take on the
+ * project's new lead or manager
+ */
+export const getProjectChanges = async (
   projectId: string,
   crId: string | null,
   implementerId: string,
@@ -59,11 +65,12 @@ export const updateProjectAndCreateChanges = async (
   newLinkCreateArgs: LinkCreateArgs[] | null,
   leadId: string | null,
   managerId: string | null,
-  organizationId: string
+  organizationId: string,
+  tx: PrismaTransactionClient = prisma
 ) => {
   let changesJson: ChangeCreateArgs[] = [];
 
-  const originalProject = await prisma.project.findUnique({
+  const originalProject = await tx.project.findUnique({
     where: {
       projectId
     },
@@ -165,50 +172,90 @@ export const updateProjectAndCreateChanges = async (
 
   changesJson = changesJson.concat(descriptionBulletChanges.changes).concat(linkChanges.changes);
 
-  // if the project has no managerId and a managerId is provided, we need to update the work packages
-  // that do not have a managerId and create changes for them
-  // this is so that project manager is the default manager for all work packages
-  if (!originalProject.wbsElement.managerId && managerId) {
-    const wpToUpdate = originalWorkPackages.filter((wp) => !wp.wbsElement.managerId);
+  // if the project has no manager and one is provided, its work packages without a manager take it too,
+  // so the project manager is the default manager for all its work packages (same goes for the lead)
+  const workPackagesNeedingManager =
+    !originalProject.wbsElement.managerId && managerId
+      ? originalWorkPackages.filter((wp) => !wp.wbsElement.managerId).map((wp) => wp.wbsElementId)
+      : [];
+  const workPackagesNeedingLead =
+    !originalProject.wbsElement.leadId && leadId
+      ? originalWorkPackages.filter((wp) => !wp.wbsElement.leadId).map((wp) => wp.wbsElementId)
+      : [];
 
-    const wpChanges = (
-      await Promise.all(
-        wpToUpdate.map(async (wp) =>
-          createChange('manager', null, await getUserFullName(managerId), crId, implementerId, wp.wbsElementId, null, null)
-        )
+  const managerWpChanges = (
+    await Promise.all(
+      workPackagesNeedingManager.map(async (wpWbsElementId) =>
+        createChange('manager', null, await getUserFullName(managerId), crId, implementerId, wpWbsElementId, null, null)
       )
-    ).filter((change) => change !== undefined);
+    )
+  ).filter((change) => change !== undefined);
 
-    changesJson = changesJson.concat(wpChanges);
+  const leadWpChanges = (
+    await Promise.all(
+      workPackagesNeedingLead.map(async (wpWbsElementId) =>
+        createChange('lead', null, await getUserFullName(leadId), crId, implementerId, wpWbsElementId, null, null)
+      )
+    )
+  ).filter((change) => change !== undefined);
 
-    await prisma.wBS_Element.updateMany({
-      where: { wbsElementId: { in: wpToUpdate.map((wp) => wp.wbsElementId) } },
+  changesJson = changesJson.concat(managerWpChanges).concat(leadWpChanges);
+
+  return {
+    wbsElementId,
+    changes: changesJson,
+    descriptionBulletChanges,
+    linkChanges,
+    workPackagesNeedingManager,
+    workPackagesNeedingLead
+  };
+};
+
+export type ProjectChanges = Awaited<ReturnType<typeof getProjectChanges>>;
+
+/**
+ * Saves an edit to a project and records its changes
+ * @param projectChanges what the edit changes, from getProjectChanges
+ * @param changeRequestId the change request to record the changes under, replacing the id they were worked out with
+ * @param tx the transaction client to write with (defaults to prisma)
+ */
+export const applyProjectChanges = async (
+  projectChanges: ProjectChanges,
+  changeRequestId: string | null,
+  implementerId: string,
+  name: string,
+  budget: number | null,
+  summary: string,
+  leadId: string | null,
+  managerId: string | null,
+  organizationId: string,
+  tx: PrismaTransactionClient = prisma
+) => {
+  const {
+    wbsElementId,
+    changes,
+    descriptionBulletChanges,
+    linkChanges,
+    workPackagesNeedingManager,
+    workPackagesNeedingLead
+  } = projectChanges;
+
+  if (workPackagesNeedingManager.length > 0) {
+    await tx.wBS_Element.updateMany({
+      where: { wbsElementId: { in: workPackagesNeedingManager } },
       data: { managerId }
     });
   }
 
-  // same goes for the project lead
-  if (!originalProject.wbsElement.leadId && leadId) {
-    const wpToUpdate = originalWorkPackages.filter((wp) => !wp.wbsElement.leadId);
-
-    const wpChanges = (
-      await Promise.all(
-        wpToUpdate.map(async (wp) =>
-          createChange('lead', null, await getUserFullName(leadId), crId, implementerId, wp.wbsElementId, null, null)
-        )
-      )
-    ).filter((change) => change !== undefined);
-
-    changesJson = changesJson.concat(wpChanges);
-
-    await prisma.wBS_Element.updateMany({
-      where: { wbsElementId: { in: wpToUpdate.map((wp) => wp.wbsElementId) } },
+  if (workPackagesNeedingLead.length > 0) {
+    await tx.wBS_Element.updateMany({
+      where: { wbsElementId: { in: workPackagesNeedingLead } },
       data: { leadId }
     });
   }
 
   // update the project with the input fields
-  await prisma.project.update({
+  await tx.project.update({
     where: {
       wbsElementId
     },
@@ -230,7 +277,7 @@ export const updateProjectAndCreateChanges = async (
   const deletedDescriptionBullets: DescriptionBulletPreview[] = descriptionBulletChanges.deleted;
 
   if (deletedDescriptionBullets.length > 0) {
-    await prisma.description_Bullet.updateMany({
+    await tx.description_Bullet.updateMany({
       where: {
         descriptionId: {
           in: deletedDescriptionBullets.map((descriptionBullet) => descriptionBullet.id)
@@ -247,20 +294,65 @@ export const updateProjectAndCreateChanges = async (
     descriptionBulletChanges.added,
     DescriptionBulletDestination.WBS_ELEMENT,
     wbsElementId,
-    organizationId
+    organizationId,
+    tx
   );
 
   // Edit the existing description bullets
-  await editDescriptionBullets(descriptionBulletChanges.edited, organizationId);
+  await editDescriptionBullets(descriptionBulletChanges.edited, organizationId, tx);
 
   // Update links
-  await updateLinks(linkChanges, wbsElementId, implementerId, organizationId);
+  await updateLinks(linkChanges, wbsElementId, implementerId, organizationId, tx);
 
-  await prisma.change.createMany({
-    data: changesJson
-  });
+  // record the changes under the real change request id
+  const changesToCreate = changeRequestId ? changes.map((change) => ({ ...change, changeRequestId })) : changes;
+  await tx.change.createMany({ data: changesToCreate });
+};
 
-  return { wbsElementId };
+// Update a project and create changes together
+export const updateProjectAndCreateChanges = async (
+  projectId: string,
+  crId: string | null,
+  implementerId: string,
+  name: string,
+  budget: number | null,
+  summary: string,
+  newDescriptionBullets: DescriptionBulletPreview[],
+  newLinkCreateArgs: LinkCreateArgs[] | null,
+  leadId: string | null,
+  managerId: string | null,
+  organizationId: string,
+  tx: PrismaTransactionClient = prisma
+) => {
+  const projectChanges = await getProjectChanges(
+    projectId,
+    crId,
+    implementerId,
+    name,
+    budget,
+    summary,
+    newDescriptionBullets,
+    newLinkCreateArgs,
+    leadId,
+    managerId,
+    organizationId,
+    tx
+  );
+
+  await applyProjectChanges(
+    projectChanges,
+    crId,
+    implementerId,
+    name,
+    budget,
+    summary,
+    leadId,
+    managerId,
+    organizationId,
+    tx
+  );
+
+  return { wbsElementId: projectChanges.wbsElementId };
 };
 /**
  * Check if given assembly, material type, manufacturer, and unit exist in the app database

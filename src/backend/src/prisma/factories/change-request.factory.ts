@@ -27,7 +27,7 @@ type ReviewOutcome = 'APPROVED' | 'DENIED' | 'PENDING';
 
 export type SeedCrOverrides = Partial<Prisma.Change_RequestCreateInput>;
 export const WORK_PACKAGE_CR_TYPES: CR_Type[] = [CR_Type.ACTIVATION, CR_Type.STAGE_GATE];
-export const PROJECT_CR_TYPES: CR_Type[] = [CR_Type.STANDARD, CR_Type.LEADERSHIP];
+export const PROJECT_CR_TYPES: CR_Type[] = [CR_Type.STANDARD, CR_Type.NON_MEANINGFUL];
 
 const STANDARD_WHY = [
   'Initial change request',
@@ -197,7 +197,7 @@ const buildStandardProposedChanges = (
 
 type CrLink = { kind: 'wbs'; wbsElementId: string } | { kind: 'accountCode'; accountCodeId: string };
 
-const AUTO_ACCEPTED_TYPES: CR_Type[] = [CR_Type.ACTIVATION, CR_Type.STAGE_GATE, CR_Type.LEADERSHIP];
+const AUTO_ACCEPTED_TYPES: CR_Type[] = [CR_Type.ACTIVATION, CR_Type.STAGE_GATE, CR_Type.NON_MEANINGFUL];
 
 const isAutoAccepted = (type: CR_Type): boolean => AUTO_ACCEPTED_TYPES.includes(type);
 
@@ -212,7 +212,7 @@ const crTypeForParent = (faker: Faker, isWorkPackage: boolean): CR_Type => {
 
   return faker.helpers.weightedArrayElement([
     { weight: 97, value: CR_Type.STANDARD },
-    { weight: 3, value: CR_Type.LEADERSHIP }
+    { weight: 3, value: CR_Type.NON_MEANINGFUL }
   ]);
 };
 
@@ -248,11 +248,7 @@ const subtypeCreateInput = (
   submitterId: string
 ): Pick<
   Prisma.Change_RequestCreateInput,
-  | 'budgetChangeRequest'
-  | 'stageGateChangeRequest'
-  | 'activationChangeRequest'
-  | 'leadershipChangeRequest'
-  | 'wbsProposedChanges'
+  'budgetChangeRequest' | 'stageGateChangeRequest' | 'activationChangeRequest' | 'wbsProposedChanges'
 > => {
   switch (type) {
     case CR_Type.BUDGET:
@@ -289,31 +285,9 @@ const subtypeCreateInput = (
         }
       };
     }
-    case CR_Type.LEADERSHIP: {
-      const currentLeadId = parent?.leadId;
-      const currentManagerId = parent?.managerId;
-
-      const leadId = pickDifferentActor(
-        faker,
-        ownerCandidates,
-        [currentLeadId, currentManagerId].filter((id): id is string => id !== undefined)
-      );
-
-      const managerId = pickDifferentActor(
-        faker,
-        ownerCandidates,
-        [currentLeadId, currentManagerId, leadId].filter((id): id is string => id !== undefined)
-      );
-
-      return {
-        leadershipChangeRequest: {
-          create: {
-            lead: { connect: { userId: leadId } },
-            manager: { connect: { userId: managerId } }
-          }
-        }
-      };
-    }
+    case CR_Type.NON_MEANINGFUL:
+      // no side table; what changed is recorded in the CR's Change rows
+      return {};
     case CR_Type.STANDARD: {
       if (!parent) {
         throw new Error('Standard change request requires a parent WBS element.');

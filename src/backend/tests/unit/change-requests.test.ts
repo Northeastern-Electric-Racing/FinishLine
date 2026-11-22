@@ -1,4 +1,4 @@
-import { Organization, User, WBS_Element_Status } from '@prisma/client';
+import { CR_Type, Organization, User, WBS_Element_Status } from '@prisma/client';
 import {
   createTestCar,
   createTestOrganization,
@@ -18,6 +18,9 @@ import {
 } from '../test-data/users.test-data.js';
 import prisma from '../../src/prisma/prisma.js';
 import { AccessDeniedException, AccessDeniedMemberException } from '../../src/utils/errors.utils.js';
+import WorkPackagesService from '../../src/services/work-packages.services.js';
+import { WorkPackageProposedChangesCreateArgs } from 'shared';
+import { vi } from 'vitest';
 
 describe('Change Request Tests', () => {
   let orgId: string;
@@ -48,6 +51,30 @@ describe('Change Request Tests', () => {
     wpWbsElementId = wp.wbsElement.wbsElementId;
     ({ workPackageId, startDate } = wp);
   });
+
+  // the work package's current values, in the shape editWorkPackage and proposed changes take
+  const currentWorkPackage = async () => {
+    const wp = await prisma.work_Package.findUniqueOrThrow({
+      where: { workPackageId },
+      include: {
+        wbsElement: {
+          include: { descriptionBullets: { where: { dateDeleted: null }, include: { descriptionBulletType: true } } }
+        }
+      }
+    });
+    return {
+      name: wp.wbsElement.name,
+      startDate: wp.startDate.toISOString().split('T')[0],
+      duration: wp.duration,
+      leadId: wp.wbsElement.leadId,
+      managerId: wp.wbsElement.managerId,
+      descriptionBullets: wp.wbsElement.descriptionBullets.map((bullet) => ({
+        id: bullet.descriptionId,
+        detail: bullet.detail,
+        type: bullet.descriptionBulletType.name
+      }))
+    };
+  };
 
   afterEach(async () => {
     await resetUsers();
@@ -190,6 +217,29 @@ describe('Change Request Tests', () => {
       expect(wbsElement?.carNumber).toEqual(12);
       expect(wbsElement?.projectNumber).toEqual(13);
       expect(wbsElement?.workPackageNumber).toEqual(14);
+    });
+  });
+
+  describe('Activation Change Requests', () => {
+    it('does not log a manager change when the manager stays the same', async () => {
+      const wbs = await prisma.wBS_Element.findUnique({ where: { wbsElementId: wpWbsElementId } });
+      const newLead = await createTestUser(aquamanLeadership, orgId);
+
+      const crId = await ChangeRequestsService.createActivationChangeRequest(
+        user,
+        2,
+        1,
+        1,
+        newLead.userId,
+        wbs!.managerId!,
+        startDate,
+        true,
+        organization
+      );
+
+      const changes = await prisma.change.findMany({ where: { changeRequestId: crId } });
+      expect(changes.find((c) => c.detail.includes('Project Lead'))).toBeDefined();
+      expect(changes.find((c) => c.detail.includes('Project Manager'))).toBeUndefined();
     });
   });
 
@@ -584,6 +634,210 @@ describe('Change Request Tests', () => {
       const changes = await prisma.change.findMany({ where: { changeRequestId: crId } });
       const durationChange = changes.find((c) => c.detail.includes('duration'));
       expect(durationChange).toBeUndefined();
+    });
+
+    it('does not leave a change request behind when creating the stage gate fails', async () => {
+      const crCountBefore = await prisma.change_Request.count({ where: { wbsElementId: wpWbsElementId } });
+
+      const dateCompleted = new Date(startDate);
+      dateCompleted.setDate(dateCompleted.getDate() - 7);
+
+      await expect(
+        ChangeRequestsService.createStageGateChangeRequest(user, 2, 1, 1, true, dateCompleted, organization)
+      ).rejects.toThrow('Date completed cannot be before the work package start date');
+
+      const crCountAfter = await prisma.change_Request.count({ where: { wbsElementId: wpWbsElementId } });
+      expect(crCountAfter).toEqual(crCountBefore);
+
+      const wbs = await prisma.wBS_Element.findUnique({ where: { wbsElementId: wpWbsElementId } });
+      expect(wbs?.status).not.toEqual(WBS_Element_Status.COMPLETE);
+    });
+
+    it('leaves the change request unreviewed when approving the stage gate fails, and it can be approved again', async () => {
+      // move the start date into the future so approving today fails the date check
+      const futureStart = new Date();
+      futureStart.setDate(futureStart.getDate() + 14);
+      await prisma.work_Package.update({ where: { workPackageId }, data: { startDate: futureStart } });
+
+      // create an unreviewed stage gate CR directly, since the service would auto-approve it
+      const numChangeRequests = await prisma.change_Request.count({ where: { organizationId: orgId } });
+      const cr = await prisma.change_Request.create({
+        data: {
+          submitter: { connect: { userId: user.userId } },
+          wbsElement: { connect: { wbsElementId: wpWbsElementId } },
+          type: CR_Type.STAGE_GATE,
+          stageGateChangeRequest: { create: { leftoverBudget: 0, confirmDone: true } },
+          organization: { connect: { organizationId: orgId } },
+          identifier: numChangeRequests + 1
+        }
+      });
+
+      await expect(
+        ChangeRequestsService.reviewChangeRequest(user, cr.crId, true, organization, 'approving')
+      ).rejects.toThrow('Date completed cannot be before the work package start date');
+
+      // nothing from the failed review was saved
+      const failedCR = await prisma.change_Request.findUnique({ where: { crId: cr.crId } });
+      expect(failedCR?.dateReviewed).toBeNull();
+      expect(failedCR?.reviewerId).toBeNull();
+      expect(failedCR?.accepted).not.toBe(true);
+
+      const changes = await prisma.change.findMany({ where: { changeRequestId: cr.crId } });
+      expect(changes).toHaveLength(0);
+
+      const wbs = await prisma.wBS_Element.findUnique({ where: { wbsElementId: wpWbsElementId } });
+      expect(wbs?.status).not.toEqual(WBS_Element_Status.COMPLETE);
+
+      // once the problem is fixed, the same CR can still be approved
+      await prisma.work_Package.update({ where: { workPackageId }, data: { startDate } });
+      await ChangeRequestsService.reviewChangeRequest(user, cr.crId, true, organization, 'approving');
+
+      const approvedWbs = await prisma.wBS_Element.findUnique({ where: { wbsElementId: wpWbsElementId } });
+      expect(approvedWbs?.status).toEqual(WBS_Element_Status.COMPLETE);
+    }, 15000);
+  });
+
+  describe('Standard Change Requests', () => {
+    beforeEach(async () => {
+      // no stage, so the tests can pass null and keep it unchanged
+      await prisma.work_Package.update({ where: { workPackageId }, data: { stage: null } });
+    });
+
+    // proposes renaming the work package and keeps everything else the same
+    const renameProposal = async (leadId?: string): Promise<WorkPackageProposedChangesCreateArgs> => {
+      const current = await currentWorkPackage();
+      return {
+        name: 'Renamed Work Package',
+        leadId: leadId ?? current.leadId ?? undefined,
+        managerId: current.managerId ?? undefined,
+        startDate: current.startDate,
+        duration: current.duration,
+        stage: undefined,
+        descriptionBullets: current.descriptionBullets,
+        blockedBy: [],
+        links: []
+      };
+    };
+
+    it('does not leave a change request behind when creating a standard CR fails validation', async () => {
+      const crCountBefore = await prisma.change_Request.count({ where: { wbsElementId: wpWbsElementId } });
+
+      await expect(
+        ChangeRequestsService.createStandardChangeRequest(
+          user,
+          2,
+          1,
+          1,
+          'testing',
+          organization,
+          undefined,
+          undefined,
+          await renameProposal('not-a-real-user')
+        )
+      ).rejects.toThrow();
+
+      const crCountAfter = await prisma.change_Request.count({ where: { wbsElementId: wpWbsElementId } });
+      expect(crCountAfter).toEqual(crCountBefore);
+    });
+
+    it('leaves a standard CR unreviewed when applying it fails, and it can be approved again', async () => {
+      const cr = await ChangeRequestsService.createStandardChangeRequest(
+        user,
+        2,
+        1,
+        1,
+        'testing',
+        organization,
+        undefined,
+        undefined,
+        await renameProposal()
+      );
+
+      // make applying the proposed changes fail after the review has been saved inside the transaction
+      const editSpy = vi.spyOn(WorkPackagesService, 'editWorkPackage').mockRejectedValueOnce(new Error('apply failed'));
+      await expect(
+        ChangeRequestsService.reviewChangeRequest(user, cr.crId, true, organization, 'approving')
+      ).rejects.toThrow('apply failed');
+      editSpy.mockRestore();
+
+      // the review rolled back, so the CR is still unreviewed and nothing was applied
+      const failedCR = await prisma.change_Request.findUnique({ where: { crId: cr.crId } });
+      expect(failedCR?.dateReviewed).toBeNull();
+      expect(failedCR?.accepted).not.toBe(true);
+      const wbs = await prisma.wBS_Element.findUnique({ where: { wbsElementId: wpWbsElementId } });
+      expect(wbs?.name).not.toEqual('Renamed Work Package');
+
+      // with nothing failing, the same CR can still be approved
+      await ChangeRequestsService.reviewChangeRequest(user, cr.crId, true, organization, 'approving');
+
+      const approvedWbs = await prisma.wBS_Element.findUnique({ where: { wbsElementId: wpWbsElementId } });
+      expect(approvedWbs?.name).toEqual('Renamed Work Package');
+      const changes = await prisma.change.findMany({ where: { changeRequestId: cr.crId } });
+      expect(changes.length).toBeGreaterThan(0);
+    }, 15000);
+  });
+
+  describe('Direct Edits', () => {
+    beforeEach(async () => {
+      // no stage, and a midnight UTC start date, so passing the current values back really changes nothing
+      await prisma.work_Package.update({
+        where: { workPackageId },
+        data: { stage: null, startDate: new Date(startDate.toISOString().split('T')[0]) }
+      });
+    });
+
+    it('does not create a change request when a direct edit changes nothing', async () => {
+      const current = await currentWorkPackage();
+      const crCountBefore = await prisma.change_Request.count({ where: { wbsElementId: wpWbsElementId } });
+
+      await WorkPackagesService.editWorkPackage(
+        user,
+        workPackageId,
+        current.name,
+        null,
+        null,
+        current.startDate,
+        current.duration,
+        [],
+        current.descriptionBullets,
+        current.leadId,
+        current.managerId,
+        organization
+      );
+
+      const crCountAfter = await prisma.change_Request.count({ where: { wbsElementId: wpWbsElementId } });
+      expect(crCountAfter).toEqual(crCountBefore);
+    });
+
+    it('records a direct minor edit under one auto-approved change request', async () => {
+      const current = await currentWorkPackage();
+
+      await WorkPackagesService.editWorkPackage(
+        user,
+        workPackageId,
+        'Renamed Work Package',
+        null,
+        null,
+        current.startDate,
+        current.duration,
+        [],
+        current.descriptionBullets,
+        current.leadId,
+        current.managerId,
+        organization
+      );
+
+      const minorEditCRs = await prisma.change_Request.findMany({
+        where: { wbsElementId: wpWbsElementId, type: CR_Type.NON_MEANINGFUL },
+        include: { changes: true }
+      });
+      expect(minorEditCRs).toHaveLength(1);
+      expect(minorEditCRs[0].accepted).toBe(true);
+      expect(minorEditCRs[0].changes).toHaveLength(1);
+      expect(minorEditCRs[0].changes[0].detail).toContain('Renamed Work Package');
+
+      const wbs = await prisma.wBS_Element.findUnique({ where: { wbsElementId: wpWbsElementId } });
+      expect(wbs?.name).toEqual('Renamed Work Package');
     });
   });
 });

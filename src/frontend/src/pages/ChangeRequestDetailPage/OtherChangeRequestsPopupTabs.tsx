@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { Box, useTheme, Collapse, Tabs, Tab, Typography } from '@mui/material';
-import { ChangeRequest, wbsPipe } from 'shared';
+import { ChangeRequest, ChangeRequestType, wbsPipe } from 'shared';
 import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -26,8 +26,11 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
+  // skip auto-approved non-meaningful CRs so these tabs only show CRs worth looking at
+  const otherChangeRequests = changeRequests?.filter((cr) => cr.type !== ChangeRequestType.NonMeaningful);
+
   // the CRs submitted or reviewed by the submitter of this CR
-  const crsFromSubmitter = changeRequests
+  const crsFromSubmitter = otherChangeRequests
     ?.filter(
       (cr) =>
         (cr.submitter.userId === changeRequest.submitter.userId || cr.reviewer?.userId === changeRequest.submitter.userId) &&
@@ -37,19 +40,19 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
 
-  const crsFromWbs = changeRequests
+  const crsFromWbs = otherChangeRequests
     ?.filter((cr) => cr.wbsName === changeRequest.wbsName)
     .sort((a: ChangeRequest, b: ChangeRequest) => {
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
 
-  const crsFromCategory = changeRequests
+  const crsFromCategory = otherChangeRequests
     ?.filter((cr) => cr.category?.name === changeRequest.category?.name)
     .sort((a: ChangeRequest, b: ChangeRequest) => {
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
 
-  const crsFromAccountCode = changeRequests
+  const crsFromAccountCode = otherChangeRequests
     ?.filter((cr) => cr.accountCode?.name === changeRequest.accountCode?.name)
     .sort((a: ChangeRequest, b: ChangeRequest) => {
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();

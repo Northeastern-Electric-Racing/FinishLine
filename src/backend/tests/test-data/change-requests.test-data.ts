@@ -22,7 +22,8 @@ export const prismaChangeRequest1: PrismaChangeRequest = {
   deletedByUserId: null,
   snapshotBlockingCount: null,
   snapshotStartDate: null,
-  snapshotDuration: null
+  snapshotDuration: null,
+  snapshotBudget: null
 };
 
 export const sharedChangeRequest: SharedChangeRequest = {
@@ -35,8 +36,9 @@ export const sharedChangeRequest: SharedChangeRequest = {
   wbsName: 'whip',
   submitter: sharedBatman,
   dateSubmitted: new Date('12-25-2000'),
-  type: ChangeRequestType.Leadership,
+  type: ChangeRequestType.NonMeaningful,
   status: ChangeRequestStatus.Open,
   requestedReviewers: [],
-  identifier: 1
+  identifier: 1,
+  triageScore: 0
 };

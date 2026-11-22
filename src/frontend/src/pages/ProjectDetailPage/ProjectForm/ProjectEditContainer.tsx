@@ -2,8 +2,8 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { ProjectDetail, ProjectProposedChangesCreateArgs, wbsPipe } from 'shared';
-import { useAllLinkTypes } from '../../../hooks/projects.hooks';
+import { ProjectDetail, ProjectProposedChangesCreateArgs, wbsPipe, projectEditNeedsReview } from 'shared';
+import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.hooks';
 import { bulletsToObject } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useState } from 'react';
@@ -12,15 +12,10 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import * as yup from 'yup';
-import {
-  CreateStandardChangeRequestPayload,
-  useCreateLeadershipChangeRequest,
-  useCreateStandardChangeRequest
-} from '../../../hooks/change-requests.hooks';
+import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 import { routes } from '../../../utils/routes';
 import { useHistory } from 'react-router-dom';
 import ProjectFormContainer from './ProjectForm';
-import { useCurrentUser } from '../../../hooks/users.hooks';
 import { useQueryClient } from 'react-query';
 
 interface ProjectEditContainerProps {
@@ -31,7 +26,6 @@ interface ProjectEditContainerProps {
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
   const toast = useToast();
   const history = useHistory();
-  const user = useCurrentUser();
   const queryClient = useQueryClient();
   const { name, budget, summary, workPackages } = project;
   const [managerId, setManagerId] = useState<string | undefined>(project.manager?.userId.toString());
@@ -39,7 +33,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const descriptionBullets = bulletsToObject(project.descriptionBullets);
 
   const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
-  const { mutateAsync: mutateLeadershipCR, isLoading: isLeadershipCRLoading } = useCreateLeadershipChangeRequest();
+  const { mutateAsync: editProject, isLoading: isEditProjectLoading } = useEditSingleProject(project.wbsNum);
 
   const {
     data: allLinkTypes,
@@ -54,9 +48,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     linkTypeName: link.linkType.name
   }));
 
-  if (isCRHookLoading || isLeadershipCRLoading) return <LoadingIndicator />;
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
+  if (isCRHookLoading || isEditProjectLoading) return <LoadingIndicator />;
 
   const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
   const projectLinkTypeNames = links.map((link) => link.linkTypeName);
@@ -101,27 +95,15 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     const { name, budget, summary, links, descriptionBullets } = data;
 
     try {
-      const leadershipChanged =
-        leadId !== project.lead?.userId.toString() || managerId !== project.manager?.userId.toString();
+      // budget and description bullets need a change request
+      const meaningfulFieldsChanged = projectEditNeedsReview(
+        project.budget,
+        budget,
+        bulletsToObject(project.descriptionBullets),
+        descriptionBullets
+      );
 
-      const otherFieldsChanged =
-        name !== project.name ||
-        budget !== project.budget ||
-        summary !== project.summary ||
-        JSON.stringify(links.map((l) => `${l.linkTypeName}:${l.url}`).sort()) !==
-          JSON.stringify(project.links.map((l) => `${l.linkType.name}:${l.url}`).sort()) ||
-        JSON.stringify(descriptionBullets) !== JSON.stringify(bulletsToObject(project.descriptionBullets));
-
-      if (leadershipChanged) {
-        await mutateLeadershipCR({
-          submitterId: user.userId,
-          wbsNum: project.wbsNum,
-          leadId,
-          managerId
-        });
-      }
-
-      if (otherFieldsChanged) {
+      if (meaningfulFieldsChanged) {
         if (!why) throw new Error('Why is required for standard change request');
         const projectPayload: ProjectProposedChangesCreateArgs = {
           name,
@@ -147,9 +129,19 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         return;
       }
 
-      toast.success('Changes submitted successfully');
+      // everything else (name, summary, links, lead and manager) applies directly
+      await editProject({
+        projectId: project.id,
+        name,
+        budget,
+        summary,
+        descriptionBullets,
+        links,
+        leadId,
+        managerId
+      });
+      toast.success('Project updated successfully');
       await queryClient.refetchQueries(['projects']);
-      history.push(routes.CHANGE_REQUESTS_OVERVIEW);
       exitEditMode();
     } catch (e) {
       if (e instanceof Error) toast.error(e.message);

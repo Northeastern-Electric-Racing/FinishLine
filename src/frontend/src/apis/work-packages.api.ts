@@ -27,7 +27,6 @@ export interface WorkPackageApiInputs {
   startDate: string;
   duration: number;
   stage: WorkPackageStage | 'NONE';
-  crId?: string;
   blockedBy: WbsNumber[];
   descriptionBullets: DescriptionBulletPreview[];
 }
@@ -36,9 +35,8 @@ export interface WorkPackageCreateArgs extends WorkPackageApiInputs {
   projectWbsNum: WbsNumber;
 }
 
-export interface WorkPackageEditArgs extends WorkPackageApiInputs {
-  crId: string;
-}
+// kept as an alias so existing imports don't break; identical to WorkPackageApiInputs
+export type WorkPackageEditArgs = WorkPackageApiInputs;
 
 /**
  * Fetch a single work package.

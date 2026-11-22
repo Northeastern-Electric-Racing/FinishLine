@@ -100,11 +100,11 @@ export default class ProjectsController {
 
   static async createProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, crId, carNumber, teamIds, budget, summary, leadId, managerId, links, descriptionBullets } = req.body;
+      const { name, carNumber, teamIds, budget, summary, leadId, managerId, links, descriptionBullets } = req.body;
 
       const createdProject = await ProjectsService.createProject(
         req.currentUser,
-        crId,
+        null,
         carNumber,
         name,
         summary,
@@ -125,11 +125,11 @@ export default class ProjectsController {
 
   static async editProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectId, crId, name, budget, summary, descriptionBullets, links, leadId, managerId } = req.body;
+      const { projectId, name, budget, summary, descriptionBullets, links, leadId, managerId } = req.body;
       await ProjectsService.editProject(
         req.currentUser,
         projectId,
-        crId,
+        null,
         name,
         budget,
         summary,

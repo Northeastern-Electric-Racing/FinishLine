@@ -31,7 +31,6 @@ export interface VersionObject {
 
 export interface EditSingleProjectPayload {
   projectId: string;
-  crId: string;
   name: string;
   budget: number;
   summary: string;
@@ -42,7 +41,6 @@ export interface EditSingleProjectPayload {
 }
 
 export interface CreateSingleProjectPayload {
-  crId?: string;
   name: string;
   carNumber: number;
   summary: string;

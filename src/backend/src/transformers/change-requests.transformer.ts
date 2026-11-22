@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { CR_Type, Prisma } from '@prisma/client';
 import {
   ChangeRequest,
   StandardChangeRequest,
@@ -10,7 +10,6 @@ import {
   WorkPackageStage,
   BudgetChangeRequest,
   isWorkPackageWbs,
-  LeadershipChangeRequest,
   ChangeRequestStatus
 } from 'shared';
 import { wbsNumOf } from '../utils/utils.js';
@@ -29,6 +28,7 @@ import {
 } from '../prisma-query-args/change-requests.query-args.js';
 import { accountCodeTransformer, otherProductReasonTransformer } from './reimbursement-requests.transformer.js';
 import { GuestChangeRequest } from '../../../shared/src/types/change-request-types.js';
+import { computeTriageScore, TriageScoreInput } from '../utils/triage-score.utils.js';
 
 const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>
@@ -72,15 +72,47 @@ const workPackageProposedChangesTransformer = (
   };
 };
 
+const triageScoreInputOf = (changeRequest: {
+  type: CR_Type;
+  snapshotBlockingCount: number | null;
+  snapshotStartDate: Date | null;
+  snapshotBudget: number | null;
+  budgetChangeRequest: { proposedBudget: number } | null;
+  activationChangeRequest: { startDate: Date } | null;
+  wbsProposedChanges: { projectProposedChanges: { budget: number } | null } | null;
+}): TriageScoreInput => {
+  // budget CRs store cents; project budgets are whole dollars
+  const budgetChange =
+    changeRequest.snapshotBudget === null
+      ? undefined
+      : changeRequest.budgetChangeRequest
+        ? { proposed: changeRequest.budgetChangeRequest.proposedBudget, current: changeRequest.snapshotBudget }
+        : changeRequest.wbsProposedChanges?.projectProposedChanges
+          ? {
+              proposed: changeRequest.wbsProposedChanges.projectProposedChanges.budget * 100,
+              current: changeRequest.snapshotBudget * 100
+            }
+          : undefined;
+
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const timelineChangeInDays =
+    changeRequest.activationChangeRequest && changeRequest.snapshotStartDate
+      ? Math.round(
+          (changeRequest.activationChangeRequest.startDate.getTime() - changeRequest.snapshotStartDate.getTime()) / msPerDay
+        )
+      : 0;
+
+  return {
+    type: changeRequest.type,
+    blockingCount: changeRequest.snapshotBlockingCount ?? 0,
+    timelineChangeInDays,
+    ...(budgetChange ? { budgetChange } : {})
+  };
+};
+
 export const changeRequestManyTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestManyQueryArgs>
-):
-  | ChangeRequest
-  | StandardChangeRequest
-  | ActivationChangeRequest
-  | StageGateChangeRequest
-  | BudgetChangeRequest
-  | LeadershipChangeRequest => {
+): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
   return {
@@ -106,17 +138,13 @@ export const changeRequestManyTransformer = (
     workPackageProposedChanges: undefined,
     originalProjectData: undefined,
     originalWorkPackageData: undefined,
-    // activation + leadership cr fields
-    lead: changeRequest.leadershipChangeRequest?.lead
-      ? userTransformer(changeRequest.leadershipChangeRequest.lead)
-      : changeRequest.activationChangeRequest?.lead
-        ? userTransformer(changeRequest.activationChangeRequest.lead)
-        : undefined,
-    manager: changeRequest.leadershipChangeRequest?.manager
-      ? userTransformer(changeRequest.leadershipChangeRequest.manager)
-      : changeRequest.activationChangeRequest?.manager
-        ? userTransformer(changeRequest.activationChangeRequest.manager)
-        : undefined,
+    // activation cr fields
+    lead: changeRequest.activationChangeRequest?.lead
+      ? userTransformer(changeRequest.activationChangeRequest.lead)
+      : undefined,
+    manager: changeRequest.activationChangeRequest?.manager
+      ? userTransformer(changeRequest.activationChangeRequest.manager)
+      : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields
@@ -124,19 +152,14 @@ export const changeRequestManyTransformer = (
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
     requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? [],
     // budget cr fields
-    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined
+    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined,
+    triageScore: computeTriageScore(triageScoreInputOf(changeRequest))
   };
 };
 
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>
-):
-  | ChangeRequest
-  | StandardChangeRequest
-  | ActivationChangeRequest
-  | StageGateChangeRequest
-  | BudgetChangeRequest
-  | LeadershipChangeRequest => {
+): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest | BudgetChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
   const wbsName = changeRequest.wbsElement
@@ -182,17 +205,13 @@ const changeRequestTransformer = (
       : undefined,
     originalProjectData: undefined,
     originalWorkPackageData: undefined,
-    // activation + leadership cr fields
-    lead: changeRequest.leadershipChangeRequest?.lead
-      ? userTransformer(changeRequest.leadershipChangeRequest.lead)
-      : changeRequest.activationChangeRequest?.lead
-        ? userTransformer(changeRequest.activationChangeRequest.lead)
-        : undefined,
-    manager: changeRequest.leadershipChangeRequest?.manager
-      ? userTransformer(changeRequest.leadershipChangeRequest.manager)
-      : changeRequest.activationChangeRequest?.manager
-        ? userTransformer(changeRequest.activationChangeRequest.manager)
-        : undefined,
+    // activation cr fields
+    lead: changeRequest.activationChangeRequest?.lead
+      ? userTransformer(changeRequest.activationChangeRequest.lead)
+      : undefined,
+    manager: changeRequest.activationChangeRequest?.manager
+      ? userTransformer(changeRequest.activationChangeRequest.manager)
+      : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields
@@ -200,7 +219,8 @@ const changeRequestTransformer = (
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
     requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? [],
     // budget cr fields
-    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined
+    proposedBudget: changeRequest.budgetChangeRequest?.proposedBudget ?? undefined,
+    triageScore: computeTriageScore(triageScoreInputOf(changeRequest))
   };
 };
 

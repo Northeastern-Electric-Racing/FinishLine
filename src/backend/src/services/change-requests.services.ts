@@ -16,7 +16,7 @@ import {
   isHead,
   isWithinBuffer
 } from 'shared';
-import prisma from '../prisma/prisma.js';
+import prisma, { PrismaTransactionClient } from '../prisma/prisma.js';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -154,10 +154,7 @@ export default class ChangeRequestsService {
         AND: [
           { dateReviewed: null },
           {
-            NOT: [
-              { type: { in: [CR_Type.ACTIVATION, CR_Type.STAGE_GATE, CR_Type.LEADERSHIP] } },
-              { submitterId: user.userId }
-            ]
+            NOT: [{ type: { in: [CR_Type.ACTIVATION, CR_Type.STAGE_GATE] } }, { submitterId: user.userId }]
           },
           ...(carId ? [{ wbsElement: { OR: [{ project: { carId } }, { workPackage: { project: { carId } } }] } }] : [])
         ],
@@ -233,7 +230,7 @@ export default class ChangeRequestsService {
         OR: [
           { dateReviewed: { gte: fiveDaysAgo } },
           {
-            type: { in: [CR_Type.ACTIVATION, CR_Type.STAGE_GATE, CR_Type.LEADERSHIP, CR_Type.BUDGET] },
+            type: { in: [CR_Type.ACTIVATION, CR_Type.STAGE_GATE, CR_Type.BUDGET] },
             dateSubmitted: { gte: fiveDaysAgo }
           }
         ],
@@ -278,30 +275,39 @@ export default class ChangeRequestsService {
       throw new AccessDeniedMemberException('review change requests');
     }
 
-    // Mark as reviewed FIRST so validateChangeRequestAccepted passes when applying proposed changes
-    const updated = await prisma.change_Request.update({
-      where: { crId },
-      data: {
-        reviewer: { connect: { userId: reviewer.userId } },
-        reviewNotes,
-        accepted,
-        dateReviewed: new Date()
-      },
-      include: {
-        ...getChangeRequestQueryArgs(organization.organizationId).include,
-        notificationSlackThreads: true
-      }
-    });
+    // mark as reviewed and apply the changes together, so a failure leaves the CR unreviewed and reviewable again.
+    // the review is saved first so validateChangeRequestAccepted, reading through tx, sees the CR as accepted
+    const updated = await prisma.$transaction(
+      async (tx) => {
+        const reviewedCR = await tx.change_Request.update({
+          where: { crId },
+          data: {
+            reviewer: { connect: { userId: reviewer.userId } },
+            reviewNotes,
+            accepted,
+            dateReviewed: new Date()
+          },
+          include: {
+            ...getChangeRequestQueryArgs(organization.organizationId).include,
+            notificationSlackThreads: true
+          }
+        });
 
-    if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
-      await this.reviewStageGateChangeRequest(foundCR, reviewer, new Date());
-    } else if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
-      await this.reviewActivationChangeRequest(foundCR, reviewer);
-    } else if (foundCR.type === CR_Type.BUDGET && foundCR.budgetChangeRequest && accepted) {
-      await this.reviewBudgetChangeRequest(foundCR, reviewer);
-    } else if (foundCR.type === CR_Type.STANDARD && accepted) {
-      await this.reviewStandardChangeRequest(foundCR, reviewer, organization);
-    }
+        if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
+          await this.reviewStageGateChangeRequest(foundCR, reviewer, new Date(), tx);
+        } else if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
+          await this.reviewActivationChangeRequest(foundCR, reviewer, tx);
+        } else if (foundCR.type === CR_Type.BUDGET && foundCR.budgetChangeRequest && accepted) {
+          await this.reviewBudgetChangeRequest(foundCR, reviewer, tx);
+        } else if (foundCR.type === CR_Type.STANDARD && accepted) {
+          await this.reviewStandardChangeRequest(foundCR, reviewer, organization, tx);
+        }
+
+        return reviewedCR;
+      },
+      // approving a standard CR can create a project and all its work packages, which takes longer than the 5 second default
+      { timeout: 20000 }
+    );
 
     await sendCRSubmitterReviewedNotification(updated);
     await sendCrReviewedPopUp(foundCR, updated.submitter, accepted, organization.organizationId);
@@ -315,11 +321,13 @@ export default class ChangeRequestsService {
    * @param foundCR the change request to be reviewed
    * @param reviewer the user reviewing the change request
    * @param organization the organization the user is currently in
+   * @param tx the transaction client to run the writes in
    */
   private static async reviewStandardChangeRequest(
     foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
     reviewer: User,
-    organization: Organization
+    organization: Organization,
+    tx: PrismaTransactionClient
   ): Promise<void> {
     if (!foundCR.wbsProposedChanges) return;
 
@@ -347,7 +355,8 @@ export default class ChangeRequestsService {
         associatedWorkPackage,
         reviewer,
         foundCR.crId,
-        organization
+        organization,
+        tx
       );
     } else if (projectProposedChanges) {
       // CR is on a project — edit it or create it
@@ -358,7 +367,8 @@ export default class ChangeRequestsService {
         reviewer,
         foundCR.crId,
         foundCR.wbsElement?.carNumber ?? 0,
-        organization
+        organization,
+        tx
       );
     }
   }
@@ -368,11 +378,13 @@ export default class ChangeRequestsService {
    * @param foundCR the change request to be reviewed
    * @param reviewer the user reviewing the change request
    * @param dateCompleted the date the work package was completed
+   * @param tx the transaction client to run the writes in
    */
   static async reviewStageGateChangeRequest(
     foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
     reviewer: User,
-    dateCompleted: Date
+    dateCompleted: Date,
+    tx: PrismaTransactionClient
   ): Promise<void> {
     if (!foundCR.wbsElement?.workPackage) {
       throw new HttpException(400, 'Stage gate can only be made on work packages!');
@@ -408,7 +420,7 @@ export default class ChangeRequestsService {
       });
     }
 
-    await prisma.work_Package.update({
+    await tx.work_Package.update({
       where: { wbsElementId: foundCR.wbsElement.wbsElementId },
       data: {
         duration: newDuration,
@@ -426,16 +438,18 @@ export default class ChangeRequestsService {
    * Reviews the activation change request and automates any changes that are made
    * @param foundCR the change request to be reviewed
    * @param reviewer the user reviewing the change request
+   * @param tx the transaction client to run the writes in
    */
   static async reviewActivationChangeRequest(
     foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
-    reviewer: User
+    reviewer: User,
+    tx: PrismaTransactionClient
   ): Promise<void> {
     const { activationChangeRequest } = foundCR;
     if (!activationChangeRequest) throw new HttpException(400, 'No activation change request found!');
 
     const shouldUpdateProjLead = activationChangeRequest.leadId !== foundCR.wbsElement?.leadId;
-    const shouldUpdateProjManager = activationChangeRequest.leadId !== foundCR.wbsElement?.managerId;
+    const shouldUpdateProjManager = activationChangeRequest.managerId !== foundCR.wbsElement?.managerId;
     const shouldChangeStartDate =
       activationChangeRequest.startDate.setHours(0, 0, 0, 0) !==
       foundCR.wbsElement?.workPackage?.startDate.setHours(0, 0, 0, 0);
@@ -483,9 +497,9 @@ export default class ChangeRequestsService {
       detail: buildChangeDetail('status', foundCR.wbsElement?.status ?? '', WBS_Element_Status.ACTIVE)
     });
 
-    await prisma.change.createMany({ data: changes });
+    await tx.change.createMany({ data: changes });
 
-    await prisma.wBS_Element.update({
+    await tx.wBS_Element.update({
       where: { wbsElementId: foundCR.wbsElementId ?? '' },
       data: {
         leadId: activationChangeRequest.leadId,
@@ -500,10 +514,12 @@ export default class ChangeRequestsService {
    * Reviews the budget change request and automates any changes that are made
    * @param foundCR the change request to be reviewed
    * @param reviewer the user reviewing the change request
+   * @param tx the transaction client to run the writes in
    */
   static async reviewBudgetChangeRequest(
     foundCR: Prisma.Change_RequestGetPayload<ChangeRequestWithProjectAndWorkPackageQueryArgs>,
-    reviewer: User
+    reviewer: User,
+    tx: PrismaTransactionClient
   ): Promise<void> {
     const { budgetChangeRequest } = foundCR;
     if (!budgetChangeRequest) throw new HttpException(400, 'No budget change request found!');
@@ -523,9 +539,9 @@ export default class ChangeRequestsService {
         )
       });
 
-      await prisma.change.createMany({ data: changesList });
+      await tx.change.createMany({ data: changesList });
 
-      await prisma.reimbursement_Product_Other_Reason.update({
+      await tx.reimbursement_Product_Other_Reason.update({
         where: { otherReimbursementProductReasonId: foundCR.categoryId ?? '' },
         data: { budget: budgetChangeRequest.proposedBudget }
       });
@@ -542,9 +558,9 @@ export default class ChangeRequestsService {
       )
     });
 
-    await prisma.change.createMany({ data: changesList });
+    await tx.change.createMany({ data: changesList });
 
-    await prisma.account_Code.update({
+    await tx.account_Code.update({
       where: { accountCodeId: foundCR.accountCodeId ?? '' },
       data: { amount: budgetChangeRequest.proposedBudget }
     });
@@ -582,7 +598,8 @@ export default class ChangeRequestsService {
         wbsNumber: { carNumber, projectNumber, workPackageNumber, organizationId: organization.organizationId }
       },
       include: {
-        changeRequests: { where: { dateDeleted: null }, include: { changes: true } }
+        changeRequests: { where: { dateDeleted: null }, include: { changes: true } },
+        project: { select: { budget: true } }
       }
     });
 
@@ -591,6 +608,10 @@ export default class ChangeRequestsService {
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
+
+    const workPackage = await prisma.work_Package.findFirst({
+      where: { wbsElementId: wbsElement.wbsElementId }
+    });
 
     const { changeRequests } = wbsElement;
     if (!allChangeRequestsReviewed(changeRequests)) {
@@ -603,24 +624,43 @@ export default class ChangeRequestsService {
     const numChanges = await prisma.change_Request.count({
       where: { organizationId: organization.organizationId }
     });
-
-    const createdCR = await prisma.change_Request.create({
-      data: {
-        submitter: { connect: { userId: submitter.userId } },
-        wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
-        type: CR_Type.ACTIVATION,
-        activationChangeRequest: {
-          create: {
-            lead: { connect: { userId: leadId } },
-            manager: { connect: { userId: managerId } },
-            startDate: new Date(startDate),
-            confirmDetails
+    const blockingCount = workPackage
+      ? await prisma.work_Package.count({
+          where: {
+            blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } },
+            wbsElement: { dateDeleted: null, status: { not: WBS_Element_Status.COMPLETE } }
           }
+        })
+      : null;
+
+    // create the CR and apply the activation together, so a failure doesn't leave an unapplied CR behind
+    const createdCR = await prisma.$transaction(async (tx) => {
+      const cr = await tx.change_Request.create({
+        data: {
+          submitter: { connect: { userId: submitter.userId } },
+          wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
+          type: CR_Type.ACTIVATION,
+          activationChangeRequest: {
+            create: {
+              lead: { connect: { userId: leadId } },
+              manager: { connect: { userId: managerId } },
+              startDate: new Date(startDate),
+              confirmDetails
+            }
+          },
+          organization: { connect: { organizationId: organization.organizationId } },
+          identifier: numChanges + 1,
+          snapshotBlockingCount: blockingCount,
+          snapshotStartDate: workPackage ? workPackage.startDate : null,
+          snapshotDuration: workPackage ? workPackage.duration : null,
+          snapshotBudget: wbsElement.project?.budget
         },
-        organization: { connect: { organizationId: organization.organizationId } },
-        identifier: numChanges + 1
-      },
-      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
+        ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
+      });
+
+      await ChangeRequestsService.reviewActivationChangeRequest(cr, submitter, tx);
+
+      return cr;
     });
 
     const teams = createdCR.wbsElement?.workPackage?.project.teams;
@@ -654,7 +694,7 @@ export default class ChangeRequestsService {
       }
     }
 
-    await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter);
+    await ChangeRequestsService.reviewActivationChangeRequest(createdCR, submitter, prisma);
 
     return createdCR.crId;
   }
@@ -688,7 +728,8 @@ export default class ChangeRequestsService {
       include: {
         workPackage: true,
         descriptionBullets: true,
-        changeRequests: { where: { dateDeleted: null }, include: { changes: true } }
+        changeRequests: { where: { dateDeleted: null }, include: { changes: true } },
+        project: true
       }
     });
 
@@ -702,6 +743,8 @@ export default class ChangeRequestsService {
       throwIfUncheckedDescriptionBullets(wbsElement.descriptionBullets);
     }
 
+    const { workPackage } = wbsElement;
+
     const { changeRequests } = wbsElement;
     if (!allChangeRequestsReviewed(changeRequests)) {
       throw new HttpException(
@@ -710,22 +753,41 @@ export default class ChangeRequestsService {
       );
     }
 
+    const blockingCount = workPackage
+      ? await prisma.work_Package.count({
+          where: {
+            blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } },
+            wbsElement: { dateDeleted: null, status: { not: WBS_Element_Status.COMPLETE } }
+          }
+        })
+      : null;
+
     const numChangeRequests = await prisma.change_Request.count({
       where: { organizationId: organization.organizationId }
     });
 
-    const createdChangeRequest = await prisma.change_Request.create({
-      data: {
-        submitter: { connect: { userId: submitter.userId } },
-        wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
-        type: CR_Type.STAGE_GATE,
-        stageGateChangeRequest: {
-          create: { leftoverBudget: 0, confirmDone }
+    const createdChangeRequest = await prisma.$transaction(async (tx) => {
+      const cr = await tx.change_Request.create({
+        data: {
+          submitter: { connect: { userId: submitter.userId } },
+          wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
+          type: CR_Type.STAGE_GATE,
+          stageGateChangeRequest: {
+            create: { leftoverBudget: 0, confirmDone }
+          },
+          organization: { connect: { organizationId: organization.organizationId } },
+          identifier: numChangeRequests + 1,
+          snapshotBlockingCount: blockingCount,
+          snapshotStartDate: workPackage ? workPackage.startDate : null,
+          snapshotDuration: workPackage ? workPackage.duration : null,
+          snapshotBudget: wbsElement.project?.budget
         },
-        organization: { connect: { organizationId: organization.organizationId } },
-        identifier: numChangeRequests + 1
-      },
-      ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
+        ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
+      });
+
+      await ChangeRequestsService.reviewStageGateChangeRequest(cr, submitter, dateCompleted, tx);
+
+      return cr;
     });
 
     const teams = createdChangeRequest.wbsElement?.workPackage?.project.teams;
@@ -740,7 +802,7 @@ export default class ChangeRequestsService {
       await addSlackThreadsToChangeRequest(createdChangeRequest.crId, notifications);
     }
 
-    await ChangeRequestsService.reviewStageGateChangeRequest(createdChangeRequest, submitter, dateCompleted);
+    await ChangeRequestsService.reviewStageGateChangeRequest(createdChangeRequest, submitter, dateCompleted, prisma);
 
     return createdChangeRequest.crId;
   }
@@ -796,7 +858,8 @@ export default class ChangeRequestsService {
           type: CR_Type.BUDGET,
           budgetChangeRequest: { create: { proposedBudget } },
           organization: { connect: { organizationId: organization.organizationId } },
-          identifier: numChangeRequests + 1
+          identifier: numChangeRequests + 1,
+          snapshotBudget: category.budget
         },
         ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
       });
@@ -843,7 +906,8 @@ export default class ChangeRequestsService {
           type: CR_Type.BUDGET,
           budgetChangeRequest: { create: { proposedBudget } },
           organization: { connect: { organizationId: organization.organizationId } },
-          identifier: numChangeRequests + 1
+          identifier: numChangeRequests + 1,
+          snapshotBudget: accountCode.amount
         },
         ...getChangeRequestWithProjectAndWorkPackageQueryArgs(organization.organizationId)
       });
@@ -871,133 +935,6 @@ export default class ChangeRequestsService {
     }
 
     return changeRequestTransformer(createdChangeRequest);
-  }
-
-  /**
-   * Validates and creates a leadership change request, auto-approved immediately.
-   * @param submitter the user creating the cr
-   * @param carNumber the car number for the wbs element
-   * @param projectNumber the project number for the wbs element
-   * @param workPackageNumber the work package number for the wbs element
-   * @param leadId the id of the new lead
-   * @param managerId the id of the new manager
-   * @param organization the organization the user is currently in
-   * @returns the id of the created cr
-   */
-  static async createLeadershipChangeRequest(
-    submitter: User,
-    carNumber: number,
-    projectNumber: number,
-    workPackageNumber: number,
-    leadId: string | undefined,
-    managerId: string | undefined,
-    organization: Organization
-  ): Promise<string> {
-    if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
-      throw new AccessDeniedGuestException('create leadership change requests');
-
-    const wbsElement = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsNumber: { carNumber, projectNumber, workPackageNumber, organizationId: organization.organizationId }
-      },
-      select: {
-        wbsElementId: true,
-        dateDeleted: true,
-        organizationId: true,
-        leadId: true,
-        managerId: true
-      }
-    });
-
-    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
-    if (wbsElement.dateDeleted)
-      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
-    if (wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('WBS Element');
-
-    await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
-
-    const numChangeRequests = await prisma.change_Request.count({
-      where: { organizationId: organization.organizationId }
-    });
-
-    const createdCR = await prisma.change_Request.create({
-      data: {
-        submitter: { connect: { userId: submitter.userId } },
-        wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
-        type: CR_Type.LEADERSHIP,
-        organization: { connect: { organizationId: organization.organizationId } },
-        identifier: numChangeRequests + 1,
-        leadershipChangeRequest: {
-          create: {
-            lead: leadId ? { connect: { userId: leadId } } : undefined,
-            manager: managerId ? { connect: { userId: managerId } } : undefined
-          }
-        }
-      }
-    });
-
-    await ChangeRequestsService.applyLeadershipChangeRequest(createdCR.crId, wbsElement, submitter, leadId, managerId);
-
-    return createdCR.crId;
-  }
-
-  /**
-   * Applies a leadership change request by updating the wbs element's lead/manager and auto-approving
-   */
-  private static async applyLeadershipChangeRequest(
-    crId: string,
-    wbsElement: { wbsElementId: string; leadId: string | null; managerId: string | null },
-    submitter: User,
-    leadId: string | undefined,
-    managerId: string | undefined
-  ): Promise<void> {
-    await prisma.$transaction(async (tx) => {
-      await tx.change_Request.update({
-        where: { crId },
-        data: {
-          reviewer: { connect: { userId: submitter.userId } },
-          dateReviewed: new Date(),
-          accepted: true,
-          reviewNotes: 'Auto-approved: leadership change only'
-        }
-      });
-
-      await tx.wBS_Element.update({
-        where: { wbsElementId: wbsElement.wbsElementId },
-        data: {
-          lead: leadId ? { connect: { userId: leadId } } : { disconnect: true },
-          manager: managerId ? { connect: { userId: managerId } } : { disconnect: true }
-        }
-      });
-
-      const changes: { changeRequestId: string; implementerId: string; wbsElementId: string; detail: string }[] = [];
-
-      if (leadId !== (wbsElement.leadId ?? undefined)) {
-        const oldLead = await getUserFullName(wbsElement.leadId ?? null);
-        const newLead = await getUserFullName(leadId ?? null);
-        changes.push({
-          changeRequestId: crId,
-          implementerId: submitter.userId,
-          wbsElementId: wbsElement.wbsElementId,
-          detail: buildChangeDetail('lead', oldLead, newLead)
-        });
-      }
-
-      if (managerId !== (wbsElement.managerId ?? undefined)) {
-        const oldManager = await getUserFullName(wbsElement.managerId ?? null);
-        const newManager = await getUserFullName(managerId ?? null);
-        changes.push({
-          changeRequestId: crId,
-          implementerId: submitter.userId,
-          wbsElementId: wbsElement.wbsElementId,
-          detail: buildChangeDetail('manager', oldManager, newManager)
-        });
-      }
-
-      if (changes.length > 0) {
-        await tx.change.createMany({ data: changes });
-      }
-    });
   }
 
   /**
@@ -1064,195 +1001,221 @@ export default class ChangeRequestsService {
       where: { organizationId: organization.organizationId }
     });
 
-    const createdCR = await prisma.change_Request.create({
-      data: {
-        submitter: { connect: { userId: submitter.userId } },
-        wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
-        type: CR_Type.STANDARD,
-        why,
-        ...(requestedReviewerId && {
-          requestedReviewers: { connect: { userId: requestedReviewerId } }
-        }),
-        organization: { connect: { organizationId: organization.organizationId } },
-        identifier: numChangeRequests + 1
-      },
-      include: {
-        wbsElement: {
-          include: {
-            project: { include: { teams: true, wbsElement: true } },
-            workPackage: { include: { project: { include: { teams: true, wbsElement: true } } } }
-          }
-        }
-      }
+    const workPackage = await prisma.work_Package.findFirst({
+      where: { wbsElementId: wbsElement.wbsElementId }
     });
 
-    if (projectProposedChanges && workPackageProposedChanges) {
-      throw new HttpException(400, "Change Request can't be on both a project and a work package");
-    } else if (projectProposedChanges) {
-      const {
-        name,
-        leadId,
-        managerId,
-        links,
-        budget,
-        summary,
-        teamIds,
-        descriptionBullets,
-        workPackageProposedChanges: wpChanges,
-        carNumber: proposedCarNumber
-      } = projectProposedChanges;
+    const blockingCount = workPackage
+      ? await prisma.work_Package.count({
+          where: {
+            blockedBy: { some: { wbsElementId: wbsElement.wbsElementId } },
+            wbsElement: { dateDeleted: null, status: { not: WBS_Element_Status.COMPLETE } }
+          }
+        })
+      : null;
 
-      const validationResult = await validateProposedChangesFields(
-        projectProposedChanges,
-        links,
-        descriptionBullets,
-        [],
-        wpChanges,
-        organization.organizationId,
-        proposedCarNumber,
-        leadId,
-        managerId
-      );
-
-      if (teamIds.length > 0) {
-        for (const teamId of teamIds) {
-          const team = await prisma.team.findUnique({ where: { teamId } });
-          if (!team) throw new NotFoundException('Team', teamId);
-        }
-      }
-
-      const isCreatingNewProject = projectNumber === 0;
-
-      const changes = await prisma.wbs_Proposed_Changes.create({
-        data: {
-          changeRequest: { connect: { crId: createdCR.crId } },
-          name,
-          status: isCreatingNewProject ? WBS_Element_Status.INACTIVE : wbsElement.status,
-          links: {
-            create: validationResult.links.map((linkInfo) => ({
-              url: linkInfo.url,
-              linkTypeId: linkInfo.linkType.id,
-              creatorId: submitter.userId
-            }))
+    // create the CR and its proposed changes together, so a failed validation doesn't leave an empty CR behind
+    const createdCR = await prisma.$transaction(
+      async (tx) => {
+        const cr = await tx.change_Request.create({
+          data: {
+            submitter: { connect: { userId: submitter.userId } },
+            wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
+            type: CR_Type.STANDARD,
+            why,
+            ...(requestedReviewerId && {
+              requestedReviewers: { connect: { userId: requestedReviewerId } }
+            }),
+            organization: { connect: { organizationId: organization.organizationId } },
+            identifier: numChangeRequests + 1,
+            snapshotBlockingCount: blockingCount,
+            snapshotStartDate: workPackage ? workPackage.startDate : null,
+            snapshotDuration: workPackage ? workPackage.duration : null,
+            snapshotBudget: wbsElement.project?.budget
           },
-          proposedDescriptionBulletChanges: {
-            create: validationResult.descriptionBullets.map((bullet) => ({
-              detail: bullet.detail,
-              descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
-            }))
-          },
-          projectProposedChanges: {
-            create: {
-              budget,
-              summary,
-              teams: { connect: teamIds.map((teamId) => ({ teamId })) },
-              workPackageProposedChanges: {
-                create: validationResult.workPackageProposedChanges.map((workPackage) => ({
-                  wbsProposedChanges: {
-                    create: {
-                      name: workPackage.originalElement.name,
-                      status: WBS_Element_Status.INACTIVE,
-                      proposedDescriptionBulletChanges: {
-                        create: workPackage.descriptionBullets.map((bullet) => ({
-                          detail: bullet.detail,
-                          descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
-                        }))
+          include: {
+            wbsElement: {
+              include: {
+                project: { include: { teams: true, wbsElement: true } },
+                workPackage: { include: { project: { include: { teams: true, wbsElement: true } } } }
+              }
+            }
+          }
+        });
+
+        if (projectProposedChanges && workPackageProposedChanges) {
+          throw new HttpException(400, "Change Request can't be on both a project and a work package");
+        } else if (projectProposedChanges) {
+          const {
+            name,
+            leadId,
+            managerId,
+            links,
+            budget,
+            summary,
+            teamIds,
+            descriptionBullets,
+            workPackageProposedChanges: wpChanges,
+            carNumber: proposedCarNumber
+          } = projectProposedChanges;
+
+          const validationResult = await validateProposedChangesFields(
+            projectProposedChanges,
+            links,
+            descriptionBullets,
+            [],
+            wpChanges,
+            organization.organizationId,
+            proposedCarNumber,
+            leadId,
+            managerId
+          );
+
+          if (teamIds.length > 0) {
+            for (const teamId of teamIds) {
+              const team = await prisma.team.findUnique({ where: { teamId } });
+              if (!team) throw new NotFoundException('Team', teamId);
+            }
+          }
+
+          const isCreatingNewProject = projectNumber === 0;
+
+          const changes = await tx.wbs_Proposed_Changes.create({
+            data: {
+              changeRequest: { connect: { crId: cr.crId } },
+              name,
+              status: isCreatingNewProject ? WBS_Element_Status.INACTIVE : wbsElement.status,
+              links: {
+                create: validationResult.links.map((linkInfo) => ({
+                  url: linkInfo.url,
+                  linkTypeId: linkInfo.linkType.id,
+                  creatorId: submitter.userId
+                }))
+              },
+              proposedDescriptionBulletChanges: {
+                create: validationResult.descriptionBullets.map((bullet) => ({
+                  detail: bullet.detail,
+                  descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
+                }))
+              },
+              projectProposedChanges: {
+                create: {
+                  budget,
+                  summary,
+                  teams: { connect: teamIds.map((teamId) => ({ teamId })) },
+                  workPackageProposedChanges: {
+                    create: validationResult.workPackageProposedChanges.map((workPackage) => ({
+                      wbsProposedChanges: {
+                        create: {
+                          name: workPackage.originalElement.name,
+                          status: WBS_Element_Status.INACTIVE,
+                          proposedDescriptionBulletChanges: {
+                            create: workPackage.descriptionBullets.map((bullet) => ({
+                              detail: bullet.detail,
+                              descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
+                            }))
+                          },
+                          leadId: workPackage.originalElement.leadId,
+                          managerId: workPackage.originalElement.managerId
+                        }
                       },
-                      leadId: workPackage.originalElement.leadId,
-                      managerId: workPackage.originalElement.managerId
-                    }
-                  },
-                  duration: workPackage.originalElement.duration,
-                  startDate: new Date(workPackage.originalElement.startDate),
-                  stage: workPackage.originalElement.stage,
+                      duration: workPackage.originalElement.duration,
+                      startDate: new Date(workPackage.originalElement.startDate),
+                      stage: workPackage.originalElement.stage,
+                      blockedBy: {
+                        connect: workPackage.validatedBlockedBys.map((wbsEl) => ({
+                          wbsNumber: {
+                            carNumber: wbsEl.carNumber,
+                            projectNumber: wbsEl.projectNumber,
+                            workPackageNumber: wbsEl.workPackageNumber,
+                            organizationId: organization.organizationId
+                          }
+                        }))
+                      }
+                    }))
+                  }
+                }
+              }
+            }
+          });
+
+          await tx.wbs_Proposed_Changes.update({
+            where: { wbsProposedChangesId: changes.wbsProposedChangesId },
+            data: {
+              leadId,
+              managerId,
+              projectProposedChanges: { update: { carId: validationResult.carId } }
+            }
+          });
+        } else if (workPackageProposedChanges) {
+          const { name, leadId, managerId, duration, startDate, stage, descriptionBullets, blockedBy } =
+            workPackageProposedChanges;
+
+          const validationResult = await validateProposedChangesFields(
+            workPackageProposedChanges,
+            workPackageProposedChanges.links,
+            descriptionBullets,
+            blockedBy,
+            [],
+            organization.organizationId,
+            undefined,
+            leadId,
+            managerId
+          );
+
+          const isCreatingNewWorkPackage = workPackageNumber === 0;
+
+          const changes = await tx.wbs_Proposed_Changes.create({
+            data: {
+              changeRequest: { connect: { crId: cr.crId } },
+              name,
+              status: isCreatingNewWorkPackage ? WBS_Element_Status.INACTIVE : wbsElement.status,
+              proposedDescriptionBulletChanges: {
+                create: validationResult.descriptionBullets.map((bullet) => ({
+                  detail: bullet.detail,
+                  descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
+                }))
+              },
+              links: {
+                create: validationResult.links.map((linkInfo) => ({
+                  url: linkInfo.url,
+                  linkTypeId: linkInfo.linkType.id,
+                  creatorId: submitter.userId
+                }))
+              },
+              ...(leadId && { lead: { connect: { userId: leadId } } }),
+              ...(managerId && { manager: { connect: { userId: managerId } } }),
+              workPackageProposedChanges: {
+                create: {
+                  duration,
+                  startDate: new Date(startDate),
+                  stage,
                   blockedBy: {
-                    connect: workPackage.validatedBlockedBys.map((wbsEl) => ({
+                    connect: validationResult.validatedBlockedBys.map((wbsNumber) => ({
                       wbsNumber: {
-                        carNumber: wbsEl.carNumber,
-                        projectNumber: wbsEl.projectNumber,
-                        workPackageNumber: wbsEl.workPackageNumber,
+                        carNumber: wbsNumber.carNumber,
+                        projectNumber: wbsNumber.projectNumber,
+                        workPackageNumber: wbsNumber.workPackageNumber,
                         organizationId: organization.organizationId
                       }
                     }))
                   }
-                }))
+                }
               }
             }
-          }
+          });
+
+          await tx.wbs_Proposed_Changes.update({
+            where: { wbsProposedChangesId: changes.wbsProposedChangesId },
+            data: { leadId, managerId }
+          });
         }
-      });
 
-      await prisma.wbs_Proposed_Changes.update({
-        where: { wbsProposedChangesId: changes.wbsProposedChangesId },
-        data: {
-          leadId,
-          managerId,
-          projectProposedChanges: { update: { carId: validationResult.carId } }
-        }
-      });
-    } else if (workPackageProposedChanges) {
-      const { name, leadId, managerId, duration, startDate, stage, descriptionBullets, blockedBy } =
-        workPackageProposedChanges;
-
-      const validationResult = await validateProposedChangesFields(
-        workPackageProposedChanges,
-        workPackageProposedChanges.links,
-        descriptionBullets,
-        blockedBy,
-        [],
-        organization.organizationId,
-        undefined,
-        leadId,
-        managerId
-      );
-
-      const isCreatingNewWorkPackage = workPackageNumber === 0;
-
-      const changes = await prisma.wbs_Proposed_Changes.create({
-        data: {
-          changeRequest: { connect: { crId: createdCR.crId } },
-          name,
-          status: isCreatingNewWorkPackage ? WBS_Element_Status.INACTIVE : wbsElement.status,
-          proposedDescriptionBulletChanges: {
-            create: validationResult.descriptionBullets.map((bullet) => ({
-              detail: bullet.detail,
-              descriptionBulletType: { connect: { id: bullet.descriptionBulletType.id } }
-            }))
-          },
-          links: {
-            create: validationResult.links.map((linkInfo) => ({
-              url: linkInfo.url,
-              linkTypeId: linkInfo.linkType.id,
-              creatorId: submitter.userId
-            }))
-          },
-          ...(leadId && { lead: { connect: { userId: leadId } } }),
-          ...(managerId && { manager: { connect: { userId: managerId } } }),
-          workPackageProposedChanges: {
-            create: {
-              duration,
-              startDate: new Date(startDate),
-              stage,
-              blockedBy: {
-                connect: validationResult.validatedBlockedBys.map((wbsNumber) => ({
-                  wbsNumber: {
-                    carNumber: wbsNumber.carNumber,
-                    projectNumber: wbsNumber.projectNumber,
-                    workPackageNumber: wbsNumber.workPackageNumber,
-                    organizationId: organization.organizationId
-                  }
-                }))
-              }
-            }
-          }
-        }
-      });
-
-      await prisma.wbs_Proposed_Changes.update({
-        where: { wbsProposedChangesId: changes.wbsProposedChangesId },
-        data: { leadId, managerId }
-      });
-    }
+        return cr;
+      },
+      // validating a project's proposed changes checks every work package in it, which can take a while
+      { timeout: 20000 }
+    );
 
     const project = createdCR.wbsElement?.workPackage?.project || createdCR.wbsElement?.project;
     const teams = project?.teams;

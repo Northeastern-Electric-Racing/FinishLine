@@ -30,7 +30,8 @@ export const exampleStandardChangeRequest: StandardChangeRequest = {
   status: ChangeRequestStatus.Implemented,
   type: ChangeRequestType.Standard,
   why: 'Spacers are needed to prevent the jet fuel from melting the I beams',
-  requestedReviewers: []
+  requestedReviewers: [],
+  triageScore: 0
 };
 
 export const exampleActivationChangeRequest: ActivationChangeRequest = {
@@ -46,7 +47,8 @@ export const exampleActivationChangeRequest: ActivationChangeRequest = {
   startDate: new Date('03/01/21'),
   confirmDetails: true,
   status: ChangeRequestStatus.Accepted,
-  requestedReviewers: []
+  requestedReviewers: [],
+  triageScore: 0
 };
 
 export const exampleStageGateChangeRequest: StageGateChangeRequest = {
@@ -60,7 +62,8 @@ export const exampleStageGateChangeRequest: StageGateChangeRequest = {
   leftoverBudget: 26,
   confirmDone: true,
   status: ChangeRequestStatus.Implemented,
-  requestedReviewers: []
+  requestedReviewers: [],
+  triageScore: 0
 };
 
 export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
@@ -136,7 +139,8 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
       dateImplemented: new Date('02/25/21')
     }
   ],
-  requestedReviewers: []
+  requestedReviewers: [],
+  triageScore: 0
 };
 
 export const exampleAllChangeRequests: ChangeRequest[] = [

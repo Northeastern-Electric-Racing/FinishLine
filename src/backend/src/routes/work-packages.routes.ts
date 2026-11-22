@@ -36,7 +36,6 @@ workPackagesRouter.get('/by-project/:wbsNum', WorkPackagesController.getWorkPack
 
 workPackagesRouter.post(
   '/create',
-  nonEmptyString(body('crId').optional()),
   nonEmptyString(body('name')),
   isWorkPackageStageOrNone(body('stage')),
   isDateOnly(body('startDate')),
@@ -53,7 +52,6 @@ workPackagesRouter.post(
 workPackagesRouter.post(
   '/edit',
   nonEmptyString(body('workPackageId')),
-  nonEmptyString(body('crId')),
   nonEmptyString(body('name')),
   isDateOnly(body('startDate')),
   intMinZero(body('duration')),
