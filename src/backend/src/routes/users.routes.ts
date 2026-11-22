@@ -19,6 +19,7 @@ userRouter.post(
 );
 userRouter.get('/:userId', UsersController.getSingleUser);
 userRouter.get('/:userId/settings', UsersController.getUserSettings);
+userRouter.get('/:userId/slack-photo', UsersController.getUserSlackPhotoUrl);
 userRouter.get('/secure-settings/current-user', UsersController.getCurrentUserSecureSettings);
 userRouter.get('/api-token/current-user', UsersController.getCurrentUserApiToken);
 userRouter.post('/api-token/generate', UsersController.generateApiToken);

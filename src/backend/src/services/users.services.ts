@@ -39,6 +39,7 @@ import { getTaskHomeCardQueryArgs } from '../prisma-query-args/tasks.query-args.
 import { taskHomeCardTransformer } from '../transformers/tasks.transformer.js';
 import { validateUserIsPartOfFinanceTeamOrHead } from '../utils/reimbursement-requests.utils.js';
 import { encrypt, decrypt } from '../utils/encryption.utils.js';
+import { getUserImageUrl } from '../integrations/slack.js';
 
 export default class UsersService {
   /**
@@ -146,6 +147,26 @@ export default class UsersService {
     if (!requestedUser) throw new NotFoundException('User', userId);
 
     return userTransformer(requestedUser);
+  }
+
+  /**
+   * Gets the url of a user's Slack profile photo, using the slack id saved in their settings
+   * @param userId the id of the user whose photo is requested
+   * @param organization the organization the requested user must belong to
+   * @returns the photo url, or null if the user has no slack id or no photo could be found
+   */
+  static async getUserSlackPhotoUrl(userId: string, organization: Organization): Promise<string | null> {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId, organizations: { some: { organizationId: organization.organizationId } } },
+      include: { userSettings: { select: { slackId: true } } }
+    });
+
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    const slackId = requestedUser.userSettings?.slackId;
+    if (!slackId) return null;
+
+    return (await getUserImageUrl(slackId)) ?? null;
   }
 
   /**
