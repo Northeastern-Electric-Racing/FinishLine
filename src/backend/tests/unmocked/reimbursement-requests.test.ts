@@ -9,13 +9,13 @@ import {
 } from '../../src/utils/errors.utils.js';
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils.js';
 import prisma from '../../src/prisma/prisma.js';
-import { addDaysToDate, IndexCode, ReimbursementRequest, ReimbursementStatusType, AccountCode } from 'shared';
+import { addDaysToDate, IndexCode, ReimbursementRequestDetail, ReimbursementStatusType, AccountCode } from 'shared';
 import { Organization, Role_Type, Theme, User, Vendor, Material } from '@prisma/client';
 import { UserWithSecureSettings } from '../../src/utils/auth.utils.js';
 
 describe('Reimbursement Requests', () => {
   let org: Organization;
-  let reimbursementRequest: ReimbursementRequest;
+  let reimbursementRequest: ReimbursementRequestDetail;
   let createdVendor: Vendor;
   let createdIndexCode: IndexCode;
   let createdAccountCode: AccountCode;
@@ -26,6 +26,22 @@ describe('Reimbursement Requests', () => {
   let regularMember: User;
   let anotherMember: User;
   let guestUser: User;
+
+  // the mutations return nothing, so these read the result back
+  const latestStatusType = async (reimbursementRequestId: string) => {
+    const status = await prisma.reimbursement_Status.findFirstOrThrow({
+      where: { reimbursementRequestId },
+      orderBy: { dateCreated: 'desc' }
+    });
+    return status.type;
+  };
+  const assigneeIdOf = async (reimbursementRequestId: string) => {
+    const request = await prisma.reimbursement_Request.findUniqueOrThrow({
+      where: { reimbursementRequestId },
+      select: { assigneeId: true }
+    });
+    return request.assigneeId;
+  };
 
   beforeEach(async () => {
     const result = await createTestReimbursementRequest();
@@ -114,7 +130,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Creating a reimbursement request', () => {
     test('Creating a Reimbursement Request Succeeds without a date', async () => {
-      const rr = await ReimbursementRequestService.createReimbursementRequest(
+      const { reimbursementRequestId } = await ReimbursementRequestService.createReimbursementRequest(
         createdUser,
         createdVendor.vendorId,
         createdIndexCode.indexCodeId,
@@ -140,8 +156,10 @@ describe('Reimbursement Requests', () => {
         100,
         org
       );
+      // create only returns the id, so read the request back
+      const rr = await ReimbursementRequestService.getSingleReimbursementRequest(createdUser, reimbursementRequestId, org);
 
-      expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
+      expect(rr.accountCode.accountCodeId).toEqual(createdAccountCode.accountCodeId);
       expect(rr.indexCode.name).toEqual('CASH');
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
@@ -155,13 +173,12 @@ describe('Reimbursement Requests', () => {
         workPackageNumber: 0
       });
       expect(rr.totalCost).toEqual(100);
-      expect(rr.reimbursementStatuses).toHaveLength(1);
-      expect(rr.reimbursementStatuses[0].type).toEqual('PENDING_LEADERSHIP_APPROVAL');
+      expect(rr.statusTypes).toEqual(['PENDING_LEADERSHIP_APPROVAL']);
       expect(rr.identifier).toEqual(2);
     });
 
     test('Creating a Reimbursement Request Succeeds with a date', async () => {
-      const rr = await ReimbursementRequestService.createReimbursementRequest(
+      const { reimbursementRequestId } = await ReimbursementRequestService.createReimbursementRequest(
         createdUser,
         createdVendor.vendorId,
         createdIndexCode.indexCodeId,
@@ -188,8 +205,10 @@ describe('Reimbursement Requests', () => {
         org,
         new Date('12-29-2023')
       );
+      // create only returns the id, so read the request back
+      const rr = await ReimbursementRequestService.getSingleReimbursementRequest(createdUser, reimbursementRequestId, org);
 
-      expect(rr.accountCode).toStrictEqual({ ...createdAccountCode, dateDeleted: null });
+      expect(rr.accountCode.accountCodeId).toEqual(createdAccountCode.accountCodeId);
       expect(rr.indexCode.name).toEqual('CASH');
       expect(rr.vendor.vendorId).toEqual(createdVendor.vendorId);
       expect(rr.recipient.userId).toEqual(createdUser.userId);
@@ -203,8 +222,7 @@ describe('Reimbursement Requests', () => {
         workPackageNumber: 0
       });
       expect(rr.totalCost).toEqual(100);
-      expect(rr.reimbursementStatuses).toHaveLength(1);
-      expect(rr.reimbursementStatuses[0].type).toEqual('PENDING_LEADERSHIP_APPROVAL');
+      expect(rr.statusTypes).toEqual(['PENDING_LEADERSHIP_APPROVAL']);
       expect(rr.identifier).toEqual(2);
     });
   });
@@ -267,13 +285,17 @@ describe('Reimbursement Requests', () => {
 
       const dateToSetAsDelivered = addDaysToDate(new Date(), -5);
 
-      const updatedRR = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
+      await ReimbursementRequestService.markReimbursementRequestAsDelivered(
         createdUser,
         oldReimbursementRequest.reimbursementRequestId,
         org,
         dateToSetAsDelivered
       );
 
+      const updatedRR = await prisma.reimbursement_Request.findUniqueOrThrow({
+        where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
+        select: { dateDelivered: true }
+      });
       expect(updatedRR.dateDelivered).toEqual(dateToSetAsDelivered);
     });
   });
@@ -306,8 +328,8 @@ describe('Reimbursement Requests', () => {
         reimbursementRequest.totalCost,
         org
       );
-      const status = await ReimbursementRequestService.denyReimbursementRequest(rr.reimbursementRequestId, createdUser, org);
-      expect(status.type).toEqual(ReimbursementStatusType.DENIED);
+      await ReimbursementRequestService.denyReimbursementRequest(rr.reimbursementRequestId, createdUser, org);
+      expect(await latestStatusType(rr.reimbursementRequestId)).toEqual(ReimbursementStatusType.DENIED);
     });
     test('Creator of reimbursement request can deny their own', async () => {
       const member: User = await prisma.user.create({
@@ -405,12 +427,8 @@ describe('Reimbursement Requests', () => {
         org
       );
 
-      const status = await ReimbursementRequestService.denyReimbursementRequest(
-        reimbReq.reimbursementRequestId,
-        recipient,
-        org
-      );
-      expect(status.type).toEqual(ReimbursementStatusType.DENIED);
+      await ReimbursementRequestService.denyReimbursementRequest(reimbReq.reimbursementRequestId, recipient, org);
+      expect(await latestStatusType(reimbReq.reimbursementRequestId)).toEqual(ReimbursementStatusType.DENIED);
     });
   });
 
@@ -465,13 +483,9 @@ describe('Reimbursement Requests', () => {
       await ReimbursementRequestService.markPendingFinance(createdUser, rr.reimbursementRequestId, org);
 
       // Input in SABO by finance team
-      const status = await ReimbursementRequestService.inputReimbursementRequestInSabo(
-        rr.reimbursementRequestId,
-        financeMember,
-        org
-      );
+      await ReimbursementRequestService.inputReimbursementRequestInSabo(rr.reimbursementRequestId, financeMember, org);
 
-      expect(status.type).toEqual(ReimbursementStatusType.PENDING_SABO_SUBMISSION);
+      expect(await latestStatusType(rr.reimbursementRequestId)).toEqual(ReimbursementStatusType.PENDING_SABO_SUBMISSION);
     });
 
     test('Cannot input in SABO without leadership approval', async () => {
@@ -572,13 +586,9 @@ describe('Reimbursement Requests', () => {
       await ReimbursementRequestService.inputReimbursementRequestInSabo(rr.reimbursementRequestId, financeMember, org);
 
       // Mark as SABO submitted by recipient
-      const status = await ReimbursementRequestService.markReimbursementRequestAsSaboSubmitted(
-        rr.reimbursementRequestId,
-        createdUser,
-        org
-      );
+      await ReimbursementRequestService.markReimbursementRequestAsSaboSubmitted(rr.reimbursementRequestId, createdUser, org);
 
-      expect(status.type).toEqual(ReimbursementStatusType.SABO_SUBMITTED);
+      expect(await latestStatusType(rr.reimbursementRequestId)).toEqual(ReimbursementStatusType.SABO_SUBMITTED);
     });
 
     test('Cannot mark as SABO submitted without input in SABO', async () => {
@@ -834,39 +844,36 @@ describe('Reimbursement Requests', () => {
 
   describe('Assign Finance Member to Reimbursement Request', () => {
     test('Member can assign a user to a reimbursement request', async () => {
-      const updatedRR = await ReimbursementRequestService.assignFinanceMember(
+      await ReimbursementRequestService.assignFinanceMember(
         regularMember,
         org,
         reimbursementRequest.reimbursementRequestId,
         financeMember.userId
       );
 
-      expect(updatedRR).not.toBeNull();
-      expect(updatedRR.assigneeId).toBe(financeMember.userId);
+      expect(await assigneeIdOf(reimbursementRequest.reimbursementRequestId)).toBe(financeMember.userId);
     });
 
     test('Finance member can assign themselves to a reimbursement request', async () => {
-      const updatedRR = await ReimbursementRequestService.assignFinanceMember(
+      await ReimbursementRequestService.assignFinanceMember(
         financeMember,
         org,
         reimbursementRequest.reimbursementRequestId,
         financeMember.userId
       );
 
-      expect(updatedRR).not.toBeNull();
-      expect(updatedRR.assigneeId).toBe(financeMember.userId);
+      expect(await assigneeIdOf(reimbursementRequest.reimbursementRequestId)).toBe(financeMember.userId);
     });
 
     test('Finance head can assign a user to a reimbursement request', async () => {
-      const updatedRR = await ReimbursementRequestService.assignFinanceMember(
+      await ReimbursementRequestService.assignFinanceMember(
         financeHead,
         org,
         reimbursementRequest.reimbursementRequestId,
         anotherMember.userId
       );
 
-      expect(updatedRR).not.toBeNull();
-      expect(updatedRR.assigneeId).toBe(anotherMember.userId);
+      expect(await assigneeIdOf(reimbursementRequest.reimbursementRequestId)).toBe(anotherMember.userId);
     });
 
     test('Can reassign a reimbursement request to a different user', async () => {
@@ -879,15 +886,14 @@ describe('Reimbursement Requests', () => {
       );
 
       // Reassignment
-      const updatedRR = await ReimbursementRequestService.assignFinanceMember(
+      await ReimbursementRequestService.assignFinanceMember(
         regularMember,
         org,
         reimbursementRequest.reimbursementRequestId,
         anotherMember.userId
       );
 
-      expect(updatedRR).not.toBeNull();
-      expect(updatedRR.assigneeId).toBe(anotherMember.userId);
+      expect(await assigneeIdOf(reimbursementRequest.reimbursementRequestId)).toBe(anotherMember.userId);
     });
 
     test('Guest cannot assign a user to a reimbursement request', async () => {

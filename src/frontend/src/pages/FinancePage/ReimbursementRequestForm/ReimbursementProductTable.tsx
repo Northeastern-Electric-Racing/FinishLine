@@ -20,7 +20,7 @@ import {
   Box
 } from '@mui/material';
 import {
-  OtherProductReason,
+  OtherProductReasonArg,
   WbsNumber,
   validateWBS,
   wbsPipe,
@@ -167,7 +167,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       cost: number;
       index: number;
       id?: string;
-      reason: WbsNumber | OtherProductReason;
+      reason: WbsNumber | OtherProductReasonArg;
     }[]
   >();
 
@@ -247,7 +247,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   reimbursementProducts.forEach((product, index) => {
     const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
-    const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as OtherProductReason).name;
+    const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as OtherProductReasonArg).name;
     if (uniqueWbsElementsWithProducts.has(productReason)) {
       const products = uniqueWbsElementsWithProducts.get(productReason);
       products?.push({ ...product, index, id: product.id, reason: product.reason });
