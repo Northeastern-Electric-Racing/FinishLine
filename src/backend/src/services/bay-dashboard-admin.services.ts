@@ -1,8 +1,9 @@
-import { Bay_Dashboard_Widget_Type, Organization } from '@prisma/client';
+import { Bay_Dashboard_Widget_Type, Bay_Dashboard_Widget_Size, Organization } from '@prisma/client';
 import {
   AvailableBayDashboardWidgets,
   BayDashboardConfig,
   BayDashboardCountdown,
+  BayDashboardRotation,
   BayDashboardSlotCreateArgs,
   BayDashboardWidgetSize,
   BayDashboardWidgetType,
@@ -13,11 +14,13 @@ import {
 import prisma from '../prisma/prisma.js';
 import {
   getBayDashboardConfigQueryArgs,
-  getBayDashboardCountdownQueryArgs
+  getBayDashboardCountdownQueryArgs,
+  getBayDashboardRotationQueryArgs
 } from '../prisma-query-args/bay-dashboard.query-args.js';
 import {
   bayDashboardConfigTransformer,
   bayDashboardCountdownTransformer,
+  bayDashboardRotationTransformer,
   bayDashboardWidgetSizeTransformer,
   bayDashboardWidgetTypeTransformer
 } from '../transformers/bay-dashboard.transformer.js';
@@ -64,6 +67,37 @@ export default class BayDashboardAdminService {
     });
 
     return config ? bayDashboardConfigTransformer(config) : null;
+  }
+
+  /**
+   * Gets the rotation time for each widget size on an organization's bay dashboard
+   * @param user the user requesting the rotation settings
+   * @param organization the organization the rotation settings belong to
+   * @param slug the organization slug from the URL, which must match the user's organization
+   * @returns the rotation time for each widget size
+   * @throws AccessDeniedException if the slug is not the right organizations slug or if they aren't a head
+   */
+  static async getBayDashboardRotations(
+    user: User,
+    organization: Organization,
+    slug: string
+  ): Promise<BayDashboardRotation[]> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, isHead)))
+      throw new AccessDeniedException('Only heads and above can view the bay dashboard rotation settings.');
+    if (organization.slug !== slug)
+      throw new AccessDeniedException('You can only view the rotation settings of your own organization');
+    // an organization has no rotation rows until it first asks for them
+    await prisma.bay_Dashboard_Rotation.createMany({
+      data: Object.values(Bay_Dashboard_Widget_Size).map((size) => ({ organizationId: organization.organizationId, size })),
+      skipDuplicates: true
+    });
+    const rotations = await prisma.bay_Dashboard_Rotation.findMany({
+      where: { organizationId: organization.organizationId },
+      orderBy: { size: 'asc' },
+      ...getBayDashboardRotationQueryArgs()
+    });
+
+    return rotations.map(bayDashboardRotationTransformer);
   }
 
   /**

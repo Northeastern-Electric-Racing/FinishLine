@@ -88,6 +88,12 @@ export interface BayDashboardCountdownCreateArgs {
   isPrimary: boolean;
 }
 
+export interface BayDashboardRotation {
+  bayDashboardRotationId: string;
+  size: BayDashboardWidgetSize;
+  rotationSeconds: number;
+}
+
 /**
  * A widget type that can be placed on a bay dashboard, along with the sizes it supports.
  */

@@ -14,6 +14,18 @@ export default class BayDashboardAdminController {
     }
   }
 
+  static async getBayDashboardRotations(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { currentUser, organization } = req;
+
+      const { slug } = req.params as Record<string, string>;
+      const rotations = await BayDashboardAdminService.getBayDashboardRotations(currentUser, organization, slug);
+      res.status(200).json(rotations);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   /**
    * Returns every widget type available for a bay dashboard along with its display name and supported sizes.
    */
