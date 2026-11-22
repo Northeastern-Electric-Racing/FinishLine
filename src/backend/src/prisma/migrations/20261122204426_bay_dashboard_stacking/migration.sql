@@ -1,4 +1,9 @@
+/*
+  Warnings:
 
+  - You are about to drop the column `rotationSeconds` on the `Bay_Dashboard_Slot` table. All the data in the column will be lost.
+
+*/
 -- AlterTable
 ALTER TABLE "Bay_Dashboard_Slot" DROP COLUMN "rotationSeconds";
 
@@ -14,9 +19,6 @@ CREATE TABLE "Bay_Dashboard_Rotation" (
 
     CONSTRAINT "Bay_Dashboard_Rotation_pkey" PRIMARY KEY ("bayDashboardRotationId")
 );
-
--- CreateIndex
-CREATE INDEX "Bay_Dashboard_Rotation_organizationId_idx" ON "Bay_Dashboard_Rotation"("organizationId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Bay_Dashboard_Rotation_organizationId_size_key" ON "Bay_Dashboard_Rotation"("organizationId", "size");

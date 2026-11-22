@@ -2180,7 +2180,6 @@ model Bay_Dashboard_Rotation {
   organization           Organization              @relation(fields: [organizationId], references: [organizationId])
 
   @@unique([organizationId, size])
-  @@index([organizationId])
 }
 
 model Bay_Dashboard_Widget {
