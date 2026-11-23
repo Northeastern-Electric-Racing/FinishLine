@@ -32,7 +32,7 @@ import { DeletedException, NotFoundException } from '../utils/errors.utils.js';
  */
 export const getRotationSecondsBySize = async (organizationId: string): Promise<RotationSecondsBySize> => {
   const rotations = await prisma.bay_Dashboard_Rotation.findMany({
-    where: { organizationId },
+    where: { organizationId, dateDeleted: null },
     select: { size: true, rotationSeconds: true }
   });
 

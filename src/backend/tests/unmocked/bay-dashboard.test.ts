@@ -16,7 +16,12 @@ describe('Bay Dashboard Tests', () => {
     organization = await createTestOrganization();
     head = await createTestUser(greenlanternHead, organization.organizationId);
     await prisma.bay_Dashboard_Rotation.create({
-      data: { size: BayDashboardWidgetSize.LARGE, rotationSeconds: 45, organizationId: organization.organizationId }
+      data: {
+        size: BayDashboardWidgetSize.LARGE,
+        rotationSeconds: 45,
+        userCreatedId: head.userId,
+        organizationId: organization.organizationId
+      }
     });
   });
 
@@ -239,12 +244,37 @@ describe('Bay Dashboard Tests', () => {
         data: { name: 'Other Org', slug: 'other-org', description: '', userCreatedId: head.userId }
       });
       await prisma.bay_Dashboard_Rotation.create({
-        data: { size: BayDashboardWidgetSize.LARGE, rotationSeconds: 10, organizationId: otherOrg.organizationId }
+        data: {
+          size: BayDashboardWidgetSize.LARGE,
+          rotationSeconds: 10,
+          userCreatedId: head.userId,
+          organizationId: otherOrg.organizationId
+        }
       });
 
       const config = await BayDashboardService.getBayDashboardConfig(organization.slug);
 
       expect(config?.slots.find((slot) => slot.size === BayDashboardWidgetSize.LARGE)?.rotationSeconds).toBe(45);
+    });
+
+    it('Uses the newest non-deleted rotation row after a soft-deleted update', async () => {
+      await createConfig(new Date('2026-01-01'));
+      await prisma.bay_Dashboard_Rotation.updateMany({
+        where: { organizationId: organization.organizationId, size: BayDashboardWidgetSize.LARGE },
+        data: { dateDeleted: new Date('2026-02-01'), userDeletedId: head.userId }
+      });
+      await prisma.bay_Dashboard_Rotation.create({
+        data: {
+          size: BayDashboardWidgetSize.LARGE,
+          rotationSeconds: 60,
+          userCreatedId: head.userId,
+          organizationId: organization.organizationId
+        }
+      });
+
+      const config = await BayDashboardService.getBayDashboardConfig(organization.slug);
+
+      expect(config?.slots.find((slot) => slot.size === BayDashboardWidgetSize.LARGE)?.rotationSeconds).toBe(60);
     });
   });
 
