@@ -69,10 +69,10 @@ execSummaryRouter.post(
 
 execSummaryRouter.post(
   '/recruitment-cycle/:recruitmentCycleId/edit',
-  intMinZero(body('eventsHeld')),
-  intMinZero(body('signUps')),
-  intMinZero(body('onboarded')),
-  intMinZero(body('activeMembers')),
+  intMinZero(body('eventsHeld')).optional({ nullable: true }),
+  intMinZero(body('signUps')).optional({ nullable: true }),
+  intMinZero(body('onboarded')).optional({ nullable: true }),
+  intMinZero(body('activeMembers')).optional({ nullable: true }),
   body('divisionCounts').isArray(),
   nonEmptyString(body('divisionCounts.*.teamTypeId')),
   intMinZero(body('divisionCounts.*.newMembers')),

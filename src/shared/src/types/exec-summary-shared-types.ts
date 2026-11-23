@@ -143,7 +143,13 @@ export interface CreateRecruitmentCycleArgs {
   divisionCounts: RecruitmentDivisionCountArgs[];
 }
 
-export type EditRecruitmentCycleArgs = Omit<CreateRecruitmentCycleArgs, 'executiveSummaryId' | 'term'>;
+export interface EditRecruitmentCycleArgs {
+  eventsHeld?: number | null;
+  signUps?: number | null;
+  onboarded?: number | null;
+  activeMembers?: number | null;
+  divisionCounts: RecruitmentDivisionCountArgs[];
+}
 
 export interface VehicleDevelopmentProjectSummary {
   wbsElementId: string;

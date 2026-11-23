@@ -1365,5 +1365,41 @@ describe('Executive Summary Tests', () => {
       });
       expect(storedCount).toBe(1);
     });
+
+    it('Clears stats passed as null and leaves stats passed as undefined unchanged', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const recruitmentCycle = await createTestRecruitmentCycle(executiveSummary.executiveSummaryId);
+
+      await ExecSummaryServices.editRecruitmentCycle(
+        admin,
+        organization,
+        5,
+        100,
+        40,
+        35,
+        [],
+        recruitmentCycle.recruitmentCycleId
+      );
+
+      await ExecSummaryServices.editRecruitmentCycle(
+        admin,
+        organization,
+        null,
+        undefined,
+        null,
+        undefined,
+        [],
+        recruitmentCycle.recruitmentCycleId
+      );
+
+      const stored = await prisma.recruitment_Cycle.findUniqueOrThrow({
+        where: { recruitmentCycleId: recruitmentCycle.recruitmentCycleId }
+      });
+      expect(stored.eventsHeld).toBeNull();
+      expect(stored.signUps).toBe(100);
+      expect(stored.onboarded).toBeNull();
+      expect(stored.activeMembers).toBe(35);
+    });
   });
 });

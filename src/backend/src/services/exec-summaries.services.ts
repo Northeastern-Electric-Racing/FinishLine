@@ -568,10 +568,10 @@ export default class ExecSummaryServices {
    * Edits an existing recruitment cycle and replaces its division counts.
    * @param submitter the user editing the recruitment cycle
    * @param organization the organization the recruitment cycle belongs to
-   * @param eventsHeld the updated number of recruitment events held
-   * @param signUps the updated number of sign ups
-   * @param onboarded the updated number of members onboarded
-   * @param activeMembers the updated number of active members
+   * @param eventsHeld the updated number of recruitment events held, null to clear it, or undefined to leave it unchanged
+   * @param signUps the updated number of sign ups, null to clear it, or undefined to leave it unchanged
+   * @param onboarded the updated number of members onboarded, null to clear it, or undefined to leave it unchanged
+   * @param activeMembers the updated number of active members, null to clear it, or undefined to leave it unchanged
    * @param divisionCounts the new/returning member counts per division; replaces the cycle's existing division counts
    * @param recruitmentCycleId the id of the recruitment cycle being edited
    * @returns the updated recruitment cycle
@@ -584,10 +584,10 @@ export default class ExecSummaryServices {
   static async editRecruitmentCycle(
     submitter: User,
     organization: Organization,
-    eventsHeld: number,
-    signUps: number,
-    onboarded: number,
-    activeMembers: number,
+    eventsHeld: number | null | undefined,
+    signUps: number | null | undefined,
+    onboarded: number | null | undefined,
+    activeMembers: number | null | undefined,
     divisionCounts: RecruitmentDivisionCountArgs[],
     recruitmentCycleId: string
   ) {
