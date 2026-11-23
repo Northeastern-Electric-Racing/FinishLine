@@ -361,6 +361,8 @@ model User {
   createdBayDashboardConfigs              Bay_Dashboard_Config[]               @relation(name: "bayDashboardConfigCreator")
   createdBayDashboardCountdowns           Bay_Dashboard_Countdown[]            @relation(name: "bayDashboardCountdownCreator")
   deletedBayDashboardCountdowns           Bay_Dashboard_Countdown[]            @relation(name: "bayDashboardCountdownDeleter")
+  createdBayDashboardRotations            Bay_Dashboard_Rotation[]             @relation(name: "bayDashboardRotationCreator")
+  deletedBayDashboardRotations            Bay_Dashboard_Rotation[]             @relation(name: "bayDashboardRotationDeleter")
 }
 
 model Role {
@@ -2176,10 +2178,16 @@ model Bay_Dashboard_Rotation {
   bayDashboardRotationId String                    @id @default(uuid())
   size                   Bay_Dashboard_Widget_Size
   rotationSeconds        Int                       @default(30)
+  dateCreated            DateTime                  @default(now())
+  dateDeleted            DateTime?
+  userCreated            User                      @relation(fields: [userCreatedId], references: [userId], name: "bayDashboardRotationCreator")
+  userCreatedId          String
+  userDeleted            User?                     @relation(fields: [userDeletedId], references: [userId], name: "bayDashboardRotationDeleter")
+  userDeletedId          String?
   organizationId         String
   organization           Organization              @relation(fields: [organizationId], references: [organizationId])
 
-  @@unique([organizationId, size])
+  @@index([organizationId, size, dateDeleted])
 }
 
 model Bay_Dashboard_Widget {
