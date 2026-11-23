@@ -21,6 +21,8 @@ describe('Change Request Tests', () => {
   let wp: WorkPackage;
 
   beforeEach(async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(0);
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     user = await createTestUser(supermanAdmin, orgId);
@@ -74,6 +76,7 @@ describe('Change Request Tests', () => {
   });
 
   afterEach(async () => {
+    vi.useRealTimers();
     await resetUsers();
   });
 

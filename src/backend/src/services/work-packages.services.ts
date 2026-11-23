@@ -49,7 +49,7 @@ import {
 } from '../utils/description-bullets.utils.js';
 import { getBlockingWorkPackages, validateBlockedBys } from '../utils/work-packages.utils.js';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args.js';
-import { userHasPermission } from '../utils/users.utils.js';
+import { getUserSlackId, userHasPermission } from '../utils/users.utils.js';
 import { sendMessage } from '../integrations/slack.js';
 
 /**
@@ -231,11 +231,12 @@ export default class WorkPackagesService {
       const endDateIsADayApart = isWithinBuffer(currDay, calculateEndDate(workPackage.startDate, workPackage.duration), 1);
       const endDateNotComplete = endDateIsADayApart && workPackage.wbsElement.status !== WBS_Element_Status.COMPLETE;
 
-      const leadIdString = workPackage.wbsElement.leadId || '';
-      const managerIdString = workPackage.wbsElement.managerId || '';
+      const leadIdString = workPackage.wbsElement.leadId ? await getUserSlackId(workPackage.wbsElement.leadId) : '';
+      const managerIdString = workPackage.wbsElement.managerId ? await getUserSlackId(workPackage.wbsElement.managerId) : '';
+      const wbsNumber: string = wbsPipe(workPackage.wbsElement);
 
-      const link = `<https://finishlinebyner.com/projects/${workPackage.wbsElement}|${workPackage.wbsElement}>`;
-      const linkButtonText = `View WP#${wbsPipe(workPackage.wbsElement)}`;
+      const link = `<https://finishlinebyner.com/projects/${wbsNumber}|${wbsNumber}>`;
+      const linkButtonText = `View WP#${wbsNumber}}`;
 
       const { teams } = workPackage.project;
 
