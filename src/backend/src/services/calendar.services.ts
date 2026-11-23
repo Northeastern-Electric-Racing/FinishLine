@@ -2,6 +2,7 @@ import {
   User,
   isAdmin,
   isHead,
+  isLeadership,
   isGuest,
   AvailabilityCreateArgs,
   BaseEvent,
@@ -166,6 +167,7 @@ export default class CalendarService {
     documents: boolean,
     description: boolean,
     onlyHeadsOrAbove: boolean,
+    onlyAdminsOrAbove: boolean,
     requiresConfirmation: boolean,
     sendSlackNotifications: boolean,
     takeAttendance: boolean
@@ -231,6 +233,7 @@ export default class CalendarService {
         documents,
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
+        onlyAdminsOrAboveForEventCreation: onlyAdminsOrAbove,
         requiresConfirmation,
         sendSlackNotifications,
         takeAttendance,
@@ -341,7 +344,12 @@ export default class CalendarService {
       throw new InvalidOrganizationException('Event Type');
     }
 
-    if (foundEventType.onlyHeadsOrAboveForEventCreation) {
+    if (foundEventType.onlyAdminsOrAboveForEventCreation) {
+      const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+      if (!hasPermission) {
+        throw new AccessDeniedAdminOnlyException('create events under this event type');
+      }
+    } else if (foundEventType.onlyHeadsOrAboveForEventCreation) {
       const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isHead);
 
       if (!hasPermission) {
@@ -705,7 +713,12 @@ export default class CalendarService {
       throw new HttpException(400, 'required members cannot be in optional members');
     }
 
-    if (foundEventType.onlyHeadsOrAboveForEventCreation) {
+    if (foundEventType.onlyAdminsOrAboveForEventCreation) {
+      const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+      if (!hasPermission) {
+        throw new AccessDeniedAdminOnlyException('edit this event');
+      }
+    } else if (foundEventType.onlyHeadsOrAboveForEventCreation) {
       const hasPermission = await userHasPermission(submitter.userId, organization.organizationId, isHead);
 
       if (!hasPermission) {
@@ -2213,6 +2226,7 @@ export default class CalendarService {
     description: string,
     colorHexCode: string,
     isNewMemberCalendar: boolean,
+    isLeadCalendar: boolean,
     organization: Organization
   ): Promise<Calendar> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
@@ -2249,6 +2263,7 @@ export default class CalendarService {
           description,
           colorHexCode,
           isNewMemberCalendar,
+          isLeadCalendar,
           userCreatedId: submitter.userId,
           organizationId: organization.organizationId
         },
@@ -2282,6 +2297,7 @@ export default class CalendarService {
     description: string,
     colorHexCode: string,
     isNewMemberCalendar: boolean,
+    isLeadCalendar: boolean,
     organization: Organization
   ): Promise<Calendar> {
     const calendar = await prisma.calendar.findUnique({
@@ -2328,7 +2344,8 @@ export default class CalendarService {
           name,
           description,
           colorHexCode,
-          isNewMemberCalendar
+          isNewMemberCalendar,
+          isLeadCalendar
         },
         ...getCalendarQueryArgs(organization.organizationId)
       });
@@ -2425,6 +2442,7 @@ export default class CalendarService {
     documents: boolean,
     description: boolean,
     onlyHeadsOrAbove: boolean,
+    onlyAdminsOrAbove: boolean,
     requiresConfirmation: boolean,
     sendSlackNotifications: boolean,
     takeAttendance: boolean
@@ -2490,6 +2508,7 @@ export default class CalendarService {
         documents,
         description,
         onlyHeadsOrAboveForEventCreation: onlyHeadsOrAbove,
+        onlyAdminsOrAboveForEventCreation: onlyAdminsOrAbove,
         requiresConfirmation,
         sendSlackNotifications,
         takeAttendance
@@ -2587,14 +2606,23 @@ export default class CalendarService {
    * Gets all events that match the given filter arguments
    *
    * @param filters Filters for the events you want to get, which include member IDs, team IDs, event IDs, event type IDs, approval status, and date ranges
+   * @param organization the organization the events are in
+   * @param submitter the user viewing the events; events on lead calendars are hidden unless they are leadership or above.
+   * Omit only for internal server calls (e.g. busy-time calculation) that never expose event details, so nothing is hidden.
    *
    * @returns The all events that match all of the given filter arguments.
    *
    * @throws NotFoundException If the given event type Ids, member IDs, team IDs, or event IDs are not found.
    */
-  static async getCalendarViewEvents(filters: FilterArgs, organization: Organization): Promise<CalendarEvent[]> {
+  static async getCalendarViewEvents(
+    filters: FilterArgs,
+    organization: Organization,
+    submitter?: User
+  ): Promise<CalendarEvent[]> {
     const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalIds, startPeriod, endPeriod, statuses } =
       filters;
+    const canSeeLeadCalendars =
+      !submitter || (await userHasPermission(submitter.userId, organization.organizationId, isLeadership));
 
     // validate memberIds
     if (memberIds?.length) {
@@ -2634,12 +2662,16 @@ export default class CalendarService {
           organization: { organizationId: organization.organizationId },
           dateDeleted: null
         },
-        select: { calendarId: true }
+        select: { calendarId: true, isLeadCalendar: true }
       });
       if (foundcalendars.length !== calendarIds.length) {
         const missingIds = calendarIds.filter((id) => !foundcalendars.some((mem) => mem.calendarId === id));
         throw new NotFoundException('Calendar', missingIds.join(', '));
       }
+      const allowedCalendarIds = foundcalendars
+        .filter((calendar) => canSeeLeadCalendars || !calendar.isLeadCalendar)
+        .map((calendar) => calendar.calendarId);
+      calendarIds.splice(0, calendarIds.length, ...allowedCalendarIds);
     }
 
     // validate eventTypeIds
@@ -2653,7 +2685,7 @@ export default class CalendarService {
         select: { eventTypeId: true }
       });
       if (foundEventTypes.length !== eventTypeIds.length) {
-        const missingIds = eventTypeIds.filter((id) => !foundEventTypes.some((et) => et.eventTypeId === id));
+        const missingIds = eventTypeIds.filter((id) => !foundEventTypes.some((eventType) => eventType.eventTypeId === id));
         throw new NotFoundException('Event Type', missingIds.join(', '));
       }
     }
@@ -2708,6 +2740,11 @@ export default class CalendarService {
           }
         : undefined;
 
+    // hide events on lead calendars from users below leadership
+    const hideLeadCalendars: Prisma.EventWhereInput | undefined = canSeeLeadCalendars
+      ? undefined
+      : { eventType: { is: { NOT: { calendars: { some: { isLeadCalendar: true } } } } } };
+
     const events = await prisma.event.findMany({
       where: {
         dateDeleted: null,
@@ -2719,7 +2756,8 @@ export default class CalendarService {
         AND: [
           ...(memberOrTeamFilter.length > 0 ? [{ OR: memberOrTeamFilter }] : []),
           eventInPeriodWhere(startPeriod, endPeriod),
-          ...(fromCalendar ? [fromCalendar] : [])
+          ...(fromCalendar ? [fromCalendar] : []),
+          ...(hideLeadCalendars ? [hideLeadCalendars] : [])
         ]
       },
       ...getCalendarEventQueryArgs(scheduleSlotOverlapWhere(startPeriod, endPeriod)),
@@ -2797,7 +2835,7 @@ export default class CalendarService {
    * @returns The upcoming events on the org's new member calendar, with only their future slots, or an empty array if no
    * calendar is designated.
    */
-  static async getNewMemberEvents(organization: Organization): Promise<BaseEvent[]> {
+  static async getNewMemberEvents(submitter: User, organization: Organization): Promise<BaseEvent[]> {
     const newMemberCalendar = await prisma.calendar.findFirst({
       where: {
         organizationId: organization.organizationId,
@@ -2809,6 +2847,8 @@ export default class CalendarService {
 
     if (!newMemberCalendar) return [];
 
+    const canSeeLeadCalendars = await userHasPermission(submitter.userId, organization.organizationId, isLeadership);
+
     const now = new Date();
     const futureSlotWhere = scheduleSlotOverlapWhere(now);
 
@@ -2817,7 +2857,9 @@ export default class CalendarService {
         dateDeleted: null,
         eventType: {
           organizationId: organization.organizationId,
-          calendars: { some: { calendarId: newMemberCalendar.calendarId } }
+          calendars: { some: { calendarId: newMemberCalendar.calendarId } },
+          // hide event types that are also on a lead calendar from users below leadership
+          ...(canSeeLeadCalendars ? {} : { NOT: { calendars: { some: { isLeadCalendar: true } } } })
         },
         // events still being scheduled have no slots yet, only the date they were requested for
         ...eventInPeriodWhere(now)
@@ -2873,11 +2915,13 @@ export default class CalendarService {
     return shops.map(shopTransformer);
   }
 
-  static async getAllCalendars(organization: Organization): Promise<Calendar[]> {
+  static async getAllCalendars(submitter: User, organization: Organization): Promise<Calendar[]> {
+    const canSeeLeadCalendar = await userHasPermission(submitter.userId, organization.organizationId, isLeadership);
     const calendars = await prisma.calendar.findMany({
       where: {
         organizationId: organization.organizationId,
-        dateDeleted: null
+        dateDeleted: null,
+        ...(canSeeLeadCalendar ? {} : { isLeadCalendar: false })
       },
       ...getCalendarQueryArgs(organization.organizationId)
     });

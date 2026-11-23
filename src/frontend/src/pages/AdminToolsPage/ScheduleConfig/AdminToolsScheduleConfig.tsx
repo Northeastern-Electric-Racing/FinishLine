@@ -165,13 +165,16 @@ const AdminToolsScheduleConfig: React.FC = () => {
                   <TableCell sx={{ fontWeight: 600 }} align="center">
                     New Member
                   </TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="center">
+                    Lead
+                  </TableCell>
                   <TableCell sx={{ width: 100 }} />
                 </TableRow>
               </TableHead>
               <TableBody>
                 {!calendars || !Array.isArray(calendars) || calendars.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} align="center">
+                    <TableCell colSpan={6} align="center">
                       No calendars yet.
                     </TableCell>
                   </TableRow>
@@ -194,6 +197,9 @@ const AdminToolsScheduleConfig: React.FC = () => {
                       </TableCell>
                       <TableCell align="center">
                         {calendar.isNewMemberCalendar && <CheckIcon fontSize="small" color="success" />}
+                      </TableCell>
+                      <TableCell align="center">
+                        {calendar.isLeadCalendar && <CheckIcon fontSize="small" color="success" />}
                       </TableCell>
                       <TableCell align="center">
                         <Box display="flex" gap={1} justifyContent="center">

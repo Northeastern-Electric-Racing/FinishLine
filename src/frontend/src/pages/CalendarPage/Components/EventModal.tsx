@@ -29,6 +29,7 @@ import {
   wbsNamePipe,
   EventType,
   isHead,
+  isAdmin,
   MAX_FILE_SIZE,
   getNextSevenDays,
   getDay,
@@ -326,6 +327,7 @@ const EventModal: React.FC<BaseEventModalProps> = ({
 
   const allowedEventTypes = useMemo(() => {
     return eventTypes.filter((et) => {
+      if (et.onlyAdminsOrAboveForEventCreation && !isAdmin(user.role)) return false;
       if (!et.onlyHeadsOrAboveForEventCreation) return true;
       return isHead(user.role);
     });

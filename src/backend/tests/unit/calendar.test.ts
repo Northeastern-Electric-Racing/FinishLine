@@ -90,6 +90,7 @@ describe('Calendar Tests', () => {
       true, // documents
       true, // description
       true, // onlyHeadsOrAbove
+      false, // onlyAdminsOrAbove
       false, // requiresConfirmation - changed to false so tests don't need initialDateScheduled
       true, // sendSlackNotifications
       false // takeAttendance
@@ -122,6 +123,7 @@ describe('Calendar Tests', () => {
           'Updated Description',
           '#FF0000',
           false,
+          false,
           organization
         )
       ).rejects.toThrow(new AccessDeniedException('Only admins can edit calendars'));
@@ -145,6 +147,7 @@ describe('Calendar Tests', () => {
         'Updated Description',
         '#0000FF',
         false,
+        false,
         organization
       );
 
@@ -162,6 +165,7 @@ describe('Calendar Tests', () => {
           'Updated Name',
           'Updated Description',
           '#FF0000',
+          false,
           false,
           organization
         )
@@ -187,6 +191,7 @@ describe('Calendar Tests', () => {
           'Updated Name',
           'Updated Description',
           '#FF0000',
+          false,
           false,
           organization
         )
@@ -281,6 +286,7 @@ describe('Calendar Tests', () => {
             true,
             false,
             false,
+            false,
             false
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create event type'));
@@ -305,6 +311,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         true,
+        false,
         false,
         false,
         false
@@ -349,6 +356,7 @@ describe('Calendar Tests', () => {
           false,
           false,
           true,
+          false,
           false,
           false,
           true // takeAttendance
@@ -648,6 +656,7 @@ describe('Calendar Tests', () => {
             'desc',
             '#3498DB',
             false,
+            false,
             organization
           )
         ).rejects.toThrow(new AccessDeniedAdminOnlyException('create calendar'));
@@ -658,6 +667,7 @@ describe('Calendar Tests', () => {
           'Cool Calendar',
           'A very cool calendar',
           '#3498DB',
+          false,
           false,
           organization
         );
@@ -673,6 +683,7 @@ describe('Calendar Tests', () => {
           'A very cool calendar',
           '#3498DB',
           false,
+          false,
           organization
         );
         await expect(
@@ -681,6 +692,7 @@ describe('Calendar Tests', () => {
             'Cool Calendar',
             'A very cool calendar, but not quite as cool',
             '#0062a3ff',
+            false,
             false,
             organization
           )
@@ -712,6 +724,7 @@ describe('Calendar Tests', () => {
         true,
         true,
         false,
+        false,
         false
       );
     });
@@ -725,6 +738,7 @@ describe('Calendar Tests', () => {
           [calendar.calendarId],
           organization,
           'Initial Event Type',
+          false,
           false,
           false,
           false,
@@ -769,6 +783,7 @@ describe('Calendar Tests', () => {
           true,
           true,
           true,
+          false,
           false
         )
       ).rejects.toThrow(new NotFoundException('Calendar', invalidCalendarId));
@@ -817,6 +832,7 @@ describe('Calendar Tests', () => {
           false,
           false,
           false,
+          false,
           false
         )
       ).rejects.toThrow(new InvalidOrganizationException('Calendar'));
@@ -837,6 +853,7 @@ describe('Calendar Tests', () => {
           false,
           false,
           true,
+          false,
           false,
           false,
           false,
@@ -869,6 +886,7 @@ describe('Calendar Tests', () => {
         true,
         false,
         true,
+        false,
         false,
         false,
         false,
@@ -918,6 +936,7 @@ describe('Calendar Tests', () => {
           false,
           true,
           true,
+          false,
           false,
           true // takeAttendance
         )
@@ -2134,6 +2153,7 @@ describe('Calendar Tests', () => {
         false,
         true,
         false,
+        false,
         false
       );
     });
@@ -2193,6 +2213,7 @@ describe('Calendar Tests', () => {
         false,
         false,
         true,
+        false,
         false,
         false
       );

@@ -43,6 +43,7 @@ export interface EventTypeFormValues {
   documents: boolean;
   description: boolean;
   onlyHeadsOrAbove: boolean;
+  onlyAdminsOrAbove: boolean;
   requiresConfirmation: boolean;
   sendSlackNotifications: boolean;
   takeAttendance: boolean;
@@ -64,6 +65,7 @@ const eventTypeSchema = yup.object({
   documents: yup.boolean().required(),
   description: yup.boolean().required(),
   onlyHeadsOrAbove: yup.boolean().required(),
+  onlyAdminsOrAbove: yup.boolean().required(),
   requiresConfirmation: yup.boolean().required(),
   sendSlackNotifications: yup.boolean().required(),
   takeAttendance: yup.boolean().required()
@@ -96,6 +98,7 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
     documents: false,
     description: true,
     onlyHeadsOrAbove: false,
+    onlyAdminsOrAbove: false,
     requiresConfirmation: false,
     sendSlackNotifications: false,
     takeAttendance: false
@@ -851,6 +854,23 @@ export const EventTypeFormModal: React.FC<EventTypeFormModalProps> = ({ open, on
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2" sx={{ color: 'white' }}>
               Only Heads Or Above Can Create Events
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Only Admins Or Above Field */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Controller
+            control={control}
+            name="onlyAdminsOrAbove"
+            render={({ field: { onChange, value } }) => (
+              <Checkbox checked={value} onChange={onChange} sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />
+            )}
+          />
+          <SupervisorAccountIcon sx={{ color: 'white', mr: 1 }} />
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body2" sx={{ color: 'white' }}>
+              Only Admins Or Above Can Create Events
             </Typography>
           </Box>
         </Box>

@@ -23,6 +23,7 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
+        onlyAdminsOrAbove,
         requiresConfirmation,
         sendSlackNotifications,
         takeAttendance
@@ -46,6 +47,7 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
+        onlyAdminsOrAbove,
         requiresConfirmation,
         sendSlackNotifications,
         takeAttendance
@@ -142,7 +144,7 @@ export default class CalendarController {
 
   static async createCalendar(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, description, colorHexCode, isNewMemberCalendar } = req.body;
+      const { name, description, colorHexCode, isNewMemberCalendar, isLeadCalendar } = req.body;
 
       const calendar = await CalendarService.createCalendar(
         req.currentUser,
@@ -150,6 +152,7 @@ export default class CalendarController {
         description,
         colorHexCode,
         isNewMemberCalendar,
+        isLeadCalendar,
         req.organization
       );
       broadcastBayDashboardUpdate(req.organization.slug);
@@ -163,7 +166,7 @@ export default class CalendarController {
   static async editCalendar(req: Request, res: Response, next: NextFunction) {
     try {
       const { calendarId } = req.params as Record<string, string>;
-      const { name, colorHexCode, description, isNewMemberCalendar } = req.body;
+      const { name, colorHexCode, description, isNewMemberCalendar, isLeadCalendar } = req.body;
 
       const updatedCalendar = await CalendarService.editCalendar(
         req.currentUser,
@@ -172,6 +175,7 @@ export default class CalendarController {
         description,
         colorHexCode,
         isNewMemberCalendar,
+        isLeadCalendar,
         req.organization
       );
       broadcastBayDashboardUpdate(req.organization.slug);
@@ -185,7 +189,7 @@ export default class CalendarController {
 
   static async getNewMemberEvents(req: Request, res: Response, next: NextFunction) {
     try {
-      const events = await CalendarService.getNewMemberEvents(req.organization);
+      const events = await CalendarService.getNewMemberEvents(req.currentUser, req.organization);
       res.status(200).json(events);
     } catch (error: unknown) {
       next(error);
@@ -224,6 +228,7 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
+        onlyAdminsOrAbove,
         requiresConfirmation,
         sendSlackNotifications,
         takeAttendance
@@ -248,6 +253,7 @@ export default class CalendarController {
         documents,
         description,
         onlyHeadsOrAbove,
+        onlyAdminsOrAbove,
         requiresConfirmation,
         sendSlackNotifications,
         takeAttendance
@@ -545,7 +551,7 @@ export default class CalendarController {
   //overall filtering for events
   static async getCalendarViewEvents(req: Request, res: Response, next: NextFunction) {
     try {
-      const filteredEvents = await CalendarService.getCalendarViewEvents(req.body, req.organization);
+      const filteredEvents = await CalendarService.getCalendarViewEvents(req.body, req.organization, req.currentUser);
       res.status(200).json(filteredEvents);
     } catch (error: unknown) {
       next(error);
@@ -554,7 +560,7 @@ export default class CalendarController {
 
   static async getAllCalendars(req: Request, res: Response, next: NextFunction) {
     try {
-      const calendars = await CalendarService.getAllCalendars(req.organization);
+      const calendars = await CalendarService.getAllCalendars(req.currentUser, req.organization);
       res.status(200).json(calendars);
     } catch (error: unknown) {
       next(error);

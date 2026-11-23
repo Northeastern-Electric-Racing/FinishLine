@@ -136,7 +136,7 @@ export const useCreateCalendar = () => {
   return useMutation<
     Calendar,
     Error,
-    { name: string; description: string; colorHexCode: string; isNewMemberCalendar: boolean }
+    { name: string; description: string; colorHexCode: string; isNewMemberCalendar: boolean; isLeadCalendar: boolean }
   >(
     async (payload) => {
       const { data } = await postCreateCalendar(payload);
@@ -155,7 +155,7 @@ export const useEditCalendar = (calendarId: string) => {
   return useMutation<
     Calendar,
     Error,
-    { name: string; description: string; colorHexCode: string; isNewMemberCalendar: boolean }
+    { name: string; description: string; colorHexCode: string; isNewMemberCalendar: boolean; isLeadCalendar: boolean }
   >(
     async (payload) => {
       const { data } = await postEditCalendar(calendarId, payload);

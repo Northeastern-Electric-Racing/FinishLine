@@ -89,6 +89,7 @@ export interface Calendar {
   dateCreated: Date;
   eventTypes: EventType[];
   isNewMemberCalendar: boolean;
+  isLeadCalendar: boolean;
 }
 
 export interface ScheduleSlot {
@@ -135,6 +136,7 @@ export interface EventType {
   documents: boolean;
   description: boolean;
   onlyHeadsOrAboveForEventCreation: boolean;
+  onlyAdminsOrAboveForEventCreation: boolean;
   requiresConfirmation: boolean;
   sendSlackNotifications: boolean;
   takeAttendance: boolean;
@@ -156,6 +158,7 @@ export interface EventTypeCreateArgs {
   documents: boolean;
   description: boolean;
   onlyHeadsOrAbove: boolean;
+  onlyAdminsOrAbove: boolean;
   requiresConfirmation: boolean;
   sendSlackNotifications: boolean;
   takeAttendance: boolean;

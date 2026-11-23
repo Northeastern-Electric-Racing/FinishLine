@@ -646,6 +646,7 @@ export const createTestDesignReviewEvent = async () => {
     true, // documents
     false, // description
     true, // onlyHeadsOrAbove
+    false, // onlyAdminsOrAbove
     true, // requiresConfirmation
     false // takeAttendance
   );
