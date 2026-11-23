@@ -189,7 +189,7 @@ export default class CalendarController {
 
   static async getNewMemberEvents(req: Request, res: Response, next: NextFunction) {
     try {
-      const events = await CalendarService.getNewMemberEvents(req.organization);
+      const events = await CalendarService.getNewMemberEvents(req.currentUser, req.organization);
       res.status(200).json(events);
     } catch (error: unknown) {
       next(error);

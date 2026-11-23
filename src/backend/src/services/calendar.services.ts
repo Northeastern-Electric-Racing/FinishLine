@@ -2606,6 +2606,9 @@ export default class CalendarService {
    * Gets all events that match the given filter arguments
    *
    * @param filters Filters for the events you want to get, which include member IDs, team IDs, event IDs, event type IDs, approval status, and date ranges
+   * @param organization the organization the events are in
+   * @param submitter the user viewing the events; events on lead calendars are hidden unless they are leadership or above.
+   * Omit only for internal server calls (e.g. busy-time calculation) that never expose event details, so nothing is hidden.
    *
    * @returns The all events that match all of the given filter arguments.
    *
@@ -2619,7 +2622,7 @@ export default class CalendarService {
     const { memberIds, teamIds, calendarIds, eventTypeIds, eventIds, approvalIds, startPeriod, endPeriod, statuses } =
       filters;
     const canSeeLeadCalendars =
-      !!submitter && (await userHasPermission(submitter.userId, organization.organizationId, isLeadership));
+      !submitter || (await userHasPermission(submitter.userId, organization.organizationId, isLeadership));
 
     // validate memberIds
     if (memberIds?.length) {
@@ -2832,7 +2835,7 @@ export default class CalendarService {
    * @returns The upcoming events on the org's new member calendar, with only their future slots, or an empty array if no
    * calendar is designated.
    */
-  static async getNewMemberEvents(organization: Organization): Promise<BaseEvent[]> {
+  static async getNewMemberEvents(submitter: User, organization: Organization): Promise<BaseEvent[]> {
     const newMemberCalendar = await prisma.calendar.findFirst({
       where: {
         organizationId: organization.organizationId,
@@ -2844,6 +2847,8 @@ export default class CalendarService {
 
     if (!newMemberCalendar) return [];
 
+    const canSeeLeadCalendars = await userHasPermission(submitter.userId, organization.organizationId, isLeadership);
+
     const now = new Date();
     const futureSlotWhere = scheduleSlotOverlapWhere(now);
 
@@ -2852,7 +2857,9 @@ export default class CalendarService {
         dateDeleted: null,
         eventType: {
           organizationId: organization.organizationId,
-          calendars: { some: { calendarId: newMemberCalendar.calendarId } }
+          calendars: { some: { calendarId: newMemberCalendar.calendarId } },
+          // hide event types that are also on a lead calendar from users below leadership
+          ...(canSeeLeadCalendars ? {} : { NOT: { calendars: { some: { isLeadCalendar: true } } } })
         },
         // events still being scheduled have no slots yet, only the date they were requested for
         ...eventInPeriodWhere(now)
