@@ -26,7 +26,8 @@ import {
   getAllOrgUsers,
   getAllOrgMembers,
   getCurrentUserApiToken,
-  generateApiToken
+  generateApiToken,
+  getUserSlackPhotoUrl
 } from '../apis/users.api';
 import {
   User,
@@ -99,6 +100,21 @@ export const useSingleUser = (id: string) => {
     const { data } = await getSingleUser(id);
     return data;
   });
+};
+
+/**
+ * Custom React Hook to supply the url of a user's Slack profile photo.
+ * @param id User ID of the user whose photo is requested.
+ */
+export const useUserSlackPhotoUrl = (id: string) => {
+  return useQuery<string | null, Error>(
+    ['users', id, 'slack-photo'],
+    async () => {
+      const { data } = await getUserSlackPhotoUrl(id);
+      return data.photoUrl;
+    },
+    { enabled: !!id, staleTime: 1000 * 60 * 60 }
+  );
 };
 
 /**
