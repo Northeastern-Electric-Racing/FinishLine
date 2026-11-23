@@ -17,6 +17,7 @@ export const bootstrapUserCreateInput = (): Prisma.UserCreateInput => ({
 
 export const organizationCreateInput = (userCreatedId: string): Prisma.OrganizationCreateInput => ({
   name: 'Northeastern Electric Racing',
+  slug: 'ner',
   description:
     'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Formula Hybrid + Electric Formula SAE (FSAE).',
   applicationLink: 'https://docs.google.com/forms/d/e/1FAIpQLSeCvG7GqmZm_gmSZiahbVTW9ZFpEWG0YfGQbkSB_whhHzxXpA/closedform',

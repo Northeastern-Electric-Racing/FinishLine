@@ -12,6 +12,10 @@ import {
   downloadFinanceImage,
   editReimbursementRequest,
   getAllReimbursementRequests,
+  getProjectSpending,
+  getReceiptFileIds,
+  getReimbursementRequestExport,
+  getSpendingByIndexCode,
   getAllReimbursements,
   getAllVendors,
   getCurrentUserReimbursementRequests,
@@ -57,7 +61,6 @@ import {
   deleteVendor,
   getAllSponsorTiers,
   editSponsor,
-  getCurrentUsersTeamsReimbursementRequests,
   deleteSponsorTask,
   editOtherProductReason,
   deleteAccountCode,
@@ -86,23 +89,26 @@ import {
   AccountCode,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
-  ReimbursementRequest,
+  ReimbursementRequestDetail,
+  ReimbursementRequestTableItem,
+  ProjectSpendingItem,
+  IndexCodeSpending,
   Vendor,
-  ReimbursementStatus,
   OtherReimbursementProductCreateArgs,
   WbsReimbursementProductCreateArgs,
-  ReimbursementStatusType,
   OtherProductReason,
+  WbsNumber,
+  wbsPipe,
+  startOfDay,
   Sponsor,
   SponsorTask,
   SponsorTier,
-  ReimbursementRequestComment,
   ReimbursementRequestData,
   SpendingBarData,
   CreateSponsorTask,
   ProspectiveSponsor
 } from 'shared';
-import { fullNamePipe } from '../utils/pipes';
+import { codeAndRefundSourceName, fullNamePipe } from '../utils/pipes';
 import { useGlobalCarFilter } from '../app/AppGlobalCarFilterContext';
 
 /**
@@ -136,7 +142,6 @@ export interface EditReimbursementRequestPayload extends CreateReimbursementRequ
 }
 
 export interface DownloadReceiptsFormInput {
-  fileIds: string[];
   startDate: Date;
   endDate: Date;
   refundSource: string;
@@ -305,11 +310,10 @@ export interface ReimbursementRequestCommentPayload {
  */
 export const useCreateReimbursementRequestComment = (reimbursementRequestId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementRequestComment, Error, ReimbursementRequestCommentPayload>(
+  return useMutation<void, Error, ReimbursementRequestCommentPayload>(
     ['reimbursement-requests', 'create', 'comment'],
     async (formData: ReimbursementRequestCommentPayload) => {
-      const { data } = await createReimbursementRequestComment(reimbursementRequestId, formData);
-      return data;
+      await createReimbursementRequestComment(reimbursementRequestId, formData);
     },
     {
       onSuccess: () => {
@@ -417,7 +421,7 @@ export const useUploadManyReceipts = () => {
  * @returns the created reimbursement request
  */
 export const useCreateReimbursementRequest = () => {
-  return useMutation<ReimbursementRequest, Error, CreateReimbursementRequestPayload>(
+  return useMutation<{ reimbursementRequestId: string }, Error, CreateReimbursementRequestPayload>(
     ['reimbursement-requests', 'create'],
     async (formData: CreateReimbursementRequestPayload) => {
       const { data } = await createReimbursementRequest(formData);
@@ -433,21 +437,19 @@ export const useCreateReimbursementRequest = () => {
  * @returns the edited reimbursement request
  */
 export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
-  return useMutation<ReimbursementRequest, Error, EditReimbursementRequestPayload>(
+  return useMutation<void, Error, EditReimbursementRequestPayload>(
     ['reimbursement-requests', 'edit'],
     async (formData: EditReimbursementRequestPayload) => {
-      const { data } = await editReimbursementRequest(reimbursementRequestId, formData);
-      return data;
+      await editReimbursementRequest(reimbursementRequestId, formData);
     }
   );
 };
 
 export const useAssignMemberToRR = (reimbursementRequestId: string) => {
-  return useMutation<ReimbursementRequest, Error, { assigneeId: string }>(
+  return useMutation<void, Error, { assigneeId: string }>(
     ['reimbursement-requests', 'edit'],
     async (payload: { assigneeId: string }) => {
-      const { data } = await assignMemberToRR(reimbursementRequestId, payload);
-      return data;
+      await assignMemberToRR(reimbursementRequestId, payload);
     }
   );
 };
@@ -469,7 +471,7 @@ export const useGetAllAccountCodes = () => {
  */
 export const useCurrentUserReimbursementRequests = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(
+  return useQuery<ReimbursementRequestTableItem[], Error>(
     ['reimbursement-requests', 'user', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
     async () => {
       const { data } = await getCurrentUserReimbursementRequests();
@@ -481,28 +483,15 @@ export const useCurrentUserReimbursementRequests = () => {
 /**
  * Custom React Hook to get the reimbursement requests assigned to the current user
  */
-export const useCurrentUserAssignedReimbursementRequests = () => {
+export const useCurrentUserAssignedReimbursementRequests = (enabled = true) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(
+  return useQuery<ReimbursementRequestTableItem[], Error>(
     ['reimbursement-requests', 'assignee', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
     async () => {
       const { data } = await getCurrentUserAssignedReimbursementRequests();
       return data;
-    }
-  );
-};
-
-/**
- * Custom React Hook to get the reimbursement requests for the current user's teams
- */
-export const useCurrentUsersTeamsReimbursementRequests = () => {
-  const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(
-    ['reimbursement-requests', 'teams', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
-    async () => {
-      const { data } = await getCurrentUsersTeamsReimbursementRequests();
-      return data;
-    }
+    },
+    { enabled }
   );
 };
 
@@ -550,13 +539,46 @@ export const useSetTaxExemptStatus = () => {
 
 /**
  * Custom React Hook to get all the reimbursement requests
+ *
+ * @param enabled whether to fetch; only finance members and heads can see them all
  */
-export const useAllReimbursementRequests = () => {
+export const useAllReimbursementRequests = (enabled = true) => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(
+  return useQuery<ReimbursementRequestTableItem[], Error>(
     ['reimbursement-requests', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
     async () => {
       const { data } = await getAllReimbursementRequests();
+      return data;
+    },
+    { enabled }
+  );
+};
+
+/**
+ * The reimbursement requests with a product bought for the given project, for its Budget tab
+ *
+ * @param enabled whether to fetch; only finance members and heads can
+ */
+export const useProjectSpending = (wbsNum: WbsNumber, enabled = true) => {
+  return useQuery<ProjectSpendingItem[], Error>(
+    ['reimbursement-requests', 'project', wbsPipe(wbsNum)],
+    async () => {
+      const { data } = await getProjectSpending(wbsNum);
+      return data;
+    },
+    { enabled }
+  );
+};
+
+/**
+ * How much has been spent from each index code, for the Total Amount Spent modal
+ */
+export const useSpendingByIndexCode = () => {
+  const { selectedCar } = useGlobalCarFilter();
+  return useQuery<IndexCodeSpending[], Error>(
+    ['reimbursement-requests', 'spending-by-index-code', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
+    async () => {
+      const { data } = await getSpendingByIndexCode();
       return data;
     }
   );
@@ -590,11 +612,10 @@ export const useAllReimbursements = () => {
  */
 export const useMarkReimbursementRequestAsDelivered = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementRequest, Error, MarkDeliveredRequestPayload>(
+  return useMutation<void, Error, MarkDeliveredRequestPayload>(
     ['reimbursement-requests', 'edit'],
     async (markDeliveredData: MarkDeliveredRequestPayload) => {
-      const { data } = await markReimbursementRequestAsDelivered(id, markDeliveredData);
-      return data;
+      await markReimbursementRequestAsDelivered(id, markDeliveredData);
     },
     {
       onSuccess: () => {
@@ -612,11 +633,10 @@ export const useMarkReimbursementRequestAsDelivered = (id: string) => {
  */
 export const useMarkReimbursementRequestAsReimbursed = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementStatus, Error>(
+  return useMutation<void, Error>(
     ['reimbursement-requests', 'edit'],
     async () => {
-      const { data } = await markReimbursementRequestAsReimbursed(id);
-      return data;
+      await markReimbursementRequestAsReimbursed(id);
     },
     {
       onSuccess: () => {
@@ -633,7 +653,7 @@ export const useMarkReimbursementRequestAsReimbursed = (id: string) => {
  * @returns the reimbursement request
  */
 export const useSingleReimbursementRequest = (id: string) => {
-  return useQuery<ReimbursementRequest, Error>(['reimbursement-requests', id], async () => {
+  return useQuery<ReimbursementRequestDetail, Error>(['reimbursement-requests', id], async () => {
     const { data } = await getSingleReimbursementRequest(id);
     return data;
   });
@@ -646,11 +666,10 @@ export const useSingleReimbursementRequest = (id: string) => {
  */
 export const useDeleteReimbursementRequest = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementRequest, Error>(
+  return useMutation<void, Error>(
     ['reimbursement-requests', 'delete'],
     async () => {
-      const { data } = await deleteReimbursementRequest(id);
-      return data;
+      await deleteReimbursementRequest(id);
     },
     {
       onSuccess: () => {
@@ -668,11 +687,10 @@ export const useDeleteReimbursementRequest = (id: string) => {
  */
 export const useInputReimbursementRequestInSabo = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementStatus, Error>(
+  return useMutation<void, Error>(
     ['reimbursement-requests', 'edit'],
     async () => {
-      const { data } = await inputReimbursementRequestInSabo(id);
-      return data;
+      await inputReimbursementRequestInSabo(id);
     },
     {
       onSuccess: () => {
@@ -691,11 +709,10 @@ export const useInputReimbursementRequestInSabo = (id: string) => {
  */
 export const useMarkReimbursementRequestAsSaboSubmitted = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementStatus, Error>(
+  return useMutation<void, Error>(
     ['reimbursement-requests', 'edit'],
     async () => {
-      const { data } = await markReimbursementRequestAsSaboSubmitted(id);
-      return data;
+      await markReimbursementRequestAsSaboSubmitted(id);
     },
     {
       onSuccess: () => {
@@ -713,11 +730,10 @@ export const useMarkReimbursementRequestAsSaboSubmitted = (id: string) => {
  */
 export const useLeadershipApproveReimbursementRequest = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementStatus, Error>(
+  return useMutation<void, Error>(
     ['reimbursement-requests', 'edit'],
     async () => {
-      const { data } = await leadershipApproveReimbursementRequest(id);
-      return data;
+      await leadershipApproveReimbursementRequest(id);
     },
     {
       onSuccess: () => {
@@ -735,11 +751,10 @@ export const useLeadershipApproveReimbursementRequest = (id: string) => {
  */
 export const useDenyReimbursementRequest = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementStatus, Error>(
+  return useMutation<void, Error>(
     ['reimbursement-requests', 'edit'],
     async () => {
-      const { data } = await denyReimbursementRequest(id);
-      return data;
+      await denyReimbursementRequest(id);
     },
     {
       onSuccess: () => {
@@ -756,7 +771,11 @@ export const useDenyReimbursementRequest = (id: string) => {
  */
 export const useDownloadPDFOfImages = () => {
   return useMutation(['reimbursement-requests'], async (formData: DownloadReceiptsFormInput) => {
-    const promises = formData.fileIds.map((fileId) => {
+    // every request created from the start of the first day through the end of the last, in the user's timezone
+    const startPeriod = startOfDay(formData.startDate);
+    const endPeriod = new Date(startOfDay(formData.endDate).getTime() + 24 * 60 * 60 * 1000 - 1);
+    const { data: fileIds } = await getReceiptFileIds(startPeriod, endPeriod, formData.refundSource);
+    const promises = fileIds.map((fileId) => {
       return downloadFinanceImage(fileId);
     });
 
@@ -772,18 +791,14 @@ export const useDownloadPDFOfImages = () => {
 
 export const useDownloadCSVFileOfReimbursementRequests = () => {
   return useMutation(['reimbursement-requests'], async () => {
-    const { data } = await getAllReimbursementRequests();
+    const { data } = await getReimbursementRequestExport();
     const csvContent =
       'data:text/csv;charset=utf-8,' +
       'SABO ID,FinishLine ID,Recipient,Total Cost,Status,Account,Account Code,Date Created,Date Delivered,Date Submitted,Vendor\n' +
       data
         .map(
           (rr) =>
-            `${rr.saboId},${rr.identifier},${fullNamePipe(rr.recipient)},${rr.totalCost},${
-              rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
-            },${rr.indexCode},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${
-              rr.reimbursementStatuses.find((rs) => rs.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated ?? ''
-            },${rr.vendor.name}`
+            `${rr.saboId},${rr.identifier},${fullNamePipe(rr.recipient)},${rr.totalCost},${rr.currentStatus},${codeAndRefundSourceName(rr.indexCode)},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${rr.dateSubmittedToSabo ?? ''},${rr.vendor.name}`
         )
         .join('\n');
     const encodedUri = encodeURI(csvContent);
@@ -800,9 +815,12 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
  *
  * @returns the list of Reimbursement Reqeusts that are pending Advisor Approval
  */
+/**
+ * The SABO numbers of the requests waiting on the advisor
+ */
 export const useGetPendingAdvisorList = () => {
   const { selectedCar } = useGlobalCarFilter();
-  return useQuery<ReimbursementRequest[], Error>(
+  return useQuery<string[], Error>(
     ['reimbursement-requests', 'pending-advisors', selectedCar === 'all-cars' ? 'all-cars' : selectedCar.id],
     async () => {
       const { data } = await getPendingAdvisorList();
@@ -817,11 +835,10 @@ export const useGetPendingAdvisorList = () => {
  * @returns the mutation to send the pending advisor list
  */
 export const useSendPendingAdvisorList = () => {
-  return useMutation<{ message: string }, Error, string[]>(
+  return useMutation<void, Error, string[]>(
     ['reimbursement-requests', 'send-pending-advisor'],
     async (saboNumbers: string[]) => {
-      const { data } = await sendPendingAdvisorList(saboNumbers);
-      return data;
+      await sendPendingAdvisorList(saboNumbers);
     }
   );
 };
@@ -976,11 +993,10 @@ export const useDeleteVendor = () => {
  */
 export const useMarkPendingFinance = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementStatus, Error>(
+  return useMutation<void, Error>(
     ['reimbursement-requests', 'pending finance'],
     async () => {
-      const { data } = await markPendingFinance(id);
-      return data;
+      await markPendingFinance(id);
     },
     {
       onSuccess: () => {
@@ -998,11 +1014,10 @@ export const useMarkPendingFinance = (id: string) => {
  */
 export const useRequestReimbursementRequestChanges = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementStatus, Error>(
+  return useMutation<void, Error>(
     ['reimbursement-requests', 'request changes'],
     async () => {
-      const { data } = await requestReimbursementRequestChanges(id);
-      return data;
+      await requestReimbursementRequestChanges(id);
     },
     {
       onSuccess: () => {

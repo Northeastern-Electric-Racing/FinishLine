@@ -4,11 +4,12 @@ import { useHistory } from 'react-router-dom';
 import { useGetAllCars } from '../../hooks/cars.hooks';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { RetrospectiveProjectPreview, Task, TeamPreview, TeamType, WbsElementPreview } from 'shared';
+import { RetrospectiveProject, GanttProjectTask, TeamPreview, TeamType, BaseWbsElement } from 'shared';
 import {
   constructCollectionsFromTeamPreviewAndProjects,
   GanttCollection,
   RetroGanttFilters,
+  reviveRetrospectiveProject,
   transformRetrospectiveProjectToGanttTask,
   useGanttFilters
 } from '../../utils/gantt.utils';
@@ -22,7 +23,6 @@ import GanttChartColorLegend from '../GanttPage/ProjectGanttChart/GanttChartColo
 import GanttChartFiltersButton from '../GanttPage/ProjectGanttChart/GanttChartFiltersButton';
 import { Box } from '@mui/system';
 import { add, sub } from 'date-fns';
-import { retrospectiveProjectPreviewTransformer } from '../../apis/transformers/projects.transformers';
 import { DatePicker } from '@mui/x-date-pickers';
 
 const RetrospectivePage = () => {
@@ -41,7 +41,7 @@ const RetrospectivePage = () => {
   const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
 
   const [searchText, setSearchText] = useState<string>('');
-  const [collections, setCollections] = useState<GanttCollection<TeamPreview, WbsElementPreview | Task>[]>([]);
+  const [collections, setCollections] = useState<GanttCollection<TeamPreview, BaseWbsElement | GanttProjectTask>[]>([]);
 
   const {
     data: projects,
@@ -52,7 +52,7 @@ const RetrospectivePage = () => {
 
   useEffect(() => {
     const requestRefresh = (
-      projects: RetrospectiveProjectPreview[],
+      projects: RetrospectiveProject[],
       teams: TeamPreview[],
       filters: RetroGanttFilters,
       searchText: string
@@ -64,7 +64,7 @@ const RetrospectivePage = () => {
           filters,
           searchText,
           transformRetrospectiveProjectToGanttTask,
-          retrospectiveProjectPreviewTransformer
+          reviveRetrospectiveProject
         )
       );
     };

@@ -2,14 +2,14 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { ProjectPreview, WbsElementPreview, wbsNamePipe, wbsPipe } from 'shared';
+import { wbsNamePipe, wbsPipe } from 'shared';
 import { routes } from '../../utils/routes';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import { FormControl, FormLabel } from '@mui/material';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import NERAutocomplete from '../../components/NERAutocomplete';
-import { useAllProjects } from '../../hooks/projects.hooks';
+import { useProjectsDropdown, useWorkPackagesDropdown } from '../../hooks/dropdowns.hooks';
 import { useAllMembers } from '../../hooks/users.hooks';
 import { userToAutocompleteOption } from '../../utils/teams.utils';
 import ErrorPage from '../ErrorPage';
@@ -57,31 +57,36 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     formState: { errors }
   } = changeRequestFormReturn;
 
-  const { isLoading, isError, error, data: projects } = useAllProjects();
+  // the picker only needs names and wbs numbers
+  const { isLoading, isError, error, data: projects } = useProjectsDropdown();
+  const {
+    isLoading: workPackagesIsLoading,
+    isError: workPackagesIsError,
+    error: workPackagesError,
+    data: workPackages
+  } = useWorkPackagesDropdown();
   const { isLoading: membersIsLoading, isError: membersIsError, error: membersError, data: members } = useAllMembers();
 
   if (isError) return <ErrorPage message={error?.message} />;
+  if (workPackagesIsError) return <ErrorPage message={workPackagesError?.message} />;
   if (membersIsError) return <ErrorPage message={membersError?.message} />;
-  if (isLoading || !projects || membersIsLoading || !members) return <LoadingIndicator />;
+  if (isLoading || !projects || workPackagesIsLoading || !workPackages || membersIsLoading || !members)
+    return <LoadingIndicator />;
 
   const memberOptions = members.map(userToAutocompleteOption);
 
   const wbsDropdownOptions: { label: string; id: string }[] = [];
 
-  projects.forEach((project: ProjectPreview) => {
+  projects.forEach((project) => {
     wbsDropdownOptions.push({
       label: `${wbsNamePipe(project)}`,
       id: wbsPipe(project.wbsNum)
     });
-    project.workPackages.forEach((workPackage: WbsElementPreview) => {
-      wbsDropdownOptions.push({
-        label: `${wbsNamePipe({
-          wbsNum: workPackage.wbsNum,
-          name: workPackage.name,
-          projectName: project.name
-        })}`,
-        id: wbsPipe(workPackage.wbsNum)
-      });
+  });
+  workPackages.forEach((workPackage) => {
+    wbsDropdownOptions.push({
+      label: `${wbsNamePipe(workPackage)}`,
+      id: wbsPipe(workPackage.wbsNum)
     });
   });
 

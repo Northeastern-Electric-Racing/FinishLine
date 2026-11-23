@@ -1,10 +1,8 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { ReimbursementRequest } from 'shared';
-import { useGetAllIndexCodes } from '../../../hooks/finance.hooks';
+import { useGetAllIndexCodes, useSpendingByIndexCode } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { isReimbursementRequestDenied } from '../../../utils/reimbursement-request.utils';
 import { centsToDollar } from '../../../utils/pipes';
 import NERModal from '../../../components/NERModal';
 import DetailDisplay from '../../../components/DetailDisplay';
@@ -12,32 +10,37 @@ import DetailDisplay from '../../../components/DetailDisplay';
 interface TotalAmountSpentModalProps {
   open: boolean;
   onHide: () => void;
-  allReimbursementRequests: ReimbursementRequest[];
 }
 
-const TotalAmountSpentModal: React.FC<TotalAmountSpentModalProps> = ({ open, onHide, allReimbursementRequests }) => {
+const TotalAmountSpentModal: React.FC<TotalAmountSpentModalProps> = ({ open, onHide }) => {
   const {
     data: indexCodes,
     isLoading: indexCodesIsLoading,
     isError: indexCodesIsError,
     error: indexCodesError
   } = useGetAllIndexCodes();
+  // totalled by the server, leaving out denied requests
+  const {
+    data: spending,
+    isLoading: spendingIsLoading,
+    isError: spendingIsError,
+    error: spendingError
+  } = useSpendingByIndexCode();
 
   if (indexCodesIsError) {
     return <ErrorPage error={indexCodesError} />;
   }
+  if (spendingIsError) {
+    return <ErrorPage error={spendingError} />;
+  }
 
-  if (!indexCodes || indexCodesIsLoading) {
+  if (!indexCodes || indexCodesIsLoading || !spending || spendingIsLoading) {
     return <LoadingIndicator />;
   }
 
-  const unDeniedReimbursementRequests = allReimbursementRequests.filter((request) => !isReimbursementRequestDenied(request));
-
   const indexCodeSpendingMap = indexCodes.reduce(
     (acc, indexCode) => {
-      const totalCents = unDeniedReimbursementRequests
-        .filter((request) => request.indexCode.indexCodeId === indexCode.indexCodeId)
-        .reduce((sum, request) => sum + request.totalCost, 0);
+      const totalCents = spending.find((entry) => entry.indexCodeId === indexCode.indexCodeId)?.totalSpent ?? 0;
 
       acc.push({
         name: indexCode.name,

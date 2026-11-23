@@ -881,6 +881,7 @@ describe('Create Rules Tests', () => {
       const otherOrganization = await prisma.organization.create({
         data: {
           name: 'Other Org',
+          slug: 'rule-other-org',
           description: 'Another organization',
           applicationLink: '',
           userCreated: {
@@ -968,6 +969,7 @@ describe('Create Rules Tests', () => {
       const wrongOrg = await prisma.organization.create({
         data: {
           name: 'wrong org',
+          slug: 'rule-wrong-org',
           userCreatedId: batman.userId,
           description: 'desc',
           applicationLink: '1'
@@ -1120,6 +1122,7 @@ describe('Rule Tests', () => {
     otherOrg = await prisma.organization.create({
       data: {
         name: 'Other Organization',
+        slug: 'rule-other-organization',
         description: 'Other test organization',
         applicationLink: '',
         userCreated: {
@@ -2706,6 +2709,7 @@ describe('Rule Tests', () => {
       const org2 = await prisma.organization.create({
         data: {
           name: 'Joe mama',
+          slug: 'rule-joe-mama-org2',
           description: 'Joe mama`s organization',
           applicationLink: '',
           userCreated: {

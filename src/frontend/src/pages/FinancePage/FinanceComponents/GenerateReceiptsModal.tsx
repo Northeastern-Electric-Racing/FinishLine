@@ -7,7 +7,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDownloadPDFOfImages } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { ReimbursementRequest, startOfDay } from 'shared';
 import { useState } from 'react';
 
 const schema = yup.object().shape({
@@ -25,10 +24,9 @@ interface GenerateReceiptsFormInput {
 interface GenerateReceiptsModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
-  allReimbursementRequests?: ReimbursementRequest[];
 }
 
-const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: GenerateReceiptsModalProps) => {
+const GenerateReceiptsModal = ({ open, setOpen }: GenerateReceiptsModalProps) => {
   const toast = useToast();
 
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
@@ -39,18 +37,9 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
   const refundSourceOptions = ['BUDGET', 'CASH', 'BOTH'];
 
   const onGenerateReceiptsSubmit = async (data: GenerateReceiptsFormInput) => {
-    if (!allReimbursementRequests) return;
-
-    const filteredRequests = allReimbursementRequests
-      .filter((val: ReimbursementRequest) => startOfDay(val.dateCreated) >= startOfDay(data.startDate))
-      .filter((val: ReimbursementRequest) => startOfDay(val.dateCreated) <= startOfDay(data.endDate))
-      .filter((val: ReimbursementRequest) => data.refundSource === 'BOTH' || val.indexCode.name === data.refundSource);
-
-    const receipts = filteredRequests?.flatMap((request: ReimbursementRequest) => request.receiptPictures);
-
     try {
+      // the server finds the receipts for the period and refund source
       await mutateAsync({
-        fileIds: receipts.map((receipt) => receipt.googleFileId),
         startDate: data.startDate,
         endDate: data.endDate,
         refundSource: data.refundSource

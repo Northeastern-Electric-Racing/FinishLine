@@ -5,12 +5,14 @@ export default class AnnouncementController {
   static async getUserUnreadAnnouncements(req: Request, res: Response, next: NextFunction) {
     try {
       const { organization, currentUser } = req;
+      const cursor = req.query.cursor as string | undefined;
 
-      const unreadAnnouncements = await AnnouncementService.getUserUnreadAnnouncements(
+      const page = await AnnouncementService.getUserUnreadAnnouncements(
         currentUser.userId,
-        organization.organizationId
+        organization.organizationId,
+        cursor
       );
-      res.status(200).json(unreadAnnouncements);
+      res.status(200).json(page);
     } catch (error: unknown) {
       next(error);
     }
@@ -19,14 +21,10 @@ export default class AnnouncementController {
   static async removeUserAnnouncement(req: Request, res: Response, next: NextFunction) {
     try {
       const { announcementId } = req.params as Record<string, string>;
-      const { organization, currentUser } = req;
+      const { currentUser } = req;
 
-      const unreadAnnouncements = await AnnouncementService.removeUserAnnouncement(
-        currentUser.userId,
-        announcementId,
-        organization.organizationId
-      );
-      res.status(200).json(unreadAnnouncements);
+      await AnnouncementService.removeUserAnnouncement(currentUser.userId, announcementId, req.organization.organizationId);
+      res.sendStatus(204);
     } catch (error: unknown) {
       next(error);
     }

@@ -4,7 +4,7 @@
  */
 import { useFieldArray, useForm } from 'react-hook-form';
 import {
-  OtherProductReason,
+  OtherProductReasonArg,
   OtherReimbursementProductCreateArgs,
   ReimbursementProductFormArgs,
   ReimbursementReceiptUploadArgs,
@@ -447,7 +447,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       reimbursementProducts.forEach((product) => {
         if (product.reason && 'otherProductReasonId' in product.reason) {
           otherReimbursementProducts.push({
-            reason: product.reason as OtherProductReason,
+            reason: product.reason as OtherProductReasonArg,
             cost: product.cost,
             name: product.name,
             refundSources: product.refundSources
@@ -508,7 +508,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
           reimbursementProducts.forEach((product) => {
             if (product.reason && 'otherProductReasonId' in product.reason) {
               otherReimbursementProducts.push({
-                reason: product.reason as OtherProductReason,
+                reason: product.reason as OtherProductReasonArg,
                 cost: product.cost,
                 name: product.name,
                 refundSources: product.refundSources

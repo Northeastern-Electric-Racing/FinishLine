@@ -1,8 +1,8 @@
 import { Box, Tooltip, IconButton } from '@mui/material';
 import { useLocation, useHistory, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { equalsWbsNumber, isGuest, ReimbursementRequest, validateWBS } from 'shared';
-import { ReimbursementProduct, ReimbursementStatusType } from 'shared';
+import { equalsWbsNumber, isGuest, ReimbursementRequestTableItem, validateWBS } from 'shared';
+import { ReimbursementStatusType } from 'shared';
 import { undefinedPipe, fullNamePipe, centsToDollar, datePipe, dateUndefinedPipe } from '../../../utils/pipes';
 import {
   createReimbursementRequestRowData,
@@ -17,9 +17,9 @@ import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 interface ReimbursementRequestInfoProps {
-  userReimbursementRequests: ReimbursementRequest[];
-  assignedReimbursementRequests: ReimbursementRequest[];
-  allReimbursementRequests?: ReimbursementRequest[];
+  userReimbursementRequests: ReimbursementRequestTableItem[];
+  assignedReimbursementRequests: ReimbursementRequestTableItem[];
+  allReimbursementRequests?: ReimbursementRequestTableItem[];
   canViewAllReimbursementRequests?: boolean;
   currentTab?: number;
   statuses?: ReimbursementStatusType[];
@@ -156,7 +156,7 @@ const ReimbursementRequestInfo = ({
         flex: 1,
         minWidth: 110,
         valueGetter: (params: any) =>
-          params.row.reimbursementProducts.map((product: ReimbursementProduct) => product.name).join(', ')
+          params.row.reimbursementProducts.map((product: { name?: string }) => product.name).join(', ')
       },
       {
         field: 'identifier',
@@ -223,7 +223,7 @@ const ReimbursementRequestInfo = ({
     return cols;
   };
 
-  const mapRow = (request: ReimbursementRequest): MapRowResult<ReimbursementRequest> => {
+  const mapRow = (request: ReimbursementRequestTableItem): MapRowResult<ReimbursementRequestTableItem> => {
     const row = createReimbursementRequestRowData(request);
     return {
       ...request,
@@ -233,7 +233,7 @@ const ReimbursementRequestInfo = ({
     };
   };
 
-  const searchFilter = (term: string, row: MapRowResult<ReimbursementRequest>): boolean => {
+  const searchFilter = (term: string, row: MapRowResult<ReimbursementRequestTableItem>): boolean => {
     if (!term) return true;
 
     const rowData = row.raw ? createReimbursementRequestRowData(row.raw) : row;
