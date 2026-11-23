@@ -14,7 +14,7 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import WorkPackagesService from '../../src/services/work-packages.services';
 import { WorkPackage } from '../../src/prisma/context';
 
-describe('Change Request Tests', () => {
+describe('Work Package Deadline Notifications', () => {
   let orgId: string;
   let organization: Organization;
   let user: User;
@@ -26,16 +26,6 @@ describe('Change Request Tests', () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
     user = await createTestUser(supermanAdmin, orgId);
-    await prisma.wBS_Element.create({
-      data: {
-        carNumber: 12,
-        projectNumber: 13,
-        workPackageNumber: 14,
-        name: 'test wbs',
-        organizationId: orgId,
-        status: WBS_Element_Status.INACTIVE
-      }
-    });
 
     const car = await createTestCar(orgId, user.userId, 2);
     const project = await createTestProject(user, orgId, undefined, car.carId, 2, 1);
@@ -87,7 +77,7 @@ describe('Change Request Tests', () => {
           workPackageId: wp.workPackageId
         },
         data: {
-          startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // tomorrow
+          startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days later
           duration: 10
         }
       });
@@ -309,33 +299,33 @@ describe('Change Request Tests', () => {
       );
       expect(sendMessageSpy).toHaveBeenCalledTimes(0);
     });
-  });
 
-  it('sends a message for both the end date and start date being today', async () => {
-    await prisma.work_Package.update({
-      where: {
-        workPackageId: wp.workPackageId
-      },
-      data: {
-        startDate: new Date(Date.now()), // today
-        duration: 0
-      }
+    it('sends a message for both the end date and start date being today', async () => {
+      await prisma.work_Package.update({
+        where: {
+          workPackageId: wp.workPackageId
+        },
+        data: {
+          startDate: new Date(Date.now()), // today
+          duration: 0
+        }
+      });
+
+      const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
+      await WorkPackagesService.sendWorkPackageDeadlineNotifications();
+      expect(sendMessageSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date is today.'),
+        expect.any(String),
+        expect.any(String)
+      );
+      expect(sendMessageSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('The work package, 2.1.1, is still not complete. The end date is today.'),
+        expect.any(String),
+        expect.any(String)
+      );
+      expect(sendMessageSpy).toHaveBeenCalledTimes(2);
     });
-
-    const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
-    await WorkPackagesService.sendWorkPackageDeadlineNotifications();
-    expect(sendMessageSpy).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.stringContaining('The work package, 2.1.1, is still inactive. The start date is today.'),
-      expect.any(String),
-      expect.any(String)
-    );
-    expect(sendMessageSpy).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.stringContaining('The work package, 2.1.1, is still not complete. The end date is today.'),
-      expect.any(String),
-      expect.any(String)
-    );
-    expect(sendMessageSpy).toHaveBeenCalledTimes(2);
   });
 });

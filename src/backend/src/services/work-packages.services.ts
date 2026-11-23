@@ -241,7 +241,7 @@ export default class WorkPackagesService {
       const { teams } = workPackage.project;
 
       if (startDateInactive) {
-        const dateRelation = WorkPackagesService.GetBeforeNowOrAfter(currDay, workPackage.startDate);
+        const dateRelation = WorkPackagesService.getBeforeNowOrAfter(currDay, workPackage.startDate);
         const startDateMessage =
           'The work package, ' +
           wbsPipe(workPackage.wbsElement) +
@@ -252,7 +252,7 @@ export default class WorkPackagesService {
         teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText));
       }
       if (endDateNotComplete) {
-        const dateRelation = WorkPackagesService.GetBeforeNowOrAfter(
+        const dateRelation = WorkPackagesService.getBeforeNowOrAfter(
           currDay,
           calculateEndDate(workPackage.startDate, workPackage.duration)
         );
@@ -274,7 +274,7 @@ export default class WorkPackagesService {
    * @param comparisonDate given date to compare with
    * @returns A string that states whether the given currDay is before / after / same day as the comparisonDate
    */
-  private static GetBeforeNowOrAfter(currDay: Date, comparisonDate: Date) {
+  private static getBeforeNowOrAfter(currDay: Date, comparisonDate: Date) {
     if (isWithinBuffer(currDay, comparisonDate, 0)) {
       return 'is today';
     }
