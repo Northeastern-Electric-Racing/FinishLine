@@ -93,7 +93,6 @@ describe('Change Request Tests', () => {
       });
 
       const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
-      console.log(sendMessageSpy.mock.calls);
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
 
       expect(sendMessageSpy).not.toHaveBeenCalledWith(
@@ -117,7 +116,6 @@ describe('Change Request Tests', () => {
       });
 
       const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
-      console.log(sendMessageSpy.mock.calls);
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
@@ -141,7 +139,6 @@ describe('Change Request Tests', () => {
       });
 
       const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
-      console.log(sendMessageSpy.mock.calls);
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
@@ -165,7 +162,6 @@ describe('Change Request Tests', () => {
       });
 
       const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
-      console.log(sendMessageSpy.mock.calls);
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
@@ -189,7 +185,6 @@ describe('Change Request Tests', () => {
       });
 
       const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
-      console.log(sendMessageSpy.mock.calls);
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
 
       expect(sendMessageSpy).not.toHaveBeenCalledWith(
@@ -213,7 +208,6 @@ describe('Change Request Tests', () => {
       });
 
       const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
-      console.log(sendMessageSpy.mock.calls);
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
 
       expect(sendMessageSpy).not.toHaveBeenCalledWith(
@@ -237,7 +231,6 @@ describe('Change Request Tests', () => {
       });
 
       const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
-      console.log(sendMessageSpy.mock.calls);
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
@@ -261,7 +254,6 @@ describe('Change Request Tests', () => {
       });
 
       const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
-      console.log(sendMessageSpy.mock.calls);
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
@@ -284,7 +276,6 @@ describe('Change Request Tests', () => {
       });
 
       const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
-      console.log(sendMessageSpy.mock.calls);
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
@@ -308,7 +299,6 @@ describe('Change Request Tests', () => {
       });
 
       const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
-      console.log(sendMessageSpy.mock.calls);
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
 
       expect(sendMessageSpy).not.toHaveBeenCalledWith(
@@ -333,7 +323,6 @@ describe('Change Request Tests', () => {
     });
 
     const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
-    console.log(sendMessageSpy.mock.calls);
     await WorkPackagesService.sendWorkPackageDeadlineNotifications();
     expect(sendMessageSpy).toHaveBeenCalledWith(
       expect.any(String),
