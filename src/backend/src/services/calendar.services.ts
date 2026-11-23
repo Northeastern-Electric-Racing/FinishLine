@@ -2572,8 +2572,6 @@ export default class CalendarService {
       filters;
     const canSeeLeadCalendars =
       !!submitter && (await userHasPermission(submitter.userId, organization.organizationId, isLeadership));
-    const canCreateAdminEventTypes =
-      !!submitter && (await userHasPermission(submitter.userId, organization.organizationId, isAdmin));
 
     // validate memberIds
     if (memberIds?.length) {
@@ -2631,16 +2629,12 @@ export default class CalendarService {
           organization: { organizationId: organization.organizationId },
           dateDeleted: null
         },
-        select: { eventTypeId: true, onlyAdminsOrAboveForEventCreation: true }
+        select: { eventTypeId: true }
       });
       if (foundEventTypes.length !== eventTypeIds.length) {
         const missingIds = eventTypeIds.filter((id) => !foundEventTypes.some((eventType) => eventType.eventTypeId === id));
         throw new NotFoundException('Event Type', missingIds.join(', '));
       }
-      const allowedIds = foundEventTypes
-        .filter((eventType) => canCreateAdminEventTypes || !eventType.onlyAdminsOrAboveForEventCreation)
-        .map((eventType) => eventType.eventTypeId);
-      eventTypeIds.splice(0, eventTypeIds.length, ...allowedIds);
     }
 
     // validate eventIds
@@ -2723,13 +2717,6 @@ export default class CalendarService {
               }
             }
           }
-        }
-      });
-    }
-    if (!canCreateAdminEventTypes) {
-      andConditions.push({
-        eventType: {
-          is: { onlyAdminsOrAboveForEventCreation: false }
         }
       });
     }
