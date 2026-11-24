@@ -189,7 +189,11 @@ export default class ExecSummaryServices {
       throw new NotFoundException('Competition Documents Summary', executiveSummaryId);
     }
 
-    if (submittedOnTimeCount !== undefined && submittedOnTimeCount !== null && (!Number.isInteger(submittedOnTimeCount) || submittedOnTimeCount < 0)) {
+    if (
+      submittedOnTimeCount !== undefined &&
+      submittedOnTimeCount !== null &&
+      (!Number.isInteger(submittedOnTimeCount) || submittedOnTimeCount < 0)
+    ) {
       throw new HttpException(400, 'Submitted on time count must be a non-negative integer');
     }
 
