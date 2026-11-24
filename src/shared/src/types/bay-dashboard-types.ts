@@ -23,6 +23,10 @@ export const TEXT_FIELD_MAX_LENGTH: Partial<Record<BayDashboardWidgetSize, numbe
   [BayDashboardWidgetSize.MEDIUM]: 160
 };
 
+export const DEFAULT_ROTATION_SECONDS = 30;
+
+export type RotationSecondsBySize = Partial<Record<BayDashboardWidgetSize, number>>;
+
 /**
  * Only what the TV needs to render a widget
  */

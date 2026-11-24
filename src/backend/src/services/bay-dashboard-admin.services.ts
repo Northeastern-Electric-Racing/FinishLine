@@ -21,6 +21,7 @@ import {
   bayDashboardWidgetSizeTransformer,
   bayDashboardWidgetTypeTransformer
 } from '../transformers/bay-dashboard.transformer.js';
+import { getRotationSecondsBySize } from './bay-dashboard.services.js';
 import { widgetDetails } from '../utils/bay-dashboard.utils.js';
 import {
   AccessDeniedException,
@@ -63,7 +64,10 @@ export default class BayDashboardAdminService {
       ...getBayDashboardConfigQueryArgs()
     });
 
-    return config ? bayDashboardConfigTransformer(config) : null;
+    if (!config) return null;
+
+    const rotations = await getRotationSecondsBySize(organization.organizationId);
+    return bayDashboardConfigTransformer(config, rotations);
   }
 
   /**
@@ -184,7 +188,8 @@ export default class BayDashboardAdminService {
       });
     });
 
-    return bayDashboardConfigTransformer(config);
+    const rotations = await getRotationSecondsBySize(organization.organizationId);
+    return bayDashboardConfigTransformer(config, rotations);
   }
 
   /**

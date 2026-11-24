@@ -11,9 +11,11 @@ import {
   BayDashboardWidgetSize,
   BayDashboardWidgetType,
   daysBetween,
+  DEFAULT_ROTATION_SECONDS,
   PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig,
-  PublicBayDashboardOverdueWorkPackage
+  PublicBayDashboardOverdueWorkPackage,
+  RotationSecondsBySize
 } from 'shared';
 import {
   BayDashboardCalendarEventQueryArgs,
@@ -60,36 +62,42 @@ export const bayDashboardWidgetTransformer = (
   };
 };
 
+const rotationSecondsFor = (size: PrismaBayDashboardWidgetSize, rotations: RotationSecondsBySize): number =>
+  rotations[bayDashboardWidgetSizeTransformer(size)] ?? DEFAULT_ROTATION_SECONDS;
+
 export const bayDashboardSlotTransformer = (
-  slot: Prisma.Bay_Dashboard_SlotGetPayload<BayDashboardSlotQueryArgs>
+  slot: Prisma.Bay_Dashboard_SlotGetPayload<BayDashboardSlotQueryArgs>,
+  rotations: RotationSecondsBySize
 ): BayDashboardSlot => {
   return {
     bayDashboardSlotId: slot.bayDashboardSlotId,
     size: bayDashboardWidgetSizeTransformer(slot.size),
     position: slot.position,
-    rotationSeconds: slot.rotationSeconds,
+    rotationSeconds: rotationSecondsFor(slot.size, rotations),
     widgets: slot.widgets.map(bayDashboardWidgetTransformer)
   };
 };
 
 export const bayDashboardConfigTransformer = (
-  config: Prisma.Bay_Dashboard_ConfigGetPayload<BayDashboardConfigQueryArgs>
+  config: Prisma.Bay_Dashboard_ConfigGetPayload<BayDashboardConfigQueryArgs>,
+  rotations: RotationSecondsBySize
 ): BayDashboardConfig => {
   return {
     bayDashboardConfigId: config.bayDashboardConfigId,
     dateCreated: config.dateCreated,
-    slots: config.slots.map(bayDashboardSlotTransformer)
+    slots: config.slots.map((slot) => bayDashboardSlotTransformer(slot, rotations))
   };
 };
 
 export const publicBayDashboardConfigTransformer = (
-  config: Prisma.Bay_Dashboard_ConfigGetPayload<PublicBayDashboardConfigQueryArgs>
+  config: Prisma.Bay_Dashboard_ConfigGetPayload<PublicBayDashboardConfigQueryArgs>,
+  rotations: RotationSecondsBySize
 ): PublicBayDashboardConfig => {
   return {
     slots: config.slots.map((slot) => ({
       size: bayDashboardWidgetSizeTransformer(slot.size),
       position: slot.position,
-      rotationSeconds: slot.rotationSeconds,
+      rotationSeconds: rotationSecondsFor(slot.size, rotations),
       widgets: slot.widgets.map((widget) => ({
         type: bayDashboardWidgetTypeTransformer(widget.type),
         order: widget.order,
