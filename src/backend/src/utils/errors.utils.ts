@@ -182,6 +182,7 @@ export type ExceptionObjectNames =
   | 'Organization'
   | 'Car'
   | 'Milestone'
+  | 'Date Marker'
   | 'Faq'
   | 'Checklist'
   | 'Checklist Item'

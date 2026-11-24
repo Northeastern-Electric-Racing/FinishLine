@@ -171,6 +171,7 @@ export const resetUsers = async () => {
   await prisma.team_Type.deleteMany();
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
+  await prisma.date_Marker.deleteMany();
   await prisma.checklist.deleteMany();
   await prisma.contact.deleteMany();
   await prisma.graph.deleteMany();
