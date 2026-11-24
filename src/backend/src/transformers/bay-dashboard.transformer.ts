@@ -6,6 +6,7 @@ import {
 import {
   BayDashboardConfig,
   BayDashboardCountdown,
+  BayDashboardRotation,
   BayDashboardSlot,
   BayDashboardWidget,
   BayDashboardWidgetSize,
@@ -20,6 +21,7 @@ import {
 import {
   BayDashboardCalendarEventQueryArgs,
   BayDashboardConfigQueryArgs,
+  BayDashboardRotationQueryArgs,
   BayDashboardCountdownQueryArgs,
   BayDashboardOverdueWorkPackageQueryArgs,
   BayDashboardSlotQueryArgs,
@@ -116,6 +118,16 @@ export const bayDashboardCountdownTransformer = (
     startDate: countdown.startDate,
     endDate: countdown.endDate ?? undefined,
     isPrimary: countdown.isPrimary
+  };
+};
+
+export const bayDashboardRotationTransformer = (
+  rotation: Prisma.Bay_Dashboard_RotationGetPayload<BayDashboardRotationQueryArgs>
+): BayDashboardRotation => {
+  return {
+    bayDashboardRotationId: rotation.bayDashboardRotationId,
+    rotationSeconds: rotation.rotationSeconds,
+    size: bayDashboardWidgetSizeTransformer(rotation.size)
   };
 };
 

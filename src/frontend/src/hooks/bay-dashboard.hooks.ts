@@ -9,6 +9,7 @@ import {
   AvailableBayDashboardWidgets,
   BayDashboardConfig,
   BayDashboardCountdown,
+  BayDashboardRotation,
   BayDashboardCountdownCreateArgs,
   BayDashboardSlotCreateArgs,
   PublicBayDashboardCalendarEvent,
@@ -24,6 +25,7 @@ import {
   getBayDashboardCalendarEvents,
   getBayDashboardConfig,
   getBayDashboardCountdowns,
+  getBayDashboardRotations,
   getBayDashboardOverdueWorkPackages,
   getCurrentBayDashboardConfig,
   saveBayDashboardConfig
@@ -96,6 +98,17 @@ export const useGetBayDashboardOverdueWorkPackages = (slug?: string) => {
 export const useGetBayDashboardCountdowns = (slug: string) => {
   return useQuery<BayDashboardCountdown[], Error>(['bay-dashboard', slug, 'countdowns'], async () => {
     const { data } = await getBayDashboardCountdowns(slug);
+    return data;
+  });
+};
+/**
+ * Custom React Hook to get the organizations bay dashboard rotation.
+ * The key sits under the ['bay-dashboard', slug, 'rotations'] so the servers update events refetch it on the TV
+ * @param slug the organization slug
+ */
+export const useGetBayDashboardRotations = (slug: string) => {
+  return useQuery<BayDashboardRotation[], Error>(['bay-dashboard', slug, 'rotations'], async () => {
+    const { data } = await getBayDashboardRotations(slug);
     return data;
   });
 };

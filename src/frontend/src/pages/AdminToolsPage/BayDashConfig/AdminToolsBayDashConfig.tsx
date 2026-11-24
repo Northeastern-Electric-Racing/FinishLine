@@ -21,6 +21,7 @@ import {
 import ErrorPage from '../../ErrorPage';
 import CountdownTable from './CountdownTable';
 import PreviewDashboard from './PreviewDashboard';
+import RotationTable from './RotationTable';
 import TextFieldWidgetFormModal from './TextFieldWidgetFormModal';
 import WidgetSelection from './WidgetSelection';
 
@@ -107,6 +108,9 @@ const AdminToolsBayDashConfig: React.FC = () => {
         </Box>
         <Box sx={{ gridColumn: { md: 'span 2' }, gridRow: { md: 3 } }}>
           <CountdownTable slug={organization.slug} />
+          <Box sx={{ mt: 4 }}>
+            <RotationTable slug={organization.slug} />
+          </Box>
         </Box>
         <Box
           sx={{

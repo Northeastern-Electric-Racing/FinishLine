@@ -27,7 +27,7 @@ interface CountdownTableProps {
   slug: string;
 }
 
-const headerCellSx = {
+export const headerCellSx = {
   fontFamily: 'Oswald, sans-serif',
   fontSize: '1.25em',
   backgroundColor: '#ef4345',

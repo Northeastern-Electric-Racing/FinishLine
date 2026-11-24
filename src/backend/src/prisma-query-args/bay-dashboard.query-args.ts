@@ -11,6 +11,8 @@ export type PublicBayDashboardConfigQueryArgs = ReturnType<typeof getPublicBayDa
 
 export type BayDashboardCountdownQueryArgs = ReturnType<typeof getBayDashboardCountdownQueryArgs>;
 
+export type BayDashboardRotationQueryArgs = ReturnType<typeof getBayDashboardRotationQueryArgs>;
+
 export type BayDashboardCalendarEventQueryArgs = ReturnType<typeof getBayDashboardCalendarEventQueryArgs>;
 
 export type BayDashboardOverdueWorkPackageQueryArgs = ReturnType<typeof getBayDashboardOverdueWorkPackageQueryArgs>;
@@ -69,6 +71,15 @@ export const getBayDashboardCountdownQueryArgs = () =>
       startDate: true,
       endDate: true,
       isPrimary: true
+    }
+  });
+
+export const getBayDashboardRotationQueryArgs = () =>
+  Prisma.validator<Prisma.Bay_Dashboard_RotationDefaultArgs>()({
+    select: {
+      bayDashboardRotationId: true,
+      size: true,
+      rotationSeconds: true
     }
   });
 

@@ -20,6 +20,8 @@ bayDashboardAdminRouter.get('/admin', BayDashboardAdminController.getCurrentBayD
 
 bayDashboardAdminRouter.get('/admin/widgets', BayDashboardAdminController.getAvailableWidgets);
 
+bayDashboardAdminRouter.get('/:slug/rotation-settings', BayDashboardAdminController.getBayDashboardRotations);
+
 bayDashboardAdminRouter.post(
   '/admin/save',
   body('slots').isArray(),
