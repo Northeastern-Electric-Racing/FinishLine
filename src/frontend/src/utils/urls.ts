@@ -20,6 +20,7 @@ const usersById = (id: string) => `${users()}/${id}`;
 const usersLogin = () => `${users()}/auth/login`;
 const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
+const userSlackPhotoByUserId = (id: string) => `${usersById(id)}/slack-photo`;
 const currentUserSecureSettings = () => `${users()}/secure-settings/current-user`;
 const userSecureSettingsSet = () => `${users()}/secure-settings/set`;
 const currentUserApiToken = () => `${users()}/api-token/current-user`;
@@ -625,6 +626,7 @@ export const apiUrls = {
   membersDropdown,
   teamsDropdown,
   usersById,
+  userSlackPhotoByUserId,
   usersLogin,
   usersLoginDev,
   userSettingsByUserId,

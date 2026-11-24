@@ -118,6 +118,14 @@ export const getSingleUserSettings = (id: string) => {
 };
 
 /**
+ * Fetches the url of a user's Slack profile photo.
+ * @param id the user id of the requested user
+ */
+export const getUserSlackPhotoUrl = (id: string) => {
+  return axios.get<{ photoUrl: string | null }>(apiUrls.userSlackPhotoByUserId(id));
+};
+
+/**
  * Fetch the secure settings for the current user
  */
 export const getCurrentUserSecureSettings = () => {

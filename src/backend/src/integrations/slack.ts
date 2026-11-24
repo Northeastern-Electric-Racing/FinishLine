@@ -476,6 +476,42 @@ export const getUserName = async (userId: string) => {
 };
 
 /**
+ * Fetches a user's profile photo url from Slack.
+ * @param userId the id of the slack user
+ * @returns the url of a 192px square photo, undefined if the client is missing or the user has no photo
+ */
+const fetchUserImage = async (userId: string): Promise<string | undefined> => {
+  const client = getSlackClient();
+  if (!client) return undefined;
+
+  const userRes = await client.users.info({ user: userId });
+  return userRes.user?.profile?.image_192;
+};
+
+/**
+ * Caches user profile photo urls for 1 day, keyed by slack user id.
+ */
+const userImageCache = new LRUCache<string, string>({
+  max: 1000,
+  ttl: 1000 * 60 * 60 * 24, // 1 day
+  fetchMethod: fetchUserImage
+});
+
+/**
+ * Given a slack user id, produces the url of the user's profile photo.
+ * Results are cached, and concurrent calls for the same user share a single slack request.
+ * @param userId the id of the slack user
+ * @returns the url of the user's photo, undefined if it cannot be found
+ */
+export const getUserImageUrl = async (userId: string): Promise<string | undefined> => {
+  try {
+    return await userImageCache.fetch(userId);
+  } catch (error) {
+    return undefined;
+  }
+};
+
+/**
  * Get the workspace id of the workspace this slack api is registered with
  * @returns the id of the workspace
  */

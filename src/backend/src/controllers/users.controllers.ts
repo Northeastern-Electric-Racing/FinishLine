@@ -99,6 +99,18 @@ export default class UsersController {
     }
   }
 
+  static async getUserSlackPhotoUrl(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params as Record<string, string>;
+
+      const photoUrl = await UsersService.getUserSlackPhotoUrl(userId, req.organization);
+
+      res.status(200).json({ photoUrl });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async updateUserSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { defaultTheme, slackId } = req.body;
