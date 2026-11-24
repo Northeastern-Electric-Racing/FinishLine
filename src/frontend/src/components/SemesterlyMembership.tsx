@@ -8,6 +8,8 @@ import { displayEnum } from '../utils/pipes';
 
 interface SemesterlyMembershipProps {
   executiveSummaries: ExecutiveSummary[];
+  // only these terms (e.g. "Fall 2025") are shown
+  termLabels: string[];
 }
 
 const BACKGROUND = '#121212';
@@ -76,8 +78,8 @@ const MembershipTooltip: React.FC<TooltipProps<number, string>> = ({ active, pay
   );
 };
 
-const SemesterlyMembership: React.FC<SemesterlyMembershipProps> = ({ executiveSummaries }) => {
-  const points = buildSemesterPoints(executiveSummaries);
+const SemesterlyMembership: React.FC<SemesterlyMembershipProps> = ({ executiveSummaries, termLabels }) => {
+  const points = buildSemesterPoints(executiveSummaries).filter((point) => termLabels.includes(point.label));
   const divisions = [...new Set(points.flatMap((point) => Object.keys(point.counts)))].sort();
   const chartData = points.map((point) => ({ name: point.label, ...point.counts }));
 
