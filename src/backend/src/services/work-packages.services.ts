@@ -17,7 +17,8 @@ import {
   WorkPackageSelection,
   WorkPackageDropdownItem,
   WorkPackageTimelineFilters,
-  isWithinBuffer
+  isWithinBuffer,
+  isSameDayUTC
 } from 'shared';
 import prisma from '../prisma/prisma.js';
 import {
@@ -244,9 +245,12 @@ export default class WorkPackagesService {
         const dateRelation = WorkPackagesService.getBeforeNowOrAfter(currDay, workPackage.startDate);
         const startDateMessage =
           'The work package, ' +
+          workPackage.wbsElement.name +
           wbsPipe(workPackage.wbsElement) +
           ', is still inactive.' +
-          ' The start date ' +
+          ' The start date, ' +
+          workPackage.startDate.toLocaleDateString('en-US') +
+          ', ' +
           dateRelation;
         const message = leadIdString + ' ' + managerIdString + ' ' + startDateMessage + '.';
         teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText));
@@ -260,7 +264,9 @@ export default class WorkPackagesService {
           'The work package, ' +
           wbsPipe(workPackage.wbsElement) +
           ', is still not complete.' +
-          ' The end date ' +
+          ' The end date, ' +
+          calculateEndDate(workPackage.startDate, workPackage.duration).toLocaleDateString('en-US') +
+          ', ' +
           dateRelation;
         const message = leadIdString + ' ' + managerIdString + ' ' + endDateMessage + '.';
         teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText));
@@ -275,12 +281,16 @@ export default class WorkPackagesService {
    * @returns A string that states whether the given currDay is before / after / same day as the comparisonDate
    */
   private static getBeforeNowOrAfter(currDay: Date, comparisonDate: Date) {
-    if (isWithinBuffer(currDay, comparisonDate, 0)) {
+    if (isSameDayUTC(currDay, comparisonDate)) {
       return 'is today';
     }
 
-    const currUtc = Date.UTC(currDay.getFullYear(), currDay.getMonth(), currDay.getDate());
-    const comparisonUtc = Date.UTC(comparisonDate.getFullYear(), comparisonDate.getMonth(), comparisonDate.getDate());
+    const currUtc = Date.UTC(currDay.getUTCFullYear(), currDay.getUTCMonth(), currDay.getUTCDate());
+    const comparisonUtc = Date.UTC(
+      comparisonDate.getUTCFullYear(),
+      comparisonDate.getUTCMonth(),
+      comparisonDate.getUTCDate()
+    );
 
     if (currUtc < comparisonUtc) {
       return 'is tomorrow';

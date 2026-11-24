@@ -63,6 +63,8 @@ describe('Work Package Deadline Notifications', () => {
         }
       }
     });
+
+    vi.restoreAllMocks();
   });
 
   afterEach(async () => {
