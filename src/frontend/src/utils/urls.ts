@@ -593,6 +593,12 @@ const executiveSummaryVehicleDevelopment = (id: string) => `${executiveSummaryBy
 const executiveSummaryBudget = (id: string) => `${executiveSummaryById(id)}/budget`;
 const executiveSummaryEdit = (id: string) => `${executiveSummaries()}/${id}/edit`;
 
+/**************** Date Marker Endpoints ****************/
+const dateMarkers = () => `${API_URL}/date-markers`;
+const dateMarkersCreate = () => `${dateMarkers()}/create`;
+const dateMarkerEdit = (dateMarkerId: string) => `${dateMarkers()}/${dateMarkerId}/edit`;
+const dateMarkerDelete = (dateMarkerId: string) => `${dateMarkers()}/${dateMarkerId}/delete`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -1035,6 +1041,11 @@ export const apiUrls = {
   executiveSummaryVehicleDevelopment,
   executiveSummaryBudget,
   executiveSummaryEdit,
+
+  dateMarkers,
+  dateMarkersCreate,
+  dateMarkerEdit,
+  dateMarkerDelete,
 
   version
 };

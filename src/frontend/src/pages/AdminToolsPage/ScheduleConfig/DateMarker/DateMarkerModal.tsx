@@ -6,13 +6,6 @@ import { Controller, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
-// TODO: replace with the shared DateMarker type once the date marker endpoints are added
-export interface DateMarker {
-  dateMarkerId: string;
-  name: string;
-  date: Date;
-}
-
 export interface DateMarkerFormValues {
   name: string;
   date: Date | null;

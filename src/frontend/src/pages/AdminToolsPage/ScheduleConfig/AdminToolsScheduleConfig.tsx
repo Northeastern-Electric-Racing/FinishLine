@@ -25,12 +25,12 @@ import CreateMachineryModal from './Machinery/CreateMachineryModal';
 import EditMachineryModal from './Machinery/EditMachineryModal';
 import CreateEventTypeModal from './EventType/CreateEventTypeModal';
 import EditEventTypeModal from './EventType/EditEventTypeModal';
-import { Shop, EventType, Calendar } from 'shared';
+import { Shop, EventType, Calendar, BaseDateMarker } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERDeleteModal from '../../../components/NERDeleteModal';
 import CreateDateMarkerModal from './DateMarker/CreateDateMarkerModal';
 import EditDateMarkerModal from './DateMarker/EditDateMarkerModal';
-import { DateMarker } from './DateMarker/DateMarkerModal';
+import { useAllDateMarkers, useDeleteDateMarker } from '../../../hooks/date-markers.hooks';
 import { datePipe } from '../../../utils/pipes';
 
 const AdminToolsScheduleConfig: React.FC = () => {
@@ -48,6 +48,12 @@ const AdminToolsScheduleConfig: React.FC = () => {
     isError: calendarsError,
     error: calendarsErrorMsg
   } = useAllCalendars();
+  const {
+    data: dateMarkers,
+    isLoading: dateMarkersLoading,
+    isError: dateMarkersError,
+    error: dateMarkersErrorMsg
+  } = useAllDateMarkers();
   const [machineryToDelete, setMachineryToDelete] = useState<{
     machineryId: string;
     machineName: string;
@@ -56,6 +62,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const { mutateAsync: deleteShop } = useDeleteShop();
   const { mutateAsync: deleteCalendar } = useDeleteCalendar();
   const { mutateAsync: deleteEventType } = useDeleteEventType();
+  const { mutate: deleteDateMarker } = useDeleteDateMarker();
   const toast = useToast();
 
   const handleDeleteMachinery = async () => {
@@ -132,22 +139,23 @@ const AdminToolsScheduleConfig: React.FC = () => {
   const [openEditCalendar, setOpenEditCalendar] = useState(false);
   const [editingCalendar, setEditingCalendar] = useState<Calendar | undefined>(undefined);
   const [openCreateDateMarker, setOpenCreateDateMarker] = useState(false);
-  const [editingDateMarker, setEditingDateMarker] = useState<DateMarker | null>(null);
-  const [dateMarkerToDelete, setDateMarkerToDelete] = useState<DateMarker | undefined>(undefined);
+  const [editingDateMarker, setEditingDateMarker] = useState<BaseDateMarker | null>(null);
+  const [dateMarkerToDelete, setDateMarkerToDelete] = useState<BaseDateMarker | undefined>(undefined);
 
-  // TODO: replace with the get all date markers query once the endpoint is available
-  const dateMarkers: DateMarker[] = [];
-
-  // TODO: wire up to the delete date marker endpoint once it is available
+  // success and error toasts are handled by the useDeleteDateMarker hook
   const handleDateMarkerDelete = () => {
+    if (!dateMarkerToDelete) return;
     setDateMarkerToDelete(undefined);
+    deleteDateMarker(dateMarkerToDelete.dateMarkerId);
   };
 
   if (shopsError) return <ErrorPage message={(shopsErrorMsg as Error).message} />;
   if (machinesError) return <ErrorPage message={(machinesErrorMsg as Error).message} />;
   if (eventTypesError) return <ErrorPage message={(eventTypesErrorMsg as Error).message} />;
   if (calendarsError) return <ErrorPage message={(calendarsErrorMsg as Error).message} />;
-  if (shopsLoading || machinesLoading || eventTypesLoading || calendarsLoading) return <LoadingIndicator />;
+  if (dateMarkersError) return <ErrorPage message={dateMarkersErrorMsg.message} />;
+  if (shopsLoading || machinesLoading || eventTypesLoading || calendarsLoading || dateMarkersLoading)
+    return <LoadingIndicator />;
 
   return (
     <Box padding="5px">
@@ -409,7 +417,7 @@ const AdminToolsScheduleConfig: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {dateMarkers.length === 0 ? (
+                {!dateMarkers || dateMarkers.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={3} align="center">
                       No date markers yet

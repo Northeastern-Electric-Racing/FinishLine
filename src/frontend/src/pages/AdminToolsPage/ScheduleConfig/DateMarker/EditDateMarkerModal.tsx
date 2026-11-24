@@ -1,20 +1,26 @@
 import React from 'react';
-import DateMarkerModal, { DateMarker, DateMarkerFormValues } from './DateMarkerModal';
+import { BaseDateMarker } from 'shared';
+import DateMarkerModal, { DateMarkerFormValues } from './DateMarkerModal';
+import { useEditDateMarker } from '../../../../hooks/date-markers.hooks';
 
 export interface EditDateMarkerModalProps {
   open: boolean;
   onClose: () => void;
-  dateMarker: DateMarker;
+  dateMarker: BaseDateMarker;
 }
 
 const EditDateMarkerModal: React.FC<EditDateMarkerModalProps> = ({ open, onClose, dateMarker }) => {
+  const { mutateAsync: editDateMarker } = useEditDateMarker(dateMarker.dateMarkerId);
+
   const initialValues: DateMarkerFormValues = {
     name: dateMarker.name,
     date: new Date(dateMarker.date)
   };
 
-  // TODO: wire up to the edit date marker endpoint once it is available
-  const onSubmit = async () => {};
+  const onSubmit = async (data: DateMarkerFormValues) => {
+    // date is never null here: the form schema requires it before submit runs
+    await editDateMarker({ name: data.name, date: data.date! });
+  };
 
   return <DateMarkerModal open={open} onClose={onClose} onSubmit={onSubmit} initialValues={initialValues} />;
 };
