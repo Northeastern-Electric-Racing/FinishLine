@@ -246,8 +246,9 @@ export default class WorkPackagesService {
         const startDateMessage =
           'The work package, ' +
           workPackage.wbsElement.name +
+          ' (WBS Element: ' +
           wbsPipe(workPackage.wbsElement) +
-          ', is still inactive.' +
+          '), is still inactive.' +
           ' The start date, ' +
           workPackage.startDate.toLocaleDateString('en-US') +
           ', ' +
@@ -262,8 +263,10 @@ export default class WorkPackagesService {
         );
         const endDateMessage =
           'The work package, ' +
+          workPackage.wbsElement.name +
+          ' (WBS Element: ' +
           wbsPipe(workPackage.wbsElement) +
-          ', is still not complete.' +
+          '), is still not complete.' +
           ' The end date, ' +
           calculateEndDate(workPackage.startDate, workPackage.duration).toLocaleDateString('en-US') +
           ', ' +

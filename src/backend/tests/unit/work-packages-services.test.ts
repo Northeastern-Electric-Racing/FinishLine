@@ -14,6 +14,7 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import WorkPackagesService from '../../src/services/work-packages.services';
 import { WorkPackage } from '../../src/prisma/context';
 
+// NOTE: "today's" date is 01/01/1970. This is due to the usage UTC, which starts at the mentioned date.
 describe('Work Package Deadline Notifications', () => {
   let orgId: string;
   let organization: Organization;
@@ -48,7 +49,8 @@ describe('Work Package Deadline Notifications', () => {
         wbsElementId: wp.wbsElementId
       },
       data: {
-        status: WBS_Element_Status.INACTIVE
+        status: WBS_Element_Status.INACTIVE,
+        name: 'TEST NAME'
       }
     });
     await prisma.project.update({
@@ -112,7 +114,9 @@ describe('Work Package Deadline Notifications', () => {
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date is tomorrow.'),
+        expect.stringContaining(
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still inactive. The start date, 1/1/1970, is tomorrow.'
+        ),
         expect.any(String),
         expect.any(String)
       );
@@ -135,7 +139,9 @@ describe('Work Package Deadline Notifications', () => {
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date is today.'),
+        expect.stringContaining(
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still inactive. The start date, 12/31/1969, is today.'
+        ),
         expect.any(String),
         expect.any(String)
       );
@@ -158,7 +164,9 @@ describe('Work Package Deadline Notifications', () => {
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date was yesterday.'),
+        expect.stringContaining(
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still inactive. The start date, 12/30/1969, was yesterday.'
+        ),
         expect.any(String),
         expect.any(String)
       );
@@ -227,7 +235,9 @@ describe('Work Package Deadline Notifications', () => {
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still not complete. The end date is tomorrow.'),
+        expect.stringContaining(
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still not complete. The end date, 1/1/1970, is tomorrow.'
+        ),
         expect.any(String),
         expect.any(String)
       );
@@ -249,7 +259,9 @@ describe('Work Package Deadline Notifications', () => {
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still not complete. The end date is today.'),
+        expect.stringContaining(
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still not complete. The end date, 12/31/1969, is today.'
+        ),
         expect.any(String),
         expect.any(String)
       );
@@ -272,7 +284,9 @@ describe('Work Package Deadline Notifications', () => {
 
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still not complete. The end date was yesterday.'),
+        expect.stringContaining(
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still not complete. The end date, 12/30/1969, was yesterday.'
+        ),
         expect.any(String),
         expect.any(String)
       );
@@ -317,13 +331,17 @@ describe('Work Package Deadline Notifications', () => {
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still inactive. The start date is today.'),
+        expect.stringContaining(
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still inactive. The start date, 12/31/1969, is today.'
+        ),
         expect.any(String),
         expect.any(String)
       );
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('The work package, 2.1.1, is still not complete. The end date is today.'),
+        expect.stringContaining(
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still not complete. The end date, 12/31/1969, is today.'
+        ),
         expect.any(String),
         expect.any(String)
       );
