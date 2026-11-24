@@ -111,7 +111,6 @@ describe('Work Package Deadline Notifications', () => {
 
       const sendMessageSpy = vi.spyOn(slackModule, 'sendMessage').mockResolvedValue({ ok: true });
       await WorkPackagesService.sendWorkPackageDeadlineNotifications();
-
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining(
