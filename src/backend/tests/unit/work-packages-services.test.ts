@@ -114,7 +114,7 @@ describe('Work Package Deadline Notifications', () => {
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining(
-          'The work package, TEST NAME (WBS Element: 2.1.1), is still inactive. The start date, 1/1/1970, is tomorrow.'
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still inactive. The start date, 1/2/1970, is tomorrow.'
         ),
         expect.any(String),
         expect.any(String)
@@ -139,7 +139,7 @@ describe('Work Package Deadline Notifications', () => {
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining(
-          'The work package, TEST NAME (WBS Element: 2.1.1), is still inactive. The start date, 11/1/1970, is today.'
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still inactive. The start date, 1/1/1970, is today.'
         ),
         expect.any(String),
         expect.any(String)
@@ -164,7 +164,7 @@ describe('Work Package Deadline Notifications', () => {
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining(
-          'The work package, TEST NAME (WBS Element: 2.1.1), is still inactive. The start date, 12/30/1969, was yesterday.'
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still inactive. The start date, 12/31/1969, was yesterday.'
         ),
         expect.any(String),
         expect.any(String)
@@ -235,7 +235,7 @@ describe('Work Package Deadline Notifications', () => {
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining(
-          'The work package, TEST NAME (WBS Element: 2.1.1), is still not complete. The end date, 1/1/1970, is tomorrow.'
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still not complete. The end date, 1/2/1970, is tomorrow.'
         ),
         expect.any(String),
         expect.any(String)
@@ -284,7 +284,7 @@ describe('Work Package Deadline Notifications', () => {
       expect(sendMessageSpy).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining(
-          'The work package, TEST NAME (WBS Element: 2.1.1), is still not complete. The end date, 12/30/1969, was yesterday.'
+          'The work package, TEST NAME (WBS Element: 2.1.1), is still not complete. The end date, 12/31/1969, was yesterday.'
         ),
         expect.any(String),
         expect.any(String)
