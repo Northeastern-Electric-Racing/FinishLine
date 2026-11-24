@@ -33,7 +33,6 @@ export const getBayDashboardSlotQueryArgs = () =>
       bayDashboardSlotId: true,
       size: true,
       position: true,
-      rotationSeconds: true,
       widgets: { orderBy: { order: 'asc' }, ...getBayDashboardWidgetQueryArgs() }
     }
   });
@@ -58,7 +57,6 @@ export const getPublicBayDashboardConfigQueryArgs = () =>
         select: {
           size: true,
           position: true,
-          rotationSeconds: true,
           widgets: { orderBy: { order: 'asc' }, select: { type: true, order: true, text: true } }
         }
       }

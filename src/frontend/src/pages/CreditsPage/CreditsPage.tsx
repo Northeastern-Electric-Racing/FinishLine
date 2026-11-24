@@ -412,6 +412,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Udhaya Bhuvanesh', color: '#B57EDC' },
     { name: 'Raymond Liu', color: '#3252df' },
     { name: 'Reem Alsheikh-Ali', color: '#57d87e' },
+    { name: 'Kaitlyn Dyer', color: '#89CFF0' },
     { name: 'Hritik Sethiya', color: '#1E90FF' }
   ];
 

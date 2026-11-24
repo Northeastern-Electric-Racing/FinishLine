@@ -15,6 +15,14 @@ describe('Bay Dashboard Tests', () => {
   beforeEach(async () => {
     organization = await createTestOrganization();
     head = await createTestUser(greenlanternHead, organization.organizationId);
+    await prisma.bay_Dashboard_Rotation.create({
+      data: {
+        size: BayDashboardWidgetSize.LARGE,
+        rotationSeconds: 45,
+        userCreatedId: head.userId,
+        organizationId: organization.organizationId
+      }
+    });
   });
 
   afterEach(async () => {
@@ -43,7 +51,6 @@ describe('Bay Dashboard Tests', () => {
             {
               size: BayDashboardWidgetSize.LARGE,
               position: 0,
-              rotationSeconds: 45,
               widgets: {
                 create: [
                   { type: BayDashboardWidgetType.TEXT_FIELD, order: 1, text },
@@ -100,6 +107,15 @@ describe('Bay Dashboard Tests', () => {
       const config = await BayDashboardAdminService.getCurrentBayDashboardConfig(admin, organization);
 
       expect(config?.bayDashboardConfigId).toBe(expected.bayDashboardConfigId);
+    });
+
+    it('Falls back to the default rotation for sizes with no rotation row', async () => {
+      await createConfig(new Date('2026-01-01'));
+      await prisma.bay_Dashboard_Rotation.deleteMany({ where: { organizationId: organization.organizationId } });
+
+      const config = await BayDashboardAdminService.getCurrentBayDashboardConfig(head, organization);
+
+      expect(config?.slots.map((slot) => slot.rotationSeconds)).toEqual([30, 30]);
     });
   });
 
@@ -211,6 +227,54 @@ describe('Bay Dashboard Tests', () => {
         expect(Object.keys(slot).sort()).toEqual(['position', 'rotationSeconds', 'size', 'widgets']);
         slot.widgets.forEach((widget) => expect(Object.keys(widget).sort()).toEqual(['order', 'text', 'type']));
       });
+    });
+
+    it('Falls back to the default rotation for sizes with no rotation row', async () => {
+      await createConfig(new Date('2026-01-01'));
+      await prisma.bay_Dashboard_Rotation.deleteMany({ where: { organizationId: organization.organizationId } });
+
+      const config = await BayDashboardService.getBayDashboardConfig(organization.slug);
+
+      expect(config?.slots.map((slot) => slot.rotationSeconds)).toEqual([30, 30]);
+    });
+
+    it('Only uses rotation rows from its own organization', async () => {
+      await createConfig(new Date('2026-01-01'));
+      const otherOrg = await prisma.organization.create({
+        data: { name: 'Other Org', slug: 'other-org', description: '', userCreatedId: head.userId }
+      });
+      await prisma.bay_Dashboard_Rotation.create({
+        data: {
+          size: BayDashboardWidgetSize.LARGE,
+          rotationSeconds: 10,
+          userCreatedId: head.userId,
+          organizationId: otherOrg.organizationId
+        }
+      });
+
+      const config = await BayDashboardService.getBayDashboardConfig(organization.slug);
+
+      expect(config?.slots.find((slot) => slot.size === BayDashboardWidgetSize.LARGE)?.rotationSeconds).toBe(45);
+    });
+
+    it('Uses the newest non-deleted rotation row after a soft-deleted update', async () => {
+      await createConfig(new Date('2026-01-01'));
+      await prisma.bay_Dashboard_Rotation.updateMany({
+        where: { organizationId: organization.organizationId, size: BayDashboardWidgetSize.LARGE },
+        data: { dateDeleted: new Date('2026-02-01'), userDeletedId: head.userId }
+      });
+      await prisma.bay_Dashboard_Rotation.create({
+        data: {
+          size: BayDashboardWidgetSize.LARGE,
+          rotationSeconds: 60,
+          userCreatedId: head.userId,
+          organizationId: organization.organizationId
+        }
+      });
+
+      const config = await BayDashboardService.getBayDashboardConfig(organization.slug);
+
+      expect(config?.slots.find((slot) => slot.size === BayDashboardWidgetSize.LARGE)?.rotationSeconds).toBe(60);
     });
   });
 

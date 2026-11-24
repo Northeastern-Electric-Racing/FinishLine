@@ -200,6 +200,7 @@ export const resetUsers = async () => {
   await prisma.dashboard.deleteMany();
   await prisma.bay_Dashboard_Config.deleteMany();
   await prisma.bay_Dashboard_Countdown.deleteMany();
+  await prisma.bay_Dashboard_Rotation.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -571,7 +572,7 @@ export const createTestReimbursementRequest = async () => {
     organization
   );
 
-  const rr = await ReimbursementRequestService.createReimbursementRequest(
+  const { reimbursementRequestId } = await ReimbursementRequestService.createReimbursementRequest(
     user,
     vendor.vendorId,
     indexCode.indexCodeId,
@@ -599,7 +600,7 @@ export const createTestReimbursementRequest = async () => {
     new Date()
   );
 
-  if (!rr) throw new Error('Failed to create reimbursement request');
+  const rr = await ReimbursementRequestService.getSingleReimbursementRequest(user, reimbursementRequestId, organization);
 
   return { rr, organization, vendor, indexCode, accountCode, project, user };
 };
