@@ -24,7 +24,6 @@ export default class CalendarController {
         description,
         onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications,
         takeAttendance
       } = req.body;
 
@@ -47,7 +46,6 @@ export default class CalendarController {
         description,
         onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications,
         takeAttendance
       );
       res.status(200).json(eventType);
@@ -225,7 +223,6 @@ export default class CalendarController {
         description,
         onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications,
         takeAttendance
       } = req.body;
 
@@ -249,7 +246,6 @@ export default class CalendarController {
         description,
         onlyHeadsOrAbove,
         requiresConfirmation,
-        sendSlackNotifications,
         takeAttendance
       );
       broadcastBayDashboardUpdate(req.organization.slug);
@@ -304,7 +300,8 @@ export default class CalendarController {
         location,
         zoomLink,
         description,
-        mention
+        mention,
+        sendSlackNotifications
       } = req.body;
 
       const parsedScheduleSlots = scheduleSlots.map((slot: { allDay: boolean; startTime?: string; endTime?: string }) => ({
@@ -334,7 +331,8 @@ export default class CalendarController {
         location,
         zoomLink,
         description,
-        mention
+        mention,
+        sendSlackNotifications
       );
       broadcastBayDashboardUpdate(req.organization.slug);
       res.status(200).json(event);
@@ -362,7 +360,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        sendSlackNotifications
       } = req.body;
 
       await CalendarService.editEvent(
@@ -383,7 +382,8 @@ export default class CalendarController {
         questionDocumentLink,
         location,
         zoomLink,
-        description
+        description,
+        sendSlackNotifications
       );
       broadcastBayDashboardUpdate(req.organization.slug);
       res.sendStatus(204);

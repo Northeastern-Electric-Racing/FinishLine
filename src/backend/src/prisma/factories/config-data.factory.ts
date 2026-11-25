@@ -471,7 +471,6 @@ type EventTypeConfig = {
   description: boolean;
   onlyHeadsOrAboveForEventCreation: boolean;
   requiresConfirmation: boolean;
-  sendSlackNotifications: boolean;
   takeAttendance: boolean;
 };
 
@@ -493,7 +492,6 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: false,
     onlyHeadsOrAboveForEventCreation: false,
     requiresConfirmation: false,
-    sendSlackNotifications: false,
     takeAttendance: false
   },
   {
@@ -513,7 +511,6 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
     requiresConfirmation: false,
-    sendSlackNotifications: true,
     takeAttendance: false
   },
   {
@@ -533,7 +530,6 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: true,
     onlyHeadsOrAboveForEventCreation: true,
     requiresConfirmation: true,
-    sendSlackNotifications: true,
     takeAttendance: false
   },
   {
@@ -553,7 +549,6 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: true,
     onlyHeadsOrAboveForEventCreation: true,
     requiresConfirmation: true,
-    sendSlackNotifications: true,
     takeAttendance: false
   },
   {
@@ -573,7 +568,6 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
     requiresConfirmation: true,
-    sendSlackNotifications: true,
     takeAttendance: false
   },
   {
@@ -593,7 +587,6 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
     requiresConfirmation: false,
-    sendSlackNotifications: true,
     takeAttendance: false
   },
   {
@@ -613,7 +606,6 @@ export const eventTypeConfigs: EventTypeConfig[] = [
     description: true,
     onlyHeadsOrAboveForEventCreation: false,
     requiresConfirmation: false,
-    sendSlackNotifications: true,
     takeAttendance: false
   }
 ];
@@ -641,7 +633,6 @@ export const eventTypeCreateInput = (
   description: config.description,
   onlyHeadsOrAboveForEventCreation: config.onlyHeadsOrAboveForEventCreation,
   requiresConfirmation: config.requiresConfirmation,
-  sendSlackNotifications: config.sendSlackNotifications,
   takeAttendance: config.takeAttendance,
   calendars: {
     connect: config.calendarNames.map((name) => {

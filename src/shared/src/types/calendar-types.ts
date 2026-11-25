@@ -136,7 +136,6 @@ export interface EventType {
   description: boolean;
   onlyHeadsOrAboveForEventCreation: boolean;
   requiresConfirmation: boolean;
-  sendSlackNotifications: boolean;
   takeAttendance: boolean;
 }
 
@@ -157,7 +156,6 @@ export interface EventTypeCreateArgs {
   description: boolean;
   onlyHeadsOrAbove: boolean;
   requiresConfirmation: boolean;
-  sendSlackNotifications: boolean;
   takeAttendance: boolean;
 }
 
@@ -232,6 +230,7 @@ export interface EventDetail extends BaseEvent {
   machinery: MachineryPreview[];
   workPackages: WorkPackageCalendarPreview[];
   documents: Document[];
+  sendSlackNotifications: boolean;
   isCurrentUserOnEvent: boolean;
 }
 

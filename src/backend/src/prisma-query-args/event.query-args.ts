@@ -70,6 +70,7 @@ export const getEventScheduledNotificationQueryArgs = () =>
     select: {
       ...getBaseEventQueryArgs().select,
       notificationSlackThreads: true,
+      sendSlackNotifications: true,
       requiredMembers: { select: { userId: true } },
       optionalMembers: { select: { userId: true } },
       workPackages: { select: { wbsElement: { select: { name: true } } } }
