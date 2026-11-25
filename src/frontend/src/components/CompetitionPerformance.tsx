@@ -14,8 +14,10 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
-import { Competition, CompetitionPerformance, isAdmin } from 'shared';
+import { Competition, CompetitionPerformance, EditCompetitionPerformanceArgs, isAdmin } from 'shared';
 import { useCurrentUser } from '../hooks/users.hooks';
+import { useEditCompetitionPerformance } from '../hooks/exec-summaries.hooks';
+import { useToast } from '../hooks/toasts.hooks';
 import NERSuccessButton from './NERSuccessButton';
 import NERFailButton from './NERFailButton';
 
@@ -73,6 +75,43 @@ const toFormValues = (performance: CompetitionPerformance): CompetitionPerforman
   maxLaps: numberToInput(performance.maxLaps),
   autocrossTopTime: timeToInput(performance.autocrossTopTimeSeconds),
   enduranceAvgLapTime: timeToInput(performance.enduranceAvgLapTimeSeconds)
+});
+
+// Parses a numeric input. Empty clears the field (null); invalid input throws.
+const parseNumber = (input: string, label: string): number | null => {
+  const trimmed = input.trim();
+  if (trimmed === '') return null;
+  const value = Number(trimmed);
+  if (Number.isNaN(value)) throw new Error(`${label} must be a number`);
+  return value;
+};
+
+// Parses a time input as either raw seconds ("52.3") or m:ss ("1:52") into seconds.
+const parseTime = (input: string, label: string): number | null => {
+  const trimmed = input.trim();
+  if (trimmed === '') return null;
+  const match = /^(\d+):(\d{1,2}(?:\.\d+)?)$/.exec(trimmed);
+  if (match) return Number(match[1]) * 60 + Number(match[2]);
+  const value = Number(trimmed);
+  if (Number.isNaN(value)) throw new Error(`${label} must be a time like 1:52 or 52.3`);
+  return value;
+};
+
+const parseText = (input: string): string | null => (input.trim() === '' ? null : input.trim());
+
+const toEditArgs = (form: CompetitionPerformanceForm): EditCompetitionPerformanceArgs => ({
+  finalPlace: parseNumber(form.finalPlace, 'Final Place'),
+  totalPointsEarned: parseNumber(form.totalPointsEarned, 'Total Points Earned'),
+  maxPoints: parseNumber(form.maxPoints, 'Max Points'),
+  bestStaticEvent: parseText(form.bestStaticEvent),
+  worstStaticEvent: parseText(form.worstStaticEvent),
+  bestDynamicEvent: parseText(form.bestDynamicEvent),
+  worstDynamicEvent: parseText(form.worstDynamicEvent),
+  accelerationTopTimeSeconds: parseTime(form.accelerationTopTime, 'Acceleration Top Time'),
+  enduranceLapsCompleted: parseNumber(form.enduranceLapsCompleted, 'Endurance Laps Completed'),
+  maxLaps: parseNumber(form.maxLaps, 'Max Laps'),
+  autocrossTopTimeSeconds: parseTime(form.autocrossTopTime, 'Autocross Top Time'),
+  enduranceAvgLapTimeSeconds: parseTime(form.enduranceAvgLapTime, 'Endurance Average Lap Time')
 });
 
 const PillInput = styled(InputBase)({
@@ -179,17 +218,21 @@ const PointsRing: React.FC<PointsRingProps> = ({ earned, max, maxContent }) => {
     </Box>
   );
 };
-// TODO: call useEditCompetitionPerformance once the backend hook is merged
 
 const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ competitionPerformances }) => {
   const [tabValue, setTabValue] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<CompetitionPerformanceForm | null>(null);
   const user = useCurrentUser();
+  const toast = useToast();
   const canEdit = isAdmin(user.role) || !!user.isOperations;
 
   const selectedCompetition = COMPETITIONS[tabValue];
   const performance = competitionPerformances.find((cp) => cp.competition === selectedCompetition);
+
+  const { mutateAsync: editCompetitionPerformance, isLoading: isSaving } = useEditCompetitionPerformance(
+    performance?.competitionPerformanceId ?? ''
+  );
 
   const startEditing = () => {
     if (!performance) return;
@@ -199,7 +242,16 @@ const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ 
 
   const handleCancel = () => setIsEditing(false);
 
-  const handleSave = () => setIsEditing(false);
+  const handleSave = async () => {
+    if (!form || !performance) return;
+    try {
+      await editCompetitionPerformance(toEditArgs(form));
+      toast.success('Competition performance updated');
+      setIsEditing(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to save competition performance');
+    }
+  };
 
   const updateField = (key: keyof CompetitionPerformanceForm) => (value: string) =>
     setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
@@ -357,8 +409,12 @@ const CompetitionPerformanceSection: React.FC<CompetitionPerformanceProps> = ({ 
 
         {isEditing && (
           <Box display="flex" justifyContent="flex-end" gap={1} mt={2}>
-            <NERFailButton onClick={handleCancel}>Cancel</NERFailButton>
-            <NERSuccessButton onClick={handleSave}>Save</NERSuccessButton>
+            <NERFailButton onClick={handleCancel} disabled={isSaving}>
+              Cancel
+            </NERFailButton>
+            <NERSuccessButton onClick={handleSave} disabled={isSaving}>
+              Save
+            </NERSuccessButton>
           </Box>
         )}
       </CardContent>
