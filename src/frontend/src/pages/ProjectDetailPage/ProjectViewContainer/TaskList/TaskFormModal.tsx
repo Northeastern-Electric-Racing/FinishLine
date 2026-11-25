@@ -57,6 +57,7 @@ interface TaskFormModalProps {
   // when true, surfaces validation errors as soon as the modal opens (used to highlight the missing
   // deadline/assignee when a task is dragged into In Progress without them)
   validateOnOpen?: boolean;
+  isCopy?: boolean;
 }
 
 const TaskFormModal: React.FC<TaskFormModalProps> = ({
@@ -70,7 +71,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
   wbsNum,
   context,
   projectCarNumbers,
-  validateOnOpen = false
+  validateOnOpen = false,
+  isCopy = false
 }) => {
   // In progress tasks must have a deadline and at least one assignee; backlog/done tasks don't.
   const isInProgress = status === TaskStatus.IN_PROGRESS;
@@ -201,7 +203,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({
       open={modalShow}
       onHide={onHide}
       formId={'edit-task-form'}
-      title={task?.title ? 'Edit Task' : 'New Task'}
+      title={task?.title ? (isCopy ? 'Copy Task' : 'Edit Task') : 'New Task'}
       reset={() => {
         if (onReset) onReset();
         reset();
