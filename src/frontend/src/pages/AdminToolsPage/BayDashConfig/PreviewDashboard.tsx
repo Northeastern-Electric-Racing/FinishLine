@@ -5,6 +5,7 @@
 
 import { Box, IconButton } from '@mui/material';
 import { Edit } from '@mui/icons-material';
+import { useState } from 'react';
 import { BayDashboardWidgetSize, BayDashboardWidgetType } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetCurrentBayDashboardConfig } from '../../../hooks/bay-dashboard.hooks';
@@ -16,6 +17,7 @@ import {
 } from '../../../utils/bay-dashboard.utils';
 import ErrorPage from '../../ErrorPage';
 import BayDashboardGrid from '../../BayDashboardPage/components/BayDashboardGrid';
+import WidgetPreviewDots from './WidgetPreviewDots';
 
 interface PreviewDashboardProps {
   selection: BayDashboardWidgetSelection;
@@ -28,10 +30,12 @@ const frameSx = { border: '2px solid white', borderRadius: '4px', width: '100%',
 /**
  * Scaled down copy of what the TV in the bay is currently displaying, with the widget picked for each
  * size in the right column swapped in. A size with nothing picked shows what the TV has.
- * Text field widgets have an edit button for changing their text.
+ * Text field widgets have an edit button for changing their text. A size with stacked widgets shows a dot per widget,
+ * and clicking a dot switches display to that widget.
  */
 const PreviewDashboard: React.FC<PreviewDashboardProps> = ({ selection, slug, onEditText }) => {
   const { data: config, isLoading, isError, error } = useGetCurrentBayDashboardConfig();
+  const [activeWidgetIndex, setActiveWidgetIndex] = useState<Partial<Record<BayDashboardWidgetSize, number>>>({});
 
   if (isError || isLoading || config === undefined) {
     return (
@@ -56,25 +60,33 @@ const PreviewDashboard: React.FC<PreviewDashboardProps> = ({ selection, slug, on
       <BayDashboardGrid
         slots={applyWidgetSelection(config?.slots ?? defaultBayDashboardSlots, selection)}
         slug={slug}
-        renderSlotAction={(size, widget) =>
-          widget.type === BayDashboardWidgetType.TEXT_FIELD && (
-            <IconButton
-              aria-label="Edit text field text"
-              size="small"
-              onClick={() => onEditText(size)}
-              sx={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                color: 'white',
-                bgcolor: 'rgba(0, 0, 0, 0.4)',
-                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
-              }}
-            >
-              <Edit fontSize="inherit" />
-            </IconButton>
-          )
-        }
+        activeWidgetIndex={activeWidgetIndex}
+        renderSlotAction={(size, widget, { activeIndex, count }) => (
+          <>
+            {widget.type === BayDashboardWidgetType.TEXT_FIELD && (
+              <IconButton
+                aria-label="Edit text field text"
+                size="small"
+                onClick={() => onEditText(size)}
+                sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  color: 'white',
+                  bgcolor: 'rgba(0, 0, 0, 0.4)',
+                  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
+                }}
+              >
+                <Edit fontSize="inherit" />
+              </IconButton>
+            )}
+            <WidgetPreviewDots
+              widgetCount={count}
+              activeIndex={activeIndex}
+              onSelect={(index) => setActiveWidgetIndex((previous) => ({ ...previous, [size]: index }))}
+            />
+          </>
+        )}
       />
     </Box>
   );
