@@ -11,6 +11,7 @@ import {
   isAdmin,
   NewMemberSignUpEvent,
   notGuest,
+  RecruitmentDivisionCountArgs,
   User
 } from 'shared';
 import prisma from '../prisma/prisma.js';
@@ -36,7 +37,8 @@ import {
   competitionDocumentsSummaryTransformer,
   executiveSummaryTransformer,
   vehicleDevelopmentSummaryTransformer,
-  competitionPerformanceTransformer
+  competitionPerformanceTransformer,
+  recruitmentCycleTransformer
 } from '../transformers/executive-summary.transformer.js';
 
 export default class ExecSummaryServices {
@@ -566,5 +568,97 @@ export default class ExecSummaryServices {
     });
 
     return competitionPerformanceTransformer(updatedCompetitionPerformance);
+  }
+
+  /**
+   * Edits an existing recruitment cycle and replaces its division counts.
+   * @param submitter the user editing the recruitment cycle
+   * @param organization the organization the recruitment cycle belongs to
+   * @param eventsHeld the updated number of recruitment events held, null to clear it, or undefined to leave it unchanged
+   * @param signUps the updated number of sign ups, null to clear it, or undefined to leave it unchanged
+   * @param onboarded the updated number of members onboarded, null to clear it, or undefined to leave it unchanged
+   * @param activeMembers the updated number of active members, null to clear it, or undefined to leave it unchanged
+   * @param divisionCounts the new/returning member counts per division; replaces the cycle's existing division counts
+   * @param recruitmentCycleId the id of the recruitment cycle being edited
+   * @returns the updated recruitment cycle
+   * @throws AccessDeniedException if the submitter is not an admin and not on the ops team
+   * @throws NotFoundException if the recruitment cycle or any of the divisions do not exist
+   * @throws InvalidOrganizationException if the recruitment cycle or any of the divisions belong to a different organization
+   * @throws DeletedException if the recruitment cycle's executive summary has been deleted
+   * @throws HttpException if the same division is listed more than once
+   */
+  static async editRecruitmentCycle(
+    submitter: User,
+    organization: Organization,
+    eventsHeld: number | null | undefined,
+    signUps: number | null | undefined,
+    onboarded: number | null | undefined,
+    activeMembers: number | null | undefined,
+    divisionCounts: RecruitmentDivisionCountArgs[],
+    recruitmentCycleId: string
+  ) {
+    const isAdminUser = await userHasPermission(submitter.userId, organization.organizationId, isAdmin);
+
+    if (!isAdminUser) {
+      let isOpsTeamMember = false;
+      try {
+        isOpsTeamMember = await isUserOnOpsTeam(submitter, organization.organizationId);
+      } catch {
+        // Ops team may not exist yet
+      }
+      if (!isOpsTeamMember) throw new AccessDeniedException('edit a recruitment cycle');
+    }
+
+    const currentRecruitmentCycle = await prisma.recruitment_Cycle.findUnique({
+      where: { recruitmentCycleId },
+      include: { executiveSummary: { include: { car: { include: { wbsElement: true } } } } }
+    });
+    if (!currentRecruitmentCycle) {
+      throw new NotFoundException('Recruitment Cycle', recruitmentCycleId);
+    }
+    if (currentRecruitmentCycle.executiveSummary.car.wbsElement.organizationId !== organization.organizationId) {
+      throw new InvalidOrganizationException('Recruitment Cycle');
+    }
+    if (currentRecruitmentCycle.executiveSummary.dateDeleted) {
+      throw new DeletedException('Executive Summary', currentRecruitmentCycle.executiveSummary.executiveSummaryId);
+    }
+
+    const teamTypeIds = divisionCounts.map((divisionCount) => divisionCount.teamTypeId);
+    if (new Set(teamTypeIds).size !== teamTypeIds.length) {
+      throw new HttpException(400, 'Each division can only be listed once per recruitment cycle');
+    }
+
+    const teamTypes = await prisma.team_Type.findMany({ where: { teamTypeId: { in: teamTypeIds } } });
+    for (const teamTypeId of teamTypeIds) {
+      const teamType = teamTypes.find((type) => type.teamTypeId === teamTypeId);
+      if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
+      if (teamType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team Type');
+    }
+
+    const updatedRecruitmentCycle = await prisma.$transaction(async (tx) => {
+      // division counts that are no longer listed are removed so the cycle matches exactly what was submitted
+      await tx.recruitment_Division_Count.deleteMany({
+        where: { recruitmentCycleId, teamTypeId: { notIn: teamTypeIds } }
+      });
+
+      for (const { teamTypeId, newMembers, returningMembers } of divisionCounts) {
+        await tx.recruitment_Division_Count.upsert({
+          where: { uniqueDivisionCountPerCycle: { recruitmentCycleId, teamTypeId } },
+          update: { newMembers, returningMembers },
+          create: { recruitmentCycleId, teamTypeId, newMembers, returningMembers }
+        });
+      }
+
+      return tx.recruitment_Cycle.update({
+        where: { recruitmentCycleId },
+        data: { eventsHeld, signUps, onboarded, activeMembers },
+        select: {
+          ...getBaseRecruitmentCycleQueryArgs().select,
+          divisionCounts: getBaseRecruitmentDivisionCountQueryArgs()
+        }
+      });
+    });
+
+    return recruitmentCycleTransformer(updatedRecruitmentCycle);
   }
 }

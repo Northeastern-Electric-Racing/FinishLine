@@ -33,6 +33,7 @@ import {
   createTestTeam,
   createTestTeamType,
   createTestCompetitionPerformance,
+  createTestRecruitmentCycle,
   resetUsers
 } from '../test-utils.js';
 import { DataSource } from 'shared';
@@ -1128,6 +1129,294 @@ describe('Executive Summary Tests', () => {
       expect(edited.totalPointsEarned).toBe(500);
       expect(edited.finalPlace).toBe(3);
       expect(edited.maxPoints).toBe(1000);
+    });
+  });
+
+  describe('Edit Recruitment Cycle', () => {
+    it('Fails if the user is not an admin and not on the ops team', async () => {
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const recruitmentCycle = await createTestRecruitmentCycle(executiveSummary.executiveSummaryId);
+      const nonAdminMember = await createTestUser(member, orgId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editRecruitmentCycle(
+            nonAdminMember,
+            organization,
+            5,
+            100,
+            40,
+            35,
+            [],
+            recruitmentCycle.recruitmentCycleId
+          )
+      ).rejects.toThrow(new AccessDeniedException('edit a recruitment cycle'));
+    });
+
+    it('Fails if the recruitment cycle does not exist', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+
+      await expect(
+        async () => await ExecSummaryServices.editRecruitmentCycle(admin, organization, 5, 100, 40, 35, [], 'nonexistent-id')
+      ).rejects.toThrow(new NotFoundException('Recruitment Cycle', 'nonexistent-id'));
+    });
+
+    it('Fails if the recruitment cycle belongs to a different organization', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      // createTestOrganization() can't be called twice in one test since it reuses the same googleAuthId,
+      // so the other organization is created directly, reusing superman as its creator
+      const otherOrganization = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          description: 'for invalid org recruitment cycle case',
+          applicationLink: '',
+          userCreated: { connect: { userId: superman.userId } }
+        }
+      });
+      const otherCar = await createTestCar(otherOrganization.organizationId, superman.userId);
+      const otherExecutiveSummary = await createTestExecutiveSummary(otherOrganization, otherCar.carId, superman.userId);
+      const otherRecruitmentCycle = await createTestRecruitmentCycle(otherExecutiveSummary.executiveSummaryId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editRecruitmentCycle(
+            admin,
+            organization,
+            5,
+            100,
+            40,
+            35,
+            [],
+            otherRecruitmentCycle.recruitmentCycleId
+          )
+      ).rejects.toThrow(new InvalidOrganizationException('Recruitment Cycle'));
+    });
+
+    it('Fails if the executive summary has been deleted', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const recruitmentCycle = await createTestRecruitmentCycle(executiveSummary.executiveSummaryId);
+
+      await prisma.executive_Summary.update({
+        where: { executiveSummaryId: executiveSummary.executiveSummaryId },
+        data: { dateDeleted: new Date(), deletedBy: { connect: { userId: admin.userId } } }
+      });
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editRecruitmentCycle(
+            admin,
+            organization,
+            5,
+            100,
+            40,
+            35,
+            [],
+            recruitmentCycle.recruitmentCycleId
+          )
+      ).rejects.toThrow(new DeletedException('Executive Summary', executiveSummary.executiveSummaryId));
+    });
+
+    it('Fails if a division is listed more than once', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const recruitmentCycle = await createTestRecruitmentCycle(executiveSummary.executiveSummaryId);
+      const division = await createTestTeamType('Mechanical', orgId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editRecruitmentCycle(
+            admin,
+            organization,
+            5,
+            100,
+            40,
+            35,
+            [
+              { teamTypeId: division.teamTypeId, newMembers: 1, returningMembers: 1 },
+              { teamTypeId: division.teamTypeId, newMembers: 2, returningMembers: 2 }
+            ],
+            recruitmentCycle.recruitmentCycleId
+          )
+      ).rejects.toThrow(new HttpException(400, 'Each division can only be listed once per recruitment cycle'));
+    });
+
+    it('Fails if a division does not exist', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const recruitmentCycle = await createTestRecruitmentCycle(executiveSummary.executiveSummaryId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editRecruitmentCycle(
+            admin,
+            organization,
+            5,
+            100,
+            40,
+            35,
+            [{ teamTypeId: 'nonexistent-division', newMembers: 1, returningMembers: 1 }],
+            recruitmentCycle.recruitmentCycleId
+          )
+      ).rejects.toThrow(new NotFoundException('Team Type', 'nonexistent-division'));
+    });
+
+    it('Fails if a division belongs to a different organization', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const recruitmentCycle = await createTestRecruitmentCycle(executiveSummary.executiveSummaryId);
+      const otherOrganization = await prisma.organization.create({
+        data: {
+          name: 'Other Org',
+          description: 'for invalid org division case',
+          applicationLink: '',
+          userCreated: { connect: { userId: superman.userId } }
+        }
+      });
+      const otherOrgDivision = await createTestTeamType('Mechanical', otherOrganization.organizationId);
+
+      await expect(
+        async () =>
+          await ExecSummaryServices.editRecruitmentCycle(
+            admin,
+            organization,
+            5,
+            100,
+            40,
+            35,
+            [{ teamTypeId: otherOrgDivision.teamTypeId, newMembers: 1, returningMembers: 1 }],
+            recruitmentCycle.recruitmentCycleId
+          )
+      ).rejects.toThrow(new InvalidOrganizationException('Team Type'));
+    });
+
+    it('Succeeds and edits the recruitment cycle as an admin', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const recruitmentCycle = await createTestRecruitmentCycle(executiveSummary.executiveSummaryId);
+      const mechanical = await createTestTeamType('Mechanical', orgId);
+      const electrical = await createTestTeamType('Electrical', orgId);
+
+      const edited = await ExecSummaryServices.editRecruitmentCycle(
+        admin,
+        organization,
+        5,
+        100,
+        40,
+        35,
+        [
+          { teamTypeId: mechanical.teamTypeId, newMembers: 10, returningMembers: 4 },
+          { teamTypeId: electrical.teamTypeId, newMembers: 8, returningMembers: 3 }
+        ],
+        recruitmentCycle.recruitmentCycleId
+      );
+
+      expect(edited.eventsHeld).toBe(5);
+      expect(edited.signUps).toBe(100);
+      expect(edited.onboarded).toBe(40);
+      expect(edited.activeMembers).toBe(35);
+      expect(edited.divisionCounts).toHaveLength(2);
+      const mechanicalCount = edited.divisionCounts.find((count) => count.teamType.teamTypeId === mechanical.teamTypeId);
+      expect(mechanicalCount?.newMembers).toBe(10);
+      expect(mechanicalCount?.returningMembers).toBe(4);
+    });
+
+    it('Succeeds and edits the recruitment cycle as an ops team member', async () => {
+      const opsMember = await createOpsTeamAndMember(organization);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const recruitmentCycle = await createTestRecruitmentCycle(executiveSummary.executiveSummaryId);
+
+      const edited = await ExecSummaryServices.editRecruitmentCycle(
+        opsMember,
+        organization,
+        5,
+        100,
+        40,
+        35,
+        [],
+        recruitmentCycle.recruitmentCycleId
+      );
+
+      expect(edited.eventsHeld).toBe(5);
+    });
+
+    it('Updates existing division counts and removes ones that are no longer listed', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const recruitmentCycle = await createTestRecruitmentCycle(executiveSummary.executiveSummaryId);
+      const mechanical = await createTestTeamType('Mechanical', orgId);
+      const electrical = await createTestTeamType('Electrical', orgId);
+
+      await ExecSummaryServices.editRecruitmentCycle(
+        admin,
+        organization,
+        5,
+        100,
+        40,
+        35,
+        [
+          { teamTypeId: mechanical.teamTypeId, newMembers: 10, returningMembers: 4 },
+          { teamTypeId: electrical.teamTypeId, newMembers: 8, returningMembers: 3 }
+        ],
+        recruitmentCycle.recruitmentCycleId
+      );
+
+      const edited = await ExecSummaryServices.editRecruitmentCycle(
+        admin,
+        organization,
+        6,
+        110,
+        45,
+        40,
+        [{ teamTypeId: mechanical.teamTypeId, newMembers: 12, returningMembers: 5 }],
+        recruitmentCycle.recruitmentCycleId
+      );
+
+      expect(edited.eventsHeld).toBe(6);
+      expect(edited.divisionCounts).toHaveLength(1);
+      expect(edited.divisionCounts[0].teamType.teamTypeId).toBe(mechanical.teamTypeId);
+      expect(edited.divisionCounts[0].newMembers).toBe(12);
+      expect(edited.divisionCounts[0].returningMembers).toBe(5);
+      const storedCount = await prisma.recruitment_Division_Count.count({
+        where: { recruitmentCycleId: recruitmentCycle.recruitmentCycleId }
+      });
+      expect(storedCount).toBe(1);
+    });
+
+    it('Clears stats passed as null and leaves stats passed as undefined unchanged', async () => {
+      const admin = await createTestUser(batmanAppAdmin, orgId);
+      const executiveSummary = await createTestExecutiveSummary(organization, car.carId, superman.userId);
+      const recruitmentCycle = await createTestRecruitmentCycle(executiveSummary.executiveSummaryId);
+
+      await ExecSummaryServices.editRecruitmentCycle(
+        admin,
+        organization,
+        5,
+        100,
+        40,
+        35,
+        [],
+        recruitmentCycle.recruitmentCycleId
+      );
+
+      await ExecSummaryServices.editRecruitmentCycle(
+        admin,
+        organization,
+        null,
+        undefined,
+        null,
+        undefined,
+        [],
+        recruitmentCycle.recruitmentCycleId
+      );
+
+      const stored = await prisma.recruitment_Cycle.findUniqueOrThrow({
+        where: { recruitmentCycleId: recruitmentCycle.recruitmentCycleId }
+      });
+      expect(stored.eventsHeld).toBeNull();
+      expect(stored.signUps).toBe(100);
+      expect(stored.onboarded).toBeNull();
+      expect(stored.activeMembers).toBe(35);
     });
   });
 });
