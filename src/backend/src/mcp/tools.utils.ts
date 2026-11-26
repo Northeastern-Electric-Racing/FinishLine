@@ -1,4 +1,4 @@
-import { Organization } from '@prisma/client';
+import { Organization, Prisma } from '@prisma/client';
 import { CallToolResult, McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import { User } from 'shared';
@@ -7,6 +7,11 @@ import { User } from 'shared';
 export interface AgentContext {
   user: User;
   organization: Organization;
+  /**
+   * The car from the request's carid header, the same global car the app scopes to. Car specific tools
+   * filter by it and never take a car as input; undefined means every car, as it does in the app.
+   */
+  currentCar?: Prisma.CarGetPayload<{ include: { wbsElement: true } }>;
 }
 
 /**

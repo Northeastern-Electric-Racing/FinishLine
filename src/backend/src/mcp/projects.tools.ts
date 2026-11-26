@@ -1,25 +1,10 @@
 import * as z from 'zod/v4';
 import { validateWBS } from 'shared';
 import ProjectsService from '../services/projects.services.js';
-import CarsService from '../services/car.services.js';
 import { withToolErrors } from './errors.js';
 import { LIST_PROJECTS_HINT, registerReadOnlyTool, ToolRegistrar, wbsNumSchema } from './tools.utils.js';
 
-export const registerProjectTools: ToolRegistrar = (server, { user, organization }) => {
-  registerReadOnlyTool(
-    server,
-    'finishline_list_cars',
-    {
-      title: 'List cars',
-      description:
-        "List the organization's cars with their ids, names, and WBS numbers. The car number is the first " +
-        'part of every WBS number, and the highest car number is the newest car, which is almost always ' +
-        'the one the user means. Use a car id from here to filter finishline_list_projects.',
-      inputSchema: z.object({})
-    },
-    async () => withToolErrors('', async () => CarsService.getAllCars(organization))
-  );
-
+export const registerProjectTools: ToolRegistrar = (server, { user, organization, currentCar }) => {
   registerReadOnlyTool(
     server,
     'finishline_list_projects',
@@ -28,16 +13,11 @@ export const registerProjectTools: ToolRegistrar = (server, { user, organization
       description:
         'List projects newest first, with their names, WBS numbers, summaries, status, dates, and teams. ' +
         'Start here when the user names a project in words rather than by number, then match the name to ' +
-        'a WBS number and use the other tools. Pass carId to only list one car; without it, projects ' +
-        'from every car come back, so prefer passing the newest car from finishline_list_cars.',
-      inputSchema: z.object({
-        carId: z
-          .string()
-          .optional()
-          .describe('The id of the car to list projects for, from finishline_list_cars. Omit this for every car.')
-      })
+        'a WBS number and use the other tools. Only the projects on the car this connection is scoped to ' +
+        'come back, or every car when it is not scoped to one.',
+      inputSchema: z.object({})
     },
-    async ({ carId }) => withToolErrors('', async () => ProjectsService.getAllProjects(organization, carId))
+    async () => withToolErrors('', async () => ProjectsService.getAllProjects(organization, currentCar?.carId))
   );
 
   registerReadOnlyTool(

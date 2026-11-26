@@ -19,6 +19,20 @@ export const getCurrentOrganization = async () => {
   });
 };
 
+/**
+ * Checks whether the organization has a Slack bot API key. Admin only.
+ */
+export const hasOrganizationApiToken = () => {
+  return axios.get<boolean>(apiUrls.organizationApiToken());
+};
+
+/**
+ * Generates a new Slack bot API key for the organization, replacing the old one. Admin only.
+ */
+export const generateOrganizationApiToken = () => {
+  return axios.post<{ token: string }>(apiUrls.generateOrganizationApiToken());
+};
+
 export const getFeaturedProjects = async () => {
   return axios.get<ProjectListItem[]>(apiUrls.organizationsFeaturedProjects(), {
     transformResponse: (data) => JSON.parse(data).map(baseProjectTransformer)

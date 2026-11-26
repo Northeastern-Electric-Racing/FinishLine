@@ -1,7 +1,10 @@
 import crypto from 'crypto';
 
-/** Prefix on every FinishLine API token, so leaked keys are easy to grep for and to recognize. */
-const API_TOKEN_PREFIX = 'fl_';
+/** Prefix on every FinishLine user API token, so leaked keys are easy to grep for and to recognize. */
+export const API_TOKEN_PREFIX = 'fl_';
+
+/** Prefix on organization (bot) API tokens, so they're distinguishable from personal tokens at a glance. */
+export const ORGANIZATION_API_TOKEN_PREFIX = 'flb_';
 
 /** Number of characters of the raw token we keep in plaintext for display purposes. */
 const PREVIEW_LENGTH = 4;
@@ -26,10 +29,13 @@ export const hashApiToken = (token: string): string => {
  * The raw token is returned to the caller exactly once and is never stored; only the hash and a
  * short preview are written to the database.
  *
+ * @param prefix the prefix to put on the token, which identifies what kind of token it is
  * @returns the raw token, its hash, and the preview shown in the UI
  */
-export const generateApiToken = (): { token: string; tokenHash: string; preview: string } => {
-  const token = API_TOKEN_PREFIX + crypto.randomBytes(32).toString('base64url');
+export const generateApiToken = (
+  prefix: string = API_TOKEN_PREFIX
+): { token: string; tokenHash: string; preview: string } => {
+  const token = prefix + crypto.randomBytes(32).toString('base64url');
 
   return {
     token,

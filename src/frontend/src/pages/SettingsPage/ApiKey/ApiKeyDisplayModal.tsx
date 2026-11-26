@@ -6,11 +6,20 @@ interface ApiKeyDisplayModalProps {
   open: boolean;
   onHide: () => void;
   token: string;
+  title?: string;
+  /** what the key acts as, shown in the usage note below the key */
+  actsAs?: string;
 }
 
-const ApiKeyDisplayModal: React.FC<ApiKeyDisplayModalProps> = ({ open, onHide, token }) => {
+const ApiKeyDisplayModal: React.FC<ApiKeyDisplayModalProps> = ({
+  open,
+  onHide,
+  token,
+  title = 'Your New API Key',
+  actsAs = 'you'
+}) => {
   return (
-    <NERModal open={open} onHide={onHide} title="Your New API Key" hideFormButtons showCloseButton>
+    <NERModal open={open} onHide={onHide} title={title} hideFormButtons showCloseButton>
       <Stack spacing={2}>
         <Alert severity="warning">
           This is the only time you'll be able to see this key. Copy it somewhere safe before closing this window.
@@ -34,7 +43,7 @@ const ApiKeyDisplayModal: React.FC<ApiKeyDisplayModalProps> = ({ open, onHide, t
         </Box>
 
         <Typography variant="caption" color="text.secondary">
-          Send this key in the <strong>x-api-key</strong> header. It acts as you, so treat it like a password and don't
+          Send this key in the <strong>x-api-key</strong> header. It acts as {actsAs}, so treat it like a password and don't
           commit it anywhere.
         </Typography>
       </Stack>
