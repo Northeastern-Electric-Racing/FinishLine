@@ -37,7 +37,7 @@ const AdminToolsBayDashConfig: React.FC = () => {
   const [selection, setSelection] = useState<BayDashboardWidgetSelection>({});
   // the size whose text field text is being edited, if any
   const [editingSize, setEditingSize] = useState<BayDashboardWidgetSize>();
-  const hasSelection = Object.values(selection).some((choice) => choice);
+  const hasSelection = Object.values(selection).some((choices) => choices?.length);
   const { data: config, isLoading, isError } = useGetCurrentBayDashboardConfig();
   const { mutate: save, isLoading: isSaving } = useSaveBayDashboardConfig();
   const {
@@ -52,7 +52,13 @@ const AdminToolsBayDashConfig: React.FC = () => {
   const getText = (size: BayDashboardWidgetSize) => getTextFieldText(config?.slots ?? [], selection, size);
 
   const handleTextSubmit = (text: string, size: BayDashboardWidgetSize) => {
-    setSelection({ ...selection, [size]: { type: BayDashboardWidgetType.TEXT_FIELD, text: text.trim() } });
+    const choices = selection[size] ?? [];
+    const trimmed = text.trim();
+    // updates the size's text field in its stack, or adds one if it isn't stacked yet
+    const updated = choices.some((choice) => choice.type === BayDashboardWidgetType.TEXT_FIELD)
+      ? choices.map((choice) => (choice.type === BayDashboardWidgetType.TEXT_FIELD ? { ...choice, text: trimmed } : choice))
+      : [...choices, { type: BayDashboardWidgetType.TEXT_FIELD, text: trimmed }];
+    setSelection({ ...selection, [size]: updated });
     toast.success(`Added ${size.toLowerCase()} text field widget with new text`);
   };
 

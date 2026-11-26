@@ -13,8 +13,13 @@ import CountdownWidget from './widgets/CountdownWidget';
 interface BayDashboardGridProps {
   slots: PublicBayDashboardSlot[];
   slug: string;
-  // optional content drawn over a slot's widget, such as an edit button, shown in admin tools but not on TV display
-  renderSlotAction?: (size: BayDashboardWidgetSize, widget: PublicBayDashboardWidget) => React.ReactNode;
+  activeWidgetIndex?: Partial<Record<BayDashboardWidgetSize, number>>;
+  // optional content drawn over a slot's widget, such as an edit button or stack dots, shown in admin tools but not on TV display
+  renderSlotAction?: (
+    size: BayDashboardWidgetSize,
+    widget: PublicBayDashboardWidget,
+    stack: { activeIndex: number; count: number }
+  ) => React.ReactNode;
 }
 
 const gridAreas: Record<BayDashboardWidgetSize, string> = {
@@ -32,7 +37,7 @@ const gridRows = `60fr 380fr ${MEDIUM_HEIGHT}fr ${SMALL_HEIGHT}fr`;
  * The Big/Medium/Small widget grid the TV renders. Fills the width of its parent at the TV's 16:9 shape,
  * so the preview is a scaled down copy of the TV.
  */
-const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, slug, renderSlotAction }) => {
+const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, slug, activeWidgetIndex, renderSlotAction }) => {
   return (
     <Box sx={{ containerType: 'inline-size', width: '100%' }}>
       <Box
@@ -54,13 +59,15 @@ const BayDashboardGrid: React.FC<BayDashboardGridProps> = ({ slots, slug, render
           <CountdownWidget slug={slug} />
         </Box>
         {defaultBayDashboardSlots.map(({ size, position, widgets: [defaultWidget] }) => {
+          const stack = slots.find((slot) => slot.size === size)?.widgets ?? [];
+          const activeIndex = stack.length === 0 ? 0 : Math.min(activeWidgetIndex?.[size] ?? 0, stack.length - 1);
           // fall back to the size's default widget when nothing is picked for it or the picked widget can't be shown
-          const widget = slots.find((slot) => slot.size === size)?.widgets[0] ?? defaultWidget;
+          const widget = stack[activeIndex] ?? defaultWidget;
 
           return (
             <Box key={position} sx={{ gridArea: gridAreas[size], minWidth: 0, minHeight: 0, position: 'relative' }}>
               <BayDashboardWidgetView widget={widget} size={size} slug={slug} fallbackWidget={defaultWidget} />
-              {renderSlotAction?.(size, widget)}
+              {renderSlotAction?.(size, widget, { activeIndex, count: stack.length })}
             </Box>
           );
         })}

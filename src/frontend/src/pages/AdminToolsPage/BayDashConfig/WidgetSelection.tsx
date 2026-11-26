@@ -16,7 +16,7 @@ import ErrorPage from '../../ErrorPage';
 import WidgetSizeDropdown from './WidgetSizeDropdown';
 
 interface WidgetSelectionProps {
-  // highlighted widget per size, only one per size (until phase 3 widget rotations)
+  // highlighted widgets per size, in stack order
   selection: BayDashboardWidgetSelection;
   onSelectionChange: (selection: BayDashboardWidgetSelection) => void;
   slug?: string;
@@ -27,8 +27,8 @@ interface WidgetSelectionProps {
 
 /**
  * Dropdowns listing the widgets available for each slot size.
- * Clicking a widget highlights it, one per size, and clicking it again unselects it.
- * A text field widget can only be highlighted once it has text.
+ * Clicking a widget adds it to the size's stack, and clicking it again removes it.
+ * Widgets stack in the order they were selected. A text field widget can only be selected once it has text.
  */
 const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectionChange, slug, getText, onEditText }) => {
   const { data: availableWidgets, isLoading, isError, error } = useAvailableBayDashboardWidgets();
@@ -37,8 +37,9 @@ const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectio
   const handleSelect = (size: BayDashboardWidgetSize, type: BayDashboardWidgetType) => {
     const widgetName = bayDashboardWidgetDisplayNames[type];
     const sizeName = size.toLowerCase();
-    if (selection[size]?.type === type) {
-      onSelectionChange({ ...selection, [size]: undefined });
+    const choices = selection[size] ?? [];
+    if (choices.some((choice) => choice.type === type)) {
+      onSelectionChange({ ...selection, [size]: choices.filter((choice) => choice.type !== type) });
       toast.success(`Removed ${sizeName} ${widgetName} widget`);
       return;
     }
@@ -49,7 +50,7 @@ const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectio
       return;
     }
 
-    onSelectionChange({ ...selection, [size]: { type, text } });
+    onSelectionChange({ ...selection, [size]: [...choices, { type, text }] });
     toast.success(`Added ${sizeName} ${widgetName} widget`);
   };
 
@@ -64,7 +65,7 @@ const WidgetSelection: React.FC<WidgetSelectionProps> = ({ selection, onSelectio
           size={size}
           widgets={availableWidgets.widgets.filter((widget) => widget.sizes.includes(size))}
           slug={slug}
-          selectedType={selection[size]?.type}
+          selectedTypes={(selection[size] ?? []).map((choice) => choice.type)}
           text={getText(size)}
           onSelect={(type) => handleSelect(size, type)}
           onEditText={() => onEditText(size)}

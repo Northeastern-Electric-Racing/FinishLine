@@ -12,7 +12,7 @@ import BayDashboardWidgetView from '../../BayDashboardPage/components/widgets/Ba
 interface WidgetSizeDropdownProps {
   size: BayDashboardWidgetSize;
   widgets: AvailableBayDashboardWidget[];
-  selectedType?: BayDashboardWidgetType;
+  selectedTypes: BayDashboardWidgetType[];
   text?: string;
   onSelect: (type: BayDashboardWidgetType) => void;
   slug?: string;
@@ -21,13 +21,13 @@ interface WidgetSizeDropdownProps {
 
 /**
  * A collapsible dropdown listing the widgets available for one widget size.
- * Clicking a widget selects it, and only one widget is highlighted at a time (until phase 3 widget rotations).
+ * Clicking a widget selects it, and every selected widget is highlighted, since a size can stack several widgets.
  * The text field widget has an edit icon for changing its text.
  */
 const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({
   size,
   widgets,
-  selectedType,
+  selectedTypes,
   text,
   onSelect,
   slug,
@@ -63,77 +63,83 @@ const WidgetSizeDropdown: React.FC<WidgetSizeDropdownProps> = ({
         {widgets.length === 0 ? (
           <Typography pl={1}>No widgets available</Typography>
         ) : (
-          widgets.map((widget) => (
-            <Box key={widget.type} sx={{ position: 'relative' }}>
-              <ButtonBase
-                onClick={() => onSelect(widget.type)}
-                aria-pressed={widget.type === selectedType}
-                sx={{
-                  display: 'block',
-                  width: '100%',
-                  textAlign: 'left',
-                  position: 'relative',
-                  containerType: 'inline-size'
-                }}
-              >
-                {widget.type === selectedType ? (
-                  <RemoveCircle
-                    fontSize="small"
+          widgets.map((widget) => {
+            const isSelected = selectedTypes.includes(widget.type);
+            return (
+              <Box key={widget.type} sx={{ position: 'relative' }}>
+                <ButtonBase
+                  onClick={() => onSelect(widget.type)}
+                  aria-pressed={isSelected}
+                  sx={{
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'left',
+                    position: 'relative',
+                    containerType: 'inline-size'
+                  }}
+                >
+                  {isSelected ? (
+                    <RemoveCircle
+                      fontSize="small"
+                      sx={{
+                        position: 'absolute',
+                        top: -6,
+                        left: -6,
+                        zIndex: 1,
+                        color: 'primary.main',
+                        bgcolor: 'white',
+                        borderRadius: '50%'
+                      }}
+                    />
+                  ) : (
+                    <AddCircle
+                      fontSize="small"
+                      sx={{ position: 'absolute', top: -6, left: -6, zIndex: 1, color: 'white' }}
+                    />
+                  )}
+                  <Box>
+                    <BayDashboardWidgetView
+                      size={size}
+                      widget={{
+                        type: widget.type,
+                        order: 0,
+                        text: widget.type === BayDashboardWidgetType.TEXT_FIELD ? text : undefined
+                      }}
+                      slug={slug}
+                    />
+                  </Box>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      inset: -2,
+                      borderRadius: 'calc(4cqw + 2px)',
+                      border: '2px solid',
+                      borderColor: isSelected ? 'primary.main' : 'transparent',
+                      pointerEvents: 'none'
+                    }}
+                  />
+                </ButtonBase>
+                {widget.type === BayDashboardWidgetType.TEXT_FIELD && (
+                  <IconButton
+                    aria-label="Edit text field text"
+                    size="small"
+                    onClick={onEditText}
                     sx={{
                       position: 'absolute',
                       top: -6,
-                      left: -6,
+                      right: -6,
                       zIndex: 1,
                       color: 'primary.main',
                       bgcolor: 'white',
-                      borderRadius: '50%'
+                      '&:hover': { bgcolor: 'grey.200' }
                     }}
-                  />
-                ) : (
-                  <AddCircle fontSize="small" sx={{ position: 'absolute', top: -6, left: -6, zIndex: 1, color: 'white' }} />
+                  >
+                    <Edit fontSize="inherit" />
+                  </IconButton>
                 )}
-                <Box>
-                  <BayDashboardWidgetView
-                    size={size}
-                    widget={{
-                      type: widget.type,
-                      order: 0,
-                      text: widget.type === BayDashboardWidgetType.TEXT_FIELD ? text : undefined
-                    }}
-                    slug={slug}
-                  />
-                </Box>
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    inset: -2,
-                    borderRadius: 'calc(4cqw + 2px)',
-                    border: '2px solid',
-                    borderColor: widget.type === selectedType ? 'primary.main' : 'transparent',
-                    pointerEvents: 'none'
-                  }}
-                />
-              </ButtonBase>
-              {widget.type === BayDashboardWidgetType.TEXT_FIELD && (
-                <IconButton
-                  aria-label="Edit text field text"
-                  size="small"
-                  onClick={onEditText}
-                  sx={{
-                    position: 'absolute',
-                    top: -6,
-                    right: -6,
-                    zIndex: 1,
-                    color: 'primary.main',
-                    bgcolor: 'white',
-                    '&:hover': { bgcolor: 'grey.200' }
-                  }}
-                >
-                  <Edit fontSize="inherit" />
-                </IconButton>
-              )}
-            </Box>
-          ))
+              </Box>
+            );
+          })
         )}
       </AccordionDetails>
     </Accordion>
