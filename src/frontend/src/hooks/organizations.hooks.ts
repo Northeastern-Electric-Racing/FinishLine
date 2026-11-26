@@ -1,14 +1,7 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import {
-  ApiTokenMetadata,
-  GeneratedApiToken,
-  NotificationChannelPreview,
-  Organization,
-  ProjectListItem,
-  User
-} from 'shared';
+import { NotificationChannelPreview, Organization, ProjectListItem, User } from 'shared';
 import {
   getFeaturedProjects,
   getCurrentOrganization,
