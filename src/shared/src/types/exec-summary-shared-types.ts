@@ -96,7 +96,13 @@ export interface CreateExecutiveSummaryArgs {
   recruitmentNotes?: string;
 }
 
-export type EditExecutiveSummaryArgs = Omit<CreateExecutiveSummaryArgs, 'carId'>;
+/**
+ * For edits, undefined leaves a field unchanged and null clears it.
+ */
+export type EditExecutiveSummaryArgs = Omit<CreateExecutiveSummaryArgs, 'carId' | 'seasonStartDate' | 'seasonEndDate'> & {
+  seasonStartDate?: Date | null;
+  seasonEndDate?: Date | null;
+};
 
 export interface CreateCompetitionPerformanceArgs {
   executiveSummaryId: string;
@@ -115,7 +121,14 @@ export interface CreateCompetitionPerformanceArgs {
   enduranceAvgLapTimeSeconds?: number;
 }
 
-export type EditCompetitionPerformanceArgs = Omit<CreateCompetitionPerformanceArgs, 'executiveSummaryId' | 'competition'>;
+/**
+ * For edits, undefined leaves a field unchanged and null clears it.
+ */
+export type EditCompetitionPerformanceArgs = {
+  [K in keyof Omit<CreateCompetitionPerformanceArgs, 'executiveSummaryId' | 'competition'>]?:
+    | CreateCompetitionPerformanceArgs[K]
+    | null;
+};
 
 export interface CreateCompetitionDocumentsSummaryArgs {
   executiveSummaryId: string;
@@ -125,7 +138,15 @@ export interface CreateCompetitionDocumentsSummaryArgs {
   dateSynced?: Date;
 }
 
-export type EditCompetitionDocumentsSummaryArgs = Omit<CreateCompetitionDocumentsSummaryArgs, 'executiveSummaryId'>;
+/**
+ * For edits, undefined leaves a field unchanged and null clears it (source cannot be cleared).
+ */
+export type EditCompetitionDocumentsSummaryArgs = {
+  submittedOnTimeCount?: number | null;
+  firstSubmissionRejectedCount?: number | null;
+  source?: DataSource;
+  dateSynced?: Date | null;
+};
 
 export interface RecruitmentDivisionCountArgs {
   teamTypeId: string;

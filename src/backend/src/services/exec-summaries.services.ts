@@ -135,7 +135,8 @@ export default class ExecSummaryServices {
   }
 
   /**
-   * Edits the competition documents summary of an executive summary. Fields that are omitted are left unchanged.
+   * Edits the competition documents summary of an executive summary. Fields that are undefined are left unchanged and
+   * the nullable fields (counts and date synced) can be cleared by passing null.
    * @param submitter the user editing the competition documents summary
    * @param organization the organization the executive summary belongs to
    * @param executiveSummaryId the id of the executive summary that owns the competition documents summary
@@ -188,12 +189,17 @@ export default class ExecSummaryServices {
       throw new NotFoundException('Competition Documents Summary', executiveSummaryId);
     }
 
-    if (submittedOnTimeCount !== undefined && (!Number.isInteger(submittedOnTimeCount) || submittedOnTimeCount < 0)) {
+    if (
+      submittedOnTimeCount !== undefined &&
+      submittedOnTimeCount !== null &&
+      (!Number.isInteger(submittedOnTimeCount) || submittedOnTimeCount < 0)
+    ) {
       throw new HttpException(400, 'Submitted on time count must be a non-negative integer');
     }
 
     if (
       firstSubmissionRejectedCount !== undefined &&
+      firstSubmissionRejectedCount !== null &&
       (!Number.isInteger(firstSubmissionRejectedCount) || firstSubmissionRejectedCount < 0)
     ) {
       throw new HttpException(400, 'First submission rejected count must be a non-negative integer');
