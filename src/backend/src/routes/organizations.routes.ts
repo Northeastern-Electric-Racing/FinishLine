@@ -9,6 +9,8 @@ const organizationRouter = express.Router();
 const upload = multer({ limits: { fileSize: MAX_FILE_SIZE }, storage: memoryStorage() });
 
 organizationRouter.get('/current', OrganizationsController.getCurrentOrganization);
+organizationRouter.get('/api-token', OrganizationsController.hasOrganizationApiToken);
+organizationRouter.post('/api-token/generate', OrganizationsController.generateOrganizationApiToken);
 organizationRouter.post('/useful-links/set', ...linkValidators, validateInputs, OrganizationsController.setUsefulLinks);
 organizationRouter.get('/useful-links', OrganizationsController.getAllUsefulLinks);
 

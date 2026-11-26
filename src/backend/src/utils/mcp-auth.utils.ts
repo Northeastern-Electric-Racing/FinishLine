@@ -6,7 +6,8 @@ import { AccessDeniedException, HttpException } from './errors.utils.js';
 const API_KEY_HEADER = 'x-api-key';
 
 /**
- * The header a shared bot (the Slack bot) sends with an admin token to act as a specific Slack user.
+ * The header the Slack bot sends with the organization API token to act as a specific Slack user.
+ * Personal tokens are rejected if they send it.
  * Node lowercases incoming header names, so this matches regardless of the casing the client used.
  */
 const SLACKBOT_USER_ID_HEADER = 'x-slackbot-user-id';
@@ -17,8 +18,9 @@ const SLACKBOT_USER_ID_HEADER = 'x-slackbot-user-id';
  * Populates req.currentUser and req.organization exactly like getUserAndOrganization does, so
  * downstream services are indistinguishable from the ones the cookie authenticated API calls.
  *
- * If an x-slackbot-user-id header is present, the token must be an admin's and the request runs as the
- * organization member linked to that Slack id (see ApiTokenService.authenticateApiToken).
+ * An organization (bot) token must send an x-slackbot-user-id header and the request runs as the
+ * organization member linked to that Slack id; a personal token must not send it (see
+ * ApiTokenService.authenticateApiToken).
  */
 export const requireApiToken = async (req: Request, _res: Response, next: NextFunction) => {
   try {

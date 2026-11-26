@@ -1,10 +1,19 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { NotificationChannelPreview, Organization, ProjectListItem, User } from 'shared';
+import {
+  ApiTokenMetadata,
+  GeneratedApiToken,
+  NotificationChannelPreview,
+  Organization,
+  ProjectListItem,
+  User
+} from 'shared';
 import {
   getFeaturedProjects,
   getCurrentOrganization,
+  hasOrganizationApiToken,
+  generateOrganizationApiToken,
   setOrganizationDescription,
   setPlatformDescription,
   setOrganizationFeaturedProjects,
@@ -51,6 +60,36 @@ export const useCurrentOrganization = () => {
     const { data } = await getCurrentOrganization();
     return data;
   });
+};
+
+/**
+ * Checks whether the organization has a Slack bot API key. Admin only.
+ */
+export const useHasOrganizationApiToken = () => {
+  return useQuery<boolean, Error>(['organizations', 'api-token'], async () => {
+    const { data } = await hasOrganizationApiToken();
+    return data;
+  });
+};
+
+/**
+ * Generates a new Slack bot API key for the organization, replacing the old one. Admin only.
+ * @returns the raw key, which is only ever visible here
+ */
+export const useGenerateOrganizationApiToken = () => {
+  const queryClient = useQueryClient();
+  return useMutation<string, Error, void>(
+    ['organizations', 'api-token', 'generate'],
+    async () => {
+      const { data } = await generateOrganizationApiToken();
+      return data.token;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations', 'api-token']);
+      }
+    }
+  );
 };
 
 export const useProvideOrganization = (): OrganizationProvider => {

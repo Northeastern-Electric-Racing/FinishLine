@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import OrganizationsService from '../services/organizations.services.js';
+import ApiTokenService from '../services/api-tokens.services.js';
 import { HttpException } from '../utils/errors.utils.js';
 
 export default class OrganizationsController {
@@ -7,6 +8,24 @@ export default class OrganizationsController {
     try {
       const organization = await OrganizationsService.getCurrentOrganization(req.organization.organizationId);
       res.status(200).json(organization);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async hasOrganizationApiToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const hasApiToken = await ApiTokenService.hasOrganizationApiToken(req.currentUser, req.organization);
+      res.status(200).json(hasApiToken);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async generateOrganizationApiToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const token = await ApiTokenService.generateOrganizationApiToken(req.currentUser, req.organization);
+      res.status(200).json({ token });
     } catch (error: unknown) {
       next(error);
     }

@@ -20,6 +20,7 @@ import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
 import GuestViewConfig from './EditGuestView/GuestViewConfig';
 import AdminToolsSlackIds from './AdminToolsSlackIds';
+import AdminToolsSlackBotToken from './AdminToolsSlackBotToken';
 import AdminToolsOnboardingConfig from './OnboardingConfig/AdminToolsOnboardingConfig';
 import AdminToolsScheduleConfig from './ScheduleConfig/AdminToolsScheduleConfig';
 import AdminToolsAttendanceConfig from './AdminToolsAttendanceConfig';
@@ -103,6 +104,7 @@ const AdminToolsPage: React.FC = () => {
             <AdminToolsSlackUpcomingDeadlines />
           </Box>
           <AdminToolsSlackIds />
+          <AdminToolsSlackBotToken />
           <AdminToolsAttendeeDesignReviewInfo />
         </Box>
       )}

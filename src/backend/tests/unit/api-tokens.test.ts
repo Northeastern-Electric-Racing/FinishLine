@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { Organization, Role_Type } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils.js';
 import {
@@ -9,7 +10,12 @@ import {
   wonderwomanGuest,
   wonderwomanSettings
 } from '../test-data/users.test-data.js';
-import { AccessDeniedException, AccessDeniedGuestException, HttpException } from '../../src/utils/errors.utils.js';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  AccessDeniedGuestException,
+  HttpException
+} from '../../src/utils/errors.utils.js';
 import prisma from '../../src/prisma/prisma.js';
 import ApiTokenService from '../../src/services/api-tokens.services.js';
 import { hashApiToken } from '../../src/utils/api-tokens.utils.js';
@@ -154,11 +160,42 @@ describe('Api Token Tests', () => {
     });
   });
 
-  describe('Authenticate Api Token On Behalf Of A Slack User', () => {
-    it('resolves to the organization member linked to the slack id', async () => {
+  describe('Organization Api Token', () => {
+    it('fails to generate for a non-admin', async () => {
+      const regularMember = await createTestUser(member, orgId);
+
+      await expect(ApiTokenService.generateOrganizationApiToken(regularMember, organization)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('generate an organization API token')
+      );
+    });
+
+    it('fails to check for a non-admin', async () => {
+      const regularMember = await createTestUser(member, orgId);
+
+      await expect(ApiTokenService.hasOrganizationApiToken(regularMember, organization)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('view the organization API token')
+      );
+    });
+
+    it('stores only the hash and reports that a token exists', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+
+      expect(await ApiTokenService.hasOrganizationApiToken(batman, organization)).toBe(false);
+
+      const token = await ApiTokenService.generateOrganizationApiToken(batman, organization);
+
+      expect(token.startsWith('flb_')).toBe(true);
+      const stored = await prisma.organization.findUnique({ where: { organizationId: orgId } });
+      expect(stored?.apiTokenHash).toBe(hashApiToken(token));
+      expect(await ApiTokenService.hasOrganizationApiToken(batman, organization)).toBe(true);
+    });
+  });
+
+  describe('Authenticate On Behalf Of A Slack User', () => {
+    it('resolves the organization token to the member linked to the slack id', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const superman = await createTestUser(supermanAdmin, orgId, supermanSettings);
-      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+      const token = await ApiTokenService.generateOrganizationApiToken(batman, organization);
 
       const { user, organization: resolved } = await ApiTokenService.authenticateApiToken(
         token,
@@ -170,19 +207,63 @@ describe('Api Token Tests', () => {
       expect(resolved.organizationId).toBe(orgId);
     });
 
-    it('fails outright when the token is not an admin', async () => {
-      const regularMember = await createTestUser(member, orgId);
+    it('keeps working after the admin who generated it is demoted', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const superman = await createTestUser(supermanAdmin, orgId, supermanSettings);
+      const token = await ApiTokenService.generateOrganizationApiToken(batman, organization);
+      await prisma.role.update({
+        where: { uniqueRole: { userId: batman.userId, organizationId: orgId } },
+        data: { roleType: Role_Type.GUEST }
+      });
+
+      const { user } = await ApiTokenService.authenticateApiToken(token, undefined, supermanSettings.slackId);
+
+      expect(user.userId).toBe(superman.userId);
+    });
+
+    it('rejects a personal admin token that sends a slack id', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
       await createTestUser(supermanAdmin, orgId, supermanSettings);
-      const { token } = await ApiTokenService.generateApiToken(regularMember, organization);
+      const { token } = await ApiTokenService.generateApiToken(batman, organization);
 
       await expect(ApiTokenService.authenticateApiToken(token, undefined, supermanSettings.slackId)).rejects.toThrow(
-        new AccessDeniedException('only admin API tokens can act on behalf of a Slack user')
+        new AccessDeniedException('only the organization API token can act on behalf of a Slack user')
       );
+    });
+
+    it('rejects the organization token without a slack id', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const token = await ApiTokenService.generateOrganizationApiToken(batman, organization);
+
+      await expect(ApiTokenService.authenticateApiToken(token, undefined)).rejects.toThrow(
+        new HttpException(401, 'Authentication Failed: Organization API tokens must act on behalf of a Slack user!')
+      );
+    });
+
+    it('rejects the old organization token once it is regenerated', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await createTestUser(supermanAdmin, orgId, supermanSettings);
+      const first = await ApiTokenService.generateOrganizationApiToken(batman, organization);
+      await ApiTokenService.generateOrganizationApiToken(batman, organization);
+
+      await expect(ApiTokenService.authenticateApiToken(first, undefined, supermanSettings.slackId)).rejects.toThrow(
+        new HttpException(401, 'Authentication Failed: Invalid API token!')
+      );
+    });
+
+    it('rejects an organization id header for a different organization', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await createTestUser(supermanAdmin, orgId, supermanSettings);
+      const token = await ApiTokenService.generateOrganizationApiToken(batman, organization);
+
+      await expect(
+        ApiTokenService.authenticateApiToken(token, 'some-other-org-id', supermanSettings.slackId)
+      ).rejects.toThrow(new AccessDeniedException('this API token belongs to a different organization'));
     });
 
     it('fails when no user in the organization has the slack id', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+      const token = await ApiTokenService.generateOrganizationApiToken(batman, organization);
 
       await expect(ApiTokenService.authenticateApiToken(token, undefined, 'unknownSlackId')).rejects.toThrow(
         new HttpException(401, 'Authentication Failed: No user in this organization is linked to that Slack id!')
@@ -202,16 +283,16 @@ describe('Api Token Tests', () => {
         }
       });
       await createTestUser(supermanAdmin, otherOrganization.organizationId, supermanSettings);
-      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+      const token = await ApiTokenService.generateOrganizationApiToken(batman, organization);
 
       await expect(ApiTokenService.authenticateApiToken(token, orgId, supermanSettings.slackId)).rejects.toThrow(
         new HttpException(401, 'Authentication Failed: No user in this organization is linked to that Slack id!')
       );
     });
 
-    it('fails for a blank slack id rather than acting as the admin', async () => {
+    it('fails for a blank slack id', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+      const token = await ApiTokenService.generateOrganizationApiToken(batman, organization);
 
       await expect(ApiTokenService.authenticateApiToken(token, undefined, '  ')).rejects.toThrow(
         new HttpException(401, 'Authentication Failed: Empty Slack user id!')
@@ -221,11 +302,24 @@ describe('Api Token Tests', () => {
     it('fails when the slack user is a guest', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       await createTestUser(wonderwomanGuest, orgId, wonderwomanSettings);
-      const { token } = await ApiTokenService.generateApiToken(batman, organization);
+      const token = await ApiTokenService.generateOrganizationApiToken(batman, organization);
 
       await expect(ApiTokenService.authenticateApiToken(token, undefined, wonderwomanSettings.slackId)).rejects.toThrow(
         new AccessDeniedException('guests cannot use the API')
       );
+    });
+
+    it('logs who is being impersonated', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const superman = await createTestUser(supermanAdmin, orgId, supermanSettings);
+      const token = await ApiTokenService.generateOrganizationApiToken(batman, organization);
+      const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
+
+      await ApiTokenService.authenticateApiToken(token, undefined, supermanSettings.slackId);
+
+      expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining(orgId));
+      expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining(superman.userId));
+      infoSpy.mockRestore();
     });
   });
 });
