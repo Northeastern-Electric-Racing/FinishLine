@@ -137,3 +137,32 @@ export interface PublicBayDashboardOverdueWorkPackage {
   daysOverdue: number;
   blockedBy: { wbsNum: WbsNumber; name: string }[];
 }
+
+export enum BayDashboardTier {
+  S = 'S',
+  A = 'A',
+  B = 'B',
+  D = 'D',
+  F = 'F'
+}
+
+/**
+ * The tiers in order from best to worst. A team gets the first tier whose
+ * maxOverdueCount its overdue work package count is below; anything else is F.
+ */
+export const BAY_DASHBOARD_TIER_THRESHOLDS: { tier: BayDashboardTier; maxOverdueCount: number }[] = [
+  { tier: BayDashboardTier.S, maxOverdueCount: 2 },
+  { tier: BayDashboardTier.A, maxOverdueCount: 4 },
+  { tier: BayDashboardTier.B, maxOverdueCount: 6 },
+  { tier: BayDashboardTier.D, maxOverdueCount: 10 }
+];
+
+/**
+ * A team's row on the unauthenticated TV's tier list, ranked by how many overdue work packages the team has.
+ */
+export interface PublicBayDashboardTierListEntry {
+  teamName: string;
+  head: Pick<UserPreview, 'firstName' | 'lastName'>;
+  overdueCount: number;
+  tier: BayDashboardTier;
+}
