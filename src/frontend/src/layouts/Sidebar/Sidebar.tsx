@@ -34,6 +34,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import SummarizeIcon from '@mui/icons-material/Summarize';
 import { useState } from 'react';
 import GlobalCarFilterHeader from '../../components/GlobalCarFilterHeader';
 import GlobalCarFilterChips from '../../components/GlobalCarFilterChips';
@@ -187,6 +188,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       name: 'Statistics',
       icon: <BarChartIcon />,
       route: routes.STATISTICS
+    });
+    memberLinkItems.splice(7, 0, {
+      name: 'Executive Summaries',
+      icon: <SummarizeIcon />,
+      route: routes.EXECUTIVE_SUMMARIES
     });
   }
 
