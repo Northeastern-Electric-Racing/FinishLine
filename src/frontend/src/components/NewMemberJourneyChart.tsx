@@ -58,8 +58,20 @@ const NewMemberJourneyChart: React.FC<NewMemberJourneyChartProps> = ({ executive
   const data = buildNewMemberJourneyData(executiveSummaries).filter((point) => termLabels.includes(point.label));
 
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 2, width: '100%', overflow: 'visible' }}>
-      <CardContent>
+    <Card
+      sx={{
+        borderRadius: 5,
+        backgroundColor: '#1e1e1e',
+        color: 'white',
+        p: 0,
+        width: '100%',
+        overflow: 'visible',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 }, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <Typography variant="h5" fontWeight="bold" textAlign="center" sx={{ textDecoration: 'underline', mb: 1 }}>
           New Member Journey Over Time
         </Typography>
@@ -67,37 +79,48 @@ const NewMemberJourneyChart: React.FC<NewMemberJourneyChartProps> = ({ executive
         {data.length === 0 ? (
           <Typography textAlign="center">No recruitment data available.</Typography>
         ) : (
-          <ResponsiveContainer width="100%" height={350}>
-            <LineChart data={data} margin={{ top: 30, right: 40, left: 0, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#3a3a3a" vertical={false} />
-              <XAxis
-                dataKey="label"
-                stroke="white"
-                tick={{ fill: 'white', fontSize: 12 }}
-                padding={{ left: 30, right: 30 }}
-              />
-              <YAxis stroke="white" tick={{ fill: 'white', fontSize: 12 }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend verticalAlign="top" align="left" wrapperStyle={{ color: 'white', paddingBottom: 16 }} />
-              <Line type="linear" dataKey="signUps" name="Sign-Ups" stroke={SIGN_UPS_COLOR} strokeWidth={2} dot={{ r: 6 }} />
-              <Line
-                type="linear"
-                dataKey="onboarded"
-                name="Onboarded"
-                stroke={ONBOARDED_COLOR}
-                strokeWidth={2}
-                dot={{ r: 6 }}
-              />
-              <Line
-                type="linear"
-                dataKey="newActiveMembers"
-                name="New Active Members"
-                stroke={NEW_ACTIVE_MEMBERS_COLOR}
-                strokeWidth={2}
-                dot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <Box flex={1} position="relative" minHeight={200}>
+            <Box position="absolute" sx={{ inset: 0 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data} margin={{ top: 10, right: 40, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#3a3a3a" vertical={false} />
+                  <XAxis
+                    dataKey="label"
+                    stroke="white"
+                    tick={{ fill: 'white', fontSize: 12 }}
+                    padding={{ left: 30, right: 30 }}
+                  />
+                  <YAxis stroke="white" tick={{ fill: 'white', fontSize: 12 }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend verticalAlign="top" align="left" wrapperStyle={{ color: 'white', paddingBottom: 8 }} />
+                  <Line
+                    type="linear"
+                    dataKey="signUps"
+                    name="Sign-Ups"
+                    stroke={SIGN_UPS_COLOR}
+                    strokeWidth={2}
+                    dot={{ r: 6 }}
+                  />
+                  <Line
+                    type="linear"
+                    dataKey="onboarded"
+                    name="Onboarded"
+                    stroke={ONBOARDED_COLOR}
+                    strokeWidth={2}
+                    dot={{ r: 6 }}
+                  />
+                  <Line
+                    type="linear"
+                    dataKey="newActiveMembers"
+                    name="New Active Members"
+                    stroke={NEW_ACTIVE_MEMBERS_COLOR}
+                    strokeWidth={2}
+                    dot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
+          </Box>
         )}
       </CardContent>
     </Card>

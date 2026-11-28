@@ -58,8 +58,19 @@ const NewMemberSignUps: React.FC<NewMemberSignUpsProps> = ({ events, termLabels 
   });
 
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 0, width: '100%' }}>
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+    <Card
+      sx={{
+        borderRadius: 5,
+        backgroundColor: '#1e1e1e',
+        color: 'white',
+        p: 0,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 }, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1} mb={2}>
           <Typography variant="h5" fontWeight="bold" sx={{ textDecoration: 'underline' }}>
             New Member Sign-Ups Across Events
@@ -69,48 +80,52 @@ const NewMemberSignUps: React.FC<NewMemberSignUpsProps> = ({ events, termLabels 
         {visibleTerms.length === 0 ? (
           <Typography textAlign="center">No recruitment events recorded for these terms.</Typography>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid stroke="#3a3a3a" vertical={false} />
-              <XAxis dataKey="name" stroke="white" tick={{ fill: 'white', fontSize: 12 }} />
-              <YAxis stroke="white" tick={{ fill: 'white', fontSize: 12 }} allowDecimals={false} />
-              <Tooltip
-                cursor={{ fill: 'rgba(255,255,255,0.08)' }}
-                content={({ active, label }) => {
-                  const term = visibleTerms.find((t) => t.label === label);
-                  if (!active || !term) return null;
-                  return (
-                    <Box sx={{ backgroundColor: '#333', color: 'white', borderRadius: '6px', p: 1 }}>
-                      <Typography variant="body2" fontWeight="bold">
-                        {term.label}: {term.total} sign-ups
-                      </Typography>
-                      {term.events.map((event) => (
-                        <Typography variant="caption" display="block" key={event.eventId}>
-                          {event.title} ({event.date.toLocaleDateString()}): {event.signUps}
-                        </Typography>
-                      ))}
-                    </Box>
-                  );
-                }}
-              />
-              {Array.from({ length: maxEvents }, (_, i) => (
-                <Bar
-                  key={`event${i}`}
-                  dataKey={`event${i}`}
-                  stackId="signups"
-                  fill={SEGMENT_SHADES[i % SEGMENT_SHADES.length]}
-                  stroke="white"
-                  strokeDasharray="3 3"
-                  strokeWidth={1}
-                  maxBarSize={48}
-                />
-              ))}
-              {/* zero-height bar on top of each stack, used only to print the total above it */}
-              <Bar dataKey="zero" stackId="signups" fill="transparent" isAnimationActive={false}>
-                <LabelList dataKey="total" position="top" style={{ fill: 'white', fontWeight: 'bold', fontSize: 14 }} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <Box flex={1} position="relative" minHeight={200}>
+            <Box position="absolute" sx={{ inset: 0 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid stroke="#3a3a3a" vertical={false} />
+                  <XAxis dataKey="name" stroke="white" tick={{ fill: 'white', fontSize: 12 }} />
+                  <YAxis stroke="white" tick={{ fill: 'white', fontSize: 12 }} allowDecimals={false} />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(255,255,255,0.08)' }}
+                    content={({ active, label }) => {
+                      const term = visibleTerms.find((t) => t.label === label);
+                      if (!active || !term) return null;
+                      return (
+                        <Box sx={{ backgroundColor: '#333', color: 'white', borderRadius: '6px', p: 1 }}>
+                          <Typography variant="body2" fontWeight="bold">
+                            {term.label}: {term.total} sign-ups
+                          </Typography>
+                          {term.events.map((event) => (
+                            <Typography variant="caption" display="block" key={event.eventId}>
+                              {event.title} ({event.date.toLocaleDateString()}): {event.signUps}
+                            </Typography>
+                          ))}
+                        </Box>
+                      );
+                    }}
+                  />
+                  {Array.from({ length: maxEvents }, (_, i) => (
+                    <Bar
+                      key={`event${i}`}
+                      dataKey={`event${i}`}
+                      stackId="signups"
+                      fill={SEGMENT_SHADES[i % SEGMENT_SHADES.length]}
+                      stroke="white"
+                      strokeDasharray="3 3"
+                      strokeWidth={1}
+                      maxBarSize={48}
+                    />
+                  ))}
+                  {/* zero-height bar on top of each stack, used only to print the total above it */}
+                  <Bar dataKey="zero" stackId="signups" fill="transparent" isAnimationActive={false}>
+                    <LabelList dataKey="total" position="top" style={{ fill: 'white', fontWeight: 'bold', fontSize: 14 }} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
+          </Box>
         )}
       </CardContent>
     </Card>
