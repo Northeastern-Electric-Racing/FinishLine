@@ -13,6 +13,8 @@ import { buildNewMemberJourneyData } from '../utils/exec-summary.utils';
 
 interface NewMemberJourneyChartProps {
   executiveSummaries: ExecutiveSummary[];
+  // only these terms (e.g. "Fall 2025") are shown
+  termLabels: string[];
 }
 
 const SIGN_UPS_COLOR = '#ef4345';
@@ -52,11 +54,11 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, label, payload })
   );
 };
 
-const NewMemberJourneyChart: React.FC<NewMemberJourneyChartProps> = ({ executiveSummaries }) => {
-  const data = buildNewMemberJourneyData(executiveSummaries);
+const NewMemberJourneyChart: React.FC<NewMemberJourneyChartProps> = ({ executiveSummaries, termLabels }) => {
+  const data = buildNewMemberJourneyData(executiveSummaries).filter((point) => termLabels.includes(point.label));
 
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 2, width: 750, overflow: 'visible' }}>
+    <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', p: 2, width: '100%', overflow: 'visible' }}>
       <CardContent>
         <Typography variant="h5" fontWeight="bold" textAlign="center" sx={{ textDecoration: 'underline', mb: 1 }}>
           New Member Journey Over Time

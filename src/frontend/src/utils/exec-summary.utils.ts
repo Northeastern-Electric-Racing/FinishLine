@@ -100,3 +100,94 @@ export const buildNewMemberJourneyData = (executiveSummaries: ExecutiveSummary[]
 
   return Array.from(pointsByLabel.values()).sort((a, b) => a.sortKey - b.sortKey);
 };
+
+/**
+ * Orders term labels like "Fall 2023" / "Spring 2024" chronologically (spring before fall within a calendar year).
+ */
+export const termLabelSortKey = (label: string): number => {
+  const [term, year] = label.split(' ');
+  return Number(year) * 2 + (term === 'Fall' ? 1 : 0);
+};
+
+/** Shortens a term label like "Fall 2023" to "F23". */
+export const termLabelShort = (label: string): string => {
+  const [term, year] = label.split(' ');
+  return `${term.charAt(0)}${year.slice(-2)}`;
+};
+
+/** The same term one year earlier, e.g. "Fall 2025" -> "Fall 2024". */
+const previousYearTermLabel = (label: string): string => {
+  const [term, year] = label.split(' ');
+  return `${term} ${Number(year) - 1}`;
+};
+
+export interface TermTotal {
+  label: string;
+  total: number;
+}
+
+export interface RecruitmentYoyMetrics {
+  bestByNewActiveMembers?: string;
+  bestByOnboarded?: string;
+  worstByNewActiveMembers?: string;
+  worstByOnboarded?: string;
+  averageNewActiveMembers?: number;
+  averageActiveMembers?: number;
+  // percentages; undefined when there is no same-term data from the year before
+  recruitmentGrowth?: number;
+  newActiveMemberGrowth?: number;
+  activeMemberGrowth?: number;
+}
+
+const extremeLabel = <T extends { label: string }>(points: T[], value: (p: T) => number, best: boolean) =>
+  points.reduce<T | undefined>((pick, point) => {
+    if (!pick) return point;
+    return (best ? value(point) > value(pick) : value(point) < value(pick)) ? point : pick;
+  }, undefined)?.label;
+
+const average = (values: number[]): number | undefined =>
+  values.length === 0 ? undefined : Math.round(values.reduce((sum, v) => sum + v, 0) / values.length);
+
+/**
+ * Growth (as a percentage) of the newest term in `windowPoints` compared to the same term a year earlier.
+ * The earlier term is looked up in `allPoints` so it still counts if it falls just outside the window.
+ */
+const yoyGrowth = <T extends { label: string }>(
+  windowPoints: T[],
+  allPoints: T[],
+  value: (p: T) => number
+): number | undefined => {
+  const latest = windowPoints[windowPoints.length - 1];
+  if (!latest) return undefined;
+  const previous = allPoints.find((p) => p.label === previousYearTermLabel(latest.label));
+  if (!previous || value(previous) === 0) return undefined;
+  return Math.round(((value(latest) - value(previous)) / value(previous)) * 100);
+};
+
+/**
+ * Computes the Key YoY Metrics for the recruitment & membership overlay.
+ *
+ * @param journeyPoints every term's sign-ups / onboarded / new active members, oldest first
+ * @param activeMemberTotals every term's total active members (new + returning across divisions), oldest first
+ * @param termLabels the terms currently selected; best/worst/averages only look at these
+ */
+export const buildRecruitmentYoyMetrics = (
+  journeyPoints: NewMemberJourneyPoint[],
+  activeMemberTotals: TermTotal[],
+  termLabels: string[]
+): RecruitmentYoyMetrics => {
+  const journeyWindow = journeyPoints.filter((p) => termLabels.includes(p.label));
+  const activeWindow = activeMemberTotals.filter((p) => termLabels.includes(p.label));
+
+  return {
+    bestByNewActiveMembers: extremeLabel(journeyWindow, (p) => p.newActiveMembers, true),
+    bestByOnboarded: extremeLabel(journeyWindow, (p) => p.onboarded, true),
+    worstByNewActiveMembers: extremeLabel(journeyWindow, (p) => p.newActiveMembers, false),
+    worstByOnboarded: extremeLabel(journeyWindow, (p) => p.onboarded, false),
+    averageNewActiveMembers: average(journeyWindow.map((p) => p.newActiveMembers)),
+    averageActiveMembers: average(activeWindow.map((p) => p.total)),
+    recruitmentGrowth: yoyGrowth(journeyWindow, journeyPoints, (p) => p.signUps),
+    newActiveMemberGrowth: yoyGrowth(journeyWindow, journeyPoints, (p) => p.newActiveMembers),
+    activeMemberGrowth: yoyGrowth(activeWindow, activeMemberTotals, (p) => p.total)
+  };
+};
