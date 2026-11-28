@@ -331,6 +331,7 @@ describe('Executive Summary Tests', () => {
       const otherOrganization = await prisma.organization.create({
         data: {
           name: 'Other Org',
+          slug: 'exec-summary-other-org-docs',
           description: 'for invalid org executive summary case',
           applicationLink: '',
           userCreated: { connect: { userId: superman.userId } }
@@ -1169,6 +1170,7 @@ describe('Executive Summary Tests', () => {
       const otherOrganization = await prisma.organization.create({
         data: {
           name: 'Other Org',
+          slug: 'exec-summary-other-org-cycle',
           description: 'for invalid org recruitment cycle case',
           applicationLink: '',
           userCreated: { connect: { userId: superman.userId } }
@@ -1269,6 +1271,7 @@ describe('Executive Summary Tests', () => {
       const otherOrganization = await prisma.organization.create({
         data: {
           name: 'Other Org',
+          slug: 'exec-summary-other-org-division',
           description: 'for invalid org division case',
           applicationLink: '',
           userCreated: { connect: { userId: superman.userId } }
