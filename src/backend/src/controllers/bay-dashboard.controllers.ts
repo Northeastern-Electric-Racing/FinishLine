@@ -64,6 +64,21 @@ export default class BayDashboardController {
   }
 
   /**
+   * Returns each active team's head ranked by their team's overdue work package count for the TV's tier list widget.
+   */
+  static async getBayDashboardTierList(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { slug } = req.params as Record<string, string>;
+
+      const tierList = await BayDashboardService.getBayDashboardTierList(slug);
+
+      res.status(200).json(tierList);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  /**
    * Opens a Server-Sent Events stream that emits an empty update event whenever this
    * org's bay dashboard config changes, so the TV can refetch without manually refreshing.
    */

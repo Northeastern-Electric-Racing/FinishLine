@@ -6,6 +6,7 @@ import {
   PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig,
   PublicBayDashboardOverdueWorkPackage,
+  PublicBayDashboardTierListEntry,
   RotationSecondsBySize
 } from 'shared';
 import prisma from '../prisma/prisma.js';
@@ -13,6 +14,7 @@ import {
   getBayDashboardCalendarEventQueryArgs,
   getBayDashboardCountdownQueryArgs,
   getBayDashboardOverdueWorkPackageQueryArgs,
+  getBayDashboardTierListTeamQueryArgs,
   getPublicBayDashboardConfigQueryArgs
 } from '../prisma-query-args/bay-dashboard.query-args.js';
 import {
@@ -20,7 +22,8 @@ import {
   bayDashboardWidgetSizeTransformer,
   publicBayDashboardCalendarEventsTransformer,
   publicBayDashboardConfigTransformer,
-  publicBayDashboardOverdueWorkPackageTransformer
+  publicBayDashboardOverdueWorkPackageTransformer,
+  publicBayDashboardTierListEntryTransformer
 } from '../transformers/bay-dashboard.transformer.js';
 import { DeletedException, NotFoundException } from '../utils/errors.utils.js';
 
@@ -153,5 +156,25 @@ export default class BayDashboardService {
       .map((wp) => publicBayDashboardOverdueWorkPackageTransformer(wp, now))
       .filter(({ endDate }) => endDate < now)
       .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
+  }
+
+  /**
+   * Gets the tier list the TV's tier list widget shows, ranking each active team's head by how many overdue work
+   * packages their team has across all of its projects.
+   * @param slug the organization slug from the /bay-dashboard/:slug URL
+   * @returns one entry per non-archived team, fewest overdue work packages (best tier) first, ties by team name
+   */
+  static async getBayDashboardTierList(slug: string): Promise<PublicBayDashboardTierListEntry[]> {
+    const organization = await BayDashboardService.getOrganizationBySlug(slug);
+    const now = new Date();
+
+    const teams = await prisma.team.findMany({
+      where: { organizationId: organization.organizationId, dateArchived: null },
+      ...getBayDashboardTierListTeamQueryArgs(now)
+    });
+
+    return teams
+      .map((team) => publicBayDashboardTierListEntryTransformer(team, now))
+      .sort((a, b) => a.overdueCount - b.overdueCount || a.teamName.localeCompare(b.teamName));
   }
 }
