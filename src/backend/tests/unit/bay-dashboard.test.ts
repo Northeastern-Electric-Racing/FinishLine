@@ -1,12 +1,14 @@
-import { Conflict_Status, Event_Status, Organization, User, WBS_Element_Status, Work_Package } from '@prisma/client';
+import { Conflict_Status, Event_Status, Organization, Team, User, WBS_Element_Status, Work_Package } from '@prisma/client';
+import { BayDashboardTier } from 'shared';
 import {
+  createTestCar,
   createTestOrganization,
   createTestProject,
   createTestUser,
   createTestWorkPackage,
   resetUsers
 } from '../test-utils.js';
-import { batmanAppAdmin } from '../test-data/users.test-data.js';
+import { batmanAppAdmin, greenlanternHead, member } from '../test-data/users.test-data.js';
 import BayDashboardService from '../../src/services/bay-dashboard.services.js';
 import { DeletedException, NotFoundException } from '../../src/utils/errors.utils.js';
 import prisma from '../../src/prisma/prisma.js';
@@ -480,6 +482,310 @@ describe('Bay Dashboard Overdue Work Packages Tests', () => {
       const overdue = await getOverdue();
 
       expect(overdue.map((workPackage) => workPackage.name)).toEqual(['WP 0.1.2', 'WP 0.1.1']);
+    });
+  });
+});
+
+describe('Bay Dashboard Tier List Tests', () => {
+  let organization: Organization;
+  let head: User;
+  let carId: string;
+  let nextProjectNumber: number;
+
+  type TestProject = { projectId: string; projectNumber: number; organizationId: string };
+
+  const daysAgo = (days: number) => new Date(Date.now() - days * DAY_MS);
+
+  const getTierList = () => BayDashboardService.getBayDashboardTierList(organization.slug);
+
+  const createTeam = (
+    teamName: string,
+    options: { headId?: string; organizationId?: string; dateArchived?: Date } = {}
+  ): Promise<Team> =>
+    prisma.team.create({
+      data: {
+        teamName,
+        slackId: 'slack',
+        headId: options.headId ?? head.userId,
+        organizationId: options.organizationId ?? organization.organizationId,
+        dateArchived: options.dateArchived
+      }
+    });
+
+  // a project assigned to the given teams; each project gets its own project number so wbs numbers don't collide
+  const createProject = async (
+    teams: Team[],
+    options: { organizationId?: string; carId?: string; dateDeleted?: Date } = {}
+  ): Promise<TestProject> => {
+    const organizationId = options.organizationId ?? organization.organizationId;
+    const projectNumber = nextProjectNumber++;
+    const project = await createTestProject(
+      head,
+      organizationId,
+      undefined,
+      options.carId ?? carId,
+      0,
+      projectNumber,
+      options.dateDeleted
+    );
+    await prisma.project.update({
+      where: { projectId: project.projectId },
+      data: { teams: { connect: teams.map(({ teamId }) => ({ teamId })) } }
+    });
+    return { projectId: project.projectId, projectNumber, organizationId };
+  };
+
+  // work packages default to starting 2024-01-01 with a 4 week duration, so they're overdue unless told otherwise
+  const createWorkPackages = async (
+    project: TestProject,
+    count: number,
+    options: { startDate?: Date; status?: WBS_Element_Status; dateDeleted?: Date } = {}
+  ) => {
+    const existing = await prisma.work_Package.count({ where: { projectId: project.projectId } });
+    for (let i = 1; i <= count; i++) {
+      const workPackage = await createTestWorkPackage(
+        head,
+        project.organizationId,
+        project.projectId,
+        0,
+        project.projectNumber,
+        existing + i
+      );
+      await prisma.work_Package.update({
+        where: { workPackageId: workPackage.workPackageId },
+        data: {
+          startDate: options.startDate,
+          wbsElement: { update: { status: options.status, dateDeleted: options.dateDeleted } }
+        }
+      });
+    }
+  };
+
+  // a team on its own project with the given number of overdue work packages
+  const createTeamWithOverdue = async (teamName: string, overdueCount: number) => {
+    const team = await createTeam(teamName);
+    await createWorkPackages(await createProject([team]), overdueCount);
+    return team;
+  };
+
+  const countsByTeam = async () =>
+    Object.fromEntries((await getTierList()).map(({ teamName, overdueCount }) => [teamName, overdueCount]));
+
+  beforeEach(async () => {
+    organization = await createTestOrganization();
+    head = await createTestUser(greenlanternHead, organization.organizationId);
+    ({ carId } = await createTestCar(organization.organizationId, head.userId));
+    nextProjectNumber = 1;
+  });
+
+  afterEach(async () => {
+    await resetUsers();
+  });
+
+  describe('Get Bay Dashboard Tier List', () => {
+    it('fails for a slug that does not belong to an organization', async () => {
+      await expect(BayDashboardService.getBayDashboardTierList('missing')).rejects.toThrow(
+        new NotFoundException('Organization', 'missing')
+      );
+    });
+
+    it('fails for a deleted organization', async () => {
+      await prisma.organization.update({
+        where: { organizationId: organization.organizationId },
+        data: { dateDeleted: new Date() }
+      });
+
+      await expect(getTierList()).rejects.toThrow(new DeletedException('Organization', organization.slug));
+    });
+
+    it('returns nothing when there are no teams', async () => {
+      expect(await getTierList()).toEqual([]);
+    });
+
+    it("returns only the team name, the head's first and last name, the overdue count and the tier", async () => {
+      await createTeamWithOverdue('Software', 3);
+
+      expect(await getTierList()).toEqual([
+        {
+          teamName: 'Software',
+          head: { firstName: head.firstName, lastName: head.lastName },
+          overdueCount: 3,
+          tier: BayDashboardTier.A
+        }
+      ]);
+    });
+
+    describe('teams with zero overdue work packages', () => {
+      it('includes a team with no projects with a count of 0 and tier S', async () => {
+        await createTeam('Software');
+
+        const [entry] = await getTierList();
+
+        expect(entry).toMatchObject({ teamName: 'Software', overdueCount: 0, tier: BayDashboardTier.S });
+      });
+
+      it('includes a team whose work packages are not overdue yet with a count of 0 and tier S', async () => {
+        const team = await createTeam('Software');
+        const project = await createProject([team]);
+        // started a week ago with a 4 week duration, so it ends in 3 weeks
+        await createWorkPackages(project, 2, { startDate: daysAgo(7) });
+
+        const [entry] = await getTierList();
+
+        expect(entry).toMatchObject({ teamName: 'Software', overdueCount: 0, tier: BayDashboardTier.S });
+      });
+    });
+
+    describe('which work packages are counted', () => {
+      it("counts the overdue work packages across all of the team's projects", async () => {
+        const team = await createTeam('Software');
+        await createWorkPackages(await createProject([team]), 2);
+        await createWorkPackages(await createProject([team]), 3);
+
+        expect(await countsByTeam()).toEqual({ Software: 5 });
+      });
+
+      it('leaves out deleted work packages', async () => {
+        const team = await createTeam('Software');
+        const project = await createProject([team]);
+        await createWorkPackages(project, 2, { dateDeleted: new Date() });
+        await createWorkPackages(project, 1);
+
+        expect(await countsByTeam()).toEqual({ Software: 1 });
+      });
+
+      it('leaves out work packages on deleted projects', async () => {
+        const team = await createTeam('Software');
+        await createWorkPackages(await createProject([team], { dateDeleted: new Date() }), 2);
+        await createWorkPackages(await createProject([team]), 1);
+
+        expect(await countsByTeam()).toEqual({ Software: 1 });
+      });
+
+      it('leaves out completed work packages', async () => {
+        const team = await createTeam('Software');
+        const project = await createProject([team]);
+        await createWorkPackages(project, 2, { status: WBS_Element_Status.COMPLETE });
+        await createWorkPackages(project, 1);
+
+        expect(await countsByTeam()).toEqual({ Software: 1 });
+      });
+
+      it('leaves out work packages that are not overdue yet', async () => {
+        const team = await createTeam('Software');
+        const project = await createProject([team]);
+        await createWorkPackages(project, 2, { startDate: daysAgo(7) });
+        await createWorkPackages(project, 1);
+
+        expect(await countsByTeam()).toEqual({ Software: 1 });
+      });
+
+      it('counts a work package on a project shared by two teams for both teams', async () => {
+        const software = await createTeam('Software');
+        const electrical = await createTeam('Electrical');
+        await createWorkPackages(await createProject([software, electrical]), 2);
+        await createWorkPackages(await createProject([electrical]), 1);
+
+        expect(await countsByTeam()).toEqual({ Software: 2, Electrical: 3 });
+      });
+    });
+
+    describe('which teams are returned', () => {
+      it('leaves out archived teams', async () => {
+        const archived = await createTeam('Archived', { dateArchived: new Date() });
+        await createWorkPackages(await createProject([archived]), 1);
+        await createTeam('Software');
+
+        expect((await getTierList()).map(({ teamName }) => teamName)).toEqual(['Software']);
+      });
+
+      it('leaves out teams from other organizations', async () => {
+        const otherOrganization = await prisma.organization.create({
+          data: {
+            name: 'Other organization',
+            slug: 'other-org',
+            description: 'Another organization',
+            applicationLink: '',
+            userCreated: { connect: { userId: head.userId } }
+          }
+        });
+        const otherCarId = (await createTestCar(otherOrganization.organizationId, head.userId)).carId;
+        const otherTeam = await createTeam('Other', { organizationId: otherOrganization.organizationId });
+        const otherProject = await createProject([otherTeam], {
+          organizationId: otherOrganization.organizationId,
+          carId: otherCarId
+        });
+        await createWorkPackages(otherProject, 1);
+        await createTeam('Software');
+
+        const tierList = await getTierList();
+        const otherTierList = await BayDashboardService.getBayDashboardTierList(otherOrganization.slug);
+
+        expect(tierList.map(({ teamName }) => teamName)).toEqual(['Software']);
+        expect(otherTierList.map(({ teamName, overdueCount }) => ({ teamName, overdueCount }))).toEqual([
+          { teamName: 'Other', overdueCount: 1 }
+        ]);
+      });
+
+      it("shows the team's head and not its leads or members", async () => {
+        const lead = await createTestUser(batmanAppAdmin, organization.organizationId);
+        const teamMember = await createTestUser(member, organization.organizationId);
+        const team = await createTeam('Software');
+        await prisma.team.update({
+          where: { teamId: team.teamId },
+          data: {
+            leads: { connect: { userId: lead.userId } },
+            members: { connect: { userId: teamMember.userId } }
+          }
+        });
+
+        const [entry] = await getTierList();
+
+        expect(entry.head).toEqual({ firstName: head.firstName, lastName: head.lastName });
+      });
+
+      it('includes a team whose head is an admin rather than a head', async () => {
+        const admin = await createTestUser(batmanAppAdmin, organization.organizationId);
+        await createTeam('Software', { headId: admin.userId });
+
+        const [entry] = await getTierList();
+
+        expect(entry.head).toEqual({ firstName: admin.firstName, lastName: admin.lastName });
+      });
+    });
+
+    it('assigns each team the tier for its overdue count', async () => {
+      await createTeamWithOverdue('S team', 1);
+      await createTeamWithOverdue('A team', 2);
+      await createTeamWithOverdue('B team', 5);
+      await createTeamWithOverdue('D team', 9);
+      await createTeamWithOverdue('F team', 10);
+
+      const tierList = await getTierList();
+
+      expect(tierList.map(({ teamName, tier }) => ({ teamName, tier }))).toEqual([
+        { teamName: 'S team', tier: BayDashboardTier.S },
+        { teamName: 'A team', tier: BayDashboardTier.A },
+        { teamName: 'B team', tier: BayDashboardTier.B },
+        { teamName: 'D team', tier: BayDashboardTier.D },
+        { teamName: 'F team', tier: BayDashboardTier.F }
+      ]);
+    });
+
+    it('sorts the fewest overdue work packages first, then by team name', async () => {
+      await createTeamWithOverdue('Mechanical', 4);
+      await createTeamWithOverdue('Software', 1);
+      await createTeamWithOverdue('Electrical', 4);
+      await createTeam('Business');
+
+      const tierList = await getTierList();
+
+      expect(tierList.map(({ teamName, overdueCount }) => ({ teamName, overdueCount }))).toEqual([
+        { teamName: 'Business', overdueCount: 0 },
+        { teamName: 'Software', overdueCount: 1 },
+        { teamName: 'Electrical', overdueCount: 4 },
+        { teamName: 'Mechanical', overdueCount: 4 }
+      ]);
     });
   });
 });
