@@ -10,11 +10,13 @@ import {
   BayDashboardWidget,
   BayDashboardWidgetSize,
   BayDashboardWidgetType,
+  calculateEndDate,
   daysBetween,
   DEFAULT_ROTATION_SECONDS,
   PublicBayDashboardCalendarEvent,
   PublicBayDashboardConfig,
   PublicBayDashboardOverdueWorkPackage,
+  PublicBayDashboardTierListEntry,
   RotationSecondsBySize
 } from 'shared';
 import {
@@ -23,11 +25,13 @@ import {
   BayDashboardCountdownQueryArgs,
   BayDashboardOverdueWorkPackageQueryArgs,
   BayDashboardSlotQueryArgs,
+  BayDashboardTierListTeamQueryArgs,
   BayDashboardWidgetQueryArgs,
   PublicBayDashboardConfigQueryArgs
 } from '../prisma-query-args/bay-dashboard.query-args.js';
 import { baseWorkPackageTransformer } from './work-packages.transformer.js';
 import { wbsNumOf } from '../utils/utils.js';
+import { getTier } from '../utils/bay-dashboard.utils.js';
 
 export const bayDashboardWidgetSizeTransformer = (size: PrismaBayDashboardWidgetSize): BayDashboardWidgetSize => {
   const mapping: Record<PrismaBayDashboardWidgetSize, BayDashboardWidgetSize> = {
@@ -159,5 +163,27 @@ export const publicBayDashboardOverdueWorkPackageTransformer = (
     endDate: base.endDate,
     daysOverdue: daysBetween(now, base.endDate),
     blockedBy: workPackage.blockedBy.map((blocker) => ({ wbsNum: wbsNumOf(blocker), name: blocker.name }))
+  };
+};
+
+/**
+ * Transforms a team into its row on the public TV's tier list, counting the work packages across all of its
+ * projects whose end date has passed. A work package on a project shared by several teams counts for each of them.
+ * @param team the team, with its head and the incomplete, non-deleted, already started work packages of its projects
+ * @param now the time the overdue calculation is made against
+ */
+export const publicBayDashboardTierListEntryTransformer = (
+  team: Prisma.TeamGetPayload<BayDashboardTierListTeamQueryArgs>,
+  now: Date
+): PublicBayDashboardTierListEntry => {
+  const overdueCount = team.projects
+    .flatMap((project) => project.workPackages)
+    .filter((workPackage) => calculateEndDate(workPackage.startDate, workPackage.duration) < now).length;
+
+  return {
+    teamName: team.teamName,
+    head: { firstName: team.head.firstName, lastName: team.head.lastName },
+    overdueCount,
+    tier: getTier(overdueCount)
   };
 };

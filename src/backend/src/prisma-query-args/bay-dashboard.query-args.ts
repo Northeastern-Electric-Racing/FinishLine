@@ -15,6 +15,8 @@ export type BayDashboardCalendarEventQueryArgs = ReturnType<typeof getBayDashboa
 
 export type BayDashboardOverdueWorkPackageQueryArgs = ReturnType<typeof getBayDashboardOverdueWorkPackageQueryArgs>;
 
+export type BayDashboardTierListTeamQueryArgs = ReturnType<typeof getBayDashboardTierListTeamQueryArgs>;
+
 export const getBayDashboardWidgetQueryArgs = () =>
   Prisma.validator<Prisma.Bay_Dashboard_WidgetDefaultArgs>()({
     select: {
@@ -108,6 +110,32 @@ export const getBayDashboardOverdueWorkPackageQueryArgs = () =>
       blockedBy: {
         where: { dateDeleted: null, status: { not: WBS_Element_Status.COMPLETE } },
         select: { carNumber: true, projectNumber: true, workPackageNumber: true, name: true }
+      }
+    }
+  });
+
+/**
+ * Only what the public TV's tier list needs from a team: its name, its head's name, and enough about each of its
+ * work packages that could be overdue to work out whether it is. The end date isn't stored, so whether a work
+ * package has actually passed it is checked after the query, the same way the overdue widget does it.
+ * @param now the time the overdue calculation is made against
+ */
+export const getBayDashboardTierListTeamQueryArgs = (now: Date) =>
+  Prisma.validator<Prisma.TeamDefaultArgs>()({
+    select: {
+      teamName: true,
+      head: { select: { firstName: true, lastName: true } },
+      projects: {
+        where: { wbsElement: { dateDeleted: null } },
+        select: {
+          workPackages: {
+            where: {
+              startDate: { lt: now },
+              wbsElement: { dateDeleted: null, status: { not: WBS_Element_Status.COMPLETE } }
+            },
+            select: { startDate: true, duration: true }
+          }
+        }
       }
     }
   });
