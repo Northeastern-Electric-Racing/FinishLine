@@ -4,107 +4,88 @@
  */
 
 import {
+  BaseDescriptionBullet,
+  BaseProject,
   dbDateToLocalDate,
   DescriptionBullet,
-  Project,
-  ProjectOverview,
-  ProjectGantt,
-  ProjectPreview,
-  RetrospectiveProjectPreview
+  DesignReviewMarker,
+  GanttWorkPackage,
+  ProjectDetail,
+  ProjectGanttItem,
+  ProjectOverviewCard,
+  RetrospectiveProject
 } from 'shared';
-import { implementedChangeTransformer } from './change-requests.transformers';
-import { taskTransformer } from './tasks.transformers';
-import { retrospectiveWorkPackageTransformer, workPackageTransformer } from './work-packages.transformers';
+import { baseTaskTransformer } from './tasks.transformers';
+import { baseWorkPackageTransformer } from './work-packages.transformers';
 
 /**
- * Transforms a description bullet to ensure deep field transformation of date objects.
+ * Converts the dates on a description bullet from a page model, which filters deleted bullets out before sending them.
  *
  * @param bullet Incoming description bullet object supplied by the HTTP response.
  * @returns Properly transformed description bullet object.
  */
-export const descriptionBulletTransformer = (bullet: DescriptionBullet) => {
-  return {
-    ...bullet,
-    dateAdded: new Date(bullet.dateAdded),
-    dateDeleted: bullet.dateDeleted ? new Date(bullet.dateDeleted) : bullet.dateDeleted,
-    dateChecked: bullet.dateChecked ? new Date(bullet.dateChecked) : bullet.dateChecked
-  };
-};
+export const baseDescriptionBulletTransformer = (bullet: BaseDescriptionBullet): BaseDescriptionBullet => ({
+  ...bullet,
+  dateAdded: new Date(bullet.dateAdded),
+  dateChecked: bullet.dateChecked ? new Date(bullet.dateChecked) : undefined
+});
 
 /**
- * Transforms a project to ensure deep field transformation of date objects.
+ * Converts the dates on a full description bullet, which still has dateDeleted (e.g. on templates).
  *
- * @param project Incoming project object supplied by the HTTP response.
- * @returns Properly transformed project object.
+ * @param bullet Incoming description bullet object supplied by the HTTP response.
+ * @returns Properly transformed description bullet object.
  */
-export const projectTransformer = (project: Project): Project => {
-  return {
-    ...project,
-    dateCreated: new Date(project.dateCreated),
-    startDate: project.startDate ? dbDateToLocalDate(new Date(project.startDate)) : undefined,
-    endDate: project.endDate ? dbDateToLocalDate(new Date(project.endDate)) : undefined,
-    workPackages: project.workPackages.map(workPackageTransformer),
-    descriptionBullets: project.descriptionBullets.map(descriptionBulletTransformer),
-    changes: project.changes.map(implementedChangeTransformer),
-    tasks: project.tasks.map(taskTransformer)
-  };
-};
+export const descriptionBulletTransformer = (bullet: DescriptionBullet): DescriptionBullet => ({
+  ...baseDescriptionBulletTransformer(bullet),
+  dateDeleted: bullet.dateDeleted ? new Date(bullet.dateDeleted) : undefined
+});
 
-export const retrospectiveProjectPreviewTransformer = (
-  project: RetrospectiveProjectPreview
-): RetrospectiveProjectPreview => {
-  return {
-    ...projectGanttTransformer(project),
-    originalEndDate: project.originalEndDate ? new Date(project.originalEndDate) : undefined,
-    originalStartDate: project.originalStartDate ? new Date(project.originalStartDate) : undefined,
-    workPackages: project.workPackages.map(retrospectiveWorkPackageTransformer)
-  };
-};
+// project start and end dates are date-only values, stored as midnight UTC
+const optionalDbDate = (date?: Date) => (date ? dbDateToLocalDate(new Date(date)) : undefined);
 
-export const projectGanttTransformer = (project: ProjectGantt): ProjectGantt => {
-  return {
-    ...project,
-    dateCreated: new Date(project.dateCreated),
-    startDate: project.startDate ? new Date(project.startDate) : undefined,
-    endDate: project.endDate ? new Date(project.endDate) : undefined,
-    workPackages: project.workPackages.map(workPackageTransformer),
-    tasks: project.tasks.map(taskTransformer)
-  };
-};
+/** Converts the dates on any project model; extended models spread it and convert what they add */
+export const baseProjectTransformer = <T extends BaseProject>(project: T): T => ({
+  ...project,
+  startDate: optionalDbDate(project.startDate),
+  endDate: optionalDbDate(project.endDate)
+});
 
-export const projectPreviewTransformer = (project: ProjectPreview): ProjectPreview => {
-  return {
-    ...project,
-    dateCreated: new Date(project.dateCreated),
-    startDate: project.startDate ? new Date(project.startDate) : undefined,
-    endDate: project.endDate ? new Date(project.endDate) : undefined,
-    workPackages: project.workPackages.map((wp) => ({
-      ...wp,
-      dateCreated: new Date(wp.dateCreated),
-      startDate: new Date(wp.startDate),
-      endDate: new Date(wp.endDate)
-    }))
-  };
-};
+export const projectOverviewCardTransformer = (project: ProjectOverviewCard): ProjectOverviewCard => ({
+  ...baseProjectTransformer(project),
+  activeWorkPackages: project.activeWorkPackages.map(baseWorkPackageTransformer)
+});
 
-export const projectOverviewTransformer = (project: ProjectOverview): ProjectOverview => {
-  return {
-    ...project,
-    dateCreated: new Date(project.dateCreated),
-    startDate: project.startDate ? new Date(project.startDate) : undefined,
-    endDate: project.endDate ? new Date(project.endDate) : undefined,
-    workPackages: project.workPackages.map((wp) => ({
-      ...wp,
-      dateCreated: new Date(wp.dateCreated),
-      startDate: new Date(wp.startDate),
-      endDate: new Date(wp.endDate)
-    })),
-    links: project.links
-  };
-};
+const designReviewMarkerTransformer = (event: DesignReviewMarker): DesignReviewMarker => ({
+  ...event,
+  dateScheduled: new Date(event.dateScheduled)
+});
 
-export const projectToProjectPreviewTransformer = (project: Project): ProjectGantt => {
-  return {
-    ...project
-  };
-};
+export const ganttWorkPackageTransformer = <T extends GanttWorkPackage>(workPackage: T): T => ({
+  ...baseWorkPackageTransformer(workPackage),
+  events: workPackage.events.map(designReviewMarkerTransformer)
+});
+
+export const projectGanttItemTransformer = (project: ProjectGanttItem): ProjectGanttItem => ({
+  ...baseProjectTransformer(project),
+  workPackages: project.workPackages.map(ganttWorkPackageTransformer),
+  tasks: project.tasks.map((task) => ({ ...baseTaskTransformer(task), startDate: optionalDbDate(task.startDate) }))
+});
+
+export const projectDetailTransformer = (project: ProjectDetail): ProjectDetail => ({
+  ...baseProjectTransformer(project),
+  descriptionBullets: project.descriptionBullets.map(baseDescriptionBulletTransformer),
+  changes: project.changes.map((change) => ({ ...change, dateImplemented: new Date(change.dateImplemented) })),
+  workPackages: project.workPackages.map(ganttWorkPackageTransformer)
+});
+
+export const retrospectiveProjectTransformer = (project: RetrospectiveProject): RetrospectiveProject => ({
+  ...baseProjectTransformer(project),
+  originalStartDate: optionalDbDate(project.originalStartDate),
+  originalEndDate: optionalDbDate(project.originalEndDate),
+  tasks: project.tasks.map((task) => ({ ...baseTaskTransformer(task), startDate: optionalDbDate(task.startDate) })),
+  workPackages: project.workPackages.map((workPackage) => ({
+    ...ganttWorkPackageTransformer(workPackage),
+    originalStartDate: dbDateToLocalDate(new Date(workPackage.originalStartDate))
+  }))
+});

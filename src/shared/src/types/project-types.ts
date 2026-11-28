@@ -3,12 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { EventPreview, TeamType } from './calendar-types.js';
+import { EventStatus } from './calendar-types.js';
 import { ImplementedChange } from './change-request-types.js';
-import { Task } from './task-types.js';
+import { BaseTask, TaskBlockerPreview } from './task-types.js';
 import { TeamPreview } from './team-types.js';
-import { User, UserPreview } from './user-types.js';
-import { WorkPackageStage } from './work-package-types.js';
+import { BaseUser, User, UserPreview } from './user-types.js';
+import { BaseWorkPackage, WorkPackageBlocker, WorkPackageChange, WorkPackageStage } from './work-package-types.js';
 
 export interface WbsNumber {
   carNumber: number;
@@ -42,84 +42,114 @@ export enum WbsElementStatus {
   Complete = 'COMPLETE'
 }
 
-export interface Project extends WbsElement {
+/** What projects and work packages have in common, for code that handles both (the gantt charts) */
+export interface BaseWbsElement {
+  id: string; // project / work package id
+  wbsElementId: string;
+  wbsNum: WbsNumber;
+  name: string;
+  status: WbsElementStatus;
+  lead?: BaseUser;
+  manager?: BaseUser;
+}
+
+export interface ProjectTeam {
+  teamId: string;
+  teamName: string;
+}
+
+/** The minimum every consumer of a project needs. Status, dates, and duration are derived from its work packages */
+export interface BaseProject extends BaseWbsElement {
+  budget: number;
   summary: string;
-  budget: number;
-  endDate?: Date;
-  duration: number;
-  startDate?: Date;
-  workPackages: WorkPackage[];
-  teams: TeamPreview[];
-  tasks: Task[];
-  favoritedBy: User[];
   abbreviation?: string;
-}
-
-export type RetrospectiveProjectPreview = Omit<ProjectGantt, 'workPackages'> & {
-  workPackages: RetrospectiveWorkPackage[];
-  originalStartDate?: Date;
-  originalEndDate?: Date;
-};
-
-export interface ProjectGantt extends WbsElementPreview {
+  teams: ProjectTeam[];
   startDate?: Date;
   endDate?: Date;
-  budget: number;
-  teams: { teamId: string; teamName: string }[];
-  workPackages: WorkPackage[];
-  tasks: Task[];
   duration: number;
-  abbreviation?: string;
-  lead?: User;
-  manager?: User;
 }
 
-export interface ProjectPreview extends WbsElementPreview {
-  startDate?: Date;
-  endDate?: Date;
-  budget: number;
-  duration: number;
-  abbreviation?: string;
-  workPackages: WorkPackagePreview[];
-  teams: { teamName: string; teamId: string }[];
-  teamTypes: { name: string; teamTypeId: string }[];
+/** The all-projects list: the projects table, project pickers, the guest projects page, team pages, and featured projects */
+export interface ProjectListItem extends BaseProject {
+  numWorkPackages: number;
+  teamTypes: { teamTypeId: string; name: string }[];
+  // stage of the first active work package, shown as a chip on guest project cards
+  activeStage?: WorkPackageStage;
 }
 
-export interface ProjectOverview extends ProjectPreview {
-  links: Link[];
+/** A link as a card or page shows it */
+export interface ProjectLink {
+  linkId: string;
+  url: string;
+  linkType: Pick<LinkType, 'name' | 'iconName'>;
+}
+
+/** Projects page overview cards: leading, my teams, and favorites */
+export interface ProjectOverviewCard extends BaseProject {
   tasksRemaining: number;
+  links: ProjectLink[];
+  activeWorkPackages: BaseWorkPackage[];
 }
 
-/** @deprecated Still used by the retrospective timelines until projects is refactored */
-export interface RetrospectiveWorkPackage extends WorkPackage {
+/** A design review, shown as a marker on a work package's gantt bar */
+export interface DesignReviewMarker {
+  eventId: string;
+  dateScheduled: Date;
+  status: EventStatus;
+  // the work package's name, shown on hover
+  wbsName: string;
+}
+
+/** A work package on a gantt chart */
+export interface GanttWorkPackage extends BaseWorkPackage {
+  blocking: WbsNumber[];
+  events: DesignReviewMarker[];
+}
+
+/** A task on the gantt chart */
+export interface GanttProjectTask extends BaseTask {
+  startDate?: Date;
+  createdBy: BaseUser;
+  // sent back unchanged when a gantt edit moves the task
+  blockedBy: Pick<TaskBlockerPreview, 'taskId'>[];
+}
+
+/** The gantt chart page */
+export interface ProjectGanttItem extends BaseProject {
+  workPackages: GanttWorkPackage[];
+  tasks: GanttProjectTask[];
+}
+
+/** A work package on the project detail page: summary accordions, the gantt tab, the work package form, and change request diffs */
+export interface ProjectDetailWorkPackage extends GanttWorkPackage {
+  blockedBy: WorkPackageBlocker[];
+  descriptionBullets: Pick<DescriptionBullet, 'id' | 'detail' | 'type'>[];
+}
+
+/** The project detail page, its edit form, and change request diffs */
+export interface ProjectDetail extends BaseProject {
+  links: ProjectLink[];
+  descriptionBullets: BaseDescriptionBullet[];
+  changes: WorkPackageChange[];
+  workPackages: ProjectDetailWorkPackage[];
+  isFavorited: boolean;
+  // whether the current user heads, leads, or is a member of one of the project's teams
+  isOnProjectTeam: boolean;
+}
+
+/** A work package on the retrospective chart, with its schedule before the chosen window's changes */
+export interface RetrospectiveWorkPackage extends GanttWorkPackage {
+  isBlocked: boolean;
   originalStartDate: Date;
   originalDuration: number;
 }
 
-/** @deprecated Use BaseWorkPackage or a per-endpoint model. Still used by Project / ProjectGantt until projects is refactored */
-export interface WorkPackage extends WbsElement {
-  orderInProject: number;
-  startDate: Date;
-  endDate: Date;
-  duration: number;
-  blockedBy: WbsNumber[];
-  blocking: WbsNumber[];
-  projectName: string;
-  stage?: WorkPackageStage;
-  teamTypes: TeamType[];
-  projectId: string;
-  events: EventPreview[];
-}
-
-/** @deprecated Use BaseWorkPackage. Still used by ProjectPreview until projects is refactored */
-export interface WorkPackagePreview extends WbsElementPreview {
-  projectName: string;
-  projectId: string;
-  startDate: Date;
-  duration: number;
-  endDate: Date;
-  stage?: WorkPackageStage;
-  blockedBy: WbsNumber[];
+/** The retrospective chart */
+export interface RetrospectiveProject extends BaseProject {
+  originalStartDate?: Date;
+  originalEndDate?: Date;
+  tasks: GanttProjectTask[];
+  workPackages: RetrospectiveWorkPackage[];
 }
 
 /** A description bullet as a page shows it: deleted bullets are filtered out before they're sent */

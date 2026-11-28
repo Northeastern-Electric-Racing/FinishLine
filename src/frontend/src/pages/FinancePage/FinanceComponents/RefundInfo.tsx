@@ -13,7 +13,7 @@ import {
   useTheme
 } from '@mui/material';
 import { useState } from 'react';
-import { Reimbursement, ReimbursementRequest, ReimbursementStatusType } from 'shared';
+import { Reimbursement, BaseReimbursementRequest, ReimbursementStatusType } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import NERProgressBar from '../../../components/NERProgressBar';
 import { useCurrentUserReimbursements, useAllReimbursements } from '../../../hooks/finance.hooks';
@@ -37,8 +37,8 @@ const RefundHeader = ({ header, data }: { header: string; data: string }) => {
 };
 
 interface RefundInfoProps {
-  userReimbursementRequests: ReimbursementRequest[];
-  allReimbursementRequests?: ReimbursementRequest[];
+  userReimbursementRequests: BaseReimbursementRequest[];
+  allReimbursementRequests?: BaseReimbursementRequest[];
   setEditModalRefund: (refund: Reimbursement) => void;
   canViewAllReimbursementRequests?: boolean;
 }
@@ -129,10 +129,7 @@ const RefundInfo = ({
     allReimbursements && canViewAllReimbursementRequests ? allReimbursements : userReimbursements;
   const displayedReimbursementRequests = (
     allReimbursementRequests && canViewAllReimbursementRequests ? allReimbursementRequests : userReimbursementRequests
-  ).filter(
-    (request: ReimbursementRequest) =>
-      !request.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)
-  );
+  ).filter((request: BaseReimbursementRequest) => !request.statusTypes.includes(ReimbursementStatusType.DENIED));
 
   const rows = displayedReimbursements.map(getRefundRowData).sort(getComparator(order, orderBy));
 
@@ -142,7 +139,7 @@ const RefundInfo = ({
   );
   const currentlyOwed =
     displayedReimbursementRequests.reduce(
-      (accumulator: number, currentVal: ReimbursementRequest) => accumulator + currentVal.totalCost,
+      (accumulator: number, currentVal: BaseReimbursementRequest) => accumulator + currentVal.totalCost,
       0
     ) - totalReceived;
   const percentRefunded = (totalReceived / (currentlyOwed + totalReceived)) * 100;

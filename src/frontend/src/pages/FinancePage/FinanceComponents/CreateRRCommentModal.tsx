@@ -6,7 +6,6 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import NERFormModal from '../../../components/NERFormModal';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { ReimbursementRequestComment } from 'shared';
 import { UseMutateAsyncFunction } from 'react-query';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 
@@ -18,7 +17,7 @@ interface CreateRRCommentModalProps {
   showModal: boolean;
   handleClose: () => void;
   mutateAsync: UseMutateAsyncFunction<
-    ReimbursementRequestComment,
+    void,
     Error,
     {
       dateCreated: Date;

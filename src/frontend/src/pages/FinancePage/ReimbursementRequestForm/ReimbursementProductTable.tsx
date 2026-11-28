@@ -20,14 +20,14 @@ import {
   Box
 } from '@mui/material';
 import {
-  OtherProductReason,
+  OtherProductReasonArg,
   WbsNumber,
   validateWBS,
   wbsPipe,
   IndexCode,
   CreateRefundSourceArgs,
   Material,
-  ProjectPreview
+  ProjectListItem
 } from 'shared';
 import { RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
@@ -59,7 +59,7 @@ interface ReimbursementProductTableProps {
   secondRefundSourceIndexCode?: IndexCode;
   firstRefundSourceName?: string;
   secondRefundSourceName?: string;
-  allProjects: ProjectPreview[];
+  allProjects: ProjectListItem[];
   applySplitShippingToProducts: (totalShipping?: number) => void;
   isEditing?: boolean;
 }
@@ -167,13 +167,13 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       cost: number;
       index: number;
       id?: string;
-      reason: WbsNumber | OtherProductReason;
+      reason: WbsNumber | OtherProductReasonArg;
     }[]
   >();
 
   const [showCreateMaterialModal, setShowCreateMaterialModal] = useState(false);
   const [currentProductIndex, setCurrentProductIndex] = useState<number | null>(null);
-  const [currentProject, setCurrentProject] = useState<ProjectPreview | null>(null);
+  const [currentProject, setCurrentProject] = useState<ProjectListItem | null>(null);
   const [pendingMaterialIndices, setPendingMaterialIndices] = useState<Set<number>>(new Set());
 
   const onCostBlurHandler = (value: number, index: number) => {
@@ -247,7 +247,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
 
   reimbursementProducts.forEach((product, index) => {
     const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
-    const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as OtherProductReason).name;
+    const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as OtherProductReasonArg).name;
     if (uniqueWbsElementsWithProducts.has(productReason)) {
       const products = uniqueWbsElementsWithProducts.get(productReason);
       products?.push({ ...product, index, id: product.id, reason: product.reason });

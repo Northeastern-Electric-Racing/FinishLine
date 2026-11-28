@@ -9,7 +9,7 @@ import { routes } from '../../../utils/routes';
 import FinanceDashboardAllView from './FinanceDashboardAllView';
 import FinanceDashboardCategoriesView from './FinanceDashboardCategoriesView';
 import FinanceDashboardTeamTypeView from './FinanceDashboardTeamTypeView';
-import { useAllReimbursementRequests, useGetPendingAdvisorList } from '../../../hooks/finance.hooks';
+import { useGetPendingAdvisorList } from '../../../hooks/finance.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { NERButton } from '../../../components/NERButton';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers/icons';
@@ -46,12 +46,6 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     error: allTeamTypesError
   } = useAllTeamTypes();
   const {
-    data: allReimbursementRequests,
-    isLoading: allReimbursementRequestsIsLoading,
-    isError: allReimbursementRequestsIsError,
-    error: allReimbursementRequestsError
-  } = useAllReimbursementRequests();
-  const {
     data: allPendingAdvisorList,
     isLoading: allPendingAdvisorListIsLoading,
     isError: allPendingAdvisorListIsError,
@@ -66,10 +60,6 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
     return <ErrorPage error={allTeamTypesError} />;
   }
 
-  if (allReimbursementRequestsIsError) {
-    return <ErrorPage error={allReimbursementRequestsError} />;
-  }
-
   if (allPendingAdvisorListIsError) {
     return <ErrorPage error={allPendingAdvisorListError} />;
   }
@@ -77,8 +67,6 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
   if (
     !allTeamTypes ||
     allTeamTypesIsLoading ||
-    !allReimbursementRequests ||
-    allReimbursementRequestsIsLoading ||
     !allPendingAdvisorList ||
     allPendingAdvisorListIsLoading ||
     filter.isLoading
@@ -339,16 +327,12 @@ const AdminFinanceDashboard: React.FC<AdminFinanceDashboardProps> = ({ startDate
       {(isFinance || isAdmin(user.role)) && (
         <PendingAdvisorModal
           open={showPendingAdvisorListModal}
-          saboNumbers={allPendingAdvisorList!.map((reimbursementRequest) => reimbursementRequest.saboId!)}
+          saboNumbers={allPendingAdvisorList}
           onHide={() => setShowPendingAdvisorListModal(false)}
         />
       )}
       {(isFinance || isAdmin(user.role)) && (
-        <TotalAmountSpentModal
-          open={showTotalAmountSpent}
-          allReimbursementRequests={allReimbursementRequests!}
-          onHide={() => setShowTotalAmountSpent(false)}
-        />
+        <TotalAmountSpentModal open={showTotalAmountSpent} onHide={() => setShowTotalAmountSpent(false)} />
       )}
       {tabIndex === 0 ? (
         <FinanceDashboardAllView

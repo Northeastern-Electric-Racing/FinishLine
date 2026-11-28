@@ -1,6 +1,6 @@
 import { Box, useTheme } from '@mui/material';
 import { useState } from 'react';
-import { ReimbursementRequest, RoleEnum, isAtLeastRank } from 'shared';
+import { ReimbursementRequestTableItem, RoleEnum, isAtLeastRank } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
@@ -8,9 +8,9 @@ import { ReimbursementStatusType } from 'shared';
 import ReimbursementRequestInfo from './FinanceComponents/ReimbursementRequestInfo';
 
 interface ReimbursementRequestTableProps {
-  userReimbursementRequests: ReimbursementRequest[];
-  assignedReimbursementRequests: ReimbursementRequest[];
-  allReimbursementRequests?: ReimbursementRequest[];
+  userReimbursementRequests: ReimbursementRequestTableItem[];
+  assignedReimbursementRequests: ReimbursementRequestTableItem[];
+  allReimbursementRequests?: ReimbursementRequestTableItem[];
   onCloseSidePage: () => void;
   statuses?: ReimbursementStatusType[];
   startDate?: Date | null;

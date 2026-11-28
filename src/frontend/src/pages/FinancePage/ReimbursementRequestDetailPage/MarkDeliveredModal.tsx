@@ -6,7 +6,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { ReimbursementRequest, startOfDay } from 'shared';
+import { ReimbursementRequestDetail, startOfDay } from 'shared';
 
 const schema = yup.object().shape({
   dateDelivered: yup.date().required('Must provide delivery date.'),
@@ -19,7 +19,7 @@ const schema = yup.object().shape({
 interface MarkDeliveredModalProps {
   modalShow: boolean;
   onHide: () => void;
-  reimbursementRequest: ReimbursementRequest;
+  reimbursementRequest: ReimbursementRequestDetail;
 }
 
 const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequest }: MarkDeliveredModalProps) => {

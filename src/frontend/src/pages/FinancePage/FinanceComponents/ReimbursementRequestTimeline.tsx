@@ -1,7 +1,7 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { Circle } from '@mui/icons-material';
 import { datePipe } from '../../../utils/pipes';
-import { ReimbursementRequestComment } from '../../../../../shared/src/types/reimbursement-requests-types';
+import { ReimbursementRequestCommentPreview } from 'shared';
 import { useState } from 'react';
 import { Link } from '@mui/material';
 import { useCreateReimbursementRequestComment } from '../../../hooks/finance.hooks';
@@ -9,22 +9,22 @@ import CreateRRCommentModal from './CreateRRCommentModal';
 
 interface TimelineProps {
   reimbursementRequestId: string;
-  reimbursementRequestComments: ReimbursementRequestComment[];
+  reimbursementRequestComments: ReimbursementRequestCommentPreview[];
 }
 
 interface CommentsSectionProps {
-  comment: ReimbursementRequestComment;
+  comment: ReimbursementRequestCommentPreview;
   isLast: boolean;
   key: number;
 }
 
 interface CreateNewCommentSectionProps {
   reimbursementRequestId: string;
-  comments: ReimbursementRequestComment[];
+  comments: ReimbursementRequestCommentPreview[];
 }
 
 const ReimbursementRequestTimeline: React.FC<TimelineProps> = ({ reimbursementRequestId, reimbursementRequestComments }) => {
-  const comments = reimbursementRequestComments.sort(
+  const comments = [...reimbursementRequestComments].sort(
     (a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
   );
   return (

@@ -6,7 +6,7 @@ import {
   calculateEndDate,
   CreateSponsorTask,
   User,
-  Event,
+  BaseEvent,
   formatForSlack,
   SlackMentionType,
   Team as SharedTeam,
@@ -54,6 +54,36 @@ export const buildDueString = (daysUntilDeadline: number): string => {
   if (daysUntilDeadline < 0) return `was due *${daysUntilDeadline * -1} days ago!*`;
   else if (daysUntilDeadline === 0) return `is due today!`;
   return `is due in ${daysUntilDeadline} days!`;
+};
+
+// slack rejects a section block whose text is longer than this
+const SLACK_SECTION_TEXT_LIMIT = 3000;
+
+/**
+ * Splits a message made of separate lines into as few messages as possible that each fit in a slack section block,
+ * never splitting a line across messages
+ * @param header the text to start the first message with
+ * @param lines the lines to split across the messages
+ * @param separator the text to join lines with
+ * @returns the messages to send, in order (empty if there are no lines)
+ */
+export const splitSlackMessage = (header: string, lines: string[], separator: string): string[] => {
+  const messages: string[] = [];
+  let current = header;
+  let currentHasLines = false;
+  lines.forEach((rawLine) => {
+    const line = rawLine.slice(0, SLACK_SECTION_TEXT_LIMIT);
+    const next = currentHasLines ? current + separator + line : current + line;
+    if (next.length <= SLACK_SECTION_TEXT_LIMIT) {
+      current = next;
+    } else {
+      if (currentHasLines) messages.push(current);
+      current = line;
+    }
+    currentHasLines = true;
+  });
+  if (currentHasLines) messages.push(current);
+  return messages;
 };
 
 // build the "user" string for the upcoming deadlines slack message
@@ -450,7 +480,7 @@ export const sendSlackEventNotificationToChannel = async (
 };
 
 export const sendSlackEventNotification = async (
-  team: Team,
+  team: Pick<Team, 'slackId'>,
   message: string
 ): Promise<{ channelId: string; ts: string }[]> => sendSlackEventNotificationToChannel(team.slackId, message);
 
@@ -460,8 +490,8 @@ export interface EventNotificationOptions {
 }
 
 export const sendSlackEventNotifications = async (
-  teams: Team[],
-  event: Event,
+  teams: Pick<Team, 'slackId'>[],
+  event: Pick<BaseEvent, 'eventId' | 'title'>,
   submitter: User,
   workPackageName: string,
   projectName: string,
@@ -523,7 +553,10 @@ export const sendSlackEventNotifications = async (
   return notifications;
 };
 
-export const sendEventUserConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
+export const sendEventUserConfirmationToThread = async (
+  threads: SlackMessageThread[],
+  submitter: { userSettings: { slackId: string } | null }
+) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} confirmed their availability!`;
@@ -533,7 +566,10 @@ export const sendEventUserConfirmationToThread = async (threads: SlackMessageThr
   }
 };
 
-export const sendEventConfirmationToThread = async (threads: SlackMessageThread[], submitter: UserWithSettings) => {
+export const sendEventConfirmationToThread = async (
+  threads: SlackMessageThread[],
+  submitter: { userSettings: { slackId: string } | null }
+) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} All of the required attendees have confirmed their availability!`;
@@ -545,7 +581,14 @@ export const sendEventConfirmationToThread = async (threads: SlackMessageThread[
 
 export const sendEventScheduledSlackNotif = async (
   threads: SlackMessageThread[],
-  event: Event,
+  event: Pick<BaseEvent, 'title' | 'scheduledTimes' | 'userCreated'> & {
+    location: string | null;
+    zoomLink: string | null;
+    questionDocumentLink: string | null;
+    workPackages: { wbsElement: { name: string } }[];
+    requiredMembers: { userId: string }[];
+    optionalMembers: { userId: string }[];
+  },
   beingRescheduled: boolean = false
 ) => {
   if (process.env.NODE_ENV !== 'production' && !DEV_TESTING_OVERRIDE) return; // don't send msgs unless in prod
@@ -1038,3 +1081,9 @@ export const sendActivationStartDateChangedNotification = async (
 
   await Promise.all(teams.map((team) => sendMessage(team.slackId, message, link, linkButtonText)));
 };
+
+/**
+ * The Slack channel that is always available for notifications in development, if configured
+ */
+export const getDevNotificationChannelId = (): string | undefined =>
+  process.env.NODE_ENV === 'development' ? process.env.SLACK_DEV_CHANNEL_ID : undefined;

@@ -1,14 +1,14 @@
 import { Box, useTheme } from '@mui/material';
 import { useState } from 'react';
-import { Reimbursement, ReimbursementRequest, isAdmin } from 'shared';
+import { Reimbursement, BaseReimbursementRequest, isAdmin } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import EditRefundModal from './FinanceComponents/EditRefundModal';
 import Tabs from '../../components/Tabs';
 import RefundInfo from './FinanceComponents/RefundInfo';
 
 interface RefundTableProps {
-  userReimbursementRequests: ReimbursementRequest[];
-  allReimbursementRequests?: ReimbursementRequest[];
+  userReimbursementRequests: BaseReimbursementRequest[];
+  allReimbursementRequests?: BaseReimbursementRequest[];
 }
 
 const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: RefundTableProps) => {
