@@ -1,0 +1,135 @@
+import { UserPreview } from './user-types.js';
+import { WbsNumber } from './project-types.js';
+
+export enum BayDashboardWidgetSize {
+  SMALL = 'SMALL',
+  MEDIUM = 'MEDIUM',
+  LARGE = 'LARGE'
+}
+
+export enum BayDashboardWidgetType {
+  CALENDAR = 'CALENDAR',
+  OVERDUE_WORK_PACKAGES = 'OVERDUE_WORK_PACKAGES',
+  TEXT_FIELD = 'TEXT_FIELD',
+  TIER_LIST = 'TIER_LIST',
+  MBTA_TRACKER = 'MBTA_TRACKER',
+  SLACK_APPRECIATIONS = 'SLACK_APPRECIATIONS',
+  SLACK_MENTIONS = 'SLACK_MENTIONS'
+}
+
+// the most characters a text field widget can display, by the size it's shown at
+export const TEXT_FIELD_MAX_LENGTH: Partial<Record<BayDashboardWidgetSize, number>> = {
+  [BayDashboardWidgetSize.SMALL]: 90,
+  [BayDashboardWidgetSize.MEDIUM]: 160
+};
+
+/**
+ * Only what the TV needs to render a widget
+ */
+export interface PublicBayDashboardWidget {
+  type: BayDashboardWidgetType;
+  order: number;
+  text?: string;
+}
+
+export interface BayDashboardWidget extends PublicBayDashboardWidget {
+  bayDashboardWidgetId: string;
+}
+
+export interface PublicBayDashboardSlot {
+  size: BayDashboardWidgetSize;
+  // 0 = left large, 1 = right medium, 2 = right small
+  position: number;
+  rotationSeconds: number;
+  widgets: PublicBayDashboardWidget[];
+}
+
+export interface BayDashboardSlot extends PublicBayDashboardSlot {
+  bayDashboardSlotId: string;
+  widgets: BayDashboardWidget[];
+}
+
+export interface BayDashboardWidgetCreateArgs {
+  type: BayDashboardWidgetType;
+  text?: string;
+}
+
+export interface BayDashboardSlotCreateArgs {
+  size: BayDashboardWidgetSize;
+  position: number;
+  widget?: BayDashboardWidgetCreateArgs;
+}
+
+export interface BayDashboardConfig {
+  bayDashboardConfigId: string;
+  dateCreated: Date;
+  slots: BayDashboardSlot[];
+}
+
+/**
+ * The config the unauthenticated TV loads
+ */
+export interface PublicBayDashboardConfig {
+  slots: PublicBayDashboardSlot[];
+}
+
+export interface BayDashboardCountdown {
+  bayDashboardCountdownId: string;
+  name: string;
+  startDate: Date;
+  endDate?: Date;
+  isPrimary: boolean;
+}
+
+export interface BayDashboardCountdownCreateArgs {
+  name: string;
+  startDate: Date;
+  endDate?: Date;
+  isPrimary: boolean;
+}
+
+/**
+ * A widget type that can be placed on a bay dashboard, along with the sizes it supports.
+ */
+export interface AvailableBayDashboardWidget {
+  type: BayDashboardWidgetType;
+  displayName: string;
+  sizes: BayDashboardWidgetSize[];
+}
+
+export interface AvailableBayDashboardWidgets {
+  widgets: AvailableBayDashboardWidget[];
+}
+
+/**
+ * How many days after today the calendar widgets look ahead, so on a Tuesday they show through next Tuesday
+ */
+export const BAY_DASHBOARD_CALENDAR_DAYS_AHEAD = 7;
+
+/**
+ * A scheduled event the unauthenticated TV can show.
+ * An event with several schedule slots is returned once per slot.
+ */
+export interface PublicBayDashboardCalendarEvent {
+  title: string;
+  startTime: Date;
+  endTime: Date;
+  allDay: boolean;
+  location?: string;
+  colorHexCode: string;
+}
+
+/**
+ * An overdue work package the unauthenticated TV can show.
+ */
+export interface PublicBayDashboardOverdueWorkPackage {
+  wbsNum: WbsNumber;
+  name: string;
+  projectWbsNum: WbsNumber;
+  projectName: string;
+  lead?: Pick<UserPreview, 'firstName' | 'lastName'>;
+  manager?: Pick<UserPreview, 'firstName' | 'lastName'>;
+  endDate: Date;
+  daysOverdue: number;
+  blockedBy: { wbsNum: WbsNumber; name: string }[];
+}

@@ -3,7 +3,7 @@ import {
   Link,
   LinkCreateArgs,
   NotificationChannelPreview,
-  ProjectPreview,
+  ProjectListItem,
   RoleEnum,
   isAdmin,
   isAtLeastRank,
@@ -22,12 +22,12 @@ import { createUsefulLinks } from '../utils/organizations.utils.js';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args.js';
 import { uploadFile } from '../utils/google-integration.utils.js';
 import { getProjects } from '../utils/projects.utils.js';
-import { getProjectPreviewQueryArgs } from '../prisma-query-args/projects.query-args.js';
-import { projectPreviewTransformer } from '../transformers/projects.transformer.js';
+import { getProjectListItemQueryArgs } from '../prisma-query-args/projects.query-args.js';
+import { projectListItemTransformer } from '../transformers/projects.transformer.js';
 import { getUserQueryArgs } from '../prisma-query-args/user.query-args.js';
 import { userTransformer } from '../transformers/user.transformer.js';
 import { organizationTransformer } from '../transformers/organizationTransformer.js';
-import { getBotChannels } from '../integrations/slack.js';
+import { getBotChannels, getChannelName } from '../integrations/slack.js';
 import { isSlackChannelMember } from '../utils/slack.utils.js';
 
 export default class OrganizationsService {
@@ -360,17 +360,17 @@ export default class OrganizationsService {
    * @param organizationId the organization to get the projects for
    * @returns all the featured projects for the organization
    */
-  static async getOrganizationFeaturedProjects(organizationId: string): Promise<ProjectPreview[]> {
+  static async getOrganizationFeaturedProjects(organizationId: string): Promise<ProjectListItem[]> {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
-      include: { featuredProjects: getProjectPreviewQueryArgs(organizationId) }
+      select: { featuredProjects: { where: { wbsElement: { dateDeleted: null } }, ...getProjectListItemQueryArgs() } }
     });
 
     if (!organization) {
       throw new NotFoundException('Organization', organizationId);
     }
 
-    return organization.featuredProjects.filter((p) => !p.wbsElement.dateDeleted).map(projectPreviewTransformer);
+    return organization.featuredProjects.map(projectListItemTransformer);
   }
 
   /**
@@ -467,18 +467,28 @@ export default class OrganizationsService {
    * @returns every channel the bot can see, each with its Slack channel id, current name, and the user's access
    */
   static async getAvailableNotificationChannelsForUser(userId: string): Promise<NotificationChannelPreview[]> {
+    const devChannelId = process.env.NODE_ENV === 'development' ? process.env.SLACK_DEV_CHANNEL_ID : undefined;
     const slackId = await getUserSlackId(userId);
     const botChannels = await getBotChannels();
 
-    return Promise.all(
+    const channels = await Promise.all(
       botChannels.map(async (channel) => ({
         slackChannelId: channel.id,
         name: channel.name,
-        hasAccess: await isSlackChannelMember(slackId, channel.id)
+        hasAccess: channel.id === devChannelId || (await isSlackChannelMember(slackId, channel.id))
       }))
     );
-  }
 
+    if (devChannelId && !channels.some((channel) => channel.slackChannelId === devChannelId)) {
+      channels.push({
+        slackChannelId: devChannelId,
+        name: (await getChannelName(devChannelId)) ?? 'slackbot_land',
+        hasAccess: true
+      });
+    }
+
+    return channels;
+  }
   /**
    * Gets the finance delegates for the given organization
    * @param organizationId the organization to get the finance delegates for

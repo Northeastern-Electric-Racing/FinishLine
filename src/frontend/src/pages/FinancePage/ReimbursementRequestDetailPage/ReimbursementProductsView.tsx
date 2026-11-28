@@ -1,11 +1,11 @@
 import { Box, Link, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import { getUniqueWbsElementsWithProductsFromReimbursementRequest } from '../../../utils/reimbursement-request.utils';
-import { ReimbursementRequest } from 'shared';
+import { ReimbursementRequestDetail } from 'shared';
 import { centsToDollar } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 
 interface ReimbursementRequestProductsViewProps {
-  reimbursementRequest: ReimbursementRequest;
+  reimbursementRequest: ReimbursementRequestDetail;
 }
 
 const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps> = ({ reimbursementRequest }) => {

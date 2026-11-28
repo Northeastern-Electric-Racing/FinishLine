@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Box, Card, CardContent, Grid, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { Calendar, TaskBoardItem, ConflictStatus, DayOfWeek, EventInstance, EventStatus, EventType } from 'shared';
+import { Calendar, TaskBoardItem, ConflictStatus, DayOfWeek, CalendarEventInstance, EventStatus, EventType } from 'shared';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -15,7 +15,7 @@ import DeleteSeriesConfirmationModal from './Components/DeleteSeriesConfirmation
 import NERDeleteModal from '../../components/NERDeleteModal';
 import { useDeleteEvent, useDeleteScheduleSlot } from '../../hooks/calendar.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
-import { getMutedColor } from '../../utils/calendar.utils';
+import { EventSlotTarget, getMutedColor } from '../../utils/calendar.utils';
 import { TaskClickContent } from './TaskClickPopup';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
@@ -43,7 +43,7 @@ export const getStatusIcon = (status: string, isLarge?: boolean) => {
 interface CalendarDayCardProps {
   cardDate: Date;
   displayMonth: Date;
-  events: EventInstance[];
+  events: CalendarEventInstance[];
   eventTypes?: EventType[];
   calendars?: Calendar[];
   dayOfWeek?: DayOfWeek;
@@ -86,7 +86,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSeriesDeleteModal, setShowSeriesDeleteModal] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<EventInstance | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventSlotTarget | null>(null);
   const toast = useToast();
 
   // Ref and state for dynamic event count calculation
@@ -124,12 +124,12 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     selectedEvent?.scheduleSlotId ?? ''
   );
 
-  const handleEdit = (event: EventInstance) => {
+  const handleEdit = (event: EventSlotTarget) => {
     setSelectedEvent(event);
     setShowEditModal(true);
   };
 
-  const handleDelete = (event: EventInstance) => {
+  const handleDelete = (event: EventSlotTarget) => {
     setSelectedEvent(event);
     if (event.recurring) {
       setShowSeriesDeleteModal(true);
@@ -296,7 +296,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     </Grid>
   );
 
-  const EventCard = ({ event }: { event: EventInstance }) => {
+  const EventCard = ({ event }: { event: CalendarEventInstance }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const specificEventType = eventTypes.find((eventType) => eventType.eventTypeId === event.eventTypeId);
@@ -428,7 +428,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     );
   };
 
-  const ExtraEventItem = ({ event }: { event: EventInstance }) => {
+  const ExtraEventItem = ({ event }: { event: CalendarEventInstance }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [tooltipHovered, setTooltipHovered] = useState(false);
     const isLocked = lockedTooltipEventId === event.eventId;
@@ -602,7 +602,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({
     extraEvents,
     extraTasks = []
   }: {
-    extraEvents: EventInstance[];
+    extraEvents: CalendarEventInstance[];
     extraTasks?: TaskBoardItem[];
   }) => {
     const totalExtra = extraEvents.length + extraTasks.length;

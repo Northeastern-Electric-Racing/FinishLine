@@ -426,7 +426,17 @@ const ImportBOMModal: React.FC<ImportBOMModalProps> = ({ open, onHide, wbsNum, a
   const selectedCount = materials.filter((m) => m.selected).length;
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="xl" fullWidth>
+    <Dialog
+      open={open}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          return;
+        }
+        handleClose();
+      }}
+      maxWidth="xl"
+      fullWidth
+    >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h5">Import BOM from Altium</Typography>

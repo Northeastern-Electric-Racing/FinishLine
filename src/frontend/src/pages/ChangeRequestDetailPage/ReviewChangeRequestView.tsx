@@ -61,7 +61,17 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
 
   const renderModal: () => JSX.Element = () => {
     return (
-      <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide}>
+      <Dialog
+        fullWidth
+        maxWidth={dialogWidth}
+        open={modalShow}
+        onClose={(_event, reason) => {
+          if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+            return;
+          }
+          onHide();
+        }}
+      >
         <IconButton
           aria-label="close"
           onClick={onHide}

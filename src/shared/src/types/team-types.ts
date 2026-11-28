@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ProjectGantt, WbsNumber } from './project-types.js';
+import { ProjectListItem, WbsNumber } from './project-types.js';
 import { User, UserPreview } from './user-types.js';
 
 export interface TeamBase {
@@ -43,7 +43,7 @@ export interface TeamWithProjects {
 }
 
 export interface Team extends TeamPreview {
-  projects: ProjectGantt[];
+  projects: ProjectListItem[];
 }
 
 export type TeamJoinRequestStatus = 'PENDING' | 'APPROVED' | 'DENIED';

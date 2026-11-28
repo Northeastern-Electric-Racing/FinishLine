@@ -18,7 +18,17 @@ import {
 } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { EventType, Machinery, ScheduleSlotCreateArgs, Shop, Event } from 'shared';
+import { EventType, Machinery, ScheduleSlotCreateArgs, Shop, EventDetail, User as SharedUser } from 'shared';
+
+// event mutations return no body, so tests read the event back the way its detail popup does
+const getEventDetail = (submitter: SharedUser | User, eventId: string, organization: Organization) =>
+  CalendarService.getSingleEvent(submitter as SharedUser, eventId, organization);
+
+const getCreatedEvent = async (
+  submitter: SharedUser | User,
+  created: Promise<{ eventId: string }>,
+  organization: Organization
+): Promise<EventDetail> => getEventDetail(submitter, (await created).eventId, organization);
 
 describe('Calendar Tests', () => {
   let orgId: string;
@@ -570,6 +580,7 @@ describe('Calendar Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org (calendar test)',
+          slug: 'other-org-calendar-1',
           description: 'for cross-org negative case',
           applicationLink: '',
           userCreated: { connect: { userId: adminUser.userId } }
@@ -767,6 +778,7 @@ describe('Calendar Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Different Org',
+          slug: 'different-org-calendar',
           description: 'for invalid org calendar case',
           applicationLink: '',
           userCreated: { connect: { userId: adminUser.userId } }
@@ -926,6 +938,7 @@ describe('Calendar Tests', () => {
       otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org (calendar test)',
+          slug: 'other-org-calendar-2',
           description: 'for cross-org negative case',
           applicationLink: '',
           userCreated: { connect: { userId: adminUser.userId } }
@@ -960,25 +973,29 @@ describe('Calendar Tests', () => {
         }
       ];
 
-      const result = await CalendarService.createEvent(
+      const result = await getCreatedEvent(
         adminUser,
-        'Team Sync',
-        eventType.eventTypeId,
-        organization,
-        [member.userId],
-        [adminUser.userId],
-        [],
-        [shop.shopId],
-        [machinery.machineryId],
-        [],
-        scheduleSlots,
-        undefined, // initialDateScheduled
-        [], // notificationChannelIds
-        undefined, // teamTypeId
-        'https://example.com/questions.pdf',
-        'Conference Room A',
-        'https://zoom.us/j/123456789',
-        'Weekly team synchronization meeting'
+        CalendarService.createEvent(
+          adminUser,
+          'Team Sync',
+          eventType.eventTypeId,
+          organization,
+          [member.userId],
+          [adminUser.userId],
+          [],
+          [shop.shopId],
+          [machinery.machineryId],
+          [],
+          scheduleSlots,
+          undefined, // initialDateScheduled
+          [], // notificationChannelIds
+          undefined, // teamTypeId
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Weekly team synchronization meeting'
+        ),
+        organization
       );
 
       expect(result.title).toBe('Team Sync');
@@ -1069,25 +1086,29 @@ describe('Calendar Tests', () => {
         }
       ];
 
-      const result = await CalendarService.createEvent(
+      const result = await getCreatedEvent(
         adminUser,
-        'Minimal Event',
-        eventType.eventTypeId,
-        organization,
-        [member.userId],
-        [adminUser.userId],
-        [],
-        [shop.shopId],
-        [machinery.machineryId],
-        [],
-        scheduleSlots,
-        undefined, // initialDateScheduled
-        [], // notificationChannelIds
-        undefined, // teamTypeId
-        'https://example.com/questions.pdf',
-        'Conference Room A',
-        'https://zoom.us/j/123456789',
-        'Weekly team synchronization meeting'
+        CalendarService.createEvent(
+          adminUser,
+          'Minimal Event',
+          eventType.eventTypeId,
+          organization,
+          [member.userId],
+          [adminUser.userId],
+          [],
+          [shop.shopId],
+          [machinery.machineryId],
+          [],
+          scheduleSlots,
+          undefined, // initialDateScheduled
+          [], // notificationChannelIds
+          undefined, // teamTypeId
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Weekly team synchronization meeting'
+        ),
+        organization
       );
 
       expect(result.title).toBe('Minimal Event');
@@ -1414,7 +1435,7 @@ describe('Calendar Tests', () => {
         'Weekly team synchronization meeting'
       );
 
-      const result = await CalendarService.getFilteredEvents(
+      const result = await CalendarService.getCalendarViewEvents(
         {
           startPeriod: new Date('2020-10-01T09:00:00Z'),
           endPeriod: new Date('2027-11-01T09:00:00Z'),
@@ -1509,7 +1530,7 @@ describe('Calendar Tests', () => {
         'Weekly team synchronization meeting'
       );
 
-      const result = await CalendarService.getFilteredEvents(
+      const result = await CalendarService.getCalendarViewEvents(
         {
           startPeriod: new Date('2025-10-01T09:00:00Z'),
           endPeriod: new Date('2025-11-01T09:00:00Z'),
@@ -1605,7 +1626,7 @@ describe('Calendar Tests', () => {
         'Weekly team synchronization meeting'
       );
 
-      const result = await CalendarService.getFilteredEvents(
+      const result = await CalendarService.getCalendarViewEvents(
         {
           startPeriod: new Date('2020-10-01T09:00:00Z'),
           endPeriod: new Date('2027-11-01T09:00:00Z'),
@@ -1620,7 +1641,7 @@ describe('Calendar Tests', () => {
 
   it('fails if memberIds do not exist', async () => {
     await expect(
-      CalendarService.getFilteredEvents(
+      CalendarService.getCalendarViewEvents(
         {
           startPeriod: new Date('2020-10-01T09:00:00Z'),
           endPeriod: new Date('2027-11-01T09:00:00Z'),
@@ -1633,7 +1654,7 @@ describe('Calendar Tests', () => {
 
   it('fails if eventTypeIds do not exist', async () => {
     await expect(
-      CalendarService.getFilteredEvents(
+      CalendarService.getCalendarViewEvents(
         {
           startPeriod: new Date('2020-10-01T09:00:00Z'),
           endPeriod: new Date('2027-11-01T09:00:00Z'),
@@ -1646,7 +1667,7 @@ describe('Calendar Tests', () => {
 
   it('fails if eventIds do not exist', async () => {
     await expect(
-      CalendarService.getFilteredEvents(
+      CalendarService.getCalendarViewEvents(
         { startPeriod: new Date('2020-10-01T09:00:00Z'), endPeriod: new Date('2027-11-01T09:00:00Z'), eventIds: ['fakeId'] },
         organization
       )
@@ -1655,7 +1676,7 @@ describe('Calendar Tests', () => {
 
   it('fails if calendarIds do not exist', async () => {
     await expect(
-      CalendarService.getFilteredEvents(
+      CalendarService.getCalendarViewEvents(
         {
           startPeriod: new Date('2020-10-01T09:00:00Z'),
           endPeriod: new Date('2027-11-01T09:00:00Z'),
@@ -1668,7 +1689,7 @@ describe('Calendar Tests', () => {
 
   it('fails if teamIds do not exist', async () => {
     await expect(
-      CalendarService.getFilteredEvents(
+      CalendarService.getCalendarViewEvents(
         { startPeriod: new Date('2020-10-01T09:00:00Z'), endPeriod: new Date('2027-11-01T09:00:00Z'), teamIds: ['fakeId'] },
         organization
       )
@@ -1752,7 +1773,7 @@ describe('Calendar Tests', () => {
   });
 
   describe('Edit Event', () => {
-    let event: Event;
+    let event: EventDetail;
     let member: User;
     let scheduleSlots: ScheduleSlotCreateArgs[];
 
@@ -1766,25 +1787,29 @@ describe('Calendar Tests', () => {
         }
       ];
 
-      event = await CalendarService.createEvent(
+      event = await getCreatedEvent(
         adminUser,
-        'Original Event',
-        eventType.eventTypeId,
-        organization,
-        [member.userId],
-        [adminUser.userId],
-        [],
-        [shop.shopId],
-        [machinery.machineryId],
-        [],
-        scheduleSlots,
-        undefined, // initialDateScheduled
-        [], // notificationChannelIds
-        undefined, // teamTypeId
-        'https://example.com/questions.pdf',
-        'Conference Room A',
-        'https://zoom.us/j/123456789',
-        'Weekly team synchronization meeting'
+        CalendarService.createEvent(
+          adminUser,
+          'Original Event',
+          eventType.eventTypeId,
+          organization,
+          [member.userId],
+          [adminUser.userId],
+          [],
+          [shop.shopId],
+          [machinery.machineryId],
+          [],
+          scheduleSlots,
+          undefined, // initialDateScheduled
+          [], // notificationChannelIds
+          undefined, // teamTypeId
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Weekly team synchronization meeting'
+        ),
+        organization
       );
     });
 
@@ -1973,7 +1998,7 @@ describe('Calendar Tests', () => {
     it('succeeds for admin and updates event', async () => {
       const newMember = await createTestUser(alfred, orgId);
 
-      const result = await CalendarService.editEvent(
+      await CalendarService.editEvent(
         adminUser,
         event.eventId,
         'Updated Event Title',
@@ -1993,6 +2018,7 @@ describe('Calendar Tests', () => {
         'https://zoom.us/updated',
         'Updated description'
       );
+      const result = await getEventDetail(adminUser, event.eventId, organization);
 
       expect(result.eventId).toBe(event.eventId);
       expect(result.title).toBe('Updated Event Title');
@@ -2011,7 +2037,7 @@ describe('Calendar Tests', () => {
   });
 
   describe('Delete Event', () => {
-    let event: Event;
+    let event: EventDetail;
     let member: User;
 
     beforeEach(async () => {
@@ -2024,25 +2050,29 @@ describe('Calendar Tests', () => {
         }
       ];
 
-      event = await CalendarService.createEvent(
+      event = await getCreatedEvent(
         adminUser,
-        'Event to Delete',
-        eventType.eventTypeId,
-        organization,
-        [adminUser.userId],
-        [member.userId],
-        [],
-        [shop.shopId],
-        [machinery.machineryId],
-        [],
-        scheduleSlots,
-        undefined, // initialDateScheduled
-        [], // notificationChannelIds
-        undefined, // teamTypeId
-        'https://updated.com/questions.pdf',
-        'Updated Location',
-        undefined,
-        'Updated description'
+        CalendarService.createEvent(
+          adminUser,
+          'Event to Delete',
+          eventType.eventTypeId,
+          organization,
+          [adminUser.userId],
+          [member.userId],
+          [],
+          [shop.shopId],
+          [machinery.machineryId],
+          [],
+          scheduleSlots,
+          undefined, // initialDateScheduled
+          [], // notificationChannelIds
+          undefined, // teamTypeId
+          'https://updated.com/questions.pdf',
+          'Updated Location',
+          undefined,
+          'Updated description'
+        ),
+        organization
       );
     });
 
@@ -2070,10 +2100,7 @@ describe('Calendar Tests', () => {
     });
 
     it('succeeds for admin and soft deletes event', async () => {
-      const result = await CalendarService.deleteEvent(adminUser, event.eventId, organization);
-
-      expect(result.eventId).toBe(event.eventId);
-      expect(result.title).toBe('Event to Delete');
+      await CalendarService.deleteEvent(adminUser, event.eventId, organization);
 
       const deletedEvent = await prisma.event.findUnique({
         where: { eventId: event.eventId }
@@ -2139,6 +2166,7 @@ describe('Calendar Tests', () => {
       const otherOrg = await prisma.organization.create({
         data: {
           name: 'Other Org (calendar test)',
+          slug: 'other-org-calendar-3',
           description: 'for cross-org negative case',
           applicationLink: '',
           userCreated: { connect: { userId: adminUser.userId } }
@@ -2209,25 +2237,29 @@ describe('Calendar Tests', () => {
         }
       ];
 
-      const result = await CalendarService.createEvent(
+      const result = await getCreatedEvent(
         adminUser,
-        'Multi-Slot Event',
-        eventType.eventTypeId,
-        organization,
-        [member.userId],
-        [adminUser.userId],
-        [],
-        [shop.shopId],
-        [machinery.machineryId],
-        [],
-        scheduleSlots,
-        undefined,
-        [],
-        undefined,
-        'https://example.com/questions.pdf',
-        'Conference Room A',
-        'https://zoom.us/j/123456789',
-        'Event with multiple slots'
+        CalendarService.createEvent(
+          adminUser,
+          'Multi-Slot Event',
+          eventType.eventTypeId,
+          organization,
+          [member.userId],
+          [adminUser.userId],
+          [],
+          [shop.shopId],
+          [machinery.machineryId],
+          [],
+          scheduleSlots,
+          undefined,
+          [],
+          undefined,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Event with multiple slots'
+        ),
+        organization
       );
 
       expect(result.title).toBe('Multi-Slot Event');
@@ -2236,7 +2268,7 @@ describe('Calendar Tests', () => {
   });
 
   describe('Edit Schedule Slot', () => {
-    let event: Event;
+    let event: EventDetail;
     let member: User;
     let headUser: User;
 
@@ -2262,25 +2294,29 @@ describe('Calendar Tests', () => {
         }
       ];
 
-      event = await CalendarService.createEvent(
+      event = await getCreatedEvent(
         adminUser,
-        'Event for Slot Editing',
-        eventType.eventTypeId,
-        organization,
-        [member.userId],
-        [adminUser.userId],
-        [],
-        [shop.shopId],
-        [machinery.machineryId],
-        [],
-        scheduleSlots,
-        undefined,
-        [],
-        undefined,
-        'https://example.com/questions.pdf',
-        'Conference Room A',
-        'https://zoom.us/j/123456789',
-        'Testing slot editing'
+        CalendarService.createEvent(
+          adminUser,
+          'Event for Slot Editing',
+          eventType.eventTypeId,
+          organization,
+          [member.userId],
+          [adminUser.userId],
+          [],
+          [shop.shopId],
+          [machinery.machineryId],
+          [],
+          scheduleSlots,
+          undefined,
+          [],
+          undefined,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Testing slot editing'
+        ),
+        organization
       );
     });
 
@@ -2342,15 +2378,8 @@ describe('Calendar Tests', () => {
       const newStartTime = new Date('2025-10-13T11:00:00Z');
       const newEndTime = new Date('2025-10-13T12:00:00Z');
 
-      const result = await CalendarService.editScheduleSlot(
-        headUser,
-        slotId,
-        newStartTime,
-        newEndTime,
-        false,
-        false,
-        organization
-      );
+      await CalendarService.editScheduleSlot(headUser, slotId, newStartTime, newEndTime, false, false, organization);
+      const result = await getEventDetail(adminUser, event.eventId, organization);
 
       expect(result.eventId).toBe(event.eventId);
       const updatedSlot = result.scheduledTimes.find((s) => s.scheduleSlotId === slotId);
@@ -2363,15 +2392,8 @@ describe('Calendar Tests', () => {
       const newStartTime = new Date('2025-10-13T14:00:00Z');
       const newEndTime = new Date('2025-10-13T15:00:00Z');
 
-      const result = await CalendarService.editScheduleSlot(
-        adminUser,
-        slotId,
-        newStartTime,
-        newEndTime,
-        false,
-        false,
-        organization
-      );
+      await CalendarService.editScheduleSlot(adminUser, slotId, newStartTime, newEndTime, false, false, organization);
+      const result = await getEventDetail(adminUser, event.eventId, organization);
 
       expect(result.eventId).toBe(event.eventId);
       const updatedSlot = result.scheduledTimes.find((s) => s.scheduleSlotId === slotId);
@@ -2384,15 +2406,8 @@ describe('Calendar Tests', () => {
       const newStartTime = new Date('2025-10-13T14:00:00Z');
       const newEndTime = new Date('2025-10-13T15:00:00Z');
 
-      const result = await CalendarService.editScheduleSlot(
-        adminUser,
-        slotId,
-        newStartTime,
-        newEndTime,
-        false,
-        false,
-        organization
-      );
+      await CalendarService.editScheduleSlot(adminUser, slotId, newStartTime, newEndTime, false, false, organization);
+      const result = await getEventDetail(adminUser, event.eventId, organization);
 
       // The edited slot should have the new times
       const editedSlot = result.scheduledTimes.find((s) => s.scheduleSlotId === slotId);
@@ -2412,7 +2427,7 @@ describe('Calendar Tests', () => {
       const newStartTime = new Date('2025-10-13T14:00:00Z');
       const newEndTime = new Date('2025-10-13T15:00:00Z');
 
-      const result = await CalendarService.editScheduleSlot(
+      await CalendarService.editScheduleSlot(
         adminUser,
         slotId,
         newStartTime,
@@ -2421,6 +2436,7 @@ describe('Calendar Tests', () => {
         true, // editAllInSeries
         organization
       );
+      const result = await getEventDetail(adminUser, event.eventId, organization);
 
       // All slots should have the same time-of-day (14:00-15:00 UTC)
       for (const slot of result.scheduledTimes) {
@@ -2434,7 +2450,7 @@ describe('Calendar Tests', () => {
       const newStartTime = new Date('2025-10-13T00:00:00Z');
       const newEndTime = new Date('2025-10-13T23:59:59Z');
 
-      const result = await CalendarService.editScheduleSlot(
+      await CalendarService.editScheduleSlot(
         adminUser,
         slotId,
         newStartTime,
@@ -2443,6 +2459,7 @@ describe('Calendar Tests', () => {
         false,
         organization
       );
+      const result = await getEventDetail(adminUser, event.eventId, organization);
 
       const updatedSlot = result.scheduledTimes.find((s) => s.scheduleSlotId === slotId);
       expect(updatedSlot?.allDay).toBe(true);
@@ -2450,7 +2467,7 @@ describe('Calendar Tests', () => {
   });
 
   describe('Delete Schedule Slot', () => {
-    let event: Event;
+    let event: EventDetail;
     let member: User;
 
     beforeEach(async () => {
@@ -2469,25 +2486,29 @@ describe('Calendar Tests', () => {
         }
       ];
 
-      event = await CalendarService.createEvent(
+      event = await getCreatedEvent(
         adminUser,
-        'Event for Slot Deletion',
-        eventType.eventTypeId,
-        organization,
-        [member.userId],
-        [adminUser.userId],
-        [],
-        [shop.shopId],
-        [machinery.machineryId],
-        [],
-        scheduleSlots,
-        undefined,
-        [],
-        undefined,
-        'https://example.com/questions.pdf',
-        'Conference Room A',
-        'https://zoom.us/j/123456789',
-        'Testing slot deletion'
+        CalendarService.createEvent(
+          adminUser,
+          'Event for Slot Deletion',
+          eventType.eventTypeId,
+          organization,
+          [member.userId],
+          [adminUser.userId],
+          [],
+          [shop.shopId],
+          [machinery.machineryId],
+          [],
+          scheduleSlots,
+          undefined,
+          [],
+          undefined,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Testing slot deletion'
+        ),
+        organization
       );
     });
 
@@ -2522,7 +2543,8 @@ describe('Calendar Tests', () => {
       const slotId = event.scheduledTimes[0].scheduleSlotId;
       const initialSlotCount = event.scheduledTimes.length;
 
-      const result = await CalendarService.deleteScheduleSlot(adminUser, slotId, organization);
+      await CalendarService.deleteScheduleSlot(adminUser, slotId, organization);
+      const result = await getEventDetail(adminUser, event.eventId, organization);
 
       expect(result.eventId).toBe(event.eventId);
       expect(result.scheduledTimes).toHaveLength(initialSlotCount - 1);
@@ -2532,7 +2554,8 @@ describe('Calendar Tests', () => {
     it('succeeds for event creator and removes the slot', async () => {
       const slotId = event.scheduledTimes[1].scheduleSlotId;
 
-      const result = await CalendarService.deleteScheduleSlot(adminUser, slotId, organization);
+      await CalendarService.deleteScheduleSlot(adminUser, slotId, organization);
+      const result = await getEventDetail(adminUser, event.eventId, organization);
 
       expect(result.scheduledTimes).toHaveLength(1);
       expect(result.scheduledTimes.find((s) => s.scheduleSlotId === slotId)).toBeUndefined();
@@ -2556,7 +2579,7 @@ describe('Calendar Tests', () => {
   });
 
   describe('Preview Schedule Slot Recurring Edits', () => {
-    let event: Event;
+    let event: EventDetail;
     let member: User;
     let headUser: User;
 
@@ -2588,25 +2611,29 @@ describe('Calendar Tests', () => {
         }
       ];
 
-      event = await CalendarService.createEvent(
+      event = await getCreatedEvent(
         adminUser,
-        'Event for Preview Testing',
-        eventType.eventTypeId,
-        organization,
-        [member.userId],
-        [adminUser.userId],
-        [],
-        [shop.shopId],
-        [machinery.machineryId],
-        [],
-        scheduleSlots,
-        undefined,
-        [],
-        undefined,
-        'https://example.com/questions.pdf',
-        'Conference Room A',
-        'https://zoom.us/j/123456789',
-        'Testing preview'
+        CalendarService.createEvent(
+          adminUser,
+          'Event for Preview Testing',
+          eventType.eventTypeId,
+          organization,
+          [member.userId],
+          [adminUser.userId],
+          [],
+          [shop.shopId],
+          [machinery.machineryId],
+          [],
+          scheduleSlots,
+          undefined,
+          [],
+          undefined,
+          'https://example.com/questions.pdf',
+          'Conference Room A',
+          'https://zoom.us/j/123456789',
+          'Testing preview'
+        ),
+        organization
       );
     });
 
@@ -2698,32 +2725,36 @@ describe('Calendar Tests', () => {
 
   describe('remindUnconfirmed', () => {
     let member: User;
-    let event: Event;
+    let event: EventDetail;
 
     beforeEach(async () => {
       member = await createTestUser(wonderwomanGuest, orgId);
       const scheduleSlots: ScheduleSlotCreateArgs[] = [
         { startTime: new Date('2025-10-13T09:00:00Z'), endTime: new Date('2025-10-13T10:00:00Z'), allDay: false }
       ];
-      event = await CalendarService.createEvent(
+      event = await getCreatedEvent(
         adminUser,
-        'Test Event',
-        eventType.eventTypeId,
-        organization,
-        [member.userId],
-        [],
-        [],
-        [],
-        [],
-        [],
-        scheduleSlots,
-        undefined, // initialDateScheduled
-        [], // notificationChannelIds
-        undefined, // teamTypeId
-        undefined, // questionDocumentLink
-        'Conference Room A', // location
-        undefined, // zoomLink
-        undefined // description
+        CalendarService.createEvent(
+          adminUser,
+          'Test Event',
+          eventType.eventTypeId,
+          organization,
+          [member.userId],
+          [],
+          [],
+          [],
+          [],
+          [],
+          scheduleSlots,
+          undefined, // initialDateScheduled
+          [], // notificationChannelIds
+          undefined, // teamTypeId
+          undefined, // questionDocumentLink
+          'Conference Room A', // location
+          undefined, // zoomLink
+          undefined // description
+        ),
+        organization
       );
     });
 

@@ -9,11 +9,9 @@ import {
   isProject,
   IndexCode,
   AccountCode,
-  WorkPackagePreview,
-  WbsElementPreview,
   UserPreview,
   ScheduleSlot,
-  Event,
+  WorkPackageCalendarPreview,
   formatEventTime,
   formatEventDate
 } from 'shared';
@@ -96,7 +94,7 @@ export const numberParamPipe = (param: string | null) => {
   }
 };
 
-export const accountCodePipe = (accountCode: AccountCode) => {
+export const accountCodePipe = (accountCode: Pick<AccountCode, 'code' | 'name'>) => {
   return `${accountCode.code} - ${accountCode.name}`;
 };
 
@@ -123,7 +121,7 @@ export const daysOrWeeksLeftOrLate = (daysLeft: number) => {
   return `${daysToDaysOrWeeksPipe(Math.abs(daysLeft))} ${daysLeft > 0 ? 'left' : 'late'}`;
 };
 
-export const eventNamePipe = (event: Event) => {
+export const eventNamePipe = (event: { title: string; workPackages: WorkPackageCalendarPreview[] }) => {
   const [firstWorkPackage] = event.workPackages;
 
   if (firstWorkPackage) {
@@ -153,16 +151,19 @@ export const centsToDollar = (cents: number) => {
   return (cents / 100.0).toFixed(2);
 };
 
-export const projectNamePipe = (wbsElement: WbsElementPreview) => {
-  return isProject(wbsElement) ? wbsElement.name : (wbsElement as WorkPackagePreview).projectName;
+// a work package carries its project's name; a project is its own
+type NamedWbsElement = { wbsNum: WbsNumber; name: string; projectName?: string };
+
+export const projectNamePipe = (wbsElement: NamedWbsElement) => {
+  return isProject(wbsElement) ? wbsElement.name : (wbsElement.projectName ?? '');
 };
 
-export const projectWbsNamePipe = (wbsElement: WbsElementPreview) => {
+export const projectWbsNamePipe = (wbsElement: NamedWbsElement) => {
   return `${projectWbsPipe(wbsElement.wbsNum)} - ${projectNamePipe(wbsElement)}`;
 };
 
 /** Displays a refund source as a string "Code - Name" */
-export const codeAndRefundSourceName = (refundSource?: IndexCode) => {
+export const codeAndRefundSourceName = (refundSource?: Pick<IndexCode, 'code' | 'name'>) => {
   return refundSource ? `${refundSource.code} - ${refundSource.name}` : '-';
 };
 

@@ -1,29 +1,23 @@
 import {
-  OtherProductReason,
-  Project,
+  BaseReimbursementRequest,
   Reimbursement,
-  ReimbursementProduct,
-  ReimbursementRequest,
+  ReimbursementProductReasonPreview,
   ReimbursementRequestRow,
-  ReimbursementStatus,
+  ReimbursementRequestTableItem,
   ReimbursementStatusType,
-  User,
-  Vendor,
-  WBSElementData,
-  WbsNumber,
   wbsPipe
 } from 'shared';
 
-export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
-  reimbursementRequest: ReimbursementRequest
-): Map<string, ReimbursementProduct[]> => {
-  const uniqueWbsElementsWithProducts = new Map<string, ReimbursementProduct[]>();
+/** Groups a request's products by what they were bought for, keyed by the wbs element or "other" reason's name */
+export const getUniqueWbsElementsWithProductsFromReimbursementRequest = <
+  T extends { reimbursementProductReason: ReimbursementProductReasonPreview }
+>(reimbursementRequest: {
+  reimbursementProducts: T[];
+}): Map<string, T[]> => {
+  const uniqueWbsElementsWithProducts = new Map<string, T[]>();
   reimbursementRequest.reimbursementProducts.forEach((product) => {
-    const wbs = !!(product.reimbursementProductReason as WBSElementData).wbsNum
-      ? `${wbsPipe((product.reimbursementProductReason as WBSElementData).wbsNum)} - ${
-          (product.reimbursementProductReason as WBSElementData).wbsName
-        }`
-      : (product.reimbursementProductReason as OtherProductReason).name;
+    const reason = product.reimbursementProductReason;
+    const wbs = 'wbsNum' in reason ? `${wbsPipe(reason.wbsNum)} - ${reason.wbsName}` : reason.name;
     if (uniqueWbsElementsWithProducts.has(wbs)) {
       const products = uniqueWbsElementsWithProducts.get(wbs);
       products?.push(product);
@@ -72,46 +66,6 @@ export const statusDescendingComparator = (a: ReimbursementStatusType, b: Reimbu
   return 0;
 };
 
-export const vendorDescendingComparator = (a: Vendor, b: Vendor) => {
-  if (b.name < a.name) {
-    return -1;
-  }
-  if (b.name > a.name) {
-    return 1;
-  }
-  return 0;
-};
-
-export const submitterDescendingComparator = (a: User, b: User) => {
-  if (b.firstName < a.firstName) {
-    return -1;
-  }
-  if (b.firstName > a.firstName) {
-    return 1;
-  }
-  return 0;
-};
-
-export const getAllWbsElements = (projects: Project[]): { wbsNum: WbsNumber; wbsName: string }[] => {
-  return projects
-    .map((project) => {
-      return {
-        wbsNum: project.wbsNum,
-        wbsName: project.name
-      };
-    })
-    .concat(
-      projects.flatMap((project) =>
-        project.workPackages.map((workPackage) => {
-          return {
-            wbsNum: workPackage.wbsNum,
-            wbsName: workPackage.projectName + ' - ' + workPackage.name
-          };
-        })
-      )
-    );
-};
-
 export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType) => {
   switch (status) {
     case ReimbursementStatusType.ADVISOR_APPROVED:
@@ -133,55 +87,35 @@ export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType)
   }
 };
 
-export const getCurrentReimbursementStatus = (statuses: ReimbursementStatus[]) => {
-  return statuses.sort((a: ReimbursementStatus, b: ReimbursementStatus) => (a.dateCreated > b.dateCreated ? -1 : 1))[0];
+// the status checks only need the request's statuses
+type WithStatuses = Pick<BaseReimbursementRequest, 'statusTypes'>;
+
+export const isReimbursementRequestAdvisorApproved = (reimbursementRequest: WithStatuses) => {
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.ADVISOR_APPROVED);
 };
 
-export const isReimbursementRequestAdvisorApproved = (reimbursementRequest: ReimbursementRequest) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.ADVISOR_APPROVED);
+export const isReimbursementRequestPendingSaboSubmission = (reimbursementRequest: WithStatuses) => {
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.PENDING_SABO_SUBMISSION);
 };
 
-export const isReimbursementRequestPendingSaboSubmission = (reimbursementRequest: ReimbursementRequest) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.PENDING_SABO_SUBMISSION);
+export const isReimbursementRequestSaboSubmitted = (reimbursementRequest: WithStatuses) => {
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.SABO_SUBMITTED);
 };
 
-export const isReimbursementRequestSaboSubmitted = (reimbursementRequest: ReimbursementRequest) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.SABO_SUBMITTED);
+export const isReimbursementRequestLeadershipApproved = (reimbursementRequest: WithStatuses) => {
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.LEADERSHIP_APPROVED);
 };
 
-export const isReimbursementRequestLeadershipApproved = (reimbursementRequest: ReimbursementRequest) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.LEADERSHIP_APPROVED);
+export const isReimbursementRequestPendingFinance = (reimbursementRequest: WithStatuses) => {
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.PENDING_FINANCE);
 };
 
-export const isReimbursementRequestPendingFinance = (reimbursementRequest: ReimbursementRequest) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.PENDING_FINANCE);
+export const isReimbursementRequestDenied = (reimbursementRequest: WithStatuses) => {
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.DENIED);
 };
 
-export const isReimbursementRequestDenied = (reimbursementRequest: ReimbursementRequest) => {
-  return reimbursementRequest.reimbursementStatuses.map((status) => status.type).includes(ReimbursementStatusType.DENIED);
-};
-
-export const isReimbursementRequestReimbursed = (reimbursementRequest: ReimbursementRequest) => {
-  return reimbursementRequest.reimbursementStatuses
-    .map((status) => status.type)
-    .includes(ReimbursementStatusType.REIMBURSED);
-};
-
-export const getReimbursementRequestDateSubmittedToSabo = (reimbursementRequest: ReimbursementRequest) => {
-  const saboStatus = reimbursementRequest.reimbursementStatuses.find(
-    (status) => status.type === ReimbursementStatusType.SABO_SUBMITTED
-  );
-  return saboStatus?.dateCreated;
+export const isReimbursementRequestReimbursed = (reimbursementRequest: WithStatuses) => {
+  return reimbursementRequest.statusTypes.includes(ReimbursementStatusType.REIMBURSED);
 };
 
 export const imagePreviewUrl = (googleFileId: string) => `https://drive.google.com/file/d/${googleFileId}/preview`;
@@ -194,18 +128,18 @@ export const getRefundRowData = (refund: Reimbursement) => {
   return { date: refund.dateCreated, amount: refund.amount, recipient: refund.userSubmitted, id: refund.reimbursementId };
 };
 
-export const createReimbursementRequestRowData = (reimbursementRequest: ReimbursementRequest): ReimbursementRequestRow => {
+export const createReimbursementRequestRowData = (
+  reimbursementRequest: ReimbursementRequestTableItem
+): ReimbursementRequestRow => {
   return {
     id: reimbursementRequest.reimbursementRequestId,
     identifier: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId,
     amount: reimbursementRequest.totalCost,
     dateSubmitted: reimbursementRequest.dateCreated,
-    status: getCurrentReimbursementStatus(reimbursementRequest.reimbursementStatuses).type,
-    dateSubmittedToSabo: getReimbursementRequestDateSubmittedToSabo(reimbursementRequest),
+    status: reimbursementRequest.currentStatus,
+    dateSubmittedToSabo: reimbursementRequest.dateSubmittedToSabo,
     submitter: reimbursementRequest.recipient,
-    vendor: reimbursementRequest.vendor,
-    refundSource: reimbursementRequest.indexCode,
     financeMemberAssigned: reimbursementRequest.assignee,
     reimbursementProducts: reimbursementRequest.reimbursementProducts,
     description: reimbursementRequest.description

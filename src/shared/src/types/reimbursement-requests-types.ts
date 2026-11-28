@@ -1,5 +1,5 @@
 import { WbsNumber } from './project-types.js';
-import { User } from './user-types.js';
+import { BaseUser, User } from './user-types.js';
 
 export interface IndexCode {
   indexCodeId: string;
@@ -9,6 +9,7 @@ export interface IndexCode {
   dateCreated: Date;
 }
 
+/** A row of the reimbursement request tables, built from a ReimbursementRequestTableItem */
 export interface ReimbursementRequestRow {
   identifier: number;
   id: string;
@@ -17,11 +18,9 @@ export interface ReimbursementRequestRow {
   dateSubmitted: Date;
   status: ReimbursementStatusType;
   dateSubmittedToSabo: Date | undefined;
-  submitter: User;
-  vendor: Vendor;
-  refundSource: IndexCode;
-  financeMemberAssigned: User | undefined;
-  reimbursementProducts: ReimbursementProduct[];
+  submitter: BaseUser;
+  financeMemberAssigned: BaseUser | undefined;
+  reimbursementProducts: ReimbursementRequestTableItem['reimbursementProducts'];
   description?: string;
 }
 
@@ -36,37 +35,90 @@ export enum ReimbursementStatusType {
   DENIED = 'DENIED'
 }
 
-export interface ReimbursementStatus {
-  reimbursementStatusId: string;
-  type: ReimbursementStatusType;
-  user: User;
-  dateCreated: Date;
-}
-
 export interface Receipt {
   receiptId: string;
   googleFileId: string;
   name: string;
 }
 
-export interface ReimbursementRequest {
+/** The minimum every reimbursement request consumer needs */
+export interface BaseReimbursementRequest {
   reimbursementRequestId: string;
   identifier: number;
   saboId?: string;
   dateCreated: Date;
-  dateOfExpense?: Date;
   description?: string;
-  reimbursementStatuses: ReimbursementStatus[];
-  recipient: User;
-  vendor: Vendor;
-  indexCode: IndexCode;
   totalCost: number;
-  receiptPictures: Receipt[];
-  reimbursementProducts: ReimbursementProduct[];
+  recipient: BaseUser;
+  // every status it has had, oldest first; the status checks only need the types
+  statusTypes: ReimbursementStatusType[];
+  // the type of the newest status
+  currentStatus: ReimbursementStatusType;
+}
+
+/** Why a product was bought: the wbs element it's for, or an "other" reason */
+export type ReimbursementProductReasonPreview = WBSElementData | Pick<OtherProductReason, 'otherProductReasonId' | 'name'>;
+
+/** A row of the My Requests, Assigned To Me, and All Requests tables */
+export interface ReimbursementRequestTableItem extends BaseReimbursementRequest {
+  // when it was marked SABO submitted, if it has been
+  dateSubmittedToSabo?: Date;
+  assignee?: BaseUser;
+  reimbursementProducts: { name?: string; reimbursementProductReason: ReimbursementProductReasonPreview }[];
+}
+
+/** A product on the reimbursement request detail page and edit form */
+export interface ReimbursementProductDetail {
+  reimbursementProductId: string;
+  name?: string;
+  cost: number;
+  materialId?: string;
+  refundSources: { refundSourceId: string; amount: number; indexCode: Pick<IndexCode, 'indexCodeId' | 'code' | 'name'> }[];
+  reimbursementProductReason: ReimbursementProductReasonPreview;
+}
+
+/** A comment on the reimbursement request timeline */
+export interface ReimbursementRequestCommentPreview {
+  reimbursementRequestCommentId: string;
+  comment: string;
+  dateCreated: Date;
+}
+
+/** The reimbursement request detail page, its modals, and the edit form */
+export interface ReimbursementRequestDetail extends BaseReimbursementRequest {
+  dateOfExpense?: Date;
   dateDelivered?: Date;
-  accountCode: AccountCode;
-  comments: ReimbursementRequestComment[];
-  assignee?: User;
+  // the Submit to SABO modal shows the recipient's email
+  recipient: BaseUser & { email: string };
+  assignee?: BaseUser;
+  vendor: Pick<Vendor, 'vendorId' | 'name'>;
+  indexCode: Pick<IndexCode, 'indexCodeId' | 'code' | 'name'>;
+  accountCode: Pick<AccountCode, 'accountCodeId' | 'code' | 'name'>;
+  receiptPictures: Receipt[];
+  reimbursementProducts: ReimbursementProductDetail[];
+  comments: ReimbursementRequestCommentPreview[];
+}
+
+/** A row of a project's Budget tab: a request with a product bought for the project */
+export interface ProjectSpendingItem extends BaseReimbursementRequest {
+  productNames: string[];
+  // the cost of just the products bought for the project
+  projectCost: number;
+}
+
+/** A row of the reimbursement requests CSV export */
+export interface ReimbursementRequestExportRow extends BaseReimbursementRequest {
+  dateDelivered?: Date;
+  dateSubmittedToSabo?: Date;
+  vendor: Pick<Vendor, 'name'>;
+  accountCode: Pick<AccountCode, 'code'>;
+  indexCode: Pick<IndexCode, 'code' | 'name'>;
+}
+
+/** How much has been spent from an index code, for the Total Amount Spent modal */
+export interface IndexCodeSpending {
+  indexCodeId: string;
+  totalSpent: number;
 }
 
 export interface OtherProductReason {
@@ -80,16 +132,6 @@ export interface OtherProductReason {
 }
 
 export type WBSElementData = { wbsNum: WbsNumber; wbsName: string };
-
-export type ReimbursementProductReason = WBSElementData | OtherProductReason;
-export interface ReimbursementProduct {
-  reimbursementProductId: string;
-  name?: string;
-  cost: number;
-  refundSources: RefundSource[];
-  reimbursementProductReason: ReimbursementProductReason;
-  materialId?: string;
-}
 
 export interface Vendor {
   vendorId: string;
@@ -113,14 +155,9 @@ export interface AccountCode {
   indexCodes: IndexCode[];
 }
 
-export interface RefundSource {
-  refundSourceId: string;
-  indexCode: IndexCode;
-  amount: number;
-}
-
 export interface CreateRefundSourceArgs {
-  indexCode: IndexCode;
+  // the form fills these from the request or the account codes; the server only reads the id
+  indexCode: Pick<IndexCode, 'indexCodeId' | 'code' | 'name'>;
   amount: number;
 }
 
@@ -132,12 +169,15 @@ export interface ReimbursementProductCreateArgs {
   refundSources: CreateRefundSourceArgs[];
 }
 
+// the form and the server only read an "other" reason's id and name
+export type OtherProductReasonArg = Pick<OtherProductReason, 'otherProductReasonId' | 'name'>;
+
 export interface ReimbursementProductFormArgs extends ReimbursementProductCreateArgs {
-  reason: WbsNumber | OtherProductReason;
+  reason: WbsNumber | OtherProductReasonArg;
 }
 
 export interface OtherReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
-  reason: OtherProductReason;
+  reason: OtherProductReasonArg;
 }
 
 export interface WbsReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
@@ -163,12 +203,4 @@ export interface Reimbursement {
   dateCreated: Date;
   amount: number;
   userSubmitted: User;
-}
-
-export interface ReimbursementRequestComment {
-  reimbursementRequestCommentId: string;
-  reimbursementRequestId: string;
-  dateCreated: Date;
-  comment: string;
-  userCreated: User;
 }

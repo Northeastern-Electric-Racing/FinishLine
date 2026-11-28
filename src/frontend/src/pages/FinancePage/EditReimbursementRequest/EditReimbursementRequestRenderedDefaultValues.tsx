@@ -1,4 +1,4 @@
-import { OtherProductReason, ReimbursementRequest, WBSElementData } from 'shared';
+import { ReimbursementRequestDetail } from 'shared';
 import ReimbursementRequestForm, {
   ReimbursementRequestDataSubmission
 } from '../ReimbursementRequestForm/ReimbursementRequestForm';
@@ -8,7 +8,7 @@ import { centsToDollar, fullNamePipe } from '../../../utils/pipes';
 import { isReimbursementRequestLeadershipApproved } from '../../../utils/reimbursement-request.utils';
 
 const EditReimbursementRequestRenderedDefaultValues: React.FC<{
-  reimbursementRequest: ReimbursementRequest;
+  reimbursementRequest: ReimbursementRequestDetail;
   onSubmitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
   onExitEditPage: () => void;
   onSubmitToFinance?: (data: ReimbursementRequestDataSubmission) => Promise<void>;
@@ -45,9 +45,10 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
           accountCodeId: reimbursementRequest.accountCode.accountCodeId,
           reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({
             id: product.reimbursementProductId,
-            reason: (product.reimbursementProductReason as WBSElementData).wbsNum
-              ? (product.reimbursementProductReason as WBSElementData).wbsNum
-              : (product.reimbursementProductReason as OtherProductReason),
+            reason:
+              'wbsNum' in product.reimbursementProductReason
+                ? product.reimbursementProductReason.wbsNum
+                : product.reimbursementProductReason,
             name: product.name,
             materialId: product.materialId,
             refundSources: product.refundSources,

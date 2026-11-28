@@ -232,4 +232,5 @@ export type ExceptionObjectNames =
   | 'Competition Performance'
   | 'Recruitment Cycle'
   | 'Slack Channel'
-  | 'Competition Documents Summary';
+  | 'Competition Documents Summary'
+  | 'Bay Dashboard Countdown';
