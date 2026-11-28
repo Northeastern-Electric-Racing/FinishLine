@@ -84,8 +84,18 @@ const SemesterlyMembership: React.FC<SemesterlyMembershipProps> = ({ executiveSu
   const chartData = points.map((point) => ({ name: point.label, ...point.counts }));
 
   return (
-    <Card sx={{ borderRadius: 5, backgroundColor: BACKGROUND, color: 'white', width: '100%' }}>
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+    <Card
+      sx={{
+        borderRadius: 5,
+        backgroundColor: BACKGROUND,
+        color: 'white',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 }, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <Typography variant="h5" fontWeight="bold" sx={{ textDecoration: 'underline', mb: 1 }}>
           Semesterly Membership
         </Typography>
@@ -93,36 +103,40 @@ const SemesterlyMembership: React.FC<SemesterlyMembershipProps> = ({ executiveSu
         {chartData.length === 0 || divisions.length === 0 ? (
           <Typography textAlign="center">No membership data available.</Typography>
         ) : (
-          <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={chartData} margin={{ top: 40, right: 30, left: 0, bottom: 0 }}>
-              <CartesianGrid stroke="#4a4a4a" vertical={false} />
-              <XAxis dataKey="name" stroke="white" tick={{ fill: 'white', fontSize: 12 }} />
-              <YAxis stroke="white" tick={{ fill: 'white', fontSize: 12 }} axisLine={false} tickLine={false} />
-              <Tooltip
-                content={<MembershipTooltip />}
-                cursor={{ stroke: ACCENT, strokeWidth: 2 }}
-                position={{ y: -10 }}
-                isAnimationActive={false}
-              />
-              <Legend verticalAlign="top" align="left" wrapperStyle={{ color: 'white', top: 0 }} iconType="square" />
-              {divisions.map((division, idx) => {
-                const color = DIVISION_COLORS[idx % DIVISION_COLORS.length];
-                return (
-                  <Line
-                    key={division}
-                    type="linear"
-                    dataKey={division}
-                    name={division}
-                    stroke={color}
-                    strokeWidth={1.5}
-                    dot={{ r: 8, fill: color, stroke: color }}
-                    activeDot={{ r: 8, fill: color, stroke: color }}
-                    connectNulls
+          <Box flex={1} position="relative" minHeight={200}>
+            <Box position="absolute" sx={{ inset: 0 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 40, right: 30, left: 0, bottom: 0 }}>
+                  <CartesianGrid stroke="#4a4a4a" vertical={false} />
+                  <XAxis dataKey="name" stroke="white" tick={{ fill: 'white', fontSize: 12 }} />
+                  <YAxis stroke="white" tick={{ fill: 'white', fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    content={<MembershipTooltip />}
+                    cursor={{ stroke: ACCENT, strokeWidth: 2 }}
+                    position={{ y: -10 }}
+                    isAnimationActive={false}
                   />
-                );
-              })}
-            </LineChart>
-          </ResponsiveContainer>
+                  <Legend verticalAlign="top" align="left" wrapperStyle={{ color: 'white', top: 0 }} iconType="square" />
+                  {divisions.map((division, idx) => {
+                    const color = DIVISION_COLORS[idx % DIVISION_COLORS.length];
+                    return (
+                      <Line
+                        key={division}
+                        type="linear"
+                        dataKey={division}
+                        name={division}
+                        stroke={color}
+                        strokeWidth={1.5}
+                        dot={{ r: 8, fill: color, stroke: color }}
+                        activeDot={{ r: 8, fill: color, stroke: color }}
+                        connectNulls
+                      />
+                    );
+                  })}
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
+          </Box>
         )}
       </CardContent>
     </Card>

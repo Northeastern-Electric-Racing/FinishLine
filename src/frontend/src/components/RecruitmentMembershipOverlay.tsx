@@ -25,6 +25,9 @@ import SemesterlyMembership, { buildSemesterPoints } from './SemesterlyMembershi
 import TermWindowSelector from './TermWindowSelector';
 
 const VISIBLE_TERMS = 6;
+// space taken by the navbar, page title and overlay tabs above this overlay; on large screens the overlay fills
+// the rest of the viewport so all four cards are visible without scrolling
+const HEADER_OFFSET = '136px';
 const POSITIVE_COLOR = '#5aa454';
 const NEGATIVE_COLOR = '#ef4345';
 
@@ -59,12 +62,14 @@ const GrowthMetric: React.FC<{ label: string; percent?: number }> = ({ label, pe
 );
 
 const KeyYoyMetrics: React.FC<{ metrics: RecruitmentYoyMetrics }> = ({ metrics }) => (
-  <Card sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', width: '100%' }}>
+  <Card
+    sx={{ borderRadius: 5, backgroundColor: '#1e1e1e', color: 'white', width: '100%', height: '100%', overflow: 'auto' }}
+  >
     <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-      <Typography variant="h5" fontWeight="bold" sx={{ textDecoration: 'underline', mb: 2 }}>
+      <Typography variant="h5" fontWeight="bold" sx={{ textDecoration: 'underline', mb: 1 }}>
         Key YoY Metrics
       </Typography>
-      <Box component="ul" sx={{ m: 0, pl: 3, '& li': { mb: 0.5 } }}>
+      <Box component="ul" sx={{ m: 0, pl: 3, '& li': { mb: 0.25 } }}>
         <Metric label="Best Recruitment Season By New Active Members" value={metrics.bestByNewActiveMembers} />
         <Metric label="Best Recruitment Season By Onboarded Members" value={metrics.bestByOnboarded} />
         <Metric label="Worst Recruitment Season By New Active Members" value={metrics.worstByNewActiveMembers} />
@@ -138,8 +143,19 @@ const RecruitmentMembershipOverlay: React.FC = () => {
     );
 
   return (
-    <Box sx={{ backgroundColor: EXEC_SUMMARY_BACKGROUND, color: 'white', borderRadius: 5, p: 2 }}>
-      <Box display="flex" justifyContent="flex-end" mb={2}>
+    <Box
+      sx={{
+        backgroundColor: EXEC_SUMMARY_BACKGROUND,
+        color: 'white',
+        borderRadius: 5,
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        height: { lg: `calc(100vh - ${HEADER_OFFSET})` },
+        minHeight: { lg: 520 }
+      }}
+    >
+      <Box display="flex" justifyContent="flex-end" mb={1}>
         <TermWindowSelector
           terms={allTermLabels.map((label) => ({ key: label, shortLabel: termLabelShort(label) }))}
           start={start}
@@ -147,7 +163,14 @@ const RecruitmentMembershipOverlay: React.FC = () => {
           onChange={setWindowStart}
         />
       </Box>
-      <Box display="grid" gap={2} gridTemplateColumns={{ xs: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))' }}>
+      <Box
+        display="grid"
+        gap={2}
+        flex={1}
+        minHeight={0}
+        gridTemplateColumns={{ xs: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))' }}
+        gridTemplateRows={{ lg: 'repeat(2, minmax(0, 1fr))' }}
+      >
         <NewMemberJourneyChart executiveSummaries={summaries} termLabels={termLabels} />
         <NewMemberSignUps events={signUpEvents} termLabels={termLabels} />
         <SemesterlyMembership executiveSummaries={summaries} termLabels={termLabels} />

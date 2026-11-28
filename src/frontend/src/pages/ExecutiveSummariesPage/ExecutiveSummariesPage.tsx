@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import Switch from '@mui/material/Switch';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
@@ -12,6 +13,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import CompetitionDocuments from '../../components/CompetitionDocuments';
 import CompetitionPerformanceSection from '../../components/CompetitionPerformance';
 import ExecSummaryOverview from '../../components/ExecSummaryOverview';
+import ExecutiveSummaryOverlays, { OVERLAY_TABS, OverlayTab } from '../../components/ExecutiveSummaryOverlays';
 import ExecutiveSummaryBudget from '../../components/ExecutiveSummaryBudget';
 import ExecutiveSummaryVehicleDevelopment from '../../components/ExecutiveSummaryVehicleDevelopment';
 import RecruitmentMembership from '../../components/RecruitmentMembership';
@@ -24,6 +26,8 @@ import ErrorPage from '../ErrorPage';
 const ExecutiveSummariesPage: React.FC = () => {
   const user = useCurrentUser();
   const [tabValue, setTabValue] = useState<number>(0);
+  const [showOverlays, setShowOverlays] = useState(false);
+  const [overlayTab, setOverlayTab] = useState<OverlayTab>(OverlayTab.BUDGET);
   const { data: cars, isLoading: carsIsLoading, isError: carsIsError, error: carsError } = useGetAllCars();
   const {
     data: executiveSummaries,
@@ -45,9 +49,43 @@ const ExecutiveSummariesPage: React.FC = () => {
     .filter((summary) => !summary.dateDeleted && summary.car.name === selectedCar?.name)
     .sort((a, b) => b.dateCreated.getTime() - a.dateCreated.getTime());
 
+  const modeToggle = (
+    <Box display="flex" alignItems="center">
+      <Typography>Exec Summaries</Typography>
+      <Switch
+        checked={showOverlays}
+        onChange={(_event, checked) => setShowOverlays(checked)}
+        inputProps={{ 'aria-label': 'Show overlays' }}
+      />
+      <Typography>Overlays</Typography>
+    </Box>
+  );
+
+  if (showOverlays)
+    return (
+      <PageLayout
+        title="Overlays"
+        headerRight={modeToggle}
+        tabs={
+          <Tabs
+            value={overlayTab}
+            onChange={(_event, newValue: OverlayTab) => setOverlayTab(newValue)}
+            aria-label="executive-summary-overlay-tabs"
+          >
+            {OVERLAY_TABS.map((tab) => (
+              <Tab label={tab.label} value={tab.value} key={tab.value} />
+            ))}
+          </Tabs>
+        }
+      >
+        <ExecutiveSummaryOverlays tab={overlayTab} />
+      </PageLayout>
+    );
+
   return (
     <PageLayout
       title="Executive Summaries"
+      headerRight={modeToggle}
       tabs={
         <Tabs
           value={tabValue}
